@@ -1,0 +1,155 @@
+<div class="contact-financials-tab">
+
+    <!-- Loading State -->
+    <div class="text-center py-5" *ngIf="isLoading$ | async">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading financial data...</span>
+        </div>
+    </div>
+
+    <ng-container *ngIf="constituents$ | async as constituents">
+
+        <!-- Empty State -->
+        <div class="alert alert-light border text-center py-5"
+            *ngIf="constituents.length === 0 && !(isLoading$ | async)">
+            <div class="mb-3 text-muted">
+                <i class="fa-solid fa-hand-holding-dollar fa-3x opacity-25"></i>
+            </div>
+            <h5>No Financial Record Verified</h5>
+            <p class="text-muted">This contact does not have an associated constituent record.</p>
+            <!-- Potential Action: Create Constituent Record (Future) -->
+        </div>
+
+        <!-- Data View (Show First Constituent) -->
+        <div *ngIf="constituents.length > 0">
+            <ng-container *ngFor="let constituent of constituents; let i = index">
+                <!-- Only showing the first one for now, or loop if needed. Assuming 1-to-1 context usually. -->
+                <div class="mb-5" *ngIf="i === 0">
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="mb-0 fw-bold">
+                            Donor Profile
+                            <span class="text-muted fw-normal ms-2 small">#{{ constituent.constituentNumber }}</span>
+                        </h5>
+                        <div>
+                            <span *ngIf="constituent.doNotSolicit" class="badge bg-danger me-1"><i
+                                    class="fa fa-ban me-1"></i> Do Not Solicit</span>
+                            <span *ngIf="constituent.doNotEmail" class="badge bg-warning text-dark me-1"><i
+                                    class="fa fa-envelope-open me-1"></i> Do Not Email</span>
+                            <span *ngIf="constituent.doNotMail" class="badge bg-warning text-dark me-1"><i
+                                    class="fa fa-mail-bulk me-1"></i> Do Not Mail</span>
+                        </div>
+                    </div>
+
+                    <!-- Summary Cards -->
+                    <div class="row g-3 mb-4">
+                        <!-- Lifetime Giving -->
+                        <div class="col-md-6 col-xl-3">
+                            <div class="card h-100 border-start border-4 border-success shadow-sm">
+                                <div class="card-body">
+                                    <small class="text-muted text-uppercase fw-bold ls-1">Lifetime Giving</small>
+                                    <div class="d-flex align-items-baseline mt-2">
+                                        <h3 class="mb-0 text-success fw-bold">{{ constituent.totalLifetimeGiving |
+                                            currency }}</h3>
+                                    </div>
+                                    <small class="text-muted">Total Contribution</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- YTD Giving -->
+                        <div class="col-md-6 col-xl-3">
+                            <div class="card h-100 border-start border-4 border-primary shadow-sm">
+                                <div class="card-body">
+                                    <small class="text-muted text-uppercase fw-bold ls-1">YTD Giving</small>
+                                    <div class="d-flex align-items-baseline mt-2">
+                                        <h3 class="mb-0 text-primary fw-bold">{{ constituent.totalYTDGiving | currency
+                                            }}</h3>
+                                    </div>
+                                    <small class="text-muted">Fiscal Year To Date</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Last Gift -->
+                        <div class="col-md-6 col-xl-3">
+                            <div class="card h-100 border-start border-4 border-info shadow-sm">
+                                <div class="card-body">
+                                    <small class="text-muted text-uppercase fw-bold ls-1">Last Gift</small>
+                                    <div class="mt-2">
+                                        <h4 class="mb-0 fw-bold">{{ constituent.lastGiftAmount | currency }}</h4>
+                                        <small class="text-muted">{{ constituent.lastGiftDate | date:'mediumDate'
+                                            }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Largest Gift -->
+                        <div class="col-md-6 col-xl-3">
+                            <div class="card h-100 border-start border-4 border-warning shadow-sm">
+                                <div class="card-body">
+                                    <small class="text-muted text-uppercase fw-bold ls-1">Largest Gift</small>
+                                    <div class="d-flex align-items-baseline mt-2">
+                                        <h3 class="mb-0 text-dark fw-bold">{{ constituent.largestGiftAmount | currency
+                                            }}</h3>
+                                    </div>
+                                    <small class="text-muted">Single Donation</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Gifts (Lazy Loaded) -->
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-white py-3">
+                            <h6 class="mb-0 fw-semibold">Gift History</h6>
+                        </div>
+                        <div class="card-body p-0">
+                            <ng-container *ngIf="constituent.Gifts$ | async as gifts; else loadingGifts">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0 align-middle">
+                                        <thead class="bg-light">
+                                            <tr>
+                                                <th class="ps-4">Date</th>
+                                                <!-- <th>Type</th> -->
+                                                <!-- Gift type not readily available in BasicListData? Need to check GiftData props -->
+                                                <!-- Assuming GiftData has amount, date. -->
+                                                <th>Amount</th>
+                                                <!-- <th>Fund</th> -->
+                                                <!-- <th class="text-end pe-4">Status</th> -->
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr *ngFor="let gift of gifts | slice:0:5"> <!-- Show last 5 -->
+                                                <!-- Note: GiftData properties need to be verified. Assuming standard fields or updating later. -->
+                                                <!-- Detailed GiftData check required if 'amount' isn't direct property. -->
+                                                <td class="ps-4">{{ gift.receivedDate | date:'mediumDate' }}</td>
+                                                <td class="fw-bold">{{ gift.amount | currency }}</td>
+                                            </tr>
+                                            <tr *ngIf="gifts.length === 0">
+                                                <td colspan="3" class="text-center py-4 text-muted">No gifts recorded.
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="p-3 text-center border-top" *ngIf="gifts.length > 5">
+                                    <button class="btn btn-link btn-sm text-decoration-none">View All History</button>
+                                </div>
+                            </ng-container>
+                            <ng-template #loadingGifts>
+                                <div class="text-center py-4">
+                                    <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                                    <span class="ms-2 text-muted">Loading gift history...</span>
+                                </div>
+                            </ng-template>
+                        </div>
+                    </div>
+
+                </div>
+            </ng-container>
+        </div>
+
+    </ng-container>
+</div>

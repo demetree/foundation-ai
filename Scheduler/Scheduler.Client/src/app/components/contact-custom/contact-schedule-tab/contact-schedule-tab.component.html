@@ -1,0 +1,90 @@
+<div class="contact-schedule-tab">
+
+    <div class="text-center py-5" *ngIf="isLoading$ | async">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading schedule...</span>
+        </div>
+    </div>
+
+    <ng-container *ngIf="!(isLoading$ | async)">
+
+        <div *ngIf="!(hasEvents$ | async)" class="alert alert-light border text-center py-5">
+            <div class="mb-3 text-muted">
+                <i class="fa-regular fa-calendar-xmark fa-3x opacity-25"></i>
+            </div>
+            <h5>No Scheduled Events</h5>
+            <p class="text-muted">This contact has no upcoming or past scheduled events recorded in interactions.</p>
+        </div>
+
+        <!-- Upcoming Events -->
+        <div *ngIf="upcomingEvents$ | async as upcoming">
+            <div *ngIf="upcoming.length > 0" class="mb-5">
+                <h5 class="fw-bold border-bottom pb-2 mb-4 text-primary">
+                    <i class="fa-regular fa-calendar-check me-2"></i>Upcoming Schedule
+                </h5>
+
+                <div class="timeline">
+                    <div *ngFor="let event of upcoming"
+                        class="card mb-3 shadow-sm border-start border-4 border-primary">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h5 class="card-title fw-bold mb-1">
+                                        {{ event.scheduledEvent?.name || event.interactionType?.name || 'Scheduled
+                                        Event' }}
+                                    </h5>
+                                    <div class="text-muted small mb-2">
+                                        <i class="fa-regular fa-clock me-1"></i>
+                                        {{ event.startTime | date:'medium' }}
+                                        <span *ngIf="event.endTime"> - {{ event.endTime | date:'mediumTime' }}</span>
+                                    </div>
+                                    <p class="card-text text-secondary mb-1" *ngIf="event.location">
+                                        <i class="fa-solid fa-location-dot me-1"></i> {{ event.location }}
+                                    </p>
+                                    <p class="card-text small bg-light p-2 rounded" *ngIf="event.notes">
+                                        <span class="fw-semibold">Notes:</span> {{ event.notes }}
+                                    </p>
+                                </div>
+                                <div class="ms-3 text-end" style="min-width: 120px;">
+                                    <span class="badge bg-primary mb-2 d-block">{{ event.interactionType?.name ||
+                                        'Event' }}</span>
+                                    <button class="btn btn-outline-secondary btn-sm w-100">Details</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Past Events -->
+        <div *ngIf="pastEvents$ | async as past">
+            <div *ngIf="past.length > 0">
+                <h6 class="fw-bold border-bottom pb-2 mb-4 text-muted">
+                    <i class="fa-solid fa-clock-rotate-left me-2"></i>Recent History
+                </h6>
+
+                <div class="opacity-75">
+                    <div *ngFor="let event of past" class="card mb-2 border-start border-2 border-secondary">
+                        <div class="card-body py-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="fw-bold mb-0">
+                                        {{ event.scheduledEvent?.name || event.interactionType?.name || 'Past Event' }}
+                                    </h6>
+                                    <span class="text-muted small">{{ event.startTime | date:'mediumDate' }}</span>
+                                </div>
+                                <div>
+                                    <span class="badge bg-light text-secondary border">{{ event.interactionType?.name
+                                        }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </ng-container>
+</div>

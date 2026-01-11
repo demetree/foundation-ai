@@ -69,8 +69,14 @@ export class ContactInteractionsTabComponent implements OnInit, OnDestroy {
     //
     // This automatically triggers the load if not already cached
     //
-    this.interactions$ = this.contact.ContactInteractions$;
-
+    this.interactions$ = this.contact.ContactInteractions$.pipe(
+      map(interactions => {
+        if (!interactions) return null;
+        return [...interactions].sort((a, b) =>
+          new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
+        );
+      })
+    );
 
     //
     // Derive loading state: true while data is null (initial state), false once loaded

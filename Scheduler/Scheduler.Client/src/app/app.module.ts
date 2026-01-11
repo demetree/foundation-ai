@@ -10,7 +10,7 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { FullCalendarModule } from '@fullcalendar/angular';
 
-import { NgbModalModule, NgbNavModule, NgbTooltipModule, NgbPopoverModule, NgbAccordionModule, NgbDropdownModule, NgbCarouselModule }   from '@ng-bootstrap/ng-bootstrap';
+import { NgbModalModule, NgbNavModule, NgbTooltipModule, NgbPopoverModule, NgbAccordionModule, NgbDropdownModule, NgbCarouselModule } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { OAuthModule, OAuthStorage } from 'angular-oauth2-oidc';
@@ -155,6 +155,8 @@ import { ContactOverviewTabComponent } from './components/contact-custom/contact
 import { ContactInteractionsTabComponent } from './components/contact-custom/contact-interactions-tab/contact-interactions-tab.component';
 import { ContactInteractionEditModalComponent } from './components/contact-custom/contact-interaction-edit-modal/contact-interaction-edit-modal.component';
 import { ContactRelationshipsTabComponent } from './components/contact-custom/contact-relationships-tab/contact-relationships-tab.component';
+import { ContactFinancialsTabComponent } from './components/contact-custom/contact-financials-tab/contact-financials-tab.component';
+import { ContactScheduleTabComponent } from './components/contact-custom/contact-schedule-tab/contact-schedule-tab.component';
 
 
 //
@@ -1214,6 +1216,8 @@ import { TributeTypeTableComponent } from './scheduler-data-components/tribute-t
     ContactInteractionsTabComponent,
     ContactInteractionEditModalComponent,
     ContactRelationshipsTabComponent,
+    ContactFinancialsTabComponent,
+    ContactScheduleTabComponent,
     ClientTargetsTabComponent,
 
     //

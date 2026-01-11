@@ -4,6 +4,10 @@ import { map } from 'rxjs/operators';
 
 import { ContactService, ContactData } from '../../../scheduler-data-services/contact.service';
 import { ContactContactData } from '../../../scheduler-data-services/contact-contact.service';
+import { OfficeContactData } from '../../../scheduler-data-services/office-contact.service';
+import { ClientContactData } from '../../../scheduler-data-services/client-contact.service';
+import { SchedulingTargetContactData } from '../../../scheduler-data-services/scheduling-target-contact.service';
+import { ResourceContactData } from '../../../scheduler-data-services/resource-contact.service';
 import { AuthService } from '../../../services/auth.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ContactFullNamePipe } from '../../../pipes/contact-full-name.pipe';
@@ -37,19 +41,39 @@ export class ContactRelationshipsTabComponent implements OnInit, OnDestroy {
     private contactFullNamePipe: ContactFullNamePipe,
     private modalService: NgbModal) {
     this.relationships$ = of(null);
+    this.officeContacts$ = of(null);
+    this.clientContacts$ = of(null);
+    this.schedulingTargetContacts$ = of(null);
+    this.resourceContacts$ = of(null);
     this.isLoading$ = of(true);
   }
+
+  /**
+   * Additional relationship observables
+   */
+  public officeContacts$: Observable<OfficeContactData[] | null>;
+  public clientContacts$: Observable<ClientContactData[] | null>;
+  public schedulingTargetContacts$: Observable<SchedulingTargetContactData[] | null>;
+  public resourceContacts$: Observable<ResourceContactData[] | null>;
 
   ngOnInit(): void {
     if (!this.contact) {
       console.error('ContactRelationshipsTabComponent: No contact input provided.');
       this.relationships$ = of([]);
+      this.officeContacts$ = of([]);
+      this.clientContacts$ = of([]);
+      this.schedulingTargetContacts$ = of([]);
+      this.resourceContacts$ = of([]);
       this.isLoading$ = of(false);
       return;
     }
 
     // Subscribe to the lazy-loaded relationships observable
     this.relationships$ = this.contact.ContactContacts$;
+    this.officeContacts$ = this.contact.OfficeContacts$;
+    this.clientContacts$ = this.contact.ClientContacts$;
+    this.schedulingTargetContacts$ = this.contact.SchedulingTargetContacts$;
+    this.resourceContacts$ = this.contact.ResourceContacts$;
 
     // Derive loading state: true while data is null
     this.isLoading$ = this.relationships$.pipe(

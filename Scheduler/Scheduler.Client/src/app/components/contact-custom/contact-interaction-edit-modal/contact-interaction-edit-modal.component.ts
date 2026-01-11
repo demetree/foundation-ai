@@ -5,7 +5,8 @@ import { Observable, Subject } from 'rxjs';
 
 import { ContactData } from '../../../scheduler-data-services/contact.service';
 import { ContactInteractionData, ContactInteractionService, ContactInteractionSubmitData } from '../../../scheduler-data-services/contact-interaction.service';
-import { InteractionTypeService, InteractionTypeData } from '../../../scheduler-data-services/interaction-type.service'; // Adjust path if needed
+import { InteractionTypeService, InteractionTypeData } from '../../../scheduler-data-services/interaction-type.service';
+import { PriorityService, PriorityData } from '../../../scheduler-data-services/priority.service';
 import { AuthService } from '../../../services/auth.service';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 
@@ -37,6 +38,7 @@ export class ContactInteractionEditModalComponent implements OnInit, OnDestroy {
    * List of available interaction types (loaded once).
    */
   public interactionTypes$: Observable<InteractionTypeData[]>;
+  public priorities$: Observable<PriorityData[]>;
 
   /**
    * Tracks whether we're currently saving to prevent double-submit.
@@ -60,6 +62,7 @@ export class ContactInteractionEditModalComponent implements OnInit, OnDestroy {
     private activeModal: NgbActiveModal,
     private contactInteractionService: ContactInteractionService,
     private interactionTypeService: InteractionTypeService,
+    private priorityService: PriorityService,
     private alertService: AlertService,
     private authService: AuthService
   ) {
@@ -69,11 +72,13 @@ export class ContactInteractionEditModalComponent implements OnInit, OnDestroy {
       startTime: [new Date().toISOString().slice(0, 16), Validators.required], // datetime-local format
       endTime: [null],
       notes: [''],
-      location: ['']
+      location: [''],
+      priorityId: [null]
     });
 
-    // Load interaction types (assuming you have a service method)
+    // Load interaction types and priorities
     this.interactionTypes$ = this.interactionTypeService.GetInteractionTypeList();
+    this.priorities$ = this.priorityService.GetPriorityList();
   }
 
   /**
@@ -97,7 +102,8 @@ export class ContactInteractionEditModalComponent implements OnInit, OnDestroy {
         startTime: this.interaction.startTime ? this.interaction.startTime.slice(0, 16) : null,
         endTime: this.interaction.endTime ? this.interaction.endTime.slice(0, 16) : null,
         notes: this.interaction.notes || '',
-        location: this.interaction.location || ''
+        location: this.interaction.location || '',
+        priorityId: this.interaction.priorityId
       });
     }
   }
@@ -116,6 +122,12 @@ export class ContactInteractionEditModalComponent implements OnInit, OnDestroy {
   public userCanSaveInteraction(): boolean {
 
     return this.contactInteractionService.userIsSchedulerContactInteractionWriter?.() ?? false;
+  }
+
+  private getInitiatingContactId(): number | bigint | null {
+    // TODO: Implement logic to get the current user's contact ID.
+    // For now, return null or potentially check AuthService extensions.
+    return null;
   }
 
   /**
@@ -166,9 +178,9 @@ export class ContactInteractionEditModalComponent implements OnInit, OnDestroy {
       location: formValue.location?.trim() || null,
 
       // review and fix these - add UI elements if need be.
-      priorityId: null,
-      initiatingContactId: null,    // probably need to add this
-      scheduledEventId: null,
+      priorityId: formValue.priorityId ? Number(formValue.priorityId) : null,
+      initiatingContactId: this.getInitiatingContactId(),
+      scheduledEventId: null, // Future: Add event picker
       externalId: null,
 
       versionNumber: this.interaction?.versionNumber ?? 0,
