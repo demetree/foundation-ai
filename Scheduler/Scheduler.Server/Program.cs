@@ -109,6 +109,9 @@ namespace Foundation.Scheduler
                 //
                 BuildFoundationServices(builder, logger);
 
+                // Register Donor Journey Calculator
+                builder.Services.AddScoped<Foundation.Scheduler.Services.DonorJourneyCalculator>();
+
                 //
                 // Add the Scheduler Database context
                 //

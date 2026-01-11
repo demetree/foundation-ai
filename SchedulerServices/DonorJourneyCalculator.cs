@@ -8,9 +8,9 @@ namespace Foundation.Scheduler.Services
 {
     public class DonorJourneyCalculator
     {
-        private readonly DatabaseContext _context;
+        private readonly SchedulerContext _context;
 
-        public DonorJourneyCalculator(DatabaseContext context)
+        public DonorJourneyCalculator(SchedulerContext context)
         {
             _context = context;
         }
@@ -22,25 +22,30 @@ namespace Foundation.Scheduler.Services
             // Or we check specific specific flags.
             // Let's assume Sequence implies progression.
             
-            var stages = _context.ConstituentJourneyStage
-                .Where(s => s.Active && !s.Deleted)
-                .OrderByDescending(s => s.Sequence)
+            var stages = _context.ConstituentJourneyStages
+                .Where(s => s.active && !s.deleted)
+                .OrderByDescending(s => s.sequence)
                 .ToList();
 
             // Calculate metrics for the constituent
-            // We need gifts. Assuming they are loaded or we load them.
-            // If they are not loaded, we should load them.
-            
-            // Note: This assumes Gift table links to Constituent. checking schema would be good but standard convention applies.
-            // Let's safe-guard lazy loading or explicit loading.
-            var gifts = _context.Gift
-                .Where(g => g.ConstituentId == constituent.Id && g.Active && !g.Deleted)
-                .ToList();
+            // Check if Gifts are already loaded (e.g. via Include) to avoid N+1
+            List<Gift> gifts;
+            if (constituent.Gifts != null)
+            {
+                 gifts = constituent.Gifts.Where(g => g.active && !g.deleted).ToList();
+            }
+            else
+            {
+                // Fallback to lazy/explicit loading query
+                gifts = _context.Gifts
+                    .Where(g => g.constituentId == constituent.id && g.active && !g.deleted)
+                    .ToList();
+            }
 
-            decimal lifetimeGiving = gifts.Sum(g => g.Amount);
-            decimal annualGiving = gifts.Where(g => g.Date >= DateTime.UtcNow.AddYears(-1)).Sum(g => g.Amount);
+            decimal lifetimeGiving = gifts.Sum(g => g.amount);
+            decimal annualGiving = gifts.Where(g => g.receivedDate >= DateTime.UtcNow.AddYears(-1)).Sum(g => g.amount);
             int giftCount = gifts.Count;
-            DateTime? lastGiftDate = gifts.OrderByDescending(g => g.Date).FirstOrDefault()?.Date;
+            DateTime? lastGiftDate = gifts.OrderByDescending(g => g.receivedDate).FirstOrDefault()?.receivedDate;
             int daysSinceLastGift = lastGiftDate.HasValue ? (int)(DateTime.UtcNow - lastGiftDate.Value).TotalDays : int.MaxValue;
 
             foreach (var stage in stages)
@@ -48,20 +53,20 @@ namespace Foundation.Scheduler.Services
                 bool match = true;
 
                 // 1. Min Annual Giving
-                if (stage.MinAnnualGiving.HasValue && annualGiving < stage.MinAnnualGiving.Value)
+                if (stage.minAnnualGiving.HasValue && annualGiving < stage.minAnnualGiving.Value)
                     match = false;
 
                 // 2. Max Days Since Last Gift (Recency)
                 // If stage requires "Recent" (e.g. < 365 days), and user is 500 days, FAIL.
-                if (match && stage.MaxDaysSinceLastGift.HasValue && daysSinceLastGift > stage.MaxDaysSinceLastGift.Value)
+                if (match && stage.maxDaysSinceLastGift.HasValue && daysSinceLastGift > stage.maxDaysSinceLastGift.Value)
                     match = false;
 
                 // 3. Min Gift Count
-                if (match && stage.MinGiftCount.HasValue && giftCount < stage.MinGiftCount.Value)
+                if (match && stage.minGiftCount.HasValue && giftCount < stage.minGiftCount.Value)
                     match = false;
                 
                 // 4. Min Lifetime Giving (Existing)
-                if (match && stage.MinLifetimeGiving.HasValue && lifetimeGiving < stage.MinLifetimeGiving.Value)
+                if (match && stage.minLifetimeGiving.HasValue && lifetimeGiving < stage.minLifetimeGiving.Value)
                     match = false;
 
                 if (match)
@@ -72,7 +77,7 @@ namespace Foundation.Scheduler.Services
             }
 
             // Fallback to default if no match found
-            return stages.FirstOrDefault(s => s.IsDefault) ?? stages.LastOrDefault(); // Fallback to lowest sequence/default
+            return stages.FirstOrDefault(s => s.isDefault) ?? stages.LastOrDefault(); // Fallback to lowest sequence/default
         }
     }
 }

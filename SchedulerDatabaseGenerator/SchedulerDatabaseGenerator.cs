@@ -3192,6 +3192,8 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
 
             Database.Table giftTable = database.AddTable("Gift");
 
+            giftTable.SetTableToBeReadonlyForControllerCreationPurposes();
+
             giftTable.comment = @"  ====================================================================================================
    GIFTS (Transactions)
    The money coming in.
