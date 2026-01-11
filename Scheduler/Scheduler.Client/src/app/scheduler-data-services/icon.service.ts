@@ -35,6 +35,7 @@ import { FundService, FundData } from './fund.service';
 import { CampaignService, CampaignData } from './campaign.service';
 import { AppealService, AppealData } from './appeal.service';
 import { HouseholdService, HouseholdData } from './household.service';
+import { ConstituentJourneyStageService, ConstituentJourneyStageData } from './constituent-journey-stage.service';
 import { ConstituentService, ConstituentData } from './constituent.service';
 import { TributeService, TributeData } from './tribute.service';
 
@@ -203,6 +204,10 @@ export class IconData {
     private _households: HouseholdData[] | null = null;
     private _householdsPromise: Promise<HouseholdData[]> | null  = null;
     private _householdsSubject = new BehaviorSubject<HouseholdData[] | null>(null);
+
+    private _constituentJourneyStages: ConstituentJourneyStageData[] | null = null;
+    private _constituentJourneyStagesPromise: Promise<ConstituentJourneyStageData[]> | null  = null;
+    private _constituentJourneyStagesSubject = new BehaviorSubject<ConstituentJourneyStageData[] | null>(null);
 
     private _constituents: ConstituentData[] | null = null;
     private _constituentsPromise: Promise<ConstituentData[]> | null  = null;
@@ -580,6 +585,25 @@ export class IconData {
 
 
 
+    public ConstituentJourneyStages$ = this._constituentJourneyStagesSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._constituentJourneyStages === null && this._constituentJourneyStagesPromise === null) {
+            this.loadConstituentJourneyStages(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public ConstituentJourneyStagesCount$ = IconService.Instance.GetIconsRowCount({iconId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
     public Constituents$ = this._constituentsSubject.asObservable().pipe(
 
         // Trigger load on first subscription if not already loaded
@@ -731,6 +755,10 @@ export class IconData {
      this._households = null;
      this._householdsPromise = null;
      this._householdsSubject.next(null);
+
+     this._constituentJourneyStages = null;
+     this._constituentJourneyStagesPromise = null;
+     this._constituentJourneyStagesSubject.next(null);
 
      this._constituents = null;
      this._constituentsPromise = null;
@@ -1983,6 +2011,71 @@ export class IconData {
 
     /**
      *
+     * Gets the ConstituentJourneyStages for this Icon.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.icon.ConstituentJourneyStages.then(constituentJourneyStages => { ... })
+     *   or
+     *   await this.icon.ConstituentJourneyStages
+     *
+    */
+    public get ConstituentJourneyStages(): Promise<ConstituentJourneyStageData[]> {
+        if (this._constituentJourneyStages !== null) {
+            return Promise.resolve(this._constituentJourneyStages);
+        }
+
+        if (this._constituentJourneyStagesPromise !== null) {
+            return this._constituentJourneyStagesPromise;
+        }
+
+        // Start the load
+        this.loadConstituentJourneyStages();
+
+        return this._constituentJourneyStagesPromise!;
+    }
+
+
+
+    private loadConstituentJourneyStages(): void {
+
+        this._constituentJourneyStagesPromise = lastValueFrom(
+            IconService.Instance.GetConstituentJourneyStagesForIcon(this.id)
+        )
+        .then(constituentJourneyStages => {
+            this._constituentJourneyStages = constituentJourneyStages ?? [];
+            this._constituentJourneyStagesSubject.next(this._constituentJourneyStages);
+            return this._constituentJourneyStages;
+         })
+        .catch(err => {
+            this._constituentJourneyStages = [];
+            this._constituentJourneyStagesSubject.next(this._constituentJourneyStages);
+            throw err;
+        })
+        .finally(() => {
+            this._constituentJourneyStagesPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached ConstituentJourneyStage. Call after mutations to force refresh.
+     */
+    public ClearConstituentJourneyStagesCache(): void {
+        this._constituentJourneyStages = null;
+        this._constituentJourneyStagesPromise = null;
+        this._constituentJourneyStagesSubject.next(this._constituentJourneyStages);      // Emit to observable
+    }
+
+    public get HasConstituentJourneyStages(): Promise<boolean> {
+        return this.ConstituentJourneyStages.then(constituentJourneyStages => constituentJourneyStages.length > 0);
+    }
+
+
+    /**
+     *
      * Gets the Constituents for this Icon.
      *
      * If already loaded, returns cached array.
@@ -2165,6 +2258,7 @@ export class IconService extends SecureEndpointBase {
         private campaignService: CampaignService,
         private appealService: AppealService,
         private householdService: HouseholdService,
+        private constituentJourneyStageService: ConstituentJourneyStageService,
         private constituentService: ConstituentService,
         private tributeService: TributeService,
         @Inject('BASE_URL') private baseUrl: string) {
@@ -2715,6 +2809,16 @@ export class IconService extends SecureEndpointBase {
     }
 
 
+    public GetConstituentJourneyStagesForIcon(iconId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<ConstituentJourneyStageData[]> {
+        return this.constituentJourneyStageService.GetConstituentJourneyStageList({
+            iconId: iconId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
     public GetConstituentsForIcon(iconId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<ConstituentData[]> {
         return this.constituentService.GetConstituentList({
             iconId: iconId,
@@ -2845,6 +2949,10 @@ export class IconService extends SecureEndpointBase {
     (revived as any)._households = null;
     (revived as any)._householdsPromise = null;
     (revived as any)._householdsSubject = new BehaviorSubject<HouseholdData[] | null>(null);
+
+    (revived as any)._constituentJourneyStages = null;
+    (revived as any)._constituentJourneyStagesPromise = null;
+    (revived as any)._constituentJourneyStagesSubject = new BehaviorSubject<ConstituentJourneyStageData[] | null>(null);
 
     (revived as any)._constituents = null;
     (revived as any)._constituentsPromise = null;
@@ -3164,6 +3272,22 @@ export class IconService extends SecureEndpointBase {
       );
 
     (revived as any).HouseholdsCount$ = HouseholdService.Instance.GetHouseholdsRowCount({iconId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).ConstituentJourneyStages$ = (revived as any)._constituentJourneyStagesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._constituentJourneyStages === null && (revived as any)._constituentJourneyStagesPromise === null) {
+                (revived as any).loadConstituentJourneyStages();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).ConstituentJourneyStagesCount$ = ConstituentJourneyStageService.Instance.GetConstituentJourneyStagesRowCount({iconId: (revived as any).id,
       active: true,
       deleted: false
     });

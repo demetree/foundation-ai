@@ -33,6 +33,8 @@ import {ClientContactChangeHistoryService} from  './client-contact-change-histor
 import {ClientTypeService} from  './client-type.service';
 import {ConstituentService} from  './constituent.service';
 import {ConstituentChangeHistoryService} from  './constituent-change-history.service';
+import {ConstituentJourneyStageService} from  './constituent-journey-stage.service';
+import {ConstituentJourneyStageChangeHistoryService} from  './constituent-journey-stage-change-history.service';
 import {ContactService} from  './contact.service';
 import {ContactChangeHistoryService} from  './contact-change-history.service';
 import {ContactContactService} from  './contact-contact.service';
@@ -165,6 +167,8 @@ export class SchedulerDataServiceManagerService  {
               , public clientTypeService: ClientTypeService
               , public constituentService: ConstituentService
               , public constituentChangeHistoryService: ConstituentChangeHistoryService
+              , public constituentJourneyStageService: ConstituentJourneyStageService
+              , public constituentJourneyStageChangeHistoryService: ConstituentJourneyStageChangeHistoryService
               , public contactService: ContactService
               , public contactChangeHistoryService: ContactChangeHistoryService
               , public contactContactService: ContactContactService
@@ -295,6 +299,8 @@ export class SchedulerDataServiceManagerService  {
         this.clientTypeService.ClearAllCaches();
         this.constituentService.ClearAllCaches();
         this.constituentChangeHistoryService.ClearAllCaches();
+        this.constituentJourneyStageService.ClearAllCaches();
+        this.constituentJourneyStageChangeHistoryService.ClearAllCaches();
         this.contactService.ClearAllCaches();
         this.contactChangeHistoryService.ClearAllCaches();
         this.contactContactService.ClearAllCaches();

@@ -377,6 +377,23 @@
                             </div>
                             </ng-template>
                         </li>
+                      <li ngbNavItem *ngIf="constituentJourneyStageService.userIsSchedulerConstituentJourneyStageReader()">
+                            <button ngbNavLink>Constituent Journey Stages
+                                <span class="badge bg-primary ms-2">
+                                    {{ (iconData?.ConstituentJourneyStagesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-constituent-journey-stage-table [queryParams]="{ iconId: iconData?.id }"></app-constituent-journey-stage-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-constituent-journey-stage-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-constituent-journey-stage-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
                       <li ngbNavItem *ngIf="constituentService.userIsSchedulerConstituentReader()">
                             <button ngbNavLink>Constituents
                                 <span class="badge bg-primary ms-2">

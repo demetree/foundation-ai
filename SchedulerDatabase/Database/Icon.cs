@@ -31,6 +31,8 @@ public partial class Icon
 
     public virtual ICollection<ClientType> ClientTypes { get; set; } = new List<ClientType>();
 
+    public virtual ICollection<ConstituentJourneyStage> ConstituentJourneyStages { get; set; } = new List<ConstituentJourneyStage>();
+
     public virtual ICollection<Constituent> Constituents { get; set; } = new List<Constituent>();
 
     public virtual ICollection<ContactMethod> ContactMethods { get; set; } = new List<ContactMethod>();

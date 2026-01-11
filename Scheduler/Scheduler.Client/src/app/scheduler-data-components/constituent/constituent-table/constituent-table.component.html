@@ -83,6 +83,14 @@
                 Notes
                 <span *ngIf="sortColumn === 'notes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('constituentJourneyStage.name')">
+                Constituent  Journey  Stage
+                <span *ngIf="sortColumn === 'constituentJourneyStage.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('dateEnteredCurrentStage')">
+                Date  Entered  Current  Stage
+                <span *ngIf="sortColumn === 'dateEnteredCurrentStage'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
             <th class="sortable" scope="col" (click)="sortBy('attributes')">
                 Attributes
                 <span *ngIf="sortColumn === 'attributes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
@@ -208,6 +216,8 @@ End of commented block for alternate definition option -->
             <td class="text-truncate">{{constituent.totalGiftCount | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{constituent.externalId}}</td>
             <td class="text-truncate">{{constituent.notes}}</td>
+            <td class="text-truncate"><a [routerLink]="['/constituentjourneystage', constituent.constituentJourneyStageId]" class="btn btn-link text-left" ngbTooltip="Open Constituent Journey Stage details">{{constituent.constituentJourneyStage?.name}}</a></td>
+            <td class="text-truncate">{{constituent.dateEnteredCurrentStage | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
             <td class="text-truncate">{{constituent.attributes}}</td>
             <td class="text-truncate"><a [routerLink]="['/icon', constituent.iconId]" class="btn btn-link text-left" ngbTooltip="Open Icon details">{{constituent.icon?.name}}</a></td>
             <td class="text-truncate">{{constituent.color}}</td>
@@ -421,6 +431,14 @@ End of commented block for alternate definition option -->
             <p class="constituent-info" *ngIf="constituent.notes != null">
               <strong>Notes: </strong>
               {{constituent.notes}}
+            </p>
+            <p class="constituent-info" *ngIf="constituent.constituentJourneyStageId != null">
+              <strong>Constituent Journey Stage: </strong>
+              <a [routerLink]="['/constituentjourneystage', constituent.constituentJourneyStageId]" class="text-left p-0 m-0" ngbTooltip="Open Constituent Journey Stage details">{{constituent.constituentJourneyStage?.name}}</a>
+            </p>
+            <p class="constituent-info" *ngIf="constituent.dateEnteredCurrentStage != null">
+              <strong>Date Entered Current Stage: </strong>
+              {{constituent.dateEnteredCurrentStage | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
             </p>
             <p class="constituent-info" *ngIf="constituent.attributes != null">
               <strong>Attributes: </strong>

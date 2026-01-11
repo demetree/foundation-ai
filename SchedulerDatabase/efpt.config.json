@@ -112,6 +112,14 @@
          "ObjectType": 0
       },
       {
+         "Name": "[Scheduler].[ConstituentJourneyStage]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ConstituentJourneyStageChangeHistory]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[Scheduler].[Contact]",
          "ObjectType": 0
       },

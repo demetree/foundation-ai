@@ -1,0 +1,66 @@
+<div class="container-fluid p-1 m-0 constituent-journey-stage-change-history-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="constituent-journey-stage-change-history-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Constituent Journey Stage Change History</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Constituent Journey Stage Change History' : 'Add Constituent Journey Stage Change History'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerConstituentJourneyStageChangeHistoryReader()">
+                <div class="col m-2 constituent-journey-stage-change-history-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="constituentJourneyStageChangeHistoryForm" (ngSubmit)="submitForm()" class="constituent-journey-stage-change-history-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('constituentJourneyStageId')">
+                                <label for="ConstituentJourneyStageChangeHistory-constituentJourneyStageId" id="label-ConstituentJourneyStageChangeHistory-constituentJourneyStageId"><span class="text-danger">*</span>Constituent Journey Stage</label>
+                                <select id="ConstituentJourneyStageChangeHistory-constituentJourneyStageId" formControlName="constituentJourneyStageId" class="form-select constituent-journey-stage-change-history-select" [disabled]="!userIsSchedulerConstituentJourneyStageChangeHistoryWriter()">
+                                    <option [ngValue]="null">Select Constituent Journey Stage</option>
+                                    <option *ngFor="let constituentJourneyStage of constituentJourneyStages$ | async" [ngValue]="constituentJourneyStage.id">{{constituentJourneyStage.name}}</option>
+                                </select>
+                                <div *ngIf="constituentJourneyStageChangeHistoryForm.get('constituentJourneyStageId')?.invalid && constituentJourneyStageChangeHistoryForm.get('constituentJourneyStageId')?.touched" class="text-danger">
+                                    Constituent Journey Stage is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="ConstituentJourneyStageChangeHistory-versionNumber" id="label-ConstituentJourneyStageChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="ConstituentJourneyStageChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control constituent-journey-stage-change-history-input" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                                <label for="ConstituentJourneyStageChangeHistory-timeStamp" id="label-ConstituentJourneyStageChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                                <input type="datetime-local" id="ConstituentJourneyStageChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control constituent-journey-stage-change-history-input" [disabled]="!userIsSchedulerConstituentJourneyStageChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                                <div *ngIf="constituentJourneyStageChangeHistoryForm.get('timeStamp')?.invalid && constituentJourneyStageChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                                    Time Stamp is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="ConstituentJourneyStageChangeHistory-userId" id="label-ConstituentJourneyStageChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="ConstituentJourneyStageChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control constituent-journey-stage-change-history-input" [disabled]="!userIsSchedulerConstituentJourneyStageChangeHistoryWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="constituentJourneyStageChangeHistoryForm.get('userId')?.invalid && constituentJourneyStageChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                                <label for="ConstituentJourneyStageChangeHistory-data" id="label-ConstituentJourneyStageChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                                <textarea id="ConstituentJourneyStageChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control constituent-journey-stage-change-history-input" [disabled]="!userIsSchedulerConstituentJourneyStageChangeHistoryWriter()"></textarea>
+                                <div *ngIf="constituentJourneyStageChangeHistoryForm.get('data')?.invalid && constituentJourneyStageChangeHistoryForm.get('data')?.touched" class="text-danger">
+                                    Data is required
+                                </div>
+                            </div>
+                            <div class="constituent-journey-stage-change-history-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="constituentJourneyStageChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Constituent Journey Stage Change History">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !constituentJourneyStageChangeHistoryForm.valid || !constituentJourneyStageChangeHistoryForm.dirty || constituentJourneyStageChangeHistoryForm.pristine || userIsSchedulerConstituentJourneyStageChangeHistoryWriter() == false " ngbTooltip="Save Constituent Journey Stage Change History">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

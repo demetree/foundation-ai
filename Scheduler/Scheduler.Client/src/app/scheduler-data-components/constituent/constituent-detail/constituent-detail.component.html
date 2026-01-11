@@ -95,6 +95,17 @@
                                 <label for="Constituent-notes" id="label-Constituent-notes">Notes</label>
                                 <textarea id="Constituent-notes" formControlName="notes" placeholder="Enter Notes" class="form-control constituent-input" [disabled]="!userIsSchedulerConstituentWriter()"></textarea>
                             </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('constituentJourneyStageId')">
+                                <label for="Constituent-constituentJourneyStageId" id="label-Constituent-constituentJourneyStageId">Constituent Journey Stage</label>
+                                <select id="Constituent-constituentJourneyStageId" formControlName="constituentJourneyStageId" class="form-select constituent-select" [disabled]="!userIsSchedulerConstituentWriter()">
+                                    <option [ngValue]="null">Select Constituent Journey Stage</option>
+                                    <option *ngFor="let constituentJourneyStage of constituentJourneyStages$ | async" [ngValue]="constituentJourneyStage.id">{{constituentJourneyStage.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('dateEnteredCurrentStage')">
+                                <label for="Constituent-dateEnteredCurrentStage" id="label-Constituent-dateEnteredCurrentStage">Date Entered Current Stage</label>
+                                <input type="datetime-local" id="Constituent-dateEnteredCurrentStage" formControlName="dateEnteredCurrentStage" placeholder="Enter Date Entered Current Stage" class="form-control constituent-input" [disabled]="!userIsSchedulerConstituentWriter()" aria-labelledby="label-dateEnteredCurrentStage" />
+                            </div>
                             <div class="form-group" *ngIf="!isFieldHidden('attributes')">
                                 <label for="Constituent-attributes" id="label-Constituent-attributes">Attributes</label>
                                 <textarea id="Constituent-attributes" formControlName="attributes" placeholder="Enter Attributes" class="form-control constituent-input" [disabled]="!userIsSchedulerConstituentWriter()"></textarea>

@@ -1,0 +1,269 @@
+<app-constituent-journey-stage-change-history-add-edit [showAddButton]="false"></app-constituent-journey-stage-change-history-add-edit>
+<div class="row" *ngIf="userIsSchedulerConstituentJourneyStageChangeHistoryReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerConstituentJourneyStageChangeHistoryWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerConstituentJourneyStageChangeHistoryWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('constituentJourneyStage.name')">
+                Constituent  Journey  Stage
+                <span *ngIf="sortColumn === 'constituentJourneyStage.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('timeStamp')">
+                Time  Stamp
+                <span *ngIf="sortColumn === 'timeStamp'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('userId')">
+                User  Id
+                <span *ngIf="sortColumn === 'userId'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('data')">
+                Data
+                <span *ngIf="sortColumn === 'data'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let constituentJourneyStageChangeHistory of filteredConstituentJourneyStageChangeHistories; trackBy: getConstituentJourneyStageChangeHistoryId">
+            <td class="header-action-button" *ngIf="userIsSchedulerConstituentJourneyStageChangeHistoryWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleEdit(constituentJourneyStageChangeHistory)"
+                      ngbTooltip="Edit" 
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsSchedulerConstituentJourneyStageChangeHistoryWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleDelete(constituentJourneyStageChangeHistory)"
+                      ngbTooltip="Delete" 
+                      placement="top">
+                <i class="fa fa-trash"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(constituentJourneyStageChangeHistory, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(constituentJourneyStageChangeHistory, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(constituentJourneyStageChangeHistory, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(constituentJourneyStageChangeHistory, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(constituentJourneyStageChangeHistory, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(constituentJourneyStageChangeHistory, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(constituentJourneyStageChangeHistory, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(constituentJourneyStageChangeHistory, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/constituentjourneystage', constituentJourneyStageChangeHistory.constituentJourneyStageId]" class="btn btn-link text-left" ngbTooltip="Open Constituent Journey Stage details">{{constituentJourneyStageChangeHistory.constituentJourneyStage?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/constituentjourneystagechangehistory', constituentJourneyStageChangeHistory.id]" class="btn btn-link text-left" ngbTooltip="Open Constituent Journey Stage Change History details">{{constituentJourneyStageChangeHistory.timeStamp | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</a></td>
+            <td class="text-truncate">{{constituentJourneyStageChangeHistory.userId | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{constituentJourneyStageChangeHistory.data}}</td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let constituentJourneyStageChangeHistory of filteredConstituentJourneyStageChangeHistories; trackBy: getConstituentJourneyStageChangeHistoryId" class="card my-2">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(constituentJourneyStageChangeHistory, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(constituentJourneyStageChangeHistory, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(constituentJourneyStageChangeHistory, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(constituentJourneyStageChangeHistory, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(constituentJourneyStageChangeHistory, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(constituentJourneyStageChangeHistory, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(constituentJourneyStageChangeHistory, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(constituentJourneyStageChangeHistory, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(constituentJourneyStageChangeHistory, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(constituentJourneyStageChangeHistory, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(constituentJourneyStageChangeHistory, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(constituentJourneyStageChangeHistory, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(constituentJourneyStageChangeHistory, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/constituentjourneystagechangehistory', constituentJourneyStageChangeHistory.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(constituentJourneyStageChangeHistory)" *ngIf="userIsSchedulerConstituentJourneyStageChangeHistoryWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(constituentJourneyStageChangeHistory)" *ngIf="userIsSchedulerConstituentJourneyStageChangeHistoryWriter()" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{constituentJourneyStageChangeHistory.id}}</strong>
+               <small class="text-muted d-block">{{constituentJourneyStageChangeHistory.constituentJourneyStage?.name}}</small>
+             </div>
+             <div>
+                <button class="btn btn-sm"
+                        [routerLink]="['/constituentjourneystagechangehistory', constituentJourneyStageChangeHistory.id]"
+                        ngbTooltip="Constituent Journey Stage Change History Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="btn btn-sm"
+                        (click)="handleEdit(constituentJourneyStageChangeHistory)"
+                        ngbTooltip="Edit Constituent Journey Stage Change History">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="btn btn-sm"
+                     (click)="handleDelete(constituentJourneyStageChangeHistory)"
+                     ngbTooltip="Delete Constituent Journey Stage Change History" 
+                     placement="top">
+                  <i class="fa fa-trash"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="constituent-journey-stage-change-history-info" *ngIf="constituentJourneyStageChangeHistory.constituentJourneyStageId != null">
+              <strong>Constituent Journey Stage: </strong>
+              <a [routerLink]="['/constituentjourneystage', constituentJourneyStageChangeHistory.constituentJourneyStageId]" class="text-left p-0 m-0" ngbTooltip="Open Constituent Journey Stage details">{{constituentJourneyStageChangeHistory.constituentJourneyStage?.name}}</a>
+            </p>
+            <p class="constituent-journey-stage-change-history-info" *ngIf="constituentJourneyStageChangeHistory.timeStamp != null">
+              <strong>Time Stamp: </strong>
+              {{constituentJourneyStageChangeHistory.timeStamp | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="constituent-journey-stage-change-history-info" *ngIf="constituentJourneyStageChangeHistory.userId != null">
+              <strong>User Id: </strong>
+              {{constituentJourneyStageChangeHistory.userId | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="constituent-journey-stage-change-history-info" *ngIf="constituentJourneyStageChangeHistory.data != null">
+              <strong>Data: </strong>
+              {{constituentJourneyStageChangeHistory.data}}
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+   </div>
+</div>

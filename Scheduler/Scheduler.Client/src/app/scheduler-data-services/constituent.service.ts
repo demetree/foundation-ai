@@ -19,6 +19,7 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
 import { ContactData } from './contact.service';
 import { ClientData } from './client.service';
 import { HouseholdData } from './household.service';
+import { ConstituentJourneyStageData } from './constituent-journey-stage.service';
 import { IconData } from './icon.service';
 import { ConstituentChangeHistoryService, ConstituentChangeHistoryData } from './constituent-change-history.service';
 import { PledgeService, PledgeData } from './pledge.service';
@@ -51,6 +52,8 @@ export class ConstituentQueryParameters {
     totalGiftCount: bigint | number | null | undefined = null;
     externalId: string | null | undefined = null;
     notes: string | null | undefined = null;
+    constituentJourneyStageId: bigint | number | null | undefined = null;
+    dateEnteredCurrentStage: string | null | undefined = null;        // ISO 8601
     attributes: string | null | undefined = null;
     iconId: bigint | number | null | undefined = null;
     color: string | null | undefined = null;
@@ -88,6 +91,8 @@ export class ConstituentSubmitData {
     totalGiftCount: bigint | number | null = null;
     externalId: string | null = null;
     notes: string | null = null;
+    constituentJourneyStageId: bigint | number | null = null;
+    dateEnteredCurrentStage: string | null = null;     // ISO 8601
     attributes: string | null = null;
     iconId: bigint | number | null = null;
     color: string | null = null;
@@ -160,6 +165,8 @@ export class ConstituentData {
     totalGiftCount!: bigint | number;
     externalId!: string | null;
     notes!: string | null;
+    constituentJourneyStageId!: bigint | number;
+    dateEnteredCurrentStage!: string | null;   // ISO 8601
     attributes!: string | null;
     iconId!: bigint | number;
     color!: string | null;
@@ -172,6 +179,7 @@ export class ConstituentData {
     active!: boolean;
     deleted!: boolean;
     client: ClientData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
+    constituentJourneyStage: ConstituentJourneyStageData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     contact: ContactData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     household: HouseholdData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     icon: IconData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
@@ -802,6 +810,8 @@ export class ConstituentService extends SecureEndpointBase {
         output.totalGiftCount = data.totalGiftCount;
         output.externalId = data.externalId;
         output.notes = data.notes;
+        output.constituentJourneyStageId = data.constituentJourneyStageId;
+        output.dateEnteredCurrentStage = data.dateEnteredCurrentStage;
         output.attributes = data.attributes;
         output.iconId = data.iconId;
         output.color = data.color;

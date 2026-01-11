@@ -302,6 +302,8 @@ namespace Foundation.Scheduler.Database
 			public Int32? totalGiftCount { get; set; }
 			public String externalId { get; set; }
 			public String notes { get; set; }
+			public Int32? constituentJourneyStageId { get; set; }
+			public DateTime? dateEnteredCurrentStage { get; set; }
 			public String attributes { get; set; }
 			public Int32? iconId { get; set; }
 			public String color { get; set; }
@@ -325,6 +327,7 @@ namespace Foundation.Scheduler.Database
 		public class ConstituentOutputDTO : ConstituentDTO
 		{
 			public Client.ClientDTO client { get; set; }
+			public ConstituentJourneyStage.ConstituentJourneyStageDTO constituentJourneyStage { get; set; }
 			public Contact.ContactDTO contact { get; set; }
 			public Household.HouseholdDTO household { get; set; }
 			public Icon.IconDTO icon { get; set; }
@@ -358,6 +361,8 @@ namespace Foundation.Scheduler.Database
 				totalGiftCount = this.totalGiftCount,
 				externalId = this.externalId,
 				notes = this.notes,
+				constituentJourneyStageId = this.constituentJourneyStageId,
+				dateEnteredCurrentStage = this.dateEnteredCurrentStage,
 				attributes = this.attributes,
 				iconId = this.iconId,
 				color = this.color,
@@ -423,6 +428,8 @@ namespace Foundation.Scheduler.Database
 				totalGiftCount = this.totalGiftCount,
 				externalId = this.externalId,
 				notes = this.notes,
+				constituentJourneyStageId = this.constituentJourneyStageId,
+				dateEnteredCurrentStage = this.dateEnteredCurrentStage,
 				attributes = this.attributes,
 				iconId = this.iconId,
 				color = this.color,
@@ -435,6 +442,7 @@ namespace Foundation.Scheduler.Database
 				active = this.active,
 				deleted = this.deleted,
 				client = this.client?.ToDTO(),
+				constituentJourneyStage = this.constituentJourneyStage?.ToDTO(),
 				contact = this.contact?.ToDTO(),
 				household = this.household?.ToDTO(),
 				icon = this.icon?.ToDTO()
@@ -492,6 +500,8 @@ namespace Foundation.Scheduler.Database
 				totalGiftCount = dto.totalGiftCount,
 				externalId = dto.externalId,
 				notes = dto.notes,
+				constituentJourneyStageId = dto.constituentJourneyStageId,
+				dateEnteredCurrentStage = dto.dateEnteredCurrentStage,
 				attributes = dto.attributes,
 				iconId = dto.iconId,
 				color = dto.color,
@@ -534,6 +544,8 @@ namespace Foundation.Scheduler.Database
 			this.totalGiftCount = dto.totalGiftCount;
 			this.externalId = dto.externalId;
 			this.notes = dto.notes;
+			this.constituentJourneyStageId = dto.constituentJourneyStageId;
+			this.dateEnteredCurrentStage = dto.dateEnteredCurrentStage;
 			this.attributes = dto.attributes;
 			this.iconId = dto.iconId;
 			this.color = dto.color;
@@ -581,6 +593,8 @@ namespace Foundation.Scheduler.Database
 				totalGiftCount = this.totalGiftCount,
 				externalId = this.externalId,
 				notes = this.notes,
+				constituentJourneyStageId = this.constituentJourneyStageId,
+				dateEnteredCurrentStage = this.dateEnteredCurrentStage,
 				attributes = this.attributes,
 				iconId = this.iconId,
 				color = this.color,
@@ -659,6 +673,8 @@ namespace Foundation.Scheduler.Database
 				totalGiftCount = constituent.totalGiftCount,
 				externalId = constituent.externalId,
 				notes = constituent.notes,
+				constituentJourneyStageId = constituent.constituentJourneyStageId,
+				dateEnteredCurrentStage = constituent.dateEnteredCurrentStage,
 				attributes = constituent.attributes,
 				iconId = constituent.iconId,
 				color = constituent.color,
@@ -705,6 +721,8 @@ namespace Foundation.Scheduler.Database
 				totalGiftCount = constituent.totalGiftCount,
 				externalId = constituent.externalId,
 				notes = constituent.notes,
+				constituentJourneyStageId = constituent.constituentJourneyStageId,
+				dateEnteredCurrentStage = constituent.dateEnteredCurrentStage,
 				attributes = constituent.attributes,
 				iconId = constituent.iconId,
 				color = constituent.color,
@@ -717,6 +735,7 @@ namespace Foundation.Scheduler.Database
 				active = constituent.active,
 				deleted = constituent.deleted,
 				client = Client.CreateMinimalAnonymous(constituent.client),
+				constituentJourneyStage = ConstituentJourneyStage.CreateMinimalAnonymous(constituent.constituentJourneyStage),
 				contact = Contact.CreateMinimalAnonymous(constituent.contact),
 				household = Household.CreateMinimalAnonymous(constituent.household),
 				icon = Icon.CreateMinimalAnonymous(constituent.icon)

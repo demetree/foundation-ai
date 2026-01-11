@@ -36,6 +36,8 @@ CREATE SCHEMA "Scheduler"
 -- DROP TABLE "Scheduler"."Pledge"
 -- DROP TABLE "Scheduler"."ConstituentChangeHistory"
 -- DROP TABLE "Scheduler"."Constituent"
+-- DROP TABLE "Scheduler"."ConstituentJourneyStageChangeHistory"
+-- DROP TABLE "Scheduler"."ConstituentJourneyStage"
 -- DROP TABLE "Scheduler"."HouseholdChangeHistory"
 -- DROP TABLE "Scheduler"."Household"
 -- DROP TABLE "Scheduler"."AppealChangeHistory"
@@ -163,6 +165,8 @@ CREATE SCHEMA "Scheduler"
 -- ALTER INDEX ALL ON "Pledge" DISABLE
 -- ALTER INDEX ALL ON "ConstituentChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "Constituent" DISABLE
+-- ALTER INDEX ALL ON "ConstituentJourneyStageChangeHistory" DISABLE
+-- ALTER INDEX ALL ON "ConstituentJourneyStage" DISABLE
 -- ALTER INDEX ALL ON "HouseholdChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "Household" DISABLE
 -- ALTER INDEX ALL ON "AppealChangeHistory" DISABLE
@@ -290,6 +294,8 @@ CREATE SCHEMA "Scheduler"
 -- ALTER INDEX ALL ON "Pledge" REBUILD
 -- ALTER INDEX ALL ON "ConstituentChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "Constituent" REBUILD
+-- ALTER INDEX ALL ON "ConstituentJourneyStageChangeHistory" REBUILD
+-- ALTER INDEX ALL ON "ConstituentJourneyStage" REBUILD
 -- ALTER INDEX ALL ON "HouseholdChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "Household" REBUILD
 -- ALTER INDEX ALL ON "AppealChangeHistory" REBUILD
@@ -5345,6 +5351,90 @@ CREATE INDEX "I_HouseholdChangeHistory_tenantGuid_householdId" ON "Scheduler"."H
 ;
 
 
+-- Defines stages in a donor's journey (e.g., Target, Qualified, Cultivated, Solicited, Stewardship).
+CREATE TABLE "Scheduler"."ConstituentJourneyStage"
+(
+	"id" SERIAL PRIMARY KEY NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	"name" VARCHAR(100) NOT NULL,
+	"description" VARCHAR(500) NULL,
+	"sequence" INT NULL,		-- Sequence to use for sorting.
+	"iconId" INT NULL,		-- Icon to use for UI display
+	"color" VARCHAR(10) NULL,		-- Hex color for UI display
+	"minLifetimeGiving" DECIMAL(11,2) NULL,		-- Optional criteria: Minimum total giving to qualify for this stage.
+	"maxLifetimeGiving" DECIMAL(11,2) NULL,		-- Optional criteria: Maximum total giving
+	"minSingleGiftAmount" DECIMAL(11,2) NULL,		-- Optional criteria: Min single gift size
+	"versionNumber" INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
+	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
+	CONSTRAINT "iconId" FOREIGN KEY ("iconId") REFERENCES "Scheduler"."Icon"("id"),		-- Foreign key to the Icon table.
+	CONSTRAINT "UC_ConstituentJourneyStage_tenantGuid_name" UNIQUE ( "tenantGuid", "name") 		-- Uniqueness enforced on the ConstituentJourneyStage table's tenantGuid and name fields.
+);
+-- Index on the ConstituentJourneyStage table's tenantGuid field.
+CREATE INDEX "I_ConstituentJourneyStage_tenantGuid" ON "Scheduler"."ConstituentJourneyStage" ("tenantGuid")
+;
+
+-- Index on the ConstituentJourneyStage table's tenantGuid,name fields.
+CREATE INDEX "I_ConstituentJourneyStage_tenantGuid_name" ON "Scheduler"."ConstituentJourneyStage" ("tenantGuid", "name")
+;
+
+-- Index on the ConstituentJourneyStage table's tenantGuid,iconId fields.
+CREATE INDEX "I_ConstituentJourneyStage_tenantGuid_iconId" ON "Scheduler"."ConstituentJourneyStage" ("tenantGuid", "iconId")
+;
+
+-- Index on the ConstituentJourneyStage table's tenantGuid,active fields.
+CREATE INDEX "I_ConstituentJourneyStage_tenantGuid_active" ON "Scheduler"."ConstituentJourneyStage" ("tenantGuid", "active")
+;
+
+-- Index on the ConstituentJourneyStage table's tenantGuid,deleted fields.
+CREATE INDEX "I_ConstituentJourneyStage_tenantGuid_deleted" ON "Scheduler"."ConstituentJourneyStage" ("tenantGuid", "deleted")
+;
+
+INSERT INTO "Scheduler"."ConstituentJourneyStage" ( "tenantGuid", "name", "description", "sequence", "color", "objectGuid" ) VALUES  ( '00000000-0000-0000-0000-000000000000', 'Unqualified', 'New potential donor.', 1, '#9E9E9E', 'd8663e5e-749c-4638-b69d-21d96078659d' );
+
+INSERT INTO "Scheduler"."ConstituentJourneyStage" ( "tenantGuid", "name", "description", "sequence", "color", "objectGuid" ) VALUES  ( '00000000-0000-0000-0000-000000000000', 'Qualified', 'Donor has been qualified.', 2, '#2196F3', 'ad06353d-2476-4322-836f-5374825968f9' );
+
+INSERT INTO "Scheduler"."ConstituentJourneyStage" ( "tenantGuid", "name", "description", "sequence", "color", "objectGuid" ) VALUES  ( '00000000-0000-0000-0000-000000000000', 'Cultivated', 'Relationship is being built.', 3, '#4CAF50', 'e8b60384-9336-4022-8b4b-970752538965' );
+
+INSERT INTO "Scheduler"."ConstituentJourneyStage" ( "tenantGuid", "name", "description", "sequence", "color", "objectGuid" ) VALUES  ( '00000000-0000-0000-0000-000000000000', 'Solicited', 'Ask has been made.', 4, '#FF9800', '64319688-fd06-4074-8902-628670bf7471' );
+
+INSERT INTO "Scheduler"."ConstituentJourneyStage" ( "tenantGuid", "name", "description", "sequence", "color", "objectGuid" ) VALUES  ( '00000000-0000-0000-0000-000000000000', 'Stewardship', 'Ongoing maintenance.', 5, '#9C27B0', '1d971578-8319-482a-9e8c-529141873837' );
+
+
+-- The change history for records from the ConstituentJourneyStage table.
+CREATE TABLE "Scheduler"."ConstituentJourneyStageChangeHistory"
+(
+	"id" SERIAL PRIMARY KEY NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	"constituentJourneyStageId" INT NOT NULL,		-- Link to the ConstituentJourneyStage table.
+	"versionNumber" INT NOT NULL,		-- This is the version number that is being historized.
+	"timeStamp" TIMESTAMP NOT NULL,		-- The time that the record version was created.
+	"userId" INT NOT NULL,
+	"data" TEXT NOT NULL,		-- This stores the JSON representing the object's historical state.
+	CONSTRAINT "constituentJourneyStageId" FOREIGN KEY ("constituentJourneyStageId") REFERENCES "Scheduler"."ConstituentJourneyStage"("id")		-- Foreign key to the ConstituentJourneyStage table.
+);
+-- Index on the ConstituentJourneyStageChangeHistory table's tenantGuid field.
+CREATE INDEX "I_ConstituentJourneyStageChangeHistory_tenantGuid" ON "Scheduler"."ConstituentJourneyStageChangeHistory" ("tenantGuid")
+;
+
+-- Index on the ConstituentJourneyStageChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX "I_ConstituentJourneyStageChangeHistory_tenantGuid_versionNumber" ON "Scheduler"."ConstituentJourneyStageChangeHistory" ("tenantGuid", "versionNumber")
+;
+
+-- Index on the ConstituentJourneyStageChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX "I_ConstituentJourneyStageChangeHistory_tenantGuid_timeStamp" ON "Scheduler"."ConstituentJourneyStageChangeHistory" ("tenantGuid", "timeStamp")
+;
+
+-- Index on the ConstituentJourneyStageChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX "I_ConstituentJourneyStageChangeHistory_tenantGuid_userId" ON "Scheduler"."ConstituentJourneyStageChangeHistory" ("tenantGuid", "userId")
+;
+
+-- Index on the ConstituentJourneyStageChangeHistory table's tenantGuid,constituentJourneyStageId fields.
+CREATE INDEX "I_ConstituentJourneyStageChangeHistory_tenantGuid_constituentJo" ON "Scheduler"."ConstituentJourneyStageChangeHistory" ("tenantGuid", "constituentJourneyStageId") INCLUDE ( versionNumber, timeStamp, userId )
+;
+
+
 /*
  ====================================================================================================
    CONSTITUENT MANAGEMENT
@@ -5372,6 +5462,8 @@ CREATE TABLE "Scheduler"."Constituent"
 	"totalGiftCount" INT NULL,		-- Caching Calculated Metrics(DP Style for fast reporting)
 	"externalId" VARCHAR(100) NULL,		-- For things like QBO Customer ID
 	"notes" TEXT NULL,
+	"constituentJourneyStageId" INT NULL,		-- Current stage in the donor journey.
+	"dateEnteredCurrentStage" TIMESTAMP NULL,		-- Date when the constituent moved to the current stage.
 	"attributes" TEXT NULL,		-- to store arbitrary JSON
 	"iconId" INT NULL,		-- Icon to use for UI display
 	"color" VARCHAR(10) NULL,		-- Hex color for UI display
@@ -5386,6 +5478,7 @@ CREATE TABLE "Scheduler"."Constituent"
 	CONSTRAINT "contactId" FOREIGN KEY ("contactId") REFERENCES "Scheduler"."Contact"("id"),		-- Foreign key to the Contact table.
 	CONSTRAINT "clientId" FOREIGN KEY ("clientId") REFERENCES "Scheduler"."Client"("id"),		-- Foreign key to the Client table.
 	CONSTRAINT "householdId" FOREIGN KEY ("householdId") REFERENCES "Scheduler"."Household"("id"),		-- Foreign key to the Household table.
+	CONSTRAINT "constituentJourneyStageId" FOREIGN KEY ("constituentJourneyStageId") REFERENCES "Scheduler"."ConstituentJourneyStage"("id"),		-- Foreign key to the ConstituentJourneyStage table.
 	CONSTRAINT "iconId" FOREIGN KEY ("iconId") REFERENCES "Scheduler"."Icon"("id")		-- Foreign key to the Icon table.
 );
 -- Index on the Constituent table's tenantGuid field.
@@ -5402,6 +5495,10 @@ CREATE INDEX "I_Constituent_tenantGuid_clientId" ON "Scheduler"."Constituent" ("
 
 -- Index on the Constituent table's tenantGuid,householdId fields.
 CREATE INDEX "I_Constituent_tenantGuid_householdId" ON "Scheduler"."Constituent" ("tenantGuid", "householdId")
+;
+
+-- Index on the Constituent table's tenantGuid,constituentJourneyStageId fields.
+CREATE INDEX "I_Constituent_tenantGuid_constituentJourneyStageId" ON "Scheduler"."Constituent" ("tenantGuid", "constituentJourneyStageId")
 ;
 
 -- Index on the Constituent table's tenantGuid,iconId fields.

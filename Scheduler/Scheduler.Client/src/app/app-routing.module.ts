@@ -223,6 +223,10 @@ import { ConstituentListingComponent } from './scheduler-data-components/constit
 import { ConstituentDetailComponent } from './scheduler-data-components/constituent/constituent-detail/constituent-detail.component';
 import { ConstituentChangeHistoryListingComponent } from './scheduler-data-components/constituent-change-history/constituent-change-history-listing/constituent-change-history-listing.component';
 import { ConstituentChangeHistoryDetailComponent } from './scheduler-data-components/constituent-change-history/constituent-change-history-detail/constituent-change-history-detail.component';
+import { ConstituentJourneyStageListingComponent } from './scheduler-data-components/constituent-journey-stage/constituent-journey-stage-listing/constituent-journey-stage-listing.component';
+import { ConstituentJourneyStageDetailComponent } from './scheduler-data-components/constituent-journey-stage/constituent-journey-stage-detail/constituent-journey-stage-detail.component';
+import { ConstituentJourneyStageChangeHistoryListingComponent } from './scheduler-data-components/constituent-journey-stage-change-history/constituent-journey-stage-change-history-listing/constituent-journey-stage-change-history-listing.component';
+import { ConstituentJourneyStageChangeHistoryDetailComponent } from './scheduler-data-components/constituent-journey-stage-change-history/constituent-journey-stage-change-history-detail/constituent-journey-stage-change-history-detail.component';
 import { ContactListingComponent } from './scheduler-data-components/contact/contact-listing/contact-listing.component';
 import { ContactDetailComponent } from './scheduler-data-components/contact/contact-detail/contact-detail.component';
 import { ContactChangeHistoryListingComponent } from './scheduler-data-components/contact-change-history/contact-change-history-listing/contact-change-history-listing.component';
@@ -750,6 +754,16 @@ const routes: Routes = [
   { path: 'constituentchangehistories/:constituentChangeHistoryId', component: ConstituentChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Constituent Change History' },
   { path: 'constituentchangehistory/:constituentChangeHistoryId', component: ConstituentChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Constituent Change History' },
   { path: 'constituentchangehistory', redirectTo: 'constituentchangehistories' },
+  { path: 'constituentjourneystages', component: ConstituentJourneyStageListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Constituent Journey Stages' },
+  { path: 'constituentjourneystages/new', component: ConstituentJourneyStageDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Constituent Journey Stage' },
+  { path: 'constituentjourneystages/:constituentJourneyStageId', component: ConstituentJourneyStageDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Constituent Journey Stage' },
+  { path: 'constituentjourneystage/:constituentJourneyStageId', component: ConstituentJourneyStageDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Constituent Journey Stage' },
+  { path: 'constituentjourneystage', redirectTo: 'constituentjourneystages' },
+  { path: 'constituentjourneystagechangehistories', component: ConstituentJourneyStageChangeHistoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Constituent Journey Stage Change Histories' },
+  { path: 'constituentjourneystagechangehistories/new', component: ConstituentJourneyStageChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Constituent Journey Stage Change History' },
+  { path: 'constituentjourneystagechangehistories/:constituentJourneyStageChangeHistoryId', component: ConstituentJourneyStageChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Constituent Journey Stage Change History' },
+  { path: 'constituentjourneystagechangehistory/:constituentJourneyStageChangeHistoryId', component: ConstituentJourneyStageChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Constituent Journey Stage Change History' },
+  { path: 'constituentjourneystagechangehistory', redirectTo: 'constituentjourneystagechangehistories' },
   { path: 'contacts', component: ContactListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Contacts' },
   { path: 'contacts/new', component: ContactDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Contact' },
   { path: 'contacts/:contactId', component: ContactDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Contact' },

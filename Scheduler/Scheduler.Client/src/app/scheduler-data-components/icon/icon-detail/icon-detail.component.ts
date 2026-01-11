@@ -42,6 +42,7 @@ import { FundService } from '../../../scheduler-data-services/fund.service';
 import { CampaignService } from '../../../scheduler-data-services/campaign.service';
 import { AppealService } from '../../../scheduler-data-services/appeal.service';
 import { HouseholdService } from '../../../scheduler-data-services/household.service';
+import { ConstituentJourneyStageService } from '../../../scheduler-data-services/constituent-journey-stage.service';
 import { ConstituentService } from '../../../scheduler-data-services/constituent.service';
 import { TributeService } from '../../../scheduler-data-services/tribute.service';
 import { AuthService } from '../../../services/auth.service';
@@ -125,6 +126,7 @@ export class IconDetailComponent implements OnInit, CanComponentDeactivate {
   public campaigns$ = this.campaignService.GetCampaignList();
   public appeals$ = this.appealService.GetAppealList();
   public households$ = this.householdService.GetHouseholdList();
+  public constituentJourneyStages$ = this.constituentJourneyStageService.GetConstituentJourneyStageList();
   public constituents$ = this.constituentService.GetConstituentList();
   public tributes$ = this.tributeService.GetTributeList();
 
@@ -151,6 +153,7 @@ export class IconDetailComponent implements OnInit, CanComponentDeactivate {
     public campaignService: CampaignService,
     public appealService: AppealService,
     public householdService: HouseholdService,
+    public constituentJourneyStageService: ConstituentJourneyStageService,
     public constituentService: ConstituentService,
     public tributeService: TributeService,
     private authService: AuthService,

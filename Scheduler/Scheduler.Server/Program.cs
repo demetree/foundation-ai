@@ -199,6 +199,8 @@ namespace Foundation.Scheduler
                 controllers.Add(typeof(ClientTypesController));
                 controllers.Add(typeof(ConstituentsController));
                 controllers.Add(typeof(ConstituentChangeHistoriesController));
+                controllers.Add(typeof(ConstituentJourneyStagesController));
+                controllers.Add(typeof(ConstituentJourneyStageChangeHistoriesController));
                 controllers.Add(typeof(ContactsController));
                 controllers.Add(typeof(ContactChangeHistoriesController));
                 controllers.Add(typeof(ContactContactsController));

@@ -41,6 +41,10 @@ public partial class Constituent
 
     public string notes { get; set; }
 
+    public int? constituentJourneyStageId { get; set; }
+
+    public DateTime? dateEnteredCurrentStage { get; set; }
+
     public string attributes { get; set; }
 
     public int? iconId { get; set; }
@@ -74,6 +78,8 @@ public partial class Constituent
     public virtual ICollection<Tribute> Tributes { get; set; } = new List<Tribute>();
 
     public virtual Client client { get; set; }
+
+    public virtual ConstituentJourneyStage constituentJourneyStage { get; set; }
 
     public virtual Contact contact { get; set; }
 

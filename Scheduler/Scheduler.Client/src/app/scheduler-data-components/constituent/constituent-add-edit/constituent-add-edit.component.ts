@@ -27,6 +27,7 @@ import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../uti
 import { ContactService } from '../../../scheduler-data-services/contact.service';
 import { ClientService } from '../../../scheduler-data-services/client.service';
 import { HouseholdService } from '../../../scheduler-data-services/household.service';
+import { ConstituentJourneyStageService } from '../../../scheduler-data-services/constituent-journey-stage.service';
 import { IconService } from '../../../scheduler-data-services/icon.service';
 import { AuthService } from '../../../services/auth.service';
 
@@ -53,6 +54,8 @@ interface ConstituentFormValues {
   totalGiftCount: string | null,     // Stored as string for form input, converted to number on submit.
   externalId: string | null,
   notes: string | null,
+  constituentJourneyStageId: number | bigint | null,       // For FK link number
+  dateEnteredCurrentStage: string | null,
   attributes: string | null,
   iconId: number | bigint | null,       // For FK link number
   color: string | null,
@@ -108,6 +111,8 @@ export class ConstituentAddEditComponent {
         totalGiftCount: [''],
         externalId: [''],
         notes: [''],
+        constituentJourneyStageId: [null],
+        dateEnteredCurrentStage: [''],
         attributes: [''],
         iconId: [null],
         color: [''],
@@ -131,6 +136,7 @@ export class ConstituentAddEditComponent {
   contacts$ = this.contactService.GetContactList();
   clients$ = this.clientService.GetClientList();
   households$ = this.householdService.GetHouseholdList();
+  constituentJourneyStages$ = this.constituentJourneyStageService.GetConstituentJourneyStageList();
   icons$ = this.iconService.GetIconList();
 
   constructor(
@@ -139,6 +145,7 @@ export class ConstituentAddEditComponent {
     private contactService: ContactService,
     private clientService: ClientService,
     private householdService: HouseholdService,
+    private constituentJourneyStageService: ConstituentJourneyStageService,
     private iconService: IconService,
     private authService: AuthService,
     private alertService: AlertService,
@@ -274,6 +281,8 @@ export class ConstituentAddEditComponent {
         totalGiftCount: formValue.totalGiftCount ? Number(formValue.totalGiftCount) : null,
         externalId: formValue.externalId?.trim() || null,
         notes: formValue.notes?.trim() || null,
+        constituentJourneyStageId: formValue.constituentJourneyStageId ? Number(formValue.constituentJourneyStageId) : null,
+        dateEnteredCurrentStage: formValue.dateEnteredCurrentStage ? dateTimeLocalToIsoUtc(formValue.dateEnteredCurrentStage.trim()) : null,
         attributes: formValue.attributes?.trim() || null,
         iconId: formValue.iconId ? Number(formValue.iconId) : null,
         color: formValue.color?.trim() || null,
@@ -425,6 +434,8 @@ export class ConstituentAddEditComponent {
         totalGiftCount: '',
         externalId: '',
         notes: '',
+        constituentJourneyStageId: null,
+        dateEnteredCurrentStage: '',
         attributes: '',
         iconId: null,
         color: '',
@@ -459,6 +470,8 @@ export class ConstituentAddEditComponent {
         totalGiftCount: constituentData.totalGiftCount?.toString() ?? '',
         externalId: constituentData.externalId ?? '',
         notes: constituentData.notes ?? '',
+        constituentJourneyStageId: constituentData.constituentJourneyStageId,
+        dateEnteredCurrentStage: isoUtcStringToDateTimeLocal(constituentData.dateEnteredCurrentStage) ?? '',
         attributes: constituentData.attributes ?? '',
         iconId: constituentData.iconId,
         color: constituentData.color ?? '',

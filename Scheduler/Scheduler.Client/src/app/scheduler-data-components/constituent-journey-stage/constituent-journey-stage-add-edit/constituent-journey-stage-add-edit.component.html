@@ -1,0 +1,98 @@
+<div class="add-constituent-journey-stage" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-constituent-journey-stage me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Constituent Journey Stage" 
+        *ngIf="userIsSchedulerConstituentJourneyStageWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #constituentJourneyStageModal let-modal>
+   <div class="modal-header bg-dark text-light constituent-journey-stage-modal-header">
+      <h5 class="modal-title mb-0" id="constituentJourneyStageModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Constituent Journey Stage' : 'Add Constituent Journey Stage' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body constituent-journey-stage-modal-body">
+      <form [formGroup]="constituentJourneyStageForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="ConstituentJourneyStage-name" id="label-ConstituentJourneyStage-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="ConstituentJourneyStage-name" formControlName="name" placeholder="Enter Name" class="form-control constituent-journey-stage-input" [disabled]="!userIsSchedulerConstituentJourneyStageWriter()" aria-labelledby="label-name" />
+                <div *ngIf="constituentJourneyStageForm.get('name')?.invalid && constituentJourneyStageForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="ConstituentJourneyStage-description" id="label-ConstituentJourneyStage-description">Description</label>
+                <textarea id="ConstituentJourneyStage-description" formControlName="description" placeholder="Enter Description" class="form-control constituent-journey-stage-input" [disabled]="!userIsSchedulerConstituentJourneyStageWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                <label for="ConstituentJourneyStage-sequence" id="label-ConstituentJourneyStage-sequence">Sequence</label>
+                <input type="number" id="ConstituentJourneyStage-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control constituent-journey-stage-input" [disabled]="!userIsSchedulerConstituentJourneyStageWriter()" aria-labelledby="label-sequence" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('iconId')">
+                <label for="ConstituentJourneyStage-iconId" id="label-ConstituentJourneyStage-iconId">Icon</label>
+                <select id="ConstituentJourneyStage-iconId" formControlName="iconId" class="form-select constituent-journey-stage-select" [disabled]="!userIsSchedulerConstituentJourneyStageWriter()">
+                    <option [ngValue]="null">Select Icon</option>
+                    <option *ngFor="let icon of icons$ | async" [ngValue]="icon.id">{{icon.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('color')">
+                <label for="ConstituentJourneyStage-color" id="label-ConstituentJourneyStage-color">Color</label>
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="ConstituentJourneyStage-color" 
+                        formControlName="color" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerConstituentJourneyStageWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="constituentJourneyStageForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('minLifetimeGiving')">
+                <label for="ConstituentJourneyStage-minLifetimeGiving" id="label-ConstituentJourneyStage-minLifetimeGiving">Min Lifetime Giving</label>
+                <input type="number" id="ConstituentJourneyStage-minLifetimeGiving" formControlName="minLifetimeGiving" placeholder="Enter Min Lifetime Giving" class="form-control constituent-journey-stage-input" [disabled]="!userIsSchedulerConstituentJourneyStageWriter()" aria-labelledby="label-minLifetimeGiving" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('maxLifetimeGiving')">
+                <label for="ConstituentJourneyStage-maxLifetimeGiving" id="label-ConstituentJourneyStage-maxLifetimeGiving">Max Lifetime Giving</label>
+                <input type="number" id="ConstituentJourneyStage-maxLifetimeGiving" formControlName="maxLifetimeGiving" placeholder="Enter Max Lifetime Giving" class="form-control constituent-journey-stage-input" [disabled]="!userIsSchedulerConstituentJourneyStageWriter()" aria-labelledby="label-maxLifetimeGiving" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('minSingleGiftAmount')">
+                <label for="ConstituentJourneyStage-minSingleGiftAmount" id="label-ConstituentJourneyStage-minSingleGiftAmount">Min Single Gift Amount</label>
+                <input type="number" id="ConstituentJourneyStage-minSingleGiftAmount" formControlName="minSingleGiftAmount" placeholder="Enter Min Single Gift Amount" class="form-control constituent-journey-stage-input" [disabled]="!userIsSchedulerConstituentJourneyStageWriter()" aria-labelledby="label-minSingleGiftAmount" />
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="ConstituentJourneyStage-versionNumber" id="label-ConstituentJourneyStage-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="ConstituentJourneyStage-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control constituent-journey-stage-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ConstituentJourneyStage-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerConstituentJourneyStageWriter()" />
+                <label for="ConstituentJourneyStage-active" class="form-check-label" id="label-ConstituentJourneyStage-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ConstituentJourneyStage-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerConstituentJourneyStageWriter()" />
+                <label for="ConstituentJourneyStage-deleted" class="form-check-label" id="label-ConstituentJourneyStage-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer constituent-journey-stage-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Constituent Journey Stage changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !constituentJourneyStageForm.valid || constituentJourneyStageForm.pristine || !userIsSchedulerConstituentJourneyStageWriter()" ngbTooltip="Save the Constituent Journey Stage changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

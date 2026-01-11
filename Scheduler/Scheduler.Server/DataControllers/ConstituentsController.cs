@@ -84,6 +84,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			int? totalGiftCount = null,
 			string externalId = null,
 			string notes = null,
+			int? constituentJourneyStageId = null,
+			DateTime? dateEnteredCurrentStage = null,
 			string attributes = null,
 			int? iconId = null,
 			string color = null,
@@ -137,6 +139,14 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			    pageSize <= 0)
 			{
 			    pageSize = null;
+			}
+
+			//
+			// Turn any local time kinded parameters to UTC.
+			//
+			if (dateEnteredCurrentStage.HasValue == true && dateEnteredCurrentStage.Value.Kind != DateTimeKind.Utc)
+			{
+				dateEnteredCurrentStage = dateEnteredCurrentStage.Value.ToUniversalTime();
 			}
 
 			IQueryable<Database.Constituent> query = (from c in _context.Constituents select c);
@@ -198,6 +208,14 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (string.IsNullOrEmpty(notes) == false)
 			{
 				query = query.Where(c => c.notes == notes);
+			}
+			if (constituentJourneyStageId.HasValue == true)
+			{
+				query = query.Where(c => c.constituentJourneyStageId == constituentJourneyStageId.Value);
+			}
+			if (dateEnteredCurrentStage.HasValue == true)
+			{
+				query = query.Where(c => c.dateEnteredCurrentStage == dateEnteredCurrentStage.Value);
 			}
 			if (string.IsNullOrEmpty(attributes) == false)
 			{
@@ -267,6 +285,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (includeRelations == true)
 			{
 				query = query.Include(x => x.client);
+				query = query.Include(x => x.constituentJourneyStage);
 				query = query.Include(x => x.contact);
 				query = query.Include(x => x.household);
 				query = query.Include(x => x.icon);
@@ -303,6 +322,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || (includeRelations == true && x.client.attributes.Contains(anyStringContains))
 			       || (includeRelations == true && x.client.avatarFileName.Contains(anyStringContains))
 			       || (includeRelations == true && x.client.avatarMimeType.Contains(anyStringContains))
+			       || (includeRelations == true && x.constituentJourneyStage.name.Contains(anyStringContains))
+			       || (includeRelations == true && x.constituentJourneyStage.description.Contains(anyStringContains))
+			       || (includeRelations == true && x.constituentJourneyStage.color.Contains(anyStringContains))
 			       || (includeRelations == true && x.contact.firstName.Contains(anyStringContains))
 			       || (includeRelations == true && x.contact.middleName.Contains(anyStringContains))
 			       || (includeRelations == true && x.contact.lastName.Contains(anyStringContains))
@@ -405,6 +427,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			int? totalGiftCount = null,
 			string externalId = null,
 			string notes = null,
+			int? constituentJourneyStageId = null,
+			DateTime? dateEnteredCurrentStage = null,
 			string attributes = null,
 			int? iconId = null,
 			string color = null,
@@ -441,6 +465,14 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
 			}
 
+
+			//
+			// Fix any non-UTC date parameters that come in.
+			//
+			if (dateEnteredCurrentStage.HasValue == true && dateEnteredCurrentStage.Value.Kind != DateTimeKind.Utc)
+			{
+				dateEnteredCurrentStage = dateEnteredCurrentStage.Value.ToUniversalTime();
+			}
 
 			IQueryable<Database.Constituent> query = (from c in _context.Constituents select c);
 			query = query.Where(x => x.tenantGuid == userTenantGuid);
@@ -499,6 +531,14 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (notes != null)
 			{
 				query = query.Where(c => c.notes == notes);
+			}
+			if (constituentJourneyStageId.HasValue == true)
+			{
+				query = query.Where(c => c.constituentJourneyStageId == constituentJourneyStageId.Value);
+			}
+			if (dateEnteredCurrentStage.HasValue == true)
+			{
+				query = query.Where(c => c.dateEnteredCurrentStage == dateEnteredCurrentStage.Value);
 			}
 			if (attributes != null)
 			{
@@ -586,6 +626,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.client.attributes.Contains(anyStringContains)
 			       || x.client.avatarFileName.Contains(anyStringContains)
 			       || x.client.avatarMimeType.Contains(anyStringContains)
+			       || x.constituentJourneyStage.name.Contains(anyStringContains)
+			       || x.constituentJourneyStage.description.Contains(anyStringContains)
+			       || x.constituentJourneyStage.color.Contains(anyStringContains)
 			       || x.contact.firstName.Contains(anyStringContains)
 			       || x.contact.middleName.Contains(anyStringContains)
 			       || x.contact.lastName.Contains(anyStringContains)
@@ -675,6 +718,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				if (includeRelations == true)
 				{
 					query = query.Include(x => x.client);
+					query = query.Include(x => x.constituentJourneyStage);
 					query = query.Include(x => x.contact);
 					query = query.Include(x => x.household);
 					query = query.Include(x => x.icon);
@@ -869,6 +913,11 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					constituent.externalId = constituent.externalId.Substring(0, 100);
 				}
 
+				if (constituent.dateEnteredCurrentStage.HasValue == true && constituent.dateEnteredCurrentStage.Value.Kind != DateTimeKind.Utc)
+				{
+					constituent.dateEnteredCurrentStage = constituent.dateEnteredCurrentStage.Value.ToUniversalTime();
+				}
+
 				if (constituent.color != null && constituent.color.Length > 10)
 				{
 					constituent.color = constituent.color.Substring(0, 10);
@@ -1051,6 +1100,11 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					constituent.externalId = constituent.externalId.Substring(0, 100);
 				}
 
+				if (constituent.dateEnteredCurrentStage.HasValue == true && constituent.dateEnteredCurrentStage.Value.Kind != DateTimeKind.Utc)
+				{
+					constituent.dateEnteredCurrentStage = constituent.dateEnteredCurrentStage.Value.ToUniversalTime();
+				}
+
 				if (constituent.color != null && constituent.color.Length > 10)
 				{
 					constituent.color = constituent.color.Substring(0, 10);
@@ -1135,6 +1189,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					constituent.SoftCredits = null;
 					constituent.Tributes = null;
 					constituent.client = null;
+					constituent.constituentJourneyStage = null;
 					constituent.contact = null;
 					constituent.household = null;
 					constituent.icon = null;
@@ -1271,6 +1326,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				cloneOfExisting.SoftCredits = null;
 				cloneOfExisting.Tributes = null;
 				cloneOfExisting.client = null;
+				cloneOfExisting.constituentJourneyStage = null;
 				cloneOfExisting.contact = null;
 				cloneOfExisting.household = null;
 				cloneOfExisting.icon = null;
@@ -1317,6 +1373,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    constituent.totalGiftCount = oldConstituent.totalGiftCount;
 				    constituent.externalId = oldConstituent.externalId;
 				    constituent.notes = oldConstituent.notes;
+				    constituent.constituentJourneyStageId = oldConstituent.constituentJourneyStageId;
+				    constituent.dateEnteredCurrentStage = oldConstituent.dateEnteredCurrentStage;
 				    constituent.attributes = oldConstituent.attributes;
 				    constituent.iconId = oldConstituent.iconId;
 				    constituent.color = oldConstituent.color;
@@ -1531,6 +1589,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			int? totalGiftCount = null,
 			string externalId = null,
 			string notes = null,
+			int? constituentJourneyStageId = null,
+			DateTime? dateEnteredCurrentStage = null,
 			string attributes = null,
 			int? iconId = null,
 			string color = null,
@@ -1581,6 +1641,14 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			    pageSize <= 0)
 			{
 			    pageSize = null;
+			}
+
+			//
+			// Turn any local time kinded parameters to UTC.
+			//
+			if (dateEnteredCurrentStage.HasValue == true && dateEnteredCurrentStage.Value.Kind != DateTimeKind.Utc)
+			{
+				dateEnteredCurrentStage = dateEnteredCurrentStage.Value.ToUniversalTime();
 			}
 
 			IQueryable<Database.Constituent> query = (from c in _context.Constituents select c);
@@ -1642,6 +1710,14 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (string.IsNullOrEmpty(notes) == false)
 			{
 				query = query.Where(c => c.notes == notes);
+			}
+			if (constituentJourneyStageId.HasValue == true)
+			{
+				query = query.Where(c => c.constituentJourneyStageId == constituentJourneyStageId.Value);
+			}
+			if (dateEnteredCurrentStage.HasValue == true)
+			{
+				query = query.Where(c => c.dateEnteredCurrentStage == dateEnteredCurrentStage.Value);
 			}
 			if (string.IsNullOrEmpty(attributes) == false)
 			{
@@ -1730,6 +1806,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.client.attributes.Contains(anyStringContains)
 			       || x.client.avatarFileName.Contains(anyStringContains)
 			       || x.client.avatarMimeType.Contains(anyStringContains)
+			       || x.constituentJourneyStage.name.Contains(anyStringContains)
+			       || x.constituentJourneyStage.description.Contains(anyStringContains)
+			       || x.constituentJourneyStage.color.Contains(anyStringContains)
 			       || x.contact.firstName.Contains(anyStringContains)
 			       || x.contact.middleName.Contains(anyStringContains)
 			       || x.contact.lastName.Contains(anyStringContains)

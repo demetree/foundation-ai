@@ -288,6 +288,8 @@ import { ClientContactChangeHistoryService } from './scheduler-data-services/cli
 import { ClientTypeService } from './scheduler-data-services/client-type.service';
 import { ConstituentService } from './scheduler-data-services/constituent.service';
 import { ConstituentChangeHistoryService } from './scheduler-data-services/constituent-change-history.service';
+import { ConstituentJourneyStageService } from './scheduler-data-services/constituent-journey-stage.service';
+import { ConstituentJourneyStageChangeHistoryService } from './scheduler-data-services/constituent-journey-stage-change-history.service';
 import { ContactService } from './scheduler-data-services/contact.service';
 import { ContactChangeHistoryService } from './scheduler-data-services/contact-change-history.service';
 import { ContactContactService } from './scheduler-data-services/contact-contact.service';
@@ -682,6 +684,14 @@ import { ConstituentChangeHistoryListingComponent } from './scheduler-data-compo
 import { ConstituentChangeHistoryAddEditComponent } from './scheduler-data-components/constituent-change-history/constituent-change-history-add-edit/constituent-change-history-add-edit.component';
 import { ConstituentChangeHistoryDetailComponent } from './scheduler-data-components/constituent-change-history/constituent-change-history-detail/constituent-change-history-detail.component';
 import { ConstituentChangeHistoryTableComponent } from './scheduler-data-components/constituent-change-history/constituent-change-history-table/constituent-change-history-table.component';
+import { ConstituentJourneyStageListingComponent } from './scheduler-data-components/constituent-journey-stage/constituent-journey-stage-listing/constituent-journey-stage-listing.component';
+import { ConstituentJourneyStageAddEditComponent } from './scheduler-data-components/constituent-journey-stage/constituent-journey-stage-add-edit/constituent-journey-stage-add-edit.component';
+import { ConstituentJourneyStageDetailComponent } from './scheduler-data-components/constituent-journey-stage/constituent-journey-stage-detail/constituent-journey-stage-detail.component';
+import { ConstituentJourneyStageTableComponent } from './scheduler-data-components/constituent-journey-stage/constituent-journey-stage-table/constituent-journey-stage-table.component';
+import { ConstituentJourneyStageChangeHistoryListingComponent } from './scheduler-data-components/constituent-journey-stage-change-history/constituent-journey-stage-change-history-listing/constituent-journey-stage-change-history-listing.component';
+import { ConstituentJourneyStageChangeHistoryAddEditComponent } from './scheduler-data-components/constituent-journey-stage-change-history/constituent-journey-stage-change-history-add-edit/constituent-journey-stage-change-history-add-edit.component';
+import { ConstituentJourneyStageChangeHistoryDetailComponent } from './scheduler-data-components/constituent-journey-stage-change-history/constituent-journey-stage-change-history-detail/constituent-journey-stage-change-history-detail.component';
+import { ConstituentJourneyStageChangeHistoryTableComponent } from './scheduler-data-components/constituent-journey-stage-change-history/constituent-journey-stage-change-history-table/constituent-journey-stage-change-history-table.component';
 import { ContactListingComponent } from './scheduler-data-components/contact/contact-listing/contact-listing.component';
 import { ContactAddEditComponent } from './scheduler-data-components/contact/contact-add-edit/contact-add-edit.component';
 import { ContactDetailComponent } from './scheduler-data-components/contact/contact-detail/contact-detail.component';
@@ -1089,6 +1099,7 @@ import { TributeTypeTableComponent } from './scheduler-data-components/tribute-t
 //
 // End of imports for Scheduler Data Components
 //
+
 
 @NgModule({
   declarations: [
@@ -1507,6 +1518,14 @@ import { TributeTypeTableComponent } from './scheduler-data-components/tribute-t
     ConstituentChangeHistoryAddEditComponent,
     ConstituentChangeHistoryDetailComponent,
     ConstituentChangeHistoryTableComponent,
+    ConstituentJourneyStageListingComponent,
+    ConstituentJourneyStageAddEditComponent,
+    ConstituentJourneyStageDetailComponent,
+    ConstituentJourneyStageTableComponent,
+    ConstituentJourneyStageChangeHistoryListingComponent,
+    ConstituentJourneyStageChangeHistoryAddEditComponent,
+    ConstituentJourneyStageChangeHistoryDetailComponent,
+    ConstituentJourneyStageChangeHistoryTableComponent,
     ContactListingComponent,
     ContactAddEditComponent,
     ContactDetailComponent,
@@ -2070,6 +2089,8 @@ import { TributeTypeTableComponent } from './scheduler-data-components/tribute-t
     ClientTypeService,
     ConstituentService,
     ConstituentChangeHistoryService,
+    ConstituentJourneyStageService,
+    ConstituentJourneyStageChangeHistoryService,
     ContactService,
     ContactChangeHistoryService,
     ContactContactService,
