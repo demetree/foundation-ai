@@ -2906,6 +2906,67 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
             householdTable.canBeFavourited = true;
 
 
+            Database.Table constituentJourneyStageTable = database.AddTable("ConstituentJourneyStage");
+            constituentJourneyStageTable.comment = "Defines stages in a donor's journey (e.g., Target, Qualified, Cultivated, Solicited, Stewardship).";
+            constituentJourneyStageTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            constituentJourneyStageTable.AddIdField();
+            constituentJourneyStageTable.AddMultiTenantSupport();
+            constituentJourneyStageTable.AddNameAndDescriptionFields(true, true, true);
+            constituentJourneyStageTable.AddSequenceField();
+            constituentJourneyStageTable.AddForeignKeyField(iconTable, true).AddScriptComments("Icon to use for UI display");
+            constituentJourneyStageTable.AddHTMLColorField("color", true).AddScriptComments("Hex color for UI display");
+
+            // Criteria fields for auto-calculation/suggestion
+             constituentJourneyStageTable.AddMoneyField("minLifetimeGiving", true, true).AddScriptComments("Optional criteria: Minimum total giving to qualify for this stage.");
+            constituentJourneyStageTable.AddMoneyField("maxLifetimeGiving", true, true).AddScriptComments("Optional criteria: Maximum total giving");
+             constituentJourneyStageTable.AddMoneyField("minSingleGiftAmount", true, true).AddScriptComments("Optional criteria: Min single gift size");
+            
+            constituentJourneyStageTable.AddVersionControl();
+            constituentJourneyStageTable.AddControlFields();
+            constituentJourneyStageTable.canBeFavourited = true;
+
+            // Seed common stages
+            constituentJourneyStageTable.AddData(new Dictionary<string, string> {
+                { "tenantGuid", "00000000-0000-0000-0000-000000000000"},
+                { "name", "Unqualified" },
+                { "description", "New potential donor." },
+                { "sequence", "1" },
+                { "color", "#9E9E9E" },
+                { "objectGuid", "d8663e5e-749c-4638-b69d-21d96078659d" } });
+
+            constituentJourneyStageTable.AddData(new Dictionary<string, string> {
+                { "tenantGuid", "00000000-0000-0000-0000-000000000000"},
+                { "name", "Qualified" },
+                { "description", "Donor has been qualified." },
+                { "sequence", "2" },
+                { "color", "#2196F3" },
+                { "objectGuid", "ad06353d-2476-4322-836f-5374825968f9" } });
+
+             constituentJourneyStageTable.AddData(new Dictionary<string, string> {
+                { "tenantGuid", "00000000-0000-0000-0000-000000000000"},
+                { "name", "Cultivated" },
+                { "description", "Relationship is being built." },
+                { "sequence", "3" },
+                { "color", "#4CAF50" },
+                { "objectGuid", "e8b60384-9336-4022-8b4b-970752538965" } });
+
+            constituentJourneyStageTable.AddData(new Dictionary<string, string> {
+                { "tenantGuid", "00000000-0000-0000-0000-000000000000"},
+                { "name", "Solicited" },
+                { "description", "Ask has been made." },
+                { "sequence", "4" },
+                { "color", "#FF9800" },
+                { "objectGuid", "64319688-fd06-4074-8902-628670bf7471" } });
+
+            constituentJourneyStageTable.AddData(new Dictionary<string, string> {
+                { "tenantGuid", "00000000-0000-0000-0000-000000000000"},
+                { "name", "Stewardship" },
+                { "description", "Ongoing maintenance." },
+                { "sequence", "5" },
+                { "color", "#9C27B0" },
+                { "objectGuid", "1d971578-8319-482a-9e8c-529141873837" } });
+
+
             Database.Table constituentTable = database.AddTable("Constituent");
             constituentTable.maxPostBytes = 5_000_000;          // Cap posts at 5 mb
 
@@ -2954,6 +3015,10 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
             // Standard attributes
             //
             constituentTable.AddTextField("notes", true);
+            
+            // Donor Journey Link
+            constituentTable.AddForeignKeyField(constituentJourneyStageTable, true, true).AddScriptComments("Current stage in the donor journey.");
+            constituentTable.AddDateTimeField("dateEnteredCurrentStage", true).AddScriptComments("Date when the constituent moved to the current stage.");
             Database.Table.Field constituentAttributesField = constituentTable.AddTextField("attributes", true).AddScriptComments("to store arbitrary JSON");
             constituentAttributesField.hideOnDefaultLists = true;
 
