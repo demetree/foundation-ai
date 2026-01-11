@@ -1,0 +1,82 @@
+<div class="add-qualification" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-qualification me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Qualification" 
+        *ngIf="userIsSchedulerQualificationWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #qualificationModal let-modal>
+   <div class="modal-header bg-dark text-light qualification-modal-header">
+      <h5 class="modal-title mb-0" id="qualificationModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Qualification' : 'Add Qualification' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body qualification-modal-body">
+      <form [formGroup]="qualificationForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="Qualification-name" id="label-Qualification-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="Qualification-name" formControlName="name" placeholder="Enter Name" class="form-control qualification-input" [disabled]="!userIsSchedulerQualificationWriter()" aria-labelledby="label-name" />
+                <div *ngIf="qualificationForm.get('name')?.invalid && qualificationForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="Qualification-description" id="label-Qualification-description"><span class="text-danger">*</span>Description</label>
+                <textarea id="Qualification-description" formControlName="description" placeholder="Enter Description" class="form-control qualification-input" [disabled]="!userIsSchedulerQualificationWriter()"></textarea>
+                <div *ngIf="qualificationForm.get('description')?.invalid && qualificationForm.get('description')?.touched" class="text-danger">
+                    Description is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isLicense')">
+                <input type="checkbox" id="Qualification-isLicense" formControlName="isLicense" class="form-check-input" [disabled]="!userIsSchedulerQualificationWriter()" />
+                <label for="Qualification-isLicense" class="form-check-label" id="label-Qualification-isLicense">Is License</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('color')">
+                <label for="Qualification-color" id="label-Qualification-color">Color</label>
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="Qualification-color" 
+                        formControlName="color" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerQualificationWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="qualificationForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                <label for="Qualification-sequence" id="label-Qualification-sequence">Sequence</label>
+                <input type="number" id="Qualification-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control qualification-input" [disabled]="!userIsSchedulerQualificationWriter()" aria-labelledby="label-sequence" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="Qualification-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerQualificationWriter()" />
+                <label for="Qualification-active" class="form-check-label" id="label-Qualification-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="Qualification-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerQualificationWriter()" />
+                <label for="Qualification-deleted" class="form-check-label" id="label-Qualification-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer qualification-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Qualification changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !qualificationForm.valid || qualificationForm.pristine || !userIsSchedulerQualificationWriter()" ngbTooltip="Save the Qualification changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

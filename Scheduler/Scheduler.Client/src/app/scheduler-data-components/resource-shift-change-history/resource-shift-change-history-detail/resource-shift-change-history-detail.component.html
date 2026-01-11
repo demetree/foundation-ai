@@ -1,0 +1,66 @@
+<div class="container-fluid p-1 m-0 resource-shift-change-history-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="resource-shift-change-history-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Resource Shift Change History</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Resource Shift Change History' : 'Add Resource Shift Change History'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerResourceShiftChangeHistoryReader()">
+                <div class="col m-2 resource-shift-change-history-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="resourceShiftChangeHistoryForm" (ngSubmit)="submitForm()" class="resource-shift-change-history-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('resourceShiftId')">
+                                <label for="ResourceShiftChangeHistory-resourceShiftId" id="label-ResourceShiftChangeHistory-resourceShiftId"><span class="text-danger">*</span>Resource Shift</label>
+                                <select id="ResourceShiftChangeHistory-resourceShiftId" formControlName="resourceShiftId" class="form-select resource-shift-change-history-select" [disabled]="!userIsSchedulerResourceShiftChangeHistoryWriter()">
+                                    <option [ngValue]="null">Select Resource Shift</option>
+                                    <option *ngFor="let resourceShift of resourceShifts$ | async" [ngValue]="resourceShift.id">{{resourceShift.label}}</option>
+                                </select>
+                                <div *ngIf="resourceShiftChangeHistoryForm.get('resourceShiftId')?.invalid && resourceShiftChangeHistoryForm.get('resourceShiftId')?.touched" class="text-danger">
+                                    Resource Shift is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="ResourceShiftChangeHistory-versionNumber" id="label-ResourceShiftChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="ResourceShiftChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control resource-shift-change-history-input" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                                <label for="ResourceShiftChangeHistory-timeStamp" id="label-ResourceShiftChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                                <input type="datetime-local" id="ResourceShiftChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control resource-shift-change-history-input" [disabled]="!userIsSchedulerResourceShiftChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                                <div *ngIf="resourceShiftChangeHistoryForm.get('timeStamp')?.invalid && resourceShiftChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                                    Time Stamp is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="ResourceShiftChangeHistory-userId" id="label-ResourceShiftChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="ResourceShiftChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control resource-shift-change-history-input" [disabled]="!userIsSchedulerResourceShiftChangeHistoryWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="resourceShiftChangeHistoryForm.get('userId')?.invalid && resourceShiftChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                                <label for="ResourceShiftChangeHistory-data" id="label-ResourceShiftChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                                <textarea id="ResourceShiftChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control resource-shift-change-history-input" [disabled]="!userIsSchedulerResourceShiftChangeHistoryWriter()"></textarea>
+                                <div *ngIf="resourceShiftChangeHistoryForm.get('data')?.invalid && resourceShiftChangeHistoryForm.get('data')?.touched" class="text-danger">
+                                    Data is required
+                                </div>
+                            </div>
+                            <div class="resource-shift-change-history-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="resourceShiftChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Resource Shift Change History">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !resourceShiftChangeHistoryForm.valid || !resourceShiftChangeHistoryForm.dirty || resourceShiftChangeHistoryForm.pristine || userIsSchedulerResourceShiftChangeHistoryWriter() == false " ngbTooltip="Save Resource Shift Change History">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

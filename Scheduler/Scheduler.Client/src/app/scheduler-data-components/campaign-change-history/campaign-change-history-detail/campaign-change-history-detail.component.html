@@ -1,0 +1,66 @@
+<div class="container-fluid p-1 m-0 campaign-change-history-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="campaign-change-history-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Campaign Change History</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Campaign Change History' : 'Add Campaign Change History'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerCampaignChangeHistoryReader()">
+                <div class="col m-2 campaign-change-history-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="campaignChangeHistoryForm" (ngSubmit)="submitForm()" class="campaign-change-history-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('campaignId')">
+                                <label for="CampaignChangeHistory-campaignId" id="label-CampaignChangeHistory-campaignId"><span class="text-danger">*</span>Campaign</label>
+                                <select id="CampaignChangeHistory-campaignId" formControlName="campaignId" class="form-select campaign-change-history-select" [disabled]="!userIsSchedulerCampaignChangeHistoryWriter()">
+                                    <option [ngValue]="null">Select Campaign</option>
+                                    <option *ngFor="let campaign of campaigns$ | async" [ngValue]="campaign.id">{{campaign.name}}</option>
+                                </select>
+                                <div *ngIf="campaignChangeHistoryForm.get('campaignId')?.invalid && campaignChangeHistoryForm.get('campaignId')?.touched" class="text-danger">
+                                    Campaign is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="CampaignChangeHistory-versionNumber" id="label-CampaignChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="CampaignChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control campaign-change-history-input" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                                <label for="CampaignChangeHistory-timeStamp" id="label-CampaignChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                                <input type="datetime-local" id="CampaignChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control campaign-change-history-input" [disabled]="!userIsSchedulerCampaignChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                                <div *ngIf="campaignChangeHistoryForm.get('timeStamp')?.invalid && campaignChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                                    Time Stamp is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="CampaignChangeHistory-userId" id="label-CampaignChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="CampaignChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control campaign-change-history-input" [disabled]="!userIsSchedulerCampaignChangeHistoryWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="campaignChangeHistoryForm.get('userId')?.invalid && campaignChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                                <label for="CampaignChangeHistory-data" id="label-CampaignChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                                <textarea id="CampaignChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control campaign-change-history-input" [disabled]="!userIsSchedulerCampaignChangeHistoryWriter()"></textarea>
+                                <div *ngIf="campaignChangeHistoryForm.get('data')?.invalid && campaignChangeHistoryForm.get('data')?.touched" class="text-danger">
+                                    Data is required
+                                </div>
+                            </div>
+                            <div class="campaign-change-history-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="campaignChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Campaign Change History">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !campaignChangeHistoryForm.valid || !campaignChangeHistoryForm.dirty || campaignChangeHistoryForm.pristine || userIsSchedulerCampaignChangeHistoryWriter() == false " ngbTooltip="Save Campaign Change History">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

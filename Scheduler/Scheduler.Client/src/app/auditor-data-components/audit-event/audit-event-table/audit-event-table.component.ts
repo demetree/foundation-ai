@@ -1,0 +1,453 @@
+import { Component, OnInit, AfterViewInit, OnChanges, SimpleChanges, Input, Output, EventEmitter, ViewChild, ChangeDetectionStrategy } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
+import { AuditEventService, AuditEventData, AuditEventQueryParameters } from '../../../auditor-data-services/audit-event.service';
+import { AuditEventAddEditComponent } from '../audit-event-add-edit/audit-event-add-edit.component';
+import { AuthService } from '../../../services/auth.service';
+import { AlertService, MessageSeverity } from '../../../services/alert.service';
+import { ConfirmationService } from '../../../services/confirmation-service';
+import { TableColumn } from '../../../utility/foundation.utility';
+
+@Component({
+  selector: 'app-audit-event-table',
+  templateUrl: './audit-event-table.component.html',
+  styleUrls: ['./audit-event-table.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class AuditEventTableComponent implements OnInit, OnChanges, AfterViewInit {
+  @ViewChild(AuditEventAddEditComponent) addEditAuditEventComponent!: AuditEventAddEditComponent;
+
+  @Input() AuditEvents: AuditEventData[] | null = null; // Optional prefiltered data
+  @Input() isSmallScreen: boolean = false;
+  @Input() filterText: string | null = null; // Optional filter text 
+  @Input() queryParams: Partial<AuditEventQueryParameters> = { } // Optional query parameters
+
+  @Input() disableDefaultEdit: boolean = false;         // Allow parent to disable default edit behavior
+  @Input() disableDefaultDelete: boolean = false;       // Allow parent to disable default delete behavior
+
+  @Output() edit = new EventEmitter<AuditEventData>(); // Emitted for custom edit handling
+  @Output() delete = new EventEmitter<AuditEventData>(); // Emitted for custom delete handling
+
+  @Input() columns: TableColumn[] = [];     // Default set built in ngOnInit
+
+  public filteredAuditEvents: AuditEventData[] | null = null;        // Stores the filtered/sorted data
+
+  // Sorting properties
+  public sortColumn: string | null = null;
+  public sortDirection: 'asc' | 'desc' = 'asc';
+
+
+  private isLoadingSubject = new BehaviorSubject<boolean>(true);
+  public isLoading$ = this.isLoadingSubject.asObservable();
+
+  private isManagingData: boolean = false; // Tracks if component is managing data loading
+
+  private debounceTimeout: any;
+
+
+  //
+  // Error state tracking to help suppress endless loop scenarios in case of server error or request path errors
+  //
+  private inErrorState: boolean = false;
+  private errorResetTimeout: any;
+
+
+  constructor(private auditEventService: AuditEventService,
+              private authService: AuthService,
+              private alertService: AlertService,
+              private confirmationService: ConfirmationService) { }
+
+  ngOnInit(): void {
+
+    // If the parent has not provided custom columns, build the defaults with entitlement checks
+    if (this.columns.length === 0) {
+      this.buildDefaultColumns();
+    }
+
+    if (!this.AuditEvents) {
+
+        this.isManagingData = true; // Component is managing data loading
+        this.loadData(); // Load data on initialization
+
+    } else {
+
+        this.applyFiltersAndSort();
+        this.isLoadingSubject.next(false);
+
+    }
+  }
+
+  ngAfterViewInit(): void {
+
+    //
+    // Subscribe to the auditEventChanged observable on the add/edit component so that when a AuditEvent changes we can reload the list, if component is available and not disabled..
+    //
+    if (this.addEditAuditEventComponent && !this.disableDefaultEdit) {
+        this.addEditAuditEventComponent.auditEventChanged.subscribe({
+        next: (result: AuditEventData[] | null) => {
+            this.loadData();
+        },
+        error: (err: any) => {
+             this.alertService.showMessage("Error during Audit Event changed notification", JSON.stringify(err), MessageSeverity.error);
+        }
+        });
+     }
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+
+
+    if (this.inErrorState == true) {
+      //
+      // Circuit breaker for endless loop prevention.
+      //
+      return;
+    }
+
+    //
+    // Reset the whole page - note that this only makes sense when this component is managing the loading of data.  Don't use the filterText input property when you are providing your own data via the data input.
+    //
+    if (changes['filterText'] && this.isManagingData == true)
+    {
+       clearTimeout(this.debounceTimeout);
+       this.debounceTimeout = setTimeout(() => {
+
+         if (this.isManagingData)
+         {
+             this.loadData();
+         }
+         else
+         {
+             this.applyFiltersAndSort();
+         }
+
+       }, 200); // 200ms debounce delay
+    }
+
+    if (changes['queryParams'])
+    {
+        this.loadData()
+    }
+  }
+
+
+ /**
+   * Construct the default column array based on user entitlements.
+   */
+  private buildDefaultColumns(): void {
+
+    //
+    // Add the fields to the column config.  Refinements to widths and such can be made easily by custom users by tweaking the input as need be.
+    //
+    // This is the default set to start with something for customization
+    //
+    // Note width purposely set to undefined so the reader knows the property is there for use.  It is to be overridden as appropriate by users 
+    // providing custom column specs.
+    //
+    // Start with the common columns that everyone sees
+    //
+    const defaultColumns: TableColumn[] = [
+    { key: 'startTime', label: 'Start Time', width: undefined, template: 'date' },
+    { key: 'stopTime', label: 'Stop Time', width: undefined, template: 'date' },
+    { key: 'completedSuccessfully', label: 'Completed Successfully', width: '120px', template: 'boolean' },
+    { key: 'auditUser.name', label: 'Audit User', width: undefined, template: 'link', linkPath: ['/audituser', 'auditUserId'] },
+    { key: 'auditSession.name', label: 'Audit Session', width: undefined, template: 'link', linkPath: ['/auditsession', 'auditSessionId'] },
+    { key: 'auditType.name', label: 'Audit Type', width: undefined, template: 'link', linkPath: ['/audittype', 'auditTypeId'] },
+    { key: 'auditAccessType.name', label: 'Audit Access Type', width: undefined, template: 'link', linkPath: ['/auditaccesstype', 'auditAccessTypeId'] },
+    { key: 'auditSource.name', label: 'Audit Source', width: undefined, template: 'link', linkPath: ['/auditsource', 'auditSourceId'] },
+    { key: 'auditUserAgent.name', label: 'Audit User Agent', width: undefined, template: 'link', linkPath: ['/audituseragent', 'auditUserAgentId'] },
+    { key: 'auditModule.name', label: 'Audit Module', width: undefined, template: 'link', linkPath: ['/auditmodule', 'auditModuleId'] },
+    { key: 'auditModuleEntity.name', label: 'Audit Module Entity', width: undefined, template: 'link', linkPath: ['/auditmoduleentity', 'auditModuleEntityId'] },
+    { key: 'auditResource.name', label: 'Audit Resource', width: undefined, template: 'link', linkPath: ['/auditresource', 'auditResourceId'] },
+    { key: 'auditHostSystem.name', label: 'Audit Host System', width: undefined, template: 'link', linkPath: ['/audithostsystem', 'auditHostSystemId'] },
+    { key: 'primaryKey', label: 'Primary Key', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/auditevent', 'id']  },
+    { key: 'threadId', label: 'Thread Id', width: undefined },
+    { key: 'message', label: 'Message', width: undefined },
+
+    ];
+
+
+    //
+    // Note that CSS stylng shows deleted rows with a strike through, and inactive as italicized, both with transparency so they stand out, regardless of if there are active/deleted columns
+    //
+    const isWriter = this.auditEventService.userIsAuditorAuditEventWriter();
+    const isAdmin = this.authService.isAuditorAdministrator; 
+
+    if (isAdmin) {
+
+    }
+    else if (isWriter) {
+    }
+
+    
+    // Assign the built array as the active columns
+    this.columns = defaultColumns;
+  }
+
+
+  public sortBy(column: string) : void {
+
+    if (this.sortColumn === column) {
+        this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+        this.sortColumn = column;
+        this.sortDirection = 'asc';
+    }
+
+    this.applyFiltersAndSort();
+  }
+
+
+  public loadData(): void {
+
+    if (!this.isManagingData) {
+      return; // Skip if parent is providing data
+    }
+
+    if (this.auditEventService.userIsAuditorAuditEventReader() == false) {
+      this.alertService.showMessage(this.authService.currentUser?.userName + " does not have the permission to read from Audit Events", '', MessageSeverity.info);
+      return;
+    }
+
+    //
+    // Server side filtering using the any string contains parameter
+    //
+    const auditEventQueryParams = {
+        ...this.queryParams,
+        anyStringContains: this.filterText || undefined
+    };
+
+    //
+    // Note that we are not clearing the data service cache here.  Fresh data will be loaded if necessary, or cached data will be returned if no changes to it have been detected.
+    //
+    this.auditEventService.GetAuditEventList(auditEventQueryParams).subscribe({
+      next: (AuditEventList) => {
+        if (AuditEventList) {
+          this.AuditEvents = AuditEventList;
+        } else {
+          this.AuditEvents = [];
+        }
+
+        //
+        // Apply the sort.  Filtering of data done already done in the data we receive from the service.
+        //
+        this.applyFiltersAndSort();
+
+        //
+        // Clear the loading spinner
+        //
+        this.isLoadingSubject.next(false);
+
+        //
+        // Reset the error state
+        //
+        this.inErrorState = false;
+
+      },
+      error: (err) => {
+
+        //
+        // Clear the loading spinner
+        //
+        this.isLoadingSubject.next(false);
+
+        //
+        // Turn the error state on
+        //
+        this.setErrorState();
+
+         this.alertService.showMessage("Error getting Audit Event data", JSON.stringify(err), MessageSeverity.error);
+      }
+    });
+  }
+
+
+
+
+  private setErrorState(): void {
+
+    // Turn error state flag on
+    this.inErrorState = true;
+
+    // wipe any existing timeout
+    clearTimeout(this.errorResetTimeout);
+
+    // Reset error state after 15 seconds
+    this.errorResetTimeout = setTimeout(() => {
+      this.inErrorState = false;
+    }, 15000); // Allow retry after 15s
+  }
+
+
+   private applyFiltersAndSort(): void {
+
+    if (!this.AuditEvents) {
+      this.filteredAuditEvents = null;
+      return;
+    }
+
+    // Helper function to safely access nested properties used by sorting and filtering.
+    const getNestedValue = (obj: any, path: string): any => {
+      return path.split('.').reduce((current, key) => {
+        return current && current[key] !== undefined ? current[key] : '';
+      }, obj);
+    };
+
+
+    let result = [...this.AuditEvents];
+
+    if (this.filterText) {
+
+      const searchText = this.filterText.toLowerCase().trim();
+
+      if (searchText) {
+
+        // Define fields to filter on, including nested properties
+        const filterFields = [
+                      'startTime',
+                      'stopTime',
+                      'completedSuccessfully',
+                      'auditUser.name',
+                      'auditSession.name',
+                      'auditType.name',
+                      'auditAccessType.name',
+                      'auditSource.name',
+                      'auditUserAgent.name',
+                      'auditModule.name',
+                      'auditModuleEntity.name',
+                      'auditResource.name',
+                      'auditHostSystem.name',
+                      'primaryKey',
+                      'threadId',
+                      'message',
+        ];
+
+        result = result.filter((auditEvent) =>
+
+        filterFields.some((field) => {
+        const value = getNestedValue(auditEvent, field);
+            return value && value.toString().toLowerCase().includes(searchText);
+          })
+          );
+      }
+    }
+
+    // Apply sorting
+    if (this.sortColumn) {
+      result.sort((a, b) => {
+
+        const aValue = getNestedValue(a, this.sortColumn!);
+        const bValue = getNestedValue(b, this.sortColumn!);
+
+        if (typeof aValue === 'number' && typeof bValue === 'number') {
+          return this.sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
+        }
+
+        const aStr = aValue ? aValue.toString() : '';
+        const bStr = bValue ? bValue.toString() : '';
+        const comparison = aStr.localeCompare(bStr, undefined, {sensitivity: 'base' });
+        return this.sortDirection === 'asc' ? comparison : -comparison;
+      });
+    }
+
+    this.filteredAuditEvents = result;
+  }
+
+
+  public handleEdit(auditEvent: AuditEventData): void {
+    if (this.disableDefaultEdit)
+    {
+        this.edit.emit(auditEvent); // Let parent handle edit
+    }
+    else if (this.addEditAuditEventComponent)
+    {
+        this.addEditAuditEventComponent.openModal(auditEvent); // Default edit behavior
+    }
+    else
+    {
+        this.alertService.showMessage(
+          'Edit functionality unavailable',
+          'Add/Edit component not initialized',
+          MessageSeverity.warn
+        );
+    }
+}
+
+
+  public handleDelete(auditEvent: AuditEventData): void {
+    if (this.disableDefaultDelete)
+    {
+        this.delete.emit(auditEvent); // Let parent handle delete
+    }
+    else
+    {
+        this.confirmationService
+          .confirm('Delete AuditEvent', 'Are you sure you want to delete this Audit Event?')
+          .then((result) => {
+              if (result)
+              {
+                  this.deleteAuditEvent(auditEvent);
+              }
+          })
+          .catch(() => { });
+    }
+  }
+
+
+  private deleteAuditEvent(auditEventData: AuditEventData): void {
+    this.auditEventService.DeleteAuditEvent(auditEventData.id).subscribe({
+      next: () => {
+       this.auditEventService.ClearAllCaches();       // Clear the data service cache because we know we have changed the data.
+        this.loadData(); // Reload the data list after deletion
+      },
+      error: (err) => {
+         this.alertService.showMessage("Error deleting Audit Event", JSON.stringify(err), MessageSeverity.error);
+      }
+    });
+  }
+
+
+  public getAuditEventId(index: number, auditEvent: any): number {
+    return auditEvent.id;
+  }
+
+
+  public userIsAuditorAuditEventReader(): boolean {
+    return this.auditEventService.userIsAuditorAuditEventReader();
+  }
+
+  public userIsAuditorAuditEventWriter(): boolean {
+    return this.auditEventService.userIsAuditorAuditEventWriter();
+  }
+
+
+
+
+  // Helper to read nested properties safely
+  public getNestedValue(obj: any, path: string): any {
+    return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+  }
+
+
+  // Build routerLink arrays like ['/auditEvent', auditEventId]
+  public buildLink(item: any, path: string[]): any[] {
+    //
+    // Expect a starting item in the path array with a slash to indicate the route.  After that, the other items in path are expected to be properties of the item.  Tyically one, but more are technically supported.
+    //
+    // The example usage is ['/route', 'routeId'], where route is the name of the route, and 'routeId' is the property name on the item object that indexes the route.
+    //
+    return path.map(segment => segment.startsWith('/') ? segment : item[segment]);
+  }
+
+
+  // Returns only columns that should appear on mobile
+  get mobileColumns(): TableColumn[] {
+    return this.columns.filter(col => col.mobile !== 'hidden');
+  }
+
+
+  // First "prominent" column for mobile view
+  get prominentColumn(): TableColumn | null {
+    return this.columns.find(col => col.mobile === 'prominent') || null;
+  }
+
+}

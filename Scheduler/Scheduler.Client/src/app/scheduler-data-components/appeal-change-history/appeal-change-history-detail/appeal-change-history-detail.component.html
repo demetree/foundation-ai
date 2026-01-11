@@ -1,0 +1,66 @@
+<div class="container-fluid p-1 m-0 appeal-change-history-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="appeal-change-history-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Appeal Change History</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Appeal Change History' : 'Add Appeal Change History'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerAppealChangeHistoryReader()">
+                <div class="col m-2 appeal-change-history-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="appealChangeHistoryForm" (ngSubmit)="submitForm()" class="appeal-change-history-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('appealId')">
+                                <label for="AppealChangeHistory-appealId" id="label-AppealChangeHistory-appealId"><span class="text-danger">*</span>Appeal</label>
+                                <select id="AppealChangeHistory-appealId" formControlName="appealId" class="form-select appeal-change-history-select" [disabled]="!userIsSchedulerAppealChangeHistoryWriter()">
+                                    <option [ngValue]="null">Select Appeal</option>
+                                    <option *ngFor="let appeal of appeals$ | async" [ngValue]="appeal.id">{{appeal.name}}</option>
+                                </select>
+                                <div *ngIf="appealChangeHistoryForm.get('appealId')?.invalid && appealChangeHistoryForm.get('appealId')?.touched" class="text-danger">
+                                    Appeal is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="AppealChangeHistory-versionNumber" id="label-AppealChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="AppealChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control appeal-change-history-input" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                                <label for="AppealChangeHistory-timeStamp" id="label-AppealChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                                <input type="datetime-local" id="AppealChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control appeal-change-history-input" [disabled]="!userIsSchedulerAppealChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                                <div *ngIf="appealChangeHistoryForm.get('timeStamp')?.invalid && appealChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                                    Time Stamp is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="AppealChangeHistory-userId" id="label-AppealChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="AppealChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control appeal-change-history-input" [disabled]="!userIsSchedulerAppealChangeHistoryWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="appealChangeHistoryForm.get('userId')?.invalid && appealChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                                <label for="AppealChangeHistory-data" id="label-AppealChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                                <textarea id="AppealChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control appeal-change-history-input" [disabled]="!userIsSchedulerAppealChangeHistoryWriter()"></textarea>
+                                <div *ngIf="appealChangeHistoryForm.get('data')?.invalid && appealChangeHistoryForm.get('data')?.touched" class="text-danger">
+                                    Data is required
+                                </div>
+                            </div>
+                            <div class="appeal-change-history-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="appealChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Appeal Change History">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !appealChangeHistoryForm.valid || !appealChangeHistoryForm.dirty || appealChangeHistoryForm.pristine || userIsSchedulerAppealChangeHistoryWriter() == false " ngbTooltip="Save Appeal Change History">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

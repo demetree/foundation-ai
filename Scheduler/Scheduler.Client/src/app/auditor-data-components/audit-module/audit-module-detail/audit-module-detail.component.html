@@ -1,0 +1,76 @@
+<div class="container-fluid p-1 m-0 audit-module-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="audit-module-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Audit Module</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Audit Module' : 'Add Audit Module'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsAuditorAuditModuleReader()">
+                <div class="col m-2 audit-module-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="auditModuleForm" (ngSubmit)="submitForm()" class="audit-module-details-form">
+                            <div class="form-group">
+                                <label for="name" id="label-name"><span class="text-danger">*</span>Name</label>
+                                <textarea id="name" formControlName="name" placeholder="Enter Name" class="form-control audit-module-input" [disabled]="!userIsAuditorAuditModuleWriter()"></textarea>
+                                <div *ngIf="auditModuleForm.get('name')?.invalid && auditModuleForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="comments" id="label-comments">Comments</label>
+                                <textarea id="comments" formControlName="comments" placeholder="Enter Comments" class="form-control audit-module-input" [disabled]="!userIsAuditorAuditModuleWriter()"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="firstAccess" id="label-firstAccess">First Access</label>
+                                <input type="datetime-local" id="firstAccess" formControlName="firstAccess" placeholder="Enter First Access" class="form-control audit-module-input" [disabled]="!userIsAuditorAuditModuleWriter()" aria-labelledby="label-firstAccess" />
+                            </div>
+                            <div class="audit-module-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="auditModuleForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Audit Module">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !auditModuleForm.valid || !auditModuleForm.dirty || auditModuleForm.pristine || userIsAuditorAuditModuleWriter() == false " ngbTooltip="Save Audit Module">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsAuditorAuditModuleReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 audit-module-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="auditModuleEntityService.userIsAuditorAuditModuleEntityReader()">
+                            <button ngbNavLink>AuditModuleEntities
+                                <span class="badge bg-primary ms-2">
+                                    {{ (auditModuleData?.AuditModuleEntitiesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <app-audit-module-entity-table [queryParams]="GetQueryParameters()"></app-audit-module-entity-table>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="auditEventService.userIsAuditorAuditEventReader()">
+                            <button ngbNavLink>AuditEvents
+                                <span class="badge bg-primary ms-2">
+                                    {{ (auditModuleData?.AuditEventsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <app-audit-event-table [queryParams]="GetQueryParameters()"></app-audit-event-table>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

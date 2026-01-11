@@ -1,0 +1,67 @@
+<div class="add-recurrence-exception" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-recurrence-exception me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Recurrence Exception" 
+        *ngIf="userIsSchedulerRecurrenceExceptionWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #recurrenceExceptionModal let-modal>
+   <div class="modal-header bg-dark text-light recurrence-exception-modal-header">
+      <h5 class="modal-title mb-0" id="recurrenceExceptionModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Recurrence Exception' : 'Add Recurrence Exception' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body recurrence-exception-modal-body">
+      <form [formGroup]="recurrenceExceptionForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('scheduledEventId')">
+                <label for="RecurrenceException-scheduledEventId" id="label-RecurrenceException-scheduledEventId"><span class="text-danger">*</span>Scheduled Event</label>
+                <select id="RecurrenceException-scheduledEventId" formControlName="scheduledEventId" class="form-select recurrence-exception-select" [disabled]="!userIsSchedulerRecurrenceExceptionWriter()">
+                    <option [ngValue]="null">Select Scheduled Event</option>
+                    <option *ngFor="let scheduledEvent of scheduledEvents$ | async" [ngValue]="scheduledEvent.id">{{[scheduledEvent.name] | filterAndJoin}}</option>
+                </select>
+                <div *ngIf="recurrenceExceptionForm.get('scheduledEventId')?.invalid && recurrenceExceptionForm.get('scheduledEventId')?.touched" class="text-danger">
+                    Scheduled Event is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('exceptionDateTime')">
+                <label for="RecurrenceException-exceptionDateTime" id="label-RecurrenceException-exceptionDateTime"><span class="text-danger">*</span>Exception Date Time</label>
+                <input type="datetime-local" id="RecurrenceException-exceptionDateTime" formControlName="exceptionDateTime" placeholder="Enter Exception Date Time" class="form-control recurrence-exception-input" [disabled]="!userIsSchedulerRecurrenceExceptionWriter()" aria-labelledby="label-exceptionDateTime" />
+                <div *ngIf="recurrenceExceptionForm.get('exceptionDateTime')?.invalid && recurrenceExceptionForm.get('exceptionDateTime')?.touched" class="text-danger">
+                    Exception Date Time is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('movedToDateTime')">
+                <label for="RecurrenceException-movedToDateTime" id="label-RecurrenceException-movedToDateTime">Moved To Date Time</label>
+                <input type="datetime-local" id="RecurrenceException-movedToDateTime" formControlName="movedToDateTime" placeholder="Enter Moved To Date Time" class="form-control recurrence-exception-input" [disabled]="!userIsSchedulerRecurrenceExceptionWriter()" aria-labelledby="label-movedToDateTime" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('reason')">
+                <label for="RecurrenceException-reason" id="label-RecurrenceException-reason">Reason</label>
+                <input type="text" id="RecurrenceException-reason" formControlName="reason" placeholder="Enter Reason" class="form-control recurrence-exception-input" [disabled]="!userIsSchedulerRecurrenceExceptionWriter()" aria-labelledby="label-reason" />
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="RecurrenceException-versionNumber" id="label-RecurrenceException-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="RecurrenceException-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control recurrence-exception-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="RecurrenceException-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerRecurrenceExceptionWriter()" />
+                <label for="RecurrenceException-active" class="form-check-label" id="label-RecurrenceException-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="RecurrenceException-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerRecurrenceExceptionWriter()" />
+                <label for="RecurrenceException-deleted" class="form-check-label" id="label-RecurrenceException-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer recurrence-exception-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Recurrence Exception changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !recurrenceExceptionForm.valid || recurrenceExceptionForm.pristine || !userIsSchedulerRecurrenceExceptionWriter()" ngbTooltip="Save the Recurrence Exception changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

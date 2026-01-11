@@ -1,0 +1,41 @@
+<!-- Sidebar (collapsible/overlay when expanded) -->
+<div *ngIf="isUserLoggedIn"
+     class="sidebar text-bg-dark no-select"
+     [class.expanded]="isExpanded"
+     [class.collapsed]="!isExpanded">
+
+  <!-- Toggle button (tooltip only when collapsed) -->
+  <button class="toggle-btn"
+          type="button"
+          (click)="tToggle.close(); toggle()"
+          [attr.aria-expanded]="isExpanded"
+          [ngbTooltip]="!isExpanded ? 'Expand' : null"
+          triggers="hover"
+          #tToggle="ngbTooltip"
+          placement="right"
+          tooltipClass="sidebar-tip"
+          aria-label="Toggle sidebar">
+    <i class="fa" [ngClass]="{ 'fa-angle-right': !isExpanded, 'fa-angle-left': isExpanded }"></i>
+  </button>
+
+  <ul class="nav nav-pills flex-column">
+    <!-- Overview -->
+    <li class="nav-item">
+      <a routerLink="/"
+         routerLinkActive="active"
+         [routerLinkActiveOptions]="{ exact: true }"
+         class="nav-link text-white"
+         [ngbTooltip]="!isExpanded ? 'Overview' : null"
+         triggers="hover" #tOverview="ngbTooltip"
+         (click)="tOverview.close()"
+         placement="right" tooltipClass="sidebar-tip">
+        <i class="fa-solid fa-gear"></i>
+        <span class="label px-2">Overview</span>
+      </a>
+    </li>
+
+  </ul>
+</div>
+
+<!-- Backdrop only when expanded (click to close) -->
+<div class="sidebar-backdrop" *ngIf="isUserLoggedIn && isExpanded" (click)="close()"></div>

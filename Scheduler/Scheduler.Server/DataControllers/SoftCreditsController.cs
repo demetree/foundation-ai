@@ -1,0 +1,1200 @@
+using System;
+using System.Threading;
+using System.Data;
+using System.Text.Json;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Storage;
+using Foundation.Security;
+using Foundation.Auditor;
+using Foundation.Controllers;
+using Foundation.Security.Database;
+using static Foundation.Auditor.AuditEngine;
+using Foundation.Scheduler.Database;
+
+namespace Foundation.Scheduler.Controllers.WebAPI
+{
+    /// <summary>
+    /// 
+    /// This auto generated class provides the basic CRUD operations for the SoftCredit entity via a Web API.
+	/// 
+	/// It can be used as-is, or as a starting point for customizations in a new partial class, or a new class entirely.
+    ///
+    /// It demonstrates the features available for the SoftCredit entity, possibly including: multi tenancy, data visibility, version control with rollback, and favouriting.
+	/// 
+    /// </summary>
+	public partial class SoftCreditsController : SecureWebAPIController
+	{
+		public const int READ_PERMISSION_LEVEL_REQUIRED = 0;
+		public const int WRITE_PERMISSION_LEVEL_REQUIRED = 0;
+
+		static object softCreditPutSyncRoot = new object();
+		static object softCreditDeleteSyncRoot = new object();
+
+		private SchedulerContext _context;
+
+		private ILogger<SoftCreditsController> _logger;
+
+		public SoftCreditsController(SchedulerContext context, ILogger<SoftCreditsController> logger) : base("Scheduler", "SoftCredit")
+		{
+			this._context = context;
+			this._logger = logger;
+
+			this._context.Database.SetCommandTimeout(60);
+
+			return;
+		}
+
+		/// <summary>
+		/// 
+		/// This gets a list of SoftCredits filtered by the parameters provided.
+		/// 
+		/// There is a filter parameter for every field, and an 'anyStringContains' parameter for cross field string partial searches.
+		/// 
+		/// Note also the pagination control in the pageSize and pageNumber parameters.
+		/// 
+		/// The rate limit is 2 per second per user.
+		/// 
+		/// </summary>
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/SoftCredits")]
+		public async Task<IActionResult> GetSoftCredits(
+			int? giftId = null,
+			int? constituentId = null,
+			decimal? amount = null,
+			string notes = null,
+			int? versionNumber = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
+			int? pageSize = null,
+			int? pageNumber = null,
+			string anyStringContains = null,
+			bool includeRelations = true,
+			CancellationToken cancellationToken = default)
+		{
+			StartAuditEventClock();
+
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 0, cancellationToken);
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+
+			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+			if (pageNumber.HasValue == true &&
+			    pageNumber < 1)
+			{
+			    pageNumber = null;
+			}
+
+			if (pageSize.HasValue == true &&
+			    pageSize <= 0)
+			{
+			    pageSize = null;
+			}
+
+			IQueryable<Database.SoftCredit> query = (from sc in _context.SoftCredits select sc);
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+			if (giftId.HasValue == true)
+			{
+				query = query.Where(sc => sc.giftId == giftId.Value);
+			}
+			if (constituentId.HasValue == true)
+			{
+				query = query.Where(sc => sc.constituentId == constituentId.Value);
+			}
+			if (amount.HasValue == true)
+			{
+				query = query.Where(sc => sc.amount == amount.Value);
+			}
+			if (string.IsNullOrEmpty(notes) == false)
+			{
+				query = query.Where(sc => sc.notes == notes);
+			}
+			if (versionNumber.HasValue == true)
+			{
+				query = query.Where(sc => sc.versionNumber == versionNumber.Value);
+			}
+			if (objectGuid.HasValue == true)
+			{
+				query = query.Where(sc => sc.objectGuid == objectGuid);
+			}
+			if (userIsWriter == true)
+			{
+				if (active.HasValue == true)
+				{
+					query = query.Where(sc => sc.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(sc => sc.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(sc => sc.deleted == false);
+				}
+			}
+			else
+			{
+				query = query.Where(sc => sc.active == true);
+				query = query.Where(sc => sc.deleted == false);
+			}
+
+			query = query.OrderBy(sc => sc.id);
+
+			if (pageNumber.HasValue == true &&
+			    pageSize.HasValue == true)
+			{
+			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
+			}
+			
+			if (includeRelations == true)
+			{
+				query = query.Include(x => x.constituent);
+				query = query.Include(x => x.gift);
+				query = query.AsSplitQuery();
+			}
+
+
+			//
+			// Add the any string contains parameter to span all the string fields on the Soft Credit, or on an any of the string fields on its immediate relations
+			//
+			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
+			//
+			if (!string.IsNullOrEmpty(anyStringContains))
+			{
+			   query = query.Where(x =>
+			       x.notes.Contains(anyStringContains)
+			       || (includeRelations == true && x.constituent.constituentNumber.Contains(anyStringContains))
+			       || (includeRelations == true && x.constituent.externalId.Contains(anyStringContains))
+			       || (includeRelations == true && x.constituent.notes.Contains(anyStringContains))
+			       || (includeRelations == true && x.constituent.attributes.Contains(anyStringContains))
+			       || (includeRelations == true && x.constituent.color.Contains(anyStringContains))
+			       || (includeRelations == true && x.constituent.avatarFileName.Contains(anyStringContains))
+			       || (includeRelations == true && x.constituent.avatarMimeType.Contains(anyStringContains))
+			       || (includeRelations == true && x.gift.referenceNumber.Contains(anyStringContains))
+			       || (includeRelations == true && x.gift.notes.Contains(anyStringContains))
+			   );
+			}
+
+			query = query.AsNoTracking();
+			
+			List<Database.SoftCredit> materialized = await query.ToListAsync(cancellationToken);
+
+			// Convert all the date properties to be of kind UTC.
+			bool databaseStoresDateWithTimeZone = _context.DoesDatabaseStoreDateWithTimeZone();
+			foreach (Database.SoftCredit softCredit in materialized)
+			{
+			    Foundation.DateTimeUtility.ConvertAllDateTimePropertiesToUTC(softCredit, databaseStoresDateWithTimeZone);
+			}
+
+
+			await CreateAuditEventAsync(AuditEngine.AuditType.ReadList, userIsAdmin == true ? "Scheduler.SoftCredit Entity list was read with Admin privilege.  Returning " + materialized.Count + " rows of data." : "Scheduler.SoftCredit Entity list was read.  Returning " + materialized.Count + " rows of data.");
+
+			// Create a new output object that only includes the relations if necessary, and doesn't include the empty list objects, so that we can reduce the amount of data being transferred.
+			if (includeRelations == true)
+			{
+				// Return a DTO with nav properties.
+				return Ok((from materializedData in materialized select materializedData.ToOutputDTO()).ToList());
+			}
+			else
+			{
+				// Return a DTO without nav properties.
+				return Ok((from materializedData in materialized select materializedData.ToDTO()).ToList());
+			}
+		}
+		
+		
+        /// <summary>
+        /// 
+        /// This returns a row count of SoftCredits filtered by the parameters provided.  Its query is similar to the GetSoftCredits method, but it only returns the count of rows that would be returned.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/SoftCredits/RowCount")]
+		public async Task<IActionResult> GetRowCount(
+			int? giftId = null,
+			int? constituentId = null,
+			decimal? amount = null,
+			string notes = null,
+			int? versionNumber = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
+			string anyStringContains = null,
+			CancellationToken cancellationToken = default)
+		{
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 0, cancellationToken);
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			IQueryable<Database.SoftCredit> query = (from sc in _context.SoftCredits select sc);
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+			if (giftId.HasValue == true)
+			{
+				query = query.Where(sc => sc.giftId == giftId.Value);
+			}
+			if (constituentId.HasValue == true)
+			{
+				query = query.Where(sc => sc.constituentId == constituentId.Value);
+			}
+			if (amount.HasValue == true)
+			{
+				query = query.Where(sc => sc.amount == amount.Value);
+			}
+			if (notes != null)
+			{
+				query = query.Where(sc => sc.notes == notes);
+			}
+			if (versionNumber.HasValue == true)
+			{
+				query = query.Where(sc => sc.versionNumber == versionNumber.Value);
+			}
+			if (objectGuid.HasValue == true)
+			{
+				query = query.Where(sc => sc.objectGuid == objectGuid);
+			}
+			if (userIsWriter == true)
+			{
+				if (active.HasValue == true)
+				{
+					query = query.Where(sc => sc.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(sc => sc.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(sc => sc.deleted == false);
+				}
+			}
+			else
+			{
+				query = query.Where(sc => sc.active == true);
+				query = query.Where(sc => sc.deleted == false);
+			}
+
+			//
+			// Add the any string contains parameter to span all the string fields on the Soft Credit, or on an any of the string fields on its immediate relations
+			//
+			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
+			//
+			if (!string.IsNullOrEmpty(anyStringContains))
+			{
+			   query = query.Where(x =>
+			       x.notes.Contains(anyStringContains)
+			       || x.constituent.constituentNumber.Contains(anyStringContains)
+			       || x.constituent.externalId.Contains(anyStringContains)
+			       || x.constituent.notes.Contains(anyStringContains)
+			       || x.constituent.attributes.Contains(anyStringContains)
+			       || x.constituent.color.Contains(anyStringContains)
+			       || x.constituent.avatarFileName.Contains(anyStringContains)
+			       || x.constituent.avatarMimeType.Contains(anyStringContains)
+			       || x.gift.referenceNumber.Contains(anyStringContains)
+			       || x.gift.notes.Contains(anyStringContains)
+			   );
+			}
+
+
+			int output = await query.CountAsync(cancellationToken);
+
+			return Ok(output);
+		}
+
+
+        /// <summary>
+        /// 
+        /// This gets a single SoftCredit by primary key.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/SoftCredit/{id}")]
+		public async Task<IActionResult> GetSoftCredit(int id, bool includeRelations = true, CancellationToken cancellationToken = default)
+		{
+			StartAuditEventClock();
+
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 0, cancellationToken);
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
+			
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			try
+			{
+				IQueryable<Database.SoftCredit> query = (from sc in _context.SoftCredits where
+							(sc.id == id) &&
+							(userIsAdmin == true || sc.deleted == false) &&
+							(userIsWriter == true || sc.active == true)
+					select sc);
+
+
+				query = query.Where(x => x.tenantGuid == userTenantGuid);
+				if (includeRelations == true)
+				{
+					query = query.Include(x => x.constituent);
+					query = query.Include(x => x.gift);
+					query = query.AsSplitQuery();
+				}
+
+				Database.SoftCredit materialized = await query.FirstOrDefaultAsync(cancellationToken);
+
+				if (materialized != null)
+				{
+					
+					// Convert all the date properties to be of kind UTC.
+					Foundation.DateTimeUtility.ConvertAllDateTimePropertiesToUTC(materialized, _context.DoesDatabaseStoreDateWithTimeZone());
+
+					await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, userIsAdmin == true ? "Scheduler.SoftCredit Entity was read with Admin privilege." : "Scheduler.SoftCredit Entity was read.");
+
+					BackgroundJob.Enqueue(() => SecurityLogic.AddToUserMostRecents(securityUser.id, "SoftCredit", materialized.id, materialized.id.ToString()));
+
+
+					// Create a new output object that only includes the relations if necessary, and doesn't include the empty list objects, so that we can reduce the amount of data being transferred.
+					if (includeRelations == true)
+					{
+						return Ok(materialized.ToOutputDTO());             // DTO with nav properties
+					}
+					else
+					{
+						return Ok(materialized.ToDTO());                   // DTO without nav properties
+					}
+				}
+				else
+				{
+					await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt to read a Scheduler.SoftCredit entity that does not exist.", id.ToString());
+					return BadRequest();
+				}
+			}
+			catch (Exception ex)
+			{
+				await CreateAuditEventAsync(AuditEngine.AuditType.Error, userIsAdmin == true ? "Exception caught during entity read of Scheduler.SoftCredit.   Entity was read with Admin privilege." : "Exception caught during entity read of Scheduler.SoftCredit.", id.ToString(), ex);
+				return Problem(ex.ToString());
+			}
+		}
+
+
+		/// <summary>
+		/// 
+		/// This updates an existing SoftCredit record
+        ///
+        /// The rate limit is 2 per second per user.
+		/// 
+		/// </summary>
+		[Route("api/SoftCredit/{id}")]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[HttpPost]
+		[HttpPut]
+		public async Task<IActionResult> PutSoftCredit(int id, [FromBody]Database.SoftCredit.SoftCreditDTO softCreditDTO, CancellationToken cancellationToken = default)
+		{
+			if (softCreditDTO == null)
+			{
+			   return BadRequest();
+			}
+
+			StartAuditEventClock();
+
+			if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+
+			if (id != softCreditDTO.id)
+			{
+				return BadRequest();
+			}
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 0, cancellationToken);
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			IQueryable<Database.SoftCredit> query = (from x in _context.SoftCredits
+				where
+				(x.id == id)
+				select x);
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+			Database.SoftCredit existing = await query.FirstOrDefaultAsync(cancellationToken);
+
+			if (existing == null)
+			{
+				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for Scheduler.SoftCredit PUT", id.ToString(), new Exception("No Scheduler.SoftCredit entity could be found with the primary key provided."));
+				return NotFound();
+			}
+
+
+            //
+            // Validate the object guid.  If it comes in as empty Guid in the DTO, then set it to the actual value from the existing record.  If the DTO has a value then it must match the existing value.
+            // 
+            if (softCreditDTO.objectGuid == Guid.Empty)
+            {
+                softCreditDTO.objectGuid = existing.objectGuid;
+            }
+            else if (softCreditDTO.objectGuid != existing.objectGuid)
+            {
+                await CreateAuditEventAsync(AuditEngine.AuditType.Error, $"Attempt was made to change object guid on a SoftCredit record.  This is not allowed.  The User is " + securityUser.accountName, existing.id.ToString());
+                return Problem("Invalid Operation.");
+            }
+
+
+			// Copy the existing object so it can be serialized as-is in the audit and history logs.
+			Database.SoftCredit cloneOfExisting = (Database.SoftCredit)_context.Entry(existing).GetDatabaseValues().ToObject();
+
+			//
+			// Create a new SoftCredit object using the data from the existing record, updated with what is in the DTO.
+			//
+			Database.SoftCredit softCredit = (Database.SoftCredit)_context.Entry(existing).GetDatabaseValues().ToObject();
+			softCredit.ApplyDTO(softCreditDTO);
+			//
+			// The tenant guid for any SoftCredit being saved must match the tenant guid of the user.  
+			//
+			if (existing.tenantGuid != userTenantGuid)
+			{
+				await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to save a record with a tenant guid that is not the user's tenant guid.", false);
+				return Problem("Data integrity violation detected while attempting to save.");
+			}
+			else
+			{
+				// Assign the tenantGuid to the SoftCredit because it shouldn't be on the input object, and we want to ensure that it always is what the correct value in case it is.
+				softCredit.tenantGuid = existing.tenantGuid;
+			}
+
+			lock (softCreditPutSyncRoot)
+			{
+				//
+				// Validate the version number for the softCredit being saved.  Error out if the database version is different than what is being saved.  If they are the same, then increment the version for this save.
+				//
+				if (existing.versionNumber != softCredit.versionNumber)
+				{
+					// Record has changed
+					CreateAuditEvent(AuditEngine.AuditType.Miscellaneous, "SoftCredit save attempt was made but save request was with version " + softCredit.versionNumber + " and the current version number is " + existing.versionNumber, false);
+					return Problem("The SoftCredit you are trying to update has already changed.  Please try your save again after reloading the SoftCredit.");
+				}
+				else
+				{
+					// Same record.  Increase version.
+					softCredit.versionNumber++;
+				}
+
+
+				// Is user who is not an admin trying to delete, or to work on a deleted record, or to delete a record by flipping it's deleted flag to true?
+				if (userIsAdmin == false && (softCredit.deleted == true || existing.deleted == true))
+				{
+					// we're not recording state here because it is not being changed.
+					CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, "Attempt to delete a record or work on a deleted Scheduler.SoftCredit record.", id.ToString());
+					DestroySessionAndAuthentication();
+					return Forbid();
+				}
+
+				try
+				{
+				    EntityEntry<Database.SoftCredit> attached = _context.Entry(existing);
+				    attached.CurrentValues.SetValues(softCredit);
+
+				    using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+				    {
+				        _context.SaveChanges();
+
+				        //
+				        // Now add the change history
+				        //
+				        SoftCreditChangeHistory softCreditChangeHistory = new SoftCreditChangeHistory();
+				        softCreditChangeHistory.softCreditId = softCredit.id;
+				        softCreditChangeHistory.versionNumber = softCredit.versionNumber;
+				        softCreditChangeHistory.timeStamp = DateTime.UtcNow;
+				        softCreditChangeHistory.userId = securityUser.id;
+				        softCreditChangeHistory.tenantGuid = userTenantGuid;
+				        softCreditChangeHistory.data = JsonSerializer.Serialize(Database.SoftCredit.CreateAnonymousWithFirstLevelSubObjects(softCredit));
+				        _context.SoftCreditChangeHistories.Add(softCreditChangeHistory);
+
+				        _context.SaveChanges();
+
+				        transaction.Commit();
+				    }
+
+					CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
+						"Scheduler.SoftCredit entity successfully updated.",
+						true,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.SoftCredit.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.SoftCredit.CreateAnonymousWithFirstLevelSubObjects(softCredit)),
+						null);
+
+				return Ok(Database.SoftCredit.CreateAnonymous(softCredit));
+				}
+				catch (Exception ex)
+				{
+					CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
+						"Scheduler.SoftCredit entity update failed",
+						false,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.SoftCredit.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.SoftCredit.CreateAnonymousWithFirstLevelSubObjects(softCredit)),
+						ex);
+
+					return Problem(ex.Message);
+				}
+
+			}
+		}
+
+        /// <summary>
+        /// 
+        /// This creates a new SoftCredit record
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+		[HttpPost]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/SoftCredit", Name = "SoftCredit")]
+		public async Task<IActionResult> PostSoftCredit([FromBody]Database.SoftCredit.SoftCreditDTO softCreditDTO, CancellationToken cancellationToken = default)
+		{
+			if (softCreditDTO == null)
+			{
+			   return BadRequest();
+			}
+
+			StartAuditEventClock();
+
+			if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+			//
+			// Create a new SoftCredit object using the data from the DTO
+			//
+			Database.SoftCredit softCredit = Database.SoftCredit.FromDTO(softCreditDTO);
+
+			try
+			{
+				//
+				// Ensure that the tenant data is correct.
+				//
+				softCredit.tenantGuid = userTenantGuid;
+
+				softCredit.objectGuid = Guid.NewGuid();
+				softCredit.versionNumber = 1;
+
+				_context.SoftCredits.Add(softCredit);
+
+				await using (IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync(cancellationToken))
+				{
+				    await _context.SaveChangesAsync(cancellationToken);
+
+				    //
+				    // Now add the change history
+				    //
+
+				    //
+				    // Detach the softCredit object so that no further changes will be written to the database
+				    //
+				    _context.Entry(softCredit).State = EntityState.Detached;
+
+				    //
+				    // Nullify all object properties before serializing.
+				    //
+					softCredit.SoftCreditChangeHistories = null;
+					softCredit.constituent = null;
+					softCredit.gift = null;
+
+
+				    SoftCreditChangeHistory softCreditChangeHistory = new SoftCreditChangeHistory();
+				    softCreditChangeHistory.softCreditId = softCredit.id;
+				    softCreditChangeHistory.versionNumber = softCredit.versionNumber;
+				    softCreditChangeHistory.timeStamp = DateTime.UtcNow;
+				    softCreditChangeHistory.userId = securityUser.id;
+				    softCreditChangeHistory.tenantGuid = userTenantGuid;
+				    softCreditChangeHistory.data = JsonSerializer.Serialize(Database.SoftCredit.CreateAnonymousWithFirstLevelSubObjects(softCredit));
+				    _context.SoftCreditChangeHistories.Add(softCreditChangeHistory);
+				    await _context.SaveChangesAsync(cancellationToken);
+
+				    await transaction.CommitAsync(cancellationToken);
+
+					await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
+						"Scheduler.SoftCredit entity successfully created.",
+						true,
+						softCredit. id.ToString(),
+						"",
+						JsonSerializer.Serialize(Database.SoftCredit.CreateAnonymousWithFirstLevelSubObjects(softCredit)),
+						null);
+
+
+				}
+			}
+			catch (Exception ex)
+			{
+				await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity, "Scheduler.SoftCredit entity creation failed.", false, softCredit.id.ToString(), "", JsonSerializer.Serialize(Database.SoftCredit.CreateAnonymousWithFirstLevelSubObjects(softCredit)), ex);
+
+				return Problem(ex.Message);
+			}
+
+
+			BackgroundJob.Enqueue(() => SecurityLogic.AddToUserMostRecents(securityUser.id, "SoftCredit", softCredit.id, softCredit.id.ToString()));
+
+			return CreatedAtRoute("SoftCredit", new { id = softCredit.id }, Database.SoftCredit.CreateAnonymousWithFirstLevelSubObjects(softCredit));
+		}
+
+
+
+        /// <summary>
+        /// 
+        /// This rolls a SoftCredit entity back to the state it was in at a prior version number.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+		[HttpPut]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/SoftCredit/Rollback/{id}")]
+		[Route("api/SoftCredit/Rollback")]
+		public async Task<IActionResult> RollbackToSoftCreditVersion(int id, int versionNumber, CancellationToken cancellationToken = default)
+		{
+			//
+			// Data rollback is an admin only function, like Deletes.
+			//
+			StartAuditEventClock();
+			
+			if (await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+			
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+			
+
+			
+			IQueryable <Database.SoftCredit> query = (from x in _context.SoftCredits
+			        where
+			        (x.id == id)
+			        select x);
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+
+			//
+			// Make sure nobody else is editing this SoftCredit concurrently
+			//
+			lock (softCreditPutSyncRoot)
+			{
+				
+				Database.SoftCredit softCredit = query.FirstOrDefault();
+				
+				if (softCredit == null)
+				{
+				    CreateAuditEvent(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for Scheduler.SoftCredit rollback", id.ToString(), new Exception("No Scheduler.SoftCredit entity could be find with the primary key provided for the rollback operation."));
+				    return NotFound();
+				}
+				
+				//
+				// Make a copy of the SoftCredit current state so we can log it.
+				//
+				Database.SoftCredit cloneOfExisting = (Database.SoftCredit)_context.Entry(softCredit).GetDatabaseValues().ToObject();
+				
+				//
+				// Remove any object fields from the clone object so that it can serialize effectively
+				//
+				cloneOfExisting.SoftCreditChangeHistories = null;
+				cloneOfExisting.constituent = null;
+				cloneOfExisting.gift = null;
+
+				if (versionNumber >= softCredit.versionNumber)
+				{
+				    CreateAuditEvent(AuditEngine.AuditType.UpdateEntity, "Invalid version number provided for Scheduler.SoftCredit rollback.  Version number provided is " + versionNumber, id.ToString(), new Exception("Invalid version number provided for Scheduler.SoftCredit rollback operation.Version number provided is " + versionNumber));
+				    return NotFound();
+				}
+				
+				SoftCreditChangeHistory softCreditChangeHistory = (from x in _context.SoftCreditChangeHistories
+				                                               where
+				                                               x.softCreditId == id &&
+				                                               x.versionNumber == versionNumber &&
+				                                               x.tenantGuid == userTenantGuid
+				                                               select x)
+				                                               .AsNoTracking()
+				                                               .FirstOrDefault();
+
+				if (softCreditChangeHistory != null)
+				{
+				    Database.SoftCredit oldSoftCredit = JsonSerializer.Deserialize<Database.SoftCredit>(softCreditChangeHistory.data);
+				
+				    //
+				    // Increase the version number
+				    //
+				    softCredit.versionNumber++;
+				
+				    //
+				    // Put all other fields back the way that they were 
+				    //
+				    softCredit.giftId = oldSoftCredit.giftId;
+				    softCredit.constituentId = oldSoftCredit.constituentId;
+				    softCredit.amount = oldSoftCredit.amount;
+				    softCredit.notes = oldSoftCredit.notes;
+				    softCredit.objectGuid = oldSoftCredit.objectGuid;
+				    softCredit.active = oldSoftCredit.active;
+				    softCredit.deleted = oldSoftCredit.deleted;
+
+				    string serializedSoftCredit = JsonSerializer.Serialize(softCredit);
+
+				    using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+				    {
+
+				        _context.SaveChanges();
+
+				        //
+				        // Now add the change history
+				        //
+				        SoftCreditChangeHistory newSoftCreditChangeHistory = new SoftCreditChangeHistory();
+				        newSoftCreditChangeHistory.softCreditId = softCredit.id;
+				        newSoftCreditChangeHistory.versionNumber = softCredit.versionNumber;
+				        newSoftCreditChangeHistory.timeStamp = DateTime.UtcNow;
+				        newSoftCreditChangeHistory.userId = securityUser.id;
+				        newSoftCreditChangeHistory.tenantGuid = userTenantGuid;
+				        newSoftCreditChangeHistory.data = JsonSerializer.Serialize(Database.SoftCredit.CreateAnonymousWithFirstLevelSubObjects(softCredit));
+				        _context.SoftCreditChangeHistories.Add(newSoftCreditChangeHistory);
+
+				        _context.SaveChanges();
+
+				        transaction.Commit();
+				    }
+
+					CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
+						"Scheduler.SoftCredit rollback process successfully rolled back to version number " + versionNumber,
+						true,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.SoftCredit.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.SoftCredit.CreateAnonymousWithFirstLevelSubObjects(softCredit)),
+						null);
+
+
+				    return Ok(Database.SoftCredit.CreateAnonymous(softCredit));
+				}
+				else
+				{
+				    CreateAuditEvent(AuditEngine.AuditType.UpdateEntity, "Could not find version number provided for Scheduler.SoftCredit rollback.  Version number provided is " + versionNumber, id.ToString(), new Exception("Could not find version number provided for Scheduler.SoftCredit rollback.  Version number provided is " + versionNumber));
+
+				    return BadRequest();
+				}
+			}
+		}
+
+
+        /// <summary>
+        /// 
+        /// This deletes a SoftCredit record
+		/// 
+		/// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+		[HttpDelete]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/SoftCredit/{id}")]
+		[Route("api/SoftCredit")]
+		public async Task<IActionResult> DeleteSoftCredit(int id, CancellationToken cancellationToken = default)
+		{
+			StartAuditEventClock();
+
+			if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(cancellationToken);
+			
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+			IQueryable<Database.SoftCredit> query = (from x in _context.SoftCredits
+				where
+				(x.id == id)
+				select x);
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+			Database.SoftCredit softCredit = await query.FirstOrDefaultAsync(cancellationToken);
+
+			if (softCredit == null)
+			{
+				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for Scheduler.SoftCredit DELETE", id.ToString(), new Exception("No Scheduler.SoftCredit entity could be find with the primary key provided."));
+				return NotFound();
+			}
+			Database.SoftCredit cloneOfExisting = (Database.SoftCredit)_context.Entry(softCredit).GetDatabaseValues().ToObject();
+
+
+			lock (softCreditDeleteSyncRoot)
+			{
+			    try
+			    {
+			        softCredit.deleted = true;
+			        softCredit.versionNumber++;
+
+			        _context.SaveChanges();
+
+			        //
+			        // Now add the change history
+			        //
+			        SoftCreditChangeHistory softCreditChangeHistory = new SoftCreditChangeHistory();
+			        softCreditChangeHistory.softCreditId = softCredit.id;
+			        softCreditChangeHistory.versionNumber = softCredit.versionNumber;
+			        softCreditChangeHistory.timeStamp = DateTime.UtcNow;
+			        softCreditChangeHistory.userId = securityUser.id;
+			        softCreditChangeHistory.tenantGuid = userTenantGuid;
+			        softCreditChangeHistory.data = JsonSerializer.Serialize(Database.SoftCredit.CreateAnonymousWithFirstLevelSubObjects(softCredit));
+			        _context.SoftCreditChangeHistories.Add(softCreditChangeHistory);
+
+			        _context.SaveChanges();
+
+					CreateAuditEvent(AuditEngine.AuditType.DeleteEntity,
+						"Scheduler.SoftCredit entity successfully deleted.",
+						true,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.SoftCredit.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.SoftCredit.CreateAnonymousWithFirstLevelSubObjects(softCredit)),
+						null);
+
+			    }
+			    catch (Exception ex)
+			    {
+					CreateAuditEvent(AuditEngine.AuditType.DeleteEntity,
+						"Scheduler.SoftCredit entity delete failed",
+						false,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.SoftCredit.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.SoftCredit.CreateAnonymousWithFirstLevelSubObjects(softCredit)),
+						ex);
+
+			        return Problem(ex.Message);
+			    }
+			    return Ok();
+			}
+		}
+
+
+        /// <summary>
+        /// 
+        /// This gets a list of SoftCredit records, filtered by the parameters provided in a simple minimal format that is useful for drop down boxes and similar.
+		/// 
+		/// It has the same filtering paramfeters as the full ListData method, but only returns the id and name fields.
+        /// 
+		/// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+		[Route("api/SoftCredits/ListData")]
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		public async Task<IActionResult> GetListData(
+			int? giftId = null,
+			int? constituentId = null,
+			decimal? amount = null,
+			string notes = null,
+			int? versionNumber = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
+			string anyStringContains = null,
+			int? pageSize = null,
+			int? pageNumber = null,
+			CancellationToken cancellationToken = default)
+		{
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 0, cancellationToken);
+
+			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			if (pageNumber.HasValue == true &&
+			    pageNumber < 1)
+			{
+			    pageNumber = null;
+			}
+
+			if (pageSize.HasValue == true &&
+			    pageSize <= 0)
+			{
+			    pageSize = null;
+			}
+
+			IQueryable<Database.SoftCredit> query = (from sc in _context.SoftCredits select sc);
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+			if (giftId.HasValue == true)
+			{
+				query = query.Where(sc => sc.giftId == giftId.Value);
+			}
+			if (constituentId.HasValue == true)
+			{
+				query = query.Where(sc => sc.constituentId == constituentId.Value);
+			}
+			if (amount.HasValue == true)
+			{
+				query = query.Where(sc => sc.amount == amount.Value);
+			}
+			if (string.IsNullOrEmpty(notes) == false)
+			{
+				query = query.Where(sc => sc.notes == notes);
+			}
+			if (versionNumber.HasValue == true)
+			{
+				query = query.Where(sc => sc.versionNumber == versionNumber.Value);
+			}
+			if (objectGuid.HasValue == true)
+			{
+				query = query.Where(sc => sc.objectGuid == objectGuid);
+			}
+			if (userIsWriter == true)
+			{
+				if (active.HasValue == true)
+				{
+					query = query.Where(sc => sc.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(sc => sc.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(sc => sc.deleted == false);
+				}
+			}
+			else
+			{
+				query = query.Where(sc => sc.active == true);
+				query = query.Where(sc => sc.deleted == false);
+			}
+
+
+			//
+			// Add the any string contains parameter to span all the string fields on the Soft Credit, or on an any of the string fields on its immediate relations
+			//
+			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
+			//
+			if (!string.IsNullOrEmpty(anyStringContains))
+			{
+			   query = query.Where(x =>
+			       x.notes.Contains(anyStringContains)
+			       || x.constituent.constituentNumber.Contains(anyStringContains)
+			       || x.constituent.externalId.Contains(anyStringContains)
+			       || x.constituent.notes.Contains(anyStringContains)
+			       || x.constituent.attributes.Contains(anyStringContains)
+			       || x.constituent.color.Contains(anyStringContains)
+			       || x.constituent.avatarFileName.Contains(anyStringContains)
+			       || x.constituent.avatarMimeType.Contains(anyStringContains)
+			       || x.gift.referenceNumber.Contains(anyStringContains)
+			       || x.gift.notes.Contains(anyStringContains)
+			   );
+			}
+
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+
+			query = query.OrderBy(x => x.id);
+			if (pageNumber.HasValue == true &&
+			    pageSize.HasValue == true)
+			{
+			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
+			}
+			return Ok(await (from queryData in query select Database.SoftCredit.CreateMinimalAnonymous(queryData)).ToListAsync(cancellationToken));
+		}
+
+
+        /// <summary>
+        /// 
+        /// This method creates an audit event from within the controller.  It is intended for use by custom logic in client applications that needs to create audit events.
+        /// 
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="message"></param>
+        /// <param name="primaryKey"></param>
+        /// <returns></returns>
+		[HttpPost]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/SoftCredit/CreateAuditEvent")]
+		public async Task<IActionResult> CreateControllerAuditEvent(AuditEngine.AuditType type, string message, string primaryKey = null)
+		{
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED) == false)
+			{
+			   return Forbid();
+			}
+
+		    await CreateAuditEventAsync(type, message, primaryKey);
+
+		    return Ok();
+		}
+
+
+	}
+}

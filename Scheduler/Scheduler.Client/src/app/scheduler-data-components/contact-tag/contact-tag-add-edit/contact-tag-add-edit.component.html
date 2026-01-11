@@ -1,0 +1,62 @@
+<div class="add-contact-tag" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-contact-tag me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Contact Tag" 
+        *ngIf="userIsSchedulerContactTagWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #contactTagModal let-modal>
+   <div class="modal-header bg-dark text-light contact-tag-modal-header">
+      <h5 class="modal-title mb-0" id="contactTagModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Contact Tag' : 'Add Contact Tag' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body contact-tag-modal-body">
+      <form [formGroup]="contactTagForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('contactId')">
+                <label for="ContactTag-contactId" id="label-ContactTag-contactId"><span class="text-danger">*</span>Contact</label>
+                <select id="ContactTag-contactId" formControlName="contactId" class="form-select contact-tag-select" [disabled]="!userIsSchedulerContactTagWriter()">
+                    <option [ngValue]="null">Select Contact</option>
+                    <option *ngFor="let contact of contacts$ | async" [ngValue]="contact.id">{{contact.firstName}}</option>
+                </select>
+                <div *ngIf="contactTagForm.get('contactId')?.invalid && contactTagForm.get('contactId')?.touched" class="text-danger">
+                    Contact is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('tagId')">
+                <label for="ContactTag-tagId" id="label-ContactTag-tagId"><span class="text-danger">*</span>Tag</label>
+                <select id="ContactTag-tagId" formControlName="tagId" class="form-select contact-tag-select" [disabled]="!userIsSchedulerContactTagWriter()">
+                    <option [ngValue]="null">Select Tag</option>
+                    <option *ngFor="let tag of tags$ | async" [ngValue]="tag.id">{{tag.name}}</option>
+                </select>
+                <div *ngIf="contactTagForm.get('tagId')?.invalid && contactTagForm.get('tagId')?.touched" class="text-danger">
+                    Tag is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="ContactTag-versionNumber" id="label-ContactTag-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="ContactTag-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control contact-tag-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ContactTag-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerContactTagWriter()" />
+                <label for="ContactTag-active" class="form-check-label" id="label-ContactTag-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ContactTag-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerContactTagWriter()" />
+                <label for="ContactTag-deleted" class="form-check-label" id="label-ContactTag-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer contact-tag-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Contact Tag changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !contactTagForm.valid || contactTagForm.pristine || !userIsSchedulerContactTagWriter()" ngbTooltip="Save the Contact Tag changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

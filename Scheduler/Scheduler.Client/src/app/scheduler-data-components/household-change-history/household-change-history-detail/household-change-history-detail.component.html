@@ -1,0 +1,66 @@
+<div class="container-fluid p-1 m-0 household-change-history-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="household-change-history-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Household Change History</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Household Change History' : 'Add Household Change History'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerHouseholdChangeHistoryReader()">
+                <div class="col m-2 household-change-history-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="householdChangeHistoryForm" (ngSubmit)="submitForm()" class="household-change-history-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('householdId')">
+                                <label for="HouseholdChangeHistory-householdId" id="label-HouseholdChangeHistory-householdId"><span class="text-danger">*</span>Household</label>
+                                <select id="HouseholdChangeHistory-householdId" formControlName="householdId" class="form-select household-change-history-select" [disabled]="!userIsSchedulerHouseholdChangeHistoryWriter()">
+                                    <option [ngValue]="null">Select Household</option>
+                                    <option *ngFor="let household of households$ | async" [ngValue]="household.id">{{household.name}}</option>
+                                </select>
+                                <div *ngIf="householdChangeHistoryForm.get('householdId')?.invalid && householdChangeHistoryForm.get('householdId')?.touched" class="text-danger">
+                                    Household is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="HouseholdChangeHistory-versionNumber" id="label-HouseholdChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="HouseholdChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control household-change-history-input" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                                <label for="HouseholdChangeHistory-timeStamp" id="label-HouseholdChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                                <input type="datetime-local" id="HouseholdChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control household-change-history-input" [disabled]="!userIsSchedulerHouseholdChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                                <div *ngIf="householdChangeHistoryForm.get('timeStamp')?.invalid && householdChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                                    Time Stamp is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="HouseholdChangeHistory-userId" id="label-HouseholdChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="HouseholdChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control household-change-history-input" [disabled]="!userIsSchedulerHouseholdChangeHistoryWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="householdChangeHistoryForm.get('userId')?.invalid && householdChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                                <label for="HouseholdChangeHistory-data" id="label-HouseholdChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                                <textarea id="HouseholdChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control household-change-history-input" [disabled]="!userIsSchedulerHouseholdChangeHistoryWriter()"></textarea>
+                                <div *ngIf="householdChangeHistoryForm.get('data')?.invalid && householdChangeHistoryForm.get('data')?.touched" class="text-danger">
+                                    Data is required
+                                </div>
+                            </div>
+                            <div class="household-change-history-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="householdChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Household Change History">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !householdChangeHistoryForm.valid || !householdChangeHistoryForm.dirty || householdChangeHistoryForm.pristine || userIsSchedulerHouseholdChangeHistoryWriter() == false " ngbTooltip="Save Household Change History">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,323 @@
+<app-appeal-add-edit [showAddButton]="false"></app-appeal-add-edit>
+<div class="row" *ngIf="userIsSchedulerAppealReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerAppealWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerAppealWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('campaign.name')">
+                Campaign
+                <span *ngIf="sortColumn === 'campaign.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('name')">
+                Name
+                <span *ngIf="sortColumn === 'name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('description')">
+                Description
+                <span *ngIf="sortColumn === 'description'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('costPerUnit')">
+                Cost  Per  Unit
+                <span *ngIf="sortColumn === 'costPerUnit'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('notes')">
+                Notes
+                <span *ngIf="sortColumn === 'notes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('icon.name')">
+                Icon
+                <span *ngIf="sortColumn === 'icon.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('color')">
+                Color
+                <span *ngIf="sortColumn === 'color'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let appeal of filteredAppeals; trackBy: getAppealId"
+              [ngClass]="{
+                 'row-inactive': appeal.active == false,
+                 'row-deleted': appeal.deleted == true 
+                 }">
+            <td class="header-action-button" *ngIf="userIsSchedulerAppealWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleEdit(appeal)"
+                      ngbTooltip="Edit" 
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsSchedulerAppealWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleDelete(appeal)"
+                      ngbTooltip="Delete" 
+                      placement="top"
+                      *ngIf="appeal.deleted == false">
+                <i class="fa fa-trash"></i>
+              </button>
+              <button class="btn btn-sm"
+                      (click)="handleUndelete(appeal)"
+                      ngbTooltip="Undelete" 
+                      placement="top"
+                      *ngIf="appeal.deleted == true">
+                <i class="fa fa-trash-arrow-up"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(appeal, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(appeal, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(appeal, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(appeal, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(appeal, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(appeal, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(appeal, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(appeal, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/campaign', appeal.campaignId]" class="btn btn-link text-left" ngbTooltip="Open Campaign details">{{appeal.campaign?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/appeal', appeal.id]" class="btn btn-link text-left" ngbTooltip="Open Appeal details">{{appeal.name}}</a></td>
+            <td class="text-truncate">{{appeal.description}}</td>
+            <td class="text-truncate">{{appeal.costPerUnit | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{appeal.notes}}</td>
+            <td class="text-truncate"><a [routerLink]="['/icon', appeal.iconId]" class="btn btn-link text-left" ngbTooltip="Open Icon details">{{appeal.icon?.name}}</a></td>
+            <td class="text-truncate">{{appeal.color}}</td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let appeal of filteredAppeals; trackBy: getAppealId" class="card my-2"
+              [ngClass]="{
+                 'row-inactive': appeal.active == false,
+                 'row-deleted': appeal.deleted == true 
+                 }">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(appeal, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(appeal, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(appeal, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(appeal, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(appeal, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(appeal, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(appeal, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(appeal, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(appeal, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(appeal, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(appeal, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(appeal, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(appeal, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/appeal', appeal.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(appeal)" *ngIf="userIsSchedulerAppealWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(appeal)" *ngIf="userIsSchedulerAppealWriter() && appeal.deleted == false" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+            <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(appeal)" *ngIf="userIsSchedulerAppealWriter() && appeal.deleted == true" ngbTooltip="Undelete">
+              <i class="fa fa-trash-arrow-upp"></i> UnDelete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{appeal.name}}</strong>
+               <small class="text-muted d-block">{{appeal.campaign?.name}}</small>
+             </div>
+             <div>
+                <button class="btn btn-sm"
+                        [routerLink]="['/appeal', appeal.id]"
+                        ngbTooltip="Appeal Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="btn btn-sm"
+                        (click)="handleEdit(appeal)"
+                        ngbTooltip="Edit Appeal">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleDelete(appeal)"
+                      ngbTooltip="Delete Appeal" 
+                      placement="top"
+                      *ngIf="appeal.deleted == false">
+                  <i class="fa fa-trash"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleUndelete(appeal)"
+                      ngbTooltip="Undelete Appeal" 
+                      placement="top"
+                      *ngIf="appeal.deleted == true">
+                 <i class="fa fa-trash-arrow-up"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="appeal-info" *ngIf="appeal.campaignId != null">
+              <strong>Campaign: </strong>
+              <a [routerLink]="['/campaign', appeal.campaignId]" class="text-left p-0 m-0" ngbTooltip="Open Campaign details">{{appeal.campaign?.name}}</a>
+            </p>
+            <p class="appeal-info" *ngIf="appeal.name != null">
+              <strong>Name: </strong>
+              {{appeal.name}}
+            </p>
+            <p class="appeal-info" *ngIf="appeal.description != null">
+              <strong>Description: </strong>
+              {{appeal.description}}
+            </p>
+            <p class="appeal-info" *ngIf="appeal.costPerUnit != null">
+              <strong>Cost Per Unit: </strong>
+              {{appeal.costPerUnit | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="appeal-info" *ngIf="appeal.notes != null">
+              <strong>Notes: </strong>
+              {{appeal.notes}}
+            </p>
+            <p class="appeal-info" *ngIf="appeal.iconId != null">
+              <strong>Icon: </strong>
+              <a [routerLink]="['/icon', appeal.iconId]" class="text-left p-0 m-0" ngbTooltip="Open Icon details">{{appeal.icon?.name}}</a>
+            </p>
+            <p class="appeal-info" *ngIf="appeal.color != null">
+              <strong>Color: </strong>
+              {{appeal.color}}
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+   </div>
+</div>

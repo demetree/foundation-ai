@@ -1,0 +1,311 @@
+<div class="container-fluid p-1 m-0 client-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="client-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Client</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Client' : 'Add Client'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerClientReader()">
+                <div class="col m-2 client-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="clientForm" (ngSubmit)="submitForm()" class="client-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="Client-name" id="label-Client-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="Client-name" formControlName="name" placeholder="Enter Name" class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="clientForm.get('name')?.invalid && clientForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="Client-description" id="label-Client-description">Description</label>
+                                <textarea id="Client-description" formControlName="description" placeholder="Enter Description" class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('clientTypeId')">
+                                <label for="Client-clientTypeId" id="label-Client-clientTypeId"><span class="text-danger">*</span>Client Type</label>
+                                <select id="Client-clientTypeId" formControlName="clientTypeId" class="form-select client-select" [disabled]="!userIsSchedulerClientWriter()">
+                                    <option [ngValue]="null">Select Client Type</option>
+                                    <option *ngFor="let clientType of clientTypes$ | async" [ngValue]="clientType.id">{{clientType.name}}</option>
+                                </select>
+                                <div *ngIf="clientForm.get('clientTypeId')?.invalid && clientForm.get('clientTypeId')?.touched" class="text-danger">
+                                    Client Type is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('currencyId')">
+                                <label for="Client-currencyId" id="label-Client-currencyId"><span class="text-danger">*</span>Currency</label>
+                                <select id="Client-currencyId" formControlName="currencyId" class="form-select client-select" [disabled]="!userIsSchedulerClientWriter()">
+                                    <option [ngValue]="null">Select Currency</option>
+                                    <option *ngFor="let currency of currencies$ | async" [ngValue]="currency.id">{{currency.name}}</option>
+                                </select>
+                                <div *ngIf="clientForm.get('currencyId')?.invalid && clientForm.get('currencyId')?.touched" class="text-danger">
+                                    Currency is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeZoneId')">
+                                <label for="Client-timeZoneId" id="label-Client-timeZoneId"><span class="text-danger">*</span>Time Zone</label>
+                                <select id="Client-timeZoneId" formControlName="timeZoneId" class="form-select client-select" [disabled]="!userIsSchedulerClientWriter()">
+                                    <option [ngValue]="null">Select Time Zone</option>
+                                    <option *ngFor="let timeZone of timeZones$ | async" [ngValue]="timeZone.id">{{timeZone.name}}</option>
+                                </select>
+                                <div *ngIf="clientForm.get('timeZoneId')?.invalid && clientForm.get('timeZoneId')?.touched" class="text-danger">
+                                    Time Zone is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('calendarId')">
+                                <label for="Client-calendarId" id="label-Client-calendarId">Calendar</label>
+                                <select id="Client-calendarId" formControlName="calendarId" class="form-select client-select" [disabled]="!userIsSchedulerClientWriter()">
+                                    <option [ngValue]="null">Select Calendar</option>
+                                    <option *ngFor="let calendar of calendars$ | async" [ngValue]="calendar.id">{{calendar.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('addressLine1')">
+                                <label for="Client-addressLine1" id="label-Client-addressLine1"><span class="text-danger">*</span>Address Line 1</label>
+                                <input type="text" id="Client-addressLine1" formControlName="addressLine1" placeholder="Enter Address Line 1" class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()" aria-labelledby="label-addressLine1" />
+                                <div *ngIf="clientForm.get('addressLine1')?.invalid && clientForm.get('addressLine1')?.touched" class="text-danger">
+                                    Address Line 1 is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('addressLine2')">
+                                <label for="Client-addressLine2" id="label-Client-addressLine2">Address Line 2</label>
+                                <input type="text" id="Client-addressLine2" formControlName="addressLine2" placeholder="Enter Address Line 2" class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()" aria-labelledby="label-addressLine2" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('city')">
+                                <label for="Client-city" id="label-Client-city"><span class="text-danger">*</span>City</label>
+                                <input type="text" id="Client-city" formControlName="city" placeholder="Enter City" class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()" aria-labelledby="label-city" />
+                                <div *ngIf="clientForm.get('city')?.invalid && clientForm.get('city')?.touched" class="text-danger">
+                                    City is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('postalCode')">
+                                <label for="Client-postalCode" id="label-Client-postalCode">Postal Code</label>
+                                <input type="text" id="Client-postalCode" formControlName="postalCode" placeholder="Enter Postal Code" class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()" aria-labelledby="label-postalCode" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('stateProvinceId')">
+                                <label for="Client-stateProvinceId" id="label-Client-stateProvinceId"><span class="text-danger">*</span>State Province</label>
+                                <select id="Client-stateProvinceId" formControlName="stateProvinceId" class="form-select client-select" [disabled]="!userIsSchedulerClientWriter()">
+                                    <option [ngValue]="null">Select State Province</option>
+                                    <option *ngFor="let stateProvince of stateProvinces$ | async" [ngValue]="stateProvince.id">{{stateProvince.name}}</option>
+                                </select>
+                                <div *ngIf="clientForm.get('stateProvinceId')?.invalid && clientForm.get('stateProvinceId')?.touched" class="text-danger">
+                                    State Province is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('countryId')">
+                                <label for="Client-countryId" id="label-Client-countryId"><span class="text-danger">*</span>Country</label>
+                                <select id="Client-countryId" formControlName="countryId" class="form-select client-select" [disabled]="!userIsSchedulerClientWriter()">
+                                    <option [ngValue]="null">Select Country</option>
+                                    <option *ngFor="let country of countries$ | async" [ngValue]="country.id">{{country.name}}</option>
+                                </select>
+                                <div *ngIf="clientForm.get('countryId')?.invalid && clientForm.get('countryId')?.touched" class="text-danger">
+                                    Country is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('phone')">
+                                <label for="Client-phone" id="label-Client-phone"><a href="tel:{{clientData?.phone}}" ngbTooltip="Phone {{clientData?.phone}}">Phone</a></label>
+                                <input type="text" id="Client-phone" formControlName="phone" placeholder="Enter Phone" class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()" aria-labelledby="label-phone" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('email')">
+<label for="Client-email" id="label-Client-email"><a href="mailto:{{clientData?.email}}" ngbTooltip="Send Email to {{clientData?.email}}">Email</a></label>
+                                <input type="text" id="Client-email" formControlName="email" placeholder="Enter Email" class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()" aria-labelledby="label-email" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('latitude')">
+                                <label for="Client-latitude" id="label-Client-latitude">Latitude</label>
+                                <input type="number" id="Client-latitude" formControlName="latitude" placeholder="Enter Latitude" class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()" aria-labelledby="label-latitude" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('longitude')">
+                                <label for="Client-longitude" id="label-Client-longitude">Longitude</label>
+                                <input type="number" id="Client-longitude" formControlName="longitude" placeholder="Enter Longitude" class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()" aria-labelledby="label-longitude" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('notes')">
+                                <label for="Client-notes" id="label-Client-notes">Notes</label>
+                                <textarea id="Client-notes" formControlName="notes" placeholder="Enter Notes" class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('externalId')">
+                                <label for="Client-externalId" id="label-Client-externalId">External Id</label>
+                                <input type="text" id="Client-externalId" formControlName="externalId" placeholder="Enter External Id" class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()" aria-labelledby="label-externalId" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('color')">
+                                <label for="Client-color" id="label-Client-color">Color</label>
+                                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="Client-color" 
+                        formControlName="color" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerClientWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="clientForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('attributes')">
+                                <label for="Client-attributes" id="label-Client-attributes">Attributes</label>
+                                <textarea id="Client-attributes" formControlName="attributes" placeholder="Enter Attributes" class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('avatarFileName')">
+                                <label for="Client-avatarFileName" id="label-Client-avatarFileName">Avatar File Name</label>
+                                <input type="text" id="Client-avatarFileName" formControlName="avatarFileName" placeholder="Enter Avatar File Name" class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()" aria-labelledby="label-avatarFileName" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('avatarSize')">
+                                <label for="Client-avatarSize" id="label-Client-avatarSize">Avatar Size</label>
+                                <input type="number" id="Client-avatarSize" formControlName="avatarSize" placeholder="Enter Avatar Size" class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()" aria-labelledby="label-avatarSize" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('avatarData')">
+                                <label for="Client-avatarData" id="label-Client-avatarData">Avatar Data</label>
+                                <input type="text" id="Client-avatarData" formControlName="avatarData" placeholder="Enter Avatar Data" class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()" aria-labelledby="label-avatarData" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('avatarMimeType')">
+                                <label for="Client-avatarMimeType" id="label-Client-avatarMimeType">Avatar Mime Type</label>
+                                <input type="text" id="Client-avatarMimeType" formControlName="avatarMimeType" placeholder="Enter Avatar Mime Type" class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()" aria-labelledby="label-avatarMimeType" />
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="Client-versionNumber" id="label-Client-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="Client-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control client-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="Client-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerClientWriter()" />
+                                <label for="Client-active" class="form-check-label" id="label-Client-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="Client-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerClientWriter()" />
+                                <label for="Client-deleted" class="form-check-label" id="label-Client-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="client-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="clientForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Client">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !clientForm.valid || !clientForm.dirty || clientForm.pristine || userIsSchedulerClientWriter() == false " ngbTooltip="Save Client">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerClientReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 client-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="clientChangeHistoryService.userIsSchedulerClientChangeHistoryReader()">
+                            <button ngbNavLink>Client Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (clientData?.ClientChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-client-change-history-table [queryParams]="{ clientId: clientData?.id }"></app-client-change-history-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-client-change-history-add-edit [preSeededData]="{ clientId: clientData?.id }" [hiddenFields]="['clientId']"></app-client-change-history-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="clientContactService.userIsSchedulerClientContactReader()">
+                            <button ngbNavLink>Client Contacts
+                                <span class="badge bg-primary ms-2">
+                                    {{ (clientData?.ClientContactsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-client-contact-table [queryParams]="{ clientId: clientData?.id }"></app-client-contact-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-client-contact-add-edit [preSeededData]="{ clientId: clientData?.id }" [hiddenFields]="['clientId']"></app-client-contact-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="schedulingTargetService.userIsSchedulerSchedulingTargetReader()">
+                            <button ngbNavLink>Scheduling Targets
+                                <span class="badge bg-primary ms-2">
+                                    {{ (clientData?.SchedulingTargetsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-scheduling-target-table [queryParams]="{ clientId: clientData?.id }"></app-scheduling-target-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-scheduling-target-add-edit [preSeededData]="{ clientId: clientData?.id }" [hiddenFields]="['clientId']"></app-scheduling-target-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="schedulingTargetAddressService.userIsSchedulerSchedulingTargetAddressReader()">
+                            <button ngbNavLink>Scheduling Target Addresses
+                                <span class="badge bg-primary ms-2">
+                                    {{ (clientData?.SchedulingTargetAddressesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-scheduling-target-address-table [queryParams]="{ clientId: clientData?.id }"></app-scheduling-target-address-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-scheduling-target-address-add-edit [preSeededData]="{ clientId: clientData?.id }" [hiddenFields]="['clientId']"></app-scheduling-target-address-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="scheduledEventService.userIsSchedulerScheduledEventReader()">
+                            <button ngbNavLink>Scheduled Events
+                                <span class="badge bg-primary ms-2">
+                                    {{ (clientData?.ScheduledEventsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-scheduled-event-table [queryParams]="{ clientId: clientData?.id }"></app-scheduled-event-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-scheduled-event-add-edit [preSeededData]="{ clientId: clientData?.id }" [hiddenFields]="['clientId']"></app-scheduled-event-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="constituentService.userIsSchedulerConstituentReader()">
+                            <button ngbNavLink>Constituents
+                                <span class="badge bg-primary ms-2">
+                                    {{ (clientData?.ConstituentsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-constituent-table [queryParams]="{ clientId: clientData?.id }"></app-constituent-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-constituent-add-edit [preSeededData]="{ clientId: clientData?.id }" [hiddenFields]="['clientId']"></app-constituent-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

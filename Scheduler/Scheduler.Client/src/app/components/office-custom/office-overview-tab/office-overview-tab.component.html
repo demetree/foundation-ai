@@ -1,0 +1,128 @@
+<div class="row g-4" *ngIf="office; else loading">
+  <!-- Core Information Card -->
+  <div class="col-lg-7">
+    <div class="card h-100">
+      <div class="card-header bg-light">
+        <h6 class="mb-0 fw-semibold">
+          <i class="fa-solid fa-info-circle me-2"></i>
+          Core Information
+        </h6>
+      </div>
+      <div class="card-body">
+        <dl class="row mb-0">
+          <dt class="col-sm-4 text-muted">Name</dt>
+          <dd class="col-sm-8 fw-medium">{{ office.name }}</dd>
+
+          <dt class="col-sm-4 text-muted">Description</dt>
+          <dd class="col-sm-8">{{ office.description || '—' }}</dd>
+
+          <dt class="col-sm-4 text-muted">Type</dt>
+          <dd class="col-sm-8">
+            {{ office.officeType?.name || 'Unknown' }}
+          </dd>
+
+          <dt class="col-sm-4 text-muted">Time Zone</dt>
+          <dd class="col-sm-8">{{ office.timeZone?.name || '—' }}</dd>
+
+          <dt class="col-sm-4 text-muted">Color</dt>
+          <dd class="col-sm-8"><span class="color-swatch"
+                                     [style.background-color]="office.color || '#cccccc'"></span></dd>
+
+
+          <dt class="col-sm-4 text-muted">External ID</dt>
+          <dd class="col-sm-8">{{ office.externalId || '—' }}</dd>
+
+          <dt class="col-sm-4 text-muted">Status</dt>
+          <dd class="col-sm-8">
+            <span class="badge me-2" [ngClass]="office.active ? 'bg-success' : 'bg-secondary'">
+              {{ office.active ? 'Active' : 'Inactive' }}
+            </span>
+            <span *ngIf="office.deleted == true" class="badge me-2" [ngClass]="office.deleted ? 'bg-danger' : 'bg-secondary'">
+              {{ office.deleted ? 'Deleted' : 'Not Deleted' }}
+            </span>
+            <span class="badge me-2 bg-secondary">
+              Version: {{ office.versionNumber }}
+            </span>
+          </dd>
+
+
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Stats Card -->
+  <div class="col-lg-5">
+    <div class="card h-100">
+      <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <h6 class="mb-0 fw-semibold">
+          <i class="fa-solid fa-chart-simple me-2"></i>
+          Quick Stats
+        </h6>
+        <button class="btn btn-sm btn-outline-secondary" (click)="loadQuickStats()">
+          <i class="fa fa-sync"></i>
+        </button>
+      </div>
+      <div class="card-body">
+        <div class="row text-center g-4">
+
+          <!-- Assignmnets -->
+          <div class="col-6">
+            <div class="fs-3 fw-bold text-primary">
+              {{ (assignmentCount$ | async) ?? '-' }}
+            </div>
+            <div class="small text-muted">Assignments</div>
+          </div>
+
+          <!-- Resources -->
+          <div class="col-6">
+            <div class="fs-3 fw-bold text-info">
+              {{ (resourceCount$ | async) ?? '-' }}
+            </div>
+            <div class="small text-muted">Resources</div>
+          </div>
+
+          <!-- Crews -->
+          <div class="col-6">
+            <div class="fs-3 fw-bold text-warning">
+              {{ (crewCount$ | async) ?? '-' }}
+            </div>
+            <div class="small text-muted">Crews</div>
+          </div>
+
+          <!-- Contacts -->
+          <div class="col-6">
+            <div class="fs-3 fw-bold text-danger">
+              {{ (contactCount$ | async) ?? '-' }}
+            </div>
+            <div class="small text-muted">Contacts</div>
+          </div>
+
+          <!-- Calendars -->
+          <div class="col-6">
+            <div class="fs-3 fw-bold text-secondary">
+              {{ (calendarCount$ | async) ?? '-' }}
+            </div>
+            <div class="small text-muted">Calendars</div>
+          </div>
+
+          <!-- Rate Sheet Overrides -->
+          <div class="col-6">
+            <div class="fs-3 fw-bold text-success">
+              {{ (rateSheetCount$ | async) ?? '-' }}
+            </div>
+            <div class="small text-muted">Rate Overrides</div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #loading>
+  <div class="text-center py-5 text-muted">
+    <i class="fa-solid fa-spinner fa-spin fa-2x mb-3"></i>
+    <div>Loading overview...</div>
+  </div>
+</ng-template>

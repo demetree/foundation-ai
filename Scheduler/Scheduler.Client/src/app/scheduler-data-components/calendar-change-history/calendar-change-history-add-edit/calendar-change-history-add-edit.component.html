@@ -1,0 +1,65 @@
+<div class="add-calendar-change-history" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-calendar-change-history me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Calendar Change History" 
+        *ngIf="userIsSchedulerCalendarChangeHistoryWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #calendarChangeHistoryModal let-modal>
+   <div class="modal-header bg-dark text-light calendar-change-history-modal-header">
+      <h5 class="modal-title mb-0" id="calendarChangeHistoryModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Calendar Change History' : 'Add Calendar Change History' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body calendar-change-history-modal-body">
+      <form [formGroup]="calendarChangeHistoryForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('calendarId')">
+                <label for="CalendarChangeHistory-calendarId" id="label-CalendarChangeHistory-calendarId"><span class="text-danger">*</span>Calendar</label>
+                <select id="CalendarChangeHistory-calendarId" formControlName="calendarId" class="form-select calendar-change-history-select" [disabled]="!userIsSchedulerCalendarChangeHistoryWriter()">
+                    <option [ngValue]="null">Select Calendar</option>
+                    <option *ngFor="let calendar of calendars$ | async" [ngValue]="calendar.id">{{calendar.name}}</option>
+                </select>
+                <div *ngIf="calendarChangeHistoryForm.get('calendarId')?.invalid && calendarChangeHistoryForm.get('calendarId')?.touched" class="text-danger">
+                    Calendar is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="CalendarChangeHistory-versionNumber" id="label-CalendarChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="CalendarChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control calendar-change-history-input" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                <label for="CalendarChangeHistory-timeStamp" id="label-CalendarChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                <input type="datetime-local" id="CalendarChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control calendar-change-history-input" [disabled]="!userIsSchedulerCalendarChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                <div *ngIf="calendarChangeHistoryForm.get('timeStamp')?.invalid && calendarChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                    Time Stamp is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                <label for="CalendarChangeHistory-userId" id="label-CalendarChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                <input type="number" id="CalendarChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control calendar-change-history-input" [disabled]="!userIsSchedulerCalendarChangeHistoryWriter()" aria-labelledby="label-userId" />
+                <div *ngIf="calendarChangeHistoryForm.get('userId')?.invalid && calendarChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                    User Id is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                <label for="CalendarChangeHistory-data" id="label-CalendarChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                <textarea id="CalendarChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control calendar-change-history-input" [disabled]="!userIsSchedulerCalendarChangeHistoryWriter()"></textarea>
+                <div *ngIf="calendarChangeHistoryForm.get('data')?.invalid && calendarChangeHistoryForm.get('data')?.touched" class="text-danger">
+                    Data is required
+                </div>
+            </div>
+         <div class="modal-footer calendar-change-history-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Calendar Change History changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !calendarChangeHistoryForm.valid || calendarChangeHistoryForm.pristine || !userIsSchedulerCalendarChangeHistoryWriter()" ngbTooltip="Save the Calendar Change History changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

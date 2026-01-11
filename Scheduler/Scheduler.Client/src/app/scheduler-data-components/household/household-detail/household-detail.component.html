@@ -1,0 +1,177 @@
+<div class="container-fluid p-1 m-0 household-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="household-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Household</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Household' : 'Add Household'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerHouseholdReader()">
+                <div class="col m-2 household-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="householdForm" (ngSubmit)="submitForm()" class="household-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="Household-name" id="label-Household-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="Household-name" formControlName="name" placeholder="Enter Name" class="form-control household-input" [disabled]="!userIsSchedulerHouseholdWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="householdForm.get('name')?.invalid && householdForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="Household-description" id="label-Household-description">Description</label>
+                                <textarea id="Household-description" formControlName="description" placeholder="Enter Description" class="form-control household-input" [disabled]="!userIsSchedulerHouseholdWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('schedulingTargetId')">
+                                <label for="Household-schedulingTargetId" id="label-Household-schedulingTargetId">Scheduling Target</label>
+                                <select id="Household-schedulingTargetId" formControlName="schedulingTargetId" class="form-select household-select" [disabled]="!userIsSchedulerHouseholdWriter()">
+                                    <option [ngValue]="null">Select Scheduling Target</option>
+                                    <option *ngFor="let schedulingTarget of schedulingTargets$ | async" [ngValue]="schedulingTarget.id">{{[schedulingTarget.name] | filterAndJoin}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('formalSalutation')">
+                                <label for="Household-formalSalutation" id="label-Household-formalSalutation">Formal Salutation</label>
+                                <input type="text" id="Household-formalSalutation" formControlName="formalSalutation" placeholder="Enter Formal Salutation" class="form-control household-input" [disabled]="!userIsSchedulerHouseholdWriter()" aria-labelledby="label-formalSalutation" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('informalSalutation')">
+                                <label for="Household-informalSalutation" id="label-Household-informalSalutation">Informal Salutation</label>
+                                <input type="text" id="Household-informalSalutation" formControlName="informalSalutation" placeholder="Enter Informal Salutation" class="form-control household-input" [disabled]="!userIsSchedulerHouseholdWriter()" aria-labelledby="label-informalSalutation" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('addressee')">
+                                <label for="Household-addressee" id="label-Household-addressee">Addressee</label>
+                                <input type="text" id="Household-addressee" formControlName="addressee" placeholder="Enter Addressee" class="form-control household-input" [disabled]="!userIsSchedulerHouseholdWriter()" aria-labelledby="label-addressee" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('totalHouseholdGiving')">
+                                <label for="Household-totalHouseholdGiving" id="label-Household-totalHouseholdGiving"><span class="text-danger">*</span>Total Household Giving</label>
+                                <input type="number" id="Household-totalHouseholdGiving" formControlName="totalHouseholdGiving" placeholder="Enter Total Household Giving" class="form-control household-input" [disabled]="!userIsSchedulerHouseholdWriter()" aria-labelledby="label-totalHouseholdGiving" />
+                                <div *ngIf="householdForm.get('totalHouseholdGiving')?.invalid && householdForm.get('totalHouseholdGiving')?.touched" class="text-danger">
+                                    Total Household Giving is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('lastHouseholdGiftDate')">
+                                <label for="Household-lastHouseholdGiftDate" id="label-Household-lastHouseholdGiftDate">Last Household Gift Date</label>
+                                <input type="date" id="Household-lastHouseholdGiftDate" formControlName="lastHouseholdGiftDate" placeholder="Enter Last Household Gift Date" class="form-control household-input" [disabled]="!userIsSchedulerHouseholdWriter()" aria-labelledby="label-lastHouseholdGiftDate" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('notes')">
+                                <label for="Household-notes" id="label-Household-notes">Notes</label>
+                                <textarea id="Household-notes" formControlName="notes" placeholder="Enter Notes" class="form-control household-input" [disabled]="!userIsSchedulerHouseholdWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('iconId')">
+                                <label for="Household-iconId" id="label-Household-iconId">Icon</label>
+                                <select id="Household-iconId" formControlName="iconId" class="form-select household-select" [disabled]="!userIsSchedulerHouseholdWriter()">
+                                    <option [ngValue]="null">Select Icon</option>
+                                    <option *ngFor="let icon of icons$ | async" [ngValue]="icon.id">{{icon.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('color')">
+                                <label for="Household-color" id="label-Household-color">Color</label>
+                                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="Household-color" 
+                        formControlName="color" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerHouseholdWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="householdForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('avatarFileName')">
+                                <label for="Household-avatarFileName" id="label-Household-avatarFileName">Avatar File Name</label>
+                                <input type="text" id="Household-avatarFileName" formControlName="avatarFileName" placeholder="Enter Avatar File Name" class="form-control household-input" [disabled]="!userIsSchedulerHouseholdWriter()" aria-labelledby="label-avatarFileName" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('avatarSize')">
+                                <label for="Household-avatarSize" id="label-Household-avatarSize">Avatar Size</label>
+                                <input type="number" id="Household-avatarSize" formControlName="avatarSize" placeholder="Enter Avatar Size" class="form-control household-input" [disabled]="!userIsSchedulerHouseholdWriter()" aria-labelledby="label-avatarSize" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('avatarData')">
+                                <label for="Household-avatarData" id="label-Household-avatarData">Avatar Data</label>
+                                <input type="text" id="Household-avatarData" formControlName="avatarData" placeholder="Enter Avatar Data" class="form-control household-input" [disabled]="!userIsSchedulerHouseholdWriter()" aria-labelledby="label-avatarData" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('avatarMimeType')">
+                                <label for="Household-avatarMimeType" id="label-Household-avatarMimeType">Avatar Mime Type</label>
+                                <input type="text" id="Household-avatarMimeType" formControlName="avatarMimeType" placeholder="Enter Avatar Mime Type" class="form-control household-input" [disabled]="!userIsSchedulerHouseholdWriter()" aria-labelledby="label-avatarMimeType" />
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="Household-versionNumber" id="label-Household-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="Household-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control household-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="Household-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerHouseholdWriter()" />
+                                <label for="Household-active" class="form-check-label" id="label-Household-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="Household-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerHouseholdWriter()" />
+                                <label for="Household-deleted" class="form-check-label" id="label-Household-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="household-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="householdForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Household">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !householdForm.valid || !householdForm.dirty || householdForm.pristine || userIsSchedulerHouseholdWriter() == false " ngbTooltip="Save Household">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerHouseholdReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 household-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="householdChangeHistoryService.userIsSchedulerHouseholdChangeHistoryReader()">
+                            <button ngbNavLink>Household Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (householdData?.HouseholdChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-household-change-history-table [queryParams]="{ householdId: householdData?.id }"></app-household-change-history-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-household-change-history-add-edit [preSeededData]="{ householdId: householdData?.id }" [hiddenFields]="['householdId']"></app-household-change-history-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="constituentService.userIsSchedulerConstituentReader()">
+                            <button ngbNavLink>Constituents
+                                <span class="badge bg-primary ms-2">
+                                    {{ (householdData?.ConstituentsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-constituent-table [queryParams]="{ householdId: householdData?.id }"></app-constituent-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-constituent-add-edit [preSeededData]="{ householdId: householdData?.id }" [hiddenFields]="['householdId']"></app-constituent-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

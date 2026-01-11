@@ -1,0 +1,368 @@
+<app-tribute-add-edit [showAddButton]="false"></app-tribute-add-edit>
+<div class="row" *ngIf="userIsSchedulerTributeReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerTributeWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerTributeWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('name')">
+                Name
+                <span *ngIf="sortColumn === 'name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('description')">
+                Description
+                <span *ngIf="sortColumn === 'description'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('tributeType.name')">
+                Tribute  Type
+                <span *ngIf="sortColumn === 'tributeType.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('defaultAcknowledgee.name')">
+                Default  Acknowledgee
+                <span *ngIf="sortColumn === 'defaultAcknowledgee.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('startDate')">
+                Start  Date
+                <span *ngIf="sortColumn === 'startDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('endDate')">
+                End  Date
+                <span *ngIf="sortColumn === 'endDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('icon.name')">
+                Icon
+                <span *ngIf="sortColumn === 'icon.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('color')">
+                Color
+                <span *ngIf="sortColumn === 'color'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('avatarFileName')">
+                Avatar  File  Name
+                <span *ngIf="sortColumn === 'avatarFileName'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('avatarSize')">
+                Avatar  Size
+                <span *ngIf="sortColumn === 'avatarSize'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('avatarData')">
+                Avatar  Data
+                <span *ngIf="sortColumn === 'avatarData'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('avatarMimeType')">
+                Avatar  Mime  Type
+                <span *ngIf="sortColumn === 'avatarMimeType'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let tribute of filteredTributes; trackBy: getTributeId"
+              [ngClass]="{
+                 'row-inactive': tribute.active == false,
+                 'row-deleted': tribute.deleted == true 
+                 }">
+            <td class="header-action-button" *ngIf="userIsSchedulerTributeWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleEdit(tribute)"
+                      ngbTooltip="Edit" 
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsSchedulerTributeWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleDelete(tribute)"
+                      ngbTooltip="Delete" 
+                      placement="top"
+                      *ngIf="tribute.deleted == false">
+                <i class="fa fa-trash"></i>
+              </button>
+              <button class="btn btn-sm"
+                      (click)="handleUndelete(tribute)"
+                      ngbTooltip="Undelete" 
+                      placement="top"
+                      *ngIf="tribute.deleted == true">
+                <i class="fa fa-trash-arrow-up"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(tribute, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(tribute, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(tribute, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(tribute, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(tribute, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(tribute, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(tribute, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(tribute, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/tribute', tribute.id]" class="btn btn-link text-left" ngbTooltip="Open Tribute details">{{tribute.name}}</a></td>
+            <td class="text-truncate">{{tribute.description}}</td>
+            <td class="text-truncate"><a [routerLink]="['/tributetype', tribute.tributeTypeId]" class="btn btn-link text-left" ngbTooltip="Open Tribute Type details">{{tribute.tributeType?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/constituent', tribute.defaultAcknowledgeeId]" class="btn btn-link text-left" ngbTooltip="Open Constituent details">{{tribute.defaultAcknowledgee?.name}}</a></td>
+            <td class="text-truncate">{{tribute.startDate | date:'YYYY-MM-dd'}}</td>
+            <td class="text-truncate">{{tribute.endDate | date:'YYYY-MM-dd'}}</td>
+            <td class="text-truncate"><a [routerLink]="['/icon', tribute.iconId]" class="btn btn-link text-left" ngbTooltip="Open Icon details">{{tribute.icon?.name}}</a></td>
+            <td class="text-truncate">{{tribute.color}}</td>
+            <td class="text-truncate">{{tribute.avatarFileName}}</td>
+            <td class="text-truncate">{{tribute.avatarSize | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{tribute.avatarData}}</td>
+            <td class="text-truncate">{{tribute.avatarMimeType}}</td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let tribute of filteredTributes; trackBy: getTributeId" class="card my-2"
+              [ngClass]="{
+                 'row-inactive': tribute.active == false,
+                 'row-deleted': tribute.deleted == true 
+                 }">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(tribute, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(tribute, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(tribute, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(tribute, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(tribute, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(tribute, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(tribute, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(tribute, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(tribute, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(tribute, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(tribute, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(tribute, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(tribute, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/tribute', tribute.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(tribute)" *ngIf="userIsSchedulerTributeWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(tribute)" *ngIf="userIsSchedulerTributeWriter() && tribute.deleted == false" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+            <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(tribute)" *ngIf="userIsSchedulerTributeWriter() && tribute.deleted == true" ngbTooltip="Undelete">
+              <i class="fa fa-trash-arrow-upp"></i> UnDelete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{tribute.name}}</strong>
+               <small class="text-muted d-block">{{tribute.tributeType?.name}}</small>
+             </div>
+             <div>
+                <button class="btn btn-sm"
+                        [routerLink]="['/tribute', tribute.id]"
+                        ngbTooltip="Tribute Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="btn btn-sm"
+                        (click)="handleEdit(tribute)"
+                        ngbTooltip="Edit Tribute">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleDelete(tribute)"
+                      ngbTooltip="Delete Tribute" 
+                      placement="top"
+                      *ngIf="tribute.deleted == false">
+                  <i class="fa fa-trash"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleUndelete(tribute)"
+                      ngbTooltip="Undelete Tribute" 
+                      placement="top"
+                      *ngIf="tribute.deleted == true">
+                 <i class="fa fa-trash-arrow-up"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="tribute-info" *ngIf="tribute.name != null">
+              <strong>Name: </strong>
+              {{tribute.name}}
+            </p>
+            <p class="tribute-info" *ngIf="tribute.description != null">
+              <strong>Description: </strong>
+              {{tribute.description}}
+            </p>
+            <p class="tribute-info" *ngIf="tribute.tributeTypeId != null">
+              <strong>Tribute Type: </strong>
+              <a [routerLink]="['/tributetype', tribute.tributeTypeId]" class="text-left p-0 m-0" ngbTooltip="Open Tribute Type details">{{tribute.tributeType?.name}}</a>
+            </p>
+            <p class="tribute-info" *ngIf="tribute.defaultAcknowledgeeId != null">
+              <strong>Default Acknowledgee: </strong>
+              <a [routerLink]="['/constituent', tribute.defaultAcknowledgeeId]" class="text-left p-0 m-0" ngbTooltip="Open Constituent details">{{tribute.defaultAcknowledgee?.name}}</a>
+            </p>
+            <p class="tribute-info" *ngIf="tribute.startDate != null">
+              <strong>Start Date: </strong>
+              {{tribute.startDate | date:'YYYY-MM-dd'}}
+            </p>
+            <p class="tribute-info" *ngIf="tribute.endDate != null">
+              <strong>End Date: </strong>
+              {{tribute.endDate | date:'YYYY-MM-dd'}}
+            </p>
+            <p class="tribute-info" *ngIf="tribute.iconId != null">
+              <strong>Icon: </strong>
+              <a [routerLink]="['/icon', tribute.iconId]" class="text-left p-0 m-0" ngbTooltip="Open Icon details">{{tribute.icon?.name}}</a>
+            </p>
+            <p class="tribute-info" *ngIf="tribute.color != null">
+              <strong>Color: </strong>
+              {{tribute.color}}
+            </p>
+            <p class="tribute-info" *ngIf="tribute.avatarFileName != null">
+              <strong>Avatar File Name: </strong>
+              {{tribute.avatarFileName}}
+            </p>
+            <p class="tribute-info" *ngIf="tribute.avatarSize != null">
+              <strong>Avatar Size: </strong>
+              {{tribute.avatarSize | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="tribute-info" *ngIf="tribute.avatarData != null">
+              <strong>Avatar Data: </strong>
+              {{tribute.avatarData}}
+            </p>
+            <p class="tribute-info" *ngIf="tribute.avatarMimeType != null">
+              <strong>Avatar Mime Type: </strong>
+              {{tribute.avatarMimeType}}
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+   </div>
+</div>

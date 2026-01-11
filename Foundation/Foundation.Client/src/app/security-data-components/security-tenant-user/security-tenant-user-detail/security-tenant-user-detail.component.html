@@ -1,0 +1,59 @@
+<div class="container-fluid p-1 m-0 security-tenant-user-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="security-tenant-user-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Security Tenant User</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Security Tenant User' : 'Add Security Tenant User'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSecuritySecurityTenantUserReader()">
+                <div class="col m-2 security-tenant-user-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="securityTenantUserForm" (ngSubmit)="submitForm()" class="security-tenant-user-details-form">
+                            <div class="form-group">
+                                <label for="securityTenantId" id="label-securityTenantId"><span class="text-danger">*</span>Security Tenant</label>
+                                <select id="securityTenantId" formControlName="securityTenantId" class="form-select security-tenant-user-select" [disabled]="!userIsSecuritySecurityTenantUserWriter()">
+                                    <option [ngValue]="null">Select Security Tenant</option>
+                                    <option *ngFor="let securityTenant of securityTenants$ | async" [ngValue]="securityTenant.id">{{securityTenant.name}}</option>
+                                </select>
+                                <div *ngIf="securityTenantUserForm.get('securityTenantId')?.invalid && securityTenantUserForm.get('securityTenantId')?.touched" class="text-danger">
+                                    Security Tenant is required
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="securityUserId" id="label-securityUserId"><span class="text-danger">*</span>Security User</label>
+                                <select id="securityUserId" formControlName="securityUserId" class="form-select security-tenant-user-select" [disabled]="!userIsSecuritySecurityTenantUserWriter()">
+                                    <option [ngValue]="null">Select Security User</option>
+                                    <option *ngFor="let securityUser of securityUsers$ | async" [ngValue]="securityUser.id">{{[securityUser.accountName] | filterAndJoin}}</option>
+                                </select>
+                                <div *ngIf="securityTenantUserForm.get('securityUserId')?.invalid && securityTenantUserForm.get('securityUserId')?.touched" class="text-danger">
+                                    Security User is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2">
+                                <input type="checkbox" id="active" formControlName="active" class="form-check-input" [disabled]="!userIsSecuritySecurityTenantUserWriter()" />
+                                <label for="active" class="form-check-label" id="label-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2">
+                                <input type="checkbox" id="deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSecuritySecurityTenantUserWriter()" />
+                                <label for="deleted" class="form-check-label" id="label-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="security-tenant-user-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="securityTenantUserForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Security Tenant User">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !securityTenantUserForm.valid || !securityTenantUserForm.dirty || securityTenantUserForm.pristine || userIsSecuritySecurityTenantUserWriter() == false " ngbTooltip="Save Security Tenant User">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

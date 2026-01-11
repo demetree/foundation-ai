@@ -1,0 +1,63 @@
+<div class="add-security-role" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-security-role me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Security Role" 
+        *ngIf="userIsSecuritySecurityRoleWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #securityRoleModal let-modal>
+   <div class="modal-header bg-dark text-light security-role-modal-header">
+      <h5 class="modal-title mb-0" id="securityRoleModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Security Role' : 'Add Security Role' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body security-role-modal-body">
+      <form [formGroup]="securityRoleForm" (ngSubmit)="submitForm()">
+            <div class="form-group">
+                <label for="privilegeId" id="label-privilegeId"><span class="text-danger">*</span>Privilege</label>
+                <select id="privilegeId" formControlName="privilegeId" class="form-select security-role-select" [disabled]="!userIsSecuritySecurityRoleWriter()">
+                    <option [ngValue]="null">Select Privilege</option>
+                    <option *ngFor="let privilege of privileges$ | async" [ngValue]="privilege.id">{{privilege.name}}</option>
+                </select>
+                <div *ngIf="securityRoleForm.get('privilegeId')?.invalid && securityRoleForm.get('privilegeId')?.touched" class="text-danger">
+                    Privilege is required
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="name" id="label-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="name" formControlName="name" placeholder="Enter Name" class="form-control security-role-input" [disabled]="!userIsSecuritySecurityRoleWriter()" aria-labelledby="label-name" />
+                <div *ngIf="securityRoleForm.get('name')?.invalid && securityRoleForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="description" id="label-description">Description</label>
+                <textarea id="description" formControlName="description" placeholder="Enter Description" class="form-control security-role-input" [disabled]="!userIsSecuritySecurityRoleWriter()"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="comments" id="label-comments">Comments</label>
+                <textarea id="comments" formControlName="comments" placeholder="Enter Comments" class="form-control security-role-input" [disabled]="!userIsSecuritySecurityRoleWriter()"></textarea>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode">
+                <input type="checkbox" id="active" formControlName="active" class="form-check-input" [disabled]="!userIsSecuritySecurityRoleWriter()" />
+                <label for="active" class="form-check-label" id="label-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode">
+                <input type="checkbox" id="deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSecuritySecurityRoleWriter()" />
+                <label for="deleted" class="form-check-label" id="label-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer security-role-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Security Role changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !securityRoleForm.valid || securityRoleForm.pristine || !userIsSecuritySecurityRoleWriter()" ngbTooltip="Save the Security Role changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

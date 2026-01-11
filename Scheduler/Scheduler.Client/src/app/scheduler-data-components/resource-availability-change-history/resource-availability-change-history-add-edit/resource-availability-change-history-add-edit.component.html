@@ -1,0 +1,65 @@
+<div class="add-resource-availability-change-history" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-resource-availability-change-history me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Resource Availability Change History" 
+        *ngIf="userIsSchedulerResourceAvailabilityChangeHistoryWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #resourceAvailabilityChangeHistoryModal let-modal>
+   <div class="modal-header bg-dark text-light resource-availability-change-history-modal-header">
+      <h5 class="modal-title mb-0" id="resourceAvailabilityChangeHistoryModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Resource Availability Change History' : 'Add Resource Availability Change History' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body resource-availability-change-history-modal-body">
+      <form [formGroup]="resourceAvailabilityChangeHistoryForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('resourceAvailabilityId')">
+                <label for="ResourceAvailabilityChangeHistory-resourceAvailabilityId" id="label-ResourceAvailabilityChangeHistory-resourceAvailabilityId"><span class="text-danger">*</span>Resource Availability</label>
+                <select id="ResourceAvailabilityChangeHistory-resourceAvailabilityId" formControlName="resourceAvailabilityId" class="form-select resource-availability-change-history-select" [disabled]="!userIsSchedulerResourceAvailabilityChangeHistoryWriter()">
+                    <option [ngValue]="null">Select Resource Availability</option>
+                    <option *ngFor="let resourceAvailability of resourceAvailabilities$ | async" [ngValue]="resourceAvailability.id">{{resourceAvailability.reason}}</option>
+                </select>
+                <div *ngIf="resourceAvailabilityChangeHistoryForm.get('resourceAvailabilityId')?.invalid && resourceAvailabilityChangeHistoryForm.get('resourceAvailabilityId')?.touched" class="text-danger">
+                    Resource Availability is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="ResourceAvailabilityChangeHistory-versionNumber" id="label-ResourceAvailabilityChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="ResourceAvailabilityChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control resource-availability-change-history-input" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                <label for="ResourceAvailabilityChangeHistory-timeStamp" id="label-ResourceAvailabilityChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                <input type="datetime-local" id="ResourceAvailabilityChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control resource-availability-change-history-input" [disabled]="!userIsSchedulerResourceAvailabilityChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                <div *ngIf="resourceAvailabilityChangeHistoryForm.get('timeStamp')?.invalid && resourceAvailabilityChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                    Time Stamp is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                <label for="ResourceAvailabilityChangeHistory-userId" id="label-ResourceAvailabilityChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                <input type="number" id="ResourceAvailabilityChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control resource-availability-change-history-input" [disabled]="!userIsSchedulerResourceAvailabilityChangeHistoryWriter()" aria-labelledby="label-userId" />
+                <div *ngIf="resourceAvailabilityChangeHistoryForm.get('userId')?.invalid && resourceAvailabilityChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                    User Id is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                <label for="ResourceAvailabilityChangeHistory-data" id="label-ResourceAvailabilityChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                <textarea id="ResourceAvailabilityChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control resource-availability-change-history-input" [disabled]="!userIsSchedulerResourceAvailabilityChangeHistoryWriter()"></textarea>
+                <div *ngIf="resourceAvailabilityChangeHistoryForm.get('data')?.invalid && resourceAvailabilityChangeHistoryForm.get('data')?.touched" class="text-danger">
+                    Data is required
+                </div>
+            </div>
+         <div class="modal-footer resource-availability-change-history-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Resource Availability Change History changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !resourceAvailabilityChangeHistoryForm.valid || resourceAvailabilityChangeHistoryForm.pristine || !userIsSchedulerResourceAvailabilityChangeHistoryWriter()" ngbTooltip="Save the Resource Availability Change History changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

@@ -1,0 +1,276 @@
+<div class="container-fluid p-1 m-0 time-zone-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="time-zone-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Time Zone</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Time Zone' : 'Add Time Zone'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerTimeZoneReader()">
+                <div class="col m-2 time-zone-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="timeZoneForm" (ngSubmit)="submitForm()" class="time-zone-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="TimeZone-name" id="label-TimeZone-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="TimeZone-name" formControlName="name" placeholder="Enter Name" class="form-control time-zone-input" [disabled]="!userIsSchedulerTimeZoneWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="timeZoneForm.get('name')?.invalid && timeZoneForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="TimeZone-description" id="label-TimeZone-description"><span class="text-danger">*</span>Description</label>
+                                <textarea id="TimeZone-description" formControlName="description" placeholder="Enter Description" class="form-control time-zone-input" [disabled]="!userIsSchedulerTimeZoneWriter()"></textarea>
+                                <div *ngIf="timeZoneForm.get('description')?.invalid && timeZoneForm.get('description')?.touched" class="text-danger">
+                                    Description is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('ianaTimeZone')">
+                                <label for="TimeZone-ianaTimeZone" id="label-TimeZone-ianaTimeZone"><span class="text-danger">*</span>Iana Time Zone</label>
+                                <input type="text" id="TimeZone-ianaTimeZone" formControlName="ianaTimeZone" placeholder="Enter Iana Time Zone" class="form-control time-zone-input" [disabled]="!userIsSchedulerTimeZoneWriter()" aria-labelledby="label-ianaTimeZone" />
+                                <div *ngIf="timeZoneForm.get('ianaTimeZone')?.invalid && timeZoneForm.get('ianaTimeZone')?.touched" class="text-danger">
+                                    Iana Time Zone is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('abbreviation')">
+                                <label for="TimeZone-abbreviation" id="label-TimeZone-abbreviation"><span class="text-danger">*</span>Abbreviation</label>
+                                <input type="text" id="TimeZone-abbreviation" formControlName="abbreviation" placeholder="Enter Abbreviation" class="form-control time-zone-input" [disabled]="!userIsSchedulerTimeZoneWriter()" aria-labelledby="label-abbreviation" />
+                                <div *ngIf="timeZoneForm.get('abbreviation')?.invalid && timeZoneForm.get('abbreviation')?.touched" class="text-danger">
+                                    Abbreviation is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('abbreviationDaylightSavings')">
+                                <label for="TimeZone-abbreviationDaylightSavings" id="label-TimeZone-abbreviationDaylightSavings"><span class="text-danger">*</span>Abbreviation Daylight Savings</label>
+                                <input type="text" id="TimeZone-abbreviationDaylightSavings" formControlName="abbreviationDaylightSavings" placeholder="Enter Abbreviation Daylight Savings" class="form-control time-zone-input" [disabled]="!userIsSchedulerTimeZoneWriter()" aria-labelledby="label-abbreviationDaylightSavings" />
+                                <div *ngIf="timeZoneForm.get('abbreviationDaylightSavings')?.invalid && timeZoneForm.get('abbreviationDaylightSavings')?.touched" class="text-danger">
+                                    Abbreviation Daylight Savings is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('supportsDaylightSavings')">
+                                <input type="checkbox" id="TimeZone-supportsDaylightSavings" formControlName="supportsDaylightSavings" class="form-check-input" [disabled]="!userIsSchedulerTimeZoneWriter()" />
+                                <label for="TimeZone-supportsDaylightSavings" class="form-check-label" id="label-TimeZone-supportsDaylightSavings"><span class="text-danger">*</span>Supports Daylight Savings</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('standardUTCOffsetHours')">
+                                <label for="TimeZone-standardUTCOffsetHours" id="label-TimeZone-standardUTCOffsetHours"><span class="text-danger">*</span>Standard U T C Offset Hours</label>
+                                <input type="number" id="TimeZone-standardUTCOffsetHours" formControlName="standardUTCOffsetHours" placeholder="Enter Standard U T C Offset Hours" class="form-control time-zone-input" [disabled]="!userIsSchedulerTimeZoneWriter()" aria-labelledby="label-standardUTCOffsetHours" />
+                                <div *ngIf="timeZoneForm.get('standardUTCOffsetHours')?.invalid && timeZoneForm.get('standardUTCOffsetHours')?.touched" class="text-danger">
+                                    Standard U T C Offset Hours is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('dstUTCOffsetHours')">
+                                <label for="TimeZone-dstUTCOffsetHours" id="label-TimeZone-dstUTCOffsetHours"><span class="text-danger">*</span>Dst U T C Offset Hours</label>
+                                <input type="number" id="TimeZone-dstUTCOffsetHours" formControlName="dstUTCOffsetHours" placeholder="Enter Dst U T C Offset Hours" class="form-control time-zone-input" [disabled]="!userIsSchedulerTimeZoneWriter()" aria-labelledby="label-dstUTCOffsetHours" />
+                                <div *ngIf="timeZoneForm.get('dstUTCOffsetHours')?.invalid && timeZoneForm.get('dstUTCOffsetHours')?.touched" class="text-danger">
+                                    Dst U T C Offset Hours is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                                <label for="TimeZone-sequence" id="label-TimeZone-sequence">Sequence</label>
+                                <input type="number" id="TimeZone-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control time-zone-input" [disabled]="!userIsSchedulerTimeZoneWriter()" aria-labelledby="label-sequence" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="TimeZone-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerTimeZoneWriter()" />
+                                <label for="TimeZone-active" class="form-check-label" id="label-TimeZone-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="TimeZone-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerTimeZoneWriter()" />
+                                <label for="TimeZone-deleted" class="form-check-label" id="label-TimeZone-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="time-zone-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="timeZoneForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Time Zone">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !timeZoneForm.valid || !timeZoneForm.dirty || timeZoneForm.pristine || userIsSchedulerTimeZoneWriter() == false " ngbTooltip="Save Time Zone">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerTimeZoneReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 time-zone-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="contactService.userIsSchedulerContactReader()">
+                            <button ngbNavLink>Contacts
+                                <span class="badge bg-primary ms-2">
+                                    {{ (timeZoneData?.ContactsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-contact-table [queryParams]="{ timeZoneId: timeZoneData?.id }"></app-contact-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-contact-add-edit [preSeededData]="{ timeZoneId: timeZoneData?.id }" [hiddenFields]="['timeZoneId']"></app-contact-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="officeService.userIsSchedulerOfficeReader()">
+                            <button ngbNavLink>Offices
+                                <span class="badge bg-primary ms-2">
+                                    {{ (timeZoneData?.OfficesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-office-table [queryParams]="{ timeZoneId: timeZoneData?.id }"></app-office-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-office-add-edit [preSeededData]="{ timeZoneId: timeZoneData?.id }" [hiddenFields]="['timeZoneId']"></app-office-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="clientService.userIsSchedulerClientReader()">
+                            <button ngbNavLink>Clients
+                                <span class="badge bg-primary ms-2">
+                                    {{ (timeZoneData?.ClientsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-client-table [queryParams]="{ timeZoneId: timeZoneData?.id }"></app-client-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-client-add-edit [preSeededData]="{ timeZoneId: timeZoneData?.id }" [hiddenFields]="['timeZoneId']"></app-client-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="tenantProfileService.userIsSchedulerTenantProfileReader()">
+                            <button ngbNavLink>Tenant Profiles
+                                <span class="badge bg-primary ms-2">
+                                    {{ (timeZoneData?.TenantProfilesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-tenant-profile-table [queryParams]="{ timeZoneId: timeZoneData?.id }"></app-tenant-profile-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-tenant-profile-add-edit [preSeededData]="{ timeZoneId: timeZoneData?.id }" [hiddenFields]="['timeZoneId']"></app-tenant-profile-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="schedulingTargetService.userIsSchedulerSchedulingTargetReader()">
+                            <button ngbNavLink>Scheduling Targets
+                                <span class="badge bg-primary ms-2">
+                                    {{ (timeZoneData?.SchedulingTargetsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-scheduling-target-table [queryParams]="{ timeZoneId: timeZoneData?.id }"></app-scheduling-target-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-scheduling-target-add-edit [preSeededData]="{ timeZoneId: timeZoneData?.id }" [hiddenFields]="['timeZoneId']"></app-scheduling-target-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="shiftPatternService.userIsSchedulerShiftPatternReader()">
+                            <button ngbNavLink>Shift Patterns
+                                <span class="badge bg-primary ms-2">
+                                    {{ (timeZoneData?.ShiftPatternsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-shift-pattern-table [queryParams]="{ timeZoneId: timeZoneData?.id }"></app-shift-pattern-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-shift-pattern-add-edit [preSeededData]="{ timeZoneId: timeZoneData?.id }" [hiddenFields]="['timeZoneId']"></app-shift-pattern-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="resourceService.userIsSchedulerResourceReader()">
+                            <button ngbNavLink>Resources
+                                <span class="badge bg-primary ms-2">
+                                    {{ (timeZoneData?.ResourcesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-resource-table [queryParams]="{ timeZoneId: timeZoneData?.id }"></app-resource-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-resource-add-edit [preSeededData]="{ timeZoneId: timeZoneData?.id }" [hiddenFields]="['timeZoneId']"></app-resource-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="resourceAvailabilityService.userIsSchedulerResourceAvailabilityReader()">
+                            <button ngbNavLink>Resource Availabilities
+                                <span class="badge bg-primary ms-2">
+                                    {{ (timeZoneData?.ResourceAvailabilitiesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-resource-availability-table [queryParams]="{ timeZoneId: timeZoneData?.id }"></app-resource-availability-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-resource-availability-add-edit [preSeededData]="{ timeZoneId: timeZoneData?.id }" [hiddenFields]="['timeZoneId']"></app-resource-availability-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="resourceShiftService.userIsSchedulerResourceShiftReader()">
+                            <button ngbNavLink>Resource Shifts
+                                <span class="badge bg-primary ms-2">
+                                    {{ (timeZoneData?.ResourceShiftsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-resource-shift-table [queryParams]="{ timeZoneId: timeZoneData?.id }"></app-resource-shift-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-resource-shift-add-edit [preSeededData]="{ timeZoneId: timeZoneData?.id }" [hiddenFields]="['timeZoneId']"></app-resource-shift-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="scheduledEventService.userIsSchedulerScheduledEventReader()">
+                            <button ngbNavLink>Scheduled Events
+                                <span class="badge bg-primary ms-2">
+                                    {{ (timeZoneData?.ScheduledEventsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-scheduled-event-table [queryParams]="{ timeZoneId: timeZoneData?.id }"></app-scheduled-event-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-scheduled-event-add-edit [preSeededData]="{ timeZoneId: timeZoneData?.id }" [hiddenFields]="['timeZoneId']"></app-scheduled-event-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

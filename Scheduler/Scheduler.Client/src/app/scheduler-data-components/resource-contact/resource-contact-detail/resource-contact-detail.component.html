@@ -1,0 +1,104 @@
+<div class="container-fluid p-1 m-0 resource-contact-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="resource-contact-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Resource Contact</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Resource Contact' : 'Add Resource Contact'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerResourceContactReader()">
+                <div class="col m-2 resource-contact-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="resourceContactForm" (ngSubmit)="submitForm()" class="resource-contact-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('resourceId')">
+                                <label for="ResourceContact-resourceId" id="label-ResourceContact-resourceId"><span class="text-danger">*</span>Resource</label>
+                                <select id="ResourceContact-resourceId" formControlName="resourceId" class="form-select resource-contact-select" [disabled]="!userIsSchedulerResourceContactWriter()">
+                                    <option [ngValue]="null">Select Resource</option>
+                                    <option *ngFor="let resource of resources$ | async" [ngValue]="resource.id">{{[resource.name] | filterAndJoin}}</option>
+                                </select>
+                                <div *ngIf="resourceContactForm.get('resourceId')?.invalid && resourceContactForm.get('resourceId')?.touched" class="text-danger">
+                                    Resource is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('contactId')">
+                                <label for="ResourceContact-contactId" id="label-ResourceContact-contactId"><span class="text-danger">*</span>Contact</label>
+                                <select id="ResourceContact-contactId" formControlName="contactId" class="form-select resource-contact-select" [disabled]="!userIsSchedulerResourceContactWriter()">
+                                    <option [ngValue]="null">Select Contact</option>
+                                    <option *ngFor="let contact of contacts$ | async" [ngValue]="contact.id">{{contact.firstName}}</option>
+                                </select>
+                                <div *ngIf="resourceContactForm.get('contactId')?.invalid && resourceContactForm.get('contactId')?.touched" class="text-danger">
+                                    Contact is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isPrimary')">
+                                <input type="checkbox" id="ResourceContact-isPrimary" formControlName="isPrimary" class="form-check-input" [disabled]="!userIsSchedulerResourceContactWriter()" />
+                                <label for="ResourceContact-isPrimary" class="form-check-label" id="label-ResourceContact-isPrimary"><span class="text-danger">*</span>Is Primary</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('relationshipTypeId')">
+                                <label for="ResourceContact-relationshipTypeId" id="label-ResourceContact-relationshipTypeId"><span class="text-danger">*</span>Relationship Type</label>
+                                <select id="ResourceContact-relationshipTypeId" formControlName="relationshipTypeId" class="form-select resource-contact-select" [disabled]="!userIsSchedulerResourceContactWriter()">
+                                    <option [ngValue]="null">Select Relationship Type</option>
+                                    <option *ngFor="let relationshipType of relationshipTypes$ | async" [ngValue]="relationshipType.id">{{relationshipType.name}}</option>
+                                </select>
+                                <div *ngIf="resourceContactForm.get('relationshipTypeId')?.invalid && resourceContactForm.get('relationshipTypeId')?.touched" class="text-danger">
+                                    Relationship Type is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="ResourceContact-versionNumber" id="label-ResourceContact-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="ResourceContact-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control resource-contact-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ResourceContact-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerResourceContactWriter()" />
+                                <label for="ResourceContact-active" class="form-check-label" id="label-ResourceContact-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ResourceContact-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerResourceContactWriter()" />
+                                <label for="ResourceContact-deleted" class="form-check-label" id="label-ResourceContact-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="resource-contact-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="resourceContactForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Resource Contact">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !resourceContactForm.valid || !resourceContactForm.dirty || resourceContactForm.pristine || userIsSchedulerResourceContactWriter() == false " ngbTooltip="Save Resource Contact">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerResourceContactReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 resource-contact-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="resourceContactChangeHistoryService.userIsSchedulerResourceContactChangeHistoryReader()">
+                            <button ngbNavLink>Resource Contact Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (resourceContactData?.ResourceContactChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-resource-contact-change-history-table [queryParams]="{ resourceContactId: resourceContactData?.id }"></app-resource-contact-change-history-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-resource-contact-change-history-add-edit [preSeededData]="{ resourceContactId: resourceContactData?.id }" [hiddenFields]="['resourceContactId']"></app-resource-contact-change-history-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

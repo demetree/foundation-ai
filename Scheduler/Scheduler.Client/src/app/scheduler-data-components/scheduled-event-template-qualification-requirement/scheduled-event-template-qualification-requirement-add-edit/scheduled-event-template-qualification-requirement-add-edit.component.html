@@ -1,0 +1,66 @@
+<div class="add-scheduled-event-template-qualification-requirement" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-scheduled-event-template-qualification-requirement me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Scheduled Event Template Qualification Requirement" 
+        *ngIf="userIsSchedulerScheduledEventTemplateQualificationRequirementWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #scheduledEventTemplateQualificationRequirementModal let-modal>
+   <div class="modal-header bg-dark text-light scheduled-event-template-qualification-requirement-modal-header">
+      <h5 class="modal-title mb-0" id="scheduledEventTemplateQualificationRequirementModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Scheduled Event Template Qualification Requirement' : 'Add Scheduled Event Template Qualification Requirement' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body scheduled-event-template-qualification-requirement-modal-body">
+      <form [formGroup]="scheduledEventTemplateQualificationRequirementForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('scheduledEventTemplateId')">
+                <label for="ScheduledEventTemplateQualificationRequirement-scheduledEventTemplateId" id="label-ScheduledEventTemplateQualificationRequirement-scheduledEventTemplateId"><span class="text-danger">*</span>Scheduled Event Template</label>
+                <select id="ScheduledEventTemplateQualificationRequirement-scheduledEventTemplateId" formControlName="scheduledEventTemplateId" class="form-select scheduled-event-template-qualification-requirement-select" [disabled]="!userIsSchedulerScheduledEventTemplateQualificationRequirementWriter()">
+                    <option [ngValue]="null">Select Scheduled Event Template</option>
+                    <option *ngFor="let scheduledEventTemplate of scheduledEventTemplates$ | async" [ngValue]="scheduledEventTemplate.id">{{scheduledEventTemplate.name}}</option>
+                </select>
+                <div *ngIf="scheduledEventTemplateQualificationRequirementForm.get('scheduledEventTemplateId')?.invalid && scheduledEventTemplateQualificationRequirementForm.get('scheduledEventTemplateId')?.touched" class="text-danger">
+                    Scheduled Event Template is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('qualificationId')">
+                <label for="ScheduledEventTemplateQualificationRequirement-qualificationId" id="label-ScheduledEventTemplateQualificationRequirement-qualificationId"><span class="text-danger">*</span>Qualification</label>
+                <select id="ScheduledEventTemplateQualificationRequirement-qualificationId" formControlName="qualificationId" class="form-select scheduled-event-template-qualification-requirement-select" [disabled]="!userIsSchedulerScheduledEventTemplateQualificationRequirementWriter()">
+                    <option [ngValue]="null">Select Qualification</option>
+                    <option *ngFor="let qualification of qualifications$ | async" [ngValue]="qualification.id">{{qualification.name}}</option>
+                </select>
+                <div *ngIf="scheduledEventTemplateQualificationRequirementForm.get('qualificationId')?.invalid && scheduledEventTemplateQualificationRequirementForm.get('qualificationId')?.touched" class="text-danger">
+                    Qualification is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isRequired')">
+                <input type="checkbox" id="ScheduledEventTemplateQualificationRequirement-isRequired" formControlName="isRequired" class="form-check-input" [disabled]="!userIsSchedulerScheduledEventTemplateQualificationRequirementWriter()" />
+                <label for="ScheduledEventTemplateQualificationRequirement-isRequired" class="form-check-label" id="label-ScheduledEventTemplateQualificationRequirement-isRequired"><span class="text-danger">*</span>Is Required</label>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="ScheduledEventTemplateQualificationRequirement-versionNumber" id="label-ScheduledEventTemplateQualificationRequirement-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="ScheduledEventTemplateQualificationRequirement-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control scheduled-event-template-qualification-requirement-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ScheduledEventTemplateQualificationRequirement-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerScheduledEventTemplateQualificationRequirementWriter()" />
+                <label for="ScheduledEventTemplateQualificationRequirement-active" class="form-check-label" id="label-ScheduledEventTemplateQualificationRequirement-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ScheduledEventTemplateQualificationRequirement-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerScheduledEventTemplateQualificationRequirementWriter()" />
+                <label for="ScheduledEventTemplateQualificationRequirement-deleted" class="form-check-label" id="label-ScheduledEventTemplateQualificationRequirement-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer scheduled-event-template-qualification-requirement-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Scheduled Event Template Qualification Requirement changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !scheduledEventTemplateQualificationRequirementForm.valid || scheduledEventTemplateQualificationRequirementForm.pristine || !userIsSchedulerScheduledEventTemplateQualificationRequirementWriter()" ngbTooltip="Save the Scheduled Event Template Qualification Requirement changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

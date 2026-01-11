@@ -1,0 +1,350 @@
+<app-rate-sheet-add-edit [showAddButton]="false"></app-rate-sheet-add-edit>
+<div class="row" *ngIf="userIsSchedulerRateSheetReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerRateSheetWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerRateSheetWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('office.name')">
+                Office
+                <span *ngIf="sortColumn === 'office.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('assignmentRole.name')">
+                Assignment  Role
+                <span *ngIf="sortColumn === 'assignmentRole.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('resource.name')">
+                Resource
+                <span *ngIf="sortColumn === 'resource.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('schedulingTarget.name')">
+                Scheduling  Target
+                <span *ngIf="sortColumn === 'schedulingTarget.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('rateType.name')">
+                Rate  Type
+                <span *ngIf="sortColumn === 'rateType.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('effectiveDate')">
+                Effective  Date
+                <span *ngIf="sortColumn === 'effectiveDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('currency.name')">
+                Currency
+                <span *ngIf="sortColumn === 'currency.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('costRate')">
+                Cost  Rate
+                <span *ngIf="sortColumn === 'costRate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('billingRate')">
+                Billing  Rate
+                <span *ngIf="sortColumn === 'billingRate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('notes')">
+                Notes
+                <span *ngIf="sortColumn === 'notes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let rateSheet of filteredRateSheets; trackBy: getRateSheetId"
+              [ngClass]="{
+                 'row-inactive': rateSheet.active == false,
+                 'row-deleted': rateSheet.deleted == true 
+                 }">
+            <td class="header-action-button" *ngIf="userIsSchedulerRateSheetWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleEdit(rateSheet)"
+                      ngbTooltip="Edit" 
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsSchedulerRateSheetWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleDelete(rateSheet)"
+                      ngbTooltip="Delete" 
+                      placement="top"
+                      *ngIf="rateSheet.deleted == false">
+                <i class="fa fa-trash"></i>
+              </button>
+              <button class="btn btn-sm"
+                      (click)="handleUndelete(rateSheet)"
+                      ngbTooltip="Undelete" 
+                      placement="top"
+                      *ngIf="rateSheet.deleted == true">
+                <i class="fa fa-trash-arrow-up"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(rateSheet, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(rateSheet, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(rateSheet, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(rateSheet, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(rateSheet, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(rateSheet, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(rateSheet, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(rateSheet, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/office', rateSheet.officeId]" class="btn btn-link text-left" ngbTooltip="Open Office details">{{rateSheet.office?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/assignmentrole', rateSheet.assignmentRoleId]" class="btn btn-link text-left" ngbTooltip="Open Assignment Role details">{{rateSheet.assignmentRole?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/resource', rateSheet.resourceId]" class="btn btn-link text-left" ngbTooltip="Open Resource details">{{rateSheet.resource?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/schedulingtarget', rateSheet.schedulingTargetId]" class="btn btn-link text-left" ngbTooltip="Open Scheduling Target details">{{rateSheet.schedulingTarget?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/ratetype', rateSheet.rateTypeId]" class="btn btn-link text-left" ngbTooltip="Open Rate Type details">{{rateSheet.rateType?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/ratesheet', rateSheet.id]" class="btn btn-link text-left" ngbTooltip="Open Rate Sheet details">{{rateSheet.effectiveDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/currency', rateSheet.currencyId]" class="btn btn-link text-left" ngbTooltip="Open Currency details">{{rateSheet.currency?.name}}</a></td>
+            <td class="text-truncate">{{rateSheet.costRate | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{rateSheet.billingRate | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{rateSheet.notes}}</td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let rateSheet of filteredRateSheets; trackBy: getRateSheetId" class="card my-2"
+              [ngClass]="{
+                 'row-inactive': rateSheet.active == false,
+                 'row-deleted': rateSheet.deleted == true 
+                 }">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(rateSheet, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(rateSheet, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(rateSheet, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(rateSheet, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(rateSheet, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(rateSheet, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(rateSheet, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(rateSheet, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(rateSheet, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(rateSheet, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(rateSheet, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(rateSheet, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(rateSheet, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/ratesheet', rateSheet.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(rateSheet)" *ngIf="userIsSchedulerRateSheetWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(rateSheet)" *ngIf="userIsSchedulerRateSheetWriter() && rateSheet.deleted == false" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+            <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(rateSheet)" *ngIf="userIsSchedulerRateSheetWriter() && rateSheet.deleted == true" ngbTooltip="Undelete">
+              <i class="fa fa-trash-arrow-upp"></i> UnDelete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{rateSheet.id}}</strong>
+               <small class="text-muted d-block">{{rateSheet.office?.name}}</small>
+             </div>
+             <div>
+                <button class="btn btn-sm"
+                        [routerLink]="['/ratesheet', rateSheet.id]"
+                        ngbTooltip="Rate Sheet Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="btn btn-sm"
+                        (click)="handleEdit(rateSheet)"
+                        ngbTooltip="Edit Rate Sheet">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleDelete(rateSheet)"
+                      ngbTooltip="Delete Rate Sheet" 
+                      placement="top"
+                      *ngIf="rateSheet.deleted == false">
+                  <i class="fa fa-trash"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleUndelete(rateSheet)"
+                      ngbTooltip="Undelete Rate Sheet" 
+                      placement="top"
+                      *ngIf="rateSheet.deleted == true">
+                 <i class="fa fa-trash-arrow-up"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="rate-sheet-info" *ngIf="rateSheet.officeId != null">
+              <strong>Office: </strong>
+              <a [routerLink]="['/office', rateSheet.officeId]" class="text-left p-0 m-0" ngbTooltip="Open Office details">{{rateSheet.office?.name}}</a>
+            </p>
+            <p class="rate-sheet-info" *ngIf="rateSheet.assignmentRoleId != null">
+              <strong>Assignment Role: </strong>
+              <a [routerLink]="['/assignmentrole', rateSheet.assignmentRoleId]" class="text-left p-0 m-0" ngbTooltip="Open Assignment Role details">{{rateSheet.assignmentRole?.name}}</a>
+            </p>
+            <p class="rate-sheet-info" *ngIf="rateSheet.resourceId != null">
+              <strong>Resource: </strong>
+              <a [routerLink]="['/resource', rateSheet.resourceId]" class="text-left p-0 m-0" ngbTooltip="Open Resource details">{{rateSheet.resource?.name}}</a>
+            </p>
+            <p class="rate-sheet-info" *ngIf="rateSheet.schedulingTargetId != null">
+              <strong>Scheduling Target: </strong>
+              <a [routerLink]="['/schedulingtarget', rateSheet.schedulingTargetId]" class="text-left p-0 m-0" ngbTooltip="Open Scheduling Target details">{{rateSheet.schedulingTarget?.name}}</a>
+            </p>
+            <p class="rate-sheet-info" *ngIf="rateSheet.rateTypeId != null">
+              <strong>Rate Type: </strong>
+              <a [routerLink]="['/ratetype', rateSheet.rateTypeId]" class="text-left p-0 m-0" ngbTooltip="Open Rate Type details">{{rateSheet.rateType?.name}}</a>
+            </p>
+            <p class="rate-sheet-info" *ngIf="rateSheet.effectiveDate != null">
+              <strong>Effective Date: </strong>
+              {{rateSheet.effectiveDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="rate-sheet-info" *ngIf="rateSheet.currencyId != null">
+              <strong>Currency: </strong>
+              <a [routerLink]="['/currency', rateSheet.currencyId]" class="text-left p-0 m-0" ngbTooltip="Open Currency details">{{rateSheet.currency?.name}}</a>
+            </p>
+            <p class="rate-sheet-info" *ngIf="rateSheet.costRate != null">
+              <strong>Cost Rate: </strong>
+              {{rateSheet.costRate | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="rate-sheet-info" *ngIf="rateSheet.billingRate != null">
+              <strong>Billing Rate: </strong>
+              {{rateSheet.billingRate | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="rate-sheet-info" *ngIf="rateSheet.notes != null">
+              <strong>Notes: </strong>
+              {{rateSheet.notes}}
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+   </div>
+</div>

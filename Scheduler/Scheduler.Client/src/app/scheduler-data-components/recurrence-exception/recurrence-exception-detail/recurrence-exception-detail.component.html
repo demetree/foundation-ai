@@ -1,0 +1,95 @@
+<div class="container-fluid p-1 m-0 recurrence-exception-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="recurrence-exception-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Recurrence Exception</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Recurrence Exception' : 'Add Recurrence Exception'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerRecurrenceExceptionReader()">
+                <div class="col m-2 recurrence-exception-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="recurrenceExceptionForm" (ngSubmit)="submitForm()" class="recurrence-exception-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('scheduledEventId')">
+                                <label for="RecurrenceException-scheduledEventId" id="label-RecurrenceException-scheduledEventId"><span class="text-danger">*</span>Scheduled Event</label>
+                                <select id="RecurrenceException-scheduledEventId" formControlName="scheduledEventId" class="form-select recurrence-exception-select" [disabled]="!userIsSchedulerRecurrenceExceptionWriter()">
+                                    <option [ngValue]="null">Select Scheduled Event</option>
+                                    <option *ngFor="let scheduledEvent of scheduledEvents$ | async" [ngValue]="scheduledEvent.id">{{[scheduledEvent.name] | filterAndJoin}}</option>
+                                </select>
+                                <div *ngIf="recurrenceExceptionForm.get('scheduledEventId')?.invalid && recurrenceExceptionForm.get('scheduledEventId')?.touched" class="text-danger">
+                                    Scheduled Event is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('exceptionDateTime')">
+                                <label for="RecurrenceException-exceptionDateTime" id="label-RecurrenceException-exceptionDateTime"><span class="text-danger">*</span>Exception Date Time</label>
+                                <input type="datetime-local" id="RecurrenceException-exceptionDateTime" formControlName="exceptionDateTime" placeholder="Enter Exception Date Time" class="form-control recurrence-exception-input" [disabled]="!userIsSchedulerRecurrenceExceptionWriter()" aria-labelledby="label-exceptionDateTime" />
+                                <div *ngIf="recurrenceExceptionForm.get('exceptionDateTime')?.invalid && recurrenceExceptionForm.get('exceptionDateTime')?.touched" class="text-danger">
+                                    Exception Date Time is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('movedToDateTime')">
+                                <label for="RecurrenceException-movedToDateTime" id="label-RecurrenceException-movedToDateTime">Moved To Date Time</label>
+                                <input type="datetime-local" id="RecurrenceException-movedToDateTime" formControlName="movedToDateTime" placeholder="Enter Moved To Date Time" class="form-control recurrence-exception-input" [disabled]="!userIsSchedulerRecurrenceExceptionWriter()" aria-labelledby="label-movedToDateTime" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('reason')">
+                                <label for="RecurrenceException-reason" id="label-RecurrenceException-reason">Reason</label>
+                                <input type="text" id="RecurrenceException-reason" formControlName="reason" placeholder="Enter Reason" class="form-control recurrence-exception-input" [disabled]="!userIsSchedulerRecurrenceExceptionWriter()" aria-labelledby="label-reason" />
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="RecurrenceException-versionNumber" id="label-RecurrenceException-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="RecurrenceException-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control recurrence-exception-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="RecurrenceException-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerRecurrenceExceptionWriter()" />
+                                <label for="RecurrenceException-active" class="form-check-label" id="label-RecurrenceException-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="RecurrenceException-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerRecurrenceExceptionWriter()" />
+                                <label for="RecurrenceException-deleted" class="form-check-label" id="label-RecurrenceException-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="recurrence-exception-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="recurrenceExceptionForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Recurrence Exception">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !recurrenceExceptionForm.valid || !recurrenceExceptionForm.dirty || recurrenceExceptionForm.pristine || userIsSchedulerRecurrenceExceptionWriter() == false " ngbTooltip="Save Recurrence Exception">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerRecurrenceExceptionReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 recurrence-exception-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="recurrenceExceptionChangeHistoryService.userIsSchedulerRecurrenceExceptionChangeHistoryReader()">
+                            <button ngbNavLink>Recurrence Exception Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (recurrenceExceptionData?.RecurrenceExceptionChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-recurrence-exception-change-history-table [queryParams]="{ recurrenceExceptionId: recurrenceExceptionData?.id }"></app-recurrence-exception-change-history-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-recurrence-exception-change-history-add-edit [preSeededData]="{ recurrenceExceptionId: recurrenceExceptionData?.id }" [hiddenFields]="['recurrenceExceptionId']"></app-recurrence-exception-change-history-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

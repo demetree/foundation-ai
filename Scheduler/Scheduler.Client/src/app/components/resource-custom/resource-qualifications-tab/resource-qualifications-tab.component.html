@@ -1,0 +1,85 @@
+<app-resource-qualification-add-edit [showAddButton]="false" (resourceQualificationChanged)="reload($event)"></app-resource-qualification-add-edit>
+<div class="card h-100">
+  <div class="card-header bg-light d-flex justify-content-between align-items-center">
+    <h6 class="mb-0 fw-semibold">
+      <i class="fa-solid fa-certificate me-2"></i>
+      Qualifications
+    </h6>
+    <div class="d-flex gap-2">
+      <button class="btn btn-sm btn-outline-primary" (click)="openAddQualificationModal()"
+              *ngIf="canWrite">
+        <i class="fa fa-plus me-1"></i> Add
+      </button>
+      <button class="btn btn-sm btn-outline-secondary" (click)="loadQualifications()">
+        <i class="fa fa-sync" [ngClass]="{'fa-spin': isLoading}"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <!-- Loading State -->
+    <div class="text-center py-4" *ngIf="isLoading">
+      <div class="spinner-border spinner-border-sm text-primary" role="status">
+        <span class="visually-hidden">Loading qualifications...</span>
+      </div>
+    </div>
+
+    <!-- Error State -->
+    <div class="alert alert-danger small" *ngIf="error">
+      <i class="fa-solid fa-exclamation-triangle me-2"></i>
+      {{ error }}
+    </div>
+
+    <!-- No Qualifications -->
+    <div class="text-center py-5 text-muted" *ngIf="!isLoading && (!qualifications || qualifications.length === 0)">
+      <i class="fa-solid fa-certificate fa-3x mb-3 opacity-50"></i>
+      <div>No qualifications recorded</div>
+    </div>
+
+    <!-- Qualifications List   (click)="navigateToResourceQualification(qual.id)"> -->
+    <div class="list-group list-group-flush" *ngIf="!isLoading && qualifications && qualifications.length > 0">
+      <div class="list-group-item px-0" *ngFor="let qual of qualifications">
+        <div class="d-flex align-items-center justify-content-between">
+          <div class="flex-grow-1">
+            <div class="fw-semibold clickable" (click)="openResourceQualificationModal(qual)">
+              {{ qual.qualification?.name || 'Unknown Qualification' }}
+            </div>
+
+
+            <div class="small text-muted">
+              <span *ngIf="qual.issuer">Issued by: {{ qual.issuer }}</span>
+              <span *ngIf="!qual.issuer">—</span>
+              <span class="ms-3">• Issue: {{ formatDate(qual.issueDate) }}</span>
+            </div>
+            <div class="small text-muted mt-1" *ngIf="qual.notes">
+              {{ qual.notes }}
+            </div>
+          </div>
+
+          <!-- Expiry Status Badge -->
+          <div class="ms-3 text-end clickable" (click)="openResourceQualificationModal(qual)">
+            <span class="badge rounded-pill px-3 mx-2 py-2"
+                  [style.background-color]="qual.qualification?.color || '#0d6efd'"
+                  [style.color]="(qual.qualification?.color ? (qual.qualification?.color | contrastColor) : '#000000')">
+              <small class="ms-1" *ngIf="qual.qualification?.isLicense == true">Is License</small>
+              <small class="ms-1" *ngIf="qual.qualification?.isLicense != true">Not License</small>
+            </span>
+            <span class="badge rounded-pill px-3 py-2 {{ getExpiryStatus(qual).badgeClass }}">
+              <i [class]="getExpiryStatus(qual).iconClass" class="me-1"></i>
+              <span *ngIf="!qual.expiryDate">No Expiry</span>
+              <span *ngIf="qual.expiryDate">
+                {{ formatDate(qual.expiryDate) }}
+                <small class="ms-1" *ngIf="getDaysUntilExpiry(qual) >= 0">
+                  ({{ getDaysUntilExpiry(qual) }} days)
+                </small>
+                <small class="ms-1 text-white" *ngIf="getDaysUntilExpiry(qual) < 0">
+                  (Expired {{ -getDaysUntilExpiry(qual) }} days ago)
+                </small>
+              </span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

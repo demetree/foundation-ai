@@ -1,0 +1,76 @@
+<div class="container-fluid p-1 m-0 audit-module-entity-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="audit-module-entity-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Audit Module Entity</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Audit Module Entity' : 'Add Audit Module Entity'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsAuditorAuditModuleEntityReader()">
+                <div class="col m-2 audit-module-entity-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="auditModuleEntityForm" (ngSubmit)="submitForm()" class="audit-module-entity-details-form">
+                            <div class="form-group">
+                                <label for="auditModuleId" id="label-auditModuleId"><span class="text-danger">*</span>Audit Module</label>
+                                <select id="auditModuleId" formControlName="auditModuleId" class="form-select audit-module-entity-select" [disabled]="!userIsAuditorAuditModuleEntityWriter()">
+                                    <option [ngValue]="null">Select Audit Module</option>
+                                    <option *ngFor="let auditModule of auditModules$ | async" [ngValue]="auditModule.id">{{auditModule.name}}</option>
+                                </select>
+                                <div *ngIf="auditModuleEntityForm.get('auditModuleId')?.invalid && auditModuleEntityForm.get('auditModuleId')?.touched" class="text-danger">
+                                    Audit Module is required
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="name" id="label-name"><span class="text-danger">*</span>Name</label>
+                                <textarea id="name" formControlName="name" placeholder="Enter Name" class="form-control audit-module-entity-input" [disabled]="!userIsAuditorAuditModuleEntityWriter()"></textarea>
+                                <div *ngIf="auditModuleEntityForm.get('name')?.invalid && auditModuleEntityForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="comments" id="label-comments">Comments</label>
+                                <textarea id="comments" formControlName="comments" placeholder="Enter Comments" class="form-control audit-module-entity-input" [disabled]="!userIsAuditorAuditModuleEntityWriter()"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="firstAccess" id="label-firstAccess">First Access</label>
+                                <input type="datetime-local" id="firstAccess" formControlName="firstAccess" placeholder="Enter First Access" class="form-control audit-module-entity-input" [disabled]="!userIsAuditorAuditModuleEntityWriter()" aria-labelledby="label-firstAccess" />
+                            </div>
+                            <div class="audit-module-entity-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="auditModuleEntityForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Audit Module Entity">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !auditModuleEntityForm.valid || !auditModuleEntityForm.dirty || auditModuleEntityForm.pristine || userIsAuditorAuditModuleEntityWriter() == false " ngbTooltip="Save Audit Module Entity">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsAuditorAuditModuleEntityReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 audit-module-entity-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="auditEventService.userIsAuditorAuditEventReader()">
+                            <button ngbNavLink>AuditEvents
+                                <span class="badge bg-primary ms-2">
+                                    {{ (auditModuleEntityData?.AuditEventsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <app-audit-event-table [queryParams]="GetQueryParameters()"></app-audit-event-table>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,257 @@
+<!-- Bootstrap Modal -->
+<div class="modal fade" id="tenantProfileModal" tabindex="-1" aria-labelledby="tenantProfileModalLabel" aria-hidden="true" #tenantProfileModal>
+  <div class="modal-dialog modal-dialog-scrollable modal-lg">
+    <div class="modal-content">
+
+      <div class="modal-header bg-dark text-light tenant-profile-modal-header">
+        <h5 class="modal-title mb-0" id="tenantProfileModalLabel">
+          {{ isEditMode ? 'Edit Company Details' : 'Add Company Details' }}
+        </h5>
+        <button type="button"
+                class="btn btn-sm btn-close btn-close-white"
+                (click)="closeModal()">
+        </button>
+      </div>
+
+      <div class="modal-body tenant-profile-modal-body text-dark">
+        <form (ngSubmit)="submitForm()" #tenantProfileForm="ngForm">
+
+          <!-- GENERAL INFORMATION -->
+          <h5 class="border-bottom mb-3">General Information</h5>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="name">
+                <span class="text-danger">*</span> Name
+              </label>
+              <input type="text" id="name" name="name" [(ngModel)]="tenantProfileSubmitData.name"
+                     class="form-control" placeholder="Enter Name" required
+                     #nameCtrl="ngModel" [disabled]="!userIsTenantProfileWriter()" />
+              <div *ngIf="nameCtrl.invalid && nameCtrl.touched" class="text-danger small">
+                Name is required.
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <label for="description">Description</label>
+              <textarea id="description" name="description" [(ngModel)]="tenantProfileSubmitData.description"
+                        class="form-control" placeholder="Enter Description" [rows]="1"
+                        [disabled]="!userIsTenantProfileWriter()"></textarea>
+            </div>
+          </div>
+
+          <h5 class="border-bottom mb-3">Company Logo</h5>
+
+          <!-- Upload Area (Hidden after upload) -->
+          <div *ngIf="!tenantProfileSubmitData.companyLogoData" class="mb-3">
+            <label for="logoUpload"><span class="text-danger">*</span> Upload Logo</label>
+            <div class="border border-2 border-dashed p-3 text-center"
+                 (dragover)="onDragOver($event)"
+                 (drop)="onFileDrop($event)"
+                 (click)="fileInput.click()"
+                 style="cursor: pointer;">
+              <p class="mb-1">Drag & drop your logo here or click to upload</p>
+              <small class="text-muted">Supported: PNG, JPEG, SVG</small>
+              <input #fileInput type="file" accept=".png,.jpg,.jpeg,.svg" (change)="onFileSelected($event)" hidden />
+            </div>
+            <div *ngIf="tenantProfileForm.submitted && !tenantProfileSubmitData.companyLogoData" class="text-danger small mt-1">
+              Company logo is required.
+            </div>
+          </div>
+
+          <!-- Centered Uploaded Image Preview -->
+          <div *ngIf="tenantProfileSubmitData.companyLogoData" class="d-flex justify-content-center">
+            <div class="position-relative d-inline-block text-center">
+              <img [src]="'data:' + tenantProfileSubmitData.companyLogoMimeType + ';base64,' + tenantProfileSubmitData.companyLogoData"
+                   alt="Uploaded Logo"
+                   class="img-thumbnail shadow-sm"
+                   style="max-width: 150px; max-height: 150px;" />
+
+              <!-- Delete (X) Button -->
+              <button type="button"
+                      class="btn btn-sm btn-danger rounded-circle position-absolute top-0 end-0 translate-middle"
+                      style="z-index: 10;"
+                      (click)="clearLogo()"
+                      ngbTooltip="Remove uploaded logo">
+                <i class="fa fa-times"></i>
+              </button>
+
+              <!-- File Info -->
+              <div class="mt-2 text-muted small">
+                {{ tenantProfileSubmitData.companyLogoFileName }} ({{ tenantProfileSubmitData.companyLogoSize }} KB)
+              </div>
+            </div>
+          </div>
+
+          <!-- CONTACT -->
+          <h5 class="border-bottom mb-3">Company Contact</h5>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="phoneNumber">
+                <span class="text-danger">*</span> Phone
+              </label>
+              <input type="text" id="phoneNumber" name="phoneNumber" [(ngModel)]="tenantProfileSubmitData.phoneNumber"
+                     class="form-control" required #phoneCtrl="ngModel"
+                     [disabled]="!userIsTenantProfileWriter()" />
+              <div *ngIf="phoneCtrl.invalid && phoneCtrl.touched" class="text-danger small">
+                Phone number is required.
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <label for="email">
+                <span class="text-danger">*</span> Email
+              </label>
+              <input type="email" id="email" name="email" [(ngModel)]="tenantProfileSubmitData.email"
+                     class="form-control" required #emailCtrl="ngModel"
+                     [disabled]="!userIsTenantProfileWriter()" />
+              <div *ngIf="emailCtrl.invalid && emailCtrl.touched" class="text-danger small">
+                A valid email is required.
+              </div>
+            </div>
+            <div class="col-md-12 mb-3">
+              <label for="website">Website</label>
+              <input type="text" id="website" name="website" [(ngModel)]="tenantProfileSubmitData.website" class="form-control" [disabled]="!userIsTenantProfileWriter()" />
+            </div>
+          </div>
+
+
+          <!-- ADDRESS -->
+          <h5 class="border-bottom mb-3">Address</h5>
+          <div class="row">
+            <!-- Address Line 1 -->
+            <div class="col-md-12 mb-3">
+              <label for="addressLine1">
+                <span class="text-danger">*</span> Address Line 1
+              </label>
+              <input type="text" id="addressLine1" name="addressLine1" [(ngModel)]="tenantProfileSubmitData.addressLine1"
+                     class="form-control" required #addressCtrl="ngModel"
+                     [disabled]="!userIsTenantProfileWriter()" />
+              <div *ngIf="addressCtrl.invalid && addressCtrl.touched" class="text-danger small">
+                Address is required.
+              </div>
+            </div>
+
+            <!-- City -->
+            <div class="col-md-4 mb-3">
+              <label for="city">
+                <span class="text-danger">*</span> City
+              </label>
+              <input type="text" id="city" name="city" [(ngModel)]="tenantProfileSubmitData.city"
+                     class="form-control" required #cityCtrl="ngModel"
+                     [disabled]="!userIsTenantProfileWriter()" />
+              <div *ngIf="cityCtrl.invalid && cityCtrl.touched" class="text-danger small">
+                City is required.
+              </div>
+            </div>
+
+            <!-- State -->
+            <div class="col-md-4 mb-3">
+              <label for="stateId">
+                <span class="text-danger">*</span> State
+              </label>
+              <select id="stateId" name="stateId" [(ngModel)]="tenantProfileSubmitData.stateProvinceId"
+                      class="form-select" required #stateCtrl="ngModel"
+                      [disabled]="!userIsTenantProfileWriter()">
+                <option [ngValue]="null">Select State</option>
+                <option *ngFor="let state of states$ | async" [ngValue]="state.id">{{ state.name }}</option>
+              </select>
+              <div *ngIf="stateCtrl.invalid && stateCtrl.touched" class="text-danger small">
+                State is required.
+              </div>
+            </div>
+
+            <!-- Postal Code -->
+            <div class="col-md-4 mb-3">
+              <label for="postalCode">
+                <span class="text-danger">*</span> Postal Code
+              </label>
+              <input type="text" id="postalCode" name="postalCode" [(ngModel)]="tenantProfileSubmitData.postalCode"
+                     class="form-control" required #postalCtrl="ngModel"
+                     [disabled]="!userIsTenantProfileWriter()" />
+              <div *ngIf="postalCtrl.invalid && postalCtrl.touched" class="text-danger small">
+                Postal Code is required.
+              </div>
+            </div>
+
+            <!-- Country -->
+            <div class="col-md-6 mb-3">
+              <label for="countryId">
+                <span class="text-danger">*</span> Country
+              </label>
+              <select id="countryId" name="countryId" [(ngModel)]="tenantProfileSubmitData.countryId"
+                      class="form-select" required #countryCtrl="ngModel"
+                      [disabled]="!userIsTenantProfileWriter()">
+                <option [ngValue]="null">Select Country</option>
+                <option *ngFor="let country of countries$ | async" [ngValue]="country.id">{{ country.name }}</option>
+              </select>
+              <div *ngIf="countryCtrl.invalid && countryCtrl.touched" class="text-danger small">
+                Country is required.
+              </div>
+            </div>
+          </div>
+
+          <!-- Branding -->
+          <!--<h5 class="border-bottom mb-3">Branding</h5>
+      <div class="row">-->
+          <!-- Primary Color -->
+          <!--<div class="col-md-6 mb-3">
+        <label for="primaryColor">Primary Color</label>
+        <div class="input-group">
+          <input type="color"
+                 class="form-control form-control-color"
+                 [ngModel]="tenantProfileSubmitData.primaryColor"
+                 (ngModelChange)="onColorPickerChange($event, 'primary')"
+                 [disabled]="!userIsTenantProfileWriter()" />
+
+          <input type="text"
+                 name="primaryColorText"
+                 class="form-control"
+                 [ngModel]="tenantProfileSubmitData.primaryColor"
+                 (ngModelChange)="onHexInputChange($event, 'primary')"
+                 (keypress)="restrictHex($event)"
+                 maxlength="7"
+                 placeholder="#RRGGBB"
+                 [disabled]="!userIsTenantProfileWriter()" />
+
+        </div>
+      </div>-->
+          <!-- Secondary Color -->
+          <!--<div class="col-md-6 mb-3">
+          <label for="secondaryColor">Secondary Color</label>
+          <div class="input-group">
+            <input type="color"
+                   class="form-control form-control-color"
+                   [ngModel]="tenantProfileSubmitData.secondaryColor"
+                   (ngModelChange)="onColorPickerChange($event, 'secondary')"
+                   [disabled]="!userIsTenantProfileWriter()" />
+
+            <input type="text"
+                   name="secondaryColorText"
+                   class="form-control"
+                   [ngModel]="tenantProfileSubmitData.secondaryColor"
+                   (ngModelChange)="onHexInputChange($event, 'secondary')"
+                   (keypress)="restrictHex($event)"
+                   maxlength="7"
+                   placeholder="#RRGGBB"
+                   [disabled]="!userIsTenantProfileWriter()" />
+          </div>
+        </div>
+      </div>-->
+          <!-- ACTIONS -->
+          <div class="modal-footer tenant-profile-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary"
+                    [disabled]="
+          !tenantProfileForm.form.valid ||
+          !tenantProfileSubmitData.companyLogoData ||
+          !userIsTenantProfileWriter()">
+              Save
+            </button>
+          </div>
+
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>

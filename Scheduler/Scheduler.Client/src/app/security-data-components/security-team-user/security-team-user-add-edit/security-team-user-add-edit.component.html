@@ -1,0 +1,74 @@
+<div class="add-security-team-user" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-security-team-user me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Security Team User" 
+        *ngIf="userIsSecuritySecurityTeamUserWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #securityTeamUserModal let-modal>
+   <div class="modal-header bg-dark text-light security-team-user-modal-header">
+      <h5 class="modal-title mb-0" id="securityTeamUserModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Security Team User' : 'Add Security Team User' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body security-team-user-modal-body">
+      <form [formGroup]="securityTeamUserForm" (ngSubmit)="submitForm()">
+            <div class="form-group">
+                <label for="securityTeamId" id="label-securityTeamId"><span class="text-danger">*</span>Security Team</label>
+                <select id="securityTeamId" formControlName="securityTeamId" class="form-select security-team-user-select" [disabled]="!userIsSecuritySecurityTeamUserWriter()">
+                    <option [ngValue]="null">Select Security Team</option>
+                    <option *ngFor="let securityTeam of securityTeams$ | async" [ngValue]="securityTeam.id">{{securityTeam.name}}</option>
+                </select>
+                <div *ngIf="securityTeamUserForm.get('securityTeamId')?.invalid && securityTeamUserForm.get('securityTeamId')?.touched" class="text-danger">
+                    Security Team is required
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="securityUserId" id="label-securityUserId"><span class="text-danger">*</span>Security User</label>
+                <select id="securityUserId" formControlName="securityUserId" class="form-select security-team-user-select" [disabled]="!userIsSecuritySecurityTeamUserWriter()">
+                    <option [ngValue]="null">Select Security User</option>
+                    <option *ngFor="let securityUser of securityUsers$ | async" [ngValue]="securityUser.id">{{[securityUser.accountName] | filterAndJoin}}</option>
+                </select>
+                <div *ngIf="securityTeamUserForm.get('securityUserId')?.invalid && securityTeamUserForm.get('securityUserId')?.touched" class="text-danger">
+                    Security User is required
+                </div>
+            </div>
+            <div class="form-check my-2">
+                <input type="checkbox" id="canRead" formControlName="canRead" class="form-check-input" [disabled]="!userIsSecuritySecurityTeamUserWriter()" />
+                <label for="canRead" class="form-check-label" id="label-canRead"><span class="text-danger">*</span>Can Read</label>
+            </div>
+            <div class="form-check my-2">
+                <input type="checkbox" id="canWrite" formControlName="canWrite" class="form-check-input" [disabled]="!userIsSecuritySecurityTeamUserWriter()" />
+                <label for="canWrite" class="form-check-label" id="label-canWrite"><span class="text-danger">*</span>Can Write</label>
+            </div>
+            <div class="form-check my-2">
+                <input type="checkbox" id="canChangeHierarchy" formControlName="canChangeHierarchy" class="form-check-input" [disabled]="!userIsSecuritySecurityTeamUserWriter()" />
+                <label for="canChangeHierarchy" class="form-check-label" id="label-canChangeHierarchy"><span class="text-danger">*</span>Can Change Hierarchy</label>
+            </div>
+            <div class="form-check my-2">
+                <input type="checkbox" id="canChangeOwner" formControlName="canChangeOwner" class="form-check-input" [disabled]="!userIsSecuritySecurityTeamUserWriter()" />
+                <label for="canChangeOwner" class="form-check-label" id="label-canChangeOwner"><span class="text-danger">*</span>Can Change Owner</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode">
+                <input type="checkbox" id="active" formControlName="active" class="form-check-input" [disabled]="!userIsSecuritySecurityTeamUserWriter()" />
+                <label for="active" class="form-check-label" id="label-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode">
+                <input type="checkbox" id="deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSecuritySecurityTeamUserWriter()" />
+                <label for="deleted" class="form-check-label" id="label-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer security-team-user-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Security Team User changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !securityTeamUserForm.valid || securityTeamUserForm.pristine || !userIsSecuritySecurityTeamUserWriter()" ngbTooltip="Save the Security Team User changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

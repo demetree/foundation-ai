@@ -1,0 +1,133 @@
+<!-- event-add-edit-modal.component.html -->
+<div class="modal-header bg-primary text-white">
+  <h5 class="modal-title">
+    <i class="bi bi-calendar-event me-2"></i>
+    {{ isEditMode ? 'Edit' : 'Create' }} Scheduled Event
+  </h5>
+  <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="activeModal.dismiss('cancel')"></button>
+</div>
+
+<div class="modal-body">
+  <!-- Template Quick Picker -->
+  <div class="card mb-4" *ngIf="!isEditMode">
+    <div class="card-header"><h6>Start from Template (Optional)</h6></div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-8">
+          <select class="form-select" [(ngModel)]="selectedTemplateId" (change)="applyTemplate()">
+            <option [ngValue]="null">Blank Event</option>
+            <option *ngFor="let template of templates" [ngValue]="template.id">
+              {{ template.name }} ({{ template.defaultDurationMinutes }} min)
+            </option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <button class="btn btn-outline-secondary w-100" (click)="selectedTemplateId = null">Clear</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <ul class="nav nav-tabs mb-4" role="tablist">
+    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#basic">Basic Info</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#assignments">Assignments</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#recurrence">Recurrence</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#advanced">Advanced</button></li>
+  </ul>
+
+  <form [formGroup]="eventForm">
+    <div class="tab-content">
+      <!-- Basic Tab -->
+      <div class="tab-pane fade show active" id="basic">
+        <div class="row g-3">
+          <div class="col-md-8">
+            <label class="form-label">Event Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" formControlName="name" />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Project / Patient</label>
+            <select class="form-select" formControlName="schedulingTargetId">
+              <option [ngValue]="null">No Target</option>
+              <option *ngFor="let target of targets" [ngValue]="target.id">
+                {{ target.name }} ({{ target.schedulingTargetType?.name }})
+              </option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Start <span class="text-danger">*</span></label>
+            <input type="datetime-local" class="form-control" formControlName="startDateTime" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">End <span class="text-danger">*</span></label>
+            <input type="datetime-local" class="form-control" formControlName="endDateTime" />
+          </div>
+          <div class="col-12">
+            <label class="form-label">Location</label>
+            <input type="text" class="form-control" formControlName="location" />
+          </div>
+          <div class="col-12">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" rows="2" formControlName="description"></textarea>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Notes</label>
+            <textarea class="form-control" rows="3" formControlName="notes"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Assignments Tab -->
+      <div class="tab-pane fade" id="assignments">
+        <div class="d-flex justify-content-between mb-3">
+          <h6>Assignments</h6>
+          <div>
+            <button class="btn btn-sm btn-outline-primary me-2" (click)="addIndividualAssignment()">Add Person</button>
+            <button class="btn btn-sm btn-outline-primary" (click)="addCrewAssignment()">Add Crew</button>
+          </div>
+        </div>
+        <div class="alert alert-info small">Assignment table coming soon...</div>
+        <div class="alert alert-warning" *ngIf="qualificationWarnings.length">
+          <strong>Warnings:</strong> {{ qualificationWarnings.join('; ') }}
+        </div>
+      </div>
+
+      <!-- Recurrence Tab -->
+      <div class="tab-pane fade" id="recurrence">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="recurring" [(ngModel)]="isRecurring">
+          <label class="form-check-label" for="recurring">Recurring Event</label>
+        </div>
+        <div class="mt-3 p-3 border rounded bg-light" *ngIf="isRecurring">
+          <em>Recurrence editor coming soon...</em>
+        </div>
+      </div>
+
+      <!-- Advanced Tab -->
+      <div class="tab-pane fade" id="advanced">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Time Zone</label>
+            <select class="form-select" formControlName="timeZoneId">
+              <option value="">System Default</option>
+              <option value="America/Chicago">Central Time</option>
+              <option value="America/New_York">Eastern Time</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">External ID</label>
+            <input type="text" class="form-control" formControlName="externalId" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+
+<div class="modal-footer">
+  <button type="button" class="btn btn-secondary" (click)="activeModal.dismiss('cancel')">Cancel</button>
+  <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving || eventForm.invalid">
+    <span *ngIf="saving" class="spinner-border spinner-border-sm me-2"></span>
+    {{ isEditMode ? 'Update' : 'Create' }}
+  </button>
+</div>

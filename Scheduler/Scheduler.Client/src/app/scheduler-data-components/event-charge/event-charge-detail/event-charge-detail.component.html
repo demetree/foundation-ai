@@ -1,0 +1,162 @@
+<div class="container-fluid p-1 m-0 event-charge-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="event-charge-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Event Charge</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Event Charge' : 'Add Event Charge'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerEventChargeReader()">
+                <div class="col m-2 event-charge-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="eventChargeForm" (ngSubmit)="submitForm()" class="event-charge-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('scheduledEventId')">
+                                <label for="EventCharge-scheduledEventId" id="label-EventCharge-scheduledEventId"><span class="text-danger">*</span>Scheduled Event</label>
+                                <select id="EventCharge-scheduledEventId" formControlName="scheduledEventId" class="form-select event-charge-select" [disabled]="!userIsSchedulerEventChargeWriter()">
+                                    <option [ngValue]="null">Select Scheduled Event</option>
+                                    <option *ngFor="let scheduledEvent of scheduledEvents$ | async" [ngValue]="scheduledEvent.id">{{[scheduledEvent.name] | filterAndJoin}}</option>
+                                </select>
+                                <div *ngIf="eventChargeForm.get('scheduledEventId')?.invalid && eventChargeForm.get('scheduledEventId')?.touched" class="text-danger">
+                                    Scheduled Event is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('resourceId')">
+                                <label for="EventCharge-resourceId" id="label-EventCharge-resourceId">Resource</label>
+                                <select id="EventCharge-resourceId" formControlName="resourceId" class="form-select event-charge-select" [disabled]="!userIsSchedulerEventChargeWriter()">
+                                    <option [ngValue]="null">Select Resource</option>
+                                    <option *ngFor="let resource of resources$ | async" [ngValue]="resource.id">{{[resource.name] | filterAndJoin}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('chargeTypeId')">
+                                <label for="EventCharge-chargeTypeId" id="label-EventCharge-chargeTypeId"><span class="text-danger">*</span>Charge Type</label>
+                                <select id="EventCharge-chargeTypeId" formControlName="chargeTypeId" class="form-select event-charge-select" [disabled]="!userIsSchedulerEventChargeWriter()">
+                                    <option [ngValue]="null">Select Charge Type</option>
+                                    <option *ngFor="let chargeType of chargeTypes$ | async" [ngValue]="chargeType.id">{{chargeType.name}}</option>
+                                </select>
+                                <div *ngIf="eventChargeForm.get('chargeTypeId')?.invalid && eventChargeForm.get('chargeTypeId')?.touched" class="text-danger">
+                                    Charge Type is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('chargeStatusId')">
+                                <label for="EventCharge-chargeStatusId" id="label-EventCharge-chargeStatusId"><span class="text-danger">*</span>Charge Status</label>
+                                <select id="EventCharge-chargeStatusId" formControlName="chargeStatusId" class="form-select event-charge-select" [disabled]="!userIsSchedulerEventChargeWriter()">
+                                    <option [ngValue]="null">Select Charge Status</option>
+                                    <option *ngFor="let chargeStatus of chargeStatuses$ | async" [ngValue]="chargeStatus.id">{{chargeStatus.name}}</option>
+                                </select>
+                                <div *ngIf="eventChargeForm.get('chargeStatusId')?.invalid && eventChargeForm.get('chargeStatusId')?.touched" class="text-danger">
+                                    Charge Status is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('quantity')">
+                                <label for="EventCharge-quantity" id="label-EventCharge-quantity">Quantity</label>
+                                <input type="number" id="EventCharge-quantity" formControlName="quantity" placeholder="Enter Quantity" class="form-control event-charge-input" [disabled]="!userIsSchedulerEventChargeWriter()" aria-labelledby="label-quantity" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('unitPrice')">
+                                <label for="EventCharge-unitPrice" id="label-EventCharge-unitPrice">Unit Price</label>
+                                <input type="number" id="EventCharge-unitPrice" formControlName="unitPrice" placeholder="Enter Unit Price" class="form-control event-charge-input" [disabled]="!userIsSchedulerEventChargeWriter()" aria-labelledby="label-unitPrice" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('extendedAmount')">
+                                <label for="EventCharge-extendedAmount" id="label-EventCharge-extendedAmount"><span class="text-danger">*</span>Extended Amount</label>
+                                <input type="number" id="EventCharge-extendedAmount" formControlName="extendedAmount" placeholder="Enter Extended Amount" class="form-control event-charge-input" [disabled]="!userIsSchedulerEventChargeWriter()" aria-labelledby="label-extendedAmount" />
+                                <div *ngIf="eventChargeForm.get('extendedAmount')?.invalid && eventChargeForm.get('extendedAmount')?.touched" class="text-danger">
+                                    Extended Amount is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('taxAmount')">
+                                <label for="EventCharge-taxAmount" id="label-EventCharge-taxAmount"><span class="text-danger">*</span>Tax Amount</label>
+                                <input type="number" id="EventCharge-taxAmount" formControlName="taxAmount" placeholder="Enter Tax Amount" class="form-control event-charge-input" [disabled]="!userIsSchedulerEventChargeWriter()" aria-labelledby="label-taxAmount" />
+                                <div *ngIf="eventChargeForm.get('taxAmount')?.invalid && eventChargeForm.get('taxAmount')?.touched" class="text-danger">
+                                    Tax Amount is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('currencyId')">
+                                <label for="EventCharge-currencyId" id="label-EventCharge-currencyId"><span class="text-danger">*</span>Currency</label>
+                                <select id="EventCharge-currencyId" formControlName="currencyId" class="form-select event-charge-select" [disabled]="!userIsSchedulerEventChargeWriter()">
+                                    <option [ngValue]="null">Select Currency</option>
+                                    <option *ngFor="let currency of currencies$ | async" [ngValue]="currency.id">{{currency.name}}</option>
+                                </select>
+                                <div *ngIf="eventChargeForm.get('currencyId')?.invalid && eventChargeForm.get('currencyId')?.touched" class="text-danger">
+                                    Currency is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('rateTypeId')">
+                                <label for="EventCharge-rateTypeId" id="label-EventCharge-rateTypeId">Rate Type</label>
+                                <select id="EventCharge-rateTypeId" formControlName="rateTypeId" class="form-select event-charge-select" [disabled]="!userIsSchedulerEventChargeWriter()">
+                                    <option [ngValue]="null">Select Rate Type</option>
+                                    <option *ngFor="let rateType of rateTypes$ | async" [ngValue]="rateType.id">{{rateType.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('notes')">
+                                <label for="EventCharge-notes" id="label-EventCharge-notes">Notes</label>
+                                <textarea id="EventCharge-notes" formControlName="notes" placeholder="Enter Notes" class="form-control event-charge-input" [disabled]="!userIsSchedulerEventChargeWriter()"></textarea>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isAutomatic')">
+                                <input type="checkbox" id="EventCharge-isAutomatic" formControlName="isAutomatic" class="form-check-input" [disabled]="!userIsSchedulerEventChargeWriter()" />
+                                <label for="EventCharge-isAutomatic" class="form-check-label" id="label-EventCharge-isAutomatic"><span class="text-danger">*</span>Is Automatic</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('exportedDate')">
+                                <label for="EventCharge-exportedDate" id="label-EventCharge-exportedDate">Exported Date</label>
+                                <input type="datetime-local" id="EventCharge-exportedDate" formControlName="exportedDate" placeholder="Enter Exported Date" class="form-control event-charge-input" [disabled]="!userIsSchedulerEventChargeWriter()" aria-labelledby="label-exportedDate" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('externalId')">
+                                <label for="EventCharge-externalId" id="label-EventCharge-externalId">External Id</label>
+                                <input type="text" id="EventCharge-externalId" formControlName="externalId" placeholder="Enter External Id" class="form-control event-charge-input" [disabled]="!userIsSchedulerEventChargeWriter()" aria-labelledby="label-externalId" />
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="EventCharge-versionNumber" id="label-EventCharge-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="EventCharge-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control event-charge-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="EventCharge-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerEventChargeWriter()" />
+                                <label for="EventCharge-active" class="form-check-label" id="label-EventCharge-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="EventCharge-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerEventChargeWriter()" />
+                                <label for="EventCharge-deleted" class="form-check-label" id="label-EventCharge-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="event-charge-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="eventChargeForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Event Charge">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !eventChargeForm.valid || !eventChargeForm.dirty || eventChargeForm.pristine || userIsSchedulerEventChargeWriter() == false " ngbTooltip="Save Event Charge">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerEventChargeReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 event-charge-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="eventChargeChangeHistoryService.userIsSchedulerEventChargeChangeHistoryReader()">
+                            <button ngbNavLink>Event Charge Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (eventChargeData?.EventChargeChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-event-charge-change-history-table [queryParams]="{ eventChargeId: eventChargeData?.id }"></app-event-charge-change-history-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-event-charge-change-history-add-edit [preSeededData]="{ eventChargeId: eventChargeData?.id }" [hiddenFields]="['eventChargeId']"></app-event-charge-change-history-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

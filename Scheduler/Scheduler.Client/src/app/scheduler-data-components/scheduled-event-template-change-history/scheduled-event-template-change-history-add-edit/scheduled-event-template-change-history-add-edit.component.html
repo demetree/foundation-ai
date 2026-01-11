@@ -1,0 +1,65 @@
+<div class="add-scheduled-event-template-change-history" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-scheduled-event-template-change-history me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Scheduled Event Template Change History" 
+        *ngIf="userIsSchedulerScheduledEventTemplateChangeHistoryWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #scheduledEventTemplateChangeHistoryModal let-modal>
+   <div class="modal-header bg-dark text-light scheduled-event-template-change-history-modal-header">
+      <h5 class="modal-title mb-0" id="scheduledEventTemplateChangeHistoryModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Scheduled Event Template Change History' : 'Add Scheduled Event Template Change History' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body scheduled-event-template-change-history-modal-body">
+      <form [formGroup]="scheduledEventTemplateChangeHistoryForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('scheduledEventTemplateId')">
+                <label for="ScheduledEventTemplateChangeHistory-scheduledEventTemplateId" id="label-ScheduledEventTemplateChangeHistory-scheduledEventTemplateId"><span class="text-danger">*</span>Scheduled Event Template</label>
+                <select id="ScheduledEventTemplateChangeHistory-scheduledEventTemplateId" formControlName="scheduledEventTemplateId" class="form-select scheduled-event-template-change-history-select" [disabled]="!userIsSchedulerScheduledEventTemplateChangeHistoryWriter()">
+                    <option [ngValue]="null">Select Scheduled Event Template</option>
+                    <option *ngFor="let scheduledEventTemplate of scheduledEventTemplates$ | async" [ngValue]="scheduledEventTemplate.id">{{scheduledEventTemplate.name}}</option>
+                </select>
+                <div *ngIf="scheduledEventTemplateChangeHistoryForm.get('scheduledEventTemplateId')?.invalid && scheduledEventTemplateChangeHistoryForm.get('scheduledEventTemplateId')?.touched" class="text-danger">
+                    Scheduled Event Template is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="ScheduledEventTemplateChangeHistory-versionNumber" id="label-ScheduledEventTemplateChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="ScheduledEventTemplateChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control scheduled-event-template-change-history-input" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                <label for="ScheduledEventTemplateChangeHistory-timeStamp" id="label-ScheduledEventTemplateChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                <input type="datetime-local" id="ScheduledEventTemplateChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control scheduled-event-template-change-history-input" [disabled]="!userIsSchedulerScheduledEventTemplateChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                <div *ngIf="scheduledEventTemplateChangeHistoryForm.get('timeStamp')?.invalid && scheduledEventTemplateChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                    Time Stamp is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                <label for="ScheduledEventTemplateChangeHistory-userId" id="label-ScheduledEventTemplateChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                <input type="number" id="ScheduledEventTemplateChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control scheduled-event-template-change-history-input" [disabled]="!userIsSchedulerScheduledEventTemplateChangeHistoryWriter()" aria-labelledby="label-userId" />
+                <div *ngIf="scheduledEventTemplateChangeHistoryForm.get('userId')?.invalid && scheduledEventTemplateChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                    User Id is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                <label for="ScheduledEventTemplateChangeHistory-data" id="label-ScheduledEventTemplateChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                <textarea id="ScheduledEventTemplateChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control scheduled-event-template-change-history-input" [disabled]="!userIsSchedulerScheduledEventTemplateChangeHistoryWriter()"></textarea>
+                <div *ngIf="scheduledEventTemplateChangeHistoryForm.get('data')?.invalid && scheduledEventTemplateChangeHistoryForm.get('data')?.touched" class="text-danger">
+                    Data is required
+                </div>
+            </div>
+         <div class="modal-footer scheduled-event-template-change-history-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Scheduled Event Template Change History changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !scheduledEventTemplateChangeHistoryForm.valid || scheduledEventTemplateChangeHistoryForm.pristine || !userIsSchedulerScheduledEventTemplateChangeHistoryWriter()" ngbTooltip="Save the Scheduled Event Template Change History changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

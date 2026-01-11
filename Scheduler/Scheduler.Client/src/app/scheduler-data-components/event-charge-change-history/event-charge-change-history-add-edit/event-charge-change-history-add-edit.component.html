@@ -1,0 +1,65 @@
+<div class="add-event-charge-change-history" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-event-charge-change-history me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Event Charge Change History" 
+        *ngIf="userIsSchedulerEventChargeChangeHistoryWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #eventChargeChangeHistoryModal let-modal>
+   <div class="modal-header bg-dark text-light event-charge-change-history-modal-header">
+      <h5 class="modal-title mb-0" id="eventChargeChangeHistoryModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Event Charge Change History' : 'Add Event Charge Change History' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body event-charge-change-history-modal-body">
+      <form [formGroup]="eventChargeChangeHistoryForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('eventChargeId')">
+                <label for="EventChargeChangeHistory-eventChargeId" id="label-EventChargeChangeHistory-eventChargeId"><span class="text-danger">*</span>Event Charge</label>
+                <select id="EventChargeChangeHistory-eventChargeId" formControlName="eventChargeId" class="form-select event-charge-change-history-select" [disabled]="!userIsSchedulerEventChargeChangeHistoryWriter()">
+                    <option [ngValue]="null">Select Event Charge</option>
+                    <option *ngFor="let eventCharge of eventCharges$ | async" [ngValue]="eventCharge.id">{{eventCharge.notes}}</option>
+                </select>
+                <div *ngIf="eventChargeChangeHistoryForm.get('eventChargeId')?.invalid && eventChargeChangeHistoryForm.get('eventChargeId')?.touched" class="text-danger">
+                    Event Charge is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="EventChargeChangeHistory-versionNumber" id="label-EventChargeChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="EventChargeChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control event-charge-change-history-input" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                <label for="EventChargeChangeHistory-timeStamp" id="label-EventChargeChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                <input type="datetime-local" id="EventChargeChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control event-charge-change-history-input" [disabled]="!userIsSchedulerEventChargeChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                <div *ngIf="eventChargeChangeHistoryForm.get('timeStamp')?.invalid && eventChargeChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                    Time Stamp is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                <label for="EventChargeChangeHistory-userId" id="label-EventChargeChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                <input type="number" id="EventChargeChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control event-charge-change-history-input" [disabled]="!userIsSchedulerEventChargeChangeHistoryWriter()" aria-labelledby="label-userId" />
+                <div *ngIf="eventChargeChangeHistoryForm.get('userId')?.invalid && eventChargeChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                    User Id is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                <label for="EventChargeChangeHistory-data" id="label-EventChargeChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                <textarea id="EventChargeChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control event-charge-change-history-input" [disabled]="!userIsSchedulerEventChargeChangeHistoryWriter()"></textarea>
+                <div *ngIf="eventChargeChangeHistoryForm.get('data')?.invalid && eventChargeChangeHistoryForm.get('data')?.touched" class="text-danger">
+                    Data is required
+                </div>
+            </div>
+         <div class="modal-footer event-charge-change-history-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Event Charge Change History changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !eventChargeChangeHistoryForm.valid || eventChargeChangeHistoryForm.pristine || !userIsSchedulerEventChargeChangeHistoryWriter()" ngbTooltip="Save the Event Charge Change History changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

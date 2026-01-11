@@ -1,0 +1,100 @@
+<div class="container-fluid p-1 m-0 security-organization-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="security-organization-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Security Organization</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Security Organization' : 'Add Security Organization'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSecuritySecurityOrganizationReader()">
+                <div class="col m-2 security-organization-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="securityOrganizationForm" (ngSubmit)="submitForm()" class="security-organization-details-form">
+                            <div class="form-group">
+                                <label for="securityTenantId" id="label-securityTenantId"><span class="text-danger">*</span>Security Tenant</label>
+                                <select id="securityTenantId" formControlName="securityTenantId" class="form-select security-organization-select" [disabled]="!userIsSecuritySecurityOrganizationWriter()">
+                                    <option [ngValue]="null">Select Security Tenant</option>
+                                    <option *ngFor="let securityTenant of securityTenants$ | async" [ngValue]="securityTenant.id">{{securityTenant.name}}</option>
+                                </select>
+                                <div *ngIf="securityOrganizationForm.get('securityTenantId')?.invalid && securityOrganizationForm.get('securityTenantId')?.touched" class="text-danger">
+                                    Security Tenant is required
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="name" id="label-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="name" formControlName="name" placeholder="Enter Name" class="form-control security-organization-input" [disabled]="!userIsSecuritySecurityOrganizationWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="securityOrganizationForm.get('name')?.invalid && securityOrganizationForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="description" id="label-description">Description</label>
+                                <textarea id="description" formControlName="description" placeholder="Enter Description" class="form-control security-organization-input" [disabled]="!userIsSecuritySecurityOrganizationWriter()"></textarea>
+                            </div>
+                            <div class="form-check my-2">
+                                <input type="checkbox" id="active" formControlName="active" class="form-check-input" [disabled]="!userIsSecuritySecurityOrganizationWriter()" />
+                                <label for="active" class="form-check-label" id="label-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2">
+                                <input type="checkbox" id="deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSecuritySecurityOrganizationWriter()" />
+                                <label for="deleted" class="form-check-label" id="label-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="security-organization-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="securityOrganizationForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Security Organization">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !securityOrganizationForm.valid || !securityOrganizationForm.dirty || securityOrganizationForm.pristine || userIsSecuritySecurityOrganizationWriter() == false " ngbTooltip="Save Security Organization">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSecuritySecurityOrganizationReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 security-organization-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="securityDepartmentService.userIsSecuritySecurityDepartmentReader()">
+                            <button ngbNavLink>SecurityDepartments
+                                <span class="badge bg-primary ms-2">
+                                    {{ (securityOrganizationData?.SecurityDepartmentsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <app-security-department-table [queryParams]="GetQueryParameters()"></app-security-department-table>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="securityUserService.userIsSecuritySecurityUserReader()">
+                            <button ngbNavLink>SecurityUsers
+                                <span class="badge bg-primary ms-2">
+                                    {{ (securityOrganizationData?.SecurityUsersCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <app-security-user-table [queryParams]="GetQueryParameters()"></app-security-user-table>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="securityOrganizationUserService.userIsSecuritySecurityOrganizationUserReader()">
+                            <button ngbNavLink>SecurityOrganizationUsers
+                                <span class="badge bg-primary ms-2">
+                                    {{ (securityOrganizationData?.SecurityOrganizationUsersCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <app-security-organization-user-table [queryParams]="GetQueryParameters()"></app-security-organization-user-table>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,1270 @@
+using System;
+using System.Threading;
+using System.Data;
+using System.Text.Json;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Storage;
+using Foundation.Security;
+using Foundation.Auditor;
+using Foundation.Controllers;
+using Foundation.Security.Database;
+using static Foundation.Auditor.AuditEngine;
+using Foundation.Scheduler.Database;
+
+namespace Foundation.Scheduler.Controllers.WebAPI
+{
+    /// <summary>
+    /// 
+    /// This auto generated class provides the basic CRUD operations for the ClientContact entity via a Web API.
+	/// 
+	/// It can be used as-is, or as a starting point for customizations in a new partial class, or a new class entirely.
+    ///
+    /// It demonstrates the features available for the ClientContact entity, possibly including: multi tenancy, data visibility, version control with rollback, and favouriting.
+	/// 
+    /// </summary>
+	public partial class ClientContactsController : SecureWebAPIController
+	{
+		public const int READ_PERMISSION_LEVEL_REQUIRED = 1;
+		public const int WRITE_PERMISSION_LEVEL_REQUIRED = 1;
+
+		static object clientContactPutSyncRoot = new object();
+		static object clientContactDeleteSyncRoot = new object();
+
+		private SchedulerContext _context;
+
+		private ILogger<ClientContactsController> _logger;
+
+		public ClientContactsController(SchedulerContext context, ILogger<ClientContactsController> logger) : base("Scheduler", "ClientContact")
+		{
+			this._context = context;
+			this._logger = logger;
+
+			this._context.Database.SetCommandTimeout(60);
+
+			return;
+		}
+
+		/// <summary>
+		/// 
+		/// This gets a list of ClientContacts filtered by the parameters provided.
+		/// 
+		/// There is a filter parameter for every field, and an 'anyStringContains' parameter for cross field string partial searches.
+		/// 
+		/// Note also the pagination control in the pageSize and pageNumber parameters.
+		/// 
+		/// The rate limit is 2 per second per user.
+		/// 
+		/// </summary>
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/ClientContacts")]
+		public async Task<IActionResult> GetClientContacts(
+			int? clientId = null,
+			int? contactId = null,
+			bool? isPrimary = null,
+			int? relationshipTypeId = null,
+			int? versionNumber = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
+			int? pageSize = null,
+			int? pageNumber = null,
+			string anyStringContains = null,
+			bool includeRelations = true,
+			CancellationToken cancellationToken = default)
+		{
+			StartAuditEventClock();
+
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 1, cancellationToken);
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+
+			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+			if (pageNumber.HasValue == true &&
+			    pageNumber < 1)
+			{
+			    pageNumber = null;
+			}
+
+			if (pageSize.HasValue == true &&
+			    pageSize <= 0)
+			{
+			    pageSize = null;
+			}
+
+			IQueryable<Database.ClientContact> query = (from cc in _context.ClientContacts select cc);
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+			if (clientId.HasValue == true)
+			{
+				query = query.Where(cc => cc.clientId == clientId.Value);
+			}
+			if (contactId.HasValue == true)
+			{
+				query = query.Where(cc => cc.contactId == contactId.Value);
+			}
+			if (isPrimary.HasValue == true)
+			{
+				query = query.Where(cc => cc.isPrimary == isPrimary.Value);
+			}
+			if (relationshipTypeId.HasValue == true)
+			{
+				query = query.Where(cc => cc.relationshipTypeId == relationshipTypeId.Value);
+			}
+			if (versionNumber.HasValue == true)
+			{
+				query = query.Where(cc => cc.versionNumber == versionNumber.Value);
+			}
+			if (objectGuid.HasValue == true)
+			{
+				query = query.Where(cc => cc.objectGuid == objectGuid);
+			}
+			if (userIsWriter == true)
+			{
+				if (active.HasValue == true)
+				{
+					query = query.Where(cc => cc.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(cc => cc.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(cc => cc.deleted == false);
+				}
+			}
+			else
+			{
+				query = query.Where(cc => cc.active == true);
+				query = query.Where(cc => cc.deleted == false);
+			}
+
+			query = query.OrderBy(cc => cc.id);
+
+			if (pageNumber.HasValue == true &&
+			    pageSize.HasValue == true)
+			{
+			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
+			}
+			
+			if (includeRelations == true)
+			{
+				query = query.Include(x => x.client);
+				query = query.Include(x => x.contact);
+				query = query.Include(x => x.relationshipType);
+				query = query.AsSplitQuery();
+			}
+
+
+			//
+			// Add the any string contains parameter to span all the string fields on the Client Contact, or on an any of the string fields on its immediate relations
+			//
+			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
+			//
+			if (!string.IsNullOrEmpty(anyStringContains))
+			{
+			   query = query.Where(x =>
+			       (includeRelations == true && x.client.name.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.description.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.addressLine1.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.addressLine2.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.city.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.postalCode.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.phone.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.email.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.notes.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.externalId.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.color.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.attributes.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.avatarFileName.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.avatarMimeType.Contains(anyStringContains))
+			       || (includeRelations == true && x.contact.firstName.Contains(anyStringContains))
+			       || (includeRelations == true && x.contact.middleName.Contains(anyStringContains))
+			       || (includeRelations == true && x.contact.lastName.Contains(anyStringContains))
+			       || (includeRelations == true && x.contact.title.Contains(anyStringContains))
+			       || (includeRelations == true && x.contact.company.Contains(anyStringContains))
+			       || (includeRelations == true && x.contact.email.Contains(anyStringContains))
+			       || (includeRelations == true && x.contact.phone.Contains(anyStringContains))
+			       || (includeRelations == true && x.contact.mobile.Contains(anyStringContains))
+			       || (includeRelations == true && x.contact.position.Contains(anyStringContains))
+			       || (includeRelations == true && x.contact.webSite.Contains(anyStringContains))
+			       || (includeRelations == true && x.contact.notes.Contains(anyStringContains))
+			       || (includeRelations == true && x.contact.color.Contains(anyStringContains))
+			       || (includeRelations == true && x.contact.avatarFileName.Contains(anyStringContains))
+			       || (includeRelations == true && x.contact.avatarMimeType.Contains(anyStringContains))
+			       || (includeRelations == true && x.contact.externalId.Contains(anyStringContains))
+			       || (includeRelations == true && x.relationshipType.name.Contains(anyStringContains))
+			       || (includeRelations == true && x.relationshipType.description.Contains(anyStringContains))
+			       || (includeRelations == true && x.relationshipType.color.Contains(anyStringContains))
+			   );
+			}
+
+			query = query.AsNoTracking();
+			
+			List<Database.ClientContact> materialized = await query.ToListAsync(cancellationToken);
+
+			// Convert all the date properties to be of kind UTC.
+			bool databaseStoresDateWithTimeZone = _context.DoesDatabaseStoreDateWithTimeZone();
+			foreach (Database.ClientContact clientContact in materialized)
+			{
+			    Foundation.DateTimeUtility.ConvertAllDateTimePropertiesToUTC(clientContact, databaseStoresDateWithTimeZone);
+			}
+
+
+			await CreateAuditEventAsync(AuditEngine.AuditType.ReadList, userIsAdmin == true ? "Scheduler.ClientContact Entity list was read with Admin privilege.  Returning " + materialized.Count + " rows of data." : "Scheduler.ClientContact Entity list was read.  Returning " + materialized.Count + " rows of data.");
+
+			// Create a new output object that only includes the relations if necessary, and doesn't include the empty list objects, so that we can reduce the amount of data being transferred.
+			if (includeRelations == true)
+			{
+				// Return a DTO with nav properties.
+				return Ok((from materializedData in materialized select materializedData.ToOutputDTO()).ToList());
+			}
+			else
+			{
+				// Return a DTO without nav properties.
+				return Ok((from materializedData in materialized select materializedData.ToDTO()).ToList());
+			}
+		}
+		
+		
+        /// <summary>
+        /// 
+        /// This returns a row count of ClientContacts filtered by the parameters provided.  Its query is similar to the GetClientContacts method, but it only returns the count of rows that would be returned.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/ClientContacts/RowCount")]
+		public async Task<IActionResult> GetRowCount(
+			int? clientId = null,
+			int? contactId = null,
+			bool? isPrimary = null,
+			int? relationshipTypeId = null,
+			int? versionNumber = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
+			string anyStringContains = null,
+			CancellationToken cancellationToken = default)
+		{
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 1, cancellationToken);
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			IQueryable<Database.ClientContact> query = (from cc in _context.ClientContacts select cc);
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+			if (clientId.HasValue == true)
+			{
+				query = query.Where(cc => cc.clientId == clientId.Value);
+			}
+			if (contactId.HasValue == true)
+			{
+				query = query.Where(cc => cc.contactId == contactId.Value);
+			}
+			if (isPrimary.HasValue == true)
+			{
+				query = query.Where(cc => cc.isPrimary == isPrimary.Value);
+			}
+			if (relationshipTypeId.HasValue == true)
+			{
+				query = query.Where(cc => cc.relationshipTypeId == relationshipTypeId.Value);
+			}
+			if (versionNumber.HasValue == true)
+			{
+				query = query.Where(cc => cc.versionNumber == versionNumber.Value);
+			}
+			if (objectGuid.HasValue == true)
+			{
+				query = query.Where(cc => cc.objectGuid == objectGuid);
+			}
+			if (userIsWriter == true)
+			{
+				if (active.HasValue == true)
+				{
+					query = query.Where(cc => cc.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(cc => cc.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(cc => cc.deleted == false);
+				}
+			}
+			else
+			{
+				query = query.Where(cc => cc.active == true);
+				query = query.Where(cc => cc.deleted == false);
+			}
+
+			//
+			// Add the any string contains parameter to span all the string fields on the Client Contact, or on an any of the string fields on its immediate relations
+			//
+			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
+			//
+			if (!string.IsNullOrEmpty(anyStringContains))
+			{
+			   query = query.Where(x =>
+			       x.client.name.Contains(anyStringContains)
+			       || x.client.description.Contains(anyStringContains)
+			       || x.client.addressLine1.Contains(anyStringContains)
+			       || x.client.addressLine2.Contains(anyStringContains)
+			       || x.client.city.Contains(anyStringContains)
+			       || x.client.postalCode.Contains(anyStringContains)
+			       || x.client.phone.Contains(anyStringContains)
+			       || x.client.email.Contains(anyStringContains)
+			       || x.client.notes.Contains(anyStringContains)
+			       || x.client.externalId.Contains(anyStringContains)
+			       || x.client.color.Contains(anyStringContains)
+			       || x.client.attributes.Contains(anyStringContains)
+			       || x.client.avatarFileName.Contains(anyStringContains)
+			       || x.client.avatarMimeType.Contains(anyStringContains)
+			       || x.contact.firstName.Contains(anyStringContains)
+			       || x.contact.middleName.Contains(anyStringContains)
+			       || x.contact.lastName.Contains(anyStringContains)
+			       || x.contact.title.Contains(anyStringContains)
+			       || x.contact.company.Contains(anyStringContains)
+			       || x.contact.email.Contains(anyStringContains)
+			       || x.contact.phone.Contains(anyStringContains)
+			       || x.contact.mobile.Contains(anyStringContains)
+			       || x.contact.position.Contains(anyStringContains)
+			       || x.contact.webSite.Contains(anyStringContains)
+			       || x.contact.notes.Contains(anyStringContains)
+			       || x.contact.color.Contains(anyStringContains)
+			       || x.contact.avatarFileName.Contains(anyStringContains)
+			       || x.contact.avatarMimeType.Contains(anyStringContains)
+			       || x.contact.externalId.Contains(anyStringContains)
+			       || x.relationshipType.name.Contains(anyStringContains)
+			       || x.relationshipType.description.Contains(anyStringContains)
+			       || x.relationshipType.color.Contains(anyStringContains)
+			   );
+			}
+
+
+			int output = await query.CountAsync(cancellationToken);
+
+			return Ok(output);
+		}
+
+
+        /// <summary>
+        /// 
+        /// This gets a single ClientContact by primary key.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/ClientContact/{id}")]
+		public async Task<IActionResult> GetClientContact(int id, bool includeRelations = true, CancellationToken cancellationToken = default)
+		{
+			StartAuditEventClock();
+
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 1, cancellationToken);
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
+			
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			try
+			{
+				IQueryable<Database.ClientContact> query = (from cc in _context.ClientContacts where
+							(cc.id == id) &&
+							(userIsAdmin == true || cc.deleted == false) &&
+							(userIsWriter == true || cc.active == true)
+					select cc);
+
+
+				query = query.Where(x => x.tenantGuid == userTenantGuid);
+				if (includeRelations == true)
+				{
+					query = query.Include(x => x.client);
+					query = query.Include(x => x.contact);
+					query = query.Include(x => x.relationshipType);
+					query = query.AsSplitQuery();
+				}
+
+				Database.ClientContact materialized = await query.FirstOrDefaultAsync(cancellationToken);
+
+				if (materialized != null)
+				{
+					
+					// Convert all the date properties to be of kind UTC.
+					Foundation.DateTimeUtility.ConvertAllDateTimePropertiesToUTC(materialized, _context.DoesDatabaseStoreDateWithTimeZone());
+
+					await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, userIsAdmin == true ? "Scheduler.ClientContact Entity was read with Admin privilege." : "Scheduler.ClientContact Entity was read.");
+
+					BackgroundJob.Enqueue(() => SecurityLogic.AddToUserMostRecents(securityUser.id, "ClientContact", materialized.id, materialized.id.ToString()));
+
+
+					// Create a new output object that only includes the relations if necessary, and doesn't include the empty list objects, so that we can reduce the amount of data being transferred.
+					if (includeRelations == true)
+					{
+						return Ok(materialized.ToOutputDTO());             // DTO with nav properties
+					}
+					else
+					{
+						return Ok(materialized.ToDTO());                   // DTO without nav properties
+					}
+				}
+				else
+				{
+					await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt to read a Scheduler.ClientContact entity that does not exist.", id.ToString());
+					return BadRequest();
+				}
+			}
+			catch (Exception ex)
+			{
+				await CreateAuditEventAsync(AuditEngine.AuditType.Error, userIsAdmin == true ? "Exception caught during entity read of Scheduler.ClientContact.   Entity was read with Admin privilege." : "Exception caught during entity read of Scheduler.ClientContact.", id.ToString(), ex);
+				return Problem(ex.ToString());
+			}
+		}
+
+
+		/// <summary>
+		/// 
+		/// This updates an existing ClientContact record
+        ///
+        /// The rate limit is 2 per second per user.
+		/// 
+		/// </summary>
+		[Route("api/ClientContact/{id}")]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[HttpPost]
+		[HttpPut]
+		public async Task<IActionResult> PutClientContact(int id, [FromBody]Database.ClientContact.ClientContactDTO clientContactDTO, CancellationToken cancellationToken = default)
+		{
+			if (clientContactDTO == null)
+			{
+			   return BadRequest();
+			}
+
+			StartAuditEventClock();
+
+			if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+
+			if (id != clientContactDTO.id)
+			{
+				return BadRequest();
+			}
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 1, cancellationToken);
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			IQueryable<Database.ClientContact> query = (from x in _context.ClientContacts
+				where
+				(x.id == id)
+				select x);
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+			Database.ClientContact existing = await query.FirstOrDefaultAsync(cancellationToken);
+
+			if (existing == null)
+			{
+				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for Scheduler.ClientContact PUT", id.ToString(), new Exception("No Scheduler.ClientContact entity could be found with the primary key provided."));
+				return NotFound();
+			}
+
+
+            //
+            // Validate the object guid.  If it comes in as empty Guid in the DTO, then set it to the actual value from the existing record.  If the DTO has a value then it must match the existing value.
+            // 
+            if (clientContactDTO.objectGuid == Guid.Empty)
+            {
+                clientContactDTO.objectGuid = existing.objectGuid;
+            }
+            else if (clientContactDTO.objectGuid != existing.objectGuid)
+            {
+                await CreateAuditEventAsync(AuditEngine.AuditType.Error, $"Attempt was made to change object guid on a ClientContact record.  This is not allowed.  The User is " + securityUser.accountName, existing.id.ToString());
+                return Problem("Invalid Operation.");
+            }
+
+
+			// Copy the existing object so it can be serialized as-is in the audit and history logs.
+			Database.ClientContact cloneOfExisting = (Database.ClientContact)_context.Entry(existing).GetDatabaseValues().ToObject();
+
+			//
+			// Create a new ClientContact object using the data from the existing record, updated with what is in the DTO.
+			//
+			Database.ClientContact clientContact = (Database.ClientContact)_context.Entry(existing).GetDatabaseValues().ToObject();
+			clientContact.ApplyDTO(clientContactDTO);
+			//
+			// The tenant guid for any ClientContact being saved must match the tenant guid of the user.  
+			//
+			if (existing.tenantGuid != userTenantGuid)
+			{
+				await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to save a record with a tenant guid that is not the user's tenant guid.", false);
+				return Problem("Data integrity violation detected while attempting to save.");
+			}
+			else
+			{
+				// Assign the tenantGuid to the ClientContact because it shouldn't be on the input object, and we want to ensure that it always is what the correct value in case it is.
+				clientContact.tenantGuid = existing.tenantGuid;
+			}
+
+			lock (clientContactPutSyncRoot)
+			{
+				//
+				// Validate the version number for the clientContact being saved.  Error out if the database version is different than what is being saved.  If they are the same, then increment the version for this save.
+				//
+				if (existing.versionNumber != clientContact.versionNumber)
+				{
+					// Record has changed
+					CreateAuditEvent(AuditEngine.AuditType.Miscellaneous, "ClientContact save attempt was made but save request was with version " + clientContact.versionNumber + " and the current version number is " + existing.versionNumber, false);
+					return Problem("The ClientContact you are trying to update has already changed.  Please try your save again after reloading the ClientContact.");
+				}
+				else
+				{
+					// Same record.  Increase version.
+					clientContact.versionNumber++;
+				}
+
+
+				// Is user who is not an admin trying to delete, or to work on a deleted record, or to delete a record by flipping it's deleted flag to true?
+				if (userIsAdmin == false && (clientContact.deleted == true || existing.deleted == true))
+				{
+					// we're not recording state here because it is not being changed.
+					CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, "Attempt to delete a record or work on a deleted Scheduler.ClientContact record.", id.ToString());
+					DestroySessionAndAuthentication();
+					return Forbid();
+				}
+
+				try
+				{
+				    EntityEntry<Database.ClientContact> attached = _context.Entry(existing);
+				    attached.CurrentValues.SetValues(clientContact);
+
+				    using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+				    {
+				        _context.SaveChanges();
+
+				        //
+				        // Now add the change history
+				        //
+				        ClientContactChangeHistory clientContactChangeHistory = new ClientContactChangeHistory();
+				        clientContactChangeHistory.clientContactId = clientContact.id;
+				        clientContactChangeHistory.versionNumber = clientContact.versionNumber;
+				        clientContactChangeHistory.timeStamp = DateTime.UtcNow;
+				        clientContactChangeHistory.userId = securityUser.id;
+				        clientContactChangeHistory.tenantGuid = userTenantGuid;
+				        clientContactChangeHistory.data = JsonSerializer.Serialize(Database.ClientContact.CreateAnonymousWithFirstLevelSubObjects(clientContact));
+				        _context.ClientContactChangeHistories.Add(clientContactChangeHistory);
+
+				        _context.SaveChanges();
+
+				        transaction.Commit();
+				    }
+
+					CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
+						"Scheduler.ClientContact entity successfully updated.",
+						true,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.ClientContact.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.ClientContact.CreateAnonymousWithFirstLevelSubObjects(clientContact)),
+						null);
+
+				return Ok(Database.ClientContact.CreateAnonymous(clientContact));
+				}
+				catch (Exception ex)
+				{
+					CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
+						"Scheduler.ClientContact entity update failed",
+						false,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.ClientContact.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.ClientContact.CreateAnonymousWithFirstLevelSubObjects(clientContact)),
+						ex);
+
+					return Problem(ex.Message);
+				}
+
+			}
+		}
+
+        /// <summary>
+        /// 
+        /// This creates a new ClientContact record
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+		[HttpPost]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/ClientContact", Name = "ClientContact")]
+		public async Task<IActionResult> PostClientContact([FromBody]Database.ClientContact.ClientContactDTO clientContactDTO, CancellationToken cancellationToken = default)
+		{
+			if (clientContactDTO == null)
+			{
+			   return BadRequest();
+			}
+
+			StartAuditEventClock();
+
+			if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+			//
+			// Create a new ClientContact object using the data from the DTO
+			//
+			Database.ClientContact clientContact = Database.ClientContact.FromDTO(clientContactDTO);
+
+			try
+			{
+				//
+				// Ensure that the tenant data is correct.
+				//
+				clientContact.tenantGuid = userTenantGuid;
+
+				clientContact.objectGuid = Guid.NewGuid();
+				clientContact.versionNumber = 1;
+
+				_context.ClientContacts.Add(clientContact);
+
+				await using (IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync(cancellationToken))
+				{
+				    await _context.SaveChangesAsync(cancellationToken);
+
+				    //
+				    // Now add the change history
+				    //
+
+				    //
+				    // Detach the clientContact object so that no further changes will be written to the database
+				    //
+				    _context.Entry(clientContact).State = EntityState.Detached;
+
+				    //
+				    // Nullify all object properties before serializing.
+				    //
+					clientContact.ClientContactChangeHistories = null;
+					clientContact.client = null;
+					clientContact.contact = null;
+					clientContact.relationshipType = null;
+
+
+				    ClientContactChangeHistory clientContactChangeHistory = new ClientContactChangeHistory();
+				    clientContactChangeHistory.clientContactId = clientContact.id;
+				    clientContactChangeHistory.versionNumber = clientContact.versionNumber;
+				    clientContactChangeHistory.timeStamp = DateTime.UtcNow;
+				    clientContactChangeHistory.userId = securityUser.id;
+				    clientContactChangeHistory.tenantGuid = userTenantGuid;
+				    clientContactChangeHistory.data = JsonSerializer.Serialize(Database.ClientContact.CreateAnonymousWithFirstLevelSubObjects(clientContact));
+				    _context.ClientContactChangeHistories.Add(clientContactChangeHistory);
+				    await _context.SaveChangesAsync(cancellationToken);
+
+				    await transaction.CommitAsync(cancellationToken);
+
+					await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
+						"Scheduler.ClientContact entity successfully created.",
+						true,
+						clientContact. id.ToString(),
+						"",
+						JsonSerializer.Serialize(Database.ClientContact.CreateAnonymousWithFirstLevelSubObjects(clientContact)),
+						null);
+
+
+				}
+			}
+			catch (Exception ex)
+			{
+				await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity, "Scheduler.ClientContact entity creation failed.", false, clientContact.id.ToString(), "", JsonSerializer.Serialize(Database.ClientContact.CreateAnonymousWithFirstLevelSubObjects(clientContact)), ex);
+
+				return Problem(ex.Message);
+			}
+
+
+			BackgroundJob.Enqueue(() => SecurityLogic.AddToUserMostRecents(securityUser.id, "ClientContact", clientContact.id, clientContact.id.ToString()));
+
+			return CreatedAtRoute("ClientContact", new { id = clientContact.id }, Database.ClientContact.CreateAnonymousWithFirstLevelSubObjects(clientContact));
+		}
+
+
+
+        /// <summary>
+        /// 
+        /// This rolls a ClientContact entity back to the state it was in at a prior version number.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+		[HttpPut]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/ClientContact/Rollback/{id}")]
+		[Route("api/ClientContact/Rollback")]
+		public async Task<IActionResult> RollbackToClientContactVersion(int id, int versionNumber, CancellationToken cancellationToken = default)
+		{
+			//
+			// Data rollback is an admin only function, like Deletes.
+			//
+			StartAuditEventClock();
+			
+			if (await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+			
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+			
+
+			
+			IQueryable <Database.ClientContact> query = (from x in _context.ClientContacts
+			        where
+			        (x.id == id)
+			        select x);
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+
+			//
+			// Make sure nobody else is editing this ClientContact concurrently
+			//
+			lock (clientContactPutSyncRoot)
+			{
+				
+				Database.ClientContact clientContact = query.FirstOrDefault();
+				
+				if (clientContact == null)
+				{
+				    CreateAuditEvent(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for Scheduler.ClientContact rollback", id.ToString(), new Exception("No Scheduler.ClientContact entity could be find with the primary key provided for the rollback operation."));
+				    return NotFound();
+				}
+				
+				//
+				// Make a copy of the ClientContact current state so we can log it.
+				//
+				Database.ClientContact cloneOfExisting = (Database.ClientContact)_context.Entry(clientContact).GetDatabaseValues().ToObject();
+				
+				//
+				// Remove any object fields from the clone object so that it can serialize effectively
+				//
+				cloneOfExisting.ClientContactChangeHistories = null;
+				cloneOfExisting.client = null;
+				cloneOfExisting.contact = null;
+				cloneOfExisting.relationshipType = null;
+
+				if (versionNumber >= clientContact.versionNumber)
+				{
+				    CreateAuditEvent(AuditEngine.AuditType.UpdateEntity, "Invalid version number provided for Scheduler.ClientContact rollback.  Version number provided is " + versionNumber, id.ToString(), new Exception("Invalid version number provided for Scheduler.ClientContact rollback operation.Version number provided is " + versionNumber));
+				    return NotFound();
+				}
+				
+				ClientContactChangeHistory clientContactChangeHistory = (from x in _context.ClientContactChangeHistories
+				                                               where
+				                                               x.clientContactId == id &&
+				                                               x.versionNumber == versionNumber &&
+				                                               x.tenantGuid == userTenantGuid
+				                                               select x)
+				                                               .AsNoTracking()
+				                                               .FirstOrDefault();
+
+				if (clientContactChangeHistory != null)
+				{
+				    Database.ClientContact oldClientContact = JsonSerializer.Deserialize<Database.ClientContact>(clientContactChangeHistory.data);
+				
+				    //
+				    // Increase the version number
+				    //
+				    clientContact.versionNumber++;
+				
+				    //
+				    // Put all other fields back the way that they were 
+				    //
+				    clientContact.clientId = oldClientContact.clientId;
+				    clientContact.contactId = oldClientContact.contactId;
+				    clientContact.isPrimary = oldClientContact.isPrimary;
+				    clientContact.relationshipTypeId = oldClientContact.relationshipTypeId;
+				    clientContact.objectGuid = oldClientContact.objectGuid;
+				    clientContact.active = oldClientContact.active;
+				    clientContact.deleted = oldClientContact.deleted;
+
+				    string serializedClientContact = JsonSerializer.Serialize(clientContact);
+
+				    using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+				    {
+
+				        _context.SaveChanges();
+
+				        //
+				        // Now add the change history
+				        //
+				        ClientContactChangeHistory newClientContactChangeHistory = new ClientContactChangeHistory();
+				        newClientContactChangeHistory.clientContactId = clientContact.id;
+				        newClientContactChangeHistory.versionNumber = clientContact.versionNumber;
+				        newClientContactChangeHistory.timeStamp = DateTime.UtcNow;
+				        newClientContactChangeHistory.userId = securityUser.id;
+				        newClientContactChangeHistory.tenantGuid = userTenantGuid;
+				        newClientContactChangeHistory.data = JsonSerializer.Serialize(Database.ClientContact.CreateAnonymousWithFirstLevelSubObjects(clientContact));
+				        _context.ClientContactChangeHistories.Add(newClientContactChangeHistory);
+
+				        _context.SaveChanges();
+
+				        transaction.Commit();
+				    }
+
+					CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
+						"Scheduler.ClientContact rollback process successfully rolled back to version number " + versionNumber,
+						true,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.ClientContact.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.ClientContact.CreateAnonymousWithFirstLevelSubObjects(clientContact)),
+						null);
+
+
+				    return Ok(Database.ClientContact.CreateAnonymous(clientContact));
+				}
+				else
+				{
+				    CreateAuditEvent(AuditEngine.AuditType.UpdateEntity, "Could not find version number provided for Scheduler.ClientContact rollback.  Version number provided is " + versionNumber, id.ToString(), new Exception("Could not find version number provided for Scheduler.ClientContact rollback.  Version number provided is " + versionNumber));
+
+				    return BadRequest();
+				}
+			}
+		}
+
+
+        /// <summary>
+        /// 
+        /// This deletes a ClientContact record
+		/// 
+		/// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+		[HttpDelete]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/ClientContact/{id}")]
+		[Route("api/ClientContact")]
+		public async Task<IActionResult> DeleteClientContact(int id, CancellationToken cancellationToken = default)
+		{
+			StartAuditEventClock();
+
+			if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(cancellationToken);
+			
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+			IQueryable<Database.ClientContact> query = (from x in _context.ClientContacts
+				where
+				(x.id == id)
+				select x);
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+			Database.ClientContact clientContact = await query.FirstOrDefaultAsync(cancellationToken);
+
+			if (clientContact == null)
+			{
+				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for Scheduler.ClientContact DELETE", id.ToString(), new Exception("No Scheduler.ClientContact entity could be find with the primary key provided."));
+				return NotFound();
+			}
+			Database.ClientContact cloneOfExisting = (Database.ClientContact)_context.Entry(clientContact).GetDatabaseValues().ToObject();
+
+
+			lock (clientContactDeleteSyncRoot)
+			{
+			    try
+			    {
+			        clientContact.deleted = true;
+			        clientContact.versionNumber++;
+
+			        _context.SaveChanges();
+
+			        //
+			        // Now add the change history
+			        //
+			        ClientContactChangeHistory clientContactChangeHistory = new ClientContactChangeHistory();
+			        clientContactChangeHistory.clientContactId = clientContact.id;
+			        clientContactChangeHistory.versionNumber = clientContact.versionNumber;
+			        clientContactChangeHistory.timeStamp = DateTime.UtcNow;
+			        clientContactChangeHistory.userId = securityUser.id;
+			        clientContactChangeHistory.tenantGuid = userTenantGuid;
+			        clientContactChangeHistory.data = JsonSerializer.Serialize(Database.ClientContact.CreateAnonymousWithFirstLevelSubObjects(clientContact));
+			        _context.ClientContactChangeHistories.Add(clientContactChangeHistory);
+
+			        _context.SaveChanges();
+
+					CreateAuditEvent(AuditEngine.AuditType.DeleteEntity,
+						"Scheduler.ClientContact entity successfully deleted.",
+						true,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.ClientContact.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.ClientContact.CreateAnonymousWithFirstLevelSubObjects(clientContact)),
+						null);
+
+			    }
+			    catch (Exception ex)
+			    {
+					CreateAuditEvent(AuditEngine.AuditType.DeleteEntity,
+						"Scheduler.ClientContact entity delete failed",
+						false,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.ClientContact.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.ClientContact.CreateAnonymousWithFirstLevelSubObjects(clientContact)),
+						ex);
+
+			        return Problem(ex.Message);
+			    }
+			    return Ok();
+			}
+		}
+
+
+        /// <summary>
+        /// 
+        /// This gets a list of ClientContact records, filtered by the parameters provided in a simple minimal format that is useful for drop down boxes and similar.
+		/// 
+		/// It has the same filtering paramfeters as the full ListData method, but only returns the id and name fields.
+        /// 
+		/// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+		[Route("api/ClientContacts/ListData")]
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		public async Task<IActionResult> GetListData(
+			int? clientId = null,
+			int? contactId = null,
+			bool? isPrimary = null,
+			int? relationshipTypeId = null,
+			int? versionNumber = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
+			string anyStringContains = null,
+			int? pageSize = null,
+			int? pageNumber = null,
+			CancellationToken cancellationToken = default)
+		{
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 1, cancellationToken);
+
+			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			if (pageNumber.HasValue == true &&
+			    pageNumber < 1)
+			{
+			    pageNumber = null;
+			}
+
+			if (pageSize.HasValue == true &&
+			    pageSize <= 0)
+			{
+			    pageSize = null;
+			}
+
+			IQueryable<Database.ClientContact> query = (from cc in _context.ClientContacts select cc);
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+			if (clientId.HasValue == true)
+			{
+				query = query.Where(cc => cc.clientId == clientId.Value);
+			}
+			if (contactId.HasValue == true)
+			{
+				query = query.Where(cc => cc.contactId == contactId.Value);
+			}
+			if (isPrimary.HasValue == true)
+			{
+				query = query.Where(cc => cc.isPrimary == isPrimary.Value);
+			}
+			if (relationshipTypeId.HasValue == true)
+			{
+				query = query.Where(cc => cc.relationshipTypeId == relationshipTypeId.Value);
+			}
+			if (versionNumber.HasValue == true)
+			{
+				query = query.Where(cc => cc.versionNumber == versionNumber.Value);
+			}
+			if (objectGuid.HasValue == true)
+			{
+				query = query.Where(cc => cc.objectGuid == objectGuid);
+			}
+			if (userIsWriter == true)
+			{
+				if (active.HasValue == true)
+				{
+					query = query.Where(cc => cc.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(cc => cc.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(cc => cc.deleted == false);
+				}
+			}
+			else
+			{
+				query = query.Where(cc => cc.active == true);
+				query = query.Where(cc => cc.deleted == false);
+			}
+
+
+			//
+			// Add the any string contains parameter to span all the string fields on the Client Contact, or on an any of the string fields on its immediate relations
+			//
+			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
+			//
+			if (!string.IsNullOrEmpty(anyStringContains))
+			{
+			   query = query.Where(x =>
+			       x.client.name.Contains(anyStringContains)
+			       || x.client.description.Contains(anyStringContains)
+			       || x.client.addressLine1.Contains(anyStringContains)
+			       || x.client.addressLine2.Contains(anyStringContains)
+			       || x.client.city.Contains(anyStringContains)
+			       || x.client.postalCode.Contains(anyStringContains)
+			       || x.client.phone.Contains(anyStringContains)
+			       || x.client.email.Contains(anyStringContains)
+			       || x.client.notes.Contains(anyStringContains)
+			       || x.client.externalId.Contains(anyStringContains)
+			       || x.client.color.Contains(anyStringContains)
+			       || x.client.attributes.Contains(anyStringContains)
+			       || x.client.avatarFileName.Contains(anyStringContains)
+			       || x.client.avatarMimeType.Contains(anyStringContains)
+			       || x.contact.firstName.Contains(anyStringContains)
+			       || x.contact.middleName.Contains(anyStringContains)
+			       || x.contact.lastName.Contains(anyStringContains)
+			       || x.contact.title.Contains(anyStringContains)
+			       || x.contact.company.Contains(anyStringContains)
+			       || x.contact.email.Contains(anyStringContains)
+			       || x.contact.phone.Contains(anyStringContains)
+			       || x.contact.mobile.Contains(anyStringContains)
+			       || x.contact.position.Contains(anyStringContains)
+			       || x.contact.webSite.Contains(anyStringContains)
+			       || x.contact.notes.Contains(anyStringContains)
+			       || x.contact.color.Contains(anyStringContains)
+			       || x.contact.avatarFileName.Contains(anyStringContains)
+			       || x.contact.avatarMimeType.Contains(anyStringContains)
+			       || x.contact.externalId.Contains(anyStringContains)
+			       || x.relationshipType.name.Contains(anyStringContains)
+			       || x.relationshipType.description.Contains(anyStringContains)
+			       || x.relationshipType.color.Contains(anyStringContains)
+			   );
+			}
+
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+
+			query = query.OrderBy(x => x.id);
+			if (pageNumber.HasValue == true &&
+			    pageSize.HasValue == true)
+			{
+			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
+			}
+			return Ok(await (from queryData in query select Database.ClientContact.CreateMinimalAnonymous(queryData)).ToListAsync(cancellationToken));
+		}
+
+
+        /// <summary>
+        /// 
+        /// This method creates an audit event from within the controller.  It is intended for use by custom logic in client applications that needs to create audit events.
+        /// 
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="message"></param>
+        /// <param name="primaryKey"></param>
+        /// <returns></returns>
+		[HttpPost]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/ClientContact/CreateAuditEvent")]
+		public async Task<IActionResult> CreateControllerAuditEvent(AuditEngine.AuditType type, string message, string primaryKey = null)
+		{
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED) == false)
+			{
+			   return Forbid();
+			}
+
+		    await CreateAuditEventAsync(type, message, primaryKey);
+
+		    return Ok();
+		}
+
+
+	}
+}

@@ -1,0 +1,54 @@
+<div class="container-fluid p-1 m-0 system-setting-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="system-setting-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">System Setting</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit System Setting' : 'Add System Setting'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSecuritySystemSettingReader()">
+                <div class="col m-2 system-setting-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="systemSettingForm" (ngSubmit)="submitForm()" class="system-setting-details-form">
+                            <div class="form-group">
+                                <label for="name" id="label-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="name" formControlName="name" placeholder="Enter Name" class="form-control system-setting-input" [disabled]="!userIsSecuritySystemSettingWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="systemSettingForm.get('name')?.invalid && systemSettingForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="description" id="label-description">Description</label>
+                                <textarea id="description" formControlName="description" placeholder="Enter Description" class="form-control system-setting-input" [disabled]="!userIsSecuritySystemSettingWriter()"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="value" id="label-value">Value</label>
+                                <textarea id="value" formControlName="value" placeholder="Enter Value" class="form-control system-setting-input" [disabled]="!userIsSecuritySystemSettingWriter()"></textarea>
+                            </div>
+                            <div class="form-check my-2">
+                                <input type="checkbox" id="active" formControlName="active" class="form-check-input" [disabled]="!userIsSecuritySystemSettingWriter()" />
+                                <label for="active" class="form-check-label" id="label-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2">
+                                <input type="checkbox" id="deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSecuritySystemSettingWriter()" />
+                                <label for="deleted" class="form-check-label" id="label-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="system-setting-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="systemSettingForm.pristine" (click)="loadData(true)" ngbTooltip="Reload System Setting">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !systemSettingForm.valid || !systemSettingForm.dirty || systemSettingForm.pristine || userIsSecuritySystemSettingWriter() == false " ngbTooltip="Save System Setting">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

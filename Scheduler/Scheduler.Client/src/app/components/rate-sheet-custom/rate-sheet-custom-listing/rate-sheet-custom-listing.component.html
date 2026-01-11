@@ -1,0 +1,186 @@
+<div class="page-container">
+  <div class="card mb-3 header-card shadow-sm">
+    <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <div class="header-left">
+        <!-- Back Button -->
+        <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back" *ngIf="canGoBack()">
+          <i class="fa-solid fa-arrow-left"></i>
+        </button>
+
+        <!-- Title -->
+        <div>
+          <h3 class="page-title mb-0">Rate Sheets</h3>
+          <small class="text-muted">View Rate Sheets</small>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <!-- Quick Search Input -->
+        <div class="search-bar me-2 position-relative">
+          <i class="fa fa-search search-icon"></i>
+          <input type="text"
+                 class="form-control search-input"
+                 placeholder="Search RateSheets..."
+                 [(ngModel)]="filterText"
+                 (ngModelChange)="onFilterChange()">
+          <button *ngIf="filterText"
+                  class="clear-search btn"
+                  (click)="filterText=''; onFilterChange()"
+                  title="Clear Search">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+        
+        <!-- Add/Edit Button -->
+        <app-rate-sheet-custom-add-edit [navigateToDetailsAfterAdd]="false"></app-rate-sheet-custom-add-edit>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mb-4 shadow-sm">
+    <div class="card-header collapsible" (click)="showPreview = !showPreview">
+      <h6 class="mb-0">
+        <i class="fa-solid fa-calculator me-2"></i>
+        Rate Resolver
+        <small class="text-muted ms-2">(Click to expand)</small>
+        <i class="fa-solid float-end" [ngClass]="showPreview ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+      </h6>
+    </div>
+
+    <div class="card-body" *ngIf="showPreview">
+      <p class="small text-muted mb-3">
+        Test how the rate hierarchy resolves for any combination. Useful for verifying overrides and global rates.
+      </p>
+
+      <div class="row g-3 mb-3">
+
+        <div class="col-md-2">
+          <label class="form-label small">Preview Rate Type</label>
+          <select class="form-select form-select-sm" [(ngModel)]="preview.rateTypeId" (ngModelChange)="previewRate()">
+            <option [ngValue]="null">Select Rate Type</option>
+            <option *ngFor="let rateType of rateTypes$ | async" [ngValue]="rateType.id">
+              {{ rateType.name }}
+            </option>
+          </select>
+        </div>
+
+
+        <div class="col-md-2">
+          <label class="form-label small">Preview Date</label>
+          <input type="date" class="form-control form-control-sm" [(ngModel)]="preview.date" (ngModelChange)="previewRate()" />
+        </div>
+
+        <div class="col-md-2" *ngIf="officeCount$ != null && ((officeCount$ | async) ?? 0) > 0">
+          <label class="form-label small">Preview Office</label>
+          <select class="form-select form-select-sm" [(ngModel)]="preview.officeId" (ngModelChange)="previewRate()">
+            <option [ngValue]="null">Any Office</option>
+            <option *ngFor="let office of offices$ | async" [ngValue]="office.id">
+              {{ office.name }}
+            </option>
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label small">Preview Role</label>
+          <select class="form-select form-select-sm" [(ngModel)]="preview.assignmentRoleId" (ngModelChange)="previewRate()">
+            <option [ngValue]="null">Any Role</option>
+            <option *ngFor="let role of assignmentRoles$ | async" [ngValue]="role.id">
+              {{ role.name }}
+            </option>
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label small">Preview Resource</label>
+          <select class="form-select form-select-sm" [(ngModel)]="preview.resourceId" (ngModelChange)="previewRate()">
+            <option [ngValue]="null">Any Resource</option>
+            <option *ngFor="let resource of resources$ | async" [ngValue]="resource.id">
+              {{ resource.name }}
+            </option>
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label small">Preview Target</label>
+          <select class="form-select form-select-sm" [(ngModel)]="preview.schedulingTargetId" (ngModelChange)="previewRate()">
+            <option [ngValue]="null">Any Target</option>
+            <option *ngFor="let target of schedulingTargets$ | async" [ngValue]="target.id">
+              {{ target.name }}
+            </option>
+          </select>
+        </div>
+
+      </div>
+
+
+      <!-- Preview Result -->
+      <div class="mt-3">
+        <ng-container *ngIf="preview.isLoading">
+          <div class="text-center py-3">
+            <div class="spinner-border spinner-border-sm text-primary" role="status">
+              <span class="visually-hidden">Resolving rate...</span>
+            </div>
+            <span class="ms-2 text-muted small">Resolving rate...</span>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="preview.result && !preview.isLoading">
+          <div class="alert alert-success py-3 px-4">
+            <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
+              <div class="flex-grow-1">
+                <div class="mb-2">
+                  <strong>Resolved Rate:</strong>
+                  <span class="ms-3 fs-4 fw-bold text-success">
+                    {{ preview.result.billingRate | currency:preview.result.currency:'symbol-narrow' }}
+                    <small class="text-muted ms-1">(Billing)</small>
+                  </span>
+                  <span class="ms-4 fs-5 text-muted">
+                    {{ preview.result.costRate | currency:preview.result.currency:'symbol-narrow' }}
+                    <small class="ms-1">(Cost)</small>
+                  </span>
+                </div>
+                <div class="small text-muted">
+                  <i class="fa-solid fa-info-circle me-2"></i>
+                  <strong>Matched:</strong> {{ preview.result.scope }}
+                  <span class="ms-3">• Effective: {{ preview.result.effectiveDate | date:'mediumDate' }}</span>
+                </div>
+              </div>
+
+              <!-- Edit Button -->
+              <div class="text-md-end">
+                <button class="btn btn-outline-primary btn-sm"
+                        (click)="editMatchedRateSheet(preview.result.id)"
+                        ngbTooltip="Edit this Rate Sheet">
+                  <i class="fa fa-pen me-2"></i> Edit Rate Sheet
+                </button>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="preview.error && !preview.isLoading">
+          <div class="alert alert-warning py-3 px-4 d-flex align-items-center">
+            <i class="fa-solid fa-exclamation-triangle me-3 fs-4"></i>
+            <div>
+              <strong>No rate found</strong>
+              <div class="small mt-1">{{ preview.error }}</div>
+            </div>
+          </div>
+        </ng-container>
+        <ng-container *ngIf="!preview.result && !preview.error && !preview.isLoading">
+          <div class="text-muted small py-2">
+            <i class="fa-solid fa-circle-info me-2"></i>
+            Select Rate Type, Date, and Either a Role or a Resource to preview resolved rate
+          </div>
+        </ng-container>
+
+      </div>
+
+    </div>
+  </div>
+
+  <app-rate-sheet-custom-table *ngIf="userIsSchedulerRateSheetReader() == true"
+                               [filterText]="filterText"
+                               [isSmallScreen]="isSmallScreen">
+  </app-rate-sheet-custom-table>
+</div>

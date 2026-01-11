@@ -1,0 +1,77 @@
+<div class="add-shift-pattern-day" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-shift-pattern-day me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Shift Pattern Day" 
+        *ngIf="userIsSchedulerShiftPatternDayWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #shiftPatternDayModal let-modal>
+   <div class="modal-header bg-dark text-light shift-pattern-day-modal-header">
+      <h5 class="modal-title mb-0" id="shiftPatternDayModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Shift Pattern Day' : 'Add Shift Pattern Day' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body shift-pattern-day-modal-body">
+      <form [formGroup]="shiftPatternDayForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('shiftPatternId')">
+                <label for="ShiftPatternDay-shiftPatternId" id="label-ShiftPatternDay-shiftPatternId"><span class="text-danger">*</span>Shift Pattern</label>
+                <select id="ShiftPatternDay-shiftPatternId" formControlName="shiftPatternId" class="form-select shift-pattern-day-select" [disabled]="!userIsSchedulerShiftPatternDayWriter()">
+                    <option [ngValue]="null">Select Shift Pattern</option>
+                    <option *ngFor="let shiftPattern of shiftPatterns$ | async" [ngValue]="shiftPattern.id">{{shiftPattern.name}}</option>
+                </select>
+                <div *ngIf="shiftPatternDayForm.get('shiftPatternId')?.invalid && shiftPatternDayForm.get('shiftPatternId')?.touched" class="text-danger">
+                    Shift Pattern is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('dayOfWeek')">
+                <label for="ShiftPatternDay-dayOfWeek" id="label-ShiftPatternDay-dayOfWeek"><span class="text-danger">*</span>Day Of Week</label>
+                <input type="number" id="ShiftPatternDay-dayOfWeek" formControlName="dayOfWeek" placeholder="Enter Day Of Week" class="form-control shift-pattern-day-input" [disabled]="!userIsSchedulerShiftPatternDayWriter()" aria-labelledby="label-dayOfWeek" />
+                <div *ngIf="shiftPatternDayForm.get('dayOfWeek')?.invalid && shiftPatternDayForm.get('dayOfWeek')?.touched" class="text-danger">
+                    Day Of Week is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('startTime')">
+                <label for="ShiftPatternDay-startTime" id="label-ShiftPatternDay-startTime"><span class="text-danger">*</span>Start Time</label>
+                <input type="text" id="ShiftPatternDay-startTime" formControlName="startTime" placeholder="Enter Start Time" class="form-control shift-pattern-day-input" [disabled]="!userIsSchedulerShiftPatternDayWriter()" aria-labelledby="label-startTime" />
+                <div *ngIf="shiftPatternDayForm.get('startTime')?.invalid && shiftPatternDayForm.get('startTime')?.touched" class="text-danger">
+                    Start Time is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('hours')">
+                <label for="ShiftPatternDay-hours" id="label-ShiftPatternDay-hours"><span class="text-danger">*</span>Hours</label>
+                <input type="number" id="ShiftPatternDay-hours" formControlName="hours" placeholder="Enter Hours" class="form-control shift-pattern-day-input" [disabled]="!userIsSchedulerShiftPatternDayWriter()" aria-labelledby="label-hours" />
+                <div *ngIf="shiftPatternDayForm.get('hours')?.invalid && shiftPatternDayForm.get('hours')?.touched" class="text-danger">
+                    Hours is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('label')">
+                <label for="ShiftPatternDay-label" id="label-ShiftPatternDay-label">Label</label>
+                <input type="text" id="ShiftPatternDay-label" formControlName="label" placeholder="Enter Label" class="form-control shift-pattern-day-input" [disabled]="!userIsSchedulerShiftPatternDayWriter()" aria-labelledby="label-label" />
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="ShiftPatternDay-versionNumber" id="label-ShiftPatternDay-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="ShiftPatternDay-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control shift-pattern-day-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ShiftPatternDay-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerShiftPatternDayWriter()" />
+                <label for="ShiftPatternDay-active" class="form-check-label" id="label-ShiftPatternDay-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ShiftPatternDay-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerShiftPatternDayWriter()" />
+                <label for="ShiftPatternDay-deleted" class="form-check-label" id="label-ShiftPatternDay-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer shift-pattern-day-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Shift Pattern Day changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !shiftPatternDayForm.valid || shiftPatternDayForm.pristine || !userIsSchedulerShiftPatternDayWriter()" ngbTooltip="Save the Shift Pattern Day changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

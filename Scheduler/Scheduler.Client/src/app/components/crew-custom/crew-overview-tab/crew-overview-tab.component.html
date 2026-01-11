@@ -1,0 +1,85 @@
+<div class="row g-4" *ngIf="crew; else loading">
+  <!-- Core Information Card -->
+  <div class="col-lg-7">
+    <div class="card h-100">
+      <div class="card-header bg-light">
+        <h6 class="mb-0 fw-semibold">
+          <i class="fa-solid fa-info-circle me-2"></i>
+          Core Information
+        </h6>
+      </div>
+      <div class="card-body">
+        <dl class="row mb-0">
+          <dt class="col-sm-4 text-muted">Name</dt>
+          <dd class="col-sm-8 fw-medium">{{ crew.name }}</dd>
+
+          <dt class="col-sm-4 text-muted">Description</dt>
+          <dd class="col-sm-8">{{ crew.description || '—' }}</dd>
+
+
+          <dt class="col-sm-4 text-muted" *ngIf="officeCount$ != null && ((officeCount$ | async) ?? 0) > 0">Office</dt>
+          <dd class="col-sm-8" *ngIf="officeCount$ != null && ((officeCount$ | async) ?? 0) > 0">{{ crew.office?.name || '—' }}</dd>
+
+          <dt class="col-sm-4 text-muted">Color</dt>
+          <dd class="col-sm-8"><span class="color-swatch"
+                                     [style.background-color]="crew.color || '#cccccc'"></span></dd>
+
+          <dt class="col-sm-4 text-muted">Status</dt>
+          <dd class="col-sm-8">
+            <span class="badge me-2" [ngClass]="crew.active ? 'bg-success' : 'bg-secondary'">
+              {{ crew.active ? 'Active' : 'Inactive' }}
+            </span>
+            <span *ngIf="crew.deleted == true" class="badge me-2" [ngClass]="crew.deleted ? 'bg-danger' : 'bg-secondary'">
+              {{ crew.deleted ? 'Deleted' : 'Not Deleted' }}
+            </span>
+            <span class="badge me-2 bg-secondary" >
+              Version: {{ crew.versionNumber }}
+            </span>
+          </dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Stats Card -->
+  <div class="col-lg-5">
+    <div class="card h-100">
+      <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <h6 class="mb-0 fw-semibold">
+          <i class="fa-solid fa-chart-simple me-2"></i>
+          Quick Stats
+        </h6>
+        <button class="btn btn-sm btn-outline-secondary" (click)="loadQuickStats()" >
+          <i class="fa fa-sync"></i>
+        </button>
+      </div>
+      <div class="card-body">
+        <div class="row text-center g-4">
+          <!-- Assignments -->
+          <div class="col-6">
+            <div class="fs-3 fw-bold text-primary">
+              {{ (assignmentCount$ | async) }}
+            </div>
+            <div class="small text-muted">Assignments</div>
+          </div>
+
+          <!-- Crew Memberss -->
+          <div class="col-6">
+            <div class="fs-3 fw-bold text-info">
+              {{ (crewMemberCount$ | async) }}
+            </div>
+            <div class="small text-muted">Crew Members</div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #loading>
+  <div class="text-center py-5 text-muted">
+    <i class="fa-solid fa-spinner fa-spin fa-2x mb-3"></i>
+    <div>Loading overview...</div>
+  </div>
+</ng-template>

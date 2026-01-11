@@ -1,0 +1,66 @@
+<div class="container-fluid p-1 m-0 scheduling-target-address-change-history-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="scheduling-target-address-change-history-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Scheduling Target Address Change History</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Scheduling Target Address Change History' : 'Add Scheduling Target Address Change History'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerSchedulingTargetAddressChangeHistoryReader()">
+                <div class="col m-2 scheduling-target-address-change-history-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="schedulingTargetAddressChangeHistoryForm" (ngSubmit)="submitForm()" class="scheduling-target-address-change-history-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('schedulingTargetAddressId')">
+                                <label for="SchedulingTargetAddressChangeHistory-schedulingTargetAddressId" id="label-SchedulingTargetAddressChangeHistory-schedulingTargetAddressId"><span class="text-danger">*</span>Scheduling Target Address</label>
+                                <select id="SchedulingTargetAddressChangeHistory-schedulingTargetAddressId" formControlName="schedulingTargetAddressId" class="form-select scheduling-target-address-change-history-select" [disabled]="!userIsSchedulerSchedulingTargetAddressChangeHistoryWriter()">
+                                    <option [ngValue]="null">Select Scheduling Target Address</option>
+                                    <option *ngFor="let schedulingTargetAddress of schedulingTargetAddresses$ | async" [ngValue]="schedulingTargetAddress.id">{{schedulingTargetAddress.addressLine1}}</option>
+                                </select>
+                                <div *ngIf="schedulingTargetAddressChangeHistoryForm.get('schedulingTargetAddressId')?.invalid && schedulingTargetAddressChangeHistoryForm.get('schedulingTargetAddressId')?.touched" class="text-danger">
+                                    Scheduling Target Address is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="SchedulingTargetAddressChangeHistory-versionNumber" id="label-SchedulingTargetAddressChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="SchedulingTargetAddressChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control scheduling-target-address-change-history-input" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                                <label for="SchedulingTargetAddressChangeHistory-timeStamp" id="label-SchedulingTargetAddressChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                                <input type="datetime-local" id="SchedulingTargetAddressChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control scheduling-target-address-change-history-input" [disabled]="!userIsSchedulerSchedulingTargetAddressChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                                <div *ngIf="schedulingTargetAddressChangeHistoryForm.get('timeStamp')?.invalid && schedulingTargetAddressChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                                    Time Stamp is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="SchedulingTargetAddressChangeHistory-userId" id="label-SchedulingTargetAddressChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="SchedulingTargetAddressChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control scheduling-target-address-change-history-input" [disabled]="!userIsSchedulerSchedulingTargetAddressChangeHistoryWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="schedulingTargetAddressChangeHistoryForm.get('userId')?.invalid && schedulingTargetAddressChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                                <label for="SchedulingTargetAddressChangeHistory-data" id="label-SchedulingTargetAddressChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                                <textarea id="SchedulingTargetAddressChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control scheduling-target-address-change-history-input" [disabled]="!userIsSchedulerSchedulingTargetAddressChangeHistoryWriter()"></textarea>
+                                <div *ngIf="schedulingTargetAddressChangeHistoryForm.get('data')?.invalid && schedulingTargetAddressChangeHistoryForm.get('data')?.touched" class="text-danger">
+                                    Data is required
+                                </div>
+                            </div>
+                            <div class="scheduling-target-address-change-history-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="schedulingTargetAddressChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Scheduling Target Address Change History">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !schedulingTargetAddressChangeHistoryForm.valid || !schedulingTargetAddressChangeHistoryForm.dirty || schedulingTargetAddressChangeHistoryForm.pristine || userIsSchedulerSchedulingTargetAddressChangeHistoryWriter() == false " ngbTooltip="Save Scheduling Target Address Change History">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

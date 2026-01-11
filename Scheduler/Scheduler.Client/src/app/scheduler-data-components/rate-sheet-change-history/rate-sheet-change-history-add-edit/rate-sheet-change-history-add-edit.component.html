@@ -1,0 +1,65 @@
+<div class="add-rate-sheet-change-history" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-rate-sheet-change-history me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Rate Sheet Change History" 
+        *ngIf="userIsSchedulerRateSheetChangeHistoryWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #rateSheetChangeHistoryModal let-modal>
+   <div class="modal-header bg-dark text-light rate-sheet-change-history-modal-header">
+      <h5 class="modal-title mb-0" id="rateSheetChangeHistoryModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Rate Sheet Change History' : 'Add Rate Sheet Change History' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body rate-sheet-change-history-modal-body">
+      <form [formGroup]="rateSheetChangeHistoryForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('rateSheetId')">
+                <label for="RateSheetChangeHistory-rateSheetId" id="label-RateSheetChangeHistory-rateSheetId"><span class="text-danger">*</span>Rate Sheet</label>
+                <select id="RateSheetChangeHistory-rateSheetId" formControlName="rateSheetId" class="form-select rate-sheet-change-history-select" [disabled]="!userIsSchedulerRateSheetChangeHistoryWriter()">
+                    <option [ngValue]="null">Select Rate Sheet</option>
+                    <option *ngFor="let rateSheet of rateSheets$ | async" [ngValue]="rateSheet.id">{{rateSheet.notes}}</option>
+                </select>
+                <div *ngIf="rateSheetChangeHistoryForm.get('rateSheetId')?.invalid && rateSheetChangeHistoryForm.get('rateSheetId')?.touched" class="text-danger">
+                    Rate Sheet is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="RateSheetChangeHistory-versionNumber" id="label-RateSheetChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="RateSheetChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control rate-sheet-change-history-input" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                <label for="RateSheetChangeHistory-timeStamp" id="label-RateSheetChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                <input type="datetime-local" id="RateSheetChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control rate-sheet-change-history-input" [disabled]="!userIsSchedulerRateSheetChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                <div *ngIf="rateSheetChangeHistoryForm.get('timeStamp')?.invalid && rateSheetChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                    Time Stamp is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                <label for="RateSheetChangeHistory-userId" id="label-RateSheetChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                <input type="number" id="RateSheetChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control rate-sheet-change-history-input" [disabled]="!userIsSchedulerRateSheetChangeHistoryWriter()" aria-labelledby="label-userId" />
+                <div *ngIf="rateSheetChangeHistoryForm.get('userId')?.invalid && rateSheetChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                    User Id is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                <label for="RateSheetChangeHistory-data" id="label-RateSheetChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                <textarea id="RateSheetChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control rate-sheet-change-history-input" [disabled]="!userIsSchedulerRateSheetChangeHistoryWriter()"></textarea>
+                <div *ngIf="rateSheetChangeHistoryForm.get('data')?.invalid && rateSheetChangeHistoryForm.get('data')?.touched" class="text-danger">
+                    Data is required
+                </div>
+            </div>
+         <div class="modal-footer rate-sheet-change-history-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Rate Sheet Change History changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !rateSheetChangeHistoryForm.valid || rateSheetChangeHistoryForm.pristine || !userIsSchedulerRateSheetChangeHistoryWriter()" ngbTooltip="Save the Rate Sheet Change History changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

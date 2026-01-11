@@ -1,0 +1,196 @@
+<div class="add-rate-sheet" *ngIf="showAddButton == true">
+  <button type="button"
+          class="btn btn-sm btn-add-rate-sheet me-2"
+          (click)="openModal()"
+          ngbTooltip="Add Rate Sheet"
+          *ngIf="userIsSchedulerRateSheetWriter() == true"
+          placement="top"
+          style="min-width: 75px;">
+    Add
+  </button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #rateSheetModal let-modal>
+  <div class="modal-header bg-dark text-light rate-sheet-modal-header">
+    <h5 class="modal-title mb-0">
+      {{ isEditMode ? 'Edit Rate Sheet' : 'Add Rate Sheet' }}
+    </h5>
+    <button type="button" class="btn btn-sm btn-close btn-close-white" (click)="closeModal()"></button>
+  </div>
+
+  <div class="modal-body rate-sheet-modal-body">
+    <form [formGroup]="rateSheetForm" (ngSubmit)="submitForm()">
+
+
+      <!-- Office Selector — Always shown, independent of scope, if there are any  -->
+      <div class="form-group mb-4" *ngIf="officeCount$ != null && ((officeCount$ | async) ?? 0) > 0">
+        <label class="form-label fw-semibold">Office Scope</label>
+        <p class="small text-muted mb-2">
+          Select an office to limit this rate to that office only. Leave as "All Offices" for global application.
+        </p>
+        <select class="form-select" formControlName="officeId">
+          <option [ngValue]="null">All Offices (Global)</option>
+          <option *ngFor="let office of offices$ | async" [ngValue]="office.id">
+            {{ office.name }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Scope Mode Selection — Always after office -->
+      <div class="form-group mb-4">
+        <label class="form-label fw-semibold"><span class="text-danger">*</span> Rate Scope</label>
+        <p class="small text-muted mb-2">
+          Choose how specific this rate should be. More specific rates override less specific ones.
+        </p>
+        <select class="form-select" formControlName="scopeMode" (change)="onScopeModeChange()">
+          <option [ngValue]="null">Select scope...</option>
+          <option value="globalRole">Role Rate — Applies to this Role (office or global)</option>
+          <option value="globalResource">Resource Rate — Applies to this Resource (office or global)</option>
+          <option value="targetRole">Target + Role — Applies to this Role on this Target</option>
+          <option value="targetResource">Target + Resource — Highest priority override</option>
+        </select>
+        <div *ngIf="rateSheetForm.get('scopeMode')?.invalid && rateSheetForm.get('scopeMode')?.touched" class="text-danger small mt-1">
+          Please select a rate scope
+        </div>
+        <div class="alert alert-info small py-2 px-3 mt-3" role="alert">
+          <i class="fa-solid fa-info-circle me-2"></i>
+          <strong>Rate Precedence (most to least specific):</strong><br>
+          1. Resource + Target + Role<br>
+          2. Resource + Target<br>
+          3. Resource + Role<br>
+          4. Resource + Office<br>
+          5. Role + Office<br>
+          6. Target<br>
+          7. Office<br>
+          8. Role<br>
+          9. Global
+        </div>
+      </div>
+
+      <!-- Conditional Fields Based on Scope Mode -->
+      <ng-container *ngIf="rateSheetForm.get('scopeMode')?.value">
+
+        <div class="card border-light mt-3" *ngIf="rateSheetForm.get('scopeMode')?.value">
+          <div class="card-body py-3">
+            <!-- Assignment Role — Shown for role-based scopes -->
+            <div class="form-group" *ngIf="isRoleScope()">
+              <label class="form-label fw-semibold">Role</label>
+              <select class="form-select rate-sheet-select" formControlName="assignmentRoleId">
+                <option [ngValue]="null">Select Role</option>
+                <option *ngFor="let role of assignmentRoles$ | async" [ngValue]="role.id">{{ role.name }}</option>
+              </select>
+            </div>
+
+            <!-- Resource — Shown for resource-based scopes -->
+            <div class="form-group" *ngIf="isResourceScope()">
+              <label class="form-label fw-semibold">Resource</label>
+              <select class="form-select rate-sheet-select" formControlName="resourceId">
+                <option [ngValue]="null">Select Resource</option>
+                <option *ngFor="let resource of resources$ | async" [ngValue]="resource.id">
+                  {{ resource.name }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Scheduling Target — Shown for target-based scopes -->
+            <div class="form-group" *ngIf="isTargetScope()">
+              <label class="form-label fw-semibold">Target</label>
+              <select class="form-select rate-sheet-select" formControlName="schedulingTargetId">
+                <option [ngValue]="null">Select Target</option>
+                <option *ngFor="let target of schedulingTargets$ | async" [ngValue]="target.id">
+                  {{ target.name }}
+                </option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Always Shown -->
+        <div class="form-group">
+          <label class="form-label fw-semibold"><span class="text-danger">*</span> Rate Type</label>
+          <select class="form-select  rate-sheet-select" formControlName="rateTypeId">
+            <option [ngValue]="null">Select Rate Type</option>
+            <option *ngFor="let type of rateTypes$ | async" [ngValue]="type.id">{{ type.name }}</option>
+          </select>
+          <div *ngIf="rateSheetForm.get('rateTypeId')?.invalid && rateSheetForm.get('rateTypeId')?.touched" class="text-danger small mt-1">
+            Rate Type is required
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label fw-semibold"><span class="text-danger">*</span> Effective Date</label>
+          <input type="datetime-local" class="form-control rate-sheet-input" formControlName="effectiveDate" />
+          <div *ngIf="rateSheetForm.get('effectiveDate')?.invalid && rateSheetForm.get('effectiveDate')?.touched" class="text-danger small mt-1">
+            Effective Date is required
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label fw-semibold"><span class="text-danger">*</span> Currency</label>
+          <select class="form-select  rate-sheet-select" formControlName="currencyId">
+            <option [ngValue]="null">Select Currency</option>
+            <option *ngFor="let currency of currencies$ | async" [ngValue]="currency.id">{{ currency.name }}</option>
+          </select>
+          <div *ngIf="rateSheetForm.get('currencyId')?.invalid && rateSheetForm.get('currencyId')?.touched" class="text-danger small mt-1">
+            Currency is required
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label fw-semibold">Cost Rate</label>
+              <input type="number" step="0.01" class="form-control  rate-sheet-input" formControlName="costRate" placeholder="0.00" />
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label fw-semibold">Billing Rate</label>
+              <input type="number" step="0.01" class="form-control  rate-sheet-input" formControlName="billingRate" placeholder="0.00" />
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-12">
+            <div class="form-group">
+              <label for="notes" class="form-label fw-semibold">Notes (optional)</label>
+              <textarea id="notes"
+                        formControlName="notes"
+                        class="form-control"
+                        rows="3"
+                        placeholder="e.g., Certified premium, Night shift differential"></textarea>
+            </div>
+          </div>
+        </div>
+
+      </ng-container>
+
+      <!-- Edit-only fields -->
+      <!--<div class="form-group" *ngIf="isEditMode">
+        <label class="form-label">Version Number</label>
+        <input type="number" class="form-control" formControlName="versionNumber" />
+      </div>-->
+      <div class="form-group d-flex gap-4" *ngIf="isEditMode">
+        <div class="form-check">
+          <input type="checkbox" class="form-check-input" id="active" formControlName="active" />
+          <label class="form-check-label" for="active">Active</label>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" class="form-check-input" id="deleted" formControlName="deleted" />
+          <label class="form-check-label" for="deleted">Deleted</label>
+        </div>
+      </div>
+
+      <div class="modal-footer rate-sheet-modal-footer border-top-0">
+        <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+        <button type="submit"
+                class="btn btn-primary"
+                [disabled]="isSaving || !rateSheetForm.valid || rateSheetForm.pristine">
+          {{ isEditMode ? 'Save Changes' : 'Create Rate Sheet' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</ng-template>

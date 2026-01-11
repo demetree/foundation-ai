@@ -1,0 +1,85 @@
+<div class="add-contact-method" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-contact-method me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Contact Method" 
+        *ngIf="userIsSchedulerContactMethodWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #contactMethodModal let-modal>
+   <div class="modal-header bg-dark text-light contact-method-modal-header">
+      <h5 class="modal-title mb-0" id="contactMethodModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Contact Method' : 'Add Contact Method' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body contact-method-modal-body">
+      <form [formGroup]="contactMethodForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="ContactMethod-name" id="label-ContactMethod-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="ContactMethod-name" formControlName="name" placeholder="Enter Name" class="form-control contact-method-input" [disabled]="!userIsSchedulerContactMethodWriter()" aria-labelledby="label-name" />
+                <div *ngIf="contactMethodForm.get('name')?.invalid && contactMethodForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="ContactMethod-description" id="label-ContactMethod-description"><span class="text-danger">*</span>Description</label>
+                <textarea id="ContactMethod-description" formControlName="description" placeholder="Enter Description" class="form-control contact-method-input" [disabled]="!userIsSchedulerContactMethodWriter()"></textarea>
+                <div *ngIf="contactMethodForm.get('description')?.invalid && contactMethodForm.get('description')?.touched" class="text-danger">
+                    Description is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                <label for="ContactMethod-sequence" id="label-ContactMethod-sequence">Sequence</label>
+                <input type="number" id="ContactMethod-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control contact-method-input" [disabled]="!userIsSchedulerContactMethodWriter()" aria-labelledby="label-sequence" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('iconId')">
+                <label for="ContactMethod-iconId" id="label-ContactMethod-iconId">Icon</label>
+                <select id="ContactMethod-iconId" formControlName="iconId" class="form-select contact-method-select" [disabled]="!userIsSchedulerContactMethodWriter()">
+                    <option [ngValue]="null">Select Icon</option>
+                    <option *ngFor="let icon of icons$ | async" [ngValue]="icon.id">{{icon.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('color')">
+                <label for="ContactMethod-color" id="label-ContactMethod-color">Color</label>
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="ContactMethod-color" 
+                        formControlName="color" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerContactMethodWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="contactMethodForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ContactMethod-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerContactMethodWriter()" />
+                <label for="ContactMethod-active" class="form-check-label" id="label-ContactMethod-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ContactMethod-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerContactMethodWriter()" />
+                <label for="ContactMethod-deleted" class="form-check-label" id="label-ContactMethod-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer contact-method-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Contact Method changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !contactMethodForm.valid || contactMethodForm.pristine || !userIsSchedulerContactMethodWriter()" ngbTooltip="Save the Contact Method changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

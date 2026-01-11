@@ -1,0 +1,59 @@
+<div class="add-security-team" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-security-team me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Security Team" 
+        *ngIf="userIsSecuritySecurityTeamWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #securityTeamModal let-modal>
+   <div class="modal-header bg-dark text-light security-team-modal-header">
+      <h5 class="modal-title mb-0" id="securityTeamModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Security Team' : 'Add Security Team' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body security-team-modal-body">
+      <form [formGroup]="securityTeamForm" (ngSubmit)="submitForm()">
+            <div class="form-group">
+                <label for="securityDepartmentId" id="label-securityDepartmentId"><span class="text-danger">*</span>Security Department</label>
+                <select id="securityDepartmentId" formControlName="securityDepartmentId" class="form-select security-team-select" [disabled]="!userIsSecuritySecurityTeamWriter()">
+                    <option [ngValue]="null">Select Security Department</option>
+                    <option *ngFor="let securityDepartment of securityDepartments$ | async" [ngValue]="securityDepartment.id">{{securityDepartment.name}}</option>
+                </select>
+                <div *ngIf="securityTeamForm.get('securityDepartmentId')?.invalid && securityTeamForm.get('securityDepartmentId')?.touched" class="text-danger">
+                    Security Department is required
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="name" id="label-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="name" formControlName="name" placeholder="Enter Name" class="form-control security-team-input" [disabled]="!userIsSecuritySecurityTeamWriter()" aria-labelledby="label-name" />
+                <div *ngIf="securityTeamForm.get('name')?.invalid && securityTeamForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="description" id="label-description">Description</label>
+                <textarea id="description" formControlName="description" placeholder="Enter Description" class="form-control security-team-input" [disabled]="!userIsSecuritySecurityTeamWriter()"></textarea>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode">
+                <input type="checkbox" id="active" formControlName="active" class="form-check-input" [disabled]="!userIsSecuritySecurityTeamWriter()" />
+                <label for="active" class="form-check-label" id="label-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode">
+                <input type="checkbox" id="deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSecuritySecurityTeamWriter()" />
+                <label for="deleted" class="form-check-label" id="label-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer security-team-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Security Team changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !securityTeamForm.valid || securityTeamForm.pristine || !userIsSecuritySecurityTeamWriter()" ngbTooltip="Save the Security Team changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

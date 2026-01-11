@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CodeGenerationCommon\CodeGenerationCommon.csproj" />
+    <ProjectReference Include="..\DatabaseGenerators\AuditorDatabaseGenerator\AuditorDatabaseGenerator.csproj" />
+    <ProjectReference Include="..\DatabaseGenerators\SecurityDatabaseGenerator\SecurityDatabaseGenerator.csproj" />
+    <ProjectReference Include="..\FoundationCommon\FoundationCommon.csproj" />
+    <ProjectReference Include="..\FoundationCore\Foundation.csproj" />
+  </ItemGroup>
+
+</Project>

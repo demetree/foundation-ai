@@ -1,0 +1,62 @@
+<div class="container-fluid p-1 m-0 entity-data-token-event-type-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="entity-data-token-event-type-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Entity Data Token Event Type</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Entity Data Token Event Type' : 'Add Entity Data Token Event Type'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSecurityEntityDataTokenEventTypeReader()">
+                <div class="col m-2 entity-data-token-event-type-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="entityDataTokenEventTypeForm" (ngSubmit)="submitForm()" class="entity-data-token-event-type-details-form">
+                            <div class="form-group">
+                                <label for="name" id="label-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="name" formControlName="name" placeholder="Enter Name" class="form-control entity-data-token-event-type-input" [disabled]="!userIsSecurityEntityDataTokenEventTypeWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="entityDataTokenEventTypeForm.get('name')?.invalid && entityDataTokenEventTypeForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="description" id="label-description">Description</label>
+                                <textarea id="description" formControlName="description" placeholder="Enter Description" class="form-control entity-data-token-event-type-input" [disabled]="!userIsSecurityEntityDataTokenEventTypeWriter()"></textarea>
+                            </div>
+                            <div class="entity-data-token-event-type-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="entityDataTokenEventTypeForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Entity Data Token Event Type">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !entityDataTokenEventTypeForm.valid || !entityDataTokenEventTypeForm.dirty || entityDataTokenEventTypeForm.pristine || userIsSecurityEntityDataTokenEventTypeWriter() == false " ngbTooltip="Save Entity Data Token Event Type">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSecurityEntityDataTokenEventTypeReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 entity-data-token-event-type-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="entityDataTokenEventService.userIsSecurityEntityDataTokenEventReader()">
+                            <button ngbNavLink>EntityDataTokenEvents
+                                <span class="badge bg-primary ms-2">
+                                    {{ (entityDataTokenEventTypeData?.EntityDataTokenEventsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <app-entity-data-token-event-table [queryParams]="GetQueryParameters()"></app-entity-data-token-event-table>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

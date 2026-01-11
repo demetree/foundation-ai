@@ -1,0 +1,45 @@
+<div class="add-audit-user-agent" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-audit-user-agent me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Audit User Agent" 
+        *ngIf="userIsAuditorAuditUserAgentWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #auditUserAgentModal let-modal>
+   <div class="modal-header bg-dark text-light audit-user-agent-modal-header">
+      <h5 class="modal-title mb-0" id="auditUserAgentModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Audit User Agent' : 'Add Audit User Agent' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body audit-user-agent-modal-body">
+      <form [formGroup]="auditUserAgentForm" (ngSubmit)="submitForm()">
+            <div class="form-group">
+                <label for="name" id="label-name"><span class="text-danger">*</span>Name</label>
+                <textarea id="name" formControlName="name" placeholder="Enter Name" class="form-control audit-user-agent-input" [disabled]="!userIsAuditorAuditUserAgentWriter()"></textarea>
+                <div *ngIf="auditUserAgentForm.get('name')?.invalid && auditUserAgentForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="comments" id="label-comments">Comments</label>
+                <textarea id="comments" formControlName="comments" placeholder="Enter Comments" class="form-control audit-user-agent-input" [disabled]="!userIsAuditorAuditUserAgentWriter()"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="firstAccess" id="label-firstAccess">First Access</label>
+                <input type="datetime-local" id="firstAccess" formControlName="firstAccess" placeholder="Enter First Access" class="form-control audit-user-agent-input" [disabled]="!userIsAuditorAuditUserAgentWriter()" aria-labelledby="label-firstAccess" />
+            </div>
+         <div class="modal-footer audit-user-agent-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Audit User Agent changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !auditUserAgentForm.valid || auditUserAgentForm.pristine || !userIsAuditorAuditUserAgentWriter()" ngbTooltip="Save the Audit User Agent changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

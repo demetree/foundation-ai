@@ -1,0 +1,79 @@
+<div class="add-scheduled-event-dependency" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-scheduled-event-dependency me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Scheduled Event Dependency" 
+        *ngIf="userIsSchedulerScheduledEventDependencyWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #scheduledEventDependencyModal let-modal>
+   <div class="modal-header bg-dark text-light scheduled-event-dependency-modal-header">
+      <h5 class="modal-title mb-0" id="scheduledEventDependencyModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Scheduled Event Dependency' : 'Add Scheduled Event Dependency' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body scheduled-event-dependency-modal-body">
+      <form [formGroup]="scheduledEventDependencyForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('predecessorEventId')">
+                <label for="ScheduledEventDependency-predecessorEventId" id="label-ScheduledEventDependency-predecessorEventId"><span class="text-danger">*</span>Predecessor Event</label>
+                <select id="ScheduledEventDependency-predecessorEventId" formControlName="predecessorEventId" class="form-select scheduled-event-dependency-select" [disabled]="!userIsSchedulerScheduledEventDependencyWriter()">
+                    <option [ngValue]="null">Select Scheduled Event</option>
+                    <option *ngFor="let scheduledEvent of scheduledEvents$ | async" [ngValue]="scheduledEvent.id">{{[scheduledEvent.name] | filterAndJoin}}</option>
+                </select>
+                <div *ngIf="scheduledEventDependencyForm.get('predecessorEventId')?.invalid && scheduledEventDependencyForm.get('predecessorEventId')?.touched" class="text-danger">
+                    Predecessor Event is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('successorEventId')">
+                <label for="ScheduledEventDependency-successorEventId" id="label-ScheduledEventDependency-successorEventId"><span class="text-danger">*</span>Successor Event</label>
+                <select id="ScheduledEventDependency-successorEventId" formControlName="successorEventId" class="form-select scheduled-event-dependency-select" [disabled]="!userIsSchedulerScheduledEventDependencyWriter()">
+                    <option [ngValue]="null">Select Scheduled Event</option>
+                    <option *ngFor="let scheduledEvent of scheduledEvents$ | async" [ngValue]="scheduledEvent.id">{{[scheduledEvent.name] | filterAndJoin}}</option>
+                </select>
+                <div *ngIf="scheduledEventDependencyForm.get('successorEventId')?.invalid && scheduledEventDependencyForm.get('successorEventId')?.touched" class="text-danger">
+                    Successor Event is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('dependencyTypeId')">
+                <label for="ScheduledEventDependency-dependencyTypeId" id="label-ScheduledEventDependency-dependencyTypeId"><span class="text-danger">*</span>Dependency Type</label>
+                <select id="ScheduledEventDependency-dependencyTypeId" formControlName="dependencyTypeId" class="form-select scheduled-event-dependency-select" [disabled]="!userIsSchedulerScheduledEventDependencyWriter()">
+                    <option [ngValue]="null">Select Dependency Type</option>
+                    <option *ngFor="let dependencyType of dependencyTypes$ | async" [ngValue]="dependencyType.id">{{dependencyType.name}}</option>
+                </select>
+                <div *ngIf="scheduledEventDependencyForm.get('dependencyTypeId')?.invalid && scheduledEventDependencyForm.get('dependencyTypeId')?.touched" class="text-danger">
+                    Dependency Type is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('lagMinutes')">
+                <label for="ScheduledEventDependency-lagMinutes" id="label-ScheduledEventDependency-lagMinutes"><span class="text-danger">*</span>Lag Minutes</label>
+                <input type="number" id="ScheduledEventDependency-lagMinutes" formControlName="lagMinutes" placeholder="Enter Lag Minutes" class="form-control scheduled-event-dependency-input" [disabled]="!userIsSchedulerScheduledEventDependencyWriter()" aria-labelledby="label-lagMinutes" />
+                <div *ngIf="scheduledEventDependencyForm.get('lagMinutes')?.invalid && scheduledEventDependencyForm.get('lagMinutes')?.touched" class="text-danger">
+                    Lag Minutes is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="ScheduledEventDependency-versionNumber" id="label-ScheduledEventDependency-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="ScheduledEventDependency-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control scheduled-event-dependency-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ScheduledEventDependency-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerScheduledEventDependencyWriter()" />
+                <label for="ScheduledEventDependency-active" class="form-check-label" id="label-ScheduledEventDependency-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ScheduledEventDependency-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerScheduledEventDependencyWriter()" />
+                <label for="ScheduledEventDependency-deleted" class="form-check-label" id="label-ScheduledEventDependency-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer scheduled-event-dependency-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Scheduled Event Dependency changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !scheduledEventDependencyForm.valid || scheduledEventDependencyForm.pristine || !userIsSchedulerScheduledEventDependencyWriter()" ngbTooltip="Save the Scheduled Event Dependency changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

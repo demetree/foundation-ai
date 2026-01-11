@@ -1,0 +1,66 @@
+<div class="container-fluid p-1 m-0 pledge-change-history-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="pledge-change-history-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Pledge Change History</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Pledge Change History' : 'Add Pledge Change History'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerPledgeChangeHistoryReader()">
+                <div class="col m-2 pledge-change-history-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="pledgeChangeHistoryForm" (ngSubmit)="submitForm()" class="pledge-change-history-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('pledgeId')">
+                                <label for="PledgeChangeHistory-pledgeId" id="label-PledgeChangeHistory-pledgeId"><span class="text-danger">*</span>Pledge</label>
+                                <select id="PledgeChangeHistory-pledgeId" formControlName="pledgeId" class="form-select pledge-change-history-select" [disabled]="!userIsSchedulerPledgeChangeHistoryWriter()">
+                                    <option [ngValue]="null">Select Pledge</option>
+                                    <option *ngFor="let pledge of pledges$ | async" [ngValue]="pledge.id">{{pledge.notes}}</option>
+                                </select>
+                                <div *ngIf="pledgeChangeHistoryForm.get('pledgeId')?.invalid && pledgeChangeHistoryForm.get('pledgeId')?.touched" class="text-danger">
+                                    Pledge is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="PledgeChangeHistory-versionNumber" id="label-PledgeChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="PledgeChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control pledge-change-history-input" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                                <label for="PledgeChangeHistory-timeStamp" id="label-PledgeChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                                <input type="datetime-local" id="PledgeChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control pledge-change-history-input" [disabled]="!userIsSchedulerPledgeChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                                <div *ngIf="pledgeChangeHistoryForm.get('timeStamp')?.invalid && pledgeChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                                    Time Stamp is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="PledgeChangeHistory-userId" id="label-PledgeChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="PledgeChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control pledge-change-history-input" [disabled]="!userIsSchedulerPledgeChangeHistoryWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="pledgeChangeHistoryForm.get('userId')?.invalid && pledgeChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                                <label for="PledgeChangeHistory-data" id="label-PledgeChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                                <textarea id="PledgeChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control pledge-change-history-input" [disabled]="!userIsSchedulerPledgeChangeHistoryWriter()"></textarea>
+                                <div *ngIf="pledgeChangeHistoryForm.get('data')?.invalid && pledgeChangeHistoryForm.get('data')?.touched" class="text-danger">
+                                    Data is required
+                                </div>
+                            </div>
+                            <div class="pledge-change-history-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="pledgeChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Pledge Change History">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !pledgeChangeHistoryForm.valid || !pledgeChangeHistoryForm.dirty || pledgeChangeHistoryForm.pristine || userIsSchedulerPledgeChangeHistoryWriter() == false " ngbTooltip="Save Pledge Change History">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

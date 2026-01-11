@@ -1,0 +1,80 @@
+<header class="navbar navbar-dark fixed-top bg-dark p-2 shadow no-select justify-content-between">
+  <!-- Logo (left) -->
+  <div class="logo-container d-flex align-items-center">
+    <a routerLink="/" class="d-flex align-items-center text-white text-decoration-none mb-1">
+      <img src="assets/images/k2_logo_white.png" alt="logo" style="height:32px;width:32px;margin-right:15px">
+      <span class="fs-4"><strong>Foundation</strong></span>
+    </a>
+  </div>
+
+  <!-- Right-side actions -->
+  <div class="d-flex align-items-center">
+    <!-- Mobile menu toggle (phone part - kept) -->
+    <button *ngIf="isUserLoggedIn" class="btn btn-outline-light d-md-none me-2" (click)="toggleMobileMenu()">
+      <i class="fa fa-bars"></i>
+    </button>
+
+
+    <!-- Profile dropdown (desktop/tablet) -->
+    <div *ngIf="isUserLoggedIn"
+         ngbDropdown
+         placement="bottom-end"
+         [autoClose]="'outside'"
+         #profileMenu="ngbDropdown"
+         class="ms-2 position-relative d-none d-md-block">
+      <button class="btn btn-dark d-flex align-items-center profile-btn"
+              id="profileDropdown"
+              ngbDropdownToggle>
+        <span class="avatar me-2">{{ userInitials }}</span>
+        <span class="d-md-inline">{{ currentUserFirstName }}</span>
+      </button>
+      <div ngbDropdownMenu
+           class="dropdown-menu shadow-lg header-profile-menu"
+           aria-labelledby="profileDropdown">
+        <div class="menu-anim">
+          <!-- Header -->
+          <div class="px-3 py-2 border-bottom small">
+            <div class="fw-semibold">{{ currentUserFirstName || 'User' }}</div>
+            <div class="text-muted">{{ authService.currentUser?.email }}</div>
+          </div>
+          <!-- Actions -->
+          <!--<button ngbDropdownItem (click)="goToSettings(profileMenu)">
+            <i class="fa-solid fa-user-gear me-2"></i> Profile / Settings
+          </button>-->
+          <button ngbDropdownItem (click)="logout(); profileMenu.close()">
+            <i class="fa fa-sign-out me-2"></i> {{ 'Logout' | translate }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+
+<!-- Mobile Menu Dropdown (Visible only on small screens) -->
+<div *ngIf="isMobileMenuOpen" class="mobile-menu bg-black text-white p-3 d-md-none">
+  <div ngbAccordion class="custom-accordion">
+    
+    <div ngbAccordionItem [collapsed]="true" class="border-0">
+      <h2 ngbAccordionHeader class="custom-accordion-header">
+        <button ngbAccordionButton class="w-100 text-start bg-light text-dark border-0 py-2">
+          <i class="fa-solid fa-users"></i>&nbsp;Something One
+        </button>
+      </h2>
+      <div ngbAccordionCollapse>
+        <div ngbAccordionBody class="p-0">
+          <ul class="nav flex-column custom-accordion-content bg-light text-dark">
+            <li class="nav-item"><a routerLink="/somewhere" class="nav-link text-grey" (click)="closeMobileMenu()">Something Two</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+
+  
+
+
+
+
+  </div>
+</div>

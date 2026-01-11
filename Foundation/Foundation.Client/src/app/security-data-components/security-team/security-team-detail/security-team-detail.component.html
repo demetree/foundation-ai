@@ -1,0 +1,90 @@
+<div class="container-fluid p-1 m-0 security-team-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="security-team-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Security Team</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Security Team' : 'Add Security Team'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSecuritySecurityTeamReader()">
+                <div class="col m-2 security-team-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="securityTeamForm" (ngSubmit)="submitForm()" class="security-team-details-form">
+                            <div class="form-group">
+                                <label for="securityDepartmentId" id="label-securityDepartmentId"><span class="text-danger">*</span>Security Department</label>
+                                <select id="securityDepartmentId" formControlName="securityDepartmentId" class="form-select security-team-select" [disabled]="!userIsSecuritySecurityTeamWriter()">
+                                    <option [ngValue]="null">Select Security Department</option>
+                                    <option *ngFor="let securityDepartment of securityDepartments$ | async" [ngValue]="securityDepartment.id">{{securityDepartment.name}}</option>
+                                </select>
+                                <div *ngIf="securityTeamForm.get('securityDepartmentId')?.invalid && securityTeamForm.get('securityDepartmentId')?.touched" class="text-danger">
+                                    Security Department is required
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="name" id="label-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="name" formControlName="name" placeholder="Enter Name" class="form-control security-team-input" [disabled]="!userIsSecuritySecurityTeamWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="securityTeamForm.get('name')?.invalid && securityTeamForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="description" id="label-description">Description</label>
+                                <textarea id="description" formControlName="description" placeholder="Enter Description" class="form-control security-team-input" [disabled]="!userIsSecuritySecurityTeamWriter()"></textarea>
+                            </div>
+                            <div class="form-check my-2">
+                                <input type="checkbox" id="active" formControlName="active" class="form-check-input" [disabled]="!userIsSecuritySecurityTeamWriter()" />
+                                <label for="active" class="form-check-label" id="label-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2">
+                                <input type="checkbox" id="deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSecuritySecurityTeamWriter()" />
+                                <label for="deleted" class="form-check-label" id="label-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="security-team-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="securityTeamForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Security Team">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !securityTeamForm.valid || !securityTeamForm.dirty || securityTeamForm.pristine || userIsSecuritySecurityTeamWriter() == false " ngbTooltip="Save Security Team">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSecuritySecurityTeamReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 security-team-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="securityUserService.userIsSecuritySecurityUserReader()">
+                            <button ngbNavLink>SecurityUsers
+                                <span class="badge bg-primary ms-2">
+                                    {{ (securityTeamData?.SecurityUsersCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <app-security-user-table [queryParams]="GetQueryParameters()"></app-security-user-table>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="securityTeamUserService.userIsSecuritySecurityTeamUserReader()">
+                            <button ngbNavLink>SecurityTeamUsers
+                                <span class="badge bg-primary ms-2">
+                                    {{ (securityTeamData?.SecurityTeamUsersCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <app-security-team-user-table [queryParams]="GetQueryParameters()"></app-security-team-user-table>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

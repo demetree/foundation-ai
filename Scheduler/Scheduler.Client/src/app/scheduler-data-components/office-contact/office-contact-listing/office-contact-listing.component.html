@@ -1,0 +1,87 @@
+<div class="page-container">
+    <div class="card mb-3 header-card shadow-sm">
+        <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div class="header-left">
+                <!-- Back Button -->
+                <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back" *ngIf="canGoBack()">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+
+                <!-- Title -->
+                <div>
+                    <h3 class="page-title mb-0">Office Contacts</h3>
+                    <small class="text-muted">View Office Contacts</small>
+                </div>
+            </div>
+
+            <div class="header-right">
+              <span class="badge bg-secondary mx-2" *ngIf="loadingTotalCount || loadingFilteredCount">
+                <i class="fa fa-spinner fa-spin me-1"></i> Loading...
+              </span>
+
+              <span *ngIf="!(loadingTotalCount || loadingFilteredCount)">
+                <ng-container *ngIf="totalOfficeContactCount$ | async as total; else falsyObservable">
+                  <span class="badge bg-secondary mx-2">
+
+                    <!-- Filtered: some results -->
+                    <ng-container *ngIf="filteredOfficeContactCount$ | async as filteredCount">
+                      <span *ngIf="filterText && (filteredCount ?? 0) > 0">
+                        {{ filteredCount }} of {{ total }} {{ total !== 1 ? 'Office Contacts' : 'Office Contact' }}
+                      </span>
+                    </ng-container>
+                    <!-- Filtered: 0 results -->
+                    <span *ngIf="total > 0 && filterText && (filteredOfficeContactCount$ | async) === 0">
+                      No matching Office Contacts
+                    </span>
+                    <!-- No filter: normal count -->
+                    <span *ngIf="!filterText">
+                      {{ total }} {{ total !== 1 ? 'Office Contacts' : 'Office Contact' }}
+                    </span>
+                    <!-- No Office Contacts at all (even unfiltered) -->
+                    <span *ngIf="total === 0">
+                      No Office Contacts
+                    </span>
+
+                  </span>
+                </ng-container>
+
+                <!-- when observable is falsy, then decide whether to show a spinner or a loading spinner..-->
+                <ng-template #falsyObservable>
+                  <span class="badge bg-secondary mx-2" *ngIf="(loadingTotalCount || loadingFilteredCount)">
+                    <i class="fa fa-spinner fa-spin me-1"></i> Loading...
+                  </span>
+                  <span class="badge bg-secondary mx-2" *ngIf="!(loadingTotalCount || loadingFilteredCount)">
+                    No Office Contacts
+                  </span>
+                </ng-template>
+
+              </span>
+
+                <!-- Quick Search Input -->
+                <div class="search-bar me-2 position-relative">  
+                <i class="fa fa-search search-icon"></i>
+                <input type="text"
+                   class="form-control search-input"
+                   placeholder="Search OfficeContacts..."
+                   [(ngModel)]="filterText"
+                   (ngModelChange)="onFilterChange()">
+                <button *ngIf="filterText"
+                    class="clear-search btn"
+                    (click)="filterText=''; onFilterChange()"
+                    title="Clear Search">
+                <i class="fa fa-times"></i>
+                </button>
+            </div>
+
+             <!-- Add/Edit Button -->
+             <app-office-contact-add-edit [navigateToDetailsAfterAdd]="false"></app-office-contact-add-edit>
+          </div>
+      </div>
+    </div>
+
+  <app-office-contact-table
+    *ngIf="userIsSchedulerOfficeContactReader() == true"
+    [filterText]="filterText"
+    [isSmallScreen]="isSmallScreen">
+  </app-office-contact-table>
+</div>

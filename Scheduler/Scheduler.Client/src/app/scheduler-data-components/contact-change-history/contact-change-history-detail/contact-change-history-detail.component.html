@@ -1,0 +1,66 @@
+<div class="container-fluid p-1 m-0 contact-change-history-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="contact-change-history-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Contact Change History</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Contact Change History' : 'Add Contact Change History'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerContactChangeHistoryReader()">
+                <div class="col m-2 contact-change-history-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="contactChangeHistoryForm" (ngSubmit)="submitForm()" class="contact-change-history-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('contactId')">
+                                <label for="ContactChangeHistory-contactId" id="label-ContactChangeHistory-contactId"><span class="text-danger">*</span>Contact</label>
+                                <select id="ContactChangeHistory-contactId" formControlName="contactId" class="form-select contact-change-history-select" [disabled]="!userIsSchedulerContactChangeHistoryWriter()">
+                                    <option [ngValue]="null">Select Contact</option>
+                                    <option *ngFor="let contact of contacts$ | async" [ngValue]="contact.id">{{contact.firstName}}</option>
+                                </select>
+                                <div *ngIf="contactChangeHistoryForm.get('contactId')?.invalid && contactChangeHistoryForm.get('contactId')?.touched" class="text-danger">
+                                    Contact is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="ContactChangeHistory-versionNumber" id="label-ContactChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="ContactChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control contact-change-history-input" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                                <label for="ContactChangeHistory-timeStamp" id="label-ContactChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                                <input type="datetime-local" id="ContactChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control contact-change-history-input" [disabled]="!userIsSchedulerContactChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                                <div *ngIf="contactChangeHistoryForm.get('timeStamp')?.invalid && contactChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                                    Time Stamp is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="ContactChangeHistory-userId" id="label-ContactChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="ContactChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control contact-change-history-input" [disabled]="!userIsSchedulerContactChangeHistoryWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="contactChangeHistoryForm.get('userId')?.invalid && contactChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                                <label for="ContactChangeHistory-data" id="label-ContactChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                                <textarea id="ContactChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control contact-change-history-input" [disabled]="!userIsSchedulerContactChangeHistoryWriter()"></textarea>
+                                <div *ngIf="contactChangeHistoryForm.get('data')?.invalid && contactChangeHistoryForm.get('data')?.touched" class="text-danger">
+                                    Data is required
+                                </div>
+                            </div>
+                            <div class="contact-change-history-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="contactChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Contact Change History">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !contactChangeHistoryForm.valid || !contactChangeHistoryForm.dirty || contactChangeHistoryForm.pristine || userIsSchedulerContactChangeHistoryWriter() == false " ngbTooltip="Save Contact Change History">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

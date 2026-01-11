@@ -1,0 +1,66 @@
+<div class="container-fluid p-1 m-0 resource-qualification-change-history-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="resource-qualification-change-history-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Resource Qualification Change History</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Resource Qualification Change History' : 'Add Resource Qualification Change History'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerResourceQualificationChangeHistoryReader()">
+                <div class="col m-2 resource-qualification-change-history-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="resourceQualificationChangeHistoryForm" (ngSubmit)="submitForm()" class="resource-qualification-change-history-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('resourceQualificationId')">
+                                <label for="ResourceQualificationChangeHistory-resourceQualificationId" id="label-ResourceQualificationChangeHistory-resourceQualificationId"><span class="text-danger">*</span>Resource Qualification</label>
+                                <select id="ResourceQualificationChangeHistory-resourceQualificationId" formControlName="resourceQualificationId" class="form-select resource-qualification-change-history-select" [disabled]="!userIsSchedulerResourceQualificationChangeHistoryWriter()">
+                                    <option [ngValue]="null">Select Resource Qualification</option>
+                                    <option *ngFor="let resourceQualification of resourceQualifications$ | async" [ngValue]="resourceQualification.id">{{resourceQualification.issuer}}</option>
+                                </select>
+                                <div *ngIf="resourceQualificationChangeHistoryForm.get('resourceQualificationId')?.invalid && resourceQualificationChangeHistoryForm.get('resourceQualificationId')?.touched" class="text-danger">
+                                    Resource Qualification is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="ResourceQualificationChangeHistory-versionNumber" id="label-ResourceQualificationChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="ResourceQualificationChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control resource-qualification-change-history-input" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                                <label for="ResourceQualificationChangeHistory-timeStamp" id="label-ResourceQualificationChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                                <input type="datetime-local" id="ResourceQualificationChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control resource-qualification-change-history-input" [disabled]="!userIsSchedulerResourceQualificationChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                                <div *ngIf="resourceQualificationChangeHistoryForm.get('timeStamp')?.invalid && resourceQualificationChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                                    Time Stamp is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="ResourceQualificationChangeHistory-userId" id="label-ResourceQualificationChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="ResourceQualificationChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control resource-qualification-change-history-input" [disabled]="!userIsSchedulerResourceQualificationChangeHistoryWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="resourceQualificationChangeHistoryForm.get('userId')?.invalid && resourceQualificationChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                                <label for="ResourceQualificationChangeHistory-data" id="label-ResourceQualificationChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                                <textarea id="ResourceQualificationChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control resource-qualification-change-history-input" [disabled]="!userIsSchedulerResourceQualificationChangeHistoryWriter()"></textarea>
+                                <div *ngIf="resourceQualificationChangeHistoryForm.get('data')?.invalid && resourceQualificationChangeHistoryForm.get('data')?.touched" class="text-danger">
+                                    Data is required
+                                </div>
+                            </div>
+                            <div class="resource-qualification-change-history-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="resourceQualificationChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Resource Qualification Change History">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !resourceQualificationChangeHistoryForm.valid || !resourceQualificationChangeHistoryForm.dirty || resourceQualificationChangeHistoryForm.pristine || userIsSchedulerResourceQualificationChangeHistoryWriter() == false " ngbTooltip="Save Resource Qualification Change History">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

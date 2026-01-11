@@ -1,0 +1,458 @@
+<app-constituent-add-edit [showAddButton]="false"></app-constituent-add-edit>
+<div class="row" *ngIf="userIsSchedulerConstituentReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerConstituentWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerConstituentWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('contact.name')">
+                Contact
+                <span *ngIf="sortColumn === 'contact.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('client.name')">
+                Client
+                <span *ngIf="sortColumn === 'client.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('household.name')">
+                Household
+                <span *ngIf="sortColumn === 'household.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('constituentNumber')">
+                Constituent  Number
+                <span *ngIf="sortColumn === 'constituentNumber'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('doNotSolicit')">
+                Do  Not  Solicit
+                <span *ngIf="sortColumn === 'doNotSolicit'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('doNotEmail')">
+                Do  Not  Email
+                <span *ngIf="sortColumn === 'doNotEmail'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('doNotMail')">
+                Do  Not  Mail
+                <span *ngIf="sortColumn === 'doNotMail'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('totalLifetimeGiving')">
+                Total  Lifetime  Giving
+                <span *ngIf="sortColumn === 'totalLifetimeGiving'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('totalYTDGiving')">
+                Total  Y  T  D  Giving
+                <span *ngIf="sortColumn === 'totalYTDGiving'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('lastGiftDate')">
+                Last  Gift  Date
+                <span *ngIf="sortColumn === 'lastGiftDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('lastGiftAmount')">
+                Last  Gift  Amount
+                <span *ngIf="sortColumn === 'lastGiftAmount'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('largestGiftAmount')">
+                Largest  Gift  Amount
+                <span *ngIf="sortColumn === 'largestGiftAmount'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('totalGiftCount')">
+                Total  Gift  Count
+                <span *ngIf="sortColumn === 'totalGiftCount'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('externalId')">
+                External  Id
+                <span *ngIf="sortColumn === 'externalId'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('notes')">
+                Notes
+                <span *ngIf="sortColumn === 'notes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('attributes')">
+                Attributes
+                <span *ngIf="sortColumn === 'attributes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('icon.name')">
+                Icon
+                <span *ngIf="sortColumn === 'icon.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('color')">
+                Color
+                <span *ngIf="sortColumn === 'color'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('avatarFileName')">
+                Avatar  File  Name
+                <span *ngIf="sortColumn === 'avatarFileName'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('avatarSize')">
+                Avatar  Size
+                <span *ngIf="sortColumn === 'avatarSize'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('avatarData')">
+                Avatar  Data
+                <span *ngIf="sortColumn === 'avatarData'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('avatarMimeType')">
+                Avatar  Mime  Type
+                <span *ngIf="sortColumn === 'avatarMimeType'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let constituent of filteredConstituents; trackBy: getConstituentId"
+              [ngClass]="{
+                 'row-inactive': constituent.active == false,
+                 'row-deleted': constituent.deleted == true 
+                 }">
+            <td class="header-action-button" *ngIf="userIsSchedulerConstituentWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleEdit(constituent)"
+                      ngbTooltip="Edit" 
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsSchedulerConstituentWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleDelete(constituent)"
+                      ngbTooltip="Delete" 
+                      placement="top"
+                      *ngIf="constituent.deleted == false">
+                <i class="fa fa-trash"></i>
+              </button>
+              <button class="btn btn-sm"
+                      (click)="handleUndelete(constituent)"
+                      ngbTooltip="Undelete" 
+                      placement="top"
+                      *ngIf="constituent.deleted == true">
+                <i class="fa fa-trash-arrow-up"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(constituent, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(constituent, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(constituent, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(constituent, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(constituent, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(constituent, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(constituent, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(constituent, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/contact', constituent.contactId]" class="btn btn-link text-left" ngbTooltip="Open Contact details">{{constituent.contact?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/client', constituent.clientId]" class="btn btn-link text-left" ngbTooltip="Open Client details">{{constituent.client?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/household', constituent.householdId]" class="btn btn-link text-left" ngbTooltip="Open Household details">{{constituent.household?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/constituent', constituent.id]" class="btn btn-link text-left" ngbTooltip="Open Constituent details">{{constituent.constituentNumber}}</a></td>
+            <td class="text-truncate"><boolean-icon [value]="constituent.doNotSolicit"/></td>
+            <td class="text-truncate"><boolean-icon [value]="constituent.doNotEmail"/></td>
+            <td class="text-truncate"><boolean-icon [value]="constituent.doNotMail"/></td>
+            <td class="text-truncate">{{constituent.totalLifetimeGiving | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{constituent.totalYTDGiving | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{constituent.lastGiftDate | date:'YYYY-MM-dd'}}</td>
+            <td class="text-truncate">{{constituent.lastGiftAmount | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{constituent.largestGiftAmount | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{constituent.totalGiftCount | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{constituent.externalId}}</td>
+            <td class="text-truncate">{{constituent.notes}}</td>
+            <td class="text-truncate">{{constituent.attributes}}</td>
+            <td class="text-truncate"><a [routerLink]="['/icon', constituent.iconId]" class="btn btn-link text-left" ngbTooltip="Open Icon details">{{constituent.icon?.name}}</a></td>
+            <td class="text-truncate">{{constituent.color}}</td>
+            <td class="text-truncate">{{constituent.avatarFileName}}</td>
+            <td class="text-truncate">{{constituent.avatarSize | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{constituent.avatarData}}</td>
+            <td class="text-truncate">{{constituent.avatarMimeType}}</td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let constituent of filteredConstituents; trackBy: getConstituentId" class="card my-2"
+              [ngClass]="{
+                 'row-inactive': constituent.active == false,
+                 'row-deleted': constituent.deleted == true 
+                 }">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(constituent, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(constituent, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(constituent, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(constituent, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(constituent, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(constituent, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(constituent, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(constituent, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(constituent, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(constituent, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(constituent, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(constituent, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(constituent, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/constituent', constituent.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(constituent)" *ngIf="userIsSchedulerConstituentWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(constituent)" *ngIf="userIsSchedulerConstituentWriter() && constituent.deleted == false" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+            <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(constituent)" *ngIf="userIsSchedulerConstituentWriter() && constituent.deleted == true" ngbTooltip="Undelete">
+              <i class="fa fa-trash-arrow-upp"></i> UnDelete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{constituent.id}}</strong>
+               <small class="text-muted d-block">{{constituent.contact?.name}}</small>
+             </div>
+             <div>
+                <button class="btn btn-sm"
+                        [routerLink]="['/constituent', constituent.id]"
+                        ngbTooltip="Constituent Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="btn btn-sm"
+                        (click)="handleEdit(constituent)"
+                        ngbTooltip="Edit Constituent">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleDelete(constituent)"
+                      ngbTooltip="Delete Constituent" 
+                      placement="top"
+                      *ngIf="constituent.deleted == false">
+                  <i class="fa fa-trash"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleUndelete(constituent)"
+                      ngbTooltip="Undelete Constituent" 
+                      placement="top"
+                      *ngIf="constituent.deleted == true">
+                 <i class="fa fa-trash-arrow-up"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="constituent-info" *ngIf="constituent.contactId != null">
+              <strong>Contact: </strong>
+              <a [routerLink]="['/contact', constituent.contactId]" class="text-left p-0 m-0" ngbTooltip="Open Contact details">{{constituent.contact?.name}}</a>
+            </p>
+            <p class="constituent-info" *ngIf="constituent.clientId != null">
+              <strong>Client: </strong>
+              <a [routerLink]="['/client', constituent.clientId]" class="text-left p-0 m-0" ngbTooltip="Open Client details">{{constituent.client?.name}}</a>
+            </p>
+            <p class="constituent-info" *ngIf="constituent.householdId != null">
+              <strong>Household: </strong>
+              <a [routerLink]="['/household', constituent.householdId]" class="text-left p-0 m-0" ngbTooltip="Open Household details">{{constituent.household?.name}}</a>
+            </p>
+            <p class="constituent-info" *ngIf="constituent.constituentNumber != null">
+              <strong>Constituent Number: </strong>
+              {{constituent.constituentNumber}}
+            </p>
+            <p class="constituent-info" *ngIf="constituent.doNotSolicit != null">
+              <strong>Do Not Solicit: </strong>
+              <boolean-icon [value]="constituent.doNotSolicit"/>
+            </p>
+            <p class="constituent-info" *ngIf="constituent.doNotEmail != null">
+              <strong>Do Not Email: </strong>
+              <boolean-icon [value]="constituent.doNotEmail"/>
+            </p>
+            <p class="constituent-info" *ngIf="constituent.doNotMail != null">
+              <strong>Do Not Mail: </strong>
+              <boolean-icon [value]="constituent.doNotMail"/>
+            </p>
+            <p class="constituent-info" *ngIf="constituent.totalLifetimeGiving != null">
+              <strong>Total Lifetime Giving: </strong>
+              {{constituent.totalLifetimeGiving | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="constituent-info" *ngIf="constituent.totalYTDGiving != null">
+              <strong>Total Y T D Giving: </strong>
+              {{constituent.totalYTDGiving | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="constituent-info" *ngIf="constituent.lastGiftDate != null">
+              <strong>Last Gift Date: </strong>
+              {{constituent.lastGiftDate | date:'YYYY-MM-dd'}}
+            </p>
+            <p class="constituent-info" *ngIf="constituent.lastGiftAmount != null">
+              <strong>Last Gift Amount: </strong>
+              {{constituent.lastGiftAmount | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="constituent-info" *ngIf="constituent.largestGiftAmount != null">
+              <strong>Largest Gift Amount: </strong>
+              {{constituent.largestGiftAmount | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="constituent-info" *ngIf="constituent.totalGiftCount != null">
+              <strong>Total Gift Count: </strong>
+              {{constituent.totalGiftCount | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="constituent-info" *ngIf="constituent.externalId != null">
+              <strong>External Id: </strong>
+              {{constituent.externalId}}
+            </p>
+            <p class="constituent-info" *ngIf="constituent.notes != null">
+              <strong>Notes: </strong>
+              {{constituent.notes}}
+            </p>
+            <p class="constituent-info" *ngIf="constituent.attributes != null">
+              <strong>Attributes: </strong>
+              {{constituent.attributes}}
+            </p>
+            <p class="constituent-info" *ngIf="constituent.iconId != null">
+              <strong>Icon: </strong>
+              <a [routerLink]="['/icon', constituent.iconId]" class="text-left p-0 m-0" ngbTooltip="Open Icon details">{{constituent.icon?.name}}</a>
+            </p>
+            <p class="constituent-info" *ngIf="constituent.color != null">
+              <strong>Color: </strong>
+              {{constituent.color}}
+            </p>
+            <p class="constituent-info" *ngIf="constituent.avatarFileName != null">
+              <strong>Avatar File Name: </strong>
+              {{constituent.avatarFileName}}
+            </p>
+            <p class="constituent-info" *ngIf="constituent.avatarSize != null">
+              <strong>Avatar Size: </strong>
+              {{constituent.avatarSize | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="constituent-info" *ngIf="constituent.avatarData != null">
+              <strong>Avatar Data: </strong>
+              {{constituent.avatarData}}
+            </p>
+            <p class="constituent-info" *ngIf="constituent.avatarMimeType != null">
+              <strong>Avatar Mime Type: </strong>
+              {{constituent.avatarMimeType}}
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+   </div>
+</div>

@@ -1,0 +1,155 @@
+<!-- app-contact-overview-tab.component.html -->
+<div class="contact-overview-tab">
+  <!-- Quick Summary Row (mirrors header but with more details) -->
+  <div class="row g-4 mb-4">
+    <!-- Left: Personal & Professional Info -->
+    <div class="col-lg-6">
+      <div class="card h-100 shadow-sm">
+        <div class="card-header bg-light">
+          <h6 class="mb-0 fw-semibold">Personal Information</h6>
+        </div>
+        <div class="card-body">
+          <dl class="row mb-0">
+            <dt class="col-sm-4 text-muted">Full Name</dt>
+            <dd class="col-sm-8">{{ contact | contactFullName }}</dd>
+
+            <dt class="col-sm-4 text-muted">Salutation</dt>
+            <dd class="col-sm-8">{{ contact.salutation?.name || '—' }}</dd>
+
+            <dt class="col-sm-4 text-muted">Birth Date</dt>
+            <dd class="col-sm-8">{{ contact.birthDate | date:'mediumDate' || '—' }}</dd>
+
+            <dt class="col-sm-4 text-muted">Contact Type</dt>
+            <dd class="col-sm-8">
+              <span class="badge bg-primary">{{ contact.contactType?.name || '—' }}</span>
+            </dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Professional Info -->
+    <div class="col-lg-6">
+      <div class="card h-100 shadow-sm">
+        <div class="card-header bg-light">
+          <h6 class="mb-0 fw-semibold">Professional Information</h6>
+        </div>
+        <div class="card-body">
+          <dl class="row mb-0">
+            <dt class="col-sm-4 text-muted">Company</dt>
+            <dd class="col-sm-8">{{ contact.company || '—' }}</dd>
+
+            <dt class="col-sm-4 text-muted">Position</dt>
+            <dd class="col-sm-8">{{ contact.position || '—' }}</dd>
+
+            <dt class="col-sm-4 text-muted">Title</dt>
+            <dd class="col-sm-8">{{ contact.title || '—' }}</dd>
+
+            <dt class="col-sm-4 text-muted">Preferred Method</dt>
+            <dd class="col-sm-8">
+              <span class="badge bg-info" *ngIf="contact?.contactMethod">
+                {{ contact.contactMethod?.name }}
+              </span>
+              <span class="text-muted" *ngIf="!contact?.contactMethod">—</span>
+            </dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contact Details Card -->
+  <div class="card mb-4 shadow-sm">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+      <h6 class="mb-0 fw-semibold">Contact Details</h6>
+      <button class="btn btn-sm btn-outline-primary" (click)="openLogInteractionModal()" *ngIf="canLogInteraction()">
+        <i class="fa-solid fa-plus me-1"></i> Log Interaction
+      </button>
+    </div>
+    <div class="card-body">
+      <div class="row g-4">
+        <div class="col-md-6">
+
+          <div class="d-flex align-items-center gap-3 mb-3" *ngIf="contact?.email">
+            <i class="fa-solid fa-envelope text-primary fa-lg"></i>
+            <div>
+              <div class="fw-semibold">Email</div>
+              <a [href]="'mailto:' + contact.email">{{ contact.email }}</a>
+            </div>
+          </div>
+
+          <div class="d-flex align-items-center gap-3 mb-3" *ngIf="contact?.phone">
+            <i class="fa-solid fa-phone text-success fa-lg"></i>
+            <div>
+              <div class="fw-semibold">Phone</div>
+              <a [href]="'tel:' + contact.phone">{{ contact.phone }}</a>
+            </div>
+          </div>
+
+          <div class="d-flex align-items-center gap-3 mb-3" *ngIf="contact?.mobile">
+            <i class="fa-solid fa-mobile-alt text-success fa-lg"></i>
+            <div>
+              <div class="fw-semibold">Mobile</div>
+              <a [href]="'tel:' + contact.mobile">{{ contact.mobile }}</a>
+              <span class="badge bg-success ms-2" *ngIf="contact?.contactMethod?.name?.toLowerCase()?.includes('mobile')">
+                Preferred
+              </span>
+            </div>
+          </div>
+
+          <div class="d-flex align-items-center gap-3" *ngIf="contact?.webSite">
+            <i class="fa-solid fa-globe text-info fa-lg"></i>
+            <div>
+              <div class="fw-semibold">Website</div>
+              <a [href]="getWebSiteAsAddress(contact)" target="_blank">{{ contact.webSite }}</a>
+            </div>
+          </div>
+
+          <div class="d-flex align-items-center gap-3 mb-3" *ngIf="contact?.timeZone">
+            <i class="fa-solid fa-globe text-primary fa-lg"></i>
+            <div>
+              <div class="fw-semibold">Time Zone</div>
+              {{contact.timeZone?.name}}
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions Column -->
+        <div class="col-md-6">
+          <h6 class="fw-semibold mb-3">Quick Actions</h6>
+          <div class="d-grid gap-2">
+            <button class="btn btn-outline-primary text-start" (click)="sendEmail()" *ngIf="contact?.email">
+              <i class="fa-solid fa-envelope me-2"></i> Send Email
+            </button>
+            <button class="btn btn-outline-success text-start" (click)="callPhone()" *ngIf="contact?.phone || contact?.mobile">
+              <i class="fa-solid fa-phone me-2"></i> Call {{ contact.mobile || contact.phone }}
+            </button>
+            <button class="btn btn-outline-info text-start" (click)="openLogInteractionModal()">
+              <i class="fa-solid fa-comment-dots me-2"></i> Log Interaction / Note
+            </button>
+            <button class="btn btn-outline-secondary text-start" (click)="addRelationship()" *ngIf="userIsSchedulerContactWriter()">
+              <i class="fa-solid fa-user-plus me-2"></i> Add Relationship
+            </button>
+            <button class="btn btn-outline-warning text-start" (click)="manageTags()" *ngIf="userIsSchedulerContactWriter()">
+              <i class="fa-solid fa-tag me-2"></i> Manage Tags
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notes Card -->
+  <div class="card shadow-sm" *ngIf="contact?.notes || userIsSchedulerContactWriter()">
+    <div class="card-header bg-light">
+      <h6 class="mb-0 fw-semibold">Notes</h6>
+    </div>
+    <div class="card-body">
+      <p class="text-muted" *ngIf="!contact?.notes">No notes recorded.</p>
+      <p class="preserve-whitespace" *ngIf="contact?.notes">{{ contact.notes }}</p>
+      <button class="btn btn-sm btn-outline-primary" (click)="openEditModal()" *ngIf="userIsSchedulerContactWriter()">
+        <i class="fa fa-pen me-1"></i> Edit Notes
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,70 @@
+<div class="container-fluid p-1 m-0 security-user-title-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="security-user-title-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Security User Title</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Security User Title' : 'Add Security User Title'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSecuritySecurityUserTitleReader()">
+                <div class="col m-2 security-user-title-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="securityUserTitleForm" (ngSubmit)="submitForm()" class="security-user-title-details-form">
+                            <div class="form-group">
+                                <label for="name" id="label-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="name" formControlName="name" placeholder="Enter Name" class="form-control security-user-title-input" [disabled]="!userIsSecuritySecurityUserTitleWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="securityUserTitleForm.get('name')?.invalid && securityUserTitleForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="description" id="label-description">Description</label>
+                                <textarea id="description" formControlName="description" placeholder="Enter Description" class="form-control security-user-title-input" [disabled]="!userIsSecuritySecurityUserTitleWriter()"></textarea>
+                            </div>
+                            <div class="form-check my-2">
+                                <input type="checkbox" id="active" formControlName="active" class="form-check-input" [disabled]="!userIsSecuritySecurityUserTitleWriter()" />
+                                <label for="active" class="form-check-label" id="label-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2">
+                                <input type="checkbox" id="deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSecuritySecurityUserTitleWriter()" />
+                                <label for="deleted" class="form-check-label" id="label-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="security-user-title-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="securityUserTitleForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Security User Title">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !securityUserTitleForm.valid || !securityUserTitleForm.dirty || securityUserTitleForm.pristine || userIsSecuritySecurityUserTitleWriter() == false " ngbTooltip="Save Security User Title">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSecuritySecurityUserTitleReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 security-user-title-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="securityUserService.userIsSecuritySecurityUserReader()">
+                            <button ngbNavLink>SecurityUsers
+                                <span class="badge bg-primary ms-2">
+                                    {{ (securityUserTitleData?.SecurityUsersCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <app-security-user-table [queryParams]="GetQueryParameters()"></app-security-user-table>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

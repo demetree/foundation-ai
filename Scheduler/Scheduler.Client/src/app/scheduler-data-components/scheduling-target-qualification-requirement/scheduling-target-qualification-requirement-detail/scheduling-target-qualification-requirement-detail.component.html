@@ -1,0 +1,94 @@
+<div class="container-fluid p-1 m-0 scheduling-target-qualification-requirement-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="scheduling-target-qualification-requirement-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Scheduling Target Qualification Requirement</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Scheduling Target Qualification Requirement' : 'Add Scheduling Target Qualification Requirement'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerSchedulingTargetQualificationRequirementReader()">
+                <div class="col m-2 scheduling-target-qualification-requirement-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="schedulingTargetQualificationRequirementForm" (ngSubmit)="submitForm()" class="scheduling-target-qualification-requirement-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('schedulingTargetId')">
+                                <label for="SchedulingTargetQualificationRequirement-schedulingTargetId" id="label-SchedulingTargetQualificationRequirement-schedulingTargetId"><span class="text-danger">*</span>Scheduling Target</label>
+                                <select id="SchedulingTargetQualificationRequirement-schedulingTargetId" formControlName="schedulingTargetId" class="form-select scheduling-target-qualification-requirement-select" [disabled]="!userIsSchedulerSchedulingTargetQualificationRequirementWriter()">
+                                    <option [ngValue]="null">Select Scheduling Target</option>
+                                    <option *ngFor="let schedulingTarget of schedulingTargets$ | async" [ngValue]="schedulingTarget.id">{{[schedulingTarget.name] | filterAndJoin}}</option>
+                                </select>
+                                <div *ngIf="schedulingTargetQualificationRequirementForm.get('schedulingTargetId')?.invalid && schedulingTargetQualificationRequirementForm.get('schedulingTargetId')?.touched" class="text-danger">
+                                    Scheduling Target is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('qualificationId')">
+                                <label for="SchedulingTargetQualificationRequirement-qualificationId" id="label-SchedulingTargetQualificationRequirement-qualificationId"><span class="text-danger">*</span>Qualification</label>
+                                <select id="SchedulingTargetQualificationRequirement-qualificationId" formControlName="qualificationId" class="form-select scheduling-target-qualification-requirement-select" [disabled]="!userIsSchedulerSchedulingTargetQualificationRequirementWriter()">
+                                    <option [ngValue]="null">Select Qualification</option>
+                                    <option *ngFor="let qualification of qualifications$ | async" [ngValue]="qualification.id">{{qualification.name}}</option>
+                                </select>
+                                <div *ngIf="schedulingTargetQualificationRequirementForm.get('qualificationId')?.invalid && schedulingTargetQualificationRequirementForm.get('qualificationId')?.touched" class="text-danger">
+                                    Qualification is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isRequired')">
+                                <input type="checkbox" id="SchedulingTargetQualificationRequirement-isRequired" formControlName="isRequired" class="form-check-input" [disabled]="!userIsSchedulerSchedulingTargetQualificationRequirementWriter()" />
+                                <label for="SchedulingTargetQualificationRequirement-isRequired" class="form-check-label" id="label-SchedulingTargetQualificationRequirement-isRequired"><span class="text-danger">*</span>Is Required</label>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="SchedulingTargetQualificationRequirement-versionNumber" id="label-SchedulingTargetQualificationRequirement-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="SchedulingTargetQualificationRequirement-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control scheduling-target-qualification-requirement-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="SchedulingTargetQualificationRequirement-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerSchedulingTargetQualificationRequirementWriter()" />
+                                <label for="SchedulingTargetQualificationRequirement-active" class="form-check-label" id="label-SchedulingTargetQualificationRequirement-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="SchedulingTargetQualificationRequirement-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerSchedulingTargetQualificationRequirementWriter()" />
+                                <label for="SchedulingTargetQualificationRequirement-deleted" class="form-check-label" id="label-SchedulingTargetQualificationRequirement-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="scheduling-target-qualification-requirement-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="schedulingTargetQualificationRequirementForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Scheduling Target Qualification Requirement">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !schedulingTargetQualificationRequirementForm.valid || !schedulingTargetQualificationRequirementForm.dirty || schedulingTargetQualificationRequirementForm.pristine || userIsSchedulerSchedulingTargetQualificationRequirementWriter() == false " ngbTooltip="Save Scheduling Target Qualification Requirement">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerSchedulingTargetQualificationRequirementReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 scheduling-target-qualification-requirement-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="schedulingTargetQualificationRequirementChangeHistoryService.userIsSchedulerSchedulingTargetQualificationRequirementChangeHistoryReader()">
+                            <button ngbNavLink>Scheduling Target Qualification Requirement Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (schedulingTargetQualificationRequirementData?.SchedulingTargetQualificationRequirementChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-scheduling-target-qualification-requirement-change-history-table [queryParams]="{ schedulingTargetQualificationRequirementId: schedulingTargetQualificationRequirementData?.id }"></app-scheduling-target-qualification-requirement-change-history-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-scheduling-target-qualification-requirement-change-history-add-edit [preSeededData]="{ schedulingTargetQualificationRequirementId: schedulingTargetQualificationRequirementData?.id }" [hiddenFields]="['schedulingTargetQualificationRequirementId']"></app-scheduling-target-qualification-requirement-change-history-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,214 @@
+<header class="navbar navbar-dark fixed-top bg-dark p-2 shadow no-select justify-content-between">
+  <!-- Logo (left) -->
+  <div class="logo-container d-flex align-items-center">
+    <a routerLink="/" class="d-flex align-items-center text-white text-decoration-none mb-1">
+      <img src="assets/images/k2_logo_white.png" alt="logo" style="height:32px;width:32px;margin-right:15px">
+      <span class="fs-4"><strong>Scheduler</strong></span>
+    </a>
+  </div>
+
+  <!-- Centered Tenant Name -->
+  <div class="text-white text-center flex-grow-1 d-sm-block">
+    <span class="fw-bold">{{ tenantName }}</span>
+  </div>
+
+  <!-- Right-side actions -->
+  <div class="d-flex align-items-center">
+    <!-- Mobile menu toggle (only on small screens) -->
+    <button *ngIf="isUserLoggedIn"
+            class="btn btn-outline-light d-md-none me-2"
+            (click)="toggleMobileMenu()"
+            [attr.aria-expanded]="isMobileMenuOpen"
+            aria-label="Open menu">
+      <i class="fa fa-bars"></i>
+    </button>
+
+    <!-- Profile dropdown (desktop/tablet) -->
+    <div *ngIf="isUserLoggedIn"
+         ngbDropdown
+         placement="bottom-end"
+         [autoClose]="'outside'"
+         #profileMenu="ngbDropdown"
+         class="ms-2 position-relative d-none d-md-block">
+      <button class="btn btn-dark d-flex align-items-center profile-btn"
+              id="profileDropdown"
+              ngbDropdownToggle>
+        <span class="avatar me-2">{{ userInitials }}</span>
+        <span class="d-md-inline">{{ currentUserFirstName }}</span>
+      </button>
+      <div ngbDropdownMenu
+           class="dropdown-menu shadow-lg header-profile-menu"
+           aria-labelledby="profileDropdown">
+        <div class="menu-anim">
+          <div class="px-3 py-2 border-bottom small">
+            <div class="fw-semibold">{{ currentUserFirstName || 'User' }}</div>
+            <div class="text-muted">{{ authService.currentUser?.email }}</div>
+          </div>
+          <button ngbDropdownItem (click)="logout(); profileMenu.close()">
+            <i class="fa fa-sign-out me-2"></i> {{ 'Logout' | translate }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Mobile Menu Overlay - Matches Sidebar Exactly -->
+<div *ngIf="isUserLoggedIn && isMobileMenuOpen"
+     class="mobile-sidebar-overlay d-md-none"
+     (click)="closeMobileMenu()">
+  <div class="mobile-sidebar bg-dark text-white"
+       (click)="$event.stopPropagation()">
+    <!-- Close button -->
+    <div class="d-flex justify-content-end p-2">
+      <button class="btn btn-close btn-close-white"
+              (click)="closeMobileMenu()"
+              aria-label="Close menu"></button>
+    </div>
+
+    <!-- Navigation List - Identical to Sidebar -->
+    <ul class="nav nav-pills flex-column px-3">
+      <!-- Overview -->
+      <li class="nav-item">
+        <a routerLink="/overview"
+           routerLinkActive="active"
+           class="nav-link text-white d-flex align-items-center py-2"
+           (click)="closeMobileMenu()">
+          <i class="fa-solid fa-house me-3"></i>
+          <span>Overview</span>
+        </a>
+      </li>
+
+      <li class="nav-item my-2"><hr class="border-secondary"></li>
+
+      <!-- Core Planning -->
+      <li class="nav-item">
+        <a routerLink="/schedule"
+           routerLinkActive="active"
+           class="nav-link text-white d-flex align-items-center py-2"
+           (click)="closeMobileMenu()">
+          <i class="fa-solid fa-calendar-days me-3"></i>
+          <span>Scheduled Events</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a routerLink="/clients"
+           routerLinkActive="active"
+           class="nav-link text-white d-flex align-items-center py-2"
+           (click)="closeMobileMenu()">
+          <i class="fa-solid fa-handshake me-3"></i>
+          <span>Clients</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a routerLink="/schedulingtargets"
+           routerLinkActive="active"
+           class="nav-link text-white d-flex align-items-center py-2"
+           (click)="closeMobileMenu()">
+          <i class="fa-solid fa-bullseye me-3"></i>
+          <span>Targets</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a routerLink="/contacts"
+           routerLinkActive="active"
+           class="nav-link text-white d-flex align-items-center py-2"
+           (click)="closeMobileMenu()">
+          <i class="fa-solid fa-address-book me-3"></i>
+          <span>Contacts</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a routerLink="/resources"
+           routerLinkActive="active"
+           class="nav-link text-white d-flex align-items-center py-2"
+           (click)="closeMobileMenu()">
+          <i class="fa-solid fa-user-gear me-3"></i>
+          <span>Resources</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a routerLink="/crews"
+           routerLinkActive="active"
+           class="nav-link text-white d-flex align-items-center py-2"
+           (click)="closeMobileMenu()">
+          <i class="fa-solid fa-users-gear me-3"></i>
+          <span>Crews</span>
+        </a>
+      </li>
+
+      <!-- Only show offices in the side bar if there is at least one configured -->
+      <li class="nav-item" *ngIf="officeCount$ != null && ((officeCount$ | async) ?? 0) > 0">
+        <a routerLink="/offices"
+           routerLinkActive="active"
+           class="nav-link text-white d-flex align-items-center py-2"
+           (click)="closeMobileMenu()">
+          <i class="fa-solid fa-building me-3"></i>
+          <span>Offices</span>
+        </a>
+      </li>
+
+      <!--- moved these to admin -->
+      <!--<li class="nav-item my-2"><hr class="border-secondary"></li>-->
+      <!-- Availability & Roles -->
+      <!--<li class="nav-item">
+    <a routerLink="/resourceavailabilities"
+       routerLinkActive="active"
+       class="nav-link text-white d-flex align-items-center py-2"
+       (click)="closeMobileMenu()">
+      <i class="fa-solid fa-clock me-3"></i>
+      <span>Availability</span>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a routerLink="/assignmentroles"
+       routerLinkActive="active"
+       class="nav-link text-white d-flex align-items-center py-2"
+       (click)="closeMobileMenu()">
+      <i class="fa-solid fa-user-tag me-3"></i>
+      <span>Assignment Roles</span>
+    </a>
+  </li>-->
+
+      <li class="nav-item my-2"><hr class="border-secondary"></li>
+
+      <!-- Organization -->
+      <!--<li class="nav-item">
+    <a routerLink="/calendars"
+       routerLinkActive="active"
+       class="nav-link text-white d-flex align-items-center py-2"
+       (click)="closeMobileMenu()">
+      <i class="fa-solid fa-calendar-week me-3"></i>
+      <span>Calendars</span>
+    </a>
+  </li>-->
+      <li class="nav-item">
+        <a routerLink="/ratesheets"
+           routerLinkActive="active"
+           class="nav-link text-white d-flex align-items-center py-2"
+           (click)="closeMobileMenu()">
+          <i class="fa-solid fa-dollar-sign me-3"></i>
+          <span>Rate Sheet</span>
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a routerLink="/administration"
+           routerLinkActive="active"
+           class="nav-link text-white d-flex align-items-center py-2"
+           (click)="closeMobileMenu()">
+          <i class="fa-solid fa-building-columns me-3"></i>
+          <span>Administration</span>
+        </a>
+      </li>
+
+    </ul>
+
+    <!-- Logout at bottom -->
+    <div class="mt-auto p-3 border-top border-secondary">
+      <button class="btn btn-outline-light w-100" (click)="logout(); closeMobileMenu()">
+        <i class="fa fa-sign-out me-2"></i> Logout
+      </button>
+    </div>
+  </div>
+</div>

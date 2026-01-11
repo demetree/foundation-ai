@@ -1,0 +1,65 @@
+<div class="add-scheduling-target-qualification-requirement-change-history" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-scheduling-target-qualification-requirement-change-history me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Scheduling Target Qualification Requirement Change History" 
+        *ngIf="userIsSchedulerSchedulingTargetQualificationRequirementChangeHistoryWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #schedulingTargetQualificationRequirementChangeHistoryModal let-modal>
+   <div class="modal-header bg-dark text-light scheduling-target-qualification-requirement-change-history-modal-header">
+      <h5 class="modal-title mb-0" id="schedulingTargetQualificationRequirementChangeHistoryModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Scheduling Target Qualification Requirement Change History' : 'Add Scheduling Target Qualification Requirement Change History' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body scheduling-target-qualification-requirement-change-history-modal-body">
+      <form [formGroup]="schedulingTargetQualificationRequirementChangeHistoryForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('schedulingTargetQualificationRequirementId')">
+                <label for="SchedulingTargetQualificationRequirementChangeHistory-schedulingTargetQualificationRequirementId" id="label-SchedulingTargetQualificationRequirementChangeHistory-schedulingTargetQualificationRequirementId"><span class="text-danger">*</span>Scheduling Target Qualification Requirement</label>
+                <select id="SchedulingTargetQualificationRequirementChangeHistory-schedulingTargetQualificationRequirementId" formControlName="schedulingTargetQualificationRequirementId" class="form-select scheduling-target-qualification-requirement-change-history-select" [disabled]="!userIsSchedulerSchedulingTargetQualificationRequirementChangeHistoryWriter()">
+                    <option [ngValue]="null">Select Scheduling Target Qualification Requirement</option>
+                    <option *ngFor="let schedulingTargetQualificationRequirement of schedulingTargetQualificationRequirements$ | async" [ngValue]="schedulingTargetQualificationRequirement.id">{{schedulingTargetQualificationRequirement.id}}</option>
+                </select>
+                <div *ngIf="schedulingTargetQualificationRequirementChangeHistoryForm.get('schedulingTargetQualificationRequirementId')?.invalid && schedulingTargetQualificationRequirementChangeHistoryForm.get('schedulingTargetQualificationRequirementId')?.touched" class="text-danger">
+                    Scheduling Target Qualification Requirement is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="SchedulingTargetQualificationRequirementChangeHistory-versionNumber" id="label-SchedulingTargetQualificationRequirementChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="SchedulingTargetQualificationRequirementChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control scheduling-target-qualification-requirement-change-history-input" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                <label for="SchedulingTargetQualificationRequirementChangeHistory-timeStamp" id="label-SchedulingTargetQualificationRequirementChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                <input type="datetime-local" id="SchedulingTargetQualificationRequirementChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control scheduling-target-qualification-requirement-change-history-input" [disabled]="!userIsSchedulerSchedulingTargetQualificationRequirementChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                <div *ngIf="schedulingTargetQualificationRequirementChangeHistoryForm.get('timeStamp')?.invalid && schedulingTargetQualificationRequirementChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                    Time Stamp is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                <label for="SchedulingTargetQualificationRequirementChangeHistory-userId" id="label-SchedulingTargetQualificationRequirementChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                <input type="number" id="SchedulingTargetQualificationRequirementChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control scheduling-target-qualification-requirement-change-history-input" [disabled]="!userIsSchedulerSchedulingTargetQualificationRequirementChangeHistoryWriter()" aria-labelledby="label-userId" />
+                <div *ngIf="schedulingTargetQualificationRequirementChangeHistoryForm.get('userId')?.invalid && schedulingTargetQualificationRequirementChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                    User Id is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                <label for="SchedulingTargetQualificationRequirementChangeHistory-data" id="label-SchedulingTargetQualificationRequirementChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                <textarea id="SchedulingTargetQualificationRequirementChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control scheduling-target-qualification-requirement-change-history-input" [disabled]="!userIsSchedulerSchedulingTargetQualificationRequirementChangeHistoryWriter()"></textarea>
+                <div *ngIf="schedulingTargetQualificationRequirementChangeHistoryForm.get('data')?.invalid && schedulingTargetQualificationRequirementChangeHistoryForm.get('data')?.touched" class="text-danger">
+                    Data is required
+                </div>
+            </div>
+         <div class="modal-footer scheduling-target-qualification-requirement-change-history-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Scheduling Target Qualification Requirement Change History changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !schedulingTargetQualificationRequirementChangeHistoryForm.valid || schedulingTargetQualificationRequirementChangeHistoryForm.pristine || !userIsSchedulerSchedulingTargetQualificationRequirementChangeHistoryWriter()" ngbTooltip="Save the Scheduling Target Qualification Requirement Change History changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

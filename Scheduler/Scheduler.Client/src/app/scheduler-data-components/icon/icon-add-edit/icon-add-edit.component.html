@@ -1,0 +1,53 @@
+<div class="add-icon" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-icon me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Icon" 
+        *ngIf="userIsSchedulerIconWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #iconModal let-modal>
+   <div class="modal-header bg-dark text-light icon-modal-header">
+      <h5 class="modal-title mb-0" id="iconModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Icon' : 'Add Icon' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body icon-modal-body">
+      <form [formGroup]="iconForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="Icon-name" id="label-Icon-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="Icon-name" formControlName="name" placeholder="Enter Name" class="form-control icon-input" [disabled]="!userIsSchedulerIconWriter()" aria-labelledby="label-name" />
+                <div *ngIf="iconForm.get('name')?.invalid && iconForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('fontAwesomeCode')">
+                <label for="Icon-fontAwesomeCode" id="label-Icon-fontAwesomeCode">Font Awesome Code</label>
+                <input type="text" id="Icon-fontAwesomeCode" formControlName="fontAwesomeCode" placeholder="Enter Font Awesome Code" class="form-control icon-input" [disabled]="!userIsSchedulerIconWriter()" aria-labelledby="label-fontAwesomeCode" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                <label for="Icon-sequence" id="label-Icon-sequence">Sequence</label>
+                <input type="number" id="Icon-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control icon-input" [disabled]="!userIsSchedulerIconWriter()" aria-labelledby="label-sequence" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="Icon-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerIconWriter()" />
+                <label for="Icon-active" class="form-check-label" id="label-Icon-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="Icon-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerIconWriter()" />
+                <label for="Icon-deleted" class="form-check-label" id="label-Icon-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer icon-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Icon changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !iconForm.valid || iconForm.pristine || !userIsSchedulerIconWriter()" ngbTooltip="Save the Icon changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

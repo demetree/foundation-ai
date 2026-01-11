@@ -1,0 +1,108 @@
+<div class="container-fluid p-1 m-0 notification-subscription-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="notification-subscription-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Notification Subscription</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Notification Subscription' : 'Add Notification Subscription'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerNotificationSubscriptionReader()">
+                <div class="col m-2 notification-subscription-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="notificationSubscriptionForm" (ngSubmit)="submitForm()" class="notification-subscription-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('resourceId')">
+                                <label for="NotificationSubscription-resourceId" id="label-NotificationSubscription-resourceId">Resource</label>
+                                <select id="NotificationSubscription-resourceId" formControlName="resourceId" class="form-select notification-subscription-select" [disabled]="!userIsSchedulerNotificationSubscriptionWriter()">
+                                    <option [ngValue]="null">Select Resource</option>
+                                    <option *ngFor="let resource of resources$ | async" [ngValue]="resource.id">{{[resource.name] | filterAndJoin}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('contactId')">
+                                <label for="NotificationSubscription-contactId" id="label-NotificationSubscription-contactId">Contact</label>
+                                <select id="NotificationSubscription-contactId" formControlName="contactId" class="form-select notification-subscription-select" [disabled]="!userIsSchedulerNotificationSubscriptionWriter()">
+                                    <option [ngValue]="null">Select Contact</option>
+                                    <option *ngFor="let contact of contacts$ | async" [ngValue]="contact.id">{{contact.firstName}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('notificationTypeId')">
+                                <label for="NotificationSubscription-notificationTypeId" id="label-NotificationSubscription-notificationTypeId"><span class="text-danger">*</span>Notification Type</label>
+                                <select id="NotificationSubscription-notificationTypeId" formControlName="notificationTypeId" class="form-select notification-subscription-select" [disabled]="!userIsSchedulerNotificationSubscriptionWriter()">
+                                    <option [ngValue]="null">Select Notification Type</option>
+                                    <option *ngFor="let notificationType of notificationTypes$ | async" [ngValue]="notificationType.id">{{notificationType.name}}</option>
+                                </select>
+                                <div *ngIf="notificationSubscriptionForm.get('notificationTypeId')?.invalid && notificationSubscriptionForm.get('notificationTypeId')?.touched" class="text-danger">
+                                    Notification Type is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('triggerEvents')">
+                                <label for="NotificationSubscription-triggerEvents" id="label-NotificationSubscription-triggerEvents"><span class="text-danger">*</span>Trigger Events</label>
+                                <input type="number" id="NotificationSubscription-triggerEvents" formControlName="triggerEvents" placeholder="Enter Trigger Events" class="form-control notification-subscription-input" [disabled]="!userIsSchedulerNotificationSubscriptionWriter()" aria-labelledby="label-triggerEvents" />
+                                <div *ngIf="notificationSubscriptionForm.get('triggerEvents')?.invalid && notificationSubscriptionForm.get('triggerEvents')?.touched" class="text-danger">
+                                    Trigger Events is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('recipientAddress')">
+                                <label for="NotificationSubscription-recipientAddress" id="label-NotificationSubscription-recipientAddress"><span class="text-danger">*</span>Recipient Address</label>
+                                <input type="text" id="NotificationSubscription-recipientAddress" formControlName="recipientAddress" placeholder="Enter Recipient Address" class="form-control notification-subscription-input" [disabled]="!userIsSchedulerNotificationSubscriptionWriter()" aria-labelledby="label-recipientAddress" />
+                                <div *ngIf="notificationSubscriptionForm.get('recipientAddress')?.invalid && notificationSubscriptionForm.get('recipientAddress')?.touched" class="text-danger">
+                                    Recipient Address is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="NotificationSubscription-versionNumber" id="label-NotificationSubscription-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="NotificationSubscription-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control notification-subscription-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="NotificationSubscription-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerNotificationSubscriptionWriter()" />
+                                <label for="NotificationSubscription-active" class="form-check-label" id="label-NotificationSubscription-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="NotificationSubscription-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerNotificationSubscriptionWriter()" />
+                                <label for="NotificationSubscription-deleted" class="form-check-label" id="label-NotificationSubscription-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="notification-subscription-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="notificationSubscriptionForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Notification Subscription">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !notificationSubscriptionForm.valid || !notificationSubscriptionForm.dirty || notificationSubscriptionForm.pristine || userIsSchedulerNotificationSubscriptionWriter() == false " ngbTooltip="Save Notification Subscription">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerNotificationSubscriptionReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 notification-subscription-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="notificationSubscriptionChangeHistoryService.userIsSchedulerNotificationSubscriptionChangeHistoryReader()">
+                            <button ngbNavLink>Notification Subscription Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (notificationSubscriptionData?.NotificationSubscriptionChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-notification-subscription-change-history-table [queryParams]="{ notificationSubscriptionId: notificationSubscriptionData?.id }"></app-notification-subscription-change-history-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-notification-subscription-change-history-add-edit [preSeededData]="{ notificationSubscriptionId: notificationSubscriptionData?.id }" [hiddenFields]="['notificationSubscriptionId']"></app-notification-subscription-change-history-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

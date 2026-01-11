@@ -1,0 +1,205 @@
+.virtual-table-container {
+  height: calc(100vh - 220px);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+  background: white;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Fixed header (outside viewport) */
+.table-header-fixed {
+  background: white;
+  z-index: 30;
+  border-bottom: 2px solid #dee2e6;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* Viewport — the only thing that scrolls */
+.viewport {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: auto;         /* to allow scrolling if the content exceeds width.  Note headers won't move with content, but will accept that compromise for not making data unreachable. */
+  scrollbar-gutter: stable; /* eliminates scrollbar jump */
+
+  /* Hack for consistnent column sizing between header and body tables*/
+  padding-right: 17px;
+  margin-right: -17px;
+}
+
+.mobile-viewport {
+  height: calc(100vh - 180px); /* or whatever fits your layout */
+  display: block;
+}
+
+/* Base table — shared by header and body */
+.custom-table {
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 0;
+}
+
+/* Header table keeps Bootstrap look */
+.table-header-fixed .custom-table {
+  border-collapse: collapse;
+}
+
+/* Inactive (deactivated) rows */
+tr.row-inactive,
+.card.row-inactive {
+  font-style: italic !important;
+  opacity: 0.75 !important; // Slightly faded for extra clarity
+}
+
+/* Deleted rows */
+tr.row-deleted,
+.card.row-deleted {
+  text-decoration: line-through !important;
+  opacity: 0.6 !important;
+  color: #999 !important; // Muted color
+}
+
+/* Combine both if deleted takes precedence */
+tr.row-deleted.row-inactive,
+.card.row-deleted.row-inactive {
+  font-style: normal; // Strikethrough wins over italic
+}
+
+.card.row-inactive {
+  font-style: italic;
+  opacity: 0.75;
+}
+
+.card.row-deleted {
+  text-decoration: line-through;
+  opacity: 0.6;
+  background-color: #f8f9fa; // Light gray background
+}
+
+
+
+/* Body table — completely clean (no Bootstrap magic) */
+.viewport .custom-table {
+  background: transparent;
+}
+
+  /* Manual striping & hover (exactly what Bootstrap does) */
+  .viewport .custom-table tbody tr {
+    background-color: white;
+  }
+
+    .viewport .custom-table tbody tr:nth-child(odd) {
+      background-color: #f8f9fa;
+    }
+
+    .viewport .custom-table tbody tr:hover {
+      background-color: #e9ecef !important;
+    }
+
+/* Perfect alignment — header and body use IDENTICAL rules */
+.custom-table th,
+.custom-table td {
+  padding: 0.75rem !important;
+  border: none !important;
+  box-sizing: border-box;
+  white-space: nowrap;
+  overflow: hidden;
+  vertical-align: middle;
+}
+
+/* Action button columns — identical in header and body */
+.header-action-button {
+  width: 45px !important;
+  min-width: 45px !important;
+  max-width: 45px !important;
+  padding: 0.5rem 0.25rem !important;
+  text-align: center;
+}
+
+/* Sortable header styling */
+.sortable {
+  cursor: pointer;
+  position: relative;
+  padding-right: 1.5rem;
+  white-space: nowrap;
+}
+
+  .sortable:hover {
+    background-color: #f8f9fa;
+  }
+
+/* Sort arrows */
+.arrow-up::after,
+.arrow-down::after {
+  content: '';
+  display: inline-block;
+  margin-left: 5px;
+  width: 0;
+  height: 0;
+  vertical-align: middle;
+}
+
+.arrow-up::after {
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 5px solid #000;
+}
+
+.arrow-down::after {
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid #000;
+}
+
+/* CDK wrapper — never adds unwanted padding */
+.cdk-virtual-scroll-content-wrapper {
+  width: 100% !important;
+}
+
+
+/* Nicer custom scrollbar */
+.viewport::-webkit-scrollbar {
+  width: 10px;
+}
+
+.viewport::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.viewport::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.2);
+  border-radius: 5px;
+}
+
+.viewport::-webkit-scrollbar-thumb:hover {
+  background: rgba(0,0,0,0.4);
+}
+
+.color-swatch {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 1px solid #ced4da;        /* Matches form-control border for consistency */
+  border-radius: 4px;               /* Slight rounding for modern look */
+  flex-shrink: 0;                   /* Prevents shrinking in flex layouts */
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1); /* Subtle depth */
+}
+
+/* Slightly larger swatch on desktop for better visibility */
+@media (min-width: 768px) {
+  .color-swatch {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+/* Ensure the text doesn't get truncated awkwardly when next to the swatch */
+td .color-swatch,
+.col-7 .color-swatch {
+  vertical-align: middle;
+}
+
+

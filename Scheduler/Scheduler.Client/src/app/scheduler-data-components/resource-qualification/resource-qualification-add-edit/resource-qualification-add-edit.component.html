@@ -1,0 +1,78 @@
+<div class="add-resource-qualification" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-resource-qualification me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Resource Qualification" 
+        *ngIf="userIsSchedulerResourceQualificationWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #resourceQualificationModal let-modal>
+   <div class="modal-header bg-dark text-light resource-qualification-modal-header">
+      <h5 class="modal-title mb-0" id="resourceQualificationModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Resource Qualification' : 'Add Resource Qualification' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body resource-qualification-modal-body">
+      <form [formGroup]="resourceQualificationForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('resourceId')">
+                <label for="ResourceQualification-resourceId" id="label-ResourceQualification-resourceId"><span class="text-danger">*</span>Resource</label>
+                <select id="ResourceQualification-resourceId" formControlName="resourceId" class="form-select resource-qualification-select" [disabled]="!userIsSchedulerResourceQualificationWriter()">
+                    <option [ngValue]="null">Select Resource</option>
+                    <option *ngFor="let resource of resources$ | async" [ngValue]="resource.id">{{[resource.name] | filterAndJoin}}</option>
+                </select>
+                <div *ngIf="resourceQualificationForm.get('resourceId')?.invalid && resourceQualificationForm.get('resourceId')?.touched" class="text-danger">
+                    Resource is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('qualificationId')">
+                <label for="ResourceQualification-qualificationId" id="label-ResourceQualification-qualificationId"><span class="text-danger">*</span>Qualification</label>
+                <select id="ResourceQualification-qualificationId" formControlName="qualificationId" class="form-select resource-qualification-select" [disabled]="!userIsSchedulerResourceQualificationWriter()">
+                    <option [ngValue]="null">Select Qualification</option>
+                    <option *ngFor="let qualification of qualifications$ | async" [ngValue]="qualification.id">{{qualification.name}}</option>
+                </select>
+                <div *ngIf="resourceQualificationForm.get('qualificationId')?.invalid && resourceQualificationForm.get('qualificationId')?.touched" class="text-danger">
+                    Qualification is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('issueDate')">
+                <label for="ResourceQualification-issueDate" id="label-ResourceQualification-issueDate">Issue Date</label>
+                <input type="datetime-local" id="ResourceQualification-issueDate" formControlName="issueDate" placeholder="Enter Issue Date" class="form-control resource-qualification-input" [disabled]="!userIsSchedulerResourceQualificationWriter()" aria-labelledby="label-issueDate" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('expiryDate')">
+                <label for="ResourceQualification-expiryDate" id="label-ResourceQualification-expiryDate">Expiry Date</label>
+                <input type="datetime-local" id="ResourceQualification-expiryDate" formControlName="expiryDate" placeholder="Enter Expiry Date" class="form-control resource-qualification-input" [disabled]="!userIsSchedulerResourceQualificationWriter()" aria-labelledby="label-expiryDate" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('issuer')">
+                <label for="ResourceQualification-issuer" id="label-ResourceQualification-issuer">Issuer</label>
+                <input type="text" id="ResourceQualification-issuer" formControlName="issuer" placeholder="Enter Issuer" class="form-control resource-qualification-input" [disabled]="!userIsSchedulerResourceQualificationWriter()" aria-labelledby="label-issuer" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('notes')">
+                <label for="ResourceQualification-notes" id="label-ResourceQualification-notes">Notes</label>
+                <textarea id="ResourceQualification-notes" formControlName="notes" placeholder="Enter Notes" class="form-control resource-qualification-input" [disabled]="!userIsSchedulerResourceQualificationWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="ResourceQualification-versionNumber" id="label-ResourceQualification-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="ResourceQualification-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control resource-qualification-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ResourceQualification-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerResourceQualificationWriter()" />
+                <label for="ResourceQualification-active" class="form-check-label" id="label-ResourceQualification-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ResourceQualification-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerResourceQualificationWriter()" />
+                <label for="ResourceQualification-deleted" class="form-check-label" id="label-ResourceQualification-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer resource-qualification-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Resource Qualification changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !resourceQualificationForm.valid || resourceQualificationForm.pristine || !userIsSchedulerResourceQualificationWriter()" ngbTooltip="Save the Resource Qualification changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

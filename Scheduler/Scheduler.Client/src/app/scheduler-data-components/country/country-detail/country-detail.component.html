@@ -1,0 +1,167 @@
+<div class="container-fluid p-1 m-0 country-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="country-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Country</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Country' : 'Add Country'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerCountryReader()">
+                <div class="col m-2 country-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="countryForm" (ngSubmit)="submitForm()" class="country-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="Country-name" id="label-Country-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="Country-name" formControlName="name" placeholder="Enter Name" class="form-control country-input" [disabled]="!userIsSchedulerCountryWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="countryForm.get('name')?.invalid && countryForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="Country-description" id="label-Country-description"><span class="text-danger">*</span>Description</label>
+                                <textarea id="Country-description" formControlName="description" placeholder="Enter Description" class="form-control country-input" [disabled]="!userIsSchedulerCountryWriter()"></textarea>
+                                <div *ngIf="countryForm.get('description')?.invalid && countryForm.get('description')?.touched" class="text-danger">
+                                    Description is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('abbreviation')">
+                                <label for="Country-abbreviation" id="label-Country-abbreviation"><span class="text-danger">*</span>Abbreviation</label>
+                                <input type="text" id="Country-abbreviation" formControlName="abbreviation" placeholder="Enter Abbreviation" class="form-control country-input" [disabled]="!userIsSchedulerCountryWriter()" aria-labelledby="label-abbreviation" />
+                                <div *ngIf="countryForm.get('abbreviation')?.invalid && countryForm.get('abbreviation')?.touched" class="text-danger">
+                                    Abbreviation is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('postalCodeFormat')">
+                                <label for="Country-postalCodeFormat" id="label-Country-postalCodeFormat">Postal Code Format</label>
+                                <input type="text" id="Country-postalCodeFormat" formControlName="postalCodeFormat" placeholder="Enter Postal Code Format" class="form-control country-input" [disabled]="!userIsSchedulerCountryWriter()" aria-labelledby="label-postalCodeFormat" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('postalCodeRegEx')">
+                                <label for="Country-postalCodeRegEx" id="label-Country-postalCodeRegEx">Postal Code Reg Ex</label>
+                                <input type="text" id="Country-postalCodeRegEx" formControlName="postalCodeRegEx" placeholder="Enter Postal Code Reg Ex" class="form-control country-input" [disabled]="!userIsSchedulerCountryWriter()" aria-labelledby="label-postalCodeRegEx" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                                <label for="Country-sequence" id="label-Country-sequence">Sequence</label>
+                                <input type="number" id="Country-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control country-input" [disabled]="!userIsSchedulerCountryWriter()" aria-labelledby="label-sequence" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="Country-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerCountryWriter()" />
+                                <label for="Country-active" class="form-check-label" id="label-Country-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="Country-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerCountryWriter()" />
+                                <label for="Country-deleted" class="form-check-label" id="label-Country-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="country-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="countryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Country">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !countryForm.valid || !countryForm.dirty || countryForm.pristine || userIsSchedulerCountryWriter() == false " ngbTooltip="Save Country">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerCountryReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 country-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="stateProvinceService.userIsSchedulerStateProvinceReader()">
+                            <button ngbNavLink>State Provinces
+                                <span class="badge bg-primary ms-2">
+                                    {{ (countryData?.StateProvincesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-state-province-table [queryParams]="{ countryId: countryData?.id }"></app-state-province-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-state-province-add-edit [preSeededData]="{ countryId: countryData?.id }" [hiddenFields]="['countryId']"></app-state-province-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="officeService.userIsSchedulerOfficeReader()">
+                            <button ngbNavLink>Offices
+                                <span class="badge bg-primary ms-2">
+                                    {{ (countryData?.OfficesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-office-table [queryParams]="{ countryId: countryData?.id }"></app-office-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-office-add-edit [preSeededData]="{ countryId: countryData?.id }" [hiddenFields]="['countryId']"></app-office-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="clientService.userIsSchedulerClientReader()">
+                            <button ngbNavLink>Clients
+                                <span class="badge bg-primary ms-2">
+                                    {{ (countryData?.ClientsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-client-table [queryParams]="{ countryId: countryData?.id }"></app-client-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-client-add-edit [preSeededData]="{ countryId: countryData?.id }" [hiddenFields]="['countryId']"></app-client-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="tenantProfileService.userIsSchedulerTenantProfileReader()">
+                            <button ngbNavLink>Tenant Profiles
+                                <span class="badge bg-primary ms-2">
+                                    {{ (countryData?.TenantProfilesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-tenant-profile-table [queryParams]="{ countryId: countryData?.id }"></app-tenant-profile-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-tenant-profile-add-edit [preSeededData]="{ countryId: countryData?.id }" [hiddenFields]="['countryId']"></app-tenant-profile-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="schedulingTargetAddressService.userIsSchedulerSchedulingTargetAddressReader()">
+                            <button ngbNavLink>Scheduling Target Addresses
+                                <span class="badge bg-primary ms-2">
+                                    {{ (countryData?.SchedulingTargetAddressesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-scheduling-target-address-table [queryParams]="{ countryId: countryData?.id }"></app-scheduling-target-address-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-scheduling-target-address-add-edit [preSeededData]="{ countryId: countryData?.id }" [hiddenFields]="['countryId']"></app-scheduling-target-address-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,210 @@
+<div class="container-fluid p-1 m-0 tenant-profile-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="tenant-profile-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Tenant Profile</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Tenant Profile' : 'Add Tenant Profile'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerTenantProfileReader()">
+                <div class="col m-2 tenant-profile-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="tenantProfileForm" (ngSubmit)="submitForm()" class="tenant-profile-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="TenantProfile-name" id="label-TenantProfile-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="TenantProfile-name" formControlName="name" placeholder="Enter Name" class="form-control tenant-profile-input" [disabled]="!userIsSchedulerTenantProfileWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="tenantProfileForm.get('name')?.invalid && tenantProfileForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="TenantProfile-description" id="label-TenantProfile-description">Description</label>
+                                <textarea id="TenantProfile-description" formControlName="description" placeholder="Enter Description" class="form-control tenant-profile-input" [disabled]="!userIsSchedulerTenantProfileWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('companyLogoFileName')">
+                                <label for="TenantProfile-companyLogoFileName" id="label-TenantProfile-companyLogoFileName">Company Logo File Name</label>
+                                <input type="text" id="TenantProfile-companyLogoFileName" formControlName="companyLogoFileName" placeholder="Enter Company Logo File Name" class="form-control tenant-profile-input" [disabled]="!userIsSchedulerTenantProfileWriter()" aria-labelledby="label-companyLogoFileName" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('companyLogoSize')">
+                                <label for="TenantProfile-companyLogoSize" id="label-TenantProfile-companyLogoSize">Company Logo Size</label>
+                                <input type="number" id="TenantProfile-companyLogoSize" formControlName="companyLogoSize" placeholder="Enter Company Logo Size" class="form-control tenant-profile-input" [disabled]="!userIsSchedulerTenantProfileWriter()" aria-labelledby="label-companyLogoSize" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('companyLogoData')">
+                                <label for="TenantProfile-companyLogoData" id="label-TenantProfile-companyLogoData">Company Logo Data</label>
+                                <input type="text" id="TenantProfile-companyLogoData" formControlName="companyLogoData" placeholder="Enter Company Logo Data" class="form-control tenant-profile-input" [disabled]="!userIsSchedulerTenantProfileWriter()" aria-labelledby="label-companyLogoData" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('companyLogoMimeType')">
+                                <label for="TenantProfile-companyLogoMimeType" id="label-TenantProfile-companyLogoMimeType">Company Logo Mime Type</label>
+                                <input type="text" id="TenantProfile-companyLogoMimeType" formControlName="companyLogoMimeType" placeholder="Enter Company Logo Mime Type" class="form-control tenant-profile-input" [disabled]="!userIsSchedulerTenantProfileWriter()" aria-labelledby="label-companyLogoMimeType" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('addressLine1')">
+                                <label for="TenantProfile-addressLine1" id="label-TenantProfile-addressLine1">Address Line 1</label>
+                                <input type="text" id="TenantProfile-addressLine1" formControlName="addressLine1" placeholder="Enter Address Line 1" class="form-control tenant-profile-input" [disabled]="!userIsSchedulerTenantProfileWriter()" aria-labelledby="label-addressLine1" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('addressLine2')">
+                                <label for="TenantProfile-addressLine2" id="label-TenantProfile-addressLine2">Address Line 2</label>
+                                <input type="text" id="TenantProfile-addressLine2" formControlName="addressLine2" placeholder="Enter Address Line 2" class="form-control tenant-profile-input" [disabled]="!userIsSchedulerTenantProfileWriter()" aria-labelledby="label-addressLine2" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('addressLine3')">
+                                <label for="TenantProfile-addressLine3" id="label-TenantProfile-addressLine3">Address Line 3</label>
+                                <input type="text" id="TenantProfile-addressLine3" formControlName="addressLine3" placeholder="Enter Address Line 3" class="form-control tenant-profile-input" [disabled]="!userIsSchedulerTenantProfileWriter()" aria-labelledby="label-addressLine3" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('city')">
+                                <label for="TenantProfile-city" id="label-TenantProfile-city">City</label>
+                                <input type="text" id="TenantProfile-city" formControlName="city" placeholder="Enter City" class="form-control tenant-profile-input" [disabled]="!userIsSchedulerTenantProfileWriter()" aria-labelledby="label-city" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('postalCode')">
+                                <label for="TenantProfile-postalCode" id="label-TenantProfile-postalCode">Postal Code</label>
+                                <input type="text" id="TenantProfile-postalCode" formControlName="postalCode" placeholder="Enter Postal Code" class="form-control tenant-profile-input" [disabled]="!userIsSchedulerTenantProfileWriter()" aria-labelledby="label-postalCode" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('stateProvinceId')">
+                                <label for="TenantProfile-stateProvinceId" id="label-TenantProfile-stateProvinceId">State Province</label>
+                                <select id="TenantProfile-stateProvinceId" formControlName="stateProvinceId" class="form-select tenant-profile-select" [disabled]="!userIsSchedulerTenantProfileWriter()">
+                                    <option [ngValue]="null">Select State Province</option>
+                                    <option *ngFor="let stateProvince of stateProvinces$ | async" [ngValue]="stateProvince.id">{{stateProvince.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('countryId')">
+                                <label for="TenantProfile-countryId" id="label-TenantProfile-countryId">Country</label>
+                                <select id="TenantProfile-countryId" formControlName="countryId" class="form-select tenant-profile-select" [disabled]="!userIsSchedulerTenantProfileWriter()">
+                                    <option [ngValue]="null">Select Country</option>
+                                    <option *ngFor="let country of countries$ | async" [ngValue]="country.id">{{country.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeZoneId')">
+                                <label for="TenantProfile-timeZoneId" id="label-TenantProfile-timeZoneId">Time Zone</label>
+                                <select id="TenantProfile-timeZoneId" formControlName="timeZoneId" class="form-select tenant-profile-select" [disabled]="!userIsSchedulerTenantProfileWriter()">
+                                    <option [ngValue]="null">Select Time Zone</option>
+                                    <option *ngFor="let timeZone of timeZones$ | async" [ngValue]="timeZone.id">{{timeZone.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('phoneNumber')">
+                                <label for="TenantProfile-phoneNumber" id="label-TenantProfile-phoneNumber"><a href="tel:{{tenantProfileData?.phoneNumber}}" ngbTooltip="Phone {{tenantProfileData?.phoneNumber}}">Phone Number</a></label>
+                                <input type="text" id="TenantProfile-phoneNumber" formControlName="phoneNumber" placeholder="Enter Phone Number" class="form-control tenant-profile-input" [disabled]="!userIsSchedulerTenantProfileWriter()" aria-labelledby="label-phoneNumber" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('email')">
+<label for="TenantProfile-email" id="label-TenantProfile-email"><a href="mailto:{{tenantProfileData?.email}}" ngbTooltip="Send Email to {{tenantProfileData?.email}}">Email</a></label>
+                                <input type="text" id="TenantProfile-email" formControlName="email" placeholder="Enter Email" class="form-control tenant-profile-input" [disabled]="!userIsSchedulerTenantProfileWriter()" aria-labelledby="label-email" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('website')">
+                                <label for="TenantProfile-website" id="label-TenantProfile-website">Website</label>
+                                <input type="text" id="TenantProfile-website" formControlName="website" placeholder="Enter Website" class="form-control tenant-profile-input" [disabled]="!userIsSchedulerTenantProfileWriter()" aria-labelledby="label-website" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('latitude')">
+                                <label for="TenantProfile-latitude" id="label-TenantProfile-latitude">Latitude</label>
+                                <input type="number" id="TenantProfile-latitude" formControlName="latitude" placeholder="Enter Latitude" class="form-control tenant-profile-input" [disabled]="!userIsSchedulerTenantProfileWriter()" aria-labelledby="label-latitude" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('longitude')">
+                                <label for="TenantProfile-longitude" id="label-TenantProfile-longitude">Longitude</label>
+                                <input type="number" id="TenantProfile-longitude" formControlName="longitude" placeholder="Enter Longitude" class="form-control tenant-profile-input" [disabled]="!userIsSchedulerTenantProfileWriter()" aria-labelledby="label-longitude" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('primaryColor')">
+                                <label for="TenantProfile-primaryColor" id="label-TenantProfile-primaryColor">Primary Color</label>
+                                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="TenantProfile-primaryColor" 
+                        formControlName="primaryColor" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerTenantProfileWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="tenantProfileForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('secondaryColor')">
+                                <label for="TenantProfile-secondaryColor" id="label-TenantProfile-secondaryColor">Secondary Color</label>
+                                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="TenantProfile-secondaryColor" 
+                        formControlName="secondaryColor" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerTenantProfileWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="tenantProfileForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('displaysMetric')">
+                                <input type="checkbox" id="TenantProfile-displaysMetric" formControlName="displaysMetric" class="form-check-input" [disabled]="!userIsSchedulerTenantProfileWriter()" />
+                                <label for="TenantProfile-displaysMetric" class="form-check-label" id="label-TenantProfile-displaysMetric"><span class="text-danger">*</span>Displays Metric</label>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('displaysUSTerms')">
+                                <input type="checkbox" id="TenantProfile-displaysUSTerms" formControlName="displaysUSTerms" class="form-check-input" [disabled]="!userIsSchedulerTenantProfileWriter()" />
+                                <label for="TenantProfile-displaysUSTerms" class="form-check-label" id="label-TenantProfile-displaysUSTerms"><span class="text-danger">*</span>Displays U S Terms</label>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="TenantProfile-versionNumber" id="label-TenantProfile-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="TenantProfile-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control tenant-profile-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="TenantProfile-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerTenantProfileWriter()" />
+                                <label for="TenantProfile-active" class="form-check-label" id="label-TenantProfile-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="TenantProfile-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerTenantProfileWriter()" />
+                                <label for="TenantProfile-deleted" class="form-check-label" id="label-TenantProfile-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="tenant-profile-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="tenantProfileForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Tenant Profile">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !tenantProfileForm.valid || !tenantProfileForm.dirty || tenantProfileForm.pristine || userIsSchedulerTenantProfileWriter() == false " ngbTooltip="Save Tenant Profile">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerTenantProfileReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 tenant-profile-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="tenantProfileChangeHistoryService.userIsSchedulerTenantProfileChangeHistoryReader()">
+                            <button ngbNavLink>Tenant Profile Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (tenantProfileData?.TenantProfileChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-tenant-profile-change-history-table [queryParams]="{ tenantProfileId: tenantProfileData?.id }"></app-tenant-profile-change-history-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-tenant-profile-change-history-add-edit [preSeededData]="{ tenantProfileId: tenantProfileData?.id }" [hiddenFields]="['tenantProfileId']"></app-tenant-profile-change-history-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

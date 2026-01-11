@@ -1,0 +1,59 @@
+<div class="container-fluid p-1 m-0 event-calendar-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="event-calendar-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Event Calendar</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Event Calendar' : 'Add Event Calendar'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerEventCalendarReader()">
+                <div class="col m-2 event-calendar-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="eventCalendarForm" (ngSubmit)="submitForm()" class="event-calendar-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('scheduledEventId')">
+                                <label for="EventCalendar-scheduledEventId" id="label-EventCalendar-scheduledEventId"><span class="text-danger">*</span>Scheduled Event</label>
+                                <select id="EventCalendar-scheduledEventId" formControlName="scheduledEventId" class="form-select event-calendar-select" [disabled]="!userIsSchedulerEventCalendarWriter()">
+                                    <option [ngValue]="null">Select Scheduled Event</option>
+                                    <option *ngFor="let scheduledEvent of scheduledEvents$ | async" [ngValue]="scheduledEvent.id">{{[scheduledEvent.name] | filterAndJoin}}</option>
+                                </select>
+                                <div *ngIf="eventCalendarForm.get('scheduledEventId')?.invalid && eventCalendarForm.get('scheduledEventId')?.touched" class="text-danger">
+                                    Scheduled Event is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('calendarId')">
+                                <label for="EventCalendar-calendarId" id="label-EventCalendar-calendarId"><span class="text-danger">*</span>Calendar</label>
+                                <select id="EventCalendar-calendarId" formControlName="calendarId" class="form-select event-calendar-select" [disabled]="!userIsSchedulerEventCalendarWriter()">
+                                    <option [ngValue]="null">Select Calendar</option>
+                                    <option *ngFor="let calendar of calendars$ | async" [ngValue]="calendar.id">{{calendar.name}}</option>
+                                </select>
+                                <div *ngIf="eventCalendarForm.get('calendarId')?.invalid && eventCalendarForm.get('calendarId')?.touched" class="text-danger">
+                                    Calendar is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="EventCalendar-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerEventCalendarWriter()" />
+                                <label for="EventCalendar-active" class="form-check-label" id="label-EventCalendar-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="EventCalendar-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerEventCalendarWriter()" />
+                                <label for="EventCalendar-deleted" class="form-check-label" id="label-EventCalendar-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="event-calendar-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="eventCalendarForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Event Calendar">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !eventCalendarForm.valid || !eventCalendarForm.dirty || eventCalendarForm.pristine || userIsSchedulerEventCalendarWriter() == false " ngbTooltip="Save Event Calendar">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

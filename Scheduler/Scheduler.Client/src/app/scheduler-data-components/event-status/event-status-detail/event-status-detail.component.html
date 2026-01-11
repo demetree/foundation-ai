@@ -1,0 +1,106 @@
+<div class="container-fluid p-1 m-0 event-status-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="event-status-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Event Status</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Event Status' : 'Add Event Status'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerEventStatusReader()">
+                <div class="col m-2 event-status-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="eventStatusForm" (ngSubmit)="submitForm()" class="event-status-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="EventStatus-name" id="label-EventStatus-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="EventStatus-name" formControlName="name" placeholder="Enter Name" class="form-control event-status-input" [disabled]="!userIsSchedulerEventStatusWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="eventStatusForm.get('name')?.invalid && eventStatusForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="EventStatus-description" id="label-EventStatus-description"><span class="text-danger">*</span>Description</label>
+                                <textarea id="EventStatus-description" formControlName="description" placeholder="Enter Description" class="form-control event-status-input" [disabled]="!userIsSchedulerEventStatusWriter()"></textarea>
+                                <div *ngIf="eventStatusForm.get('description')?.invalid && eventStatusForm.get('description')?.touched" class="text-danger">
+                                    Description is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('color')">
+                                <label for="EventStatus-color" id="label-EventStatus-color">Color</label>
+                                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="EventStatus-color" 
+                        formControlName="color" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerEventStatusWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="eventStatusForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                                <label for="EventStatus-sequence" id="label-EventStatus-sequence">Sequence</label>
+                                <input type="number" id="EventStatus-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control event-status-input" [disabled]="!userIsSchedulerEventStatusWriter()" aria-labelledby="label-sequence" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="EventStatus-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerEventStatusWriter()" />
+                                <label for="EventStatus-active" class="form-check-label" id="label-EventStatus-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="EventStatus-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerEventStatusWriter()" />
+                                <label for="EventStatus-deleted" class="form-check-label" id="label-EventStatus-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="event-status-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="eventStatusForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Event Status">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !eventStatusForm.valid || !eventStatusForm.dirty || eventStatusForm.pristine || userIsSchedulerEventStatusWriter() == false " ngbTooltip="Save Event Status">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerEventStatusReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 event-status-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="scheduledEventService.userIsSchedulerScheduledEventReader()">
+                            <button ngbNavLink>Scheduled Events
+                                <span class="badge bg-primary ms-2">
+                                    {{ (eventStatusData?.ScheduledEventsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-scheduled-event-table [queryParams]="{ eventStatusId: eventStatusData?.id }"></app-scheduled-event-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-scheduled-event-add-edit [preSeededData]="{ eventStatusId: eventStatusData?.id }" [hiddenFields]="['eventStatusId']"></app-scheduled-event-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

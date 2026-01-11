@@ -1,0 +1,102 @@
+<div class="add-fund" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-fund me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Fund" 
+        *ngIf="userIsSchedulerFundWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #fundModal let-modal>
+   <div class="modal-header bg-dark text-light fund-modal-header">
+      <h5 class="modal-title mb-0" id="fundModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Fund' : 'Add Fund' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body fund-modal-body">
+      <form [formGroup]="fundForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="Fund-name" id="label-Fund-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="Fund-name" formControlName="name" placeholder="Enter Name" class="form-control fund-input" [disabled]="!userIsSchedulerFundWriter()" aria-labelledby="label-name" />
+                <div *ngIf="fundForm.get('name')?.invalid && fundForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="Fund-description" id="label-Fund-description">Description</label>
+                <textarea id="Fund-description" formControlName="description" placeholder="Enter Description" class="form-control fund-input" [disabled]="!userIsSchedulerFundWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('glCode')">
+                <label for="Fund-glCode" id="label-Fund-glCode">Gl Code</label>
+                <input type="text" id="Fund-glCode" formControlName="glCode" placeholder="Enter Gl Code" class="form-control fund-input" [disabled]="!userIsSchedulerFundWriter()" aria-labelledby="label-glCode" />
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isRestricted')">
+                <input type="checkbox" id="Fund-isRestricted" formControlName="isRestricted" class="form-check-input" [disabled]="!userIsSchedulerFundWriter()" />
+                <label for="Fund-isRestricted" class="form-check-label" id="label-Fund-isRestricted"><span class="text-danger">*</span>Is Restricted</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('goalAmount')">
+                <label for="Fund-goalAmount" id="label-Fund-goalAmount">Goal Amount</label>
+                <input type="number" id="Fund-goalAmount" formControlName="goalAmount" placeholder="Enter Goal Amount" class="form-control fund-input" [disabled]="!userIsSchedulerFundWriter()" aria-labelledby="label-goalAmount" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('notes')">
+                <label for="Fund-notes" id="label-Fund-notes">Notes</label>
+                <textarea id="Fund-notes" formControlName="notes" placeholder="Enter Notes" class="form-control fund-input" [disabled]="!userIsSchedulerFundWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                <label for="Fund-sequence" id="label-Fund-sequence">Sequence</label>
+                <input type="number" id="Fund-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control fund-input" [disabled]="!userIsSchedulerFundWriter()" aria-labelledby="label-sequence" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('iconId')">
+                <label for="Fund-iconId" id="label-Fund-iconId">Icon</label>
+                <select id="Fund-iconId" formControlName="iconId" class="form-select fund-select" [disabled]="!userIsSchedulerFundWriter()">
+                    <option [ngValue]="null">Select Icon</option>
+                    <option *ngFor="let icon of icons$ | async" [ngValue]="icon.id">{{icon.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('color')">
+                <label for="Fund-color" id="label-Fund-color">Color</label>
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="Fund-color" 
+                        formControlName="color" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerFundWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="fundForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="Fund-versionNumber" id="label-Fund-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="Fund-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control fund-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="Fund-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerFundWriter()" />
+                <label for="Fund-active" class="form-check-label" id="label-Fund-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="Fund-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerFundWriter()" />
+                <label for="Fund-deleted" class="form-check-label" id="label-Fund-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer fund-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Fund changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !fundForm.valid || fundForm.pristine || !userIsSchedulerFundWriter()" ngbTooltip="Save the Fund changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

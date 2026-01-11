@@ -1,0 +1,57 @@
+<div class="container-fluid p-1 m-0 o-a-u-t-h-token-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="o-a-u-t-h-token-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">O A U T H Token</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit O A U T H Token' : 'Add O A U T H Token'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSecurityOAUTHTokenReader()">
+                <div class="col m-2 o-a-u-t-h-token-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="oAUTHTokenForm" (ngSubmit)="submitForm()" class="o-a-u-t-h-token-details-form">
+                            <div class="form-group">
+                                <label for="token" id="label-token"><span class="text-danger">*</span>Token</label>
+                                <input type="text" id="token" formControlName="token" placeholder="Enter Token" class="form-control o-a-u-t-h-token-input" [disabled]="!userIsSecurityOAUTHTokenWriter()" aria-labelledby="label-token" />
+                                <div *ngIf="oAUTHTokenForm.get('token')?.invalid && oAUTHTokenForm.get('token')?.touched" class="text-danger">
+                                    Token is required
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="expiryDateTime" id="label-expiryDateTime"><span class="text-danger">*</span>Expiry Date Time</label>
+                                <input type="datetime-local" id="expiryDateTime" formControlName="expiryDateTime" placeholder="Enter Expiry Date Time" class="form-control o-a-u-t-h-token-input" [disabled]="!userIsSecurityOAUTHTokenWriter()" aria-labelledby="label-expiryDateTime" />
+                                <div *ngIf="oAUTHTokenForm.get('expiryDateTime')?.invalid && oAUTHTokenForm.get('expiryDateTime')?.touched" class="text-danger">
+                                    Expiry Date Time is required
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="userData" id="label-userData">User Data</label>
+                                <textarea id="userData" formControlName="userData" placeholder="Enter User Data" class="form-control o-a-u-t-h-token-input" [disabled]="!userIsSecurityOAUTHTokenWriter()"></textarea>
+                            </div>
+                            <div class="form-check my-2">
+                                <input type="checkbox" id="active" formControlName="active" class="form-check-input" [disabled]="!userIsSecurityOAUTHTokenWriter()" />
+                                <label for="active" class="form-check-label" id="label-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2">
+                                <input type="checkbox" id="deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSecurityOAUTHTokenWriter()" />
+                                <label for="deleted" class="form-check-label" id="label-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="o-a-u-t-h-token-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="oAUTHTokenForm.pristine" (click)="loadData(true)" ngbTooltip="Reload O A U T H Token">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !oAUTHTokenForm.valid || !oAUTHTokenForm.dirty || oAUTHTokenForm.pristine || userIsSecurityOAUTHTokenWriter() == false " ngbTooltip="Save O A U T H Token">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

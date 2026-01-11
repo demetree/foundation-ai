@@ -1,0 +1,41 @@
+<div class="add-audit-access-type" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-audit-access-type me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Audit Access Type" 
+        *ngIf="userIsAuditorAuditAccessTypeWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #auditAccessTypeModal let-modal>
+   <div class="modal-header bg-dark text-light audit-access-type-modal-header">
+      <h5 class="modal-title mb-0" id="auditAccessTypeModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Audit Access Type' : 'Add Audit Access Type' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body audit-access-type-modal-body">
+      <form [formGroup]="auditAccessTypeForm" (ngSubmit)="submitForm()">
+            <div class="form-group">
+                <label for="name" id="label-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="name" formControlName="name" placeholder="Enter Name" class="form-control audit-access-type-input" [disabled]="!userIsAuditorAuditAccessTypeWriter()" aria-labelledby="label-name" />
+                <div *ngIf="auditAccessTypeForm.get('name')?.invalid && auditAccessTypeForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="description" id="label-description">Description</label>
+                <textarea id="description" formControlName="description" placeholder="Enter Description" class="form-control audit-access-type-input" [disabled]="!userIsAuditorAuditAccessTypeWriter()"></textarea>
+            </div>
+         <div class="modal-footer audit-access-type-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Audit Access Type changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !auditAccessTypeForm.valid || auditAccessTypeForm.pristine || !userIsAuditorAuditAccessTypeWriter()" ngbTooltip="Save the Audit Access Type changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

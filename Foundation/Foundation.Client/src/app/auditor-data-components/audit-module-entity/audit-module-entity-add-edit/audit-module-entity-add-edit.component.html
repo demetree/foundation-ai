@@ -1,0 +1,55 @@
+<div class="add-audit-module-entity" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-audit-module-entity me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Audit Module Entity" 
+        *ngIf="userIsAuditorAuditModuleEntityWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #auditModuleEntityModal let-modal>
+   <div class="modal-header bg-dark text-light audit-module-entity-modal-header">
+      <h5 class="modal-title mb-0" id="auditModuleEntityModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Audit Module Entity' : 'Add Audit Module Entity' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body audit-module-entity-modal-body">
+      <form [formGroup]="auditModuleEntityForm" (ngSubmit)="submitForm()">
+            <div class="form-group">
+                <label for="auditModuleId" id="label-auditModuleId"><span class="text-danger">*</span>Audit Module</label>
+                <select id="auditModuleId" formControlName="auditModuleId" class="form-select audit-module-entity-select" [disabled]="!userIsAuditorAuditModuleEntityWriter()">
+                    <option [ngValue]="null">Select Audit Module</option>
+                    <option *ngFor="let auditModule of auditModules$ | async" [ngValue]="auditModule.id">{{auditModule.name}}</option>
+                </select>
+                <div *ngIf="auditModuleEntityForm.get('auditModuleId')?.invalid && auditModuleEntityForm.get('auditModuleId')?.touched" class="text-danger">
+                    Audit Module is required
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="name" id="label-name"><span class="text-danger">*</span>Name</label>
+                <textarea id="name" formControlName="name" placeholder="Enter Name" class="form-control audit-module-entity-input" [disabled]="!userIsAuditorAuditModuleEntityWriter()"></textarea>
+                <div *ngIf="auditModuleEntityForm.get('name')?.invalid && auditModuleEntityForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="comments" id="label-comments">Comments</label>
+                <textarea id="comments" formControlName="comments" placeholder="Enter Comments" class="form-control audit-module-entity-input" [disabled]="!userIsAuditorAuditModuleEntityWriter()"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="firstAccess" id="label-firstAccess">First Access</label>
+                <input type="datetime-local" id="firstAccess" formControlName="firstAccess" placeholder="Enter First Access" class="form-control audit-module-entity-input" [disabled]="!userIsAuditorAuditModuleEntityWriter()" aria-labelledby="label-firstAccess" />
+            </div>
+         <div class="modal-footer audit-module-entity-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Audit Module Entity changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !auditModuleEntityForm.valid || auditModuleEntityForm.pristine || !userIsAuditorAuditModuleEntityWriter()" ngbTooltip="Save the Audit Module Entity changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

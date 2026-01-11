@@ -1,0 +1,156 @@
+<div class="container-fluid p-1 m-0 contact-details-container">
+  <div class="p-2 detail-background">
+
+    <!-- Header with Avatar and Key Info -->
+    <div class="card mb-4 header-card shadow-sm">
+      <div class="card-body d-flex align-items-center gap-4">
+
+        <!-- Avatar -->
+        <div class="avatar rounded-circle overflow-hidden border shadow clickable"
+             style="width: 120px; height: 120px; background: #f8f9fa;"
+             (click)="openEditModal()">
+          <ng-container *ngIf="contact?.avatarData; else defaultAvatar">
+            <img [src]="'data:' + (contact?.avatarMimeType || 'image/png') + ';base64,' + (contact?.avatarData || '')"
+                 class="w-100 h-100 object-fit-cover"
+                 alt="{{ contact | contactFullName }} avatar">
+          </ng-container>
+
+          <ng-template #defaultAvatar>
+            <div class="w-100 h-100 d-flex align-items-center justify-content-center text-white fw-bold fs-3"
+                 [style.background-color]="contact?.color || '#6c757d'">
+              <span *ngIf="contact?.icon == null">{{ contact?.firstName | slice:0:1 | uppercase }}{{ contact?.middleName | slice:0:1 | uppercase }}{{ contact?.lastName | slice:0:1 | uppercase }}</span>
+              <i *ngIf="contact?.icon != null" class="fa-2x" [class]="contact?.icon?.fontAwesomeCode || 'fa-solid fa-user'"></i>
+            </div>
+          </ng-template>
+        </div>
+
+        <!-- Core Details -->
+        <div class="flex-grow-1">
+          <div class="d-flex align-items-center gap-3 mb-2">
+            <span class="text-uppercase text-muted small fw-semibold">{{ contact?.contactType?.name || 'Contact' }}</span>
+            <h3 class="mb-0">{{ (contact | contactFullName) || 'Loading...' }}</h3>
+            <span class="badge" [ngClass]="contact?.active ? 'bg-success' : 'bg-secondary'">
+              {{ contact?.active ? 'Active' : 'Inactive' }}
+            </span>
+            <span *ngIf="contact?.deleted" class="badge bg-danger">Deleted</span>
+            <span class="badge bg-secondary">Version: {{ contact?.versionNumber }}</span>
+
+            <!-- note that this depend on the revived/reloaded icon object set in the main load function-->
+            <ng-container *ngIf="contact?.ContactTags$ | async as tags">
+              <span *ngFor="let ct of tags"
+                    class="badge ms-1"
+                    [style.background-color]="ct.tag?.color || '#6c757d'"
+                    [style.color]="ct.tag?.color | contrastColor"
+                    [ngbTooltip]="ct.tag?.description">
+                <i *ngIf="ct.tag?.icon != null" class="fa" [ngClass]="ct.tag?.icon?.fontAwesomeCode"></i>
+                {{ ct.tag?.name }}
+              </span>
+            </ng-container>
+
+
+          </div>
+          <div class="text-muted small">
+            <div *ngIf="contact?.company || contact?.position">
+              <strong>{{ contact?.position ? contact?.position + (contact?.company ? ' at ' : '') : '' }}</strong>
+              {{ contact?.company }}
+            </div>
+            <div *ngIf="contact?.email">
+              <i class="fa-solid fa-envelope me-1"></i>
+              <a [href]="'mailto:' + contact?.email">{{ contact?.email }}</a>
+            </div>
+            <div *ngIf="contact?.mobile || contact?.phone">
+              <i class="fa-solid fa-phone me-1"></i>
+              {{ contact?.mobile || contact?.phone }}
+              <span *ngIf="contact?.mobile && contact?.phone"> / {{ contact?.phone }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="text-end">
+          <button class="btn btn-primary" (click)="openEditModal()" *ngIf="userIsSchedulerContactWriter()">
+            <i class="fa fa-pen me-2"></i> Edit
+          </button>
+          <button class="btn btn-outline-secondary ms-2" (click)="goBack()" ngbTooltip="Go Back" *ngIf="canGoBack()">
+            <i class="fa fa-arrow-left me-2"></i> Back
+          </button>
+
+          <app-contact-custom-add-edit [navigateToDetailsAfterAdd]="false" (contactChanged)="contactChanged($event)" style="display: none"></app-contact-custom-add-edit>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading / Error -->
+    <div class="text-center py-5" *ngIf="isLoading$ | async">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading contact...</span>
+      </div>
+    </div>
+
+    <div class="alert alert-danger" *ngIf="error">
+      <i class="fa-solid fa-exclamation-triangle me-2"></i>
+      {{ error }}
+    </div>
+
+    <!-- Tabs -->
+    <ul ngbNav #nav="ngbNav" class="nav-tabs" [(activeId)]="activeTab">
+
+      <!-- Contact Overview -->
+      <li ngbNavItem="overview">
+        <button ngbNavLink>Overview</button>
+        <ng-template ngbNavContent>
+          <div *ngIf="contact; else loadingTemplate">
+            <app-contact-overview-tab [contact]="contact"></app-contact-overview-tab>
+          </div>
+          <ng-template #loadingTemplate>
+            <div class="text-center py-5 text-muted">
+              <div class="spinner-border spinner-border-sm" role="status">
+                <span class="visually-hidden">Loading overview...</span>
+              </div>
+            </div>
+            <div class="mt-3">Loading contact details...</div>
+          </ng-template>
+        </ng-template>
+      </li>
+
+      <!-- Contact Interactions -->
+      <li ngbNavItem="interactions">
+        <button ngbNavLink>Interactions</button>
+        <ng-template ngbNavContent>
+          <div *ngIf="contact; else loadingTemplate">
+            <app-contact-interactions-tab [contact]="contact"></app-contact-interactions-tab>
+          </div>
+          <ng-template #loadingTemplate>
+            <div class="text-center py-5 text-muted">
+              <div class="spinner-border spinner-border-sm" role="status">
+                <span class="visually-hidden">Loading interactions...</span>
+              </div>
+            </div>
+            <div class="mt-3">Loading contact interactions...</div>
+          </ng-template>
+        </ng-template>
+      </li>
+
+      <!-- Contact Relationships -->
+      <li ngbNavItem="relationships">
+        <button ngbNavLink>Relationships</button>
+        <ng-template ngbNavContent>
+          <div *ngIf="contact; else loadingTemplate">
+            <app-contact-relationships-tab [contact]="contact"></app-contact-relationships-tab>
+          </div>
+          <ng-template #loadingTemplate>
+            <div class="text-center py-5 text-muted">
+              <div class="spinner-border spinner-border-sm" role="status">
+                <span class="visually-hidden">Loading relationships...</span>
+              </div>
+            </div>
+            <div class="mt-3">Loading contact relationships...</div>
+          </ng-template>
+        </ng-template>
+      </li>
+
+    </ul>
+    <div [ngbNavOutlet]="nav" class="mt-4"></div>
+  </div>
+</div>
+

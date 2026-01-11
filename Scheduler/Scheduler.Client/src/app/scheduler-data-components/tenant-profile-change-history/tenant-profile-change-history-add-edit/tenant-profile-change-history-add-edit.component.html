@@ -1,0 +1,65 @@
+<div class="add-tenant-profile-change-history" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-tenant-profile-change-history me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Tenant Profile Change History" 
+        *ngIf="userIsSchedulerTenantProfileChangeHistoryWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #tenantProfileChangeHistoryModal let-modal>
+   <div class="modal-header bg-dark text-light tenant-profile-change-history-modal-header">
+      <h5 class="modal-title mb-0" id="tenantProfileChangeHistoryModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Tenant Profile Change History' : 'Add Tenant Profile Change History' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body tenant-profile-change-history-modal-body">
+      <form [formGroup]="tenantProfileChangeHistoryForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('tenantProfileId')">
+                <label for="TenantProfileChangeHistory-tenantProfileId" id="label-TenantProfileChangeHistory-tenantProfileId"><span class="text-danger">*</span>Tenant Profile</label>
+                <select id="TenantProfileChangeHistory-tenantProfileId" formControlName="tenantProfileId" class="form-select tenant-profile-change-history-select" [disabled]="!userIsSchedulerTenantProfileChangeHistoryWriter()">
+                    <option [ngValue]="null">Select Tenant Profile</option>
+                    <option *ngFor="let tenantProfile of tenantProfiles$ | async" [ngValue]="tenantProfile.id">{{tenantProfile.name}}</option>
+                </select>
+                <div *ngIf="tenantProfileChangeHistoryForm.get('tenantProfileId')?.invalid && tenantProfileChangeHistoryForm.get('tenantProfileId')?.touched" class="text-danger">
+                    Tenant Profile is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="TenantProfileChangeHistory-versionNumber" id="label-TenantProfileChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="TenantProfileChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control tenant-profile-change-history-input" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                <label for="TenantProfileChangeHistory-timeStamp" id="label-TenantProfileChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                <input type="datetime-local" id="TenantProfileChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control tenant-profile-change-history-input" [disabled]="!userIsSchedulerTenantProfileChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                <div *ngIf="tenantProfileChangeHistoryForm.get('timeStamp')?.invalid && tenantProfileChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                    Time Stamp is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                <label for="TenantProfileChangeHistory-userId" id="label-TenantProfileChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                <input type="number" id="TenantProfileChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control tenant-profile-change-history-input" [disabled]="!userIsSchedulerTenantProfileChangeHistoryWriter()" aria-labelledby="label-userId" />
+                <div *ngIf="tenantProfileChangeHistoryForm.get('userId')?.invalid && tenantProfileChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                    User Id is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                <label for="TenantProfileChangeHistory-data" id="label-TenantProfileChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                <textarea id="TenantProfileChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control tenant-profile-change-history-input" [disabled]="!userIsSchedulerTenantProfileChangeHistoryWriter()"></textarea>
+                <div *ngIf="tenantProfileChangeHistoryForm.get('data')?.invalid && tenantProfileChangeHistoryForm.get('data')?.touched" class="text-danger">
+                    Data is required
+                </div>
+            </div>
+         <div class="modal-footer tenant-profile-change-history-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Tenant Profile Change History changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !tenantProfileChangeHistoryForm.valid || tenantProfileChangeHistoryForm.pristine || !userIsSchedulerTenantProfileChangeHistoryWriter()" ngbTooltip="Save the Tenant Profile Change History changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

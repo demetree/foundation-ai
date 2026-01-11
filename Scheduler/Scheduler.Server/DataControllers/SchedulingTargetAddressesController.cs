@@ -1,0 +1,1453 @@
+using System;
+using System.Threading;
+using System.Data;
+using System.Text.Json;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Storage;
+using Foundation.Security;
+using Foundation.Auditor;
+using Foundation.Controllers;
+using Foundation.Security.Database;
+using static Foundation.Auditor.AuditEngine;
+using Foundation.Scheduler.Database;
+
+namespace Foundation.Scheduler.Controllers.WebAPI
+{
+    /// <summary>
+    /// 
+    /// This auto generated class provides the basic CRUD operations for the SchedulingTargetAddress entity via a Web API.
+	/// 
+	/// It can be used as-is, or as a starting point for customizations in a new partial class, or a new class entirely.
+    ///
+    /// It demonstrates the features available for the SchedulingTargetAddress entity, possibly including: multi tenancy, data visibility, version control with rollback, and favouriting.
+	/// 
+    /// </summary>
+	public partial class SchedulingTargetAddressesController : SecureWebAPIController
+	{
+		public const int READ_PERMISSION_LEVEL_REQUIRED = 1;
+		public const int WRITE_PERMISSION_LEVEL_REQUIRED = 50;
+
+		static object schedulingTargetAddressPutSyncRoot = new object();
+		static object schedulingTargetAddressDeleteSyncRoot = new object();
+
+		private SchedulerContext _context;
+
+		private ILogger<SchedulingTargetAddressesController> _logger;
+
+		public SchedulingTargetAddressesController(SchedulerContext context, ILogger<SchedulingTargetAddressesController> logger) : base("Scheduler", "SchedulingTargetAddress")
+		{
+			this._context = context;
+			this._logger = logger;
+
+			this._context.Database.SetCommandTimeout(60);
+
+			return;
+		}
+
+		/// <summary>
+		/// 
+		/// This gets a list of SchedulingTargetAddresses filtered by the parameters provided.
+		/// 
+		/// There is a filter parameter for every field, and an 'anyStringContains' parameter for cross field string partial searches.
+		/// 
+		/// Note also the pagination control in the pageSize and pageNumber parameters.
+		/// 
+		/// The rate limit is 2 per second per user.
+		/// 
+		/// </summary>
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/SchedulingTargetAddresses")]
+		public async Task<IActionResult> GetSchedulingTargetAddresses(
+			int? schedulingTargetId = null,
+			int? clientId = null,
+			string addressLine1 = null,
+			string addressLine2 = null,
+			string city = null,
+			string postalCode = null,
+			int? stateProvinceId = null,
+			int? countryId = null,
+			double? latitude = null,
+			double? longitude = null,
+			string label = null,
+			bool? isPrimary = null,
+			int? versionNumber = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
+			int? pageSize = null,
+			int? pageNumber = null,
+			string anyStringContains = null,
+			bool includeRelations = true,
+			CancellationToken cancellationToken = default)
+		{
+			StartAuditEventClock();
+
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 50, cancellationToken);
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+
+			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+			if (pageNumber.HasValue == true &&
+			    pageNumber < 1)
+			{
+			    pageNumber = null;
+			}
+
+			if (pageSize.HasValue == true &&
+			    pageSize <= 0)
+			{
+			    pageSize = null;
+			}
+
+			IQueryable<Database.SchedulingTargetAddress> query = (from sta in _context.SchedulingTargetAddresses select sta);
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+			if (schedulingTargetId.HasValue == true)
+			{
+				query = query.Where(sta => sta.schedulingTargetId == schedulingTargetId.Value);
+			}
+			if (clientId.HasValue == true)
+			{
+				query = query.Where(sta => sta.clientId == clientId.Value);
+			}
+			if (string.IsNullOrEmpty(addressLine1) == false)
+			{
+				query = query.Where(sta => sta.addressLine1 == addressLine1);
+			}
+			if (string.IsNullOrEmpty(addressLine2) == false)
+			{
+				query = query.Where(sta => sta.addressLine2 == addressLine2);
+			}
+			if (string.IsNullOrEmpty(city) == false)
+			{
+				query = query.Where(sta => sta.city == city);
+			}
+			if (string.IsNullOrEmpty(postalCode) == false)
+			{
+				query = query.Where(sta => sta.postalCode == postalCode);
+			}
+			if (stateProvinceId.HasValue == true)
+			{
+				query = query.Where(sta => sta.stateProvinceId == stateProvinceId.Value);
+			}
+			if (countryId.HasValue == true)
+			{
+				query = query.Where(sta => sta.countryId == countryId.Value);
+			}
+			if (latitude.HasValue == true)
+			{
+				query = query.Where(sta => sta.latitude == latitude.Value);
+			}
+			if (longitude.HasValue == true)
+			{
+				query = query.Where(sta => sta.longitude == longitude.Value);
+			}
+			if (string.IsNullOrEmpty(label) == false)
+			{
+				query = query.Where(sta => sta.label == label);
+			}
+			if (isPrimary.HasValue == true)
+			{
+				query = query.Where(sta => sta.isPrimary == isPrimary.Value);
+			}
+			if (versionNumber.HasValue == true)
+			{
+				query = query.Where(sta => sta.versionNumber == versionNumber.Value);
+			}
+			if (objectGuid.HasValue == true)
+			{
+				query = query.Where(sta => sta.objectGuid == objectGuid);
+			}
+			if (userIsWriter == true)
+			{
+				if (active.HasValue == true)
+				{
+					query = query.Where(sta => sta.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(sta => sta.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(sta => sta.deleted == false);
+				}
+			}
+			else
+			{
+				query = query.Where(sta => sta.active == true);
+				query = query.Where(sta => sta.deleted == false);
+			}
+
+			query = query.OrderBy(sta => sta.addressLine1).ThenBy(sta => sta.addressLine2).ThenBy(sta => sta.city);
+
+			if (pageNumber.HasValue == true &&
+			    pageSize.HasValue == true)
+			{
+			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
+			}
+			
+			if (includeRelations == true)
+			{
+				query = query.Include(x => x.client);
+				query = query.Include(x => x.country);
+				query = query.Include(x => x.schedulingTarget);
+				query = query.Include(x => x.stateProvince);
+				query = query.AsSplitQuery();
+			}
+
+
+			//
+			// Add the any string contains parameter to span all the string fields on the Scheduling Target Address, or on an any of the string fields on its immediate relations
+			//
+			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
+			//
+			if (!string.IsNullOrEmpty(anyStringContains))
+			{
+			   query = query.Where(x =>
+			       x.addressLine1.Contains(anyStringContains)
+			       || x.addressLine2.Contains(anyStringContains)
+			       || x.city.Contains(anyStringContains)
+			       || x.postalCode.Contains(anyStringContains)
+			       || x.label.Contains(anyStringContains)
+			       || (includeRelations == true && x.client.name.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.description.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.addressLine1.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.addressLine2.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.city.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.postalCode.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.phone.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.email.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.notes.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.externalId.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.color.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.attributes.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.avatarFileName.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.avatarMimeType.Contains(anyStringContains))
+			       || (includeRelations == true && x.country.name.Contains(anyStringContains))
+			       || (includeRelations == true && x.country.description.Contains(anyStringContains))
+			       || (includeRelations == true && x.country.abbreviation.Contains(anyStringContains))
+			       || (includeRelations == true && x.country.postalCodeFormat.Contains(anyStringContains))
+			       || (includeRelations == true && x.country.postalCodeRegEx.Contains(anyStringContains))
+			       || (includeRelations == true && x.schedulingTarget.name.Contains(anyStringContains))
+			       || (includeRelations == true && x.schedulingTarget.description.Contains(anyStringContains))
+			       || (includeRelations == true && x.schedulingTarget.notes.Contains(anyStringContains))
+			       || (includeRelations == true && x.schedulingTarget.externalId.Contains(anyStringContains))
+			       || (includeRelations == true && x.schedulingTarget.color.Contains(anyStringContains))
+			       || (includeRelations == true && x.schedulingTarget.attributes.Contains(anyStringContains))
+			       || (includeRelations == true && x.schedulingTarget.avatarFileName.Contains(anyStringContains))
+			       || (includeRelations == true && x.schedulingTarget.avatarMimeType.Contains(anyStringContains))
+			       || (includeRelations == true && x.stateProvince.name.Contains(anyStringContains))
+			       || (includeRelations == true && x.stateProvince.description.Contains(anyStringContains))
+			       || (includeRelations == true && x.stateProvince.abbreviation.Contains(anyStringContains))
+			   );
+			}
+
+			query = query.AsNoTracking();
+			
+			List<Database.SchedulingTargetAddress> materialized = await query.ToListAsync(cancellationToken);
+
+			// Convert all the date properties to be of kind UTC.
+			bool databaseStoresDateWithTimeZone = _context.DoesDatabaseStoreDateWithTimeZone();
+			foreach (Database.SchedulingTargetAddress schedulingTargetAddress in materialized)
+			{
+			    Foundation.DateTimeUtility.ConvertAllDateTimePropertiesToUTC(schedulingTargetAddress, databaseStoresDateWithTimeZone);
+			}
+
+
+			await CreateAuditEventAsync(AuditEngine.AuditType.ReadList, userIsAdmin == true ? "Scheduler.SchedulingTargetAddress Entity list was read with Admin privilege.  Returning " + materialized.Count + " rows of data." : "Scheduler.SchedulingTargetAddress Entity list was read.  Returning " + materialized.Count + " rows of data.");
+
+			// Create a new output object that only includes the relations if necessary, and doesn't include the empty list objects, so that we can reduce the amount of data being transferred.
+			if (includeRelations == true)
+			{
+				// Return a DTO with nav properties.
+				return Ok((from materializedData in materialized select materializedData.ToOutputDTO()).ToList());
+			}
+			else
+			{
+				// Return a DTO without nav properties.
+				return Ok((from materializedData in materialized select materializedData.ToDTO()).ToList());
+			}
+		}
+		
+		
+        /// <summary>
+        /// 
+        /// This returns a row count of SchedulingTargetAddresses filtered by the parameters provided.  Its query is similar to the GetSchedulingTargetAddresses method, but it only returns the count of rows that would be returned.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/SchedulingTargetAddresses/RowCount")]
+		public async Task<IActionResult> GetRowCount(
+			int? schedulingTargetId = null,
+			int? clientId = null,
+			string addressLine1 = null,
+			string addressLine2 = null,
+			string city = null,
+			string postalCode = null,
+			int? stateProvinceId = null,
+			int? countryId = null,
+			double? latitude = null,
+			double? longitude = null,
+			string label = null,
+			bool? isPrimary = null,
+			int? versionNumber = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
+			string anyStringContains = null,
+			CancellationToken cancellationToken = default)
+		{
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 50, cancellationToken);
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			IQueryable<Database.SchedulingTargetAddress> query = (from sta in _context.SchedulingTargetAddresses select sta);
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+			if (schedulingTargetId.HasValue == true)
+			{
+				query = query.Where(sta => sta.schedulingTargetId == schedulingTargetId.Value);
+			}
+			if (clientId.HasValue == true)
+			{
+				query = query.Where(sta => sta.clientId == clientId.Value);
+			}
+			if (addressLine1 != null)
+			{
+				query = query.Where(sta => sta.addressLine1 == addressLine1);
+			}
+			if (addressLine2 != null)
+			{
+				query = query.Where(sta => sta.addressLine2 == addressLine2);
+			}
+			if (city != null)
+			{
+				query = query.Where(sta => sta.city == city);
+			}
+			if (postalCode != null)
+			{
+				query = query.Where(sta => sta.postalCode == postalCode);
+			}
+			if (stateProvinceId.HasValue == true)
+			{
+				query = query.Where(sta => sta.stateProvinceId == stateProvinceId.Value);
+			}
+			if (countryId.HasValue == true)
+			{
+				query = query.Where(sta => sta.countryId == countryId.Value);
+			}
+			if (latitude.HasValue == true)
+			{
+				query = query.Where(sta => sta.latitude == latitude.Value);
+			}
+			if (longitude.HasValue == true)
+			{
+				query = query.Where(sta => sta.longitude == longitude.Value);
+			}
+			if (label != null)
+			{
+				query = query.Where(sta => sta.label == label);
+			}
+			if (isPrimary.HasValue == true)
+			{
+				query = query.Where(sta => sta.isPrimary == isPrimary.Value);
+			}
+			if (versionNumber.HasValue == true)
+			{
+				query = query.Where(sta => sta.versionNumber == versionNumber.Value);
+			}
+			if (objectGuid.HasValue == true)
+			{
+				query = query.Where(sta => sta.objectGuid == objectGuid);
+			}
+			if (userIsWriter == true)
+			{
+				if (active.HasValue == true)
+				{
+					query = query.Where(sta => sta.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(sta => sta.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(sta => sta.deleted == false);
+				}
+			}
+			else
+			{
+				query = query.Where(sta => sta.active == true);
+				query = query.Where(sta => sta.deleted == false);
+			}
+
+			//
+			// Add the any string contains parameter to span all the string fields on the Scheduling Target Address, or on an any of the string fields on its immediate relations
+			//
+			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
+			//
+			if (!string.IsNullOrEmpty(anyStringContains))
+			{
+			   query = query.Where(x =>
+			       x.addressLine1.Contains(anyStringContains)
+			       || x.addressLine2.Contains(anyStringContains)
+			       || x.city.Contains(anyStringContains)
+			       || x.postalCode.Contains(anyStringContains)
+			       || x.label.Contains(anyStringContains)
+			       || x.client.name.Contains(anyStringContains)
+			       || x.client.description.Contains(anyStringContains)
+			       || x.client.addressLine1.Contains(anyStringContains)
+			       || x.client.addressLine2.Contains(anyStringContains)
+			       || x.client.city.Contains(anyStringContains)
+			       || x.client.postalCode.Contains(anyStringContains)
+			       || x.client.phone.Contains(anyStringContains)
+			       || x.client.email.Contains(anyStringContains)
+			       || x.client.notes.Contains(anyStringContains)
+			       || x.client.externalId.Contains(anyStringContains)
+			       || x.client.color.Contains(anyStringContains)
+			       || x.client.attributes.Contains(anyStringContains)
+			       || x.client.avatarFileName.Contains(anyStringContains)
+			       || x.client.avatarMimeType.Contains(anyStringContains)
+			       || x.country.name.Contains(anyStringContains)
+			       || x.country.description.Contains(anyStringContains)
+			       || x.country.abbreviation.Contains(anyStringContains)
+			       || x.country.postalCodeFormat.Contains(anyStringContains)
+			       || x.country.postalCodeRegEx.Contains(anyStringContains)
+			       || x.schedulingTarget.name.Contains(anyStringContains)
+			       || x.schedulingTarget.description.Contains(anyStringContains)
+			       || x.schedulingTarget.notes.Contains(anyStringContains)
+			       || x.schedulingTarget.externalId.Contains(anyStringContains)
+			       || x.schedulingTarget.color.Contains(anyStringContains)
+			       || x.schedulingTarget.attributes.Contains(anyStringContains)
+			       || x.schedulingTarget.avatarFileName.Contains(anyStringContains)
+			       || x.schedulingTarget.avatarMimeType.Contains(anyStringContains)
+			       || x.stateProvince.name.Contains(anyStringContains)
+			       || x.stateProvince.description.Contains(anyStringContains)
+			       || x.stateProvince.abbreviation.Contains(anyStringContains)
+			   );
+			}
+
+
+			int output = await query.CountAsync(cancellationToken);
+
+			return Ok(output);
+		}
+
+
+        /// <summary>
+        /// 
+        /// This gets a single SchedulingTargetAddress by primary key.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/SchedulingTargetAddress/{id}")]
+		public async Task<IActionResult> GetSchedulingTargetAddress(int id, bool includeRelations = true, CancellationToken cancellationToken = default)
+		{
+			StartAuditEventClock();
+
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 50, cancellationToken);
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
+			
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			try
+			{
+				IQueryable<Database.SchedulingTargetAddress> query = (from sta in _context.SchedulingTargetAddresses where
+							(sta.id == id) &&
+							(userIsAdmin == true || sta.deleted == false) &&
+							(userIsWriter == true || sta.active == true)
+					select sta);
+
+
+				query = query.Where(x => x.tenantGuid == userTenantGuid);
+				if (includeRelations == true)
+				{
+					query = query.Include(x => x.client);
+					query = query.Include(x => x.country);
+					query = query.Include(x => x.schedulingTarget);
+					query = query.Include(x => x.stateProvince);
+					query = query.AsSplitQuery();
+				}
+
+				Database.SchedulingTargetAddress materialized = await query.FirstOrDefaultAsync(cancellationToken);
+
+				if (materialized != null)
+				{
+					
+					// Convert all the date properties to be of kind UTC.
+					Foundation.DateTimeUtility.ConvertAllDateTimePropertiesToUTC(materialized, _context.DoesDatabaseStoreDateWithTimeZone());
+
+					await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, userIsAdmin == true ? "Scheduler.SchedulingTargetAddress Entity was read with Admin privilege." : "Scheduler.SchedulingTargetAddress Entity was read.");
+
+					BackgroundJob.Enqueue(() => SecurityLogic.AddToUserMostRecents(securityUser.id, "SchedulingTargetAddress", materialized.id, materialized.addressLine1));
+
+
+					// Create a new output object that only includes the relations if necessary, and doesn't include the empty list objects, so that we can reduce the amount of data being transferred.
+					if (includeRelations == true)
+					{
+						return Ok(materialized.ToOutputDTO());             // DTO with nav properties
+					}
+					else
+					{
+						return Ok(materialized.ToDTO());                   // DTO without nav properties
+					}
+				}
+				else
+				{
+					await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt to read a Scheduler.SchedulingTargetAddress entity that does not exist.", id.ToString());
+					return BadRequest();
+				}
+			}
+			catch (Exception ex)
+			{
+				await CreateAuditEventAsync(AuditEngine.AuditType.Error, userIsAdmin == true ? "Exception caught during entity read of Scheduler.SchedulingTargetAddress.   Entity was read with Admin privilege." : "Exception caught during entity read of Scheduler.SchedulingTargetAddress.", id.ToString(), ex);
+				return Problem(ex.ToString());
+			}
+		}
+
+
+		/// <summary>
+		/// 
+		/// This updates an existing SchedulingTargetAddress record
+        ///
+        /// The rate limit is 2 per second per user.
+		/// 
+		/// </summary>
+		[Route("api/SchedulingTargetAddress/{id}")]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[HttpPost]
+		[HttpPut]
+		public async Task<IActionResult> PutSchedulingTargetAddress(int id, [FromBody]Database.SchedulingTargetAddress.SchedulingTargetAddressDTO schedulingTargetAddressDTO, CancellationToken cancellationToken = default)
+		{
+			if (schedulingTargetAddressDTO == null)
+			{
+			   return BadRequest();
+			}
+
+			StartAuditEventClock();
+
+			if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+
+			if (id != schedulingTargetAddressDTO.id)
+			{
+				return BadRequest();
+			}
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 50, cancellationToken);
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			IQueryable<Database.SchedulingTargetAddress> query = (from x in _context.SchedulingTargetAddresses
+				where
+				(x.id == id)
+				select x);
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+			Database.SchedulingTargetAddress existing = await query.FirstOrDefaultAsync(cancellationToken);
+
+			if (existing == null)
+			{
+				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for Scheduler.SchedulingTargetAddress PUT", id.ToString(), new Exception("No Scheduler.SchedulingTargetAddress entity could be found with the primary key provided."));
+				return NotFound();
+			}
+
+
+            //
+            // Validate the object guid.  If it comes in as empty Guid in the DTO, then set it to the actual value from the existing record.  If the DTO has a value then it must match the existing value.
+            // 
+            if (schedulingTargetAddressDTO.objectGuid == Guid.Empty)
+            {
+                schedulingTargetAddressDTO.objectGuid = existing.objectGuid;
+            }
+            else if (schedulingTargetAddressDTO.objectGuid != existing.objectGuid)
+            {
+                await CreateAuditEventAsync(AuditEngine.AuditType.Error, $"Attempt was made to change object guid on a SchedulingTargetAddress record.  This is not allowed.  The User is " + securityUser.accountName, existing.id.ToString());
+                return Problem("Invalid Operation.");
+            }
+
+
+			// Copy the existing object so it can be serialized as-is in the audit and history logs.
+			Database.SchedulingTargetAddress cloneOfExisting = (Database.SchedulingTargetAddress)_context.Entry(existing).GetDatabaseValues().ToObject();
+
+			//
+			// Create a new SchedulingTargetAddress object using the data from the existing record, updated with what is in the DTO.
+			//
+			Database.SchedulingTargetAddress schedulingTargetAddress = (Database.SchedulingTargetAddress)_context.Entry(existing).GetDatabaseValues().ToObject();
+			schedulingTargetAddress.ApplyDTO(schedulingTargetAddressDTO);
+			//
+			// The tenant guid for any SchedulingTargetAddress being saved must match the tenant guid of the user.  
+			//
+			if (existing.tenantGuid != userTenantGuid)
+			{
+				await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to save a record with a tenant guid that is not the user's tenant guid.", false);
+				return Problem("Data integrity violation detected while attempting to save.");
+			}
+			else
+			{
+				// Assign the tenantGuid to the SchedulingTargetAddress because it shouldn't be on the input object, and we want to ensure that it always is what the correct value in case it is.
+				schedulingTargetAddress.tenantGuid = existing.tenantGuid;
+			}
+
+			lock (schedulingTargetAddressPutSyncRoot)
+			{
+				//
+				// Validate the version number for the schedulingTargetAddress being saved.  Error out if the database version is different than what is being saved.  If they are the same, then increment the version for this save.
+				//
+				if (existing.versionNumber != schedulingTargetAddress.versionNumber)
+				{
+					// Record has changed
+					CreateAuditEvent(AuditEngine.AuditType.Miscellaneous, "SchedulingTargetAddress save attempt was made but save request was with version " + schedulingTargetAddress.versionNumber + " and the current version number is " + existing.versionNumber, false);
+					return Problem("The SchedulingTargetAddress you are trying to update has already changed.  Please try your save again after reloading the SchedulingTargetAddress.");
+				}
+				else
+				{
+					// Same record.  Increase version.
+					schedulingTargetAddress.versionNumber++;
+				}
+
+
+				// Is user who is not an admin trying to delete, or to work on a deleted record, or to delete a record by flipping it's deleted flag to true?
+				if (userIsAdmin == false && (schedulingTargetAddress.deleted == true || existing.deleted == true))
+				{
+					// we're not recording state here because it is not being changed.
+					CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, "Attempt to delete a record or work on a deleted Scheduler.SchedulingTargetAddress record.", id.ToString());
+					DestroySessionAndAuthentication();
+					return Forbid();
+				}
+
+				if (schedulingTargetAddress.addressLine1 != null && schedulingTargetAddress.addressLine1.Length > 250)
+				{
+					schedulingTargetAddress.addressLine1 = schedulingTargetAddress.addressLine1.Substring(0, 250);
+				}
+
+				if (schedulingTargetAddress.addressLine2 != null && schedulingTargetAddress.addressLine2.Length > 250)
+				{
+					schedulingTargetAddress.addressLine2 = schedulingTargetAddress.addressLine2.Substring(0, 250);
+				}
+
+				if (schedulingTargetAddress.city != null && schedulingTargetAddress.city.Length > 100)
+				{
+					schedulingTargetAddress.city = schedulingTargetAddress.city.Substring(0, 100);
+				}
+
+				if (schedulingTargetAddress.postalCode != null && schedulingTargetAddress.postalCode.Length > 100)
+				{
+					schedulingTargetAddress.postalCode = schedulingTargetAddress.postalCode.Substring(0, 100);
+				}
+
+				if (schedulingTargetAddress.label != null && schedulingTargetAddress.label.Length > 250)
+				{
+					schedulingTargetAddress.label = schedulingTargetAddress.label.Substring(0, 250);
+				}
+
+				try
+				{
+				    EntityEntry<Database.SchedulingTargetAddress> attached = _context.Entry(existing);
+				    attached.CurrentValues.SetValues(schedulingTargetAddress);
+
+				    using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+				    {
+				        _context.SaveChanges();
+
+				        //
+				        // Now add the change history
+				        //
+				        SchedulingTargetAddressChangeHistory schedulingTargetAddressChangeHistory = new SchedulingTargetAddressChangeHistory();
+				        schedulingTargetAddressChangeHistory.schedulingTargetAddressId = schedulingTargetAddress.id;
+				        schedulingTargetAddressChangeHistory.versionNumber = schedulingTargetAddress.versionNumber;
+				        schedulingTargetAddressChangeHistory.timeStamp = DateTime.UtcNow;
+				        schedulingTargetAddressChangeHistory.userId = securityUser.id;
+				        schedulingTargetAddressChangeHistory.tenantGuid = userTenantGuid;
+				        schedulingTargetAddressChangeHistory.data = JsonSerializer.Serialize(Database.SchedulingTargetAddress.CreateAnonymousWithFirstLevelSubObjects(schedulingTargetAddress));
+				        _context.SchedulingTargetAddressChangeHistories.Add(schedulingTargetAddressChangeHistory);
+
+				        _context.SaveChanges();
+
+				        transaction.Commit();
+				    }
+
+					CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
+						"Scheduler.SchedulingTargetAddress entity successfully updated.",
+						true,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.SchedulingTargetAddress.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.SchedulingTargetAddress.CreateAnonymousWithFirstLevelSubObjects(schedulingTargetAddress)),
+						null);
+
+				return Ok(Database.SchedulingTargetAddress.CreateAnonymous(schedulingTargetAddress));
+				}
+				catch (Exception ex)
+				{
+					CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
+						"Scheduler.SchedulingTargetAddress entity update failed",
+						false,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.SchedulingTargetAddress.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.SchedulingTargetAddress.CreateAnonymousWithFirstLevelSubObjects(schedulingTargetAddress)),
+						ex);
+
+					return Problem(ex.Message);
+				}
+
+			}
+		}
+
+        /// <summary>
+        /// 
+        /// This creates a new SchedulingTargetAddress record
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+		[HttpPost]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/SchedulingTargetAddress", Name = "SchedulingTargetAddress")]
+		public async Task<IActionResult> PostSchedulingTargetAddress([FromBody]Database.SchedulingTargetAddress.SchedulingTargetAddressDTO schedulingTargetAddressDTO, CancellationToken cancellationToken = default)
+		{
+			if (schedulingTargetAddressDTO == null)
+			{
+			   return BadRequest();
+			}
+
+			StartAuditEventClock();
+
+			if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+			//
+			// Create a new SchedulingTargetAddress object using the data from the DTO
+			//
+			Database.SchedulingTargetAddress schedulingTargetAddress = Database.SchedulingTargetAddress.FromDTO(schedulingTargetAddressDTO);
+
+			try
+			{
+				//
+				// Ensure that the tenant data is correct.
+				//
+				schedulingTargetAddress.tenantGuid = userTenantGuid;
+
+				if (schedulingTargetAddress.addressLine1 != null && schedulingTargetAddress.addressLine1.Length > 250)
+				{
+					schedulingTargetAddress.addressLine1 = schedulingTargetAddress.addressLine1.Substring(0, 250);
+				}
+
+				if (schedulingTargetAddress.addressLine2 != null && schedulingTargetAddress.addressLine2.Length > 250)
+				{
+					schedulingTargetAddress.addressLine2 = schedulingTargetAddress.addressLine2.Substring(0, 250);
+				}
+
+				if (schedulingTargetAddress.city != null && schedulingTargetAddress.city.Length > 100)
+				{
+					schedulingTargetAddress.city = schedulingTargetAddress.city.Substring(0, 100);
+				}
+
+				if (schedulingTargetAddress.postalCode != null && schedulingTargetAddress.postalCode.Length > 100)
+				{
+					schedulingTargetAddress.postalCode = schedulingTargetAddress.postalCode.Substring(0, 100);
+				}
+
+				if (schedulingTargetAddress.label != null && schedulingTargetAddress.label.Length > 250)
+				{
+					schedulingTargetAddress.label = schedulingTargetAddress.label.Substring(0, 250);
+				}
+
+				schedulingTargetAddress.objectGuid = Guid.NewGuid();
+				schedulingTargetAddress.versionNumber = 1;
+
+				_context.SchedulingTargetAddresses.Add(schedulingTargetAddress);
+
+				await using (IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync(cancellationToken))
+				{
+				    await _context.SaveChangesAsync(cancellationToken);
+
+				    //
+				    // Now add the change history
+				    //
+
+				    //
+				    // Detach the schedulingTargetAddress object so that no further changes will be written to the database
+				    //
+				    _context.Entry(schedulingTargetAddress).State = EntityState.Detached;
+
+				    //
+				    // Nullify all object properties before serializing.
+				    //
+					schedulingTargetAddress.SchedulingTargetAddressChangeHistories = null;
+					schedulingTargetAddress.client = null;
+					schedulingTargetAddress.country = null;
+					schedulingTargetAddress.schedulingTarget = null;
+					schedulingTargetAddress.stateProvince = null;
+
+
+				    SchedulingTargetAddressChangeHistory schedulingTargetAddressChangeHistory = new SchedulingTargetAddressChangeHistory();
+				    schedulingTargetAddressChangeHistory.schedulingTargetAddressId = schedulingTargetAddress.id;
+				    schedulingTargetAddressChangeHistory.versionNumber = schedulingTargetAddress.versionNumber;
+				    schedulingTargetAddressChangeHistory.timeStamp = DateTime.UtcNow;
+				    schedulingTargetAddressChangeHistory.userId = securityUser.id;
+				    schedulingTargetAddressChangeHistory.tenantGuid = userTenantGuid;
+				    schedulingTargetAddressChangeHistory.data = JsonSerializer.Serialize(Database.SchedulingTargetAddress.CreateAnonymousWithFirstLevelSubObjects(schedulingTargetAddress));
+				    _context.SchedulingTargetAddressChangeHistories.Add(schedulingTargetAddressChangeHistory);
+				    await _context.SaveChangesAsync(cancellationToken);
+
+				    await transaction.CommitAsync(cancellationToken);
+
+					await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
+						"Scheduler.SchedulingTargetAddress entity successfully created.",
+						true,
+						schedulingTargetAddress. id.ToString(),
+						"",
+						JsonSerializer.Serialize(Database.SchedulingTargetAddress.CreateAnonymousWithFirstLevelSubObjects(schedulingTargetAddress)),
+						null);
+
+
+				}
+			}
+			catch (Exception ex)
+			{
+				await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity, "Scheduler.SchedulingTargetAddress entity creation failed.", false, schedulingTargetAddress.id.ToString(), "", JsonSerializer.Serialize(Database.SchedulingTargetAddress.CreateAnonymousWithFirstLevelSubObjects(schedulingTargetAddress)), ex);
+
+				return Problem(ex.Message);
+			}
+
+
+			BackgroundJob.Enqueue(() => SecurityLogic.AddToUserMostRecents(securityUser.id, "SchedulingTargetAddress", schedulingTargetAddress.id, schedulingTargetAddress.addressLine1));
+
+			return CreatedAtRoute("SchedulingTargetAddress", new { id = schedulingTargetAddress.id }, Database.SchedulingTargetAddress.CreateAnonymousWithFirstLevelSubObjects(schedulingTargetAddress));
+		}
+
+
+
+        /// <summary>
+        /// 
+        /// This rolls a SchedulingTargetAddress entity back to the state it was in at a prior version number.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+		[HttpPut]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/SchedulingTargetAddress/Rollback/{id}")]
+		[Route("api/SchedulingTargetAddress/Rollback")]
+		public async Task<IActionResult> RollbackToSchedulingTargetAddressVersion(int id, int versionNumber, CancellationToken cancellationToken = default)
+		{
+			//
+			// Data rollback is an admin only function, like Deletes.
+			//
+			StartAuditEventClock();
+			
+			if (await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+			
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+			
+
+			
+			IQueryable <Database.SchedulingTargetAddress> query = (from x in _context.SchedulingTargetAddresses
+			        where
+			        (x.id == id)
+			        select x);
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+
+			//
+			// Make sure nobody else is editing this SchedulingTargetAddress concurrently
+			//
+			lock (schedulingTargetAddressPutSyncRoot)
+			{
+				
+				Database.SchedulingTargetAddress schedulingTargetAddress = query.FirstOrDefault();
+				
+				if (schedulingTargetAddress == null)
+				{
+				    CreateAuditEvent(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for Scheduler.SchedulingTargetAddress rollback", id.ToString(), new Exception("No Scheduler.SchedulingTargetAddress entity could be find with the primary key provided for the rollback operation."));
+				    return NotFound();
+				}
+				
+				//
+				// Make a copy of the SchedulingTargetAddress current state so we can log it.
+				//
+				Database.SchedulingTargetAddress cloneOfExisting = (Database.SchedulingTargetAddress)_context.Entry(schedulingTargetAddress).GetDatabaseValues().ToObject();
+				
+				//
+				// Remove any object fields from the clone object so that it can serialize effectively
+				//
+				cloneOfExisting.SchedulingTargetAddressChangeHistories = null;
+				cloneOfExisting.client = null;
+				cloneOfExisting.country = null;
+				cloneOfExisting.schedulingTarget = null;
+				cloneOfExisting.stateProvince = null;
+
+				if (versionNumber >= schedulingTargetAddress.versionNumber)
+				{
+				    CreateAuditEvent(AuditEngine.AuditType.UpdateEntity, "Invalid version number provided for Scheduler.SchedulingTargetAddress rollback.  Version number provided is " + versionNumber, id.ToString(), new Exception("Invalid version number provided for Scheduler.SchedulingTargetAddress rollback operation.Version number provided is " + versionNumber));
+				    return NotFound();
+				}
+				
+				SchedulingTargetAddressChangeHistory schedulingTargetAddressChangeHistory = (from x in _context.SchedulingTargetAddressChangeHistories
+				                                               where
+				                                               x.schedulingTargetAddressId == id &&
+				                                               x.versionNumber == versionNumber &&
+				                                               x.tenantGuid == userTenantGuid
+				                                               select x)
+				                                               .AsNoTracking()
+				                                               .FirstOrDefault();
+
+				if (schedulingTargetAddressChangeHistory != null)
+				{
+				    Database.SchedulingTargetAddress oldSchedulingTargetAddress = JsonSerializer.Deserialize<Database.SchedulingTargetAddress>(schedulingTargetAddressChangeHistory.data);
+				
+				    //
+				    // Increase the version number
+				    //
+				    schedulingTargetAddress.versionNumber++;
+				
+				    //
+				    // Put all other fields back the way that they were 
+				    //
+				    schedulingTargetAddress.schedulingTargetId = oldSchedulingTargetAddress.schedulingTargetId;
+				    schedulingTargetAddress.clientId = oldSchedulingTargetAddress.clientId;
+				    schedulingTargetAddress.addressLine1 = oldSchedulingTargetAddress.addressLine1;
+				    schedulingTargetAddress.addressLine2 = oldSchedulingTargetAddress.addressLine2;
+				    schedulingTargetAddress.city = oldSchedulingTargetAddress.city;
+				    schedulingTargetAddress.postalCode = oldSchedulingTargetAddress.postalCode;
+				    schedulingTargetAddress.stateProvinceId = oldSchedulingTargetAddress.stateProvinceId;
+				    schedulingTargetAddress.countryId = oldSchedulingTargetAddress.countryId;
+				    schedulingTargetAddress.latitude = oldSchedulingTargetAddress.latitude;
+				    schedulingTargetAddress.longitude = oldSchedulingTargetAddress.longitude;
+				    schedulingTargetAddress.label = oldSchedulingTargetAddress.label;
+				    schedulingTargetAddress.isPrimary = oldSchedulingTargetAddress.isPrimary;
+				    schedulingTargetAddress.objectGuid = oldSchedulingTargetAddress.objectGuid;
+				    schedulingTargetAddress.active = oldSchedulingTargetAddress.active;
+				    schedulingTargetAddress.deleted = oldSchedulingTargetAddress.deleted;
+
+				    string serializedSchedulingTargetAddress = JsonSerializer.Serialize(schedulingTargetAddress);
+
+				    using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+				    {
+
+				        _context.SaveChanges();
+
+				        //
+				        // Now add the change history
+				        //
+				        SchedulingTargetAddressChangeHistory newSchedulingTargetAddressChangeHistory = new SchedulingTargetAddressChangeHistory();
+				        newSchedulingTargetAddressChangeHistory.schedulingTargetAddressId = schedulingTargetAddress.id;
+				        newSchedulingTargetAddressChangeHistory.versionNumber = schedulingTargetAddress.versionNumber;
+				        newSchedulingTargetAddressChangeHistory.timeStamp = DateTime.UtcNow;
+				        newSchedulingTargetAddressChangeHistory.userId = securityUser.id;
+				        newSchedulingTargetAddressChangeHistory.tenantGuid = userTenantGuid;
+				        newSchedulingTargetAddressChangeHistory.data = JsonSerializer.Serialize(Database.SchedulingTargetAddress.CreateAnonymousWithFirstLevelSubObjects(schedulingTargetAddress));
+				        _context.SchedulingTargetAddressChangeHistories.Add(newSchedulingTargetAddressChangeHistory);
+
+				        _context.SaveChanges();
+
+				        transaction.Commit();
+				    }
+
+					CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
+						"Scheduler.SchedulingTargetAddress rollback process successfully rolled back to version number " + versionNumber,
+						true,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.SchedulingTargetAddress.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.SchedulingTargetAddress.CreateAnonymousWithFirstLevelSubObjects(schedulingTargetAddress)),
+						null);
+
+
+				    return Ok(Database.SchedulingTargetAddress.CreateAnonymous(schedulingTargetAddress));
+				}
+				else
+				{
+				    CreateAuditEvent(AuditEngine.AuditType.UpdateEntity, "Could not find version number provided for Scheduler.SchedulingTargetAddress rollback.  Version number provided is " + versionNumber, id.ToString(), new Exception("Could not find version number provided for Scheduler.SchedulingTargetAddress rollback.  Version number provided is " + versionNumber));
+
+				    return BadRequest();
+				}
+			}
+		}
+
+
+        /// <summary>
+        /// 
+        /// This deletes a SchedulingTargetAddress record
+		/// 
+		/// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+		[HttpDelete]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/SchedulingTargetAddress/{id}")]
+		[Route("api/SchedulingTargetAddress")]
+		public async Task<IActionResult> DeleteSchedulingTargetAddress(int id, CancellationToken cancellationToken = default)
+		{
+			StartAuditEventClock();
+
+			if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(cancellationToken);
+			
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+			IQueryable<Database.SchedulingTargetAddress> query = (from x in _context.SchedulingTargetAddresses
+				where
+				(x.id == id)
+				select x);
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+			Database.SchedulingTargetAddress schedulingTargetAddress = await query.FirstOrDefaultAsync(cancellationToken);
+
+			if (schedulingTargetAddress == null)
+			{
+				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for Scheduler.SchedulingTargetAddress DELETE", id.ToString(), new Exception("No Scheduler.SchedulingTargetAddress entity could be find with the primary key provided."));
+				return NotFound();
+			}
+			Database.SchedulingTargetAddress cloneOfExisting = (Database.SchedulingTargetAddress)_context.Entry(schedulingTargetAddress).GetDatabaseValues().ToObject();
+
+
+			lock (schedulingTargetAddressDeleteSyncRoot)
+			{
+			    try
+			    {
+			        schedulingTargetAddress.deleted = true;
+			        schedulingTargetAddress.versionNumber++;
+
+			        _context.SaveChanges();
+
+			        //
+			        // Now add the change history
+			        //
+			        SchedulingTargetAddressChangeHistory schedulingTargetAddressChangeHistory = new SchedulingTargetAddressChangeHistory();
+			        schedulingTargetAddressChangeHistory.schedulingTargetAddressId = schedulingTargetAddress.id;
+			        schedulingTargetAddressChangeHistory.versionNumber = schedulingTargetAddress.versionNumber;
+			        schedulingTargetAddressChangeHistory.timeStamp = DateTime.UtcNow;
+			        schedulingTargetAddressChangeHistory.userId = securityUser.id;
+			        schedulingTargetAddressChangeHistory.tenantGuid = userTenantGuid;
+			        schedulingTargetAddressChangeHistory.data = JsonSerializer.Serialize(Database.SchedulingTargetAddress.CreateAnonymousWithFirstLevelSubObjects(schedulingTargetAddress));
+			        _context.SchedulingTargetAddressChangeHistories.Add(schedulingTargetAddressChangeHistory);
+
+			        _context.SaveChanges();
+
+					CreateAuditEvent(AuditEngine.AuditType.DeleteEntity,
+						"Scheduler.SchedulingTargetAddress entity successfully deleted.",
+						true,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.SchedulingTargetAddress.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.SchedulingTargetAddress.CreateAnonymousWithFirstLevelSubObjects(schedulingTargetAddress)),
+						null);
+
+			    }
+			    catch (Exception ex)
+			    {
+					CreateAuditEvent(AuditEngine.AuditType.DeleteEntity,
+						"Scheduler.SchedulingTargetAddress entity delete failed",
+						false,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.SchedulingTargetAddress.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.SchedulingTargetAddress.CreateAnonymousWithFirstLevelSubObjects(schedulingTargetAddress)),
+						ex);
+
+			        return Problem(ex.Message);
+			    }
+			    return Ok();
+			}
+		}
+
+
+        /// <summary>
+        /// 
+        /// This gets a list of SchedulingTargetAddress records, filtered by the parameters provided in a simple minimal format that is useful for drop down boxes and similar.
+		/// 
+		/// It has the same filtering paramfeters as the full ListData method, but only returns the id and name fields.
+        /// 
+		/// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+		[Route("api/SchedulingTargetAddresses/ListData")]
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		public async Task<IActionResult> GetListData(
+			int? schedulingTargetId = null,
+			int? clientId = null,
+			string addressLine1 = null,
+			string addressLine2 = null,
+			string city = null,
+			string postalCode = null,
+			int? stateProvinceId = null,
+			int? countryId = null,
+			double? latitude = null,
+			double? longitude = null,
+			string label = null,
+			bool? isPrimary = null,
+			int? versionNumber = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
+			string anyStringContains = null,
+			int? pageSize = null,
+			int? pageNumber = null,
+			CancellationToken cancellationToken = default)
+		{
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 50, cancellationToken);
+
+			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			if (pageNumber.HasValue == true &&
+			    pageNumber < 1)
+			{
+			    pageNumber = null;
+			}
+
+			if (pageSize.HasValue == true &&
+			    pageSize <= 0)
+			{
+			    pageSize = null;
+			}
+
+			IQueryable<Database.SchedulingTargetAddress> query = (from sta in _context.SchedulingTargetAddresses select sta);
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+			if (schedulingTargetId.HasValue == true)
+			{
+				query = query.Where(sta => sta.schedulingTargetId == schedulingTargetId.Value);
+			}
+			if (clientId.HasValue == true)
+			{
+				query = query.Where(sta => sta.clientId == clientId.Value);
+			}
+			if (string.IsNullOrEmpty(addressLine1) == false)
+			{
+				query = query.Where(sta => sta.addressLine1 == addressLine1);
+			}
+			if (string.IsNullOrEmpty(addressLine2) == false)
+			{
+				query = query.Where(sta => sta.addressLine2 == addressLine2);
+			}
+			if (string.IsNullOrEmpty(city) == false)
+			{
+				query = query.Where(sta => sta.city == city);
+			}
+			if (string.IsNullOrEmpty(postalCode) == false)
+			{
+				query = query.Where(sta => sta.postalCode == postalCode);
+			}
+			if (stateProvinceId.HasValue == true)
+			{
+				query = query.Where(sta => sta.stateProvinceId == stateProvinceId.Value);
+			}
+			if (countryId.HasValue == true)
+			{
+				query = query.Where(sta => sta.countryId == countryId.Value);
+			}
+			if (string.IsNullOrEmpty(label) == false)
+			{
+				query = query.Where(sta => sta.label == label);
+			}
+			if (isPrimary.HasValue == true)
+			{
+				query = query.Where(sta => sta.isPrimary == isPrimary.Value);
+			}
+			if (versionNumber.HasValue == true)
+			{
+				query = query.Where(sta => sta.versionNumber == versionNumber.Value);
+			}
+			if (objectGuid.HasValue == true)
+			{
+				query = query.Where(sta => sta.objectGuid == objectGuid);
+			}
+			if (userIsWriter == true)
+			{
+				if (active.HasValue == true)
+				{
+					query = query.Where(sta => sta.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(sta => sta.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(sta => sta.deleted == false);
+				}
+			}
+			else
+			{
+				query = query.Where(sta => sta.active == true);
+				query = query.Where(sta => sta.deleted == false);
+			}
+
+
+			//
+			// Add the any string contains parameter to span all the string fields on the Scheduling Target Address, or on an any of the string fields on its immediate relations
+			//
+			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
+			//
+			if (!string.IsNullOrEmpty(anyStringContains))
+			{
+			   query = query.Where(x =>
+			       x.addressLine1.Contains(anyStringContains)
+			       || x.addressLine2.Contains(anyStringContains)
+			       || x.city.Contains(anyStringContains)
+			       || x.postalCode.Contains(anyStringContains)
+			       || x.label.Contains(anyStringContains)
+			       || x.client.name.Contains(anyStringContains)
+			       || x.client.description.Contains(anyStringContains)
+			       || x.client.addressLine1.Contains(anyStringContains)
+			       || x.client.addressLine2.Contains(anyStringContains)
+			       || x.client.city.Contains(anyStringContains)
+			       || x.client.postalCode.Contains(anyStringContains)
+			       || x.client.phone.Contains(anyStringContains)
+			       || x.client.email.Contains(anyStringContains)
+			       || x.client.notes.Contains(anyStringContains)
+			       || x.client.externalId.Contains(anyStringContains)
+			       || x.client.color.Contains(anyStringContains)
+			       || x.client.attributes.Contains(anyStringContains)
+			       || x.client.avatarFileName.Contains(anyStringContains)
+			       || x.client.avatarMimeType.Contains(anyStringContains)
+			       || x.country.name.Contains(anyStringContains)
+			       || x.country.description.Contains(anyStringContains)
+			       || x.country.abbreviation.Contains(anyStringContains)
+			       || x.country.postalCodeFormat.Contains(anyStringContains)
+			       || x.country.postalCodeRegEx.Contains(anyStringContains)
+			       || x.schedulingTarget.name.Contains(anyStringContains)
+			       || x.schedulingTarget.description.Contains(anyStringContains)
+			       || x.schedulingTarget.notes.Contains(anyStringContains)
+			       || x.schedulingTarget.externalId.Contains(anyStringContains)
+			       || x.schedulingTarget.color.Contains(anyStringContains)
+			       || x.schedulingTarget.attributes.Contains(anyStringContains)
+			       || x.schedulingTarget.avatarFileName.Contains(anyStringContains)
+			       || x.schedulingTarget.avatarMimeType.Contains(anyStringContains)
+			       || x.stateProvince.name.Contains(anyStringContains)
+			       || x.stateProvince.description.Contains(anyStringContains)
+			       || x.stateProvince.abbreviation.Contains(anyStringContains)
+			   );
+			}
+
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+
+			query = query.OrderBy(x => x.addressLine1).ThenBy(x => x.addressLine2).ThenBy(x => x.city);
+			if (pageNumber.HasValue == true &&
+			    pageSize.HasValue == true)
+			{
+			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
+			}
+			return Ok(await (from queryData in query select Database.SchedulingTargetAddress.CreateMinimalAnonymous(queryData)).ToListAsync(cancellationToken));
+		}
+
+
+        /// <summary>
+        /// 
+        /// This method creates an audit event from within the controller.  It is intended for use by custom logic in client applications that needs to create audit events.
+        /// 
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="message"></param>
+        /// <param name="primaryKey"></param>
+        /// <returns></returns>
+		[HttpPost]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/SchedulingTargetAddress/CreateAuditEvent")]
+		public async Task<IActionResult> CreateControllerAuditEvent(AuditEngine.AuditType type, string message, string primaryKey = null)
+		{
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED) == false)
+			{
+			   return Forbid();
+			}
+
+		    await CreateAuditEventAsync(type, message, primaryKey);
+
+		    return Ok();
+		}
+
+
+	}
+}

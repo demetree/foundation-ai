@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>Foundation</title>
+  <base href="/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link href="/assets/fontawesome/css/fontawesome.css" rel="preload" as="style" onload="this.rel='stylesheet'" />
+  <link href="/assets/fontawesome/css/solid.css" rel="preload" as="style" onload="this.rel='stylesheet'" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/favicon/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon/favicon-16x16.png">
+  <link rel="manifest" href="/assets/favicon/site.webmanifest">
+  <link href="/assets/styles-external.css" rel="preload" as="style" onload="this.rel='stylesheet'">
+
+  <style>
+    #pre-bootstrap {
+      background-color: white;
+      bottom: 0;
+      left: 0;
+      position: fixed;
+      right: 0;
+      top: 0;
+      z-index: 999999;
+    }
+
+      #pre-bootstrap div.pre-load-navbar-simulator {
+        background-color: #212529;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif;
+        font-size: 20px;
+        color: white;
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 56px;
+        width: 100%;
+        display: block;
+        margin-top: 0px;
+        text-align: center;
+        line-height: 50px;
+      }
+
+      #pre-bootstrap div.messaging {
+        color: black;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif;
+        position: absolute;
+        top: 56px;
+        left: 0;
+        width: 100%;
+        height: calc(100% - 56px);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+
+      #pre-bootstrap h1 {
+        font-size: 30px;
+        width: 100%;
+        font-weight: normal;
+        line-height: 50px;
+        margin: 0 0 10px 0;
+        text-align: center;
+      }
+
+      #pre-bootstrap p {
+        font-size: 18px;
+        width: 100%;
+        text-align: center;
+        line-height: 32px;
+        margin: 0 0 0 0;
+      }
+
+    .cs-loader {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .cs-logo {
+      width: 60px;
+      height: 60px;
+      opacity: 0.4;
+      animation: spin 3s linear infinite;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .cs-logo {
+        animation: none;
+        opacity: 0.6;
+      }
+    }
+  </style>
+</head>
+
+<body class="pre-login-background no-select">
+  <app-root>
+    <div id="pre-bootstrap">
+      <div class="pre-load-navbar-simulator">
+        K2 Research
+      </div>
+      <div class="messaging">
+        <div class="cs-loader">
+          <img src="/assets/favicon/apple-touch-icon.png" class="cs-logo">
+        </div>
+      </div>
+    </div>
+  </app-root>
+  <script src="/assets/bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

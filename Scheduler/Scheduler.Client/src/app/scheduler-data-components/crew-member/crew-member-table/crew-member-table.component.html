@@ -1,0 +1,314 @@
+<app-crew-member-add-edit [showAddButton]="false"></app-crew-member-add-edit>
+<div class="row" *ngIf="userIsSchedulerCrewMemberReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerCrewMemberWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerCrewMemberWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('crew.name')">
+                Crew
+                <span *ngIf="sortColumn === 'crew.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('resource.name')">
+                Resource
+                <span *ngIf="sortColumn === 'resource.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('assignmentRole.name')">
+                Assignment  Role
+                <span *ngIf="sortColumn === 'assignmentRole.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('sequence')">
+                Sequence
+                <span *ngIf="sortColumn === 'sequence'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('icon.name')">
+                Icon
+                <span *ngIf="sortColumn === 'icon.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('color')">
+                Color
+                <span *ngIf="sortColumn === 'color'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let crewMember of filteredCrewMembers; trackBy: getCrewMemberId"
+              [ngClass]="{
+                 'row-inactive': crewMember.active == false,
+                 'row-deleted': crewMember.deleted == true 
+                 }">
+            <td class="header-action-button" *ngIf="userIsSchedulerCrewMemberWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleEdit(crewMember)"
+                      ngbTooltip="Edit" 
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsSchedulerCrewMemberWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleDelete(crewMember)"
+                      ngbTooltip="Delete" 
+                      placement="top"
+                      *ngIf="crewMember.deleted == false">
+                <i class="fa fa-trash"></i>
+              </button>
+              <button class="btn btn-sm"
+                      (click)="handleUndelete(crewMember)"
+                      ngbTooltip="Undelete" 
+                      placement="top"
+                      *ngIf="crewMember.deleted == true">
+                <i class="fa fa-trash-arrow-up"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(crewMember, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(crewMember, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(crewMember, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(crewMember, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(crewMember, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(crewMember, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(crewMember, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(crewMember, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/crew', crewMember.crewId]" class="btn btn-link text-left" ngbTooltip="Open Crew details">{{crewMember.crew?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/resource', crewMember.resourceId]" class="btn btn-link text-left" ngbTooltip="Open Resource details">{{crewMember.resource?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/assignmentrole', crewMember.assignmentRoleId]" class="btn btn-link text-left" ngbTooltip="Open Assignment Role details">{{crewMember.assignmentRole?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/crewmember', crewMember.id]" class="btn btn-link text-left" ngbTooltip="Open Crew Member details">{{crewMember.sequence | bigNumberFormat : '1.0-2'}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/icon', crewMember.iconId]" class="btn btn-link text-left" ngbTooltip="Open Icon details">{{crewMember.icon?.name}}</a></td>
+            <td class="text-truncate">{{crewMember.color}}</td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let crewMember of filteredCrewMembers; trackBy: getCrewMemberId" class="card my-2"
+              [ngClass]="{
+                 'row-inactive': crewMember.active == false,
+                 'row-deleted': crewMember.deleted == true 
+                 }">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(crewMember, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(crewMember, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(crewMember, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(crewMember, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(crewMember, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(crewMember, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(crewMember, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(crewMember, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(crewMember, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(crewMember, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(crewMember, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(crewMember, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(crewMember, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/crewmember', crewMember.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(crewMember)" *ngIf="userIsSchedulerCrewMemberWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(crewMember)" *ngIf="userIsSchedulerCrewMemberWriter() && crewMember.deleted == false" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+            <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(crewMember)" *ngIf="userIsSchedulerCrewMemberWriter() && crewMember.deleted == true" ngbTooltip="Undelete">
+              <i class="fa fa-trash-arrow-upp"></i> UnDelete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{crewMember.id}}</strong>
+               <small class="text-muted d-block">{{crewMember.crew?.name}}</small>
+             </div>
+             <div>
+                <button class="btn btn-sm"
+                        [routerLink]="['/crewmember', crewMember.id]"
+                        ngbTooltip="Crew Member Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="btn btn-sm"
+                        (click)="handleEdit(crewMember)"
+                        ngbTooltip="Edit Crew Member">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleDelete(crewMember)"
+                      ngbTooltip="Delete Crew Member" 
+                      placement="top"
+                      *ngIf="crewMember.deleted == false">
+                  <i class="fa fa-trash"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleUndelete(crewMember)"
+                      ngbTooltip="Undelete Crew Member" 
+                      placement="top"
+                      *ngIf="crewMember.deleted == true">
+                 <i class="fa fa-trash-arrow-up"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="crew-member-info" *ngIf="crewMember.crewId != null">
+              <strong>Crew: </strong>
+              <a [routerLink]="['/crew', crewMember.crewId]" class="text-left p-0 m-0" ngbTooltip="Open Crew details">{{crewMember.crew?.name}}</a>
+            </p>
+            <p class="crew-member-info" *ngIf="crewMember.resourceId != null">
+              <strong>Resource: </strong>
+              <a [routerLink]="['/resource', crewMember.resourceId]" class="text-left p-0 m-0" ngbTooltip="Open Resource details">{{crewMember.resource?.name}}</a>
+            </p>
+            <p class="crew-member-info" *ngIf="crewMember.assignmentRoleId != null">
+              <strong>Assignment Role: </strong>
+              <a [routerLink]="['/assignmentrole', crewMember.assignmentRoleId]" class="text-left p-0 m-0" ngbTooltip="Open Assignment Role details">{{crewMember.assignmentRole?.name}}</a>
+            </p>
+            <p class="crew-member-info" *ngIf="crewMember.sequence != null">
+              <strong>Sequence: </strong>
+              {{crewMember.sequence | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="crew-member-info" *ngIf="crewMember.iconId != null">
+              <strong>Icon: </strong>
+              <a [routerLink]="['/icon', crewMember.iconId]" class="text-left p-0 m-0" ngbTooltip="Open Icon details">{{crewMember.icon?.name}}</a>
+            </p>
+            <p class="crew-member-info" *ngIf="crewMember.color != null">
+              <strong>Color: </strong>
+              {{crewMember.color}}
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+   </div>
+</div>

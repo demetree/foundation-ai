@@ -1,0 +1,75 @@
+<div class="container-fluid p-1 m-0 security-organization-user-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="security-organization-user-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Security Organization User</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Security Organization User' : 'Add Security Organization User'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSecuritySecurityOrganizationUserReader()">
+                <div class="col m-2 security-organization-user-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="securityOrganizationUserForm" (ngSubmit)="submitForm()" class="security-organization-user-details-form">
+                            <div class="form-group">
+                                <label for="securityOrganizationId" id="label-securityOrganizationId"><span class="text-danger">*</span>Security Organization</label>
+                                <select id="securityOrganizationId" formControlName="securityOrganizationId" class="form-select security-organization-user-select" [disabled]="!userIsSecuritySecurityOrganizationUserWriter()">
+                                    <option [ngValue]="null">Select Security Organization</option>
+                                    <option *ngFor="let securityOrganization of securityOrganizations$ | async" [ngValue]="securityOrganization.id">{{securityOrganization.name}}</option>
+                                </select>
+                                <div *ngIf="securityOrganizationUserForm.get('securityOrganizationId')?.invalid && securityOrganizationUserForm.get('securityOrganizationId')?.touched" class="text-danger">
+                                    Security Organization is required
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="securityUserId" id="label-securityUserId"><span class="text-danger">*</span>Security User</label>
+                                <select id="securityUserId" formControlName="securityUserId" class="form-select security-organization-user-select" [disabled]="!userIsSecuritySecurityOrganizationUserWriter()">
+                                    <option [ngValue]="null">Select Security User</option>
+                                    <option *ngFor="let securityUser of securityUsers$ | async" [ngValue]="securityUser.id">{{[securityUser.accountName] | filterAndJoin}}</option>
+                                </select>
+                                <div *ngIf="securityOrganizationUserForm.get('securityUserId')?.invalid && securityOrganizationUserForm.get('securityUserId')?.touched" class="text-danger">
+                                    Security User is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2">
+                                <input type="checkbox" id="canRead" formControlName="canRead" class="form-check-input" [disabled]="!userIsSecuritySecurityOrganizationUserWriter()" />
+                                <label for="canRead" class="form-check-label" id="label-canRead"><span class="text-danger">*</span>Can Read</label>
+                            </div>
+                            <div class="form-check my-2">
+                                <input type="checkbox" id="canWrite" formControlName="canWrite" class="form-check-input" [disabled]="!userIsSecuritySecurityOrganizationUserWriter()" />
+                                <label for="canWrite" class="form-check-label" id="label-canWrite"><span class="text-danger">*</span>Can Write</label>
+                            </div>
+                            <div class="form-check my-2">
+                                <input type="checkbox" id="canChangeHierarchy" formControlName="canChangeHierarchy" class="form-check-input" [disabled]="!userIsSecuritySecurityOrganizationUserWriter()" />
+                                <label for="canChangeHierarchy" class="form-check-label" id="label-canChangeHierarchy"><span class="text-danger">*</span>Can Change Hierarchy</label>
+                            </div>
+                            <div class="form-check my-2">
+                                <input type="checkbox" id="canChangeOwner" formControlName="canChangeOwner" class="form-check-input" [disabled]="!userIsSecuritySecurityOrganizationUserWriter()" />
+                                <label for="canChangeOwner" class="form-check-label" id="label-canChangeOwner"><span class="text-danger">*</span>Can Change Owner</label>
+                            </div>
+                            <div class="form-check my-2">
+                                <input type="checkbox" id="active" formControlName="active" class="form-check-input" [disabled]="!userIsSecuritySecurityOrganizationUserWriter()" />
+                                <label for="active" class="form-check-label" id="label-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2">
+                                <input type="checkbox" id="deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSecuritySecurityOrganizationUserWriter()" />
+                                <label for="deleted" class="form-check-label" id="label-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="security-organization-user-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="securityOrganizationUserForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Security Organization User">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !securityOrganizationUserForm.valid || !securityOrganizationUserForm.dirty || securityOrganizationUserForm.pristine || userIsSecuritySecurityOrganizationUserWriter() == false " ngbTooltip="Save Security Organization User">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

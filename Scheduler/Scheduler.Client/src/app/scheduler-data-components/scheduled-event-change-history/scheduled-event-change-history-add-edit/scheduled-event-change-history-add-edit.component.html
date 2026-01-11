@@ -1,0 +1,65 @@
+<div class="add-scheduled-event-change-history" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-scheduled-event-change-history me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Scheduled Event Change History" 
+        *ngIf="userIsSchedulerScheduledEventChangeHistoryWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #scheduledEventChangeHistoryModal let-modal>
+   <div class="modal-header bg-dark text-light scheduled-event-change-history-modal-header">
+      <h5 class="modal-title mb-0" id="scheduledEventChangeHistoryModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Scheduled Event Change History' : 'Add Scheduled Event Change History' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body scheduled-event-change-history-modal-body">
+      <form [formGroup]="scheduledEventChangeHistoryForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('scheduledEventId')">
+                <label for="ScheduledEventChangeHistory-scheduledEventId" id="label-ScheduledEventChangeHistory-scheduledEventId"><span class="text-danger">*</span>Scheduled Event</label>
+                <select id="ScheduledEventChangeHistory-scheduledEventId" formControlName="scheduledEventId" class="form-select scheduled-event-change-history-select" [disabled]="!userIsSchedulerScheduledEventChangeHistoryWriter()">
+                    <option [ngValue]="null">Select Scheduled Event</option>
+                    <option *ngFor="let scheduledEvent of scheduledEvents$ | async" [ngValue]="scheduledEvent.id">{{[scheduledEvent.name] | filterAndJoin}}</option>
+                </select>
+                <div *ngIf="scheduledEventChangeHistoryForm.get('scheduledEventId')?.invalid && scheduledEventChangeHistoryForm.get('scheduledEventId')?.touched" class="text-danger">
+                    Scheduled Event is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="ScheduledEventChangeHistory-versionNumber" id="label-ScheduledEventChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="ScheduledEventChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control scheduled-event-change-history-input" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                <label for="ScheduledEventChangeHistory-timeStamp" id="label-ScheduledEventChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                <input type="datetime-local" id="ScheduledEventChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control scheduled-event-change-history-input" [disabled]="!userIsSchedulerScheduledEventChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                <div *ngIf="scheduledEventChangeHistoryForm.get('timeStamp')?.invalid && scheduledEventChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                    Time Stamp is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                <label for="ScheduledEventChangeHistory-userId" id="label-ScheduledEventChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                <input type="number" id="ScheduledEventChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control scheduled-event-change-history-input" [disabled]="!userIsSchedulerScheduledEventChangeHistoryWriter()" aria-labelledby="label-userId" />
+                <div *ngIf="scheduledEventChangeHistoryForm.get('userId')?.invalid && scheduledEventChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                    User Id is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                <label for="ScheduledEventChangeHistory-data" id="label-ScheduledEventChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                <textarea id="ScheduledEventChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control scheduled-event-change-history-input" [disabled]="!userIsSchedulerScheduledEventChangeHistoryWriter()"></textarea>
+                <div *ngIf="scheduledEventChangeHistoryForm.get('data')?.invalid && scheduledEventChangeHistoryForm.get('data')?.touched" class="text-danger">
+                    Data is required
+                </div>
+            </div>
+         <div class="modal-footer scheduled-event-change-history-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Scheduled Event Change History changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !scheduledEventChangeHistoryForm.valid || scheduledEventChangeHistoryForm.pristine || !userIsSchedulerScheduledEventChangeHistoryWriter()" ngbTooltip="Save the Scheduled Event Change History changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

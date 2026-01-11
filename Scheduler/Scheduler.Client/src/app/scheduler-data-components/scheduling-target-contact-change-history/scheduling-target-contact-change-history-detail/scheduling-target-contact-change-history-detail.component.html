@@ -1,0 +1,66 @@
+<div class="container-fluid p-1 m-0 scheduling-target-contact-change-history-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="scheduling-target-contact-change-history-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Scheduling Target Contact Change History</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Scheduling Target Contact Change History' : 'Add Scheduling Target Contact Change History'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerSchedulingTargetContactChangeHistoryReader()">
+                <div class="col m-2 scheduling-target-contact-change-history-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="schedulingTargetContactChangeHistoryForm" (ngSubmit)="submitForm()" class="scheduling-target-contact-change-history-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('schedulingTargetContactId')">
+                                <label for="SchedulingTargetContactChangeHistory-schedulingTargetContactId" id="label-SchedulingTargetContactChangeHistory-schedulingTargetContactId"><span class="text-danger">*</span>Scheduling Target Contact</label>
+                                <select id="SchedulingTargetContactChangeHistory-schedulingTargetContactId" formControlName="schedulingTargetContactId" class="form-select scheduling-target-contact-change-history-select" [disabled]="!userIsSchedulerSchedulingTargetContactChangeHistoryWriter()">
+                                    <option [ngValue]="null">Select Scheduling Target Contact</option>
+                                    <option *ngFor="let schedulingTargetContact of schedulingTargetContacts$ | async" [ngValue]="schedulingTargetContact.id">{{schedulingTargetContact.id}}</option>
+                                </select>
+                                <div *ngIf="schedulingTargetContactChangeHistoryForm.get('schedulingTargetContactId')?.invalid && schedulingTargetContactChangeHistoryForm.get('schedulingTargetContactId')?.touched" class="text-danger">
+                                    Scheduling Target Contact is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="SchedulingTargetContactChangeHistory-versionNumber" id="label-SchedulingTargetContactChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="SchedulingTargetContactChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control scheduling-target-contact-change-history-input" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                                <label for="SchedulingTargetContactChangeHistory-timeStamp" id="label-SchedulingTargetContactChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                                <input type="datetime-local" id="SchedulingTargetContactChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control scheduling-target-contact-change-history-input" [disabled]="!userIsSchedulerSchedulingTargetContactChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                                <div *ngIf="schedulingTargetContactChangeHistoryForm.get('timeStamp')?.invalid && schedulingTargetContactChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                                    Time Stamp is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="SchedulingTargetContactChangeHistory-userId" id="label-SchedulingTargetContactChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="SchedulingTargetContactChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control scheduling-target-contact-change-history-input" [disabled]="!userIsSchedulerSchedulingTargetContactChangeHistoryWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="schedulingTargetContactChangeHistoryForm.get('userId')?.invalid && schedulingTargetContactChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                                <label for="SchedulingTargetContactChangeHistory-data" id="label-SchedulingTargetContactChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                                <textarea id="SchedulingTargetContactChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control scheduling-target-contact-change-history-input" [disabled]="!userIsSchedulerSchedulingTargetContactChangeHistoryWriter()"></textarea>
+                                <div *ngIf="schedulingTargetContactChangeHistoryForm.get('data')?.invalid && schedulingTargetContactChangeHistoryForm.get('data')?.touched" class="text-danger">
+                                    Data is required
+                                </div>
+                            </div>
+                            <div class="scheduling-target-contact-change-history-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="schedulingTargetContactChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Scheduling Target Contact Change History">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !schedulingTargetContactChangeHistoryForm.valid || !schedulingTargetContactChangeHistoryForm.dirty || schedulingTargetContactChangeHistoryForm.pristine || userIsSchedulerSchedulingTargetContactChangeHistoryWriter() == false " ngbTooltip="Save Scheduling Target Contact Change History">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

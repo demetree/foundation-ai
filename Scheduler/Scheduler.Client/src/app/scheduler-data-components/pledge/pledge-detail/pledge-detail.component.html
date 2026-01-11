@@ -1,0 +1,172 @@
+<div class="container-fluid p-1 m-0 pledge-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="pledge-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Pledge</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Pledge' : 'Add Pledge'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerPledgeReader()">
+                <div class="col m-2 pledge-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="pledgeForm" (ngSubmit)="submitForm()" class="pledge-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('constituentId')">
+                                <label for="Pledge-constituentId" id="label-Pledge-constituentId"><span class="text-danger">*</span>Constituent</label>
+                                <select id="Pledge-constituentId" formControlName="constituentId" class="form-select pledge-select" [disabled]="!userIsSchedulerPledgeWriter()">
+                                    <option [ngValue]="null">Select Constituent</option>
+                                    <option *ngFor="let constituent of constituents$ | async" [ngValue]="constituent.id">{{constituent.constituentNumber}}</option>
+                                </select>
+                                <div *ngIf="pledgeForm.get('constituentId')?.invalid && pledgeForm.get('constituentId')?.touched" class="text-danger">
+                                    Constituent is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('totalAmount')">
+                                <label for="Pledge-totalAmount" id="label-Pledge-totalAmount"><span class="text-danger">*</span>Total Amount</label>
+                                <input type="number" id="Pledge-totalAmount" formControlName="totalAmount" placeholder="Enter Total Amount" class="form-control pledge-input" [disabled]="!userIsSchedulerPledgeWriter()" aria-labelledby="label-totalAmount" />
+                                <div *ngIf="pledgeForm.get('totalAmount')?.invalid && pledgeForm.get('totalAmount')?.touched" class="text-danger">
+                                    Total Amount is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('balanceAmount')">
+                                <label for="Pledge-balanceAmount" id="label-Pledge-balanceAmount"><span class="text-danger">*</span>Balance Amount</label>
+                                <input type="number" id="Pledge-balanceAmount" formControlName="balanceAmount" placeholder="Enter Balance Amount" class="form-control pledge-input" [disabled]="!userIsSchedulerPledgeWriter()" aria-labelledby="label-balanceAmount" />
+                                <div *ngIf="pledgeForm.get('balanceAmount')?.invalid && pledgeForm.get('balanceAmount')?.touched" class="text-danger">
+                                    Balance Amount is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('pledgeDate')">
+                                <label for="Pledge-pledgeDate" id="label-Pledge-pledgeDate"><span class="text-danger">*</span>Pledge Date</label>
+                                <input type="date" id="Pledge-pledgeDate" formControlName="pledgeDate" placeholder="Enter Pledge Date" class="form-control pledge-input" [disabled]="!userIsSchedulerPledgeWriter()" aria-labelledby="label-pledgeDate" />
+                                <div *ngIf="pledgeForm.get('pledgeDate')?.invalid && pledgeForm.get('pledgeDate')?.touched" class="text-danger">
+                                    Pledge Date is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('startDate')">
+                                <label for="Pledge-startDate" id="label-Pledge-startDate">Start Date</label>
+                                <input type="date" id="Pledge-startDate" formControlName="startDate" placeholder="Enter Start Date" class="form-control pledge-input" [disabled]="!userIsSchedulerPledgeWriter()" aria-labelledby="label-startDate" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('endDate')">
+                                <label for="Pledge-endDate" id="label-Pledge-endDate">End Date</label>
+                                <input type="date" id="Pledge-endDate" formControlName="endDate" placeholder="Enter End Date" class="form-control pledge-input" [disabled]="!userIsSchedulerPledgeWriter()" aria-labelledby="label-endDate" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('recurrenceFrequencyId')">
+                                <label for="Pledge-recurrenceFrequencyId" id="label-Pledge-recurrenceFrequencyId">Recurrence Frequency</label>
+                                <select id="Pledge-recurrenceFrequencyId" formControlName="recurrenceFrequencyId" class="form-select pledge-select" [disabled]="!userIsSchedulerPledgeWriter()">
+                                    <option [ngValue]="null">Select Recurrence Frequency</option>
+                                    <option *ngFor="let recurrenceFrequency of recurrenceFrequencies$ | async" [ngValue]="recurrenceFrequency.id">{{recurrenceFrequency.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('fundId')">
+                                <label for="Pledge-fundId" id="label-Pledge-fundId"><span class="text-danger">*</span>Fund</label>
+                                <select id="Pledge-fundId" formControlName="fundId" class="form-select pledge-select" [disabled]="!userIsSchedulerPledgeWriter()">
+                                    <option [ngValue]="null">Select Fund</option>
+                                    <option *ngFor="let fund of funds$ | async" [ngValue]="fund.id">{{fund.name}}</option>
+                                </select>
+                                <div *ngIf="pledgeForm.get('fundId')?.invalid && pledgeForm.get('fundId')?.touched" class="text-danger">
+                                    Fund is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('campaignId')">
+                                <label for="Pledge-campaignId" id="label-Pledge-campaignId">Campaign</label>
+                                <select id="Pledge-campaignId" formControlName="campaignId" class="form-select pledge-select" [disabled]="!userIsSchedulerPledgeWriter()">
+                                    <option [ngValue]="null">Select Campaign</option>
+                                    <option *ngFor="let campaign of campaigns$ | async" [ngValue]="campaign.id">{{campaign.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('appealId')">
+                                <label for="Pledge-appealId" id="label-Pledge-appealId">Appeal</label>
+                                <select id="Pledge-appealId" formControlName="appealId" class="form-select pledge-select" [disabled]="!userIsSchedulerPledgeWriter()">
+                                    <option [ngValue]="null">Select Appeal</option>
+                                    <option *ngFor="let appeal of appeals$ | async" [ngValue]="appeal.id">{{appeal.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('writeOffAmount')">
+                                <label for="Pledge-writeOffAmount" id="label-Pledge-writeOffAmount"><span class="text-danger">*</span>Write Off Amount</label>
+                                <input type="number" id="Pledge-writeOffAmount" formControlName="writeOffAmount" placeholder="Enter Write Off Amount" class="form-control pledge-input" [disabled]="!userIsSchedulerPledgeWriter()" aria-labelledby="label-writeOffAmount" />
+                                <div *ngIf="pledgeForm.get('writeOffAmount')?.invalid && pledgeForm.get('writeOffAmount')?.touched" class="text-danger">
+                                    Write Off Amount is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isWrittenOff')">
+                                <input type="checkbox" id="Pledge-isWrittenOff" formControlName="isWrittenOff" class="form-check-input" [disabled]="!userIsSchedulerPledgeWriter()" />
+                                <label for="Pledge-isWrittenOff" class="form-check-label" id="label-Pledge-isWrittenOff"><span class="text-danger">*</span>Is Written Off</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('notes')">
+                                <label for="Pledge-notes" id="label-Pledge-notes">Notes</label>
+                                <textarea id="Pledge-notes" formControlName="notes" placeholder="Enter Notes" class="form-control pledge-input" [disabled]="!userIsSchedulerPledgeWriter()"></textarea>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="Pledge-versionNumber" id="label-Pledge-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="Pledge-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control pledge-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="Pledge-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerPledgeWriter()" />
+                                <label for="Pledge-active" class="form-check-label" id="label-Pledge-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="Pledge-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerPledgeWriter()" />
+                                <label for="Pledge-deleted" class="form-check-label" id="label-Pledge-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="pledge-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="pledgeForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Pledge">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !pledgeForm.valid || !pledgeForm.dirty || pledgeForm.pristine || userIsSchedulerPledgeWriter() == false " ngbTooltip="Save Pledge">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerPledgeReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 pledge-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="pledgeChangeHistoryService.userIsSchedulerPledgeChangeHistoryReader()">
+                            <button ngbNavLink>Pledge Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (pledgeData?.PledgeChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-pledge-change-history-table [queryParams]="{ pledgeId: pledgeData?.id }"></app-pledge-change-history-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-pledge-change-history-add-edit [preSeededData]="{ pledgeId: pledgeData?.id }" [hiddenFields]="['pledgeId']"></app-pledge-change-history-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="giftService.userIsSchedulerGiftReader()">
+                            <button ngbNavLink>Gifts
+                                <span class="badge bg-primary ms-2">
+                                    {{ (pledgeData?.GiftsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-gift-table [queryParams]="{ pledgeId: pledgeData?.id }"></app-gift-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-gift-add-edit [preSeededData]="{ pledgeId: pledgeData?.id }" [hiddenFields]="['pledgeId']"></app-gift-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

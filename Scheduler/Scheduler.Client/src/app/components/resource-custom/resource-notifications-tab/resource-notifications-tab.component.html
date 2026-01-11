@@ -1,0 +1,66 @@
+<div class="card h-100">
+  <div class="card-header bg-light d-flex justify-content-between align-items-center">
+    <h6 class="mb-0 fw-semibold">
+      <i class="fa-solid fa-bell me-2"></i>
+      Notification Subscriptions
+      <span class="badge bg-primary ms-2" *ngIf="subscriptions !== null">
+        {{ subscriptions.length }}
+      </span>
+    </h6>
+    <button class="btn btn-sm btn-outline-primary"
+            (click)="openAddEditModal()"
+            *ngIf="resource">
+      <i class="fa fa-plus me-1"></i>
+      Add Subscription
+    </button>
+  </div>
+
+  <div class="card-body">
+    <!-- Loading -->
+    <div class="text-center py-4" *ngIf="isLoading">
+      <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+    </div>
+
+    <!-- Error -->
+    <div class="alert alert-danger small" *ngIf="error">
+      <i class="fa-solid fa-exclamation-triangle me-2"></i>
+      {{ error }}
+    </div>
+
+    <!-- Empty -->
+    <div class="text-center py-5 text-muted" *ngIf="!isLoading && (!subscriptions || subscriptions.length === 0)">
+      <i class="fa-solid fa-bell-slash fa-3x mb-3 opacity-50"></i>
+      <div>No notification subscriptions</div>
+    </div>
+
+    <!-- List -->
+    <div class="list-group list-group-flush" *ngIf="!isLoading && subscriptions && subscriptions.length > 0">
+      <div class="list-group-item px-0 py-3"
+           *ngFor="let sub of subscriptions">
+        <div class="d-flex align-items-center justify-content-between">
+          <div class="flex-grow-1">
+            <div class="fw-semibold">
+              {{ sub.notificationType?.name || 'Unknown Type' }}
+              <span class="text-muted small ms-2">→ {{ sub.recipientAddress }}</span>
+            </div>
+            <div class="small text-muted mt-1">
+              Triggers: {{ getTriggerNames(sub.triggerEvents) }}
+            </div>
+          </div>
+          <div class="btn-group btn-group-sm">
+            <button class="btn btn-outline-secondary"
+                    (click)="openAddEditModal(sub)"
+                    title="Edit">
+              <i class="fa fa-pen"></i>
+            </button>
+            <button class="btn btn-outline-danger"
+                    (click)="deleteSubscription(sub)"
+                    title="Delete">
+              <i class="fa fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

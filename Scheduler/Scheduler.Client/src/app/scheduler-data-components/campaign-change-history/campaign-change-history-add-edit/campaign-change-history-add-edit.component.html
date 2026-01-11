@@ -1,0 +1,65 @@
+<div class="add-campaign-change-history" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-campaign-change-history me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Campaign Change History" 
+        *ngIf="userIsSchedulerCampaignChangeHistoryWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #campaignChangeHistoryModal let-modal>
+   <div class="modal-header bg-dark text-light campaign-change-history-modal-header">
+      <h5 class="modal-title mb-0" id="campaignChangeHistoryModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Campaign Change History' : 'Add Campaign Change History' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body campaign-change-history-modal-body">
+      <form [formGroup]="campaignChangeHistoryForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('campaignId')">
+                <label for="CampaignChangeHistory-campaignId" id="label-CampaignChangeHistory-campaignId"><span class="text-danger">*</span>Campaign</label>
+                <select id="CampaignChangeHistory-campaignId" formControlName="campaignId" class="form-select campaign-change-history-select" [disabled]="!userIsSchedulerCampaignChangeHistoryWriter()">
+                    <option [ngValue]="null">Select Campaign</option>
+                    <option *ngFor="let campaign of campaigns$ | async" [ngValue]="campaign.id">{{campaign.name}}</option>
+                </select>
+                <div *ngIf="campaignChangeHistoryForm.get('campaignId')?.invalid && campaignChangeHistoryForm.get('campaignId')?.touched" class="text-danger">
+                    Campaign is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="CampaignChangeHistory-versionNumber" id="label-CampaignChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="CampaignChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control campaign-change-history-input" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                <label for="CampaignChangeHistory-timeStamp" id="label-CampaignChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                <input type="datetime-local" id="CampaignChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control campaign-change-history-input" [disabled]="!userIsSchedulerCampaignChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                <div *ngIf="campaignChangeHistoryForm.get('timeStamp')?.invalid && campaignChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                    Time Stamp is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                <label for="CampaignChangeHistory-userId" id="label-CampaignChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                <input type="number" id="CampaignChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control campaign-change-history-input" [disabled]="!userIsSchedulerCampaignChangeHistoryWriter()" aria-labelledby="label-userId" />
+                <div *ngIf="campaignChangeHistoryForm.get('userId')?.invalid && campaignChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                    User Id is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                <label for="CampaignChangeHistory-data" id="label-CampaignChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                <textarea id="CampaignChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control campaign-change-history-input" [disabled]="!userIsSchedulerCampaignChangeHistoryWriter()"></textarea>
+                <div *ngIf="campaignChangeHistoryForm.get('data')?.invalid && campaignChangeHistoryForm.get('data')?.touched" class="text-danger">
+                    Data is required
+                </div>
+            </div>
+         <div class="modal-footer campaign-change-history-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Campaign Change History changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !campaignChangeHistoryForm.valid || campaignChangeHistoryForm.pristine || !userIsSchedulerCampaignChangeHistoryWriter()" ngbTooltip="Save the Campaign Change History changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

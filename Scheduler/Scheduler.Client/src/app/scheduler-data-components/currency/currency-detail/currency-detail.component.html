@@ -1,0 +1,185 @@
+<div class="container-fluid p-1 m-0 currency-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="currency-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Currency</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Currency' : 'Add Currency'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerCurrencyReader()">
+                <div class="col m-2 currency-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="currencyForm" (ngSubmit)="submitForm()" class="currency-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="Currency-name" id="label-Currency-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="Currency-name" formControlName="name" placeholder="Enter Name" class="form-control currency-input" [disabled]="!userIsSchedulerCurrencyWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="currencyForm.get('name')?.invalid && currencyForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="Currency-description" id="label-Currency-description"><span class="text-danger">*</span>Description</label>
+                                <textarea id="Currency-description" formControlName="description" placeholder="Enter Description" class="form-control currency-input" [disabled]="!userIsSchedulerCurrencyWriter()"></textarea>
+                                <div *ngIf="currencyForm.get('description')?.invalid && currencyForm.get('description')?.touched" class="text-danger">
+                                    Description is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('code')">
+                                <label for="Currency-code" id="label-Currency-code"><span class="text-danger">*</span>Code</label>
+                                <input type="text" id="Currency-code" formControlName="code" placeholder="Enter Code" class="form-control currency-input" [disabled]="!userIsSchedulerCurrencyWriter()" aria-labelledby="label-code" />
+                                <div *ngIf="currencyForm.get('code')?.invalid && currencyForm.get('code')?.touched" class="text-danger">
+                                    Code is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('color')">
+                                <label for="Currency-color" id="label-Currency-color">Color</label>
+                                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="Currency-color" 
+                        formControlName="color" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerCurrencyWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="currencyForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isDefault')">
+                                <input type="checkbox" id="Currency-isDefault" formControlName="isDefault" class="form-check-input" [disabled]="!userIsSchedulerCurrencyWriter()" />
+                                <label for="Currency-isDefault" class="form-check-label" id="label-Currency-isDefault"><span class="text-danger">*</span>Is Default</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                                <label for="Currency-sequence" id="label-Currency-sequence">Sequence</label>
+                                <input type="number" id="Currency-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control currency-input" [disabled]="!userIsSchedulerCurrencyWriter()" aria-labelledby="label-sequence" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="Currency-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerCurrencyWriter()" />
+                                <label for="Currency-active" class="form-check-label" id="label-Currency-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="Currency-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerCurrencyWriter()" />
+                                <label for="Currency-deleted" class="form-check-label" id="label-Currency-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="currency-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="currencyForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Currency">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !currencyForm.valid || !currencyForm.dirty || currencyForm.pristine || userIsSchedulerCurrencyWriter() == false " ngbTooltip="Save Currency">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerCurrencyReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 currency-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="chargeTypeService.userIsSchedulerChargeTypeReader()">
+                            <button ngbNavLink>Charge Types
+                                <span class="badge bg-primary ms-2">
+                                    {{ (currencyData?.ChargeTypesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-charge-type-table [queryParams]="{ currencyId: currencyData?.id }"></app-charge-type-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-charge-type-add-edit [preSeededData]="{ currencyId: currencyData?.id }" [hiddenFields]="['currencyId']"></app-charge-type-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="officeService.userIsSchedulerOfficeReader()">
+                            <button ngbNavLink>Offices
+                                <span class="badge bg-primary ms-2">
+                                    {{ (currencyData?.OfficesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-office-table [queryParams]="{ currencyId: currencyData?.id }"></app-office-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-office-add-edit [preSeededData]="{ currencyId: currencyData?.id }" [hiddenFields]="['currencyId']"></app-office-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="clientService.userIsSchedulerClientReader()">
+                            <button ngbNavLink>Clients
+                                <span class="badge bg-primary ms-2">
+                                    {{ (currencyData?.ClientsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-client-table [queryParams]="{ currencyId: currencyData?.id }"></app-client-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-client-add-edit [preSeededData]="{ currencyId: currencyData?.id }" [hiddenFields]="['currencyId']"></app-client-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="rateSheetService.userIsSchedulerRateSheetReader()">
+                            <button ngbNavLink>Rate Sheets
+                                <span class="badge bg-primary ms-2">
+                                    {{ (currencyData?.RateSheetsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-rate-sheet-table [queryParams]="{ currencyId: currencyData?.id }"></app-rate-sheet-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-rate-sheet-add-edit [preSeededData]="{ currencyId: currencyData?.id }" [hiddenFields]="['currencyId']"></app-rate-sheet-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="eventChargeService.userIsSchedulerEventChargeReader()">
+                            <button ngbNavLink>Event Charges
+                                <span class="badge bg-primary ms-2">
+                                    {{ (currencyData?.EventChargesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-event-charge-table [queryParams]="{ currencyId: currencyData?.id }"></app-event-charge-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-event-charge-add-edit [preSeededData]="{ currencyId: currencyData?.id }" [hiddenFields]="['currencyId']"></app-event-charge-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

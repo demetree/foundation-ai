@@ -1,0 +1,80 @@
+.overview-container {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+// Ensure cards stretch properly on smaller screens
+.card-body {
+  display: flex;
+  flex-direction: column;
+}
+
+// Minor spacing adjustments
+.border-bottom.last\:border-0:last-child {
+  border-bottom: none !important;
+}
+
+h1 {
+  margin-bottom: 16px;
+}
+
+.quick-actions {
+  margin-bottom: 32px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 24px;
+}
+
+.dashboard-card {
+  height: fit-content;
+}
+
+.empty-state {
+  color: #666;
+  font-style: italic;
+  padding: 16px 0;
+}
+
+.assignment-item,
+.upcoming-item,
+.blackout-item {
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #eee;
+}
+
+  .assignment-item:last-child,
+  .upcoming-item:last-child,
+  .blackout-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+
+.event-name {
+  font-weight: 500;
+  font-size: 1.1em;
+}
+
+.event-time,
+.event-location {
+  color: #555;
+  font-size: 0.95em;
+}
+
+.assignment-list {
+  margin: 8px 0 0 20px;
+  padding-left: 0;
+  list-style: none;
+}
+
+  .assignment-list li {
+    margin: 4px 0;
+  }

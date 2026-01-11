@@ -1,0 +1,113 @@
+<div class="container-fluid p-1 m-0 interaction-type-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="interaction-type-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Interaction Type</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Interaction Type' : 'Add Interaction Type'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerInteractionTypeReader()">
+                <div class="col m-2 interaction-type-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="interactionTypeForm" (ngSubmit)="submitForm()" class="interaction-type-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="InteractionType-name" id="label-InteractionType-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="InteractionType-name" formControlName="name" placeholder="Enter Name" class="form-control interaction-type-input" [disabled]="!userIsSchedulerInteractionTypeWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="interactionTypeForm.get('name')?.invalid && interactionTypeForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="InteractionType-description" id="label-InteractionType-description"><span class="text-danger">*</span>Description</label>
+                                <textarea id="InteractionType-description" formControlName="description" placeholder="Enter Description" class="form-control interaction-type-input" [disabled]="!userIsSchedulerInteractionTypeWriter()"></textarea>
+                                <div *ngIf="interactionTypeForm.get('description')?.invalid && interactionTypeForm.get('description')?.touched" class="text-danger">
+                                    Description is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                                <label for="InteractionType-sequence" id="label-InteractionType-sequence">Sequence</label>
+                                <input type="number" id="InteractionType-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control interaction-type-input" [disabled]="!userIsSchedulerInteractionTypeWriter()" aria-labelledby="label-sequence" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('iconId')">
+                                <label for="InteractionType-iconId" id="label-InteractionType-iconId">Icon</label>
+                                <select id="InteractionType-iconId" formControlName="iconId" class="form-select interaction-type-select" [disabled]="!userIsSchedulerInteractionTypeWriter()">
+                                    <option [ngValue]="null">Select Icon</option>
+                                    <option *ngFor="let icon of icons$ | async" [ngValue]="icon.id">{{icon.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('color')">
+                                <label for="InteractionType-color" id="label-InteractionType-color">Color</label>
+                                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="InteractionType-color" 
+                        formControlName="color" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerInteractionTypeWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="interactionTypeForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="InteractionType-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerInteractionTypeWriter()" />
+                                <label for="InteractionType-active" class="form-check-label" id="label-InteractionType-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="InteractionType-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerInteractionTypeWriter()" />
+                                <label for="InteractionType-deleted" class="form-check-label" id="label-InteractionType-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="interaction-type-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="interactionTypeForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Interaction Type">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !interactionTypeForm.valid || !interactionTypeForm.dirty || interactionTypeForm.pristine || userIsSchedulerInteractionTypeWriter() == false " ngbTooltip="Save Interaction Type">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerInteractionTypeReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 interaction-type-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="contactInteractionService.userIsSchedulerContactInteractionReader()">
+                            <button ngbNavLink>Contact Interactions
+                                <span class="badge bg-primary ms-2">
+                                    {{ (interactionTypeData?.ContactInteractionsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-contact-interaction-table [queryParams]="{ interactionTypeId: interactionTypeData?.id }"></app-contact-interaction-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-contact-interaction-add-edit [preSeededData]="{ interactionTypeId: interactionTypeData?.id }" [hiddenFields]="['interactionTypeId']"></app-contact-interaction-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

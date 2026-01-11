@@ -1,0 +1,50 @@
+
+
+/* Importing Bootstrap SCSS file. */
+@import 'app/assets/styles/styles-vendor.css';
+@import "bootstrap-icons/font/bootstrap-icons.css";
+@import 'bootstrap/scss/bootstrap';
+
+@import "bootstrap-icons/font/bootstrap-icons.css";
+
+@import 'bootstrap/scss/bootstrap';
+
+@import 'app/assets/styles/vertical-tabs';
+@import 'app/assets/styles/ngx-datatable';
+
+
+
+.spinner-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.8);
+  z-index: 1050;
+}
+
+
+.pre-login-background {
+  background: url(assets/images/backgrounds/background.jpg) no-repeat center center fixed;
+  background-size: cover;
+}
+
+.post-login-background {
+  background-color: #f9f9f9;  // a light grey
+}
+
+
+.no-select {
+  user-select: none
+}
+
+h1, h2, h3, h4, h5, h6, label, th {
+  user-select: none;
+}
+
+td {
+  user-select: text;
+}
+
+

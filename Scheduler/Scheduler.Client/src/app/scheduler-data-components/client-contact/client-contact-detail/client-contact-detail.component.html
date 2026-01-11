@@ -1,0 +1,104 @@
+<div class="container-fluid p-1 m-0 client-contact-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="client-contact-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Client Contact</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Client Contact' : 'Add Client Contact'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerClientContactReader()">
+                <div class="col m-2 client-contact-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="clientContactForm" (ngSubmit)="submitForm()" class="client-contact-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('clientId')">
+                                <label for="ClientContact-clientId" id="label-ClientContact-clientId"><span class="text-danger">*</span>Client</label>
+                                <select id="ClientContact-clientId" formControlName="clientId" class="form-select client-contact-select" [disabled]="!userIsSchedulerClientContactWriter()">
+                                    <option [ngValue]="null">Select Client</option>
+                                    <option *ngFor="let client of clients$ | async" [ngValue]="client.id">{{client.name}}</option>
+                                </select>
+                                <div *ngIf="clientContactForm.get('clientId')?.invalid && clientContactForm.get('clientId')?.touched" class="text-danger">
+                                    Client is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('contactId')">
+                                <label for="ClientContact-contactId" id="label-ClientContact-contactId"><span class="text-danger">*</span>Contact</label>
+                                <select id="ClientContact-contactId" formControlName="contactId" class="form-select client-contact-select" [disabled]="!userIsSchedulerClientContactWriter()">
+                                    <option [ngValue]="null">Select Contact</option>
+                                    <option *ngFor="let contact of contacts$ | async" [ngValue]="contact.id">{{contact.firstName}}</option>
+                                </select>
+                                <div *ngIf="clientContactForm.get('contactId')?.invalid && clientContactForm.get('contactId')?.touched" class="text-danger">
+                                    Contact is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isPrimary')">
+                                <input type="checkbox" id="ClientContact-isPrimary" formControlName="isPrimary" class="form-check-input" [disabled]="!userIsSchedulerClientContactWriter()" />
+                                <label for="ClientContact-isPrimary" class="form-check-label" id="label-ClientContact-isPrimary"><span class="text-danger">*</span>Is Primary</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('relationshipTypeId')">
+                                <label for="ClientContact-relationshipTypeId" id="label-ClientContact-relationshipTypeId"><span class="text-danger">*</span>Relationship Type</label>
+                                <select id="ClientContact-relationshipTypeId" formControlName="relationshipTypeId" class="form-select client-contact-select" [disabled]="!userIsSchedulerClientContactWriter()">
+                                    <option [ngValue]="null">Select Relationship Type</option>
+                                    <option *ngFor="let relationshipType of relationshipTypes$ | async" [ngValue]="relationshipType.id">{{relationshipType.name}}</option>
+                                </select>
+                                <div *ngIf="clientContactForm.get('relationshipTypeId')?.invalid && clientContactForm.get('relationshipTypeId')?.touched" class="text-danger">
+                                    Relationship Type is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="ClientContact-versionNumber" id="label-ClientContact-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="ClientContact-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control client-contact-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ClientContact-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerClientContactWriter()" />
+                                <label for="ClientContact-active" class="form-check-label" id="label-ClientContact-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ClientContact-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerClientContactWriter()" />
+                                <label for="ClientContact-deleted" class="form-check-label" id="label-ClientContact-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="client-contact-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="clientContactForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Client Contact">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !clientContactForm.valid || !clientContactForm.dirty || clientContactForm.pristine || userIsSchedulerClientContactWriter() == false " ngbTooltip="Save Client Contact">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerClientContactReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 client-contact-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="clientContactChangeHistoryService.userIsSchedulerClientContactChangeHistoryReader()">
+                            <button ngbNavLink>Client Contact Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (clientContactData?.ClientContactChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-client-contact-change-history-table [queryParams]="{ clientContactId: clientContactData?.id }"></app-client-contact-change-history-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-client-contact-change-history-add-edit [preSeededData]="{ clientContactId: clientContactData?.id }" [hiddenFields]="['clientContactId']"></app-client-contact-change-history-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

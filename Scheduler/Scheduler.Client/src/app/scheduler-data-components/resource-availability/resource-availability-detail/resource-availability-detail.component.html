@@ -1,0 +1,106 @@
+<div class="container-fluid p-1 m-0 resource-availability-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="resource-availability-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Resource Availability</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Resource Availability' : 'Add Resource Availability'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerResourceAvailabilityReader()">
+                <div class="col m-2 resource-availability-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="resourceAvailabilityForm" (ngSubmit)="submitForm()" class="resource-availability-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('resourceId')">
+                                <label for="ResourceAvailability-resourceId" id="label-ResourceAvailability-resourceId"><span class="text-danger">*</span>Resource</label>
+                                <select id="ResourceAvailability-resourceId" formControlName="resourceId" class="form-select resource-availability-select" [disabled]="!userIsSchedulerResourceAvailabilityWriter()">
+                                    <option [ngValue]="null">Select Resource</option>
+                                    <option *ngFor="let resource of resources$ | async" [ngValue]="resource.id">{{[resource.name] | filterAndJoin}}</option>
+                                </select>
+                                <div *ngIf="resourceAvailabilityForm.get('resourceId')?.invalid && resourceAvailabilityForm.get('resourceId')?.touched" class="text-danger">
+                                    Resource is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeZoneId')">
+                                <label for="ResourceAvailability-timeZoneId" id="label-ResourceAvailability-timeZoneId">Time Zone</label>
+                                <select id="ResourceAvailability-timeZoneId" formControlName="timeZoneId" class="form-select resource-availability-select" [disabled]="!userIsSchedulerResourceAvailabilityWriter()">
+                                    <option [ngValue]="null">Select Time Zone</option>
+                                    <option *ngFor="let timeZone of timeZones$ | async" [ngValue]="timeZone.id">{{timeZone.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('startDateTime')">
+                                <label for="ResourceAvailability-startDateTime" id="label-ResourceAvailability-startDateTime"><span class="text-danger">*</span>Start Date Time</label>
+                                <input type="datetime-local" id="ResourceAvailability-startDateTime" formControlName="startDateTime" placeholder="Enter Start Date Time" class="form-control resource-availability-input" [disabled]="!userIsSchedulerResourceAvailabilityWriter()" aria-labelledby="label-startDateTime" />
+                                <div *ngIf="resourceAvailabilityForm.get('startDateTime')?.invalid && resourceAvailabilityForm.get('startDateTime')?.touched" class="text-danger">
+                                    Start Date Time is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('endDateTime')">
+                                <label for="ResourceAvailability-endDateTime" id="label-ResourceAvailability-endDateTime">End Date Time</label>
+                                <input type="datetime-local" id="ResourceAvailability-endDateTime" formControlName="endDateTime" placeholder="Enter End Date Time" class="form-control resource-availability-input" [disabled]="!userIsSchedulerResourceAvailabilityWriter()" aria-labelledby="label-endDateTime" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('reason')">
+                                <label for="ResourceAvailability-reason" id="label-ResourceAvailability-reason">Reason</label>
+                                <input type="text" id="ResourceAvailability-reason" formControlName="reason" placeholder="Enter Reason" class="form-control resource-availability-input" [disabled]="!userIsSchedulerResourceAvailabilityWriter()" aria-labelledby="label-reason" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('notes')">
+                                <label for="ResourceAvailability-notes" id="label-ResourceAvailability-notes">Notes</label>
+                                <textarea id="ResourceAvailability-notes" formControlName="notes" placeholder="Enter Notes" class="form-control resource-availability-input" [disabled]="!userIsSchedulerResourceAvailabilityWriter()"></textarea>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="ResourceAvailability-versionNumber" id="label-ResourceAvailability-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="ResourceAvailability-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control resource-availability-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ResourceAvailability-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerResourceAvailabilityWriter()" />
+                                <label for="ResourceAvailability-active" class="form-check-label" id="label-ResourceAvailability-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ResourceAvailability-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerResourceAvailabilityWriter()" />
+                                <label for="ResourceAvailability-deleted" class="form-check-label" id="label-ResourceAvailability-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="resource-availability-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="resourceAvailabilityForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Resource Availability">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !resourceAvailabilityForm.valid || !resourceAvailabilityForm.dirty || resourceAvailabilityForm.pristine || userIsSchedulerResourceAvailabilityWriter() == false " ngbTooltip="Save Resource Availability">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerResourceAvailabilityReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 resource-availability-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="resourceAvailabilityChangeHistoryService.userIsSchedulerResourceAvailabilityChangeHistoryReader()">
+                            <button ngbNavLink>Resource Availability Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (resourceAvailabilityData?.ResourceAvailabilityChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-resource-availability-change-history-table [queryParams]="{ resourceAvailabilityId: resourceAvailabilityData?.id }"></app-resource-availability-change-history-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-resource-availability-change-history-add-edit [preSeededData]="{ resourceAvailabilityId: resourceAvailabilityData?.id }" [hiddenFields]="['resourceAvailabilityId']"></app-resource-availability-change-history-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

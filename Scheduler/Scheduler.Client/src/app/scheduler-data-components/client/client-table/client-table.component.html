@@ -1,0 +1,476 @@
+<app-client-add-edit [showAddButton]="false"></app-client-add-edit>
+<div class="row" *ngIf="userIsSchedulerClientReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerClientWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerClientWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('name')">
+                Name
+                <span *ngIf="sortColumn === 'name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('description')">
+                Description
+                <span *ngIf="sortColumn === 'description'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('clientType.name')">
+                Client  Type
+                <span *ngIf="sortColumn === 'clientType.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('currency.name')">
+                Currency
+                <span *ngIf="sortColumn === 'currency.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('timeZone.name')">
+                Time  Zone
+                <span *ngIf="sortColumn === 'timeZone.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('calendar.name')">
+                Calendar
+                <span *ngIf="sortColumn === 'calendar.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('addressLine1')">
+                Address  Line  1
+                <span *ngIf="sortColumn === 'addressLine1'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('addressLine2')">
+                Address  Line  2
+                <span *ngIf="sortColumn === 'addressLine2'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('city')">
+                City
+                <span *ngIf="sortColumn === 'city'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('postalCode')">
+                Postal  Code
+                <span *ngIf="sortColumn === 'postalCode'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('stateProvince.name')">
+                State  Province
+                <span *ngIf="sortColumn === 'stateProvince.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('country.name')">
+                Country
+                <span *ngIf="sortColumn === 'country.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('phone')">
+                Phone
+                <span *ngIf="sortColumn === 'phone'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('email')">
+                Email
+                <span *ngIf="sortColumn === 'email'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('latitude')">
+                Latitude
+                <span *ngIf="sortColumn === 'latitude'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('longitude')">
+                Longitude
+                <span *ngIf="sortColumn === 'longitude'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('notes')">
+                Notes
+                <span *ngIf="sortColumn === 'notes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('externalId')">
+                External  Id
+                <span *ngIf="sortColumn === 'externalId'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('color')">
+                Color
+                <span *ngIf="sortColumn === 'color'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('attributes')">
+                Attributes
+                <span *ngIf="sortColumn === 'attributes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('avatarFileName')">
+                Avatar  File  Name
+                <span *ngIf="sortColumn === 'avatarFileName'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('avatarSize')">
+                Avatar  Size
+                <span *ngIf="sortColumn === 'avatarSize'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('avatarData')">
+                Avatar  Data
+                <span *ngIf="sortColumn === 'avatarData'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('avatarMimeType')">
+                Avatar  Mime  Type
+                <span *ngIf="sortColumn === 'avatarMimeType'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let client of filteredClients; trackBy: getClientId"
+              [ngClass]="{
+                 'row-inactive': client.active == false,
+                 'row-deleted': client.deleted == true 
+                 }">
+            <td class="header-action-button" *ngIf="userIsSchedulerClientWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleEdit(client)"
+                      ngbTooltip="Edit" 
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsSchedulerClientWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleDelete(client)"
+                      ngbTooltip="Delete" 
+                      placement="top"
+                      *ngIf="client.deleted == false">
+                <i class="fa fa-trash"></i>
+              </button>
+              <button class="btn btn-sm"
+                      (click)="handleUndelete(client)"
+                      ngbTooltip="Undelete" 
+                      placement="top"
+                      *ngIf="client.deleted == true">
+                <i class="fa fa-trash-arrow-up"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(client, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(client, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(client, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(client, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(client, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(client, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(client, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(client, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/client', client.id]" class="btn btn-link text-left" ngbTooltip="Open Client details">{{client.name}}</a></td>
+            <td class="text-truncate">{{client.description}}</td>
+            <td class="text-truncate"><a [routerLink]="['/clienttype', client.clientTypeId]" class="btn btn-link text-left" ngbTooltip="Open Client Type details">{{client.clientType?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/currency', client.currencyId]" class="btn btn-link text-left" ngbTooltip="Open Currency details">{{client.currency?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/timezone', client.timeZoneId]" class="btn btn-link text-left" ngbTooltip="Open Time Zone details">{{client.timeZone?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/calendar', client.calendarId]" class="btn btn-link text-left" ngbTooltip="Open Calendar details">{{client.calendar?.name}}</a></td>
+            <td class="text-truncate">{{client.addressLine1}}</td>
+            <td class="text-truncate">{{client.addressLine2}}</td>
+            <td class="text-truncate">{{client.city}}</td>
+            <td class="text-truncate">{{client.postalCode}}</td>
+            <td class="text-truncate"><a [routerLink]="['/stateprovince', client.stateProvinceId]" class="btn btn-link text-left" ngbTooltip="Open State Province details">{{client.stateProvince?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/country', client.countryId]" class="btn btn-link text-left" ngbTooltip="Open Country details">{{client.country?.name}}</a></td>
+            <td class="text-truncate"><a href="tel:{{client?.phone}}" ngbTooltip="Call {{client?.phone}}">{{client.phone}}</a></td>
+            <td class="text-truncate"><a href="mailto:{{client?.email}}" ngbTooltip="Send Email to {{client?.email}}">{{client.email}}</a></td>
+            <td class="text-truncate">{{client.latitude | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{client.longitude | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{client.notes}}</td>
+            <td class="text-truncate">{{client.externalId}}</td>
+            <td class="text-truncate">{{client.color}}</td>
+            <td class="text-truncate">{{client.attributes}}</td>
+            <td class="text-truncate">{{client.avatarFileName}}</td>
+            <td class="text-truncate">{{client.avatarSize | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{client.avatarData}}</td>
+            <td class="text-truncate">{{client.avatarMimeType}}</td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let client of filteredClients; trackBy: getClientId" class="card my-2"
+              [ngClass]="{
+                 'row-inactive': client.active == false,
+                 'row-deleted': client.deleted == true 
+                 }">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(client, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(client, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(client, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(client, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(client, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(client, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(client, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(client, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(client, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(client, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(client, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(client, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(client, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/client', client.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(client)" *ngIf="userIsSchedulerClientWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(client)" *ngIf="userIsSchedulerClientWriter() && client.deleted == false" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+            <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(client)" *ngIf="userIsSchedulerClientWriter() && client.deleted == true" ngbTooltip="Undelete">
+              <i class="fa fa-trash-arrow-upp"></i> UnDelete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{client.name}}</strong>
+               <small class="text-muted d-block">{{client.clientType?.name}}</small>
+             </div>
+             <div>
+                <button class="btn btn-sm"
+                        [routerLink]="['/client', client.id]"
+                        ngbTooltip="Client Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="btn btn-sm"
+                        (click)="handleEdit(client)"
+                        ngbTooltip="Edit Client">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleDelete(client)"
+                      ngbTooltip="Delete Client" 
+                      placement="top"
+                      *ngIf="client.deleted == false">
+                  <i class="fa fa-trash"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleUndelete(client)"
+                      ngbTooltip="Undelete Client" 
+                      placement="top"
+                      *ngIf="client.deleted == true">
+                 <i class="fa fa-trash-arrow-up"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="client-info" *ngIf="client.name != null">
+              <strong>Name: </strong>
+              {{client.name}}
+            </p>
+            <p class="client-info" *ngIf="client.description != null">
+              <strong>Description: </strong>
+              {{client.description}}
+            </p>
+            <p class="client-info" *ngIf="client.clientTypeId != null">
+              <strong>Client Type: </strong>
+              <a [routerLink]="['/clienttype', client.clientTypeId]" class="text-left p-0 m-0" ngbTooltip="Open Client Type details">{{client.clientType?.name}}</a>
+            </p>
+            <p class="client-info" *ngIf="client.currencyId != null">
+              <strong>Currency: </strong>
+              <a [routerLink]="['/currency', client.currencyId]" class="text-left p-0 m-0" ngbTooltip="Open Currency details">{{client.currency?.name}}</a>
+            </p>
+            <p class="client-info" *ngIf="client.timeZoneId != null">
+              <strong>Time Zone: </strong>
+              <a [routerLink]="['/timezone', client.timeZoneId]" class="text-left p-0 m-0" ngbTooltip="Open Time Zone details">{{client.timeZone?.name}}</a>
+            </p>
+            <p class="client-info" *ngIf="client.calendarId != null">
+              <strong>Calendar: </strong>
+              <a [routerLink]="['/calendar', client.calendarId]" class="text-left p-0 m-0" ngbTooltip="Open Calendar details">{{client.calendar?.name}}</a>
+            </p>
+            <p class="client-info" *ngIf="client.addressLine1 != null">
+              <strong>Address Line 1: </strong>
+              {{client.addressLine1}}
+            </p>
+            <p class="client-info" *ngIf="client.addressLine2 != null">
+              <strong>Address Line 2: </strong>
+              {{client.addressLine2}}
+            </p>
+            <p class="client-info" *ngIf="client.city != null">
+              <strong>City: </strong>
+              {{client.city}}
+            </p>
+            <p class="client-info" *ngIf="client.postalCode != null">
+              <strong>Postal Code: </strong>
+              {{client.postalCode}}
+            </p>
+            <p class="client-info" *ngIf="client.stateProvinceId != null">
+              <strong>State Province: </strong>
+              <a [routerLink]="['/stateprovince', client.stateProvinceId]" class="text-left p-0 m-0" ngbTooltip="Open State Province details">{{client.stateProvince?.name}}</a>
+            </p>
+            <p class="client-info" *ngIf="client.countryId != null">
+              <strong>Country: </strong>
+              <a [routerLink]="['/country', client.countryId]" class="text-left p-0 m-0" ngbTooltip="Open Country details">{{client.country?.name}}</a>
+            </p>
+            <p class="client-info" *ngIf="client.phone != null">
+              <strong>Phone: </strong>
+              <a href="tel:{{client?.phone}}" ngbTooltip="Call {{client?.phone}}">{{client.phone}}</a>
+            </p>
+            <p class="client-info" *ngIf="client.email != null">
+              <strong>Email: </strong>
+              <a href="mailto:{{client?.email}}" ngbTooltip="Send Email to {{client?.email}}">{{client.email}}</a>
+            </p>
+            <p class="client-info" *ngIf="client.latitude != null">
+              <strong>Latitude: </strong>
+              {{client.latitude | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="client-info" *ngIf="client.longitude != null">
+              <strong>Longitude: </strong>
+              {{client.longitude | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="client-info" *ngIf="client.notes != null">
+              <strong>Notes: </strong>
+              {{client.notes}}
+            </p>
+            <p class="client-info" *ngIf="client.externalId != null">
+              <strong>External Id: </strong>
+              {{client.externalId}}
+            </p>
+            <p class="client-info" *ngIf="client.color != null">
+              <strong>Color: </strong>
+              {{client.color}}
+            </p>
+            <p class="client-info" *ngIf="client.attributes != null">
+              <strong>Attributes: </strong>
+              {{client.attributes}}
+            </p>
+            <p class="client-info" *ngIf="client.avatarFileName != null">
+              <strong>Avatar File Name: </strong>
+              {{client.avatarFileName}}
+            </p>
+            <p class="client-info" *ngIf="client.avatarSize != null">
+              <strong>Avatar Size: </strong>
+              {{client.avatarSize | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="client-info" *ngIf="client.avatarData != null">
+              <strong>Avatar Data: </strong>
+              {{client.avatarData}}
+            </p>
+            <p class="client-info" *ngIf="client.avatarMimeType != null">
+              <strong>Avatar Mime Type: </strong>
+              {{client.avatarMimeType}}
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+   </div>
+</div>

@@ -1,0 +1,467 @@
+<app-contact-add-edit [showAddButton]="false"></app-contact-add-edit>
+<div class="row" *ngIf="userIsSchedulerContactReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerContactWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerContactWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('contactType.name')">
+                Contact  Type
+                <span *ngIf="sortColumn === 'contactType.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('firstName')">
+                First  Name
+                <span *ngIf="sortColumn === 'firstName'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('middleName')">
+                Middle  Name
+                <span *ngIf="sortColumn === 'middleName'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('lastName')">
+                Last  Name
+                <span *ngIf="sortColumn === 'lastName'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('salutation.name')">
+                Salutation
+                <span *ngIf="sortColumn === 'salutation.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('title')">
+                Title
+                <span *ngIf="sortColumn === 'title'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('birthDate')">
+                Birth  Date
+                <span *ngIf="sortColumn === 'birthDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('company')">
+                Company
+                <span *ngIf="sortColumn === 'company'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('email')">
+                Email
+                <span *ngIf="sortColumn === 'email'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('phone')">
+                Phone
+                <span *ngIf="sortColumn === 'phone'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('mobile')">
+                Mobile
+                <span *ngIf="sortColumn === 'mobile'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('position')">
+                Position
+                <span *ngIf="sortColumn === 'position'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('webSite')">
+                Web  Site
+                <span *ngIf="sortColumn === 'webSite'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('contactMethod.name')">
+                Contact  Method
+                <span *ngIf="sortColumn === 'contactMethod.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('notes')">
+                Notes
+                <span *ngIf="sortColumn === 'notes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('timeZone.name')">
+                Time  Zone
+                <span *ngIf="sortColumn === 'timeZone.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('icon.name')">
+                Icon
+                <span *ngIf="sortColumn === 'icon.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('color')">
+                Color
+                <span *ngIf="sortColumn === 'color'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('avatarFileName')">
+                Avatar  File  Name
+                <span *ngIf="sortColumn === 'avatarFileName'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('avatarSize')">
+                Avatar  Size
+                <span *ngIf="sortColumn === 'avatarSize'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('avatarData')">
+                Avatar  Data
+                <span *ngIf="sortColumn === 'avatarData'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('avatarMimeType')">
+                Avatar  Mime  Type
+                <span *ngIf="sortColumn === 'avatarMimeType'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('externalId')">
+                External  Id
+                <span *ngIf="sortColumn === 'externalId'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let contact of filteredContacts; trackBy: getContactId"
+              [ngClass]="{
+                 'row-inactive': contact.active == false,
+                 'row-deleted': contact.deleted == true 
+                 }">
+            <td class="header-action-button" *ngIf="userIsSchedulerContactWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleEdit(contact)"
+                      ngbTooltip="Edit" 
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsSchedulerContactWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleDelete(contact)"
+                      ngbTooltip="Delete" 
+                      placement="top"
+                      *ngIf="contact.deleted == false">
+                <i class="fa fa-trash"></i>
+              </button>
+              <button class="btn btn-sm"
+                      (click)="handleUndelete(contact)"
+                      ngbTooltip="Undelete" 
+                      placement="top"
+                      *ngIf="contact.deleted == true">
+                <i class="fa fa-trash-arrow-up"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(contact, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(contact, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(contact, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(contact, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(contact, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(contact, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(contact, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(contact, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/contacttype', contact.contactTypeId]" class="btn btn-link text-left" ngbTooltip="Open Contact Type details">{{contact.contactType?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/contact', contact.id]" class="btn btn-link text-left" ngbTooltip="Open Contact details">{{contact.firstName}}</a></td>
+            <td class="text-truncate">{{contact.middleName}}</td>
+            <td class="text-truncate">{{contact.lastName}}</td>
+            <td class="text-truncate"><a [routerLink]="['/salutation', contact.salutationId]" class="btn btn-link text-left" ngbTooltip="Open Salutation details">{{contact.salutation?.name}}</a></td>
+            <td class="text-truncate">{{contact.title}}</td>
+            <td class="text-truncate">{{contact.birthDate | date:'YYYY-MM-dd'}}</td>
+            <td class="text-truncate">{{contact.company}}</td>
+            <td class="text-truncate"><a href="mailto:{{contact?.email}}" ngbTooltip="Send Email to {{contact?.email}}">{{contact.email}}</a></td>
+            <td class="text-truncate"><a href="tel:{{contact?.phone}}" ngbTooltip="Call {{contact?.phone}}">{{contact.phone}}</a></td>
+            <td class="text-truncate">{{contact.mobile}}</td>
+            <td class="text-truncate">{{contact.position}}</td>
+            <td class="text-truncate">{{contact.webSite}}</td>
+            <td class="text-truncate"><a [routerLink]="['/contactmethod', contact.contactMethodId]" class="btn btn-link text-left" ngbTooltip="Open Contact Method details">{{contact.contactMethod?.name}}</a></td>
+            <td class="text-truncate">{{contact.notes}}</td>
+            <td class="text-truncate"><a [routerLink]="['/timezone', contact.timeZoneId]" class="btn btn-link text-left" ngbTooltip="Open Time Zone details">{{contact.timeZone?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/icon', contact.iconId]" class="btn btn-link text-left" ngbTooltip="Open Icon details">{{contact.icon?.name}}</a></td>
+            <td class="text-truncate">{{contact.color}}</td>
+            <td class="text-truncate">{{contact.avatarFileName}}</td>
+            <td class="text-truncate">{{contact.avatarSize | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{contact.avatarData}}</td>
+            <td class="text-truncate">{{contact.avatarMimeType}}</td>
+            <td class="text-truncate">{{contact.externalId}}</td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let contact of filteredContacts; trackBy: getContactId" class="card my-2"
+              [ngClass]="{
+                 'row-inactive': contact.active == false,
+                 'row-deleted': contact.deleted == true 
+                 }">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(contact, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(contact, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(contact, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(contact, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(contact, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(contact, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(contact, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(contact, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(contact, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(contact, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(contact, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(contact, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(contact, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/contact', contact.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(contact)" *ngIf="userIsSchedulerContactWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(contact)" *ngIf="userIsSchedulerContactWriter() && contact.deleted == false" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+            <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(contact)" *ngIf="userIsSchedulerContactWriter() && contact.deleted == true" ngbTooltip="Undelete">
+              <i class="fa fa-trash-arrow-upp"></i> UnDelete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{contact.id}}</strong>
+               <small class="text-muted d-block">{{contact.contactType?.name}}</small>
+             </div>
+             <div>
+                <button class="btn btn-sm"
+                        [routerLink]="['/contact', contact.id]"
+                        ngbTooltip="Contact Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="btn btn-sm"
+                        (click)="handleEdit(contact)"
+                        ngbTooltip="Edit Contact">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleDelete(contact)"
+                      ngbTooltip="Delete Contact" 
+                      placement="top"
+                      *ngIf="contact.deleted == false">
+                  <i class="fa fa-trash"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleUndelete(contact)"
+                      ngbTooltip="Undelete Contact" 
+                      placement="top"
+                      *ngIf="contact.deleted == true">
+                 <i class="fa fa-trash-arrow-up"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="contact-info" *ngIf="contact.contactTypeId != null">
+              <strong>Contact Type: </strong>
+              <a [routerLink]="['/contacttype', contact.contactTypeId]" class="text-left p-0 m-0" ngbTooltip="Open Contact Type details">{{contact.contactType?.name}}</a>
+            </p>
+            <p class="contact-info" *ngIf="contact.firstName != null">
+              <strong>First Name: </strong>
+              {{contact.firstName}}
+            </p>
+            <p class="contact-info" *ngIf="contact.middleName != null">
+              <strong>Middle Name: </strong>
+              {{contact.middleName}}
+            </p>
+            <p class="contact-info" *ngIf="contact.lastName != null">
+              <strong>Last Name: </strong>
+              {{contact.lastName}}
+            </p>
+            <p class="contact-info" *ngIf="contact.salutationId != null">
+              <strong>Salutation: </strong>
+              <a [routerLink]="['/salutation', contact.salutationId]" class="text-left p-0 m-0" ngbTooltip="Open Salutation details">{{contact.salutation?.name}}</a>
+            </p>
+            <p class="contact-info" *ngIf="contact.title != null">
+              <strong>Title: </strong>
+              {{contact.title}}
+            </p>
+            <p class="contact-info" *ngIf="contact.birthDate != null">
+              <strong>Birth Date: </strong>
+              {{contact.birthDate | date:'YYYY-MM-dd'}}
+            </p>
+            <p class="contact-info" *ngIf="contact.company != null">
+              <strong>Company: </strong>
+              {{contact.company}}
+            </p>
+            <p class="contact-info" *ngIf="contact.email != null">
+              <strong>Email: </strong>
+              <a href="mailto:{{contact?.email}}" ngbTooltip="Send Email to {{contact?.email}}">{{contact.email}}</a>
+            </p>
+            <p class="contact-info" *ngIf="contact.phone != null">
+              <strong>Phone: </strong>
+              <a href="tel:{{contact?.phone}}" ngbTooltip="Call {{contact?.phone}}">{{contact.phone}}</a>
+            </p>
+            <p class="contact-info" *ngIf="contact.mobile != null">
+              <strong>Mobile: </strong>
+              {{contact.mobile}}
+            </p>
+            <p class="contact-info" *ngIf="contact.position != null">
+              <strong>Position: </strong>
+              {{contact.position}}
+            </p>
+            <p class="contact-info" *ngIf="contact.webSite != null">
+              <strong>Web Site: </strong>
+              {{contact.webSite}}
+            </p>
+            <p class="contact-info" *ngIf="contact.contactMethodId != null">
+              <strong>Contact Method: </strong>
+              <a [routerLink]="['/contactmethod', contact.contactMethodId]" class="text-left p-0 m-0" ngbTooltip="Open Contact Method details">{{contact.contactMethod?.name}}</a>
+            </p>
+            <p class="contact-info" *ngIf="contact.notes != null">
+              <strong>Notes: </strong>
+              {{contact.notes}}
+            </p>
+            <p class="contact-info" *ngIf="contact.timeZoneId != null">
+              <strong>Time Zone: </strong>
+              <a [routerLink]="['/timezone', contact.timeZoneId]" class="text-left p-0 m-0" ngbTooltip="Open Time Zone details">{{contact.timeZone?.name}}</a>
+            </p>
+            <p class="contact-info" *ngIf="contact.iconId != null">
+              <strong>Icon: </strong>
+              <a [routerLink]="['/icon', contact.iconId]" class="text-left p-0 m-0" ngbTooltip="Open Icon details">{{contact.icon?.name}}</a>
+            </p>
+            <p class="contact-info" *ngIf="contact.color != null">
+              <strong>Color: </strong>
+              {{contact.color}}
+            </p>
+            <p class="contact-info" *ngIf="contact.avatarFileName != null">
+              <strong>Avatar File Name: </strong>
+              {{contact.avatarFileName}}
+            </p>
+            <p class="contact-info" *ngIf="contact.avatarSize != null">
+              <strong>Avatar Size: </strong>
+              {{contact.avatarSize | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="contact-info" *ngIf="contact.avatarData != null">
+              <strong>Avatar Data: </strong>
+              {{contact.avatarData}}
+            </p>
+            <p class="contact-info" *ngIf="contact.avatarMimeType != null">
+              <strong>Avatar Mime Type: </strong>
+              {{contact.avatarMimeType}}
+            </p>
+            <p class="contact-info" *ngIf="contact.externalId != null">
+              <strong>External Id: </strong>
+              {{contact.externalId}}
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+   </div>
+</div>

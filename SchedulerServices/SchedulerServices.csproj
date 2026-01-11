@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Intuit.TSheets" Version="1.4.3" />
+    <PackageReference Include="IppDotNetSdkForQuickBooksApiV3" Version="14.7.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SchedulerDatabase\SchedulerDatabase.csproj" />
+  </ItemGroup>
+
+</Project>

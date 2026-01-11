@@ -1,0 +1,45 @@
+<div class="add-audit-module" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-audit-module me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Audit Module" 
+        *ngIf="userIsAuditorAuditModuleWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #auditModuleModal let-modal>
+   <div class="modal-header bg-dark text-light audit-module-modal-header">
+      <h5 class="modal-title mb-0" id="auditModuleModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Audit Module' : 'Add Audit Module' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body audit-module-modal-body">
+      <form [formGroup]="auditModuleForm" (ngSubmit)="submitForm()">
+            <div class="form-group">
+                <label for="name" id="label-name"><span class="text-danger">*</span>Name</label>
+                <textarea id="name" formControlName="name" placeholder="Enter Name" class="form-control audit-module-input" [disabled]="!userIsAuditorAuditModuleWriter()"></textarea>
+                <div *ngIf="auditModuleForm.get('name')?.invalid && auditModuleForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="comments" id="label-comments">Comments</label>
+                <textarea id="comments" formControlName="comments" placeholder="Enter Comments" class="form-control audit-module-input" [disabled]="!userIsAuditorAuditModuleWriter()"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="firstAccess" id="label-firstAccess">First Access</label>
+                <input type="datetime-local" id="firstAccess" formControlName="firstAccess" placeholder="Enter First Access" class="form-control audit-module-input" [disabled]="!userIsAuditorAuditModuleWriter()" aria-labelledby="label-firstAccess" />
+            </div>
+         <div class="modal-footer audit-module-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Audit Module changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !auditModuleForm.valid || auditModuleForm.pristine || !userIsAuditorAuditModuleWriter()" ngbTooltip="Save the Audit Module changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

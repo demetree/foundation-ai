@@ -1,0 +1,66 @@
+<div class="container-fluid p-1 m-0 shift-pattern-day-change-history-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="shift-pattern-day-change-history-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Shift Pattern Day Change History</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Shift Pattern Day Change History' : 'Add Shift Pattern Day Change History'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerShiftPatternDayChangeHistoryReader()">
+                <div class="col m-2 shift-pattern-day-change-history-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="shiftPatternDayChangeHistoryForm" (ngSubmit)="submitForm()" class="shift-pattern-day-change-history-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('shiftPatternDayId')">
+                                <label for="ShiftPatternDayChangeHistory-shiftPatternDayId" id="label-ShiftPatternDayChangeHistory-shiftPatternDayId"><span class="text-danger">*</span>Shift Pattern Day</label>
+                                <select id="ShiftPatternDayChangeHistory-shiftPatternDayId" formControlName="shiftPatternDayId" class="form-select shift-pattern-day-change-history-select" [disabled]="!userIsSchedulerShiftPatternDayChangeHistoryWriter()">
+                                    <option [ngValue]="null">Select Shift Pattern Day</option>
+                                    <option *ngFor="let shiftPatternDay of shiftPatternDays$ | async" [ngValue]="shiftPatternDay.id">{{shiftPatternDay.label}}</option>
+                                </select>
+                                <div *ngIf="shiftPatternDayChangeHistoryForm.get('shiftPatternDayId')?.invalid && shiftPatternDayChangeHistoryForm.get('shiftPatternDayId')?.touched" class="text-danger">
+                                    Shift Pattern Day is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="ShiftPatternDayChangeHistory-versionNumber" id="label-ShiftPatternDayChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="ShiftPatternDayChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control shift-pattern-day-change-history-input" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                                <label for="ShiftPatternDayChangeHistory-timeStamp" id="label-ShiftPatternDayChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                                <input type="datetime-local" id="ShiftPatternDayChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control shift-pattern-day-change-history-input" [disabled]="!userIsSchedulerShiftPatternDayChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                                <div *ngIf="shiftPatternDayChangeHistoryForm.get('timeStamp')?.invalid && shiftPatternDayChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                                    Time Stamp is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="ShiftPatternDayChangeHistory-userId" id="label-ShiftPatternDayChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="ShiftPatternDayChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control shift-pattern-day-change-history-input" [disabled]="!userIsSchedulerShiftPatternDayChangeHistoryWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="shiftPatternDayChangeHistoryForm.get('userId')?.invalid && shiftPatternDayChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                                <label for="ShiftPatternDayChangeHistory-data" id="label-ShiftPatternDayChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                                <textarea id="ShiftPatternDayChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control shift-pattern-day-change-history-input" [disabled]="!userIsSchedulerShiftPatternDayChangeHistoryWriter()"></textarea>
+                                <div *ngIf="shiftPatternDayChangeHistoryForm.get('data')?.invalid && shiftPatternDayChangeHistoryForm.get('data')?.touched" class="text-danger">
+                                    Data is required
+                                </div>
+                            </div>
+                            <div class="shift-pattern-day-change-history-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="shiftPatternDayChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Shift Pattern Day Change History">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !shiftPatternDayChangeHistoryForm.valid || !shiftPatternDayChangeHistoryForm.dirty || shiftPatternDayChangeHistoryForm.pristine || userIsSchedulerShiftPatternDayChangeHistoryWriter() == false " ngbTooltip="Save Shift Pattern Day Change History">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,76 @@
+<div class="add-scheduling-target-contact" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-scheduling-target-contact me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Scheduling Target Contact" 
+        *ngIf="userIsSchedulerSchedulingTargetContactWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #schedulingTargetContactModal let-modal>
+   <div class="modal-header bg-dark text-light scheduling-target-contact-modal-header">
+      <h5 class="modal-title mb-0" id="schedulingTargetContactModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Scheduling Target Contact' : 'Add Scheduling Target Contact' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body scheduling-target-contact-modal-body">
+      <form [formGroup]="schedulingTargetContactForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('schedulingTargetId')">
+                <label for="SchedulingTargetContact-schedulingTargetId" id="label-SchedulingTargetContact-schedulingTargetId"><span class="text-danger">*</span>Scheduling Target</label>
+                <select id="SchedulingTargetContact-schedulingTargetId" formControlName="schedulingTargetId" class="form-select scheduling-target-contact-select" [disabled]="!userIsSchedulerSchedulingTargetContactWriter()">
+                    <option [ngValue]="null">Select Scheduling Target</option>
+                    <option *ngFor="let schedulingTarget of schedulingTargets$ | async" [ngValue]="schedulingTarget.id">{{[schedulingTarget.name] | filterAndJoin}}</option>
+                </select>
+                <div *ngIf="schedulingTargetContactForm.get('schedulingTargetId')?.invalid && schedulingTargetContactForm.get('schedulingTargetId')?.touched" class="text-danger">
+                    Scheduling Target is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('contactId')">
+                <label for="SchedulingTargetContact-contactId" id="label-SchedulingTargetContact-contactId"><span class="text-danger">*</span>Contact</label>
+                <select id="SchedulingTargetContact-contactId" formControlName="contactId" class="form-select scheduling-target-contact-select" [disabled]="!userIsSchedulerSchedulingTargetContactWriter()">
+                    <option [ngValue]="null">Select Contact</option>
+                    <option *ngFor="let contact of contacts$ | async" [ngValue]="contact.id">{{contact.firstName}}</option>
+                </select>
+                <div *ngIf="schedulingTargetContactForm.get('contactId')?.invalid && schedulingTargetContactForm.get('contactId')?.touched" class="text-danger">
+                    Contact is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isPrimary')">
+                <input type="checkbox" id="SchedulingTargetContact-isPrimary" formControlName="isPrimary" class="form-check-input" [disabled]="!userIsSchedulerSchedulingTargetContactWriter()" />
+                <label for="SchedulingTargetContact-isPrimary" class="form-check-label" id="label-SchedulingTargetContact-isPrimary"><span class="text-danger">*</span>Is Primary</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('relationshipTypeId')">
+                <label for="SchedulingTargetContact-relationshipTypeId" id="label-SchedulingTargetContact-relationshipTypeId"><span class="text-danger">*</span>Relationship Type</label>
+                <select id="SchedulingTargetContact-relationshipTypeId" formControlName="relationshipTypeId" class="form-select scheduling-target-contact-select" [disabled]="!userIsSchedulerSchedulingTargetContactWriter()">
+                    <option [ngValue]="null">Select Relationship Type</option>
+                    <option *ngFor="let relationshipType of relationshipTypes$ | async" [ngValue]="relationshipType.id">{{relationshipType.name}}</option>
+                </select>
+                <div *ngIf="schedulingTargetContactForm.get('relationshipTypeId')?.invalid && schedulingTargetContactForm.get('relationshipTypeId')?.touched" class="text-danger">
+                    Relationship Type is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="SchedulingTargetContact-versionNumber" id="label-SchedulingTargetContact-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="SchedulingTargetContact-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control scheduling-target-contact-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="SchedulingTargetContact-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerSchedulingTargetContactWriter()" />
+                <label for="SchedulingTargetContact-active" class="form-check-label" id="label-SchedulingTargetContact-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="SchedulingTargetContact-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerSchedulingTargetContactWriter()" />
+                <label for="SchedulingTargetContact-deleted" class="form-check-label" id="label-SchedulingTargetContact-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer scheduling-target-contact-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Scheduling Target Contact changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !schedulingTargetContactForm.valid || schedulingTargetContactForm.pristine || !userIsSchedulerSchedulingTargetContactWriter()" ngbTooltip="Save the Scheduling Target Contact changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

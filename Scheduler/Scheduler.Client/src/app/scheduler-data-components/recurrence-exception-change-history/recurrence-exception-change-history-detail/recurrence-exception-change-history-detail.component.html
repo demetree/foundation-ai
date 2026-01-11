@@ -1,0 +1,66 @@
+<div class="container-fluid p-1 m-0 recurrence-exception-change-history-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="recurrence-exception-change-history-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Recurrence Exception Change History</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Recurrence Exception Change History' : 'Add Recurrence Exception Change History'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerRecurrenceExceptionChangeHistoryReader()">
+                <div class="col m-2 recurrence-exception-change-history-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="recurrenceExceptionChangeHistoryForm" (ngSubmit)="submitForm()" class="recurrence-exception-change-history-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('recurrenceExceptionId')">
+                                <label for="RecurrenceExceptionChangeHistory-recurrenceExceptionId" id="label-RecurrenceExceptionChangeHistory-recurrenceExceptionId"><span class="text-danger">*</span>Recurrence Exception</label>
+                                <select id="RecurrenceExceptionChangeHistory-recurrenceExceptionId" formControlName="recurrenceExceptionId" class="form-select recurrence-exception-change-history-select" [disabled]="!userIsSchedulerRecurrenceExceptionChangeHistoryWriter()">
+                                    <option [ngValue]="null">Select Recurrence Exception</option>
+                                    <option *ngFor="let recurrenceException of recurrenceExceptions$ | async" [ngValue]="recurrenceException.id">{{recurrenceException.reason}}</option>
+                                </select>
+                                <div *ngIf="recurrenceExceptionChangeHistoryForm.get('recurrenceExceptionId')?.invalid && recurrenceExceptionChangeHistoryForm.get('recurrenceExceptionId')?.touched" class="text-danger">
+                                    Recurrence Exception is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="RecurrenceExceptionChangeHistory-versionNumber" id="label-RecurrenceExceptionChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="RecurrenceExceptionChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control recurrence-exception-change-history-input" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                                <label for="RecurrenceExceptionChangeHistory-timeStamp" id="label-RecurrenceExceptionChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                                <input type="datetime-local" id="RecurrenceExceptionChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control recurrence-exception-change-history-input" [disabled]="!userIsSchedulerRecurrenceExceptionChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                                <div *ngIf="recurrenceExceptionChangeHistoryForm.get('timeStamp')?.invalid && recurrenceExceptionChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                                    Time Stamp is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="RecurrenceExceptionChangeHistory-userId" id="label-RecurrenceExceptionChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="RecurrenceExceptionChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control recurrence-exception-change-history-input" [disabled]="!userIsSchedulerRecurrenceExceptionChangeHistoryWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="recurrenceExceptionChangeHistoryForm.get('userId')?.invalid && recurrenceExceptionChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                                <label for="RecurrenceExceptionChangeHistory-data" id="label-RecurrenceExceptionChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                                <textarea id="RecurrenceExceptionChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control recurrence-exception-change-history-input" [disabled]="!userIsSchedulerRecurrenceExceptionChangeHistoryWriter()"></textarea>
+                                <div *ngIf="recurrenceExceptionChangeHistoryForm.get('data')?.invalid && recurrenceExceptionChangeHistoryForm.get('data')?.touched" class="text-danger">
+                                    Data is required
+                                </div>
+                            </div>
+                            <div class="recurrence-exception-change-history-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="recurrenceExceptionChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Recurrence Exception Change History">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !recurrenceExceptionChangeHistoryForm.valid || !recurrenceExceptionChangeHistoryForm.dirty || recurrenceExceptionChangeHistoryForm.pristine || userIsSchedulerRecurrenceExceptionChangeHistoryWriter() == false " ngbTooltip="Save Recurrence Exception Change History">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

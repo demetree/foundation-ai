@@ -1,0 +1,66 @@
+<div class="container-fluid p-1 m-0 resource-contact-change-history-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="resource-contact-change-history-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Resource Contact Change History</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Resource Contact Change History' : 'Add Resource Contact Change History'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerResourceContactChangeHistoryReader()">
+                <div class="col m-2 resource-contact-change-history-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="resourceContactChangeHistoryForm" (ngSubmit)="submitForm()" class="resource-contact-change-history-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('resourceContactId')">
+                                <label for="ResourceContactChangeHistory-resourceContactId" id="label-ResourceContactChangeHistory-resourceContactId"><span class="text-danger">*</span>Resource Contact</label>
+                                <select id="ResourceContactChangeHistory-resourceContactId" formControlName="resourceContactId" class="form-select resource-contact-change-history-select" [disabled]="!userIsSchedulerResourceContactChangeHistoryWriter()">
+                                    <option [ngValue]="null">Select Resource Contact</option>
+                                    <option *ngFor="let resourceContact of resourceContacts$ | async" [ngValue]="resourceContact.id">{{resourceContact.id}}</option>
+                                </select>
+                                <div *ngIf="resourceContactChangeHistoryForm.get('resourceContactId')?.invalid && resourceContactChangeHistoryForm.get('resourceContactId')?.touched" class="text-danger">
+                                    Resource Contact is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="ResourceContactChangeHistory-versionNumber" id="label-ResourceContactChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="ResourceContactChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control resource-contact-change-history-input" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                                <label for="ResourceContactChangeHistory-timeStamp" id="label-ResourceContactChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                                <input type="datetime-local" id="ResourceContactChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control resource-contact-change-history-input" [disabled]="!userIsSchedulerResourceContactChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                                <div *ngIf="resourceContactChangeHistoryForm.get('timeStamp')?.invalid && resourceContactChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                                    Time Stamp is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="ResourceContactChangeHistory-userId" id="label-ResourceContactChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="ResourceContactChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control resource-contact-change-history-input" [disabled]="!userIsSchedulerResourceContactChangeHistoryWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="resourceContactChangeHistoryForm.get('userId')?.invalid && resourceContactChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                                <label for="ResourceContactChangeHistory-data" id="label-ResourceContactChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                                <textarea id="ResourceContactChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control resource-contact-change-history-input" [disabled]="!userIsSchedulerResourceContactChangeHistoryWriter()"></textarea>
+                                <div *ngIf="resourceContactChangeHistoryForm.get('data')?.invalid && resourceContactChangeHistoryForm.get('data')?.touched" class="text-danger">
+                                    Data is required
+                                </div>
+                            </div>
+                            <div class="resource-contact-change-history-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="resourceContactChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Resource Contact Change History">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !resourceContactChangeHistoryForm.valid || !resourceContactChangeHistoryForm.dirty || resourceContactChangeHistoryForm.pristine || userIsSchedulerResourceContactChangeHistoryWriter() == false " ngbTooltip="Save Resource Contact Change History">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

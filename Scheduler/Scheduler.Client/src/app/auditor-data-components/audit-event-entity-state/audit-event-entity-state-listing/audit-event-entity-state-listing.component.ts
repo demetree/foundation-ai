@@ -1,0 +1,164 @@
+import { Component, OnInit, AfterViewInit, ViewChild } from '@angular/core';
+import { Observable, map, finalize, startWith, shareReplay } from 'rxjs';
+import { BreakpointObserver } from '@angular/cdk/layout';
+import { NavigationService } from '../../../utility-services/navigation.service';
+import { CanComponentDeactivate } from '../../../guards/unsaved-changes.guard';
+import { AuditEventEntityStateService, AuditEventEntityStateData } from '../../../auditor-data-services/audit-event-entity-state.service';
+import { AuditEventEntityStateAddEditComponent } from '../audit-event-entity-state-add-edit/audit-event-entity-state-add-edit.component';
+import { AuditEventEntityStateTableComponent } from '../audit-event-entity-state-table/audit-event-entity-state-table.component';
+import { AlertService, MessageSeverity } from '../../../services/alert.service';
+
+@Component({
+  selector: 'app-audit-event-entity-state-listing',
+  templateUrl: './audit-event-entity-state-listing.component.html',
+  styleUrls: ['./audit-event-entity-state-listing.component.scss']
+})
+export class AuditEventEntityStateListingComponent implements OnInit, AfterViewInit, CanComponentDeactivate {
+  @ViewChild(AuditEventEntityStateAddEditComponent) addEditAuditEventEntityStateComponent!: AuditEventEntityStateAddEditComponent;
+  @ViewChild(AuditEventEntityStateTableComponent) auditEventEntityStateTableComponent!: AuditEventEntityStateTableComponent;
+
+  public AuditEventEntityStates: AuditEventEntityStateData[] | null = null;
+  public isSmallScreen: boolean = false;
+
+  public filterText: string | null = null;
+
+  public totalAuditEventEntityStateCount$ : Observable<number> | null = null;
+  public filteredAuditEventEntityStateCount$: Observable<number> | null = null;
+  public loadingTotalCount = false;
+  public loadingFilteredCount = false;
+
+  private debounceTimeout: any;
+
+  constructor(private auditEventEntityStateService: AuditEventEntityStateService,
+              private alertService: AlertService,
+              private navigationService: NavigationService,
+              private breakpointObserver: BreakpointObserver) { }
+
+  ngOnInit(): void {
+
+    this.breakpointObserver
+      .observe(['(max-width: 1100px)']) // this size is specified to try and find a balance so tablets and phone see cards, but wider screens get a table.
+      .subscribe((result) => {
+        this.isSmallScreen = result.matches;
+      });
+
+    this.loadCounts();
+  }
+
+
+  ngAfterViewInit(): void {
+    //
+    // Subscribe to the auditEventEntityStateChanged observable on the add/edit component so that when a AuditEventEntityState changes we can reload the list.
+    //
+    this.addEditAuditEventEntityStateComponent.auditEventEntityStateChanged.subscribe({
+      next: (result: AuditEventEntityStateData[] | null) => {
+        this.auditEventEntityStateTableComponent.loadData();
+        this.loadCounts();
+      },
+      error: (err: any) => {
+         this.alertService.showMessage("Error during Audit Event Entity State changed notification", JSON.stringify(err), MessageSeverity.error);
+      }
+    });
+  }
+
+  canDeactivate(): boolean {
+    //
+    // Do not allow route changes when the modal is up.
+    //
+    if (this.addEditAuditEventEntityStateComponent.modalIsDisplayed == true) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+
+  private loadCounts(): void {
+
+    this.loadingTotalCount = true;
+    this.loadingFilteredCount = true;
+
+    // Total count (no filter)
+    this.totalAuditEventEntityStateCount$ = this.auditEventEntityStateService.GetAuditEventEntityStatesRowCount({
+      active: true,
+      deleted: false
+    }).pipe(
+      map(c => Number(c ?? 0)),
+      startWith(0),
+      finalize(() => {
+        this.loadingTotalCount = false;
+      }),
+      shareReplay(1)
+    );
+
+    if (this.filterText) {
+
+      this.filteredAuditEventEntityStateCount$ = this.auditEventEntityStateService.GetAuditEventEntityStatesRowCount({
+        active: true,
+        deleted: false,
+        anyStringContains: this.filterText || undefined
+      }).pipe(
+        map(c => Number(c ?? 0)),
+        startWith(0),
+        finalize(() => {
+          this.loadingFilteredCount = false;
+        }),
+        shareReplay(1)
+      )
+    } else {
+
+      this.filteredAuditEventEntityStateCount$ = this.totalAuditEventEntityStateCount$; // No filter, so assign to be same as total observable
+      this.loadingFilteredCount = false;
+    }
+
+    //
+    // Subscribe to the observables to kick them off.  We don't want to depend on the template to do this.
+    //
+    // Although the templates would (and do) subscribe to these, repeated fast filtering operations can sometimes get stuck in a loading state, so this is a defensive measure to eliminate that risk.
+    //
+    this.totalAuditEventEntityStateCount$.subscribe();
+
+    if (this.filteredAuditEventEntityStateCount$ != this.totalAuditEventEntityStateCount$) {
+      this.filteredAuditEventEntityStateCount$.subscribe();
+    }
+  }
+
+
+  public goBack(): void {
+    this.navigationService.goBack();
+   }
+
+
+  public canGoBack(): boolean {
+    return this.navigationService.canGoBack();
+  }
+
+
+  public clearFilter() {
+    this.filterText = '';
+  }
+
+
+  //
+  // Update the counts when the filter change
+  //
+  public onFilterChange(): void {
+
+    clearTimeout(this.debounceTimeout);
+
+    this.debounceTimeout = setTimeout(() => {
+      this.auditEventEntityStateTableComponent.loadData(); // Refresh table
+      this.loadCounts(); // Refresh both counts
+    }, 500);           // 500 millisecond debounce
+  }
+
+
+
+  public userIsAuditorAuditEventEntityStateReader(): boolean {
+    return this.auditEventEntityStateService.userIsAuditorAuditEventEntityStateReader();
+  }
+
+  public userIsAuditorAuditEventEntityStateWriter(): boolean {
+    return this.auditEventEntityStateService.userIsAuditorAuditEventEntityStateWriter();
+  }
+}

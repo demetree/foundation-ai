@@ -1,0 +1,421 @@
+<div class="container-fluid p-1 m-0 icon-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="icon-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Icon</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Icon' : 'Add Icon'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerIconReader()">
+                <div class="col m-2 icon-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="iconForm" (ngSubmit)="submitForm()" class="icon-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="Icon-name" id="label-Icon-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="Icon-name" formControlName="name" placeholder="Enter Name" class="form-control icon-input" [disabled]="!userIsSchedulerIconWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="iconForm.get('name')?.invalid && iconForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('fontAwesomeCode')">
+                                <label for="Icon-fontAwesomeCode" id="label-Icon-fontAwesomeCode">Font Awesome Code</label>
+                                <input type="text" id="Icon-fontAwesomeCode" formControlName="fontAwesomeCode" placeholder="Enter Font Awesome Code" class="form-control icon-input" [disabled]="!userIsSchedulerIconWriter()" aria-labelledby="label-fontAwesomeCode" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                                <label for="Icon-sequence" id="label-Icon-sequence">Sequence</label>
+                                <input type="number" id="Icon-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control icon-input" [disabled]="!userIsSchedulerIconWriter()" aria-labelledby="label-sequence" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="Icon-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerIconWriter()" />
+                                <label for="Icon-active" class="form-check-label" id="label-Icon-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="Icon-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerIconWriter()" />
+                                <label for="Icon-deleted" class="form-check-label" id="label-Icon-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="icon-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="iconForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Icon">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !iconForm.valid || !iconForm.dirty || iconForm.pristine || userIsSchedulerIconWriter() == false " ngbTooltip="Save Icon">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerIconReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 icon-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="resourceTypeService.userIsSchedulerResourceTypeReader()">
+                            <button ngbNavLink>Resource Types
+                                <span class="badge bg-primary ms-2">
+                                    {{ (iconData?.ResourceTypesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-resource-type-table [queryParams]="{ iconId: iconData?.id }"></app-resource-type-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-resource-type-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-resource-type-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="priorityService.userIsSchedulerPriorityReader()">
+                            <button ngbNavLink>Priorities
+                                <span class="badge bg-primary ms-2">
+                                    {{ (iconData?.PrioritiesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-priority-table [queryParams]="{ iconId: iconData?.id }"></app-priority-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-priority-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-priority-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="contactMethodService.userIsSchedulerContactMethodReader()">
+                            <button ngbNavLink>Contact Methods
+                                <span class="badge bg-primary ms-2">
+                                    {{ (iconData?.ContactMethodsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-contact-method-table [queryParams]="{ iconId: iconData?.id }"></app-contact-method-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-contact-method-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-contact-method-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="interactionTypeService.userIsSchedulerInteractionTypeReader()">
+                            <button ngbNavLink>Interaction Types
+                                <span class="badge bg-primary ms-2">
+                                    {{ (iconData?.InteractionTypesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-interaction-type-table [queryParams]="{ iconId: iconData?.id }"></app-interaction-type-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-interaction-type-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-interaction-type-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="tagService.userIsSchedulerTagReader()">
+                            <button ngbNavLink>Tags
+                                <span class="badge bg-primary ms-2">
+                                    {{ (iconData?.TagsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-tag-table [queryParams]="{ iconId: iconData?.id }"></app-tag-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-tag-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-tag-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="contactTypeService.userIsSchedulerContactTypeReader()">
+                            <button ngbNavLink>Contact Types
+                                <span class="badge bg-primary ms-2">
+                                    {{ (iconData?.ContactTypesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-contact-type-table [queryParams]="{ iconId: iconData?.id }"></app-contact-type-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-contact-type-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-contact-type-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="contactService.userIsSchedulerContactReader()">
+                            <button ngbNavLink>Contacts
+                                <span class="badge bg-primary ms-2">
+                                    {{ (iconData?.ContactsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-contact-table [queryParams]="{ iconId: iconData?.id }"></app-contact-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-contact-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-contact-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="relationshipTypeService.userIsSchedulerRelationshipTypeReader()">
+                            <button ngbNavLink>Relationship Types
+                                <span class="badge bg-primary ms-2">
+                                    {{ (iconData?.RelationshipTypesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-relationship-type-table [queryParams]="{ iconId: iconData?.id }"></app-relationship-type-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-relationship-type-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-relationship-type-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="officeTypeService.userIsSchedulerOfficeTypeReader()">
+                            <button ngbNavLink>Office Types
+                                <span class="badge bg-primary ms-2">
+                                    {{ (iconData?.OfficeTypesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-office-type-table [queryParams]="{ iconId: iconData?.id }"></app-office-type-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-office-type-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-office-type-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="calendarService.userIsSchedulerCalendarReader()">
+                            <button ngbNavLink>Calendars
+                                <span class="badge bg-primary ms-2">
+                                    {{ (iconData?.CalendarsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-calendar-table [queryParams]="{ iconId: iconData?.id }"></app-calendar-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-calendar-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-calendar-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="clientTypeService.userIsSchedulerClientTypeReader()">
+                            <button ngbNavLink>Client Types
+                                <span class="badge bg-primary ms-2">
+                                    {{ (iconData?.ClientTypesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-client-type-table [queryParams]="{ iconId: iconData?.id }"></app-client-type-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-client-type-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-client-type-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="assignmentRoleService.userIsSchedulerAssignmentRoleReader()">
+                            <button ngbNavLink>Assignment Roles
+                                <span class="badge bg-primary ms-2">
+                                    {{ (iconData?.AssignmentRolesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-assignment-role-table [queryParams]="{ iconId: iconData?.id }"></app-assignment-role-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-assignment-role-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-assignment-role-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="schedulingTargetTypeService.userIsSchedulerSchedulingTargetTypeReader()">
+                            <button ngbNavLink>Scheduling Target Types
+                                <span class="badge bg-primary ms-2">
+                                    {{ (iconData?.SchedulingTargetTypesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-scheduling-target-type-table [queryParams]="{ iconId: iconData?.id }"></app-scheduling-target-type-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-scheduling-target-type-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-scheduling-target-type-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="crewService.userIsSchedulerCrewReader()">
+                            <button ngbNavLink>Crews
+                                <span class="badge bg-primary ms-2">
+                                    {{ (iconData?.CrewsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-crew-table [queryParams]="{ iconId: iconData?.id }"></app-crew-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-crew-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-crew-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="crewMemberService.userIsSchedulerCrewMemberReader()">
+                            <button ngbNavLink>Crew Members
+                                <span class="badge bg-primary ms-2">
+                                    {{ (iconData?.CrewMembersCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-crew-member-table [queryParams]="{ iconId: iconData?.id }"></app-crew-member-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-crew-member-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-crew-member-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="fundService.userIsSchedulerFundReader()">
+                            <button ngbNavLink>Funds
+                                <span class="badge bg-primary ms-2">
+                                    {{ (iconData?.FundsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-fund-table [queryParams]="{ iconId: iconData?.id }"></app-fund-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-fund-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-fund-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="campaignService.userIsSchedulerCampaignReader()">
+                            <button ngbNavLink>Campaigns
+                                <span class="badge bg-primary ms-2">
+                                    {{ (iconData?.CampaignsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-campaign-table [queryParams]="{ iconId: iconData?.id }"></app-campaign-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-campaign-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-campaign-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="appealService.userIsSchedulerAppealReader()">
+                            <button ngbNavLink>Appeals
+                                <span class="badge bg-primary ms-2">
+                                    {{ (iconData?.AppealsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-appeal-table [queryParams]="{ iconId: iconData?.id }"></app-appeal-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-appeal-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-appeal-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="householdService.userIsSchedulerHouseholdReader()">
+                            <button ngbNavLink>Households
+                                <span class="badge bg-primary ms-2">
+                                    {{ (iconData?.HouseholdsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-household-table [queryParams]="{ iconId: iconData?.id }"></app-household-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-household-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-household-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="constituentService.userIsSchedulerConstituentReader()">
+                            <button ngbNavLink>Constituents
+                                <span class="badge bg-primary ms-2">
+                                    {{ (iconData?.ConstituentsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-constituent-table [queryParams]="{ iconId: iconData?.id }"></app-constituent-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-constituent-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-constituent-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="tributeService.userIsSchedulerTributeReader()">
+                            <button ngbNavLink>Tributes
+                                <span class="badge bg-primary ms-2">
+                                    {{ (iconData?.TributesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-tribute-table [queryParams]="{ iconId: iconData?.id }"></app-tribute-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-tribute-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-tribute-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

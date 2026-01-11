@@ -1,0 +1,73 @@
+<div class="add-scheduled-event-template-charge" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-scheduled-event-template-charge me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Scheduled Event Template Charge" 
+        *ngIf="userIsSchedulerScheduledEventTemplateChargeWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #scheduledEventTemplateChargeModal let-modal>
+   <div class="modal-header bg-dark text-light scheduled-event-template-charge-modal-header">
+      <h5 class="modal-title mb-0" id="scheduledEventTemplateChargeModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Scheduled Event Template Charge' : 'Add Scheduled Event Template Charge' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body scheduled-event-template-charge-modal-body">
+      <form [formGroup]="scheduledEventTemplateChargeForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('scheduledEventTemplateId')">
+                <label for="ScheduledEventTemplateCharge-scheduledEventTemplateId" id="label-ScheduledEventTemplateCharge-scheduledEventTemplateId"><span class="text-danger">*</span>Scheduled Event Template</label>
+                <select id="ScheduledEventTemplateCharge-scheduledEventTemplateId" formControlName="scheduledEventTemplateId" class="form-select scheduled-event-template-charge-select" [disabled]="!userIsSchedulerScheduledEventTemplateChargeWriter()">
+                    <option [ngValue]="null">Select Scheduled Event Template</option>
+                    <option *ngFor="let scheduledEventTemplate of scheduledEventTemplates$ | async" [ngValue]="scheduledEventTemplate.id">{{scheduledEventTemplate.name}}</option>
+                </select>
+                <div *ngIf="scheduledEventTemplateChargeForm.get('scheduledEventTemplateId')?.invalid && scheduledEventTemplateChargeForm.get('scheduledEventTemplateId')?.touched" class="text-danger">
+                    Scheduled Event Template is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('chargeTypeId')">
+                <label for="ScheduledEventTemplateCharge-chargeTypeId" id="label-ScheduledEventTemplateCharge-chargeTypeId"><span class="text-danger">*</span>Charge Type</label>
+                <select id="ScheduledEventTemplateCharge-chargeTypeId" formControlName="chargeTypeId" class="form-select scheduled-event-template-charge-select" [disabled]="!userIsSchedulerScheduledEventTemplateChargeWriter()">
+                    <option [ngValue]="null">Select Charge Type</option>
+                    <option *ngFor="let chargeType of chargeTypes$ | async" [ngValue]="chargeType.id">{{chargeType.name}}</option>
+                </select>
+                <div *ngIf="scheduledEventTemplateChargeForm.get('chargeTypeId')?.invalid && scheduledEventTemplateChargeForm.get('chargeTypeId')?.touched" class="text-danger">
+                    Charge Type is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('defaultAmount')">
+                <label for="ScheduledEventTemplateCharge-defaultAmount" id="label-ScheduledEventTemplateCharge-defaultAmount"><span class="text-danger">*</span>Default Amount</label>
+                <input type="number" id="ScheduledEventTemplateCharge-defaultAmount" formControlName="defaultAmount" placeholder="Enter Default Amount" class="form-control scheduled-event-template-charge-input" [disabled]="!userIsSchedulerScheduledEventTemplateChargeWriter()" aria-labelledby="label-defaultAmount" />
+                <div *ngIf="scheduledEventTemplateChargeForm.get('defaultAmount')?.invalid && scheduledEventTemplateChargeForm.get('defaultAmount')?.touched" class="text-danger">
+                    Default Amount is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isRequired')">
+                <input type="checkbox" id="ScheduledEventTemplateCharge-isRequired" formControlName="isRequired" class="form-check-input" [disabled]="!userIsSchedulerScheduledEventTemplateChargeWriter()" />
+                <label for="ScheduledEventTemplateCharge-isRequired" class="form-check-label" id="label-ScheduledEventTemplateCharge-isRequired"><span class="text-danger">*</span>Is Required</label>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="ScheduledEventTemplateCharge-versionNumber" id="label-ScheduledEventTemplateCharge-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="ScheduledEventTemplateCharge-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control scheduled-event-template-charge-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ScheduledEventTemplateCharge-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerScheduledEventTemplateChargeWriter()" />
+                <label for="ScheduledEventTemplateCharge-active" class="form-check-label" id="label-ScheduledEventTemplateCharge-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ScheduledEventTemplateCharge-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerScheduledEventTemplateChargeWriter()" />
+                <label for="ScheduledEventTemplateCharge-deleted" class="form-check-label" id="label-ScheduledEventTemplateCharge-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer scheduled-event-template-charge-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Scheduled Event Template Charge changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !scheduledEventTemplateChargeForm.valid || scheduledEventTemplateChargeForm.pristine || !userIsSchedulerScheduledEventTemplateChargeWriter()" ngbTooltip="Save the Scheduled Event Template Charge changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

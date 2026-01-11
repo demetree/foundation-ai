@@ -1,0 +1,145 @@
+<app-crew-member-add-edit [showAddButton]="false" (crewMemberChanged)="reload($event)"></app-crew-member-add-edit>
+<app-crew-custom-add-edit [showAddButton]="false" (crewChanged)="reload($event)"></app-crew-custom-add-edit>
+<div class="card h-100">
+  <div class="card-header bg-light d-flex justify-content-between align-items-center">
+    <h6 class="mb-0 fw-semibold">
+      <i class="fa-solid fa-users-gear me-2"></i>
+      Crews
+    </h6>
+    <div class="d-flex gap-2">
+      <!-- Add Crew Button -->
+      <button class="btn btn-sm btn-primary"
+              (click)="openAddCrewModal()"
+              *ngIf="userIsSchedulerCrewWriter()">
+        <i class="fa fa-plus me-1"></i> Add Crew
+      </button>
+      <!-- Refresh Button -->
+      <button class="btn btn-sm btn-outline-secondary" (click)="loadCrews()">
+        <i class="fa fa-sync" [ngClass]="{'fa-spin': isLoading}"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <!-- Loading -->
+    <div class="text-center py-4" *ngIf="isLoading">
+      <div class="spinner-border spinner-border-sm text-primary" role="status">
+        <span class="visually-hidden">Loading crews...</span>
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div class="alert alert-danger small" *ngIf="error">
+      <i class="fa-solid fa-exclamation-triangle me-2"></i>
+      {{ error }}
+    </div>
+
+    <!-- Empty -->
+    <div class="text-center py-5 text-muted" *ngIf="!isLoading && (!crews || crews.length === 0)">
+      <i class="fa-solid fa-users-slash fa-3x mb-3 opacity-50"></i>
+      <div>No crews</div>
+    </div>
+
+    <!-- Crew List -->
+    <div class="list-group list-group-flush" *ngIf="!isLoading && crews && crews.length > 0">
+      <div class="list-group-item px-0 py-3 border-start border-4"
+           *ngFor="let crew of crews"
+           [style.border-left-color]="crew.color || '#dee2e6'">
+
+        <div class="d-flex align-items-center clickable"
+             (click)="toggleCrewExpanded(crew)">
+
+
+          <!-- Crew Avatar -->
+          <div class="avatar-preview rounded-circle overflow-hidden flex-shrink-0 me-3 clickable mx-3"
+               (click)="navigateToCrew(crew.id)"
+               style="width: 50px; height: 50px;"
+               ngbTooltip="Crew Details"
+               [style.background-image]="crew.avatarData ? 'url(data:' + crew.avatarMimeType + ';base64,' + crew.avatarData + ')' : null"
+               [style.background-color]="crew.color || crew.color || '#6c757d'">
+            <i [class]="crew.icon?.fontAwesomeCode || 'fa-solid fa-users'"
+               class="fa-2x text-white d-flex align-items-center justify-content-center w-100 h-100"
+               *ngIf="!crew.avatarData"></i>
+          </div>
+
+
+          <!-- Crew Info -->
+          <div class="flex-grow-1">
+            <div class="d-flex align-items-center gap-3">
+              <h6 class="mb-0 fw-bold">{{ crew.name }}</h6>
+              <span class="badge bg-light text-dark">
+                {{ (crew?.CrewMembers$ | async)?.length || 0 }}
+                member{{ ((crew?.CrewMembers$ | async)?.length || 0) !== 1 ? 's' : '' }}
+              </span>
+
+              <!-- Chevron — placed immediately after description, not pushed to far right -->
+              <i [class]="isCrewExpanded(crew) ? 'fa-solid fa-chevron-down' : 'fa-solid fa-chevron-right'"
+                 class="ms-3 text-muted flex-shrink-0"></i>
+            </div>
+            <div class="small text-muted" *ngIf="crew.description">
+              {{ crew.description }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Expanded content -->
+        <div class="mt-3 ps-5 border-start border-2 ms-4"
+             *ngIf="isCrewExpanded(crew) && (crew.CrewMembers$ | async)?.length">
+
+
+          <div class="d-flex flex-wrap gap-3">
+            <!-- w-100 for safety on wrap -->
+            <div class="d-flex align-items-center gap-2 mb-2 w-100"
+                 *ngFor="let member of crew.CrewMembers$ | async">
+              <!-- Member Avatar -->
+              <div class="avatar-preview rounded-circle overflow-hidden"
+                   (click)="navigateToResource(member.resourceId)"
+                   ngbTooltip="Resource Details"
+                   style="width: 32px; height: 32px;"
+                   [style.background-image]="member.resource?.avatarData ? 'url(data:' + member.resource?.avatarMimeType + ';base64,' + member.resource?.avatarData + ')' : null"
+                   [style.background-color]="member.resource?.color || '#6c757d'">
+                <i [class]="'fa-solid fa-user'"
+                   class="fa text-white d-flex align-items-center justify-content-center w-100 h-100"
+                   *ngIf="!member.resource?.avatarData"></i>
+              </div>
+              <!-- Member Name + Role -->
+              <div class="flex-grow-1">
+                <!-- note that this takes up the available space so the badge can push right -->
+                <div class="small fw-medium">
+                  {{ member.resource?.name }}
+                </div>
+                <div class="small text-muted">
+                  {{ member.assignmentRole?.name || 'No role assigned' }}
+                </div>
+              </div>
+
+              <!-- Crew Badge - Pushed to the right -->
+              <div class="ms-auto clickable"
+                   ngbTooltip="Edit Crew Membership"
+                   (click)="openCrewMemberModal(member)">
+                <div class="badge rounded-pill px-3 py-2 text-white"
+                     [style.background-color]="member.color || member.crew?.color || member.resource?.color || '#0d6efd'  ">
+
+                  <i [class]="member.crew?.icon?.fontAwesomeCode || 'fa-solid fa-users'"
+                     [style.color]="(member.color ? (member.color | contrastColor) :
+                                     member.resource?.color ? (member.resource?.color | contrastColor) :
+                                     member.crew?.color ? ( member.crew?.color | contrastColor) :
+                                     '#FFFFFF') || 'inherit'"
+                     class="me-2"></i>
+                  Membership
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- No Members Message -->
+          <div class="mt-3 ps-5 small text-muted"
+               *ngIf="isCrewExpanded(crew) && ((crew.CrewMembers$ | async)?.length === 0)">
+            No members in this crew
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

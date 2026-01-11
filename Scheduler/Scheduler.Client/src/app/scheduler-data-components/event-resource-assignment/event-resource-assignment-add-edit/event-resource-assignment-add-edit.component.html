@@ -1,0 +1,130 @@
+<div class="add-event-resource-assignment" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-event-resource-assignment me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Event Resource Assignment" 
+        *ngIf="userIsSchedulerEventResourceAssignmentWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #eventResourceAssignmentModal let-modal>
+   <div class="modal-header bg-dark text-light event-resource-assignment-modal-header">
+      <h5 class="modal-title mb-0" id="eventResourceAssignmentModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Event Resource Assignment' : 'Add Event Resource Assignment' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body event-resource-assignment-modal-body">
+      <form [formGroup]="eventResourceAssignmentForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('scheduledEventId')">
+                <label for="EventResourceAssignment-scheduledEventId" id="label-EventResourceAssignment-scheduledEventId"><span class="text-danger">*</span>Scheduled Event</label>
+                <select id="EventResourceAssignment-scheduledEventId" formControlName="scheduledEventId" class="form-select event-resource-assignment-select" [disabled]="!userIsSchedulerEventResourceAssignmentWriter()">
+                    <option [ngValue]="null">Select Scheduled Event</option>
+                    <option *ngFor="let scheduledEvent of scheduledEvents$ | async" [ngValue]="scheduledEvent.id">{{[scheduledEvent.name] | filterAndJoin}}</option>
+                </select>
+                <div *ngIf="eventResourceAssignmentForm.get('scheduledEventId')?.invalid && eventResourceAssignmentForm.get('scheduledEventId')?.touched" class="text-danger">
+                    Scheduled Event is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('officeId')">
+                <label for="EventResourceAssignment-officeId" id="label-EventResourceAssignment-officeId">Office</label>
+                <select id="EventResourceAssignment-officeId" formControlName="officeId" class="form-select event-resource-assignment-select" [disabled]="!userIsSchedulerEventResourceAssignmentWriter()">
+                    <option [ngValue]="null">Select Office</option>
+                    <option *ngFor="let office of offices$ | async" [ngValue]="office.id">{{office.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('resourceId')">
+                <label for="EventResourceAssignment-resourceId" id="label-EventResourceAssignment-resourceId">Resource</label>
+                <select id="EventResourceAssignment-resourceId" formControlName="resourceId" class="form-select event-resource-assignment-select" [disabled]="!userIsSchedulerEventResourceAssignmentWriter()">
+                    <option [ngValue]="null">Select Resource</option>
+                    <option *ngFor="let resource of resources$ | async" [ngValue]="resource.id">{{[resource.name] | filterAndJoin}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('crewId')">
+                <label for="EventResourceAssignment-crewId" id="label-EventResourceAssignment-crewId">Crew</label>
+                <select id="EventResourceAssignment-crewId" formControlName="crewId" class="form-select event-resource-assignment-select" [disabled]="!userIsSchedulerEventResourceAssignmentWriter()">
+                    <option [ngValue]="null">Select Crew</option>
+                    <option *ngFor="let crew of crews$ | async" [ngValue]="crew.id">{{[crew.name] | filterAndJoin}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('assignmentRoleId')">
+                <label for="EventResourceAssignment-assignmentRoleId" id="label-EventResourceAssignment-assignmentRoleId">Assignment Role</label>
+                <select id="EventResourceAssignment-assignmentRoleId" formControlName="assignmentRoleId" class="form-select event-resource-assignment-select" [disabled]="!userIsSchedulerEventResourceAssignmentWriter()">
+                    <option [ngValue]="null">Select Assignment Role</option>
+                    <option *ngFor="let assignmentRole of assignmentRoles$ | async" [ngValue]="assignmentRole.id">{{assignmentRole.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('assignmentStatusId')">
+                <label for="EventResourceAssignment-assignmentStatusId" id="label-EventResourceAssignment-assignmentStatusId"><span class="text-danger">*</span>Assignment Status</label>
+                <select id="EventResourceAssignment-assignmentStatusId" formControlName="assignmentStatusId" class="form-select event-resource-assignment-select" [disabled]="!userIsSchedulerEventResourceAssignmentWriter()">
+                    <option [ngValue]="null">Select Assignment Status</option>
+                    <option *ngFor="let assignmentStatus of assignmentStatuses$ | async" [ngValue]="assignmentStatus.id">{{assignmentStatus.name}}</option>
+                </select>
+                <div *ngIf="eventResourceAssignmentForm.get('assignmentStatusId')?.invalid && eventResourceAssignmentForm.get('assignmentStatusId')?.touched" class="text-danger">
+                    Assignment Status is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('assignmentStartDateTime')">
+                <label for="EventResourceAssignment-assignmentStartDateTime" id="label-EventResourceAssignment-assignmentStartDateTime">Assignment Start Date Time</label>
+                <input type="datetime-local" id="EventResourceAssignment-assignmentStartDateTime" formControlName="assignmentStartDateTime" placeholder="Enter Assignment Start Date Time" class="form-control event-resource-assignment-input" [disabled]="!userIsSchedulerEventResourceAssignmentWriter()" aria-labelledby="label-assignmentStartDateTime" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('assignmentEndDateTime')">
+                <label for="EventResourceAssignment-assignmentEndDateTime" id="label-EventResourceAssignment-assignmentEndDateTime">Assignment End Date Time</label>
+                <input type="datetime-local" id="EventResourceAssignment-assignmentEndDateTime" formControlName="assignmentEndDateTime" placeholder="Enter Assignment End Date Time" class="form-control event-resource-assignment-input" [disabled]="!userIsSchedulerEventResourceAssignmentWriter()" aria-labelledby="label-assignmentEndDateTime" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('notes')">
+                <label for="EventResourceAssignment-notes" id="label-EventResourceAssignment-notes">Notes</label>
+                <textarea id="EventResourceAssignment-notes" formControlName="notes" placeholder="Enter Notes" class="form-control event-resource-assignment-input" [disabled]="!userIsSchedulerEventResourceAssignmentWriter()"></textarea>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isTravelRequired')">
+                <input type="checkbox" id="EventResourceAssignment-isTravelRequired" formControlName="isTravelRequired" class="form-check-input" [disabled]="!userIsSchedulerEventResourceAssignmentWriter()" />
+                <label for="EventResourceAssignment-isTravelRequired" class="form-check-label" id="label-EventResourceAssignment-isTravelRequired">Is Travel Required</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('travelDurationMinutes')">
+                <label for="EventResourceAssignment-travelDurationMinutes" id="label-EventResourceAssignment-travelDurationMinutes">Travel Duration Minutes</label>
+                <input type="number" id="EventResourceAssignment-travelDurationMinutes" formControlName="travelDurationMinutes" placeholder="Enter Travel Duration Minutes" class="form-control event-resource-assignment-input" [disabled]="!userIsSchedulerEventResourceAssignmentWriter()" aria-labelledby="label-travelDurationMinutes" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('distanceKilometers')">
+                <label for="EventResourceAssignment-distanceKilometers" id="label-EventResourceAssignment-distanceKilometers">Distance Kilometers</label>
+                <input type="number" id="EventResourceAssignment-distanceKilometers" formControlName="distanceKilometers" placeholder="Enter Distance Kilometers" class="form-control event-resource-assignment-input" [disabled]="!userIsSchedulerEventResourceAssignmentWriter()" aria-labelledby="label-distanceKilometers" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('startLocation')">
+                <label for="EventResourceAssignment-startLocation" id="label-EventResourceAssignment-startLocation">Start Location</label>
+                <input type="text" id="EventResourceAssignment-startLocation" formControlName="startLocation" placeholder="Enter Start Location" class="form-control event-resource-assignment-input" [disabled]="!userIsSchedulerEventResourceAssignmentWriter()" aria-labelledby="label-startLocation" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('actualStartDateTime')">
+                <label for="EventResourceAssignment-actualStartDateTime" id="label-EventResourceAssignment-actualStartDateTime">Actual Start Date Time</label>
+                <input type="datetime-local" id="EventResourceAssignment-actualStartDateTime" formControlName="actualStartDateTime" placeholder="Enter Actual Start Date Time" class="form-control event-resource-assignment-input" [disabled]="!userIsSchedulerEventResourceAssignmentWriter()" aria-labelledby="label-actualStartDateTime" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('actualEndDateTime')">
+                <label for="EventResourceAssignment-actualEndDateTime" id="label-EventResourceAssignment-actualEndDateTime">Actual End Date Time</label>
+                <input type="datetime-local" id="EventResourceAssignment-actualEndDateTime" formControlName="actualEndDateTime" placeholder="Enter Actual End Date Time" class="form-control event-resource-assignment-input" [disabled]="!userIsSchedulerEventResourceAssignmentWriter()" aria-labelledby="label-actualEndDateTime" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('actualNotes')">
+                <label for="EventResourceAssignment-actualNotes" id="label-EventResourceAssignment-actualNotes">Actual Notes</label>
+                <textarea id="EventResourceAssignment-actualNotes" formControlName="actualNotes" placeholder="Enter Actual Notes" class="form-control event-resource-assignment-input" [disabled]="!userIsSchedulerEventResourceAssignmentWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="EventResourceAssignment-versionNumber" id="label-EventResourceAssignment-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="EventResourceAssignment-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control event-resource-assignment-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="EventResourceAssignment-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerEventResourceAssignmentWriter()" />
+                <label for="EventResourceAssignment-active" class="form-check-label" id="label-EventResourceAssignment-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="EventResourceAssignment-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerEventResourceAssignmentWriter()" />
+                <label for="EventResourceAssignment-deleted" class="form-check-label" id="label-EventResourceAssignment-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer event-resource-assignment-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Event Resource Assignment changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !eventResourceAssignmentForm.valid || eventResourceAssignmentForm.pristine || !userIsSchedulerEventResourceAssignmentWriter()" ngbTooltip="Save the Event Resource Assignment changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

@@ -1,0 +1,468 @@
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { NavigationService } from '../../../utility-services/navigation.service';
+import { CanComponentDeactivate } from '../../../guards/unsaved-changes.guard';
+import { AlertService, MessageSeverity } from '../../../services/alert.service';
+import { SecurityTeamUserService, SecurityTeamUserData, SecurityTeamUserSubmitData } from '../../../security-data-services/security-team-user.service';
+import { SecurityTeamService } from '../../../security-data-services/security-team.service';
+import { SecurityUserService } from '../../../security-data-services/security-user.service';
+import { AuthService } from '../../../services/auth.service';
+import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
+import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
+
+@Component({
+  selector: 'app-security-team-user-detail',
+  templateUrl: './security-team-user-detail.component.html',
+  styleUrls: ['./security-team-user-detail.component.scss']
+})
+
+export class SecurityTeamUserDetailComponent implements OnInit, CanComponentDeactivate {
+
+  securityTeamUserForm: FormGroup = this.fb.group({
+        securityTeamId: [null, Validators.required],
+        securityUserId: [null, Validators.required],
+        canRead: [false],
+        canWrite: [false],
+        canChangeHierarchy: [false],
+        canChangeOwner: [false],
+        active: [true],
+        deleted: [false],
+      });
+
+
+  public securityTeamUserId: string | null = null;
+  public securityTeamUserData: SecurityTeamUserData | null = null;
+
+  private isLoadingSubject = new BehaviorSubject<boolean>(true);
+  public isLoading$ = this.isLoadingSubject.asObservable();
+
+  public isSaving = false;
+
+  public isEditMode = true;   // Defaults to true (edit).  Gets set to false in ngOnInit if route is 'new'
+
+  securityTeamUsers$ = this.securityTeamUserService.GetSecurityTeamUserList();
+  securityTeams$ = this.securityTeamService.GetSecurityTeamList();
+  securityUsers$ = this.securityUserService.GetSecurityUserList();
+
+  private destroy$ = new Subject<void>();
+
+  constructor(
+    public securityTeamUserService: SecurityTeamUserService,
+    public securityTeamService: SecurityTeamService,
+    public securityUserService: SecurityUserService,
+    private authService: AuthService,
+    private route: ActivatedRoute,
+    private router: Router,
+    private fb: FormBuilder,
+    private alertService: AlertService,
+    private navigationService: NavigationService) { 
+
+    }
+
+  ngOnInit(): void {
+
+    // Get the securityTeamUserId from the route parameters
+    this.securityTeamUserId = this.route.snapshot.paramMap.get('securityTeamUserId');
+
+    if (this.securityTeamUserId === 'new' ||
+        this.securityTeamUserId == null) {
+      //
+      // Add mode
+      //
+      this.isEditMode = false;
+      this.securityTeamUserData = null;
+
+      this.buildFormValues(null);
+
+      this.isLoadingSubject.next(false); // No load needed for add mode
+
+      document.title = 'Add New Security Team User';
+
+    } else {
+
+      // Edit mode
+      this.isEditMode = true;
+
+      document.title = 'Edit Security Team User';
+
+      // Load the data from the server
+      this.loadData(false);
+    }
+
+  }
+
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+
+  public canDeactivate(): boolean {
+    if (this.securityTeamUserForm.dirty) {
+      return confirm('You have unsaved Security Team User changes. Are you sure you want to leave this page?');
+    }
+    return true;
+  }
+
+
+ public GetQueryParameters(): any {
+
+    if (this.securityTeamUserId != null && this.securityTeamUserId !== 'new') {
+
+      const id = parseInt(this.securityTeamUserId, 10);
+
+      if (!isNaN(id)) {
+        return { securityTeamUserId: id };
+      }
+    }
+
+    return null;
+  }
+
+
+/*
+  * Loads the SecurityTeamUser data for the current securityTeamUserId.
+  *
+  * Fully respects the SecurityTeamUserService caching strategy and error handling strategy.
+  *
+  * @param forceLoadAndDisplaySuccessAlert
+  *   - true  will bypass cache entirely and show success alert message
+  *   - false/null will use cache if available, no alert message
+  */
+  public loadData(forceLoadAndDisplaySuccessAlert: boolean | null = null): void {
+
+    //
+    // Start loading indicator immediately
+    //
+    this.isLoadingSubject.next(true);
+
+
+    //
+    // Permission Check
+    //
+    if (!this.securityTeamUserService.userIsSecuritySecurityTeamUserReader()) {
+
+      const userName = this.authService.currentUser?.userName || 'Current user';
+      this.alertService.showMessage(`${userName} does not have permission to read SecurityTeamUsers.`,
+                                    'Access Denied',
+                                     MessageSeverity.warn
+      );
+
+      this.isLoadingSubject.next(false);
+
+      return;
+    }
+
+    //
+    // Validate securityTeamUserId
+    //
+    if (!this.securityTeamUserId) {
+
+      this.alertService.showMessage('No SecurityTeamUser ID provided.', 'Missing ID', MessageSeverity.error);
+      this.isLoadingSubject.next(false);
+
+      return;
+    }
+
+    const securityTeamUserId = Number(this.securityTeamUserId);
+
+    if (isNaN(securityTeamUserId) || securityTeamUserId <= 0) {
+
+      this.alertService.showMessage(`Invalid Security Team User ID: "${this.securityTeamUserId}"`,
+                                    'Invalid ID',
+                                    MessageSeverity.error
+      );
+
+      this.isLoadingSubject.next(false);
+
+      return;
+    }
+
+    //
+    // Force refresh: clear specific record cache only
+    //
+    if (forceLoadAndDisplaySuccessAlert === true) {
+      // This is the most targeted way: clear only this SecurityTeamUser + relations
+
+      this.securityTeamUserService.ClearRecordCache(securityTeamUserId, true);
+    }
+
+    //
+    // Subscribe with full next/error handling
+    //
+    this.securityTeamUserService.GetSecurityTeamUser(securityTeamUserId, true).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+
+      next: (securityTeamUserData) => {
+
+        //
+        // Success path — securityTeamUserData can legitimately be null if 404'd but request succeeded
+        //
+        if (!securityTeamUserData) {
+
+          this.handleSecurityTeamUserNotFound(securityTeamUserId);
+
+        } else {
+
+          this.securityTeamUserData = securityTeamUserData;
+          this.buildFormValues(this.securityTeamUserData);
+
+          if (forceLoadAndDisplaySuccessAlert === true) {
+            this.alertService.showMessage(
+              'SecurityTeamUser loaded successfully',
+              '',
+              MessageSeverity.success
+            );
+          }
+        }
+
+        this.isLoadingSubject.next(false);
+      },
+
+      error: (error: any) => {
+        //
+        // All HTTP/network/parsing errors flow here
+        // The service already stripped sensitive info and re-threw cleanly
+        //
+        this.handleSecurityTeamUserLoadError(error, securityTeamUserId);
+        this.isLoadingSubject.next(false);
+      }
+    });
+  }
+
+
+  private handleSecurityTeamUserNotFound(securityTeamUserId: number): void {
+
+    this.securityTeamUserData = null;
+    this.buildFormValues(null);
+
+    this.alertService.showMessage(
+      `SecurityTeamUser #${securityTeamUserId} was not found or has been deleted.`,
+      'Not Found',
+      MessageSeverity.warn
+    );
+  }
+
+
+  private handleSecurityTeamUserLoadError(error: any, securityTeamUserId: number): void {
+
+    let message = 'Failed to load Security Team User.';
+    let title = 'Load Error';
+    let severity = MessageSeverity.error;
+
+    //
+    // Leverage HTTP status if available
+    //
+    if (error?.status) {
+      switch (error.status) {
+        case 401:
+          message = 'Your session has expired. Please log in again.';
+          title = 'Unauthorized';
+          break;
+        case 403:
+          message = 'You do not have permission to view this Security Team User.';
+          title = 'Forbidden';
+          break;
+        case 404:
+          message = `Security Team User #${securityTeamUserId} was not found.`;
+          title = 'Not Found';
+          severity = MessageSeverity.warn;
+          break;
+        case 500:
+          message = 'Server error. Please try again or contact support.';
+          title = 'Server Error';
+          break;
+        case 0:
+          message = 'Cannot reach server. Check your internet connection.';
+          title = 'Offline';
+          break;
+        default:
+          message = `Server error ${error.status || 'unknown'}: ${error.statusText || 'Request failed'}`;
+      }
+    } else {
+      message = error?.message || message;
+    }
+
+    console.error(`Security Team User load failed (ID: ${securityTeamUserId})`, error);
+
+    //
+    // Reset UI to safe state
+    //
+    this.securityTeamUserData = null;
+    this.buildFormValues(null);
+
+    this.alertService.showMessage(message, title, severity);
+  }
+
+
+  private buildFormValues(securityTeamUserData: SecurityTeamUserData | null) {
+
+    if (securityTeamUserData == null) {
+      
+      //
+      // Reset the form group to null state, but don't change the form instance.
+      //
+      this.securityTeamUserForm.reset({
+        securityTeamId: null,
+        securityUserId: null,
+        canRead: false,
+        canWrite: false,
+        canChangeHierarchy: false,
+        canChangeOwner: false,
+        active: true,
+        deleted: false,
+   }, { emitEvent: false});
+
+    }
+    else {
+
+        //
+        // Reset the form with properly formatted values that support dates in datetime-local inputs
+        //
+        this.securityTeamUserForm.reset({
+        securityTeamId: securityTeamUserData.securityTeamId,
+        securityUserId: securityTeamUserData.securityUserId,
+        canRead: securityTeamUserData.canRead ?? false,
+        canWrite: securityTeamUserData.canWrite ?? false,
+        canChangeHierarchy: securityTeamUserData.canChangeHierarchy ?? false,
+        canChangeOwner: securityTeamUserData.canChangeOwner ?? false,
+        active: securityTeamUserData.active ?? true,
+        deleted: securityTeamUserData.deleted ?? false,
+      }, { emitEvent: false});
+    }
+
+    this.securityTeamUserForm.markAsPristine();
+    this.securityTeamUserForm.markAsUntouched();
+  }
+
+  public goBack(): void {
+    this.navigationService.goBack();
+  }
+
+
+  public canGoBack(): boolean {
+    return this.navigationService.canGoBack();
+  }
+
+
+  public submitForm() {
+
+    if (this.isSaving == true) {
+      return;
+    }
+
+    if (this.securityTeamUserService.userIsSecuritySecurityTeamUserWriter() == false) {
+      this.alertService.showMessage(this.authService.currentUser?.userName + " does not have the permission to write to Security Team Users", 'Access Denied', MessageSeverity.info);
+      return;
+    }
+
+    if (!this.securityTeamUserForm.valid) {
+      this.alertService.showMessage('Please fix form errors before saving.', 'Invalid Data', MessageSeverity.warn);
+      this.securityTeamUserForm.markAllAsTouched();
+      return;
+    }
+
+    this.isSaving = true;
+
+    const formValue = this.securityTeamUserForm.getRawValue();
+
+
+
+    //
+    // Build clean submit object from form + fallback to current data if needed
+    //
+    const securityTeamUserSubmitData: SecurityTeamUserSubmitData = {
+        id: this.securityTeamUserData?.id || 0,
+        securityTeamId: Number(formValue.securityTeamId),
+        securityUserId: Number(formValue.securityUserId),
+        canRead: !!formValue.canRead,
+        canWrite: !!formValue.canWrite,
+        canChangeHierarchy: !!formValue.canChangeHierarchy,
+        canChangeOwner: !!formValue.canChangeOwner,
+        active: !!formValue.active,
+        deleted: !!formValue.deleted,
+   };
+
+
+    //
+    // Choose the save method we want
+    //
+    const saveObservable = this.isEditMode
+      ? this.securityTeamUserService.PutSecurityTeamUser(securityTeamUserSubmitData.id, securityTeamUserSubmitData)
+      : this.securityTeamUserService.PostSecurityTeamUser(securityTeamUserSubmitData);
+
+
+    saveObservable.pipe(
+      finalize(() => this.isSaving = false)
+    ).subscribe({
+      next: (savedSecurityTeamUserData) => {
+
+        this.securityTeamUserService.ClearAllCaches();       // Clear the data service cache because we know we have changed the data.
+
+        if (!this.isEditMode) {
+          //
+          // Navigate to the newly created Security Team User's detail page
+          //
+          this.securityTeamUserForm.markAsPristine();     // Set the form to new state so the deactivate guard won't complain during routing
+          this.securityTeamUserForm.markAsUntouched();
+
+          this.router.navigate(['/securityteamusers', savedSecurityTeamUserData.id]);
+          this.alertService.showMessage('Security Team User added successfully', '', MessageSeverity.success);
+        } else {
+
+          //
+          // Rebuild the form with the new data
+          //
+          this.securityTeamUserData = savedSecurityTeamUserData;
+          this.buildFormValues(this.securityTeamUserData);
+
+          this.alertService.showMessage("Security Team User saved successfully", '', MessageSeverity.success);
+        }
+      },
+      error: (err) => {
+
+            let errorMessage: string;
+
+            // Check if err is an Error object (e.g., new Error('message'))
+            if (err instanceof Error) {
+                errorMessage = err.message || 'An unexpected error occurred.';
+            }
+            // Check if err is a ServerError object with status and error properties
+            else if (err.status && err.error)
+            {
+                if (err.status === 403)
+                {
+                    errorMessage = err.error?.message ||
+                                   'You do not have permission to save this Security Team User.';
+                }
+                else
+                {
+                    errorMessage = err.error?.message ||
+                                   err.error?.error_description ||
+                                   err.error?.detail ||
+                                   'An error occurred while saving the Security Team User.';
+                }
+            }
+            // Fallback for unexpected error formats
+            else {
+                errorMessage = 'An unexpected error occurred.';
+            }
+
+            this.alertService.showMessage('Security Team User could not be saved',
+                                          errorMessage,
+                                          MessageSeverity.error);
+      }
+    });
+  }
+
+  public userIsSecuritySecurityTeamUserReader(): boolean {
+    return this.securityTeamUserService.userIsSecuritySecurityTeamUserReader();
+  }
+
+  public userIsSecuritySecurityTeamUserWriter(): boolean {
+    return this.securityTeamUserService.userIsSecuritySecurityTeamUserWriter();
+  }
+}

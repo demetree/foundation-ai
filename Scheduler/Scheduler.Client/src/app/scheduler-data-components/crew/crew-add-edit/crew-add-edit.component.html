@@ -1,0 +1,109 @@
+<div class="add-crew" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-crew me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Crew" 
+        *ngIf="userIsSchedulerCrewWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #crewModal let-modal>
+   <div class="modal-header bg-dark text-light crew-modal-header">
+      <h5 class="modal-title mb-0" id="crewModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Crew' : 'Add Crew' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body crew-modal-body">
+      <form [formGroup]="crewForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="Crew-name" id="label-Crew-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="Crew-name" formControlName="name" placeholder="Enter Name" class="form-control crew-input" [disabled]="!userIsSchedulerCrewWriter()" aria-labelledby="label-name" />
+                <div *ngIf="crewForm.get('name')?.invalid && crewForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="Crew-description" id="label-Crew-description">Description</label>
+                <textarea id="Crew-description" formControlName="description" placeholder="Enter Description" class="form-control crew-input" [disabled]="!userIsSchedulerCrewWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('notes')">
+                <label for="Crew-notes" id="label-Crew-notes">Notes</label>
+                <textarea id="Crew-notes" formControlName="notes" placeholder="Enter Notes" class="form-control crew-input" [disabled]="!userIsSchedulerCrewWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('officeId')">
+                <label for="Crew-officeId" id="label-Crew-officeId">Office</label>
+                <select id="Crew-officeId" formControlName="officeId" class="form-select crew-select" [disabled]="!userIsSchedulerCrewWriter()">
+                    <option [ngValue]="null">Select Office</option>
+                    <option *ngFor="let office of offices$ | async" [ngValue]="office.id">{{office.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('iconId')">
+                <label for="Crew-iconId" id="label-Crew-iconId">Icon</label>
+                <select id="Crew-iconId" formControlName="iconId" class="form-select crew-select" [disabled]="!userIsSchedulerCrewWriter()">
+                    <option [ngValue]="null">Select Icon</option>
+                    <option *ngFor="let icon of icons$ | async" [ngValue]="icon.id">{{icon.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('color')">
+                <label for="Crew-color" id="label-Crew-color">Color</label>
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="Crew-color" 
+                        formControlName="color" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerCrewWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="crewForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('avatarFileName')">
+                <label for="Crew-avatarFileName" id="label-Crew-avatarFileName">Avatar File Name</label>
+                <input type="text" id="Crew-avatarFileName" formControlName="avatarFileName" placeholder="Enter Avatar File Name" class="form-control crew-input" [disabled]="!userIsSchedulerCrewWriter()" aria-labelledby="label-avatarFileName" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('avatarSize')">
+                <label for="Crew-avatarSize" id="label-Crew-avatarSize">Avatar Size</label>
+                <input type="number" id="Crew-avatarSize" formControlName="avatarSize" placeholder="Enter Avatar Size" class="form-control crew-input" [disabled]="!userIsSchedulerCrewWriter()" aria-labelledby="label-avatarSize" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('avatarData')">
+                <label for="Crew-avatarData" id="label-Crew-avatarData">Avatar Data</label>
+                <input type="text" id="Crew-avatarData" formControlName="avatarData" placeholder="Enter Avatar Data" class="form-control crew-input" [disabled]="!userIsSchedulerCrewWriter()" aria-labelledby="label-avatarData" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('avatarMimeType')">
+                <label for="Crew-avatarMimeType" id="label-Crew-avatarMimeType">Avatar Mime Type</label>
+                <input type="text" id="Crew-avatarMimeType" formControlName="avatarMimeType" placeholder="Enter Avatar Mime Type" class="form-control crew-input" [disabled]="!userIsSchedulerCrewWriter()" aria-labelledby="label-avatarMimeType" />
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="Crew-versionNumber" id="label-Crew-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="Crew-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control crew-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="Crew-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerCrewWriter()" />
+                <label for="Crew-active" class="form-check-label" id="label-Crew-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="Crew-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerCrewWriter()" />
+                <label for="Crew-deleted" class="form-check-label" id="label-Crew-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer crew-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Crew changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !crewForm.valid || crewForm.pristine || !userIsSchedulerCrewWriter()" ngbTooltip="Save the Crew changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

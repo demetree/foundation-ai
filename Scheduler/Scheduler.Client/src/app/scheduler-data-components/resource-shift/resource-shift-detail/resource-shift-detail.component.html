@@ -1,0 +1,112 @@
+<div class="container-fluid p-1 m-0 resource-shift-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="resource-shift-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Resource Shift</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Resource Shift' : 'Add Resource Shift'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerResourceShiftReader()">
+                <div class="col m-2 resource-shift-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="resourceShiftForm" (ngSubmit)="submitForm()" class="resource-shift-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('resourceId')">
+                                <label for="ResourceShift-resourceId" id="label-ResourceShift-resourceId"><span class="text-danger">*</span>Resource</label>
+                                <select id="ResourceShift-resourceId" formControlName="resourceId" class="form-select resource-shift-select" [disabled]="!userIsSchedulerResourceShiftWriter()">
+                                    <option [ngValue]="null">Select Resource</option>
+                                    <option *ngFor="let resource of resources$ | async" [ngValue]="resource.id">{{[resource.name] | filterAndJoin}}</option>
+                                </select>
+                                <div *ngIf="resourceShiftForm.get('resourceId')?.invalid && resourceShiftForm.get('resourceId')?.touched" class="text-danger">
+                                    Resource is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('dayOfWeek')">
+                                <label for="ResourceShift-dayOfWeek" id="label-ResourceShift-dayOfWeek"><span class="text-danger">*</span>Day Of Week</label>
+                                <input type="number" id="ResourceShift-dayOfWeek" formControlName="dayOfWeek" placeholder="Enter Day Of Week" class="form-control resource-shift-input" [disabled]="!userIsSchedulerResourceShiftWriter()" aria-labelledby="label-dayOfWeek" />
+                                <div *ngIf="resourceShiftForm.get('dayOfWeek')?.invalid && resourceShiftForm.get('dayOfWeek')?.touched" class="text-danger">
+                                    Day Of Week is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeZoneId')">
+                                <label for="ResourceShift-timeZoneId" id="label-ResourceShift-timeZoneId">Time Zone</label>
+                                <select id="ResourceShift-timeZoneId" formControlName="timeZoneId" class="form-select resource-shift-select" [disabled]="!userIsSchedulerResourceShiftWriter()">
+                                    <option [ngValue]="null">Select Time Zone</option>
+                                    <option *ngFor="let timeZone of timeZones$ | async" [ngValue]="timeZone.id">{{timeZone.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('startTime')">
+                                <label for="ResourceShift-startTime" id="label-ResourceShift-startTime"><span class="text-danger">*</span>Start Time</label>
+                                <input type="text" id="ResourceShift-startTime" formControlName="startTime" placeholder="Enter Start Time" class="form-control resource-shift-input" [disabled]="!userIsSchedulerResourceShiftWriter()" aria-labelledby="label-startTime" />
+                                <div *ngIf="resourceShiftForm.get('startTime')?.invalid && resourceShiftForm.get('startTime')?.touched" class="text-danger">
+                                    Start Time is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('hours')">
+                                <label for="ResourceShift-hours" id="label-ResourceShift-hours"><span class="text-danger">*</span>Hours</label>
+                                <input type="number" id="ResourceShift-hours" formControlName="hours" placeholder="Enter Hours" class="form-control resource-shift-input" [disabled]="!userIsSchedulerResourceShiftWriter()" aria-labelledby="label-hours" />
+                                <div *ngIf="resourceShiftForm.get('hours')?.invalid && resourceShiftForm.get('hours')?.touched" class="text-danger">
+                                    Hours is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('label')">
+                                <label for="ResourceShift-label" id="label-ResourceShift-label">Label</label>
+                                <input type="text" id="ResourceShift-label" formControlName="label" placeholder="Enter Label" class="form-control resource-shift-input" [disabled]="!userIsSchedulerResourceShiftWriter()" aria-labelledby="label-label" />
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="ResourceShift-versionNumber" id="label-ResourceShift-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="ResourceShift-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control resource-shift-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ResourceShift-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerResourceShiftWriter()" />
+                                <label for="ResourceShift-active" class="form-check-label" id="label-ResourceShift-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ResourceShift-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerResourceShiftWriter()" />
+                                <label for="ResourceShift-deleted" class="form-check-label" id="label-ResourceShift-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="resource-shift-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="resourceShiftForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Resource Shift">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !resourceShiftForm.valid || !resourceShiftForm.dirty || resourceShiftForm.pristine || userIsSchedulerResourceShiftWriter() == false " ngbTooltip="Save Resource Shift">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerResourceShiftReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 resource-shift-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="resourceShiftChangeHistoryService.userIsSchedulerResourceShiftChangeHistoryReader()">
+                            <button ngbNavLink>Resource Shift Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (resourceShiftData?.ResourceShiftChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-resource-shift-change-history-table [queryParams]="{ resourceShiftId: resourceShiftData?.id }"></app-resource-shift-change-history-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-resource-shift-change-history-add-edit [preSeededData]="{ resourceShiftId: resourceShiftData?.id }" [hiddenFields]="['resourceShiftId']"></app-resource-shift-change-history-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

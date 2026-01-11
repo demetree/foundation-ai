@@ -1,0 +1,58 @@
+<div class="add-event-calendar" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-event-calendar me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Event Calendar" 
+        *ngIf="userIsSchedulerEventCalendarWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #eventCalendarModal let-modal>
+   <div class="modal-header bg-dark text-light event-calendar-modal-header">
+      <h5 class="modal-title mb-0" id="eventCalendarModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Event Calendar' : 'Add Event Calendar' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body event-calendar-modal-body">
+      <form [formGroup]="eventCalendarForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('scheduledEventId')">
+                <label for="EventCalendar-scheduledEventId" id="label-EventCalendar-scheduledEventId"><span class="text-danger">*</span>Scheduled Event</label>
+                <select id="EventCalendar-scheduledEventId" formControlName="scheduledEventId" class="form-select event-calendar-select" [disabled]="!userIsSchedulerEventCalendarWriter()">
+                    <option [ngValue]="null">Select Scheduled Event</option>
+                    <option *ngFor="let scheduledEvent of scheduledEvents$ | async" [ngValue]="scheduledEvent.id">{{[scheduledEvent.name] | filterAndJoin}}</option>
+                </select>
+                <div *ngIf="eventCalendarForm.get('scheduledEventId')?.invalid && eventCalendarForm.get('scheduledEventId')?.touched" class="text-danger">
+                    Scheduled Event is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('calendarId')">
+                <label for="EventCalendar-calendarId" id="label-EventCalendar-calendarId"><span class="text-danger">*</span>Calendar</label>
+                <select id="EventCalendar-calendarId" formControlName="calendarId" class="form-select event-calendar-select" [disabled]="!userIsSchedulerEventCalendarWriter()">
+                    <option [ngValue]="null">Select Calendar</option>
+                    <option *ngFor="let calendar of calendars$ | async" [ngValue]="calendar.id">{{calendar.name}}</option>
+                </select>
+                <div *ngIf="eventCalendarForm.get('calendarId')?.invalid && eventCalendarForm.get('calendarId')?.touched" class="text-danger">
+                    Calendar is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="EventCalendar-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerEventCalendarWriter()" />
+                <label for="EventCalendar-active" class="form-check-label" id="label-EventCalendar-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="EventCalendar-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerEventCalendarWriter()" />
+                <label for="EventCalendar-deleted" class="form-check-label" id="label-EventCalendar-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer event-calendar-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Event Calendar changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !eventCalendarForm.valid || eventCalendarForm.pristine || !userIsSchedulerEventCalendarWriter()" ngbTooltip="Save the Event Calendar changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

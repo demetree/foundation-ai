@@ -1,0 +1,143 @@
+<div class="container-fluid p-1 m-0 rate-sheet-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="rate-sheet-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Rate Sheet</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Rate Sheet' : 'Add Rate Sheet'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerRateSheetReader()">
+                <div class="col m-2 rate-sheet-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="rateSheetForm" (ngSubmit)="submitForm()" class="rate-sheet-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('officeId')">
+                                <label for="RateSheet-officeId" id="label-RateSheet-officeId">Office</label>
+                                <select id="RateSheet-officeId" formControlName="officeId" class="form-select rate-sheet-select" [disabled]="!userIsSchedulerRateSheetWriter()">
+                                    <option [ngValue]="null">Select Office</option>
+                                    <option *ngFor="let office of offices$ | async" [ngValue]="office.id">{{office.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('assignmentRoleId')">
+                                <label for="RateSheet-assignmentRoleId" id="label-RateSheet-assignmentRoleId">Assignment Role</label>
+                                <select id="RateSheet-assignmentRoleId" formControlName="assignmentRoleId" class="form-select rate-sheet-select" [disabled]="!userIsSchedulerRateSheetWriter()">
+                                    <option [ngValue]="null">Select Assignment Role</option>
+                                    <option *ngFor="let assignmentRole of assignmentRoles$ | async" [ngValue]="assignmentRole.id">{{assignmentRole.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('resourceId')">
+                                <label for="RateSheet-resourceId" id="label-RateSheet-resourceId">Resource</label>
+                                <select id="RateSheet-resourceId" formControlName="resourceId" class="form-select rate-sheet-select" [disabled]="!userIsSchedulerRateSheetWriter()">
+                                    <option [ngValue]="null">Select Resource</option>
+                                    <option *ngFor="let resource of resources$ | async" [ngValue]="resource.id">{{[resource.name] | filterAndJoin}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('schedulingTargetId')">
+                                <label for="RateSheet-schedulingTargetId" id="label-RateSheet-schedulingTargetId">Scheduling Target</label>
+                                <select id="RateSheet-schedulingTargetId" formControlName="schedulingTargetId" class="form-select rate-sheet-select" [disabled]="!userIsSchedulerRateSheetWriter()">
+                                    <option [ngValue]="null">Select Scheduling Target</option>
+                                    <option *ngFor="let schedulingTarget of schedulingTargets$ | async" [ngValue]="schedulingTarget.id">{{[schedulingTarget.name] | filterAndJoin}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('rateTypeId')">
+                                <label for="RateSheet-rateTypeId" id="label-RateSheet-rateTypeId"><span class="text-danger">*</span>Rate Type</label>
+                                <select id="RateSheet-rateTypeId" formControlName="rateTypeId" class="form-select rate-sheet-select" [disabled]="!userIsSchedulerRateSheetWriter()">
+                                    <option [ngValue]="null">Select Rate Type</option>
+                                    <option *ngFor="let rateType of rateTypes$ | async" [ngValue]="rateType.id">{{rateType.name}}</option>
+                                </select>
+                                <div *ngIf="rateSheetForm.get('rateTypeId')?.invalid && rateSheetForm.get('rateTypeId')?.touched" class="text-danger">
+                                    Rate Type is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('effectiveDate')">
+                                <label for="RateSheet-effectiveDate" id="label-RateSheet-effectiveDate"><span class="text-danger">*</span>Effective Date</label>
+                                <input type="datetime-local" id="RateSheet-effectiveDate" formControlName="effectiveDate" placeholder="Enter Effective Date" class="form-control rate-sheet-input" [disabled]="!userIsSchedulerRateSheetWriter()" aria-labelledby="label-effectiveDate" />
+                                <div *ngIf="rateSheetForm.get('effectiveDate')?.invalid && rateSheetForm.get('effectiveDate')?.touched" class="text-danger">
+                                    Effective Date is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('currencyId')">
+                                <label for="RateSheet-currencyId" id="label-RateSheet-currencyId"><span class="text-danger">*</span>Currency</label>
+                                <select id="RateSheet-currencyId" formControlName="currencyId" class="form-select rate-sheet-select" [disabled]="!userIsSchedulerRateSheetWriter()">
+                                    <option [ngValue]="null">Select Currency</option>
+                                    <option *ngFor="let currency of currencies$ | async" [ngValue]="currency.id">{{currency.name}}</option>
+                                </select>
+                                <div *ngIf="rateSheetForm.get('currencyId')?.invalid && rateSheetForm.get('currencyId')?.touched" class="text-danger">
+                                    Currency is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('costRate')">
+                                <label for="RateSheet-costRate" id="label-RateSheet-costRate"><span class="text-danger">*</span>Cost Rate</label>
+                                <input type="number" id="RateSheet-costRate" formControlName="costRate" placeholder="Enter Cost Rate" class="form-control rate-sheet-input" [disabled]="!userIsSchedulerRateSheetWriter()" aria-labelledby="label-costRate" />
+                                <div *ngIf="rateSheetForm.get('costRate')?.invalid && rateSheetForm.get('costRate')?.touched" class="text-danger">
+                                    Cost Rate is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('billingRate')">
+                                <label for="RateSheet-billingRate" id="label-RateSheet-billingRate"><span class="text-danger">*</span>Billing Rate</label>
+                                <input type="number" id="RateSheet-billingRate" formControlName="billingRate" placeholder="Enter Billing Rate" class="form-control rate-sheet-input" [disabled]="!userIsSchedulerRateSheetWriter()" aria-labelledby="label-billingRate" />
+                                <div *ngIf="rateSheetForm.get('billingRate')?.invalid && rateSheetForm.get('billingRate')?.touched" class="text-danger">
+                                    Billing Rate is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('notes')">
+                                <label for="RateSheet-notes" id="label-RateSheet-notes">Notes</label>
+                                <textarea id="RateSheet-notes" formControlName="notes" placeholder="Enter Notes" class="form-control rate-sheet-input" [disabled]="!userIsSchedulerRateSheetWriter()"></textarea>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="RateSheet-versionNumber" id="label-RateSheet-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="RateSheet-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control rate-sheet-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="RateSheet-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerRateSheetWriter()" />
+                                <label for="RateSheet-active" class="form-check-label" id="label-RateSheet-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="RateSheet-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerRateSheetWriter()" />
+                                <label for="RateSheet-deleted" class="form-check-label" id="label-RateSheet-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="rate-sheet-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="rateSheetForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Rate Sheet">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !rateSheetForm.valid || !rateSheetForm.dirty || rateSheetForm.pristine || userIsSchedulerRateSheetWriter() == false " ngbTooltip="Save Rate Sheet">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerRateSheetReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 rate-sheet-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="rateSheetChangeHistoryService.userIsSchedulerRateSheetChangeHistoryReader()">
+                            <button ngbNavLink>Rate Sheet Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (rateSheetData?.RateSheetChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-rate-sheet-change-history-table [queryParams]="{ rateSheetId: rateSheetData?.id }"></app-rate-sheet-change-history-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-rate-sheet-change-history-add-edit [preSeededData]="{ rateSheetId: rateSheetData?.id }" [hiddenFields]="['rateSheetId']"></app-rate-sheet-change-history-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

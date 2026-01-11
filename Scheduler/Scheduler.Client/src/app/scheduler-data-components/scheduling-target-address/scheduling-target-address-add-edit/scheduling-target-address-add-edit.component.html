@@ -1,0 +1,117 @@
+<div class="add-scheduling-target-address" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-scheduling-target-address me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Scheduling Target Address" 
+        *ngIf="userIsSchedulerSchedulingTargetAddressWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #schedulingTargetAddressModal let-modal>
+   <div class="modal-header bg-dark text-light scheduling-target-address-modal-header">
+      <h5 class="modal-title mb-0" id="schedulingTargetAddressModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Scheduling Target Address' : 'Add Scheduling Target Address' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body scheduling-target-address-modal-body">
+      <form [formGroup]="schedulingTargetAddressForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('schedulingTargetId')">
+                <label for="SchedulingTargetAddress-schedulingTargetId" id="label-SchedulingTargetAddress-schedulingTargetId"><span class="text-danger">*</span>Scheduling Target</label>
+                <select id="SchedulingTargetAddress-schedulingTargetId" formControlName="schedulingTargetId" class="form-select scheduling-target-address-select" [disabled]="!userIsSchedulerSchedulingTargetAddressWriter()">
+                    <option [ngValue]="null">Select Scheduling Target</option>
+                    <option *ngFor="let schedulingTarget of schedulingTargets$ | async" [ngValue]="schedulingTarget.id">{{[schedulingTarget.name] | filterAndJoin}}</option>
+                </select>
+                <div *ngIf="schedulingTargetAddressForm.get('schedulingTargetId')?.invalid && schedulingTargetAddressForm.get('schedulingTargetId')?.touched" class="text-danger">
+                    Scheduling Target is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('clientId')">
+                <label for="SchedulingTargetAddress-clientId" id="label-SchedulingTargetAddress-clientId">Client</label>
+                <select id="SchedulingTargetAddress-clientId" formControlName="clientId" class="form-select scheduling-target-address-select" [disabled]="!userIsSchedulerSchedulingTargetAddressWriter()">
+                    <option [ngValue]="null">Select Client</option>
+                    <option *ngFor="let client of clients$ | async" [ngValue]="client.id">{{client.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('addressLine1')">
+                <label for="SchedulingTargetAddress-addressLine1" id="label-SchedulingTargetAddress-addressLine1"><span class="text-danger">*</span>Address Line 1</label>
+                <input type="text" id="SchedulingTargetAddress-addressLine1" formControlName="addressLine1" placeholder="Enter Address Line 1" class="form-control scheduling-target-address-input" [disabled]="!userIsSchedulerSchedulingTargetAddressWriter()" aria-labelledby="label-addressLine1" />
+                <div *ngIf="schedulingTargetAddressForm.get('addressLine1')?.invalid && schedulingTargetAddressForm.get('addressLine1')?.touched" class="text-danger">
+                    Address Line 1 is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('addressLine2')">
+                <label for="SchedulingTargetAddress-addressLine2" id="label-SchedulingTargetAddress-addressLine2">Address Line 2</label>
+                <input type="text" id="SchedulingTargetAddress-addressLine2" formControlName="addressLine2" placeholder="Enter Address Line 2" class="form-control scheduling-target-address-input" [disabled]="!userIsSchedulerSchedulingTargetAddressWriter()" aria-labelledby="label-addressLine2" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('city')">
+                <label for="SchedulingTargetAddress-city" id="label-SchedulingTargetAddress-city"><span class="text-danger">*</span>City</label>
+                <input type="text" id="SchedulingTargetAddress-city" formControlName="city" placeholder="Enter City" class="form-control scheduling-target-address-input" [disabled]="!userIsSchedulerSchedulingTargetAddressWriter()" aria-labelledby="label-city" />
+                <div *ngIf="schedulingTargetAddressForm.get('city')?.invalid && schedulingTargetAddressForm.get('city')?.touched" class="text-danger">
+                    City is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('postalCode')">
+                <label for="SchedulingTargetAddress-postalCode" id="label-SchedulingTargetAddress-postalCode">Postal Code</label>
+                <input type="text" id="SchedulingTargetAddress-postalCode" formControlName="postalCode" placeholder="Enter Postal Code" class="form-control scheduling-target-address-input" [disabled]="!userIsSchedulerSchedulingTargetAddressWriter()" aria-labelledby="label-postalCode" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('stateProvinceId')">
+                <label for="SchedulingTargetAddress-stateProvinceId" id="label-SchedulingTargetAddress-stateProvinceId"><span class="text-danger">*</span>State Province</label>
+                <select id="SchedulingTargetAddress-stateProvinceId" formControlName="stateProvinceId" class="form-select scheduling-target-address-select" [disabled]="!userIsSchedulerSchedulingTargetAddressWriter()">
+                    <option [ngValue]="null">Select State Province</option>
+                    <option *ngFor="let stateProvince of stateProvinces$ | async" [ngValue]="stateProvince.id">{{stateProvince.name}}</option>
+                </select>
+                <div *ngIf="schedulingTargetAddressForm.get('stateProvinceId')?.invalid && schedulingTargetAddressForm.get('stateProvinceId')?.touched" class="text-danger">
+                    State Province is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('countryId')">
+                <label for="SchedulingTargetAddress-countryId" id="label-SchedulingTargetAddress-countryId"><span class="text-danger">*</span>Country</label>
+                <select id="SchedulingTargetAddress-countryId" formControlName="countryId" class="form-select scheduling-target-address-select" [disabled]="!userIsSchedulerSchedulingTargetAddressWriter()">
+                    <option [ngValue]="null">Select Country</option>
+                    <option *ngFor="let country of countries$ | async" [ngValue]="country.id">{{country.name}}</option>
+                </select>
+                <div *ngIf="schedulingTargetAddressForm.get('countryId')?.invalid && schedulingTargetAddressForm.get('countryId')?.touched" class="text-danger">
+                    Country is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('latitude')">
+                <label for="SchedulingTargetAddress-latitude" id="label-SchedulingTargetAddress-latitude">Latitude</label>
+                <input type="number" id="SchedulingTargetAddress-latitude" formControlName="latitude" placeholder="Enter Latitude" class="form-control scheduling-target-address-input" [disabled]="!userIsSchedulerSchedulingTargetAddressWriter()" aria-labelledby="label-latitude" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('longitude')">
+                <label for="SchedulingTargetAddress-longitude" id="label-SchedulingTargetAddress-longitude">Longitude</label>
+                <input type="number" id="SchedulingTargetAddress-longitude" formControlName="longitude" placeholder="Enter Longitude" class="form-control scheduling-target-address-input" [disabled]="!userIsSchedulerSchedulingTargetAddressWriter()" aria-labelledby="label-longitude" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('label')">
+                <label for="SchedulingTargetAddress-label" id="label-SchedulingTargetAddress-label">Label</label>
+                <input type="text" id="SchedulingTargetAddress-label" formControlName="label" placeholder="Enter Label" class="form-control scheduling-target-address-input" [disabled]="!userIsSchedulerSchedulingTargetAddressWriter()" aria-labelledby="label-label" />
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isPrimary')">
+                <input type="checkbox" id="SchedulingTargetAddress-isPrimary" formControlName="isPrimary" class="form-check-input" [disabled]="!userIsSchedulerSchedulingTargetAddressWriter()" />
+                <label for="SchedulingTargetAddress-isPrimary" class="form-check-label" id="label-SchedulingTargetAddress-isPrimary"><span class="text-danger">*</span>Is Primary</label>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="SchedulingTargetAddress-versionNumber" id="label-SchedulingTargetAddress-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="SchedulingTargetAddress-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control scheduling-target-address-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="SchedulingTargetAddress-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerSchedulingTargetAddressWriter()" />
+                <label for="SchedulingTargetAddress-active" class="form-check-label" id="label-SchedulingTargetAddress-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="SchedulingTargetAddress-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerSchedulingTargetAddressWriter()" />
+                <label for="SchedulingTargetAddress-deleted" class="form-check-label" id="label-SchedulingTargetAddress-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer scheduling-target-address-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Scheduling Target Address changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !schedulingTargetAddressForm.valid || schedulingTargetAddressForm.pristine || !userIsSchedulerSchedulingTargetAddressWriter()" ngbTooltip="Save the Scheduling Target Address changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

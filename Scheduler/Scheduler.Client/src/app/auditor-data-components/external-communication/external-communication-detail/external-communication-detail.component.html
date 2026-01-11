@@ -1,0 +1,86 @@
+<div class="container-fluid p-1 m-0 external-communication-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="external-communication-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">External Communication</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit External Communication' : 'Add External Communication'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsAuditorExternalCommunicationReader()">
+                <div class="col m-2 external-communication-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="externalCommunicationForm" (ngSubmit)="submitForm()" class="external-communication-details-form">
+                            <div class="form-group">
+                                <label for="timeStamp" id="label-timeStamp">Time Stamp</label>
+                                <input type="datetime-local" id="timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control external-communication-input" [disabled]="!userIsAuditorExternalCommunicationWriter()" aria-labelledby="label-timeStamp" />
+                            </div>
+                            <div class="form-group">
+                                <label for="auditUserId" id="label-auditUserId">Audit User</label>
+                                <select id="auditUserId" formControlName="auditUserId" class="form-select external-communication-select" [disabled]="!userIsAuditorExternalCommunicationWriter()">
+                                    <option [ngValue]="null">Select Audit User</option>
+                                    <option *ngFor="let auditUser of auditUsers$ | async" [ngValue]="auditUser.id">{{auditUser.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="communicationType" id="label-communicationType">Communication Type</label>
+                                <input type="text" id="communicationType" formControlName="communicationType" placeholder="Enter Communication Type" class="form-control external-communication-input" [disabled]="!userIsAuditorExternalCommunicationWriter()" aria-labelledby="label-communicationType" />
+                            </div>
+                            <div class="form-group">
+                                <label for="subject" id="label-subject">Subject</label>
+                                <textarea id="subject" formControlName="subject" placeholder="Enter Subject" class="form-control external-communication-input" [disabled]="!userIsAuditorExternalCommunicationWriter()"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="message" id="label-message">Message</label>
+                                <textarea id="message" formControlName="message" placeholder="Enter Message" class="form-control external-communication-input" [disabled]="!userIsAuditorExternalCommunicationWriter()"></textarea>
+                            </div>
+                            <div class="form-check my-2">
+                                <input type="checkbox" id="completedSuccessfully" formControlName="completedSuccessfully" class="form-check-input" [disabled]="!userIsAuditorExternalCommunicationWriter()" />
+                                <label for="completedSuccessfully" class="form-check-label" id="label-completedSuccessfully"><span class="text-danger">*</span>Completed Successfully</label>
+                            </div>
+                            <div class="form-group">
+                                <label for="responseMessage" id="label-responseMessage">Response Message</label>
+                                <textarea id="responseMessage" formControlName="responseMessage" placeholder="Enter Response Message" class="form-control external-communication-input" [disabled]="!userIsAuditorExternalCommunicationWriter()"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="exceptionText" id="label-exceptionText">Exception Text</label>
+                                <textarea id="exceptionText" formControlName="exceptionText" placeholder="Enter Exception Text" class="form-control external-communication-input" [disabled]="!userIsAuditorExternalCommunicationWriter()"></textarea>
+                            </div>
+                            <div class="external-communication-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="externalCommunicationForm.pristine" (click)="loadData(true)" ngbTooltip="Reload External Communication">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !externalCommunicationForm.valid || !externalCommunicationForm.dirty || externalCommunicationForm.pristine || userIsAuditorExternalCommunicationWriter() == false " ngbTooltip="Save External Communication">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsAuditorExternalCommunicationReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 external-communication-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="externalCommunicationRecipientService.userIsAuditorExternalCommunicationRecipientReader()">
+                            <button ngbNavLink>ExternalCommunicationRecipients
+                                <span class="badge bg-primary ms-2">
+                                    {{ (externalCommunicationData?.ExternalCommunicationRecipientsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <app-external-communication-recipient-table [queryParams]="GetQueryParameters()"></app-external-communication-recipient-table>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

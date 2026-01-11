@@ -1,0 +1,404 @@
+<app-event-resource-assignment-add-edit [showAddButton]="false"></app-event-resource-assignment-add-edit>
+<div class="row" *ngIf="userIsSchedulerEventResourceAssignmentReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerEventResourceAssignmentWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerEventResourceAssignmentWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('scheduledEvent.name')">
+                Scheduled  Event
+                <span *ngIf="sortColumn === 'scheduledEvent.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('office.name')">
+                Office
+                <span *ngIf="sortColumn === 'office.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('resource.name')">
+                Resource
+                <span *ngIf="sortColumn === 'resource.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('crew.name')">
+                Crew
+                <span *ngIf="sortColumn === 'crew.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('assignmentRole.name')">
+                Assignment  Role
+                <span *ngIf="sortColumn === 'assignmentRole.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('assignmentStatus.name')">
+                Assignment  Status
+                <span *ngIf="sortColumn === 'assignmentStatus.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('assignmentStartDateTime')">
+                Assignment  Start  Date  Time
+                <span *ngIf="sortColumn === 'assignmentStartDateTime'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('assignmentEndDateTime')">
+                Assignment  End  Date  Time
+                <span *ngIf="sortColumn === 'assignmentEndDateTime'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('notes')">
+                Notes
+                <span *ngIf="sortColumn === 'notes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('isTravelRequired')">
+                Is  Travel  Required
+                <span *ngIf="sortColumn === 'isTravelRequired'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('travelDurationMinutes')">
+                Travel  Duration  Minutes
+                <span *ngIf="sortColumn === 'travelDurationMinutes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('distanceKilometers')">
+                Distance  Kilometers
+                <span *ngIf="sortColumn === 'distanceKilometers'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('startLocation')">
+                Start  Location
+                <span *ngIf="sortColumn === 'startLocation'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('actualStartDateTime')">
+                Actual  Start  Date  Time
+                <span *ngIf="sortColumn === 'actualStartDateTime'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('actualEndDateTime')">
+                Actual  End  Date  Time
+                <span *ngIf="sortColumn === 'actualEndDateTime'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('actualNotes')">
+                Actual  Notes
+                <span *ngIf="sortColumn === 'actualNotes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let eventResourceAssignment of filteredEventResourceAssignments; trackBy: getEventResourceAssignmentId"
+              [ngClass]="{
+                 'row-inactive': eventResourceAssignment.active == false,
+                 'row-deleted': eventResourceAssignment.deleted == true 
+                 }">
+            <td class="header-action-button" *ngIf="userIsSchedulerEventResourceAssignmentWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleEdit(eventResourceAssignment)"
+                      ngbTooltip="Edit" 
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsSchedulerEventResourceAssignmentWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleDelete(eventResourceAssignment)"
+                      ngbTooltip="Delete" 
+                      placement="top"
+                      *ngIf="eventResourceAssignment.deleted == false">
+                <i class="fa fa-trash"></i>
+              </button>
+              <button class="btn btn-sm"
+                      (click)="handleUndelete(eventResourceAssignment)"
+                      ngbTooltip="Undelete" 
+                      placement="top"
+                      *ngIf="eventResourceAssignment.deleted == true">
+                <i class="fa fa-trash-arrow-up"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(eventResourceAssignment, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(eventResourceAssignment, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(eventResourceAssignment, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(eventResourceAssignment, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(eventResourceAssignment, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(eventResourceAssignment, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(eventResourceAssignment, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(eventResourceAssignment, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/scheduledevent', eventResourceAssignment.scheduledEventId]" class="btn btn-link text-left" ngbTooltip="Open Scheduled Event details">{{eventResourceAssignment.scheduledEvent?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/office', eventResourceAssignment.officeId]" class="btn btn-link text-left" ngbTooltip="Open Office details">{{eventResourceAssignment.office?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/resource', eventResourceAssignment.resourceId]" class="btn btn-link text-left" ngbTooltip="Open Resource details">{{eventResourceAssignment.resource?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/crew', eventResourceAssignment.crewId]" class="btn btn-link text-left" ngbTooltip="Open Crew details">{{eventResourceAssignment.crew?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/assignmentrole', eventResourceAssignment.assignmentRoleId]" class="btn btn-link text-left" ngbTooltip="Open Assignment Role details">{{eventResourceAssignment.assignmentRole?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/assignmentstatus', eventResourceAssignment.assignmentStatusId]" class="btn btn-link text-left" ngbTooltip="Open Assignment Status details">{{eventResourceAssignment.assignmentStatus?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/eventresourceassignment', eventResourceAssignment.id]" class="btn btn-link text-left" ngbTooltip="Open Event Resource Assignment details">{{eventResourceAssignment.assignmentStartDateTime | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</a></td>
+            <td class="text-truncate">{{eventResourceAssignment.assignmentEndDateTime | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate">{{eventResourceAssignment.notes}}</td>
+            <td class="text-truncate"><boolean-icon [value]="eventResourceAssignment.isTravelRequired"/></td>
+            <td class="text-truncate">{{eventResourceAssignment.travelDurationMinutes | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{eventResourceAssignment.distanceKilometers | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{eventResourceAssignment.startLocation}}</td>
+            <td class="text-truncate">{{eventResourceAssignment.actualStartDateTime | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate">{{eventResourceAssignment.actualEndDateTime | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate">{{eventResourceAssignment.actualNotes}}</td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let eventResourceAssignment of filteredEventResourceAssignments; trackBy: getEventResourceAssignmentId" class="card my-2"
+              [ngClass]="{
+                 'row-inactive': eventResourceAssignment.active == false,
+                 'row-deleted': eventResourceAssignment.deleted == true 
+                 }">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(eventResourceAssignment, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(eventResourceAssignment, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(eventResourceAssignment, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(eventResourceAssignment, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(eventResourceAssignment, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(eventResourceAssignment, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(eventResourceAssignment, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(eventResourceAssignment, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(eventResourceAssignment, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(eventResourceAssignment, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(eventResourceAssignment, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(eventResourceAssignment, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(eventResourceAssignment, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/eventresourceassignment', eventResourceAssignment.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(eventResourceAssignment)" *ngIf="userIsSchedulerEventResourceAssignmentWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(eventResourceAssignment)" *ngIf="userIsSchedulerEventResourceAssignmentWriter() && eventResourceAssignment.deleted == false" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+            <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(eventResourceAssignment)" *ngIf="userIsSchedulerEventResourceAssignmentWriter() && eventResourceAssignment.deleted == true" ngbTooltip="Undelete">
+              <i class="fa fa-trash-arrow-upp"></i> UnDelete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{eventResourceAssignment.id}}</strong>
+               <small class="text-muted d-block">{{eventResourceAssignment.scheduledEvent?.name}}</small>
+             </div>
+             <div>
+                <button class="btn btn-sm"
+                        [routerLink]="['/eventresourceassignment', eventResourceAssignment.id]"
+                        ngbTooltip="Event Resource Assignment Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="btn btn-sm"
+                        (click)="handleEdit(eventResourceAssignment)"
+                        ngbTooltip="Edit Event Resource Assignment">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleDelete(eventResourceAssignment)"
+                      ngbTooltip="Delete Event Resource Assignment" 
+                      placement="top"
+                      *ngIf="eventResourceAssignment.deleted == false">
+                  <i class="fa fa-trash"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleUndelete(eventResourceAssignment)"
+                      ngbTooltip="Undelete Event Resource Assignment" 
+                      placement="top"
+                      *ngIf="eventResourceAssignment.deleted == true">
+                 <i class="fa fa-trash-arrow-up"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="event-resource-assignment-info" *ngIf="eventResourceAssignment.scheduledEventId != null">
+              <strong>Scheduled Event: </strong>
+              <a [routerLink]="['/scheduledevent', eventResourceAssignment.scheduledEventId]" class="text-left p-0 m-0" ngbTooltip="Open Scheduled Event details">{{eventResourceAssignment.scheduledEvent?.name}}</a>
+            </p>
+            <p class="event-resource-assignment-info" *ngIf="eventResourceAssignment.officeId != null">
+              <strong>Office: </strong>
+              <a [routerLink]="['/office', eventResourceAssignment.officeId]" class="text-left p-0 m-0" ngbTooltip="Open Office details">{{eventResourceAssignment.office?.name}}</a>
+            </p>
+            <p class="event-resource-assignment-info" *ngIf="eventResourceAssignment.resourceId != null">
+              <strong>Resource: </strong>
+              <a [routerLink]="['/resource', eventResourceAssignment.resourceId]" class="text-left p-0 m-0" ngbTooltip="Open Resource details">{{eventResourceAssignment.resource?.name}}</a>
+            </p>
+            <p class="event-resource-assignment-info" *ngIf="eventResourceAssignment.crewId != null">
+              <strong>Crew: </strong>
+              <a [routerLink]="['/crew', eventResourceAssignment.crewId]" class="text-left p-0 m-0" ngbTooltip="Open Crew details">{{eventResourceAssignment.crew?.name}}</a>
+            </p>
+            <p class="event-resource-assignment-info" *ngIf="eventResourceAssignment.assignmentRoleId != null">
+              <strong>Assignment Role: </strong>
+              <a [routerLink]="['/assignmentrole', eventResourceAssignment.assignmentRoleId]" class="text-left p-0 m-0" ngbTooltip="Open Assignment Role details">{{eventResourceAssignment.assignmentRole?.name}}</a>
+            </p>
+            <p class="event-resource-assignment-info" *ngIf="eventResourceAssignment.assignmentStatusId != null">
+              <strong>Assignment Status: </strong>
+              <a [routerLink]="['/assignmentstatus', eventResourceAssignment.assignmentStatusId]" class="text-left p-0 m-0" ngbTooltip="Open Assignment Status details">{{eventResourceAssignment.assignmentStatus?.name}}</a>
+            </p>
+            <p class="event-resource-assignment-info" *ngIf="eventResourceAssignment.assignmentStartDateTime != null">
+              <strong>Assignment Start Date Time: </strong>
+              {{eventResourceAssignment.assignmentStartDateTime | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="event-resource-assignment-info" *ngIf="eventResourceAssignment.assignmentEndDateTime != null">
+              <strong>Assignment End Date Time: </strong>
+              {{eventResourceAssignment.assignmentEndDateTime | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="event-resource-assignment-info" *ngIf="eventResourceAssignment.notes != null">
+              <strong>Notes: </strong>
+              {{eventResourceAssignment.notes}}
+            </p>
+            <p class="event-resource-assignment-info" *ngIf="eventResourceAssignment.isTravelRequired != null">
+              <strong>Is Travel Required: </strong>
+              <boolean-icon [value]="eventResourceAssignment.isTravelRequired"/>
+            </p>
+            <p class="event-resource-assignment-info" *ngIf="eventResourceAssignment.travelDurationMinutes != null">
+              <strong>Travel Duration Minutes: </strong>
+              {{eventResourceAssignment.travelDurationMinutes | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="event-resource-assignment-info" *ngIf="eventResourceAssignment.distanceKilometers != null">
+              <strong>Distance Kilometers: </strong>
+              {{eventResourceAssignment.distanceKilometers | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="event-resource-assignment-info" *ngIf="eventResourceAssignment.startLocation != null">
+              <strong>Start Location: </strong>
+              {{eventResourceAssignment.startLocation}}
+            </p>
+            <p class="event-resource-assignment-info" *ngIf="eventResourceAssignment.actualStartDateTime != null">
+              <strong>Actual Start Date Time: </strong>
+              {{eventResourceAssignment.actualStartDateTime | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="event-resource-assignment-info" *ngIf="eventResourceAssignment.actualEndDateTime != null">
+              <strong>Actual End Date Time: </strong>
+              {{eventResourceAssignment.actualEndDateTime | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="event-resource-assignment-info" *ngIf="eventResourceAssignment.actualNotes != null">
+              <strong>Actual Notes: </strong>
+              {{eventResourceAssignment.actualNotes}}
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+   </div>
+</div>

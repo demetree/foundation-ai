@@ -1,0 +1,339 @@
+<div class="container-fluid p-1 m-0 resource-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="resource-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Resource</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Resource' : 'Add Resource'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerResourceReader()">
+                <div class="col m-2 resource-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="resourceForm" (ngSubmit)="submitForm()" class="resource-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="Resource-name" id="label-Resource-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="Resource-name" formControlName="name" placeholder="Enter Name" class="form-control resource-input" [disabled]="!userIsSchedulerResourceWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="resourceForm.get('name')?.invalid && resourceForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="Resource-description" id="label-Resource-description">Description</label>
+                                <textarea id="Resource-description" formControlName="description" placeholder="Enter Description" class="form-control resource-input" [disabled]="!userIsSchedulerResourceWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('officeId')">
+                                <label for="Resource-officeId" id="label-Resource-officeId">Office</label>
+                                <select id="Resource-officeId" formControlName="officeId" class="form-select resource-select" [disabled]="!userIsSchedulerResourceWriter()">
+                                    <option [ngValue]="null">Select Office</option>
+                                    <option *ngFor="let office of offices$ | async" [ngValue]="office.id">{{office.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('resourceTypeId')">
+                                <label for="Resource-resourceTypeId" id="label-Resource-resourceTypeId"><span class="text-danger">*</span>Resource Type</label>
+                                <select id="Resource-resourceTypeId" formControlName="resourceTypeId" class="form-select resource-select" [disabled]="!userIsSchedulerResourceWriter()">
+                                    <option [ngValue]="null">Select Resource Type</option>
+                                    <option *ngFor="let resourceType of resourceTypes$ | async" [ngValue]="resourceType.id">{{resourceType.name}}</option>
+                                </select>
+                                <div *ngIf="resourceForm.get('resourceTypeId')?.invalid && resourceForm.get('resourceTypeId')?.touched" class="text-danger">
+                                    Resource Type is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('shiftPatternId')">
+                                <label for="Resource-shiftPatternId" id="label-Resource-shiftPatternId">Shift Pattern</label>
+                                <select id="Resource-shiftPatternId" formControlName="shiftPatternId" class="form-select resource-select" [disabled]="!userIsSchedulerResourceWriter()">
+                                    <option [ngValue]="null">Select Shift Pattern</option>
+                                    <option *ngFor="let shiftPattern of shiftPatterns$ | async" [ngValue]="shiftPattern.id">{{shiftPattern.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeZoneId')">
+                                <label for="Resource-timeZoneId" id="label-Resource-timeZoneId"><span class="text-danger">*</span>Time Zone</label>
+                                <select id="Resource-timeZoneId" formControlName="timeZoneId" class="form-select resource-select" [disabled]="!userIsSchedulerResourceWriter()">
+                                    <option [ngValue]="null">Select Time Zone</option>
+                                    <option *ngFor="let timeZone of timeZones$ | async" [ngValue]="timeZone.id">{{timeZone.name}}</option>
+                                </select>
+                                <div *ngIf="resourceForm.get('timeZoneId')?.invalid && resourceForm.get('timeZoneId')?.touched" class="text-danger">
+                                    Time Zone is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('targetWeeklyWorkHours')">
+                                <label for="Resource-targetWeeklyWorkHours" id="label-Resource-targetWeeklyWorkHours">Target Weekly Work Hours</label>
+                                <input type="number" id="Resource-targetWeeklyWorkHours" formControlName="targetWeeklyWorkHours" placeholder="Enter Target Weekly Work Hours" class="form-control resource-input" [disabled]="!userIsSchedulerResourceWriter()" aria-labelledby="label-targetWeeklyWorkHours" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('notes')">
+                                <label for="Resource-notes" id="label-Resource-notes">Notes</label>
+                                <textarea id="Resource-notes" formControlName="notes" placeholder="Enter Notes" class="form-control resource-input" [disabled]="!userIsSchedulerResourceWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('externalId')">
+                                <label for="Resource-externalId" id="label-Resource-externalId">External Id</label>
+                                <input type="text" id="Resource-externalId" formControlName="externalId" placeholder="Enter External Id" class="form-control resource-input" [disabled]="!userIsSchedulerResourceWriter()" aria-labelledby="label-externalId" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('color')">
+                                <label for="Resource-color" id="label-Resource-color">Color</label>
+                                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="Resource-color" 
+                        formControlName="color" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerResourceWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="resourceForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('attributes')">
+                                <label for="Resource-attributes" id="label-Resource-attributes">Attributes</label>
+                                <textarea id="Resource-attributes" formControlName="attributes" placeholder="Enter Attributes" class="form-control resource-input" [disabled]="!userIsSchedulerResourceWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('avatarFileName')">
+                                <label for="Resource-avatarFileName" id="label-Resource-avatarFileName">Avatar File Name</label>
+                                <input type="text" id="Resource-avatarFileName" formControlName="avatarFileName" placeholder="Enter Avatar File Name" class="form-control resource-input" [disabled]="!userIsSchedulerResourceWriter()" aria-labelledby="label-avatarFileName" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('avatarSize')">
+                                <label for="Resource-avatarSize" id="label-Resource-avatarSize">Avatar Size</label>
+                                <input type="number" id="Resource-avatarSize" formControlName="avatarSize" placeholder="Enter Avatar Size" class="form-control resource-input" [disabled]="!userIsSchedulerResourceWriter()" aria-labelledby="label-avatarSize" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('avatarData')">
+                                <label for="Resource-avatarData" id="label-Resource-avatarData">Avatar Data</label>
+                                <input type="text" id="Resource-avatarData" formControlName="avatarData" placeholder="Enter Avatar Data" class="form-control resource-input" [disabled]="!userIsSchedulerResourceWriter()" aria-labelledby="label-avatarData" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('avatarMimeType')">
+                                <label for="Resource-avatarMimeType" id="label-Resource-avatarMimeType">Avatar Mime Type</label>
+                                <input type="text" id="Resource-avatarMimeType" formControlName="avatarMimeType" placeholder="Enter Avatar Mime Type" class="form-control resource-input" [disabled]="!userIsSchedulerResourceWriter()" aria-labelledby="label-avatarMimeType" />
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="Resource-versionNumber" id="label-Resource-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="Resource-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control resource-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="Resource-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerResourceWriter()" />
+                                <label for="Resource-active" class="form-check-label" id="label-Resource-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="Resource-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerResourceWriter()" />
+                                <label for="Resource-deleted" class="form-check-label" id="label-Resource-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="resource-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="resourceForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Resource">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !resourceForm.valid || !resourceForm.dirty || resourceForm.pristine || userIsSchedulerResourceWriter() == false " ngbTooltip="Save Resource">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerResourceReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 resource-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="resourceChangeHistoryService.userIsSchedulerResourceChangeHistoryReader()">
+                            <button ngbNavLink>Resource Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (resourceData?.ResourceChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-resource-change-history-table [queryParams]="{ resourceId: resourceData?.id }"></app-resource-change-history-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-resource-change-history-add-edit [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-resource-change-history-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="resourceContactService.userIsSchedulerResourceContactReader()">
+                            <button ngbNavLink>Resource Contacts
+                                <span class="badge bg-primary ms-2">
+                                    {{ (resourceData?.ResourceContactsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-resource-contact-table [queryParams]="{ resourceId: resourceData?.id }"></app-resource-contact-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-resource-contact-add-edit [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-resource-contact-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="rateSheetService.userIsSchedulerRateSheetReader()">
+                            <button ngbNavLink>Rate Sheets
+                                <span class="badge bg-primary ms-2">
+                                    {{ (resourceData?.RateSheetsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-rate-sheet-table [queryParams]="{ resourceId: resourceData?.id }"></app-rate-sheet-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-rate-sheet-add-edit [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-rate-sheet-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="resourceQualificationService.userIsSchedulerResourceQualificationReader()">
+                            <button ngbNavLink>Resource Qualifications
+                                <span class="badge bg-primary ms-2">
+                                    {{ (resourceData?.ResourceQualificationsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-resource-qualification-table [queryParams]="{ resourceId: resourceData?.id }"></app-resource-qualification-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-resource-qualification-add-edit [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-resource-qualification-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="resourceAvailabilityService.userIsSchedulerResourceAvailabilityReader()">
+                            <button ngbNavLink>Resource Availabilities
+                                <span class="badge bg-primary ms-2">
+                                    {{ (resourceData?.ResourceAvailabilitiesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-resource-availability-table [queryParams]="{ resourceId: resourceData?.id }"></app-resource-availability-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-resource-availability-add-edit [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-resource-availability-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="resourceShiftService.userIsSchedulerResourceShiftReader()">
+                            <button ngbNavLink>Resource Shifts
+                                <span class="badge bg-primary ms-2">
+                                    {{ (resourceData?.ResourceShiftsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-resource-shift-table [queryParams]="{ resourceId: resourceData?.id }"></app-resource-shift-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-resource-shift-add-edit [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-resource-shift-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="crewMemberService.userIsSchedulerCrewMemberReader()">
+                            <button ngbNavLink>Crew Members
+                                <span class="badge bg-primary ms-2">
+                                    {{ (resourceData?.CrewMembersCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-crew-member-table [queryParams]="{ resourceId: resourceData?.id }"></app-crew-member-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-crew-member-add-edit [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-crew-member-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="scheduledEventService.userIsSchedulerScheduledEventReader()">
+                            <button ngbNavLink>Scheduled Events
+                                <span class="badge bg-primary ms-2">
+                                    {{ (resourceData?.ScheduledEventsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-scheduled-event-table [queryParams]="{ resourceId: resourceData?.id }"></app-scheduled-event-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-scheduled-event-add-edit [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-scheduled-event-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="eventChargeService.userIsSchedulerEventChargeReader()">
+                            <button ngbNavLink>Event Charges
+                                <span class="badge bg-primary ms-2">
+                                    {{ (resourceData?.EventChargesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-event-charge-table [queryParams]="{ resourceId: resourceData?.id }"></app-event-charge-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-event-charge-add-edit [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-event-charge-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="eventResourceAssignmentService.userIsSchedulerEventResourceAssignmentReader()">
+                            <button ngbNavLink>Event Resource Assignments
+                                <span class="badge bg-primary ms-2">
+                                    {{ (resourceData?.EventResourceAssignmentsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-event-resource-assignment-table [queryParams]="{ resourceId: resourceData?.id }"></app-event-resource-assignment-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-event-resource-assignment-add-edit [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-event-resource-assignment-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="notificationSubscriptionService.userIsSchedulerNotificationSubscriptionReader()">
+                            <button ngbNavLink>Notification Subscriptions
+                                <span class="badge bg-primary ms-2">
+                                    {{ (resourceData?.NotificationSubscriptionsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-notification-subscription-table [queryParams]="{ resourceId: resourceData?.id }"></app-notification-subscription-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-notification-subscription-add-edit [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-notification-subscription-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

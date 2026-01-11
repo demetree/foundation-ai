@@ -1,0 +1,59 @@
+<div class="add-security-department" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-security-department me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Security Department" 
+        *ngIf="userIsSecuritySecurityDepartmentWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #securityDepartmentModal let-modal>
+   <div class="modal-header bg-dark text-light security-department-modal-header">
+      <h5 class="modal-title mb-0" id="securityDepartmentModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Security Department' : 'Add Security Department' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body security-department-modal-body">
+      <form [formGroup]="securityDepartmentForm" (ngSubmit)="submitForm()">
+            <div class="form-group">
+                <label for="securityOrganizationId" id="label-securityOrganizationId"><span class="text-danger">*</span>Security Organization</label>
+                <select id="securityOrganizationId" formControlName="securityOrganizationId" class="form-select security-department-select" [disabled]="!userIsSecuritySecurityDepartmentWriter()">
+                    <option [ngValue]="null">Select Security Organization</option>
+                    <option *ngFor="let securityOrganization of securityOrganizations$ | async" [ngValue]="securityOrganization.id">{{securityOrganization.name}}</option>
+                </select>
+                <div *ngIf="securityDepartmentForm.get('securityOrganizationId')?.invalid && securityDepartmentForm.get('securityOrganizationId')?.touched" class="text-danger">
+                    Security Organization is required
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="name" id="label-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="name" formControlName="name" placeholder="Enter Name" class="form-control security-department-input" [disabled]="!userIsSecuritySecurityDepartmentWriter()" aria-labelledby="label-name" />
+                <div *ngIf="securityDepartmentForm.get('name')?.invalid && securityDepartmentForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="description" id="label-description">Description</label>
+                <textarea id="description" formControlName="description" placeholder="Enter Description" class="form-control security-department-input" [disabled]="!userIsSecuritySecurityDepartmentWriter()"></textarea>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode">
+                <input type="checkbox" id="active" formControlName="active" class="form-check-input" [disabled]="!userIsSecuritySecurityDepartmentWriter()" />
+                <label for="active" class="form-check-label" id="label-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode">
+                <input type="checkbox" id="deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSecuritySecurityDepartmentWriter()" />
+                <label for="deleted" class="form-check-label" id="label-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer security-department-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Security Department changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !securityDepartmentForm.valid || securityDepartmentForm.pristine || !userIsSecuritySecurityDepartmentWriter()" ngbTooltip="Save the Security Department changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

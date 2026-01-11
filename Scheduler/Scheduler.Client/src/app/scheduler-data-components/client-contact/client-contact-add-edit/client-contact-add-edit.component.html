@@ -1,0 +1,76 @@
+<div class="add-client-contact" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-client-contact me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Client Contact" 
+        *ngIf="userIsSchedulerClientContactWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #clientContactModal let-modal>
+   <div class="modal-header bg-dark text-light client-contact-modal-header">
+      <h5 class="modal-title mb-0" id="clientContactModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Client Contact' : 'Add Client Contact' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body client-contact-modal-body">
+      <form [formGroup]="clientContactForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('clientId')">
+                <label for="ClientContact-clientId" id="label-ClientContact-clientId"><span class="text-danger">*</span>Client</label>
+                <select id="ClientContact-clientId" formControlName="clientId" class="form-select client-contact-select" [disabled]="!userIsSchedulerClientContactWriter()">
+                    <option [ngValue]="null">Select Client</option>
+                    <option *ngFor="let client of clients$ | async" [ngValue]="client.id">{{client.name}}</option>
+                </select>
+                <div *ngIf="clientContactForm.get('clientId')?.invalid && clientContactForm.get('clientId')?.touched" class="text-danger">
+                    Client is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('contactId')">
+                <label for="ClientContact-contactId" id="label-ClientContact-contactId"><span class="text-danger">*</span>Contact</label>
+                <select id="ClientContact-contactId" formControlName="contactId" class="form-select client-contact-select" [disabled]="!userIsSchedulerClientContactWriter()">
+                    <option [ngValue]="null">Select Contact</option>
+                    <option *ngFor="let contact of contacts$ | async" [ngValue]="contact.id">{{contact.firstName}}</option>
+                </select>
+                <div *ngIf="clientContactForm.get('contactId')?.invalid && clientContactForm.get('contactId')?.touched" class="text-danger">
+                    Contact is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isPrimary')">
+                <input type="checkbox" id="ClientContact-isPrimary" formControlName="isPrimary" class="form-check-input" [disabled]="!userIsSchedulerClientContactWriter()" />
+                <label for="ClientContact-isPrimary" class="form-check-label" id="label-ClientContact-isPrimary"><span class="text-danger">*</span>Is Primary</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('relationshipTypeId')">
+                <label for="ClientContact-relationshipTypeId" id="label-ClientContact-relationshipTypeId"><span class="text-danger">*</span>Relationship Type</label>
+                <select id="ClientContact-relationshipTypeId" formControlName="relationshipTypeId" class="form-select client-contact-select" [disabled]="!userIsSchedulerClientContactWriter()">
+                    <option [ngValue]="null">Select Relationship Type</option>
+                    <option *ngFor="let relationshipType of relationshipTypes$ | async" [ngValue]="relationshipType.id">{{relationshipType.name}}</option>
+                </select>
+                <div *ngIf="clientContactForm.get('relationshipTypeId')?.invalid && clientContactForm.get('relationshipTypeId')?.touched" class="text-danger">
+                    Relationship Type is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="ClientContact-versionNumber" id="label-ClientContact-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="ClientContact-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control client-contact-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ClientContact-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerClientContactWriter()" />
+                <label for="ClientContact-active" class="form-check-label" id="label-ClientContact-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ClientContact-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerClientContactWriter()" />
+                <label for="ClientContact-deleted" class="form-check-label" id="label-ClientContact-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer client-contact-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Client Contact changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !clientContactForm.valid || clientContactForm.pristine || !userIsSchedulerClientContactWriter()" ngbTooltip="Save the Client Contact changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

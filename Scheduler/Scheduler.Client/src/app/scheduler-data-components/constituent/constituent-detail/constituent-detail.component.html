@@ -1,0 +1,265 @@
+<div class="container-fluid p-1 m-0 constituent-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="constituent-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Constituent</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Constituent' : 'Add Constituent'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerConstituentReader()">
+                <div class="col m-2 constituent-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="constituentForm" (ngSubmit)="submitForm()" class="constituent-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('contactId')">
+                                <label for="Constituent-contactId" id="label-Constituent-contactId">Contact</label>
+                                <select id="Constituent-contactId" formControlName="contactId" class="form-select constituent-select" [disabled]="!userIsSchedulerConstituentWriter()">
+                                    <option [ngValue]="null">Select Contact</option>
+                                    <option *ngFor="let contact of contacts$ | async" [ngValue]="contact.id">{{contact.firstName}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('clientId')">
+                                <label for="Constituent-clientId" id="label-Constituent-clientId">Client</label>
+                                <select id="Constituent-clientId" formControlName="clientId" class="form-select constituent-select" [disabled]="!userIsSchedulerConstituentWriter()">
+                                    <option [ngValue]="null">Select Client</option>
+                                    <option *ngFor="let client of clients$ | async" [ngValue]="client.id">{{client.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('householdId')">
+                                <label for="Constituent-householdId" id="label-Constituent-householdId">Household</label>
+                                <select id="Constituent-householdId" formControlName="householdId" class="form-select constituent-select" [disabled]="!userIsSchedulerConstituentWriter()">
+                                    <option [ngValue]="null">Select Household</option>
+                                    <option *ngFor="let household of households$ | async" [ngValue]="household.id">{{household.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('constituentNumber')">
+                                <label for="Constituent-constituentNumber" id="label-Constituent-constituentNumber"><span class="text-danger">*</span>Constituent Number</label>
+                                <input type="text" id="Constituent-constituentNumber" formControlName="constituentNumber" placeholder="Enter Constituent Number" class="form-control constituent-input" [disabled]="!userIsSchedulerConstituentWriter()" aria-labelledby="label-constituentNumber" />
+                                <div *ngIf="constituentForm.get('constituentNumber')?.invalid && constituentForm.get('constituentNumber')?.touched" class="text-danger">
+                                    Constituent Number is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('doNotSolicit')">
+                                <input type="checkbox" id="Constituent-doNotSolicit" formControlName="doNotSolicit" class="form-check-input" [disabled]="!userIsSchedulerConstituentWriter()" />
+                                <label for="Constituent-doNotSolicit" class="form-check-label" id="label-Constituent-doNotSolicit"><span class="text-danger">*</span>Do Not Solicit</label>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('doNotEmail')">
+                                <input type="checkbox" id="Constituent-doNotEmail" formControlName="doNotEmail" class="form-check-input" [disabled]="!userIsSchedulerConstituentWriter()" />
+                                <label for="Constituent-doNotEmail" class="form-check-label" id="label-Constituent-doNotEmail"><span class="text-danger">*</span>Do Not Email</label>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('doNotMail')">
+                                <input type="checkbox" id="Constituent-doNotMail" formControlName="doNotMail" class="form-check-input" [disabled]="!userIsSchedulerConstituentWriter()" />
+                                <label for="Constituent-doNotMail" class="form-check-label" id="label-Constituent-doNotMail"><span class="text-danger">*</span>Do Not Mail</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('totalLifetimeGiving')">
+                                <label for="Constituent-totalLifetimeGiving" id="label-Constituent-totalLifetimeGiving"><span class="text-danger">*</span>Total Lifetime Giving</label>
+                                <input type="number" id="Constituent-totalLifetimeGiving" formControlName="totalLifetimeGiving" placeholder="Enter Total Lifetime Giving" class="form-control constituent-input" [disabled]="!userIsSchedulerConstituentWriter()" aria-labelledby="label-totalLifetimeGiving" />
+                                <div *ngIf="constituentForm.get('totalLifetimeGiving')?.invalid && constituentForm.get('totalLifetimeGiving')?.touched" class="text-danger">
+                                    Total Lifetime Giving is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('totalYTDGiving')">
+                                <label for="Constituent-totalYTDGiving" id="label-Constituent-totalYTDGiving"><span class="text-danger">*</span>Total Y T D Giving</label>
+                                <input type="number" id="Constituent-totalYTDGiving" formControlName="totalYTDGiving" placeholder="Enter Total Y T D Giving" class="form-control constituent-input" [disabled]="!userIsSchedulerConstituentWriter()" aria-labelledby="label-totalYTDGiving" />
+                                <div *ngIf="constituentForm.get('totalYTDGiving')?.invalid && constituentForm.get('totalYTDGiving')?.touched" class="text-danger">
+                                    Total Y T D Giving is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('lastGiftDate')">
+                                <label for="Constituent-lastGiftDate" id="label-Constituent-lastGiftDate">Last Gift Date</label>
+                                <input type="date" id="Constituent-lastGiftDate" formControlName="lastGiftDate" placeholder="Enter Last Gift Date" class="form-control constituent-input" [disabled]="!userIsSchedulerConstituentWriter()" aria-labelledby="label-lastGiftDate" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('lastGiftAmount')">
+                                <label for="Constituent-lastGiftAmount" id="label-Constituent-lastGiftAmount">Last Gift Amount</label>
+                                <input type="number" id="Constituent-lastGiftAmount" formControlName="lastGiftAmount" placeholder="Enter Last Gift Amount" class="form-control constituent-input" [disabled]="!userIsSchedulerConstituentWriter()" aria-labelledby="label-lastGiftAmount" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('largestGiftAmount')">
+                                <label for="Constituent-largestGiftAmount" id="label-Constituent-largestGiftAmount">Largest Gift Amount</label>
+                                <input type="number" id="Constituent-largestGiftAmount" formControlName="largestGiftAmount" placeholder="Enter Largest Gift Amount" class="form-control constituent-input" [disabled]="!userIsSchedulerConstituentWriter()" aria-labelledby="label-largestGiftAmount" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('totalGiftCount')">
+                                <label for="Constituent-totalGiftCount" id="label-Constituent-totalGiftCount">Total Gift Count</label>
+                                <input type="number" id="Constituent-totalGiftCount" formControlName="totalGiftCount" placeholder="Enter Total Gift Count" class="form-control constituent-input" [disabled]="!userIsSchedulerConstituentWriter()" aria-labelledby="label-totalGiftCount" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('externalId')">
+                                <label for="Constituent-externalId" id="label-Constituent-externalId">External Id</label>
+                                <input type="text" id="Constituent-externalId" formControlName="externalId" placeholder="Enter External Id" class="form-control constituent-input" [disabled]="!userIsSchedulerConstituentWriter()" aria-labelledby="label-externalId" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('notes')">
+                                <label for="Constituent-notes" id="label-Constituent-notes">Notes</label>
+                                <textarea id="Constituent-notes" formControlName="notes" placeholder="Enter Notes" class="form-control constituent-input" [disabled]="!userIsSchedulerConstituentWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('attributes')">
+                                <label for="Constituent-attributes" id="label-Constituent-attributes">Attributes</label>
+                                <textarea id="Constituent-attributes" formControlName="attributes" placeholder="Enter Attributes" class="form-control constituent-input" [disabled]="!userIsSchedulerConstituentWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('iconId')">
+                                <label for="Constituent-iconId" id="label-Constituent-iconId">Icon</label>
+                                <select id="Constituent-iconId" formControlName="iconId" class="form-select constituent-select" [disabled]="!userIsSchedulerConstituentWriter()">
+                                    <option [ngValue]="null">Select Icon</option>
+                                    <option *ngFor="let icon of icons$ | async" [ngValue]="icon.id">{{icon.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('color')">
+                                <label for="Constituent-color" id="label-Constituent-color">Color</label>
+                                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="Constituent-color" 
+                        formControlName="color" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerConstituentWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="constituentForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('avatarFileName')">
+                                <label for="Constituent-avatarFileName" id="label-Constituent-avatarFileName">Avatar File Name</label>
+                                <input type="text" id="Constituent-avatarFileName" formControlName="avatarFileName" placeholder="Enter Avatar File Name" class="form-control constituent-input" [disabled]="!userIsSchedulerConstituentWriter()" aria-labelledby="label-avatarFileName" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('avatarSize')">
+                                <label for="Constituent-avatarSize" id="label-Constituent-avatarSize">Avatar Size</label>
+                                <input type="number" id="Constituent-avatarSize" formControlName="avatarSize" placeholder="Enter Avatar Size" class="form-control constituent-input" [disabled]="!userIsSchedulerConstituentWriter()" aria-labelledby="label-avatarSize" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('avatarData')">
+                                <label for="Constituent-avatarData" id="label-Constituent-avatarData">Avatar Data</label>
+                                <input type="text" id="Constituent-avatarData" formControlName="avatarData" placeholder="Enter Avatar Data" class="form-control constituent-input" [disabled]="!userIsSchedulerConstituentWriter()" aria-labelledby="label-avatarData" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('avatarMimeType')">
+                                <label for="Constituent-avatarMimeType" id="label-Constituent-avatarMimeType">Avatar Mime Type</label>
+                                <input type="text" id="Constituent-avatarMimeType" formControlName="avatarMimeType" placeholder="Enter Avatar Mime Type" class="form-control constituent-input" [disabled]="!userIsSchedulerConstituentWriter()" aria-labelledby="label-avatarMimeType" />
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="Constituent-versionNumber" id="label-Constituent-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="Constituent-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control constituent-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="Constituent-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerConstituentWriter()" />
+                                <label for="Constituent-active" class="form-check-label" id="label-Constituent-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="Constituent-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerConstituentWriter()" />
+                                <label for="Constituent-deleted" class="form-check-label" id="label-Constituent-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="constituent-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="constituentForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Constituent">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !constituentForm.valid || !constituentForm.dirty || constituentForm.pristine || userIsSchedulerConstituentWriter() == false " ngbTooltip="Save Constituent">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerConstituentReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 constituent-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="constituentChangeHistoryService.userIsSchedulerConstituentChangeHistoryReader()">
+                            <button ngbNavLink>Constituent Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (constituentData?.ConstituentChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-constituent-change-history-table [queryParams]="{ constituentId: constituentData?.id }"></app-constituent-change-history-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-constituent-change-history-add-edit [preSeededData]="{ constituentId: constituentData?.id }" [hiddenFields]="['constituentId']"></app-constituent-change-history-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="pledgeService.userIsSchedulerPledgeReader()">
+                            <button ngbNavLink>Pledges
+                                <span class="badge bg-primary ms-2">
+                                    {{ (constituentData?.PledgesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-pledge-table [queryParams]="{ constituentId: constituentData?.id }"></app-pledge-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-pledge-add-edit [preSeededData]="{ constituentId: constituentData?.id }" [hiddenFields]="['constituentId']"></app-pledge-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="tributeService.userIsSchedulerTributeReader()">
+                            <button ngbNavLink>Tributes Default Acknowledgees
+                                <span class="badge bg-primary ms-2">
+                                    {{ (constituentData?.DefaultAcknowledgeesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-tribute-table [queryParams]="{ defaultAcknowledgeeId: constituentData?.id }"></app-tribute-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-tribute-add-edit [preSeededData]="{ defaultAcknowledgeeId: constituentData?.id }" [hiddenFields]="['defaultAcknowledgeeId']"></app-tribute-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="giftService.userIsSchedulerGiftReader()">
+                            <button ngbNavLink>Gifts
+                                <span class="badge bg-primary ms-2">
+                                    {{ (constituentData?.GiftsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-gift-table [queryParams]="{ constituentId: constituentData?.id }"></app-gift-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-gift-add-edit [preSeededData]="{ constituentId: constituentData?.id }" [hiddenFields]="['constituentId']"></app-gift-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="softCreditService.userIsSchedulerSoftCreditReader()">
+                            <button ngbNavLink>Soft Credits
+                                <span class="badge bg-primary ms-2">
+                                    {{ (constituentData?.SoftCreditsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-soft-credit-table [queryParams]="{ constituentId: constituentData?.id }"></app-soft-credit-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-soft-credit-add-edit [preSeededData]="{ constituentId: constituentData?.id }" [hiddenFields]="['constituentId']"></app-soft-credit-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

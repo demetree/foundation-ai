@@ -1,0 +1,108 @@
+:host {
+  header.navbar {
+    width: 100%;
+    overflow: visible; // allow dropdown to overflow
+    position: fixed; // fixed-top behavior
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1050; // above content
+  }
+
+  .navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 56px;
+  }
+
+  .logo-container {
+    margin-left: 12px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+  }
+
+  .profile-btn {
+    border-radius: 999px;
+    padding: 6px 10px;
+    line-height: 1;
+    position: relative;
+  }
+
+  .avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, #6ea8fe 0%, #5bc0de 100%);
+    color: #0b1320;
+  }
+  /* Dropdown container positioning */
+  .ms-2.position-relative {
+    position: relative !important;
+  }
+  /* Dropdown menu positioning and styling */
+  .header-profile-menu {
+    border-radius: 12px;
+    overflow: hidden;
+    z-index: 1060 !important;
+    min-width: 220px;
+    border: 1px solid rgba(0,0,0,0.15);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.175) !important;
+    position: absolute !important;
+    top: 100% !important;
+    right: 0 !important;
+    left: auto !important;
+    transform: none !important;
+    margin-top: 2px;
+  }
+  /* Animate a child wrapper so we don't fight the placement transform */
+  .header-profile-menu .menu-anim {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+    transition: opacity 120ms ease, transform 120ms ease;
+  }
+
+  .header-profile-menu.show .menu-anim {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  /* Ensure dropdown items are properly styled */
+  .header-profile-menu .dropdown-item {
+    padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
+  }
+
+  .header-profile-menu .dropdown-item:hover {
+    background-color: #f8f9fa;
+  }
+  /* Mobile accordion link colors */
+  .text-grey {
+    color: #000 !important;
+  }
+
+  .custom-accordion-content .nav-link {
+    color: #000 !important;
+    text-decoration: none;
+  }
+
+  .custom-accordion-content .nav-link:hover {
+    color: #000 !important;
+  }
+}
+
+/* Mobile menu panel (phone part) */
+.mobile-menu {
+  position: absolute;
+  top: 56px;
+  width: 100%;
+  z-index: 1050;
+  border-top: 1px solid #444;
+}

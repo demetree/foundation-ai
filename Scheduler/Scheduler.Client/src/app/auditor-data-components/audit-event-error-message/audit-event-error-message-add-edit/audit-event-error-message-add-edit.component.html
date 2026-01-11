@@ -1,0 +1,47 @@
+<div class="add-audit-event-error-message" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-audit-event-error-message me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Audit Event Error Message" 
+        *ngIf="userIsAuditorAuditEventErrorMessageWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #auditEventErrorMessageModal let-modal>
+   <div class="modal-header bg-dark text-light audit-event-error-message-modal-header">
+      <h5 class="modal-title mb-0" id="auditEventErrorMessageModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Audit Event Error Message' : 'Add Audit Event Error Message' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body audit-event-error-message-modal-body">
+      <form [formGroup]="auditEventErrorMessageForm" (ngSubmit)="submitForm()">
+            <div class="form-group">
+                <label for="auditEventId" id="label-auditEventId"><span class="text-danger">*</span>Audit Event</label>
+                <select id="auditEventId" formControlName="auditEventId" class="form-select audit-event-error-message-select" [disabled]="!userIsAuditorAuditEventErrorMessageWriter()">
+                    <option [ngValue]="null">Select Audit Event</option>
+                    <option *ngFor="let auditEvent of auditEvents$ | async" [ngValue]="auditEvent.id">{{[auditEvent.message] | filterAndJoin}}</option>
+                </select>
+                <div *ngIf="auditEventErrorMessageForm.get('auditEventId')?.invalid && auditEventErrorMessageForm.get('auditEventId')?.touched" class="text-danger">
+                    Audit Event is required
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="errorMessage" id="label-errorMessage"><span class="text-danger">*</span>Error Message</label>
+                <textarea id="errorMessage" formControlName="errorMessage" placeholder="Enter Error Message" class="form-control audit-event-error-message-input" [disabled]="!userIsAuditorAuditEventErrorMessageWriter()"></textarea>
+                <div *ngIf="auditEventErrorMessageForm.get('errorMessage')?.invalid && auditEventErrorMessageForm.get('errorMessage')?.touched" class="text-danger">
+                    Error Message is required
+                </div>
+            </div>
+         <div class="modal-footer audit-event-error-message-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Audit Event Error Message changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !auditEventErrorMessageForm.valid || auditEventErrorMessageForm.pristine || !userIsAuditorAuditEventErrorMessageWriter()" ngbTooltip="Save the Audit Event Error Message changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

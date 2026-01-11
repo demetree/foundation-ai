@@ -1,0 +1,239 @@
+<div class="container-fluid p-1 m-0 office-details-container">
+  <div class="p-2 detail-background">
+
+    <!-- Header with Avatar and Key Info -->
+    <div class="card mb-4 header-card shadow-sm">
+      <div class="card-body d-flex align-items-center gap-4">
+
+        <!-- Avatar -->
+        <div class="avatar rounded-circle overflow-hidden border shadow clickable"
+             style="width: 120px; height: 120px; background: #f8f9fa;"
+             (click)="openEditModal()">
+          <ng-container *ngIf="office?.avatarData; else defaultAvatar">
+            <img [src]="'data:' + (office?.avatarMimeType || 'image/png') + ';base64,' + (office?.avatarData || '')"
+                 class="w-100 h-100 object-fit-cover"
+                 alt="{{ office?.name }} avatar">
+          </ng-container>
+
+          <ng-template #defaultAvatar>
+            <div class="w-100 h-100 d-flex align-items-center justify-content-center text-white fw-bold fs-3"
+                 [style.background-color]="office?.color || '#6c757d'">
+              {{ office?.name | slice:0:2 | uppercase }}
+            </div>
+          </ng-template>
+        </div>
+
+        <!-- Details -->
+        <div class="flex-grow-1">
+          <div class="d-flex align-items-center gap-3 mb-2">
+            <span class="text-uppercase text-muted small fw-semibold">Office</span>
+            <span class="text-muted small">•</span>
+            <h3 class="mb-0">{{ office?.name || 'Loading...' }}</h3>
+
+            <!-- Active / Deleted Status -->
+            <span class="badge" [ngClass]="office?.active ? 'bg-success' : 'bg-secondary'">
+              {{ office?.active ? 'Active' : 'Inactive' }}
+            </span>
+
+            <span *ngIf="office?.deleted == true" class="badge " [ngClass]="office?.deleted ? 'bg-danger' : 'bg-secondary'">
+              {{ office?.deleted ? 'Deleted' : 'Not Deleted' }}
+            </span>
+
+            <span class="badge bg-secondary">Version: {{ office?.versionNumber }}</span>
+          </div>
+
+          <div class="text-muted small">
+            <div *ngIf="office?.description"><strong>Description: </strong>{{ office?.description }}</div>
+            <div><strong>Type:</strong> {{ office?.officeType?.name || '—' }}</div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="text-end">
+          <button class="btn btn-primary" (click)="openEditModal()" *ngIf="userIsSchedulerOfficeWriter()">
+            <i class="fa fa-pen me-2"></i> Edit
+          </button>
+          <button class="btn btn-outline-secondary ms-2" (click)="goBack()" ngbTooltip="Go Back" *ngIf="canGoBack()">
+            <i class="fa fa-arrow-left me-2"></i> Back
+          </button>
+
+          <app-office-custom-add-edit [navigateToDetailsAfterAdd]="false" (officeChanged)="officeChanged($event)" style="display: none"></app-office-custom-add-edit>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading / Error -->
+    <div class="text-center py-5" *ngIf="isLoading$ | async">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading office...</span>
+      </div>
+    </div>
+
+    <div class="alert alert-danger" *ngIf="error">
+      <i class="fa-solid fa-exclamation-triangle me-2"></i>
+      {{ error }}
+    </div>
+
+    <!-- Tabs -->
+    <ul ngbNav #nav="ngbNav" class="nav-tabs" [(activeId)]="activeTab">
+      <li ngbNavItem="overview">
+        <button ngbNavLink>Overview</button>
+        <ng-template ngbNavContent>
+          <div *ngIf="office; else loadingTemplate">
+            <app-office-overview-tab [office]="office"></app-office-overview-tab>
+          </div>
+          <ng-template #loadingTemplate>
+            <div class="text-center py-5 text-muted">
+              <div class="spinner-border spinner-border-sm" role="status">
+                <span class="visually-hidden">Loading overview...</span>
+              </div>
+            </div>
+            <div class="mt-3">Loading office details...</div>
+          </ng-template>
+        </ng-template>
+      </li>
+
+      <li ngbNavItem="assignments">
+        <button ngbNavLink>
+          Assignments
+          <span class="badge bg-primary ms-2">
+            {{ (assignmentCount$ | async) ?? '-' }}
+          </span>
+        </button>
+        <ng-template ngbNavContent>
+          <div *ngIf="office; else loadingTemplate">
+            <app-office-assignments-tab [office]="office"
+                                        (officeAssignmentChanged)="refreshRowCountObservables()"></app-office-assignments-tab>
+          </div>
+          <ng-template #loadingTemplate>
+            <div class="text-center py-5 text-muted">
+              <div class="spinner-border spinner-border-sm" role="status">
+                <span class="visually-hidden">Loading assignments...</span>
+              </div>
+            </div>
+            <div class="mt-3">Loading assignments...</div>
+          </ng-template>
+        </ng-template>
+      </li>
+
+      <li ngbNavItem="resources">
+        <button ngbNavLink>
+          Resources
+          <span class="badge bg-info ms-2">
+            {{ (office?.ResourcesCount$ | async) ?? '-' }}
+          </span>
+        </button>
+        <ng-template ngbNavContent>
+          <div *ngIf="office; else loadingTemplate">
+            <app-office-resources-tab [office]="office"
+                                      (resourceChanged)="refreshRowCountObservables()"></app-office-resources-tab>
+          </div>
+          <ng-template #loadingTemplate>
+            <div class="text-center py-5 text-muted">
+              <div class="spinner-border spinner-border-sm" role="status">
+                <span class="visually-hidden">Loading resources...</span>
+              </div>
+            </div>
+            <div class="mt-3">Loading office resource details...</div>
+          </ng-template>
+        </ng-template>
+      </li>
+
+      <li ngbNavItem="crews">
+        <button ngbNavLink>
+          Crews
+          <span class="badge bg-warning ms-2">
+            {{ (office?.CrewsCount$ | async) ?? '-' }}
+          </span>
+        </button>
+        <ng-template ngbNavContent>
+          <div *ngIf="office; else loadingTemplate">
+            <app-office-crews-tab [office]="office"
+                                  (crewChanged)="refreshRowCountObservables()"></app-office-crews-tab>
+          </div>
+          <ng-template #loadingTemplate>
+            <div class="text-center py-5 text-muted">
+              <div class="spinner-border spinner-border-sm" role="status">
+                <span class="visually-hidden">Loading crews...</span>
+              </div>
+            </div>
+            <div class="mt-3">Loading office crew details...</div>
+          </ng-template>
+        </ng-template>
+      </li>
+
+
+      <li ngbNavItem="contacts">
+        <button ngbNavLink>
+          Contacts
+          <span class="badge bg-danger ms-2">
+            {{ (office?.OfficeContactsCount$ | async) ?? '-' }}
+          </span>
+        </button>
+        <ng-template ngbNavContent>
+          <div *ngIf="office; else loadingTemplate">
+            <app-office-contacts-tab [office]="office"
+                                     (officeContactChanged)="refreshRowCountObservables()"></app-office-contacts-tab>
+          </div>
+          <ng-template #loadingTemplate>
+            <div class="text-center py-5 text-muted">
+              <div class="spinner-border spinner-border-sm" role="status">
+                <span class="visually-hidden">Loading contacts...</span>
+              </div>
+            </div>
+            <div class="mt-3">Loading contacts...</div>
+          </ng-template>
+        </ng-template>
+      </li>
+
+
+      <li ngbNavItem="calendars">
+        <button ngbNavLink>
+          Calendars
+          <span class="badge bg-secondary ms-2">
+            {{ (office?.CalendarsCount$ | async) ?? '-' }}
+          </span>
+        </button>
+        <ng-template ngbNavContent>
+          <div *ngIf="office; else loadingTemplate">
+            <app-office-calendars-tab [office]="office"
+                                      (calendarChanged)="refreshRowCountObservables()"></app-office-calendars-tab>
+          </div>
+          <ng-template #loadingTemplate>
+            <div class="text-center py-5 text-muted">
+              <div class="spinner-border spinner-border-sm" role="status">
+                <span class="visually-hidden">Loading calendars...</span>
+              </div>
+            </div>
+            <div class="mt-3">Loading calendars...</div>
+          </ng-template>
+        </ng-template>
+      </li>
+
+      <li ngbNavItem="rates">
+        <button ngbNavLink>
+          Rate Overrides
+          <span class="badge bg-success ms-2">
+            {{ (office?.RateSheetsCount$ | async) ?? '-' }}
+          </span>
+        </button>
+        <ng-template ngbNavContent>
+          <div *ngIf="office; else loadingTemplate">
+            <app-office-rates-tab [office]="office"
+                                  (rateSheetChanged)="refreshRowCountObservables()"></app-office-rates-tab>
+          </div>
+          <ng-template #loadingTemplate>
+            <div class="text-center py-5 text-muted">
+              <div class="spinner-border spinner-border-sm" role="status">
+                <span class="visually-hidden">Loading rate overrides...</span>
+              </div>
+            </div>
+            <div class="mt-3">Loading rate overrides...</div>
+          </ng-template>
+        </ng-template>
+      </li>
+
+    </ul>
+    <div [ngbNavOutlet]="nav" class="mt-4"></div>
+  </div>
+</div>

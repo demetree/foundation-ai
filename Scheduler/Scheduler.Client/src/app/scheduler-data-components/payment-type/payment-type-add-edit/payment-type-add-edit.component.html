@@ -1,0 +1,56 @@
+<div class="add-payment-type" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-payment-type me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Payment Type" 
+        *ngIf="userIsSchedulerPaymentTypeWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #paymentTypeModal let-modal>
+   <div class="modal-header bg-dark text-light payment-type-modal-header">
+      <h5 class="modal-title mb-0" id="paymentTypeModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Payment Type' : 'Add Payment Type' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body payment-type-modal-body">
+      <form [formGroup]="paymentTypeForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="PaymentType-name" id="label-PaymentType-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="PaymentType-name" formControlName="name" placeholder="Enter Name" class="form-control payment-type-input" [disabled]="!userIsSchedulerPaymentTypeWriter()" aria-labelledby="label-name" />
+                <div *ngIf="paymentTypeForm.get('name')?.invalid && paymentTypeForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="PaymentType-description" id="label-PaymentType-description"><span class="text-danger">*</span>Description</label>
+                <textarea id="PaymentType-description" formControlName="description" placeholder="Enter Description" class="form-control payment-type-input" [disabled]="!userIsSchedulerPaymentTypeWriter()"></textarea>
+                <div *ngIf="paymentTypeForm.get('description')?.invalid && paymentTypeForm.get('description')?.touched" class="text-danger">
+                    Description is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                <label for="PaymentType-sequence" id="label-PaymentType-sequence">Sequence</label>
+                <input type="number" id="PaymentType-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control payment-type-input" [disabled]="!userIsSchedulerPaymentTypeWriter()" aria-labelledby="label-sequence" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="PaymentType-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerPaymentTypeWriter()" />
+                <label for="PaymentType-active" class="form-check-label" id="label-PaymentType-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="PaymentType-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerPaymentTypeWriter()" />
+                <label for="PaymentType-deleted" class="form-check-label" id="label-PaymentType-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer payment-type-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Payment Type changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !paymentTypeForm.valid || paymentTypeForm.pristine || !userIsSchedulerPaymentTypeWriter()" ngbTooltip="Save the Payment Type changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

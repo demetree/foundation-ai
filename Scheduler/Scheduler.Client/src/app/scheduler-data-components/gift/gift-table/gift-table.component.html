@@ -1,0 +1,404 @@
+<app-gift-add-edit [showAddButton]="false"></app-gift-add-edit>
+<div class="row" *ngIf="userIsSchedulerGiftReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerGiftWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerGiftWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('office.name')">
+                Office
+                <span *ngIf="sortColumn === 'office.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('constituent.name')">
+                Constituent
+                <span *ngIf="sortColumn === 'constituent.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('pledge.name')">
+                Pledge
+                <span *ngIf="sortColumn === 'pledge.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('amount')">
+                Amount
+                <span *ngIf="sortColumn === 'amount'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('receivedDate')">
+                Received  Date
+                <span *ngIf="sortColumn === 'receivedDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('postedDate')">
+                Posted  Date
+                <span *ngIf="sortColumn === 'postedDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('fund.name')">
+                Fund
+                <span *ngIf="sortColumn === 'fund.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('campaign.name')">
+                Campaign
+                <span *ngIf="sortColumn === 'campaign.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('appeal.name')">
+                Appeal
+                <span *ngIf="sortColumn === 'appeal.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('paymentType.name')">
+                Payment  Type
+                <span *ngIf="sortColumn === 'paymentType.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('referenceNumber')">
+                Reference  Number
+                <span *ngIf="sortColumn === 'referenceNumber'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('batch.name')">
+                Batch
+                <span *ngIf="sortColumn === 'batch.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('receiptType.name')">
+                Receipt  Type
+                <span *ngIf="sortColumn === 'receiptType.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('receiptDate')">
+                Receipt  Date
+                <span *ngIf="sortColumn === 'receiptDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('tribute.name')">
+                Tribute
+                <span *ngIf="sortColumn === 'tribute.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('notes')">
+                Notes
+                <span *ngIf="sortColumn === 'notes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let gift of filteredGifts; trackBy: getGiftId"
+              [ngClass]="{
+                 'row-inactive': gift.active == false,
+                 'row-deleted': gift.deleted == true 
+                 }">
+            <td class="header-action-button" *ngIf="userIsSchedulerGiftWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleEdit(gift)"
+                      ngbTooltip="Edit" 
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsSchedulerGiftWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleDelete(gift)"
+                      ngbTooltip="Delete" 
+                      placement="top"
+                      *ngIf="gift.deleted == false">
+                <i class="fa fa-trash"></i>
+              </button>
+              <button class="btn btn-sm"
+                      (click)="handleUndelete(gift)"
+                      ngbTooltip="Undelete" 
+                      placement="top"
+                      *ngIf="gift.deleted == true">
+                <i class="fa fa-trash-arrow-up"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(gift, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(gift, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(gift, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(gift, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(gift, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(gift, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(gift, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(gift, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/office', gift.officeId]" class="btn btn-link text-left" ngbTooltip="Open Office details">{{gift.office?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/constituent', gift.constituentId]" class="btn btn-link text-left" ngbTooltip="Open Constituent details">{{gift.constituent?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/pledge', gift.pledgeId]" class="btn btn-link text-left" ngbTooltip="Open Pledge details">{{gift.pledge?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/gift', gift.id]" class="btn btn-link text-left" ngbTooltip="Open Gift details">{{gift.amount | bigNumberFormat : '1.0-2'}}</a></td>
+            <td class="text-truncate">{{gift.receivedDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate">{{gift.postedDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate"><a [routerLink]="['/fund', gift.fundId]" class="btn btn-link text-left" ngbTooltip="Open Fund details">{{gift.fund?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/campaign', gift.campaignId]" class="btn btn-link text-left" ngbTooltip="Open Campaign details">{{gift.campaign?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/appeal', gift.appealId]" class="btn btn-link text-left" ngbTooltip="Open Appeal details">{{gift.appeal?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/paymenttype', gift.paymentTypeId]" class="btn btn-link text-left" ngbTooltip="Open Payment Type details">{{gift.paymentType?.name}}</a></td>
+            <td class="text-truncate">{{gift.referenceNumber}}</td>
+            <td class="text-truncate"><a [routerLink]="['/batch', gift.batchId]" class="btn btn-link text-left" ngbTooltip="Open Batch details">{{gift.batch?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/receipttype', gift.receiptTypeId]" class="btn btn-link text-left" ngbTooltip="Open Receipt Type details">{{gift.receiptType?.name}}</a></td>
+            <td class="text-truncate">{{gift.receiptDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate"><a [routerLink]="['/tribute', gift.tributeId]" class="btn btn-link text-left" ngbTooltip="Open Tribute details">{{gift.tribute?.name}}</a></td>
+            <td class="text-truncate">{{gift.notes}}</td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let gift of filteredGifts; trackBy: getGiftId" class="card my-2"
+              [ngClass]="{
+                 'row-inactive': gift.active == false,
+                 'row-deleted': gift.deleted == true 
+                 }">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(gift, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(gift, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(gift, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(gift, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(gift, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(gift, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(gift, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(gift, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(gift, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(gift, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(gift, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(gift, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(gift, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/gift', gift.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(gift)" *ngIf="userIsSchedulerGiftWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(gift)" *ngIf="userIsSchedulerGiftWriter() && gift.deleted == false" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+            <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(gift)" *ngIf="userIsSchedulerGiftWriter() && gift.deleted == true" ngbTooltip="Undelete">
+              <i class="fa fa-trash-arrow-upp"></i> UnDelete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{gift.id}}</strong>
+               <small class="text-muted d-block">{{gift.office?.name}}</small>
+             </div>
+             <div>
+                <button class="btn btn-sm"
+                        [routerLink]="['/gift', gift.id]"
+                        ngbTooltip="Gift Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="btn btn-sm"
+                        (click)="handleEdit(gift)"
+                        ngbTooltip="Edit Gift">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleDelete(gift)"
+                      ngbTooltip="Delete Gift" 
+                      placement="top"
+                      *ngIf="gift.deleted == false">
+                  <i class="fa fa-trash"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleUndelete(gift)"
+                      ngbTooltip="Undelete Gift" 
+                      placement="top"
+                      *ngIf="gift.deleted == true">
+                 <i class="fa fa-trash-arrow-up"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="gift-info" *ngIf="gift.officeId != null">
+              <strong>Office: </strong>
+              <a [routerLink]="['/office', gift.officeId]" class="text-left p-0 m-0" ngbTooltip="Open Office details">{{gift.office?.name}}</a>
+            </p>
+            <p class="gift-info" *ngIf="gift.constituentId != null">
+              <strong>Constituent: </strong>
+              <a [routerLink]="['/constituent', gift.constituentId]" class="text-left p-0 m-0" ngbTooltip="Open Constituent details">{{gift.constituent?.name}}</a>
+            </p>
+            <p class="gift-info" *ngIf="gift.pledgeId != null">
+              <strong>Pledge: </strong>
+              <a [routerLink]="['/pledge', gift.pledgeId]" class="text-left p-0 m-0" ngbTooltip="Open Pledge details">{{gift.pledge?.name}}</a>
+            </p>
+            <p class="gift-info" *ngIf="gift.amount != null">
+              <strong>Amount: </strong>
+              {{gift.amount | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="gift-info" *ngIf="gift.receivedDate != null">
+              <strong>Received Date: </strong>
+              {{gift.receivedDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="gift-info" *ngIf="gift.postedDate != null">
+              <strong>Posted Date: </strong>
+              {{gift.postedDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="gift-info" *ngIf="gift.fundId != null">
+              <strong>Fund: </strong>
+              <a [routerLink]="['/fund', gift.fundId]" class="text-left p-0 m-0" ngbTooltip="Open Fund details">{{gift.fund?.name}}</a>
+            </p>
+            <p class="gift-info" *ngIf="gift.campaignId != null">
+              <strong>Campaign: </strong>
+              <a [routerLink]="['/campaign', gift.campaignId]" class="text-left p-0 m-0" ngbTooltip="Open Campaign details">{{gift.campaign?.name}}</a>
+            </p>
+            <p class="gift-info" *ngIf="gift.appealId != null">
+              <strong>Appeal: </strong>
+              <a [routerLink]="['/appeal', gift.appealId]" class="text-left p-0 m-0" ngbTooltip="Open Appeal details">{{gift.appeal?.name}}</a>
+            </p>
+            <p class="gift-info" *ngIf="gift.paymentTypeId != null">
+              <strong>Payment Type: </strong>
+              <a [routerLink]="['/paymenttype', gift.paymentTypeId]" class="text-left p-0 m-0" ngbTooltip="Open Payment Type details">{{gift.paymentType?.name}}</a>
+            </p>
+            <p class="gift-info" *ngIf="gift.referenceNumber != null">
+              <strong>Reference Number: </strong>
+              {{gift.referenceNumber}}
+            </p>
+            <p class="gift-info" *ngIf="gift.batchId != null">
+              <strong>Batch: </strong>
+              <a [routerLink]="['/batch', gift.batchId]" class="text-left p-0 m-0" ngbTooltip="Open Batch details">{{gift.batch?.name}}</a>
+            </p>
+            <p class="gift-info" *ngIf="gift.receiptTypeId != null">
+              <strong>Receipt Type: </strong>
+              <a [routerLink]="['/receipttype', gift.receiptTypeId]" class="text-left p-0 m-0" ngbTooltip="Open Receipt Type details">{{gift.receiptType?.name}}</a>
+            </p>
+            <p class="gift-info" *ngIf="gift.receiptDate != null">
+              <strong>Receipt Date: </strong>
+              {{gift.receiptDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="gift-info" *ngIf="gift.tributeId != null">
+              <strong>Tribute: </strong>
+              <a [routerLink]="['/tribute', gift.tributeId]" class="text-left p-0 m-0" ngbTooltip="Open Tribute details">{{gift.tribute?.name}}</a>
+            </p>
+            <p class="gift-info" *ngIf="gift.notes != null">
+              <strong>Notes: </strong>
+              {{gift.notes}}
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+   </div>
+</div>

@@ -1,0 +1,73 @@
+<div class="add-soft-credit" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-soft-credit me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Soft Credit" 
+        *ngIf="userIsSchedulerSoftCreditWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #softCreditModal let-modal>
+   <div class="modal-header bg-dark text-light soft-credit-modal-header">
+      <h5 class="modal-title mb-0" id="softCreditModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Soft Credit' : 'Add Soft Credit' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body soft-credit-modal-body">
+      <form [formGroup]="softCreditForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('giftId')">
+                <label for="SoftCredit-giftId" id="label-SoftCredit-giftId"><span class="text-danger">*</span>Gift</label>
+                <select id="SoftCredit-giftId" formControlName="giftId" class="form-select soft-credit-select" [disabled]="!userIsSchedulerSoftCreditWriter()">
+                    <option [ngValue]="null">Select Gift</option>
+                    <option *ngFor="let gift of gifts$ | async" [ngValue]="gift.id">{{gift.referenceNumber}}</option>
+                </select>
+                <div *ngIf="softCreditForm.get('giftId')?.invalid && softCreditForm.get('giftId')?.touched" class="text-danger">
+                    Gift is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('constituentId')">
+                <label for="SoftCredit-constituentId" id="label-SoftCredit-constituentId"><span class="text-danger">*</span>Constituent</label>
+                <select id="SoftCredit-constituentId" formControlName="constituentId" class="form-select soft-credit-select" [disabled]="!userIsSchedulerSoftCreditWriter()">
+                    <option [ngValue]="null">Select Constituent</option>
+                    <option *ngFor="let constituent of constituents$ | async" [ngValue]="constituent.id">{{constituent.constituentNumber}}</option>
+                </select>
+                <div *ngIf="softCreditForm.get('constituentId')?.invalid && softCreditForm.get('constituentId')?.touched" class="text-danger">
+                    Constituent is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('amount')">
+                <label for="SoftCredit-amount" id="label-SoftCredit-amount"><span class="text-danger">*</span>Amount</label>
+                <input type="number" id="SoftCredit-amount" formControlName="amount" placeholder="Enter Amount" class="form-control soft-credit-input" [disabled]="!userIsSchedulerSoftCreditWriter()" aria-labelledby="label-amount" />
+                <div *ngIf="softCreditForm.get('amount')?.invalid && softCreditForm.get('amount')?.touched" class="text-danger">
+                    Amount is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('notes')">
+                <label for="SoftCredit-notes" id="label-SoftCredit-notes">Notes</label>
+                <textarea id="SoftCredit-notes" formControlName="notes" placeholder="Enter Notes" class="form-control soft-credit-input" [disabled]="!userIsSchedulerSoftCreditWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="SoftCredit-versionNumber" id="label-SoftCredit-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="SoftCredit-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control soft-credit-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="SoftCredit-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerSoftCreditWriter()" />
+                <label for="SoftCredit-active" class="form-check-label" id="label-SoftCredit-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="SoftCredit-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerSoftCreditWriter()" />
+                <label for="SoftCredit-deleted" class="form-check-label" id="label-SoftCredit-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer soft-credit-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Soft Credit changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !softCreditForm.valid || softCreditForm.pristine || !userIsSchedulerSoftCreditWriter()" ngbTooltip="Save the Soft Credit changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

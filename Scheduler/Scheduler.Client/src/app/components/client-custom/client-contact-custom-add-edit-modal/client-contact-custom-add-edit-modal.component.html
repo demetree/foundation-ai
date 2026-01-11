@@ -1,0 +1,128 @@
+<div class="modal-header bg-dark text-light">
+  <h5 class="modal-title mb-0">
+    {{ isEditMode ? 'Edit Contact Link' : 'Add Contact to Client' }}
+  </h5>
+  <button type="button" class="btn-close btn-close-white" (click)="closeModal()"></button>
+</div>
+
+<div class="modal-body">
+  <form [formGroup]="contactForm" (ngSubmit)="submitForm()">
+    <!-- Toggle: Create new vs link existing -->
+    <div class="form-check mb-4">
+      <input class="form-check-input" type="checkbox" id="createNewContact" formControlName="createNewContact">
+      <label class="form-check-label fw-semibold" for="createNewContact">
+        Create a new contact
+      </label>
+      <div class="small text-muted">
+        Uncheck to link an existing contact from your directory.
+      </div>
+    </div>
+
+    <!-- Existing Contact Selector -->
+    <div class="mb-4" *ngIf="!contactForm.get('createNewContact')?.value">
+      <label class="form-label fw-semibold">Select Existing Contact</label>
+      <select class="form-select" formControlName="contactId">
+        <option [ngValue]="null">Choose a contact...</option>
+        <option *ngFor="let contact of contacts$ | async" [ngValue]="contact.id">
+          {{ contact.firstName }} {{ contact.lastName }} ({{ contact.email || contact.mobile || 'No contact info' }})
+        </option>
+      </select>
+    </div>
+
+    <!-- New Contact Fields -->
+    <div class="row mb-4" *ngIf="contactForm.get('createNewContact')?.value">
+      <div class="col-md-12">
+        <label class="form-label fw-semibold">Type <span class="text-danger">*</span></label>
+        <select class="form-select" formControlName="contactTypeId">
+          <option [ngValue]="null">Select contact type...</option>
+          <option *ngFor="let ct of contactTypes$ | async" [ngValue]="ct.id">
+            {{ ct.name }}
+          </option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">First Name <span class="text-danger">*</span></label>
+        <input type="text" class="form-control" formControlName="firstName">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Last Name <span class="text-danger">*</span></label>
+        <input type="text" class="form-control" formControlName="lastName">
+      </div>
+      <div class="col-md-6 mt-3">
+        <label class="form-label">Email</label>
+        <input type="email" class="form-control" formControlName="email">
+      </div>
+      <div class="col-md-6 mt-3">
+        <label class="form-label">Mobile</label>
+        <input type="tel" class="form-control" formControlName="mobile">
+      </div>
+      <div class="col-md-6 mt-3">
+        <label class="form-label">Phone</label>
+        <input type="tel" class="form-control" formControlName="phone">
+      </div>
+      <div class="col-md-6 mt-3">
+        <label class="form-label">Company</label>
+        <input type="text" class="form-control" formControlName="company">
+      </div>
+      <div class="col-md-6 mt-3">
+        <label class="form-label">Title</label>
+        <input type="text" class="form-control" formControlName="title">
+      </div>
+      <div class="col-md-6 mt-3">
+        <label class="form-label">Position</label>
+        <input type="text" class="form-control" formControlName="position">
+      </div>
+      <div class="col-12 mt-3">
+        <label class="form-label">Notes</label>
+        <textarea class="form-control" rows="3" formControlName="notes"></textarea>
+      </div>
+      <div class="col-md-6 mt-3">
+        <label class="form-label fw-semibold">Icon</label>
+        <select class="form-select" formControlName="iconId">
+          <option [ngValue]="null">Select icon...</option>
+          <option *ngFor="let icon of icons$ | async" [ngValue]="icon.id">
+            {{ icon.name }}
+          </option>
+        </select>
+      </div>
+      <div class="col-md-6 mt-3">
+        <label class="form-label">Color</label>
+        <input type="color" class="form-control form-control-color color-picker" formControlName="color">
+      </div>
+    </div>
+
+    <!-- Relationship & Primary -->
+    <div class="row">
+      <div class="col-md-8">
+        <label class="form-label fw-semibold">Relationship <span class="text-danger">*</span></label>
+        <select class="form-select" formControlName="relationshipTypeId">
+          <option [ngValue]="null">Select relationship...</option>
+          <option *ngFor="let rt of relationshipTypes$ | async" [ngValue]="rt.id">
+            {{ rt.name }}
+          </option>
+        </select>
+      </div>
+      <div class="col-md-4 d-flex align-items-end">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="isPrimary" formControlName="isPrimary">
+          <label class="form-check-label" for="isPrimary">
+            Primary Contact
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer mt-4 border-top-0">
+      <button type="button" class="btn btn-secondary" (click)="closeModal()" [disabled]="isSaving">
+        Cancel
+      </button>
+      <button type="submit"
+              class="btn btn-primary"
+              [disabled]="isSaving || contactForm.invalid">
+        {{ isEditMode ? 'Save Changes' : 'Add Contact'
+      }}
+      </button>
+    </div>
+  </form>
+</div>
+

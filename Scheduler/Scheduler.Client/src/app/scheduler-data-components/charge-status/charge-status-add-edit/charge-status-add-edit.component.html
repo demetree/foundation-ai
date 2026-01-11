@@ -1,0 +1,78 @@
+<div class="add-charge-status" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-charge-status me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Charge Status" 
+        *ngIf="userIsSchedulerChargeStatusWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #chargeStatusModal let-modal>
+   <div class="modal-header bg-dark text-light charge-status-modal-header">
+      <h5 class="modal-title mb-0" id="chargeStatusModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Charge Status' : 'Add Charge Status' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body charge-status-modal-body">
+      <form [formGroup]="chargeStatusForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="ChargeStatus-name" id="label-ChargeStatus-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="ChargeStatus-name" formControlName="name" placeholder="Enter Name" class="form-control charge-status-input" [disabled]="!userIsSchedulerChargeStatusWriter()" aria-labelledby="label-name" />
+                <div *ngIf="chargeStatusForm.get('name')?.invalid && chargeStatusForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="ChargeStatus-description" id="label-ChargeStatus-description"><span class="text-danger">*</span>Description</label>
+                <textarea id="ChargeStatus-description" formControlName="description" placeholder="Enter Description" class="form-control charge-status-input" [disabled]="!userIsSchedulerChargeStatusWriter()"></textarea>
+                <div *ngIf="chargeStatusForm.get('description')?.invalid && chargeStatusForm.get('description')?.touched" class="text-danger">
+                    Description is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('color')">
+                <label for="ChargeStatus-color" id="label-ChargeStatus-color">Color</label>
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="ChargeStatus-color" 
+                        formControlName="color" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerChargeStatusWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="chargeStatusForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                <label for="ChargeStatus-sequence" id="label-ChargeStatus-sequence">Sequence</label>
+                <input type="number" id="ChargeStatus-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control charge-status-input" [disabled]="!userIsSchedulerChargeStatusWriter()" aria-labelledby="label-sequence" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ChargeStatus-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerChargeStatusWriter()" />
+                <label for="ChargeStatus-active" class="form-check-label" id="label-ChargeStatus-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ChargeStatus-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerChargeStatusWriter()" />
+                <label for="ChargeStatus-deleted" class="form-check-label" id="label-ChargeStatus-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer charge-status-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Charge Status changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !chargeStatusForm.valid || chargeStatusForm.pristine || !userIsSchedulerChargeStatusWriter()" ngbTooltip="Save the Charge Status changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

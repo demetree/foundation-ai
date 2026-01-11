@@ -1,0 +1,150 @@
+﻿{
+   "CodeGenerationMode": 4,
+   "ContextClassName": "SecurityContext",
+   "ContextNamespace": null,
+   "FilterSchemas": false,
+   "IncludeConnectionString": false,
+   "ModelNamespace": null,
+   "OutputContextPath": "",
+   "OutputPath": "Database",
+   "PreserveCasingWithRegex": true,
+   "ProjectRootNamespace": "Foundation.Security",
+   "Schemas": null,
+   "SelectedHandlebarsLanguage": 2,
+   "SelectedToBeGenerated": 0,
+   "T4TemplatePath": null,
+   "Tables": [
+      {
+         "Name": "[Security].[EntityDataToken]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Security].[EntityDataTokenEvent]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Security].[EntityDataTokenEventType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Security].[LoginAttempt]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Security].[Module]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Security].[ModuleSecurityRole]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Security].[OAUTHToken]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Security].[Privilege]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Security].[SecurityDepartment]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Security].[SecurityDepartmentUser]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Security].[SecurityGroup]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Security].[SecurityGroupSecurityRole]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Security].[SecurityOrganization]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Security].[SecurityOrganizationUser]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Security].[SecurityRole]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Security].[SecurityTeam]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Security].[SecurityTeamUser]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Security].[SecurityTenant]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Security].[SecurityTenantUser]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Security].[SecurityUser]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Security].[SecurityUserEvent]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Security].[SecurityUserEventType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Security].[SecurityUserPasswordResetToken]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Security].[SecurityUserSecurityGroup]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Security].[SecurityUserSecurityRole]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Security].[SecurityUserTitle]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Security].[SystemSetting]",
+         "ObjectType": 0
+      }
+   ],
+   "UiHint": null,
+   "UncountableWords": null,
+   "UseAsyncStoredProcedureCalls": true,
+   "UseBoolPropertiesWithoutDefaultSql": false,
+   "UseDatabaseNames": true,
+   "UseDateOnlyTimeOnly": true,
+   "UseDbContextSplitting": false,
+   "UseDecimalDataAnnotationForSprocResult": true,
+   "UseFluentApiOnly": true,
+   "UseHandleBars": false,
+   "UseHierarchyId": false,
+   "UseInflector": true,
+   "UseLegacyPluralizer": false,
+   "UseManyToManyEntity": false,
+   "UseNoDefaultConstructor": false,
+   "UseNoNavigations": false,
+   "UseNoObjectFilter": false,
+   "UseNodaTime": false,
+   "UseNullableReferences": false,
+   "UsePrefixNavigationNaming": false,
+   "UseSchemaFolders": false,
+   "UseSchemaNamespaces": false,
+   "UseSpatial": false,
+   "UseT4": false
+}

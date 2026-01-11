@@ -1,0 +1,66 @@
+<div class="container-fluid p-1 m-0 gift-change-history-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="gift-change-history-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Gift Change History</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Gift Change History' : 'Add Gift Change History'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerGiftChangeHistoryReader()">
+                <div class="col m-2 gift-change-history-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="giftChangeHistoryForm" (ngSubmit)="submitForm()" class="gift-change-history-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('giftId')">
+                                <label for="GiftChangeHistory-giftId" id="label-GiftChangeHistory-giftId"><span class="text-danger">*</span>Gift</label>
+                                <select id="GiftChangeHistory-giftId" formControlName="giftId" class="form-select gift-change-history-select" [disabled]="!userIsSchedulerGiftChangeHistoryWriter()">
+                                    <option [ngValue]="null">Select Gift</option>
+                                    <option *ngFor="let gift of gifts$ | async" [ngValue]="gift.id">{{gift.referenceNumber}}</option>
+                                </select>
+                                <div *ngIf="giftChangeHistoryForm.get('giftId')?.invalid && giftChangeHistoryForm.get('giftId')?.touched" class="text-danger">
+                                    Gift is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="GiftChangeHistory-versionNumber" id="label-GiftChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="GiftChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control gift-change-history-input" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                                <label for="GiftChangeHistory-timeStamp" id="label-GiftChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                                <input type="datetime-local" id="GiftChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control gift-change-history-input" [disabled]="!userIsSchedulerGiftChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                                <div *ngIf="giftChangeHistoryForm.get('timeStamp')?.invalid && giftChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                                    Time Stamp is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="GiftChangeHistory-userId" id="label-GiftChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="GiftChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control gift-change-history-input" [disabled]="!userIsSchedulerGiftChangeHistoryWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="giftChangeHistoryForm.get('userId')?.invalid && giftChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                                <label for="GiftChangeHistory-data" id="label-GiftChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                                <textarea id="GiftChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control gift-change-history-input" [disabled]="!userIsSchedulerGiftChangeHistoryWriter()"></textarea>
+                                <div *ngIf="giftChangeHistoryForm.get('data')?.invalid && giftChangeHistoryForm.get('data')?.touched" class="text-danger">
+                                    Data is required
+                                </div>
+                            </div>
+                            <div class="gift-change-history-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="giftChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Gift Change History">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !giftChangeHistoryForm.valid || !giftChangeHistoryForm.dirty || giftChangeHistoryForm.pristine || userIsSchedulerGiftChangeHistoryWriter() == false " ngbTooltip="Save Gift Change History">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

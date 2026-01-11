@@ -1,0 +1,56 @@
+<div class="add-recurrence-frequency" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-recurrence-frequency me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Recurrence Frequency" 
+        *ngIf="userIsSchedulerRecurrenceFrequencyWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #recurrenceFrequencyModal let-modal>
+   <div class="modal-header bg-dark text-light recurrence-frequency-modal-header">
+      <h5 class="modal-title mb-0" id="recurrenceFrequencyModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Recurrence Frequency' : 'Add Recurrence Frequency' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body recurrence-frequency-modal-body">
+      <form [formGroup]="recurrenceFrequencyForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="RecurrenceFrequency-name" id="label-RecurrenceFrequency-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="RecurrenceFrequency-name" formControlName="name" placeholder="Enter Name" class="form-control recurrence-frequency-input" [disabled]="!userIsSchedulerRecurrenceFrequencyWriter()" aria-labelledby="label-name" />
+                <div *ngIf="recurrenceFrequencyForm.get('name')?.invalid && recurrenceFrequencyForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="RecurrenceFrequency-description" id="label-RecurrenceFrequency-description"><span class="text-danger">*</span>Description</label>
+                <textarea id="RecurrenceFrequency-description" formControlName="description" placeholder="Enter Description" class="form-control recurrence-frequency-input" [disabled]="!userIsSchedulerRecurrenceFrequencyWriter()"></textarea>
+                <div *ngIf="recurrenceFrequencyForm.get('description')?.invalid && recurrenceFrequencyForm.get('description')?.touched" class="text-danger">
+                    Description is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                <label for="RecurrenceFrequency-sequence" id="label-RecurrenceFrequency-sequence">Sequence</label>
+                <input type="number" id="RecurrenceFrequency-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control recurrence-frequency-input" [disabled]="!userIsSchedulerRecurrenceFrequencyWriter()" aria-labelledby="label-sequence" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="RecurrenceFrequency-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerRecurrenceFrequencyWriter()" />
+                <label for="RecurrenceFrequency-active" class="form-check-label" id="label-RecurrenceFrequency-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="RecurrenceFrequency-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerRecurrenceFrequencyWriter()" />
+                <label for="RecurrenceFrequency-deleted" class="form-check-label" id="label-RecurrenceFrequency-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer recurrence-frequency-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Recurrence Frequency changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !recurrenceFrequencyForm.valid || recurrenceFrequencyForm.pristine || !userIsSchedulerRecurrenceFrequencyWriter()" ngbTooltip="Save the Recurrence Frequency changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

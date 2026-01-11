@@ -1,0 +1,46 @@
+.tenant-profile-modal-header {
+  background-color: #343a40;
+  color: #fff;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.tenant-profile-modal-body {
+  padding: 15px;
+  font-size: 1rem;
+}
+
+.section-heading {
+  font-weight: bold;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  color: black;
+}
+
+.tenant-profile-input, .tenant-profile-select {
+  margin-bottom: 15px;
+  border-radius: 5px;
+}
+
+.tenant-profile-input::placeholder, .tenant-profile-select::placeholder {
+  color: #6c757d;
+}
+
+.tenant-profile-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 10px;
+  padding-bottom: 0px;
+  border: none;
+}
+
+.text-danger {
+  color: #dc3545 !important;
+}
+
+.position-absolute.top-0.end-0.translate-middle {
+  top: -10px !important;
+  right: -10px !important;
+}

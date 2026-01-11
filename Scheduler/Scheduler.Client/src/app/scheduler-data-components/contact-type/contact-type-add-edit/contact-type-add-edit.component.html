@@ -1,0 +1,85 @@
+<div class="add-contact-type" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-contact-type me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Contact Type" 
+        *ngIf="userIsSchedulerContactTypeWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #contactTypeModal let-modal>
+   <div class="modal-header bg-dark text-light contact-type-modal-header">
+      <h5 class="modal-title mb-0" id="contactTypeModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Contact Type' : 'Add Contact Type' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body contact-type-modal-body">
+      <form [formGroup]="contactTypeForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="ContactType-name" id="label-ContactType-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="ContactType-name" formControlName="name" placeholder="Enter Name" class="form-control contact-type-input" [disabled]="!userIsSchedulerContactTypeWriter()" aria-labelledby="label-name" />
+                <div *ngIf="contactTypeForm.get('name')?.invalid && contactTypeForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="ContactType-description" id="label-ContactType-description"><span class="text-danger">*</span>Description</label>
+                <textarea id="ContactType-description" formControlName="description" placeholder="Enter Description" class="form-control contact-type-input" [disabled]="!userIsSchedulerContactTypeWriter()"></textarea>
+                <div *ngIf="contactTypeForm.get('description')?.invalid && contactTypeForm.get('description')?.touched" class="text-danger">
+                    Description is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                <label for="ContactType-sequence" id="label-ContactType-sequence">Sequence</label>
+                <input type="number" id="ContactType-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control contact-type-input" [disabled]="!userIsSchedulerContactTypeWriter()" aria-labelledby="label-sequence" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('iconId')">
+                <label for="ContactType-iconId" id="label-ContactType-iconId">Icon</label>
+                <select id="ContactType-iconId" formControlName="iconId" class="form-select contact-type-select" [disabled]="!userIsSchedulerContactTypeWriter()">
+                    <option [ngValue]="null">Select Icon</option>
+                    <option *ngFor="let icon of icons$ | async" [ngValue]="icon.id">{{icon.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('color')">
+                <label for="ContactType-color" id="label-ContactType-color">Color</label>
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="ContactType-color" 
+                        formControlName="color" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerContactTypeWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="contactTypeForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ContactType-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerContactTypeWriter()" />
+                <label for="ContactType-active" class="form-check-label" id="label-ContactType-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ContactType-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerContactTypeWriter()" />
+                <label for="ContactType-deleted" class="form-check-label" id="label-ContactType-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer contact-type-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Contact Type changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !contactTypeForm.valid || contactTypeForm.pristine || !userIsSchedulerContactTypeWriter()" ngbTooltip="Save the Contact Type changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

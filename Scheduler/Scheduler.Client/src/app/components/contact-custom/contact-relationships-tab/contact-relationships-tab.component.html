@@ -1,0 +1,101 @@
+<div class="contact-relationships-tab">
+  <!-- Header with Add Button -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="mb-0 fw-semibold">Relationships</h5>
+    <button class="btn btn-primary btn-sm"
+            (click)="openAddRelationshipModal()"
+            *ngIf="userCanManageRelationships()">
+      <i class="fa-solid fa-plus me-2"></i> Add Relationship
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div class="text-center py-5" *ngIf="isLoading$ | async">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading relationships...</span>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="alert alert-info" *ngIf="(relationships$ | async)?.length === 0 && !(isLoading$ | async)">
+    <i class="fa-solid fa-info-circle me-2"></i>
+    No relationships defined yet.
+    <a href="javascript:void(0)" class="alert-link" (click)="openAddRelationshipModal()">Add the first one</a>.
+  </div>
+
+  <!-- Relationships List -->
+  <div class="row g-4" *ngIf="relationships$ | async as relationships">
+    <div class="col-lg-6 col-xxl-4" *ngFor="let rel of relationships">
+      <div class="card h-100 shadow-sm position-relative">
+        <!-- Primary Badge -->
+        <div class="position-absolute top-0 end-0 mt-2 me-2" *ngIf="rel.isPrimary">
+          <span class="badge bg-success">Primary</span>
+        </div>
+
+        <div class="card-body">
+          <!-- Related Contact -->
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <div class="avatar rounded-circle overflow-hidden border"
+                 style="width: 60px; height: 60px;"
+                 [style.background-color]="rel.relatedContact?.color || '#6c757d'">
+              <ng-container *ngIf="rel.relatedContact?.avatarData; else defaultRelatedAvatar">
+                <img [src]="'data:' + (rel.relatedContact?.avatarMimeType || 'image/png') + ';base64,' + rel.relatedContact?.avatarData"
+                     alt="Related contact avatar"
+                     class="w-100 h-100 object-fit-cover">
+              </ng-container>
+              <ng-template #defaultRelatedAvatar>
+                <div class="w-100 h-100 d-flex align-items-center justify-content-center text-white fw-bold">
+                  <i class="fa-solid fa-user fa-2x"></i>
+                </div>
+              </ng-template>
+            </div>
+
+            <div class="flex-grow-1">
+              <h6 class="mb-1">
+                <a [routerLink]="['/contact', rel.relatedContact?.id]"
+                   class="text-decoration-none">
+                  {{ rel.relatedContact! | contactFullName }}
+                </a>
+              </h6>
+              <small class="text-muted">
+                {{ rel.relatedContact?.company || '' }}
+                <span *ngIf="rel.relatedContact?.company && rel.relatedContact?.title">•</span>
+                {{ rel.relatedContact?.title || '' }}
+              </small>
+            </div>
+          </div>
+
+          <!-- Relationship Details -->
+          <div class="border-top pt-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="badge"
+                    [style.background-color]="rel.relationshipType?.color || '#6c757d'"
+                    [style.color]="rel.relationshipType?.color | contrastColor">
+                {{ rel.relationshipType?.name || 'Unknown' }}
+              </span>
+
+              <!-- fix this-->
+              <small class="text-muted">
+                <!--{{ rel.isEmergencyEligible ? 'Emergency Contact Eligible' : '' }} -->
+                FIX THIS
+              </small>
+            </div>
+
+            <!-- Actions -->
+            <div class="d-flex gap-2 mt-3" *ngIf="userCanManageRelationships()">
+              <button class="btn btn-outline-primary btn-sm flex-grow-1"
+                      (click)="openEditRelationshipModal(rel)">
+                <i class="fa fa-pen me-1"></i> Edit
+              </button>
+              <button class="btn btn-outline-danger btn-sm"
+                      (click)="deleteRelationship(rel)"
+                      ngbTooltip="Delete Relationship">
+                <i class="fa fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

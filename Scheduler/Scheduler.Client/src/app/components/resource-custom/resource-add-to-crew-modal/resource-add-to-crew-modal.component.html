@@ -1,0 +1,61 @@
+<div class="modal-header">
+  <h5 class="modal-title">
+    Add {{ resourceName }} to Crew
+  </h5>
+  <button type="button" class="btn-close" (click)="cancel()" aria-label="Close"></button>
+</div>
+
+<div class="modal-body">
+  <form [formGroup]="addForm">
+    <!-- Crew Selection -->
+    <div class="mb-3">
+      <label for="crewId" class="form-label">
+        <span class="text-danger">*</span> Crew
+      </label>
+      <select id="crewId" formControlName="crewId" class="form-select">
+        <option [ngValue]="null">Select a crew...</option>
+        <option *ngFor="let crew of crews$ | async" [ngValue]="crew.id">
+          {{ crew.name }}
+        </option>
+      </select>
+    </div>
+
+    <!-- Assignment Role Selection with Visual Preview -->
+    <div class="mb-3">
+      <label for="assignmentRoleId" class="form-label">Role (optional)</label>
+      <select id="assignmentRoleId" formControlName="assignmentRoleId" class="form-select">
+        <option [ngValue]="null">No specific role</option>
+        <option *ngFor="let role of assignmentRoles$ | async" [ngValue]="role.id">
+          <i [class]="role.icon?.fontAwesomeCode || 'fa-solid fa-user'"
+             [style.color]="role.color || '#6c757d'"
+             class="me-2"></i>
+          {{ role.name }}
+        </option>
+      </select>
+      <small class="form-text text-muted">
+        Choose a role to assign specific duties and rate overrides
+      </small>
+    </div>
+
+    <!-- Sequence -->
+    <div class="mb-3">
+      <label for="sequence" class="form-label">
+        <span class="text-danger">*</span> Position in Crew
+      </label>
+      <input type="number" id="sequence" formControlName="sequence" class="form-control" min="1" />
+      <small class="form-text text-muted">
+        Lower numbers appear first in crew roster
+      </small>
+    </div>
+  </form>
+</div>
+
+<div class="modal-footer">
+  <button type="button" class="btn btn-secondary" (click)="cancel()" [disabled]="isSaving">
+    Cancel
+  </button>
+  <button type="button" class="btn btn-primary" (click)="submit()" [disabled]="isSaving || !addForm.valid">
+    <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
+    Add to Crew
+  </button>
+</div>

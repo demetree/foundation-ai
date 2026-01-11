@@ -1,0 +1,101 @@
+<div class="container-fluid p-1 m-0 soft-credit-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="soft-credit-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Soft Credit</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Soft Credit' : 'Add Soft Credit'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerSoftCreditReader()">
+                <div class="col m-2 soft-credit-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="softCreditForm" (ngSubmit)="submitForm()" class="soft-credit-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('giftId')">
+                                <label for="SoftCredit-giftId" id="label-SoftCredit-giftId"><span class="text-danger">*</span>Gift</label>
+                                <select id="SoftCredit-giftId" formControlName="giftId" class="form-select soft-credit-select" [disabled]="!userIsSchedulerSoftCreditWriter()">
+                                    <option [ngValue]="null">Select Gift</option>
+                                    <option *ngFor="let gift of gifts$ | async" [ngValue]="gift.id">{{gift.referenceNumber}}</option>
+                                </select>
+                                <div *ngIf="softCreditForm.get('giftId')?.invalid && softCreditForm.get('giftId')?.touched" class="text-danger">
+                                    Gift is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('constituentId')">
+                                <label for="SoftCredit-constituentId" id="label-SoftCredit-constituentId"><span class="text-danger">*</span>Constituent</label>
+                                <select id="SoftCredit-constituentId" formControlName="constituentId" class="form-select soft-credit-select" [disabled]="!userIsSchedulerSoftCreditWriter()">
+                                    <option [ngValue]="null">Select Constituent</option>
+                                    <option *ngFor="let constituent of constituents$ | async" [ngValue]="constituent.id">{{constituent.constituentNumber}}</option>
+                                </select>
+                                <div *ngIf="softCreditForm.get('constituentId')?.invalid && softCreditForm.get('constituentId')?.touched" class="text-danger">
+                                    Constituent is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('amount')">
+                                <label for="SoftCredit-amount" id="label-SoftCredit-amount"><span class="text-danger">*</span>Amount</label>
+                                <input type="number" id="SoftCredit-amount" formControlName="amount" placeholder="Enter Amount" class="form-control soft-credit-input" [disabled]="!userIsSchedulerSoftCreditWriter()" aria-labelledby="label-amount" />
+                                <div *ngIf="softCreditForm.get('amount')?.invalid && softCreditForm.get('amount')?.touched" class="text-danger">
+                                    Amount is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('notes')">
+                                <label for="SoftCredit-notes" id="label-SoftCredit-notes">Notes</label>
+                                <textarea id="SoftCredit-notes" formControlName="notes" placeholder="Enter Notes" class="form-control soft-credit-input" [disabled]="!userIsSchedulerSoftCreditWriter()"></textarea>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="SoftCredit-versionNumber" id="label-SoftCredit-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="SoftCredit-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control soft-credit-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="SoftCredit-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerSoftCreditWriter()" />
+                                <label for="SoftCredit-active" class="form-check-label" id="label-SoftCredit-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="SoftCredit-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerSoftCreditWriter()" />
+                                <label for="SoftCredit-deleted" class="form-check-label" id="label-SoftCredit-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="soft-credit-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="softCreditForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Soft Credit">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !softCreditForm.valid || !softCreditForm.dirty || softCreditForm.pristine || userIsSchedulerSoftCreditWriter() == false " ngbTooltip="Save Soft Credit">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerSoftCreditReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 soft-credit-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="softCreditChangeHistoryService.userIsSchedulerSoftCreditChangeHistoryReader()">
+                            <button ngbNavLink>Soft Credit Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (softCreditData?.SoftCreditChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-soft-credit-change-history-table [queryParams]="{ softCreditId: softCreditData?.id }"></app-soft-credit-change-history-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-soft-credit-change-history-add-edit [preSeededData]="{ softCreditId: softCreditData?.id }" [hiddenFields]="['softCreditId']"></app-soft-credit-change-history-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

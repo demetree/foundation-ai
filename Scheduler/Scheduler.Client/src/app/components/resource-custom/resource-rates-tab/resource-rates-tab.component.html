@@ -1,0 +1,78 @@
+<div class="card h-100">
+  <div class="card-header bg-light d-flex justify-content-between align-items-center">
+    <h6 class="mb-0 fw-semibold">
+      <i class="fa-solid fa-dollar-sign me-2"></i>
+      Rate Overrides
+    </h6>
+    <div class="d-flex gap-2">
+      <button class="btn btn-sm btn-primary" (click)="openAddRateOverrideModal()">
+        <i class="fa fa-plus me-1"></i> Add Override
+      </button>
+      <button class="btn btn-sm btn-outline-secondary" (click)="loadRateSheets()">
+        <i class="fa fa-sync" [ngClass]="{'fa-spin': isLoading}"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <!-- Loading -->
+    <div class="text-center py-4" *ngIf="isLoading">
+      <div class="spinner-border spinner-border-sm text-primary" role="status">
+        <span class="visually-hidden">Loading rate overrides...</span>
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div class="alert alert-danger small" *ngIf="error">
+      <i class="fa-solid fa-exclamation-triangle me-2"></i>
+      {{ error }}
+    </div>
+
+    <!-- Empty -->
+    <div class="text-center py-5 text-muted" *ngIf="!isLoading && (!rateSheets || rateSheets.length === 0)">
+      <i class="fa-solid fa-money-bill-wave fa-3x mb-3 opacity-50"></i>
+      <div>No rate overrides defined</div>
+      <div class="small mt-2">Uses default rates</div>
+    </div>
+
+    <!-- Rate List -->
+    <div class="table-responsive" *ngIf="!isLoading && rateSheets && rateSheets.length > 0">
+      <table class="table table-hover align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Effective Date</th>
+            <th>Role</th>
+            <th>Cost Rate</th>
+            <th>Billing Rate</th>
+            <th>Currency</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let sheet of rateSheets">
+            <td>
+              {{ sheet.effectiveDate | date:'mediumDate' }}
+            </td>
+            <td>
+              {{ sheet.assignmentRole?.name || 'All Roles' }}
+            </td>
+            <td>
+              {{ formatCurrency(sheet.costRate, sheet.currency?.code!) }}
+            </td>
+            <td>
+              {{ formatCurrency(sheet.billingRate, sheet.currency?.code!) }}
+            </td>
+            <td>
+              {{ sheet.currency?.code || '—' }}
+            </td>
+            <td>
+              <span class="badge rounded-pill {{ getRateStatus(sheet).badgeClass }}">
+                {{ getRateStatus(sheet).text }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

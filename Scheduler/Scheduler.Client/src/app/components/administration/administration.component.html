@@ -1,0 +1,421 @@
+<!-- Page Container -->
+<div class="container-fluid p-3">
+
+  <!-- Header Card -->
+  <div class="card mb-4 shadow-sm border-0">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+      <!-- Left: Back + Title -->
+      <div class="d-flex align-items-center">
+        <button class="btn btn-sm btn-light me-3" (click)="goBack()" ngbTooltip="Go Back">
+          <i class="fa-solid fa-arrow-left"></i>
+        </button>
+        <div>
+          <h3 class="mb-0">Administration</h3>
+          <small class="text-muted">Company profile & system configuration</small>
+        </div>
+      </div>
+
+      <!-- Right: Action Buttons -->
+      <div class="d-flex align-items-center">
+        <app-add-tenant-profile (tenantProfileChanged)="LoadData()"></app-add-tenant-profile>
+        <button class="btn btn-primary ms-2" (click)="onEdit(tenantProfileData)" ngbTooltip="Edit Profile">
+          <i class="fa fa-pen me-1"></i> Edit Profile
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation Tabs -->
+  <ul class="nav nav-tabs mb-4 border-bottom-0" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active fw-semibold" id="profile-tab" data-bs-toggle="tab"
+              data-bs-target="#profile" type="button" role="tab">
+        Company Profile
+      </button>
+    </li>
+    <li class="nav-item" role="presentation" *ngIf="userIsSchedulerAdministrator()">
+      <button class="nav-link fw-semibold" id="configuration-tab" data-bs-toggle="tab"
+              data-bs-target="#configuration" type="button" role="tab">
+        Configuration
+      </button>
+    </li>
+    <li class="nav-item" role="presentation" *ngIf="userIsFoundationAdministrator()">
+      <button class="nav-link fw-semibold" id="foundation-tab" data-bs-toggle="tab"
+              data-bs-target="#foundation" type="button" role="tab">
+        Foundation Admin
+      </button>
+    </li>
+    <li class="nav-item ms-auto" role="presentation" *ngIf="userIsFoundationAdministrator()">
+      <button class="nav-link fw-semibold" id="export-tab" data-bs-toggle="tab"
+              data-bs-target="#export" type="button" role="tab">
+        Export
+      </button>
+    </li>
+  </ul>
+
+  <!-- Tab Content -->
+  <div class="tab-content">
+
+    <!-- Tab 1: Company Profile -->
+    <div class="tab-pane fade show active" id="profile" role="tabpanel">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+
+          <!-- General Info & Logo Row -->
+          <div class="row mb-4">
+            <div class="col-md-7">
+              <h5 class="border-bottom pb-2 mb-4">General Information</h5>
+              <div class="row g-3">
+                <div class="col-12">
+                  <label class="form-label fw-semibold">Company Name</label>
+                  <input type="text" class="form-control bg-light border-0 shadow-sm"
+                         [value]="tenantProfileData.name" readonly>
+                </div>
+                <div class="col-12">
+                  <label class="form-label fw-semibold">Description</label>
+                  <input type="text" class="form-control bg-light border-0 shadow-sm"
+                         [value]="tenantProfileData.description || '—'" readonly>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold">Phone</label>
+                  <input type="text" class="form-control bg-light border-0 shadow-sm"
+                         [value]="tenantProfileData.phoneNumber || '—'" readonly>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold">Email</label>
+                  <input type="email" class="form-control bg-light border-0 shadow-sm"
+                         [value]="tenantProfileData.email || '—'" readonly>
+                </div>
+                <div class="col-12">
+                  <label class="form-label fw-semibold">Website</label>
+                  <input type="url" class="form-control bg-light border-0 shadow-sm"
+                         [value]="tenantProfileData.website || '—'" readonly>
+                </div>
+              </div>
+            </div>
+
+            <!-- Logo -->
+            <div class="col-md-5 text-center text-md-end">
+              <h5 class="border-bottom pb-2 mb-4">Logo</h5>
+              <div class="mb-4">
+                <div *ngIf="tenantProfileData.companyLogoData; else logoPlaceholder">
+                  <img [src]="'data:' + tenantProfileData.companyLogoMimeType + ';base64,' + tenantProfileData.companyLogoData"
+                       [alt]="tenantProfileData.companyLogoFileName"
+                       class="rounded shadow border"
+                       style="width: 140px; height: 140px; object-fit: contain; background: white;" />
+                </div>
+                <ng-template #logoPlaceholder>
+                  <div class="rounded shadow border bg-light d-flex align-items-center justify-content-center text-muted mx-auto"
+                       style="width: 140px; height: 140px;">
+                    <i class="fa-solid fa-building fa-4x opacity-50"></i>
+                  </div>
+                </ng-template>
+              </div>
+            </div>
+          </div>
+
+          <!-- Address Section -->
+          <div class="mb-4">
+            <h5 class="border-bottom pb-2 mb-4">Address</h5>
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="form-label fw-semibold">Street Address</label>
+                <input type="text" class="form-control bg-light border-0 shadow-sm"
+                       [value]="[tenantProfileData.addressLine1, tenantProfileData.addressLine2, tenantProfileData.addressLine3].join(', ') || '—'" readonly>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">City</label>
+                <input type="text" class="form-control bg-light border-0 shadow-sm"
+                       [value]="tenantProfileData.city || '—'" readonly>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label fw-semibold">State/Province</label>
+                <input type="text" class="form-control bg-light border-0 shadow-sm"
+                       [value]="stateName || '—'" readonly>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label fw-semibold">Postal Code</label>
+                <input type="text" class="form-control bg-light border-0 shadow-sm"
+                       [value]="tenantProfileData.postalCode || '—'" readonly>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label fw-semibold">Country</label>
+                <input type="text" class="form-control bg-light border-0 shadow-sm"
+                       [value]="countryName || '—'" readonly>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 2: Configuration -->
+    <div class="tab-pane fade" id="configuration" role="tabpanel" *ngIf="userIsSchedulerAdministrator()">
+      <div class="row gy-2 gx-4">
+
+        <!-- Column 1  row 1-->
+        <div class="col-lg-6">
+          <div class="card shadow-sm h-100 border-0">
+            <div class="card-header bg-light fw-semibold">Core Organization</div>
+            <div class="list-group list-group-flush">
+              <a class="list-group-item list-group-item-action d-flex align-items-center" routerLink="/offices">
+                <i class="fa-solid fa-building me-3 text-primary"></i> Offices
+              </a>
+              <a class="list-group-item list-group-item-action d-flex align-items-center" routerLink="/calendars">
+                <i class="fa-solid fa-calendar-week me-3 text-primary"></i> Calendars
+              </a>
+              <a class="list-group-item list-group-item-action d-flex align-items-center" routerLink="/resourcetypes">
+                <i class="fa-solid fa-tags me-3 text-primary"></i> Resource Types
+              </a>
+              <a class="list-group-item list-group-item-action d-flex align-items-center" routerLink="/clienttypes">
+                <i class="fa-solid fa-user me-3 text-primary"></i> Client Types
+              </a>
+              <a class="list-group-item list-group-item-action d-flex align-items-center" routerLink="/schedulingtargettypes">
+                <i class="fa-solid fa-bullseye me-3 text-primary"></i> Target Types
+              </a>
+              <a class="list-group-item list-group-item-action d-flex align-items-center" routerLink="/priorities">
+                <i class="fa-solid fa-triangle-exclamation me-3 text-primary"></i> Priority Levels
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Column 2 row 1 -->
+        <div class="col-lg-6">
+          <div class="card shadow-sm h-100 border-0">
+            <div class="card-header bg-light fw-semibold">Scheduling & Events</div>
+            <div class="list-group list-group-flush">
+              <a class="list-group-item list-group-item-action d-flex align-items-center" routerLink="/scheduledeventtemplates">
+                <i class="fa-solid fa-calendar-xmark me-3 text-primary"></i> Event Templates
+              </a>
+              <a class="list-group-item list-group-item-action d-flex align-items-center" routerLink="/assignmentroles">
+                <i class="fa-solid fa-user-tag me-3 text-primary"></i> Assignment Roles
+              </a>
+              <a class="list-group-item list-group-item-action d-flex align-items-center" routerLink="/qualifications">
+                <i class="fa-solid fa-certificate me-3 text-primary"></i> Qualifications
+              </a>
+              <a class="list-group-item list-group-item-action d-flex align-items-center" routerLink="/shiftpatterns">
+                <i class="fa-solid fa-clock-rotate-left me-3 text-primary"></i> Shift Patterns
+              </a>
+              <a class="list-group-item list-group-item-action d-flex align-items-center" routerLink="/scheduledevents">
+                <i class="fa-solid fa-calendar me-3 text-primary"></i> Scheduled Events
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row  gy-2 gx-4">
+        <!-- Column 1 row 2 -->
+        <div class="col-lg-6">
+          <div class="card shadow-sm mt-4 border-0">
+            <div class="card-header bg-light fw-semibold">Financial Configuration</div>
+            <div class="list-group list-group-flush">
+              <a class="list-group-item list-group-item-action d-flex align-items-center" routerLink="/ratesheets">
+                <i class="fa-solid fa-table me-3 text-primary"></i> Rate Sheets
+              </a>
+              <a class="list-group-item list-group-item-action d-flex align-items-center" routerLink="/ratetypes">
+                <i class="fa-solid fa-money-bill-trend-up me-3 text-primary"></i> Rate Types
+              </a>
+              <a class="list-group-item list-group-item-action d-flex align-items-center" routerLink="/chargetypes">
+                <i class="fa-solid fa-cash-register me-3 text-primary"></i> Charge Types
+              </a>
+              <a class="list-group-item list-group-item-action d-flex align-items-center" routerLink="/currencies">
+                <i class="fa-solid fa-dollar-sign me-3 text-primary"></i> Currencies
+              </a>
+              <a class="list-group-item list-group-item-action d-flex align-items-center"
+                 [routerLink]="['/eventcharges']" ngbTooltip="Edit Event Charges">
+                <i class="fa-solid fa-comments-dollar me-3 text-primary"></i> Event Charges
+              </a>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Column 2 row 2 -->
+        <div class="col-lg-6">
+          <div class="card shadow-sm mt-4 border-0">
+            <div class="card-header bg-light fw-semibold">Fund Raising Configuration</div>
+            <div class="list-group list-group-flush">
+
+              <a class="list-group-item list-group-item-action d-flex align-items-center"
+                 *ngIf="userIsSchedulerAdministrator()"
+                 [routerLink]="['/funds']" ngbTooltip="Edit Funds">
+                <i class="fa-solid fa-wallet me-3 text-primary"></i> Funds
+              </a>
+
+              <a class="list-group-item list-group-item-action d-flex align-items-center"
+                 *ngIf="userIsSchedulerAdministrator()"
+                 [routerLink]="['/campaigns']" ngbTooltip="Edit Campaigns">
+                <i class="fa-solid fa-bullhorn me-3 text-primary"></i> Campaigns
+              </a>
+
+              <a class="list-group-item list-group-item-action d-flex align-items-center"
+                 *ngIf="userIsSchedulerAdministrator()"
+                 [routerLink]="['/appeals']" ngbTooltip="Edit Appeals">
+                <i class="fa-solid fa-envelope-open-text me-3 text-primary"></i> Appeals
+              </a>
+
+              <a class="list-group-item list-group-item-action d-flex align-items-center"
+                 *ngIf="userIsSchedulerAdministrator()"
+                 [routerLink]="['/households']" ngbTooltip="Edit Households">
+                <i class="fa-solid fa-house-user me-3 text-primary"></i> Households
+              </a>
+
+              <a class="list-group-item list-group-item-action d-flex align-items-center"
+                 *ngIf="userIsSchedulerAdministrator()"
+                 [routerLink]="['/constituents']" ngbTooltip="Edit Constituents">
+                <i class="fa-solid fa-user me-3 text-primary"></i> Constituents
+              </a>
+
+              <a class="list-group-item list-group-item-action d-flex align-items-center"
+                 *ngIf="userIsSchedulerAdministrator()"
+                 [routerLink]="['/pledges']" ngbTooltip="Edit Pledges">
+                <i class="fa-solid fa-handshake me-3 text-primary"></i> Pledges
+              </a>
+
+              <a class="list-group-item list-group-item-action d-flex align-items-center"
+                 *ngIf="userIsSchedulerAdministrator()"
+                 [routerLink]="['/tributes']" ngbTooltip="Edit Tributes">
+                <i class="fa-solid fa-heart me-3 text-primary"></i> Tributes
+              </a>
+
+              <a class="list-group-item list-group-item-action d-flex align-items-center"
+                 *ngIf="userIsSchedulerAdministrator()"
+                 [routerLink]="['/gifts']" ngbTooltip="Edit Gifts">
+                <i class="fa-solid fa-gift me-3 text-primary"></i> Gifts
+              </a>
+
+              <a class="list-group-item list-group-item-action d-flex align-items-center"
+                 *ngIf="userIsSchedulerAdministrator()"
+                 [routerLink]="['/softcredits']" ngbTooltip="Edit Soft Credits">
+                <i class="fa-solid fa-share-nodes me-3 text-primary"></i> Soft Credits
+              </a>
+
+              <a class="list-group-item list-group-item-action d-flex align-items-center"
+                 *ngIf="userIsSchedulerAdministrator()"
+                 [routerLink]="['/batches']" ngbTooltip="Edit Batches">
+                <i class="fa-solid fa-layer-group me-3 text-primary"></i> Batches
+              </a>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Tab 3: Foundation Administration (only for foundation admins) -->
+    <div class="tab-pane fade" id="foundation" role="tabpanel" *ngIf="userIsFoundationAdministrator()">
+      <div class="row  gy-2 gx-4">
+        <div class="col-lg-6">
+          <div class="card shadow-sm border-0">
+            <div class="card-header bg-light fw-semibold">Foundation Masters</div>
+            <div class="list-group list-group-flush">
+              <a class="list-group-item list-group-item-action d-flex align-items-center" routerLink="/officetypes">
+                <i class="fa-solid fa-building me-3 text-primary"></i> Office Types
+              </a>
+              <a class="list-group-item list-group-item-action d-flex align-items-center" routerLink="/contacttypes">
+                <i class="fa-solid fa-id-card me-3 text-primary"></i> Contact Types
+              </a>
+              <a class="list-group-item list-group-item-action d-flex align-items-center" routerLink="/relationshiptypes">
+                <i class="fa-solid fa-heart me-3 text-primary"></i> Relationship Types
+              </a>
+              <a class="list-group-item list-group-item-action d-flex align-items-center" routerLink="/eventstatuses">
+                <i class="fa-solid fa-calendar me-3 text-primary"></i> Event Statuses
+              </a>
+              <a class="list-group-item list-group-item-action d-flex align-items-center"
+                 [routerLink]="['/bookingsourcetypes']" ngbTooltip="Edit Boooking Sources">
+                <i class="fa-solid fa-book me-3 text-primary"></i> Booking Sources
+              </a>
+
+              <a class="list-group-item list-group-item-action d-flex align-items-center"
+                 [routerLink]="['/assignmentstatuses']" ngbTooltip="Edit Assignment Statuses">
+                <i class="fa-solid fa-signal me-3 text-primary"></i> Assignment Statuses
+              </a>
+
+              <a class="list-group-item list-group-item-action d-flex align-items-center"
+                 [routerLink]="['/dependencytypes']" ngbTooltip="Edit Dependency Types">
+                <i class="fa-solid fa-arrows-left-right me-3 text-primary"></i> Dependency Types
+              </a>
+
+              <a class="list-group-item list-group-item-action d-flex align-items-center"
+                 [routerLink]="['/recurrencefrequencies']" ngbTooltip="Edit Recurrence Frequencies">
+                <i class="fa-solid fa-wave-square me-3 text-primary"></i> Recurrence Frequencies
+              </a>
+
+              <a class="list-group-item list-group-item-action d-flex align-items-center"
+                 [routerLink]="['/paymenttypes']" ngbTooltip="Edit Payment Types">
+                <i class="fa-solid fa-credit-card me-3 text-primary"></i> Payment Types
+              </a>
+
+
+              <a class="list-group-item list-group-item-action d-flex align-items-center"
+                 [routerLink]="['/chargestatuses']" ngbTooltip="Edit Charge Status">
+                <i class="fa-solid fa-arrow-down-short-wide me-3 text-primary"></i> Charge Statuses
+              </a>
+
+              <a class="list-group-item list-group-item-action d-flex align-items-center"
+                 [routerLink]="['/batchstatuses']" ngbTooltip="Edit Batch Statuses">
+                <i class="fa-solid fa-circle-check me-3 text-primary"></i> Batch Statuses
+              </a>
+
+              <a class="list-group-item list-group-item-action d-flex align-items-center"
+                 [routerLink]="['/tributetypes']" ngbTooltip="Edit Tribute Types">
+                <i class="fa-regular fa-heart me-3 text-primary"></i> Tribute Types
+              </a>
+
+
+              <a class="list-group-item list-group-item-action d-flex align-items-center"
+                 [routerLink]="['/countries']" ngbTooltip="Edit Countries">
+                <i class="fa-solid fa-globe me-3 text-primary"></i> Countries
+              </a>
+
+              <a class="list-group-item list-group-item-action d-flex align-items-center"
+                 [routerLink]="['/stateprovinces']" ngbTooltip="Edit States and Provinces">
+                <i class="fa-solid fa-sign-hanging me-3 text-primary"></i> States and Provinces
+              </a>
+
+              <a class="list-group-item list-group-item-action d-flex align-items-center"
+                 [routerLink]="['/timezones']" ngbTooltip="Edit Time Zones">
+                <i class="fa-solid fa-earth-americas me-3 text-primary"></i> Time Zones
+              </a>
+
+              <a class="list-group-item list-group-item-action d-flex align-items-center"
+                 [routerLink]="['/icons']" ngbTooltip="Manage Icon Library">
+                <i class="fa-solid fa-icons me-3 text-primary"></i> Icons
+              </a>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 4: Data Export -->
+    <div class="tab-pane fade" id="export" role="tabpanel" *ngIf="userIsFoundationAdministrator()">
+      <div class="card shadow-sm border-0">
+        <div class="card-body text-center py-5">
+          <h5 class="mb-4">Export System Data</h5>
+          <p class="text-muted mb-4">Generate a complete Excel export of all master data for backup or analysis.</p>
+
+          <div *ngIf="isDownloadingExcel; else exportButton">
+            <div class="spinner-border spinner-border-lg text-primary mb-3" role="status">
+              <span class="visually-hidden">Exporting...</span>
+            </div>
+            <p class="text-muted">Preparing your export... This may take a moment.</p>
+          </div>
+
+          <ng-template #exportButton>
+            <button class="btn btn-outline-primary btn-lg" (click)="exportToExcel()">
+              <i class="fa-solid fa-file-excel fa-2x me-3"></i>
+              Export All Data to Excel
+            </button>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

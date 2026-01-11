@@ -1,0 +1,82 @@
+<div class="add-scheduled-event-template" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-scheduled-event-template me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Scheduled Event Template" 
+        *ngIf="userIsSchedulerScheduledEventTemplateWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #scheduledEventTemplateModal let-modal>
+   <div class="modal-header bg-dark text-light scheduled-event-template-modal-header">
+      <h5 class="modal-title mb-0" id="scheduledEventTemplateModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Scheduled Event Template' : 'Add Scheduled Event Template' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body scheduled-event-template-modal-body">
+      <form [formGroup]="scheduledEventTemplateForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="ScheduledEventTemplate-name" id="label-ScheduledEventTemplate-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="ScheduledEventTemplate-name" formControlName="name" placeholder="Enter Name" class="form-control scheduled-event-template-input" [disabled]="!userIsSchedulerScheduledEventTemplateWriter()" aria-labelledby="label-name" />
+                <div *ngIf="scheduledEventTemplateForm.get('name')?.invalid && scheduledEventTemplateForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="ScheduledEventTemplate-description" id="label-ScheduledEventTemplate-description">Description</label>
+                <textarea id="ScheduledEventTemplate-description" formControlName="description" placeholder="Enter Description" class="form-control scheduled-event-template-input" [disabled]="!userIsSchedulerScheduledEventTemplateWriter()"></textarea>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('defaultAllDay')">
+                <input type="checkbox" id="ScheduledEventTemplate-defaultAllDay" formControlName="defaultAllDay" class="form-check-input" [disabled]="!userIsSchedulerScheduledEventTemplateWriter()" />
+                <label for="ScheduledEventTemplate-defaultAllDay" class="form-check-label" id="label-ScheduledEventTemplate-defaultAllDay"><span class="text-danger">*</span>Default All Day</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('defaultDurationMinutes')">
+                <label for="ScheduledEventTemplate-defaultDurationMinutes" id="label-ScheduledEventTemplate-defaultDurationMinutes"><span class="text-danger">*</span>Default Duration Minutes</label>
+                <input type="number" id="ScheduledEventTemplate-defaultDurationMinutes" formControlName="defaultDurationMinutes" placeholder="Enter Default Duration Minutes" class="form-control scheduled-event-template-input" [disabled]="!userIsSchedulerScheduledEventTemplateWriter()" aria-labelledby="label-defaultDurationMinutes" />
+                <div *ngIf="scheduledEventTemplateForm.get('defaultDurationMinutes')?.invalid && scheduledEventTemplateForm.get('defaultDurationMinutes')?.touched" class="text-danger">
+                    Default Duration Minutes is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('schedulingTargetTypeId')">
+                <label for="ScheduledEventTemplate-schedulingTargetTypeId" id="label-ScheduledEventTemplate-schedulingTargetTypeId">Scheduling Target Type</label>
+                <select id="ScheduledEventTemplate-schedulingTargetTypeId" formControlName="schedulingTargetTypeId" class="form-select scheduled-event-template-select" [disabled]="!userIsSchedulerScheduledEventTemplateWriter()">
+                    <option [ngValue]="null">Select Scheduling Target Type</option>
+                    <option *ngFor="let schedulingTargetType of schedulingTargetTypes$ | async" [ngValue]="schedulingTargetType.id">{{schedulingTargetType.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('priorityId')">
+                <label for="ScheduledEventTemplate-priorityId" id="label-ScheduledEventTemplate-priorityId">Priority</label>
+                <select id="ScheduledEventTemplate-priorityId" formControlName="priorityId" class="form-select scheduled-event-template-select" [disabled]="!userIsSchedulerScheduledEventTemplateWriter()">
+                    <option [ngValue]="null">Select Priority</option>
+                    <option *ngFor="let priority of priorities$ | async" [ngValue]="priority.id">{{priority.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('defaultLocationPattern')">
+                <label for="ScheduledEventTemplate-defaultLocationPattern" id="label-ScheduledEventTemplate-defaultLocationPattern">Default Location Pattern</label>
+                <input type="text" id="ScheduledEventTemplate-defaultLocationPattern" formControlName="defaultLocationPattern" placeholder="Enter Default Location Pattern" class="form-control scheduled-event-template-input" [disabled]="!userIsSchedulerScheduledEventTemplateWriter()" aria-labelledby="label-defaultLocationPattern" />
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="ScheduledEventTemplate-versionNumber" id="label-ScheduledEventTemplate-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="ScheduledEventTemplate-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control scheduled-event-template-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ScheduledEventTemplate-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerScheduledEventTemplateWriter()" />
+                <label for="ScheduledEventTemplate-active" class="form-check-label" id="label-ScheduledEventTemplate-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ScheduledEventTemplate-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerScheduledEventTemplateWriter()" />
+                <label for="ScheduledEventTemplate-deleted" class="form-check-label" id="label-ScheduledEventTemplate-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer scheduled-event-template-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Scheduled Event Template changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !scheduledEventTemplateForm.valid || scheduledEventTemplateForm.pristine || !userIsSchedulerScheduledEventTemplateWriter()" ngbTooltip="Save the Scheduled Event Template changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

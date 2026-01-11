@@ -1,0 +1,56 @@
+<div class="add-salutation" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-salutation me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Salutation" 
+        *ngIf="userIsSchedulerSalutationWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #salutationModal let-modal>
+   <div class="modal-header bg-dark text-light salutation-modal-header">
+      <h5 class="modal-title mb-0" id="salutationModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Salutation' : 'Add Salutation' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body salutation-modal-body">
+      <form [formGroup]="salutationForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="Salutation-name" id="label-Salutation-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="Salutation-name" formControlName="name" placeholder="Enter Name" class="form-control salutation-input" [disabled]="!userIsSchedulerSalutationWriter()" aria-labelledby="label-name" />
+                <div *ngIf="salutationForm.get('name')?.invalid && salutationForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="Salutation-description" id="label-Salutation-description"><span class="text-danger">*</span>Description</label>
+                <textarea id="Salutation-description" formControlName="description" placeholder="Enter Description" class="form-control salutation-input" [disabled]="!userIsSchedulerSalutationWriter()"></textarea>
+                <div *ngIf="salutationForm.get('description')?.invalid && salutationForm.get('description')?.touched" class="text-danger">
+                    Description is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                <label for="Salutation-sequence" id="label-Salutation-sequence">Sequence</label>
+                <input type="number" id="Salutation-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control salutation-input" [disabled]="!userIsSchedulerSalutationWriter()" aria-labelledby="label-sequence" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="Salutation-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerSalutationWriter()" />
+                <label for="Salutation-active" class="form-check-label" id="label-Salutation-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="Salutation-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerSalutationWriter()" />
+                <label for="Salutation-deleted" class="form-check-label" id="label-Salutation-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer salutation-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Salutation changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !salutationForm.valid || salutationForm.pristine || !userIsSchedulerSalutationWriter()" ngbTooltip="Save the Salutation changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

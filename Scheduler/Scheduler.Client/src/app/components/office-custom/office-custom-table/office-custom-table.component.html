@@ -1,0 +1,429 @@
+<app-office-custom-add-edit [showAddButton]="false"></app-office-custom-add-edit>
+<div class="row" *ngIf="userIsSchedulerOfficeReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerOfficeWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerOfficeWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('name')">
+                Name
+                <span *ngIf="sortColumn === 'name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('description')">
+                Description
+                <span *ngIf="sortColumn === 'description'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('officeType.name')">
+                Office  Type
+                <span *ngIf="sortColumn === 'officeType.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('timeZone.name')">
+                Time  Zone
+                <span *ngIf="sortColumn === 'timeZone.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('currency.name')">
+                Currency
+                <span *ngIf="sortColumn === 'currency.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('addressLine1')">
+                Address  Line  1
+                <span *ngIf="sortColumn === 'addressLine1'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('addressLine2')">
+                Address  Line  2
+                <span *ngIf="sortColumn === 'addressLine2'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('city')">
+                City
+                <span *ngIf="sortColumn === 'city'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('postalCode')">
+                Postal  Code
+                <span *ngIf="sortColumn === 'postalCode'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('stateProvince.name')">
+                State  Province
+                <span *ngIf="sortColumn === 'stateProvince.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('country.name')">
+                Country
+                <span *ngIf="sortColumn === 'country.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('phone')">
+                Phone
+                <span *ngIf="sortColumn === 'phone'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('externalId')">
+                External  Id
+                <span *ngIf="sortColumn === 'externalId'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('color')">
+                Color
+                <span *ngIf="sortColumn === 'color'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('attributes')">
+                Attributes
+                <span *ngIf="sortColumn === 'attributes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('avatarFileName')">
+                Avatar  File  Name
+                <span *ngIf="sortColumn === 'avatarFileName'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('avatarSize')">
+                Avatar  Size
+                <span *ngIf="sortColumn === 'avatarSize'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('avatarData')">
+                Avatar  Data
+                <span *ngIf="sortColumn === 'avatarData'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('avatarMimeType')">
+                Avatar  Mime  Type
+                <span *ngIf="sortColumn === 'avatarMimeType'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let office of filteredOffices; trackBy: getOfficeId"
+              [ngClass]="{
+                 'row-inactive': office.active == false,
+                 'row-deleted': office.deleted == true 
+                 }">
+            <td class="header-action-button" *ngIf="userIsSchedulerOfficeWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleEdit(office)"
+                      ngbTooltip="Edit" 
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsSchedulerOfficeWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleDelete(office)"
+                      ngbTooltip="Delete" 
+                      placement="top"
+                      *ngIf="office.deleted == false">
+                <i class="fa fa-trash"></i>
+              </button>
+              <button class="btn btn-sm"
+                      (click)="handleUndelete(office)"
+                      ngbTooltip="Undelete" 
+                      placement="top"
+                      *ngIf="office.deleted == true">
+                <i class="fa fa-trash-arrow-up"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(office, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(office, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(office, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(office, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(office, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(office, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!--<span class="text-muted small">
+                        {{ getNestedValue(office, col.key) || '—' }}
+                    </span>-->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(office, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/office', office.id]" class="btn btn-link text-left" ngbTooltip="Open Office details">{{office.name}}</a></td>
+            <td class="text-truncate">{{office.description}}</td>
+            <td class="text-truncate"><a [routerLink]="['/officetype', office.officeTypeId]" class="btn btn-link text-left" ngbTooltip="Open Office Type details">{{office.officeType?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/timezone', office.timeZoneId]" class="btn btn-link text-left" ngbTooltip="Open Time Zone details">{{office.timeZone?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/currency', office.currencyId]" class="btn btn-link text-left" ngbTooltip="Open Currency details">{{office.currency?.name}}</a></td>
+            <td class="text-truncate">{{office.addressLine1}}</td>
+            <td class="text-truncate">{{office.addressLine2}}</td>
+            <td class="text-truncate">{{office.city}}</td>
+            <td class="text-truncate">{{office.postalCode}}</td>
+            <td class="text-truncate"><a [routerLink]="['/stateprovince', office.stateProvinceId]" class="btn btn-link text-left" ngbTooltip="Open State Province details">{{office.stateProvince?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/country', office.countryId]" class="btn btn-link text-left" ngbTooltip="Open Country details">{{office.country?.name}}</a></td>
+            <td class="text-truncate"><a href="tel:{{office?.phone}}" ngbTooltip="Call {{office?.phone}}">{{office.phone}}</a></td>
+            <td class="text-truncate">{{office.externalId}}</td>
+            <td class="text-truncate">{{office.color}}</td>
+            <td class="text-truncate">{{office.attributes}}</td>
+            <td class="text-truncate">{{office.avatarFileName}}</td>
+            <td class="text-truncate">{{office.avatarSize | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{office.avatarData}}</td>
+            <td class="text-truncate">{{office.avatarMimeType}}</td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let office of filteredOffices; trackBy: getOfficeId" class="card my-2"
+              [ngClass]="{
+                 'row-inactive': office.active == false,
+                 'row-deleted': office.deleted == true 
+                 }">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(office, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(office, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(office, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(office, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(office, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(office, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(office, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(office, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(office, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(office, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(office, col.key) || 'No color set' }}">
+                        </span>
+                        <!--<span class="small">
+                        {{ getNestedValue(office, col.key) || '—' }}
+                        </span>-->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(office, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/office', office.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(office)" *ngIf="userIsSchedulerOfficeWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(office)" *ngIf="userIsSchedulerOfficeWriter() && office.deleted == false" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+            <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(office)" *ngIf="userIsSchedulerOfficeWriter() && office.deleted == true" ngbTooltip="Undelete">
+              <i class="fa fa-trash-arrow-upp"></i> UnDelete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{office.name}}</strong>
+               <small class="text-muted d-block">{{office.officeType?.name}}</small>
+             </div>
+             <div>
+                <button class="btn btn-sm"
+                        [routerLink]="['/office', office.id]"
+                        ngbTooltip="Office Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="btn btn-sm"
+                        (click)="handleEdit(office)"
+                        ngbTooltip="Edit Office">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleDelete(office)"
+                      ngbTooltip="Delete Office" 
+                      placement="top"
+                      *ngIf="office.deleted == false">
+                  <i class="fa fa-trash"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleUndelete(office)"
+                      ngbTooltip="Undelete Office" 
+                      placement="top"
+                      *ngIf="office.deleted == true">
+                 <i class="fa fa-trash-arrow-up"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="office-info" *ngIf="office.name != null">
+              <strong>Name: </strong>
+              {{office.name}}
+            </p>
+            <p class="office-info" *ngIf="office.description != null">
+              <strong>Description: </strong>
+              {{office.description}}
+            </p>
+            <p class="office-info" *ngIf="office.officeTypeId != null">
+              <strong>Office Type: </strong>
+              <a [routerLink]="['/officetype', office.officeTypeId]" class="text-left p-0 m-0" ngbTooltip="Open Office Type details">{{office.officeType?.name}}</a>
+            </p>
+            <p class="office-info" *ngIf="office.timeZoneId != null">
+              <strong>Time Zone: </strong>
+              <a [routerLink]="['/timezone', office.timeZoneId]" class="text-left p-0 m-0" ngbTooltip="Open Time Zone details">{{office.timeZone?.name}}</a>
+            </p>
+            <p class="office-info" *ngIf="office.currencyId != null">
+              <strong>Currency: </strong>
+              <a [routerLink]="['/currency', office.currencyId]" class="text-left p-0 m-0" ngbTooltip="Open Currency details">{{office.currency?.name}}</a>
+            </p>
+            <p class="office-info" *ngIf="office.addressLine1 != null">
+              <strong>Address Line 1: </strong>
+              {{office.addressLine1}}
+            </p>
+            <p class="office-info" *ngIf="office.addressLine2 != null">
+              <strong>Address Line 2: </strong>
+              {{office.addressLine2}}
+            </p>
+            <p class="office-info" *ngIf="office.city != null">
+              <strong>City: </strong>
+              {{office.city}}
+            </p>
+            <p class="office-info" *ngIf="office.postalCode != null">
+              <strong>Postal Code: </strong>
+              {{office.postalCode}}
+            </p>
+            <p class="office-info" *ngIf="office.stateProvinceId != null">
+              <strong>State Province: </strong>
+              <a [routerLink]="['/stateprovince', office.stateProvinceId]" class="text-left p-0 m-0" ngbTooltip="Open State Province details">{{office.stateProvince?.name}}</a>
+            </p>
+            <p class="office-info" *ngIf="office.countryId != null">
+              <strong>Country: </strong>
+              <a [routerLink]="['/country', office.countryId]" class="text-left p-0 m-0" ngbTooltip="Open Country details">{{office.country?.name}}</a>
+            </p>
+            <p class="office-info" *ngIf="office.phone != null">
+              <strong>Phone: </strong>
+              <a href="tel:{{office?.phone}}" ngbTooltip="Call {{office?.phone}}">{{office.phone}}</a>
+            </p>
+            <p class="office-info" *ngIf="office.externalId != null">
+              <strong>External Id: </strong>
+              {{office.externalId}}
+            </p>
+            <p class="office-info" *ngIf="office.color != null">
+              <strong>Color: </strong>
+              {{office.color}}
+            </p>
+            <p class="office-info" *ngIf="office.attributes != null">
+              <strong>Attributes: </strong>
+              {{office.attributes}}
+            </p>
+            <p class="office-info" *ngIf="office.avatarFileName != null">
+              <strong>Avatar File Name: </strong>
+              {{office.avatarFileName}}
+            </p>
+            <p class="office-info" *ngIf="office.avatarSize != null">
+              <strong>Avatar Size: </strong>
+              {{office.avatarSize | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="office-info" *ngIf="office.avatarData != null">
+              <strong>Avatar Data: </strong>
+              {{office.avatarData}}
+            </p>
+            <p class="office-info" *ngIf="office.avatarMimeType != null">
+              <strong>Avatar Mime Type: </strong>
+              {{office.avatarMimeType}}
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+   </div>
+</div>

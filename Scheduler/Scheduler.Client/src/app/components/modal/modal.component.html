@@ -1,0 +1,78 @@
+<div class="modal-header">
+  <h5 class="modal-title">Add New Project</h5>
+  <button type="button" class="btn-close" aria-label="Close" (click)="cancelForm()"></button>
+</div>
+
+<div class="modal-body modal-body-scrollable">
+  <form (ngSubmit)="submitForm()" #projectForm="ngForm">
+    <!-- Project Information Section -->
+    <h6>Project Information</h6>
+
+    <label for="projectName">Name of the Project:</label>
+    <input type="text" id="projectName" name="projectName" ngModel required />
+
+    <label for="projectDescription">Details of the Project (Optional):</label>
+    <textarea id="projectDescription" name="projectDescription" ngModel rows="4"></textarea>
+
+    <label for="clientName">Client Name:</label>
+    <input type="text" id="clientName" name="clientName" ngModel required />
+
+    <label for="contractor">Contractor:</label>
+    <input type="text" id="contractor" name="contractor" ngModel required />
+
+    <label for="location">Location:</label>
+    <input type="text" id="location" name="location" ngModel required placeholder="Enter location" />
+
+    <label for="subgradeMaterial">Subgrade Material:</label>
+    <select id="subgradeMaterial" name="subgradeMaterial" ngModel required>
+      <option value="" disabled selected>Select Material</option>
+      <option value="Soil">Soil</option>
+      <option value="Sand">Sand</option>
+      <option value="Gravel">Gravel</option>
+      <option value="Clay">Clay</option>
+      <!-- Add more materials as needed -->
+    </select>
+
+    <!-- Equipment Information Section -->
+    <h6 class="mt-4">Equipment Information</h6>
+
+    <label for="piName">Pi Name/Serial:</label>
+    <input type="text" id="piName" name="piName" ngModel required />
+
+    <label for="wifiName">WiFi Name:</label>
+    <input type="text" id="wifiName" name="wifiName" ngModel required />
+
+    <label for="wifiPassword">Password:</label>
+    <input type="password" id="wifiPassword" name="wifiPassword" ngModel required />
+
+    <label for="accelerometerSerial">Accelerometer Serial:</label>
+    <input type="text" id="accelerometerSerial" name="accelerometerSerial" ngModel required />
+
+    <label for="gpsSerial">GPS Serial:</label>
+    <input type="text" id="gpsSerial" name="gpsSerial" ngModel required />
+
+    <!-- Roller Information Section -->
+    <h6 class="mt-4">Roller Information</h6>
+
+    <!-- Add fields for roller-specific information -->
+    <label for="rollerModel">Roller Model:</label>
+    <input type="text" id="rollerModel" name="rollerModel" ngModel required />
+
+    <label for="rollerWeight">Roller Weight:</label>
+    <input type="number" id="rollerWeight" name="rollerWeight" ngModel required placeholder="Enter weight in tons" />
+
+    <label for="vibrationFrequency">Vibration Frequency:</label>
+    <input type="number" id="vibrationFrequency" name="vibrationFrequency" ngModel required placeholder="Enter frequency in Hz" />
+
+    <label for="engineType">Engine Type:</label>
+    <input type="text" id="engineType" name="engineType" ngModel required />
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="cancelForm()">Cancel</button>
+      <input type="submit"
+             value="Add Project"
+             class="btn btn-primary"
+             [disabled]="!projectForm.form.valid" />
+    </div>
+  </form>
+</div>

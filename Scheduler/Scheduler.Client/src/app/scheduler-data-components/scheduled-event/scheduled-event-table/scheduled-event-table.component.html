@@ -1,0 +1,476 @@
+<app-scheduled-event-add-edit [showAddButton]="false"></app-scheduled-event-add-edit>
+<div class="row" *ngIf="userIsSchedulerScheduledEventReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerScheduledEventWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerScheduledEventWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('office.name')">
+                Office
+                <span *ngIf="sortColumn === 'office.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('client.name')">
+                Client
+                <span *ngIf="sortColumn === 'client.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('scheduledEventTemplate.name')">
+                Scheduled  Event  Template
+                <span *ngIf="sortColumn === 'scheduledEventTemplate.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('recurrenceRule.name')">
+                Recurrence  Rule
+                <span *ngIf="sortColumn === 'recurrenceRule.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('schedulingTarget.name')">
+                Scheduling  Target
+                <span *ngIf="sortColumn === 'schedulingTarget.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('timeZone.name')">
+                Time  Zone
+                <span *ngIf="sortColumn === 'timeZone.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('parentScheduledEvent.name')">
+                Parent  Scheduled  Event
+                <span *ngIf="sortColumn === 'parentScheduledEvent.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('recurrenceInstanceDate')">
+                Recurrence  Instance  Date
+                <span *ngIf="sortColumn === 'recurrenceInstanceDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('name')">
+                Name
+                <span *ngIf="sortColumn === 'name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('description')">
+                Description
+                <span *ngIf="sortColumn === 'description'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('isAllDay')">
+                Is  All  Day
+                <span *ngIf="sortColumn === 'isAllDay'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('startDateTime')">
+                Start  Date  Time
+                <span *ngIf="sortColumn === 'startDateTime'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('endDateTime')">
+                End  Date  Time
+                <span *ngIf="sortColumn === 'endDateTime'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('location')">
+                Location
+                <span *ngIf="sortColumn === 'location'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('eventStatus.name')">
+                Event  Status
+                <span *ngIf="sortColumn === 'eventStatus.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('resource.name')">
+                Resource
+                <span *ngIf="sortColumn === 'resource.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('crew.name')">
+                Crew
+                <span *ngIf="sortColumn === 'crew.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('priority.name')">
+                Priority
+                <span *ngIf="sortColumn === 'priority.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('bookingSourceType.name')">
+                Booking  Source  Type
+                <span *ngIf="sortColumn === 'bookingSourceType.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('partySize')">
+                Party  Size
+                <span *ngIf="sortColumn === 'partySize'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('notes')">
+                Notes
+                <span *ngIf="sortColumn === 'notes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('color')">
+                Color
+                <span *ngIf="sortColumn === 'color'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('externalId')">
+                External  Id
+                <span *ngIf="sortColumn === 'externalId'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('attributes')">
+                Attributes
+                <span *ngIf="sortColumn === 'attributes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let scheduledEvent of filteredScheduledEvents; trackBy: getScheduledEventId"
+              [ngClass]="{
+                 'row-inactive': scheduledEvent.active == false,
+                 'row-deleted': scheduledEvent.deleted == true 
+                 }">
+            <td class="header-action-button" *ngIf="userIsSchedulerScheduledEventWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleEdit(scheduledEvent)"
+                      ngbTooltip="Edit" 
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsSchedulerScheduledEventWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleDelete(scheduledEvent)"
+                      ngbTooltip="Delete" 
+                      placement="top"
+                      *ngIf="scheduledEvent.deleted == false">
+                <i class="fa fa-trash"></i>
+              </button>
+              <button class="btn btn-sm"
+                      (click)="handleUndelete(scheduledEvent)"
+                      ngbTooltip="Undelete" 
+                      placement="top"
+                      *ngIf="scheduledEvent.deleted == true">
+                <i class="fa fa-trash-arrow-up"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(scheduledEvent, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(scheduledEvent, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(scheduledEvent, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(scheduledEvent, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(scheduledEvent, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(scheduledEvent, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(scheduledEvent, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(scheduledEvent, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/office', scheduledEvent.officeId]" class="btn btn-link text-left" ngbTooltip="Open Office details">{{scheduledEvent.office?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/client', scheduledEvent.clientId]" class="btn btn-link text-left" ngbTooltip="Open Client details">{{scheduledEvent.client?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/scheduledeventtemplate', scheduledEvent.scheduledEventTemplateId]" class="btn btn-link text-left" ngbTooltip="Open Scheduled Event Template details">{{scheduledEvent.scheduledEventTemplate?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/recurrencerule', scheduledEvent.recurrenceRuleId]" class="btn btn-link text-left" ngbTooltip="Open Recurrence Rule details">{{scheduledEvent.recurrenceRule?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/schedulingtarget', scheduledEvent.schedulingTargetId]" class="btn btn-link text-left" ngbTooltip="Open Scheduling Target details">{{scheduledEvent.schedulingTarget?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/timezone', scheduledEvent.timeZoneId]" class="btn btn-link text-left" ngbTooltip="Open Time Zone details">{{scheduledEvent.timeZone?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/scheduledevent', scheduledEvent.parentScheduledEventId]" class="btn btn-link text-left" ngbTooltip="Open Scheduled Event details">{{scheduledEvent.parentScheduledEvent?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/scheduledevent', scheduledEvent.id]" class="btn btn-link text-left" ngbTooltip="Open Scheduled Event details">{{scheduledEvent.recurrenceInstanceDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</a></td>
+            <td class="text-truncate">{{scheduledEvent.name}}</td>
+            <td class="text-truncate">{{scheduledEvent.description}}</td>
+            <td class="text-truncate"><boolean-icon [value]="scheduledEvent.isAllDay"/></td>
+            <td class="text-truncate">{{scheduledEvent.startDateTime | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate">{{scheduledEvent.endDateTime | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate">{{scheduledEvent.location}}</td>
+            <td class="text-truncate"><a [routerLink]="['/eventstatus', scheduledEvent.eventStatusId]" class="btn btn-link text-left" ngbTooltip="Open Event Status details">{{scheduledEvent.eventStatus?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/resource', scheduledEvent.resourceId]" class="btn btn-link text-left" ngbTooltip="Open Resource details">{{scheduledEvent.resource?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/crew', scheduledEvent.crewId]" class="btn btn-link text-left" ngbTooltip="Open Crew details">{{scheduledEvent.crew?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/priority', scheduledEvent.priorityId]" class="btn btn-link text-left" ngbTooltip="Open Priority details">{{scheduledEvent.priority?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/bookingsourcetype', scheduledEvent.bookingSourceTypeId]" class="btn btn-link text-left" ngbTooltip="Open Booking Source Type details">{{scheduledEvent.bookingSourceType?.name}}</a></td>
+            <td class="text-truncate">{{scheduledEvent.partySize | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{scheduledEvent.notes}}</td>
+            <td class="text-truncate">{{scheduledEvent.color}}</td>
+            <td class="text-truncate">{{scheduledEvent.externalId}}</td>
+            <td class="text-truncate">{{scheduledEvent.attributes}}</td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let scheduledEvent of filteredScheduledEvents; trackBy: getScheduledEventId" class="card my-2"
+              [ngClass]="{
+                 'row-inactive': scheduledEvent.active == false,
+                 'row-deleted': scheduledEvent.deleted == true 
+                 }">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(scheduledEvent, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(scheduledEvent, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(scheduledEvent, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(scheduledEvent, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(scheduledEvent, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(scheduledEvent, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(scheduledEvent, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(scheduledEvent, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(scheduledEvent, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(scheduledEvent, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(scheduledEvent, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(scheduledEvent, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(scheduledEvent, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/scheduledevent', scheduledEvent.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(scheduledEvent)" *ngIf="userIsSchedulerScheduledEventWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(scheduledEvent)" *ngIf="userIsSchedulerScheduledEventWriter() && scheduledEvent.deleted == false" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+            <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(scheduledEvent)" *ngIf="userIsSchedulerScheduledEventWriter() && scheduledEvent.deleted == true" ngbTooltip="Undelete">
+              <i class="fa fa-trash-arrow-upp"></i> UnDelete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{scheduledEvent.name}}</strong>
+               <small class="text-muted d-block">{{scheduledEvent.office?.name}}</small>
+             </div>
+             <div>
+                <button class="btn btn-sm"
+                        [routerLink]="['/scheduledevent', scheduledEvent.id]"
+                        ngbTooltip="Scheduled Event Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="btn btn-sm"
+                        (click)="handleEdit(scheduledEvent)"
+                        ngbTooltip="Edit Scheduled Event">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleDelete(scheduledEvent)"
+                      ngbTooltip="Delete Scheduled Event" 
+                      placement="top"
+                      *ngIf="scheduledEvent.deleted == false">
+                  <i class="fa fa-trash"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleUndelete(scheduledEvent)"
+                      ngbTooltip="Undelete Scheduled Event" 
+                      placement="top"
+                      *ngIf="scheduledEvent.deleted == true">
+                 <i class="fa fa-trash-arrow-up"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="scheduled-event-info" *ngIf="scheduledEvent.officeId != null">
+              <strong>Office: </strong>
+              <a [routerLink]="['/office', scheduledEvent.officeId]" class="text-left p-0 m-0" ngbTooltip="Open Office details">{{scheduledEvent.office?.name}}</a>
+            </p>
+            <p class="scheduled-event-info" *ngIf="scheduledEvent.clientId != null">
+              <strong>Client: </strong>
+              <a [routerLink]="['/client', scheduledEvent.clientId]" class="text-left p-0 m-0" ngbTooltip="Open Client details">{{scheduledEvent.client?.name}}</a>
+            </p>
+            <p class="scheduled-event-info" *ngIf="scheduledEvent.scheduledEventTemplateId != null">
+              <strong>Scheduled Event Template: </strong>
+              <a [routerLink]="['/scheduledeventtemplate', scheduledEvent.scheduledEventTemplateId]" class="text-left p-0 m-0" ngbTooltip="Open Scheduled Event Template details">{{scheduledEvent.scheduledEventTemplate?.name}}</a>
+            </p>
+            <p class="scheduled-event-info" *ngIf="scheduledEvent.recurrenceRuleId != null">
+              <strong>Recurrence Rule: </strong>
+              <a [routerLink]="['/recurrencerule', scheduledEvent.recurrenceRuleId]" class="text-left p-0 m-0" ngbTooltip="Open Recurrence Rule details">{{scheduledEvent.recurrenceRule?.name}}</a>
+            </p>
+            <p class="scheduled-event-info" *ngIf="scheduledEvent.schedulingTargetId != null">
+              <strong>Scheduling Target: </strong>
+              <a [routerLink]="['/schedulingtarget', scheduledEvent.schedulingTargetId]" class="text-left p-0 m-0" ngbTooltip="Open Scheduling Target details">{{scheduledEvent.schedulingTarget?.name}}</a>
+            </p>
+            <p class="scheduled-event-info" *ngIf="scheduledEvent.timeZoneId != null">
+              <strong>Time Zone: </strong>
+              <a [routerLink]="['/timezone', scheduledEvent.timeZoneId]" class="text-left p-0 m-0" ngbTooltip="Open Time Zone details">{{scheduledEvent.timeZone?.name}}</a>
+            </p>
+            <p class="scheduled-event-info" *ngIf="scheduledEvent.parentScheduledEventId != null">
+              <strong>Parent Scheduled Event: </strong>
+              <a [routerLink]="['/scheduledevent', scheduledEvent.parentScheduledEventId]" class="text-left p-0 m-0" ngbTooltip="Open Scheduled Event details">{{scheduledEvent.parentScheduledEvent?.name}}</a>
+            </p>
+            <p class="scheduled-event-info" *ngIf="scheduledEvent.recurrenceInstanceDate != null">
+              <strong>Recurrence Instance Date: </strong>
+              {{scheduledEvent.recurrenceInstanceDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="scheduled-event-info" *ngIf="scheduledEvent.name != null">
+              <strong>Name: </strong>
+              {{scheduledEvent.name}}
+            </p>
+            <p class="scheduled-event-info" *ngIf="scheduledEvent.description != null">
+              <strong>Description: </strong>
+              {{scheduledEvent.description}}
+            </p>
+            <p class="scheduled-event-info" *ngIf="scheduledEvent.isAllDay != null">
+              <strong>Is All Day: </strong>
+              <boolean-icon [value]="scheduledEvent.isAllDay"/>
+            </p>
+            <p class="scheduled-event-info" *ngIf="scheduledEvent.startDateTime != null">
+              <strong>Start Date Time: </strong>
+              {{scheduledEvent.startDateTime | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="scheduled-event-info" *ngIf="scheduledEvent.endDateTime != null">
+              <strong>End Date Time: </strong>
+              {{scheduledEvent.endDateTime | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="scheduled-event-info" *ngIf="scheduledEvent.location != null">
+              <strong>Location: </strong>
+              {{scheduledEvent.location}}
+            </p>
+            <p class="scheduled-event-info" *ngIf="scheduledEvent.eventStatusId != null">
+              <strong>Event Status: </strong>
+              <a [routerLink]="['/eventstatus', scheduledEvent.eventStatusId]" class="text-left p-0 m-0" ngbTooltip="Open Event Status details">{{scheduledEvent.eventStatus?.name}}</a>
+            </p>
+            <p class="scheduled-event-info" *ngIf="scheduledEvent.resourceId != null">
+              <strong>Resource: </strong>
+              <a [routerLink]="['/resource', scheduledEvent.resourceId]" class="text-left p-0 m-0" ngbTooltip="Open Resource details">{{scheduledEvent.resource?.name}}</a>
+            </p>
+            <p class="scheduled-event-info" *ngIf="scheduledEvent.crewId != null">
+              <strong>Crew: </strong>
+              <a [routerLink]="['/crew', scheduledEvent.crewId]" class="text-left p-0 m-0" ngbTooltip="Open Crew details">{{scheduledEvent.crew?.name}}</a>
+            </p>
+            <p class="scheduled-event-info" *ngIf="scheduledEvent.priorityId != null">
+              <strong>Priority: </strong>
+              <a [routerLink]="['/priority', scheduledEvent.priorityId]" class="text-left p-0 m-0" ngbTooltip="Open Priority details">{{scheduledEvent.priority?.name}}</a>
+            </p>
+            <p class="scheduled-event-info" *ngIf="scheduledEvent.bookingSourceTypeId != null">
+              <strong>Booking Source Type: </strong>
+              <a [routerLink]="['/bookingsourcetype', scheduledEvent.bookingSourceTypeId]" class="text-left p-0 m-0" ngbTooltip="Open Booking Source Type details">{{scheduledEvent.bookingSourceType?.name}}</a>
+            </p>
+            <p class="scheduled-event-info" *ngIf="scheduledEvent.partySize != null">
+              <strong>Party Size: </strong>
+              {{scheduledEvent.partySize | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="scheduled-event-info" *ngIf="scheduledEvent.notes != null">
+              <strong>Notes: </strong>
+              {{scheduledEvent.notes}}
+            </p>
+            <p class="scheduled-event-info" *ngIf="scheduledEvent.color != null">
+              <strong>Color: </strong>
+              {{scheduledEvent.color}}
+            </p>
+            <p class="scheduled-event-info" *ngIf="scheduledEvent.externalId != null">
+              <strong>External Id: </strong>
+              {{scheduledEvent.externalId}}
+            </p>
+            <p class="scheduled-event-info" *ngIf="scheduledEvent.attributes != null">
+              <strong>Attributes: </strong>
+              {{scheduledEvent.attributes}}
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+   </div>
+</div>

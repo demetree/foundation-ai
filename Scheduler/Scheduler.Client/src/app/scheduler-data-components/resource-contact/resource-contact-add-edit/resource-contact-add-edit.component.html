@@ -1,0 +1,76 @@
+<div class="add-resource-contact" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-resource-contact me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Resource Contact" 
+        *ngIf="userIsSchedulerResourceContactWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #resourceContactModal let-modal>
+   <div class="modal-header bg-dark text-light resource-contact-modal-header">
+      <h5 class="modal-title mb-0" id="resourceContactModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Resource Contact' : 'Add Resource Contact' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body resource-contact-modal-body">
+      <form [formGroup]="resourceContactForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('resourceId')">
+                <label for="ResourceContact-resourceId" id="label-ResourceContact-resourceId"><span class="text-danger">*</span>Resource</label>
+                <select id="ResourceContact-resourceId" formControlName="resourceId" class="form-select resource-contact-select" [disabled]="!userIsSchedulerResourceContactWriter()">
+                    <option [ngValue]="null">Select Resource</option>
+                    <option *ngFor="let resource of resources$ | async" [ngValue]="resource.id">{{[resource.name] | filterAndJoin}}</option>
+                </select>
+                <div *ngIf="resourceContactForm.get('resourceId')?.invalid && resourceContactForm.get('resourceId')?.touched" class="text-danger">
+                    Resource is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('contactId')">
+                <label for="ResourceContact-contactId" id="label-ResourceContact-contactId"><span class="text-danger">*</span>Contact</label>
+                <select id="ResourceContact-contactId" formControlName="contactId" class="form-select resource-contact-select" [disabled]="!userIsSchedulerResourceContactWriter()">
+                    <option [ngValue]="null">Select Contact</option>
+                    <option *ngFor="let contact of contacts$ | async" [ngValue]="contact.id">{{contact.firstName}}</option>
+                </select>
+                <div *ngIf="resourceContactForm.get('contactId')?.invalid && resourceContactForm.get('contactId')?.touched" class="text-danger">
+                    Contact is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isPrimary')">
+                <input type="checkbox" id="ResourceContact-isPrimary" formControlName="isPrimary" class="form-check-input" [disabled]="!userIsSchedulerResourceContactWriter()" />
+                <label for="ResourceContact-isPrimary" class="form-check-label" id="label-ResourceContact-isPrimary"><span class="text-danger">*</span>Is Primary</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('relationshipTypeId')">
+                <label for="ResourceContact-relationshipTypeId" id="label-ResourceContact-relationshipTypeId"><span class="text-danger">*</span>Relationship Type</label>
+                <select id="ResourceContact-relationshipTypeId" formControlName="relationshipTypeId" class="form-select resource-contact-select" [disabled]="!userIsSchedulerResourceContactWriter()">
+                    <option [ngValue]="null">Select Relationship Type</option>
+                    <option *ngFor="let relationshipType of relationshipTypes$ | async" [ngValue]="relationshipType.id">{{relationshipType.name}}</option>
+                </select>
+                <div *ngIf="resourceContactForm.get('relationshipTypeId')?.invalid && resourceContactForm.get('relationshipTypeId')?.touched" class="text-danger">
+                    Relationship Type is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="ResourceContact-versionNumber" id="label-ResourceContact-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="ResourceContact-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control resource-contact-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ResourceContact-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerResourceContactWriter()" />
+                <label for="ResourceContact-active" class="form-check-label" id="label-ResourceContact-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ResourceContact-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerResourceContactWriter()" />
+                <label for="ResourceContact-deleted" class="form-check-label" id="label-ResourceContact-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer resource-contact-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Resource Contact changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !resourceContactForm.valid || resourceContactForm.pristine || !userIsSchedulerResourceContactWriter()" ngbTooltip="Save the Resource Contact changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

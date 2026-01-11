@@ -1,0 +1,84 @@
+<div class="container-fluid p-1 m-0 payment-type-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="payment-type-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Payment Type</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Payment Type' : 'Add Payment Type'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerPaymentTypeReader()">
+                <div class="col m-2 payment-type-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="paymentTypeForm" (ngSubmit)="submitForm()" class="payment-type-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="PaymentType-name" id="label-PaymentType-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="PaymentType-name" formControlName="name" placeholder="Enter Name" class="form-control payment-type-input" [disabled]="!userIsSchedulerPaymentTypeWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="paymentTypeForm.get('name')?.invalid && paymentTypeForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="PaymentType-description" id="label-PaymentType-description"><span class="text-danger">*</span>Description</label>
+                                <textarea id="PaymentType-description" formControlName="description" placeholder="Enter Description" class="form-control payment-type-input" [disabled]="!userIsSchedulerPaymentTypeWriter()"></textarea>
+                                <div *ngIf="paymentTypeForm.get('description')?.invalid && paymentTypeForm.get('description')?.touched" class="text-danger">
+                                    Description is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                                <label for="PaymentType-sequence" id="label-PaymentType-sequence">Sequence</label>
+                                <input type="number" id="PaymentType-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control payment-type-input" [disabled]="!userIsSchedulerPaymentTypeWriter()" aria-labelledby="label-sequence" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="PaymentType-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerPaymentTypeWriter()" />
+                                <label for="PaymentType-active" class="form-check-label" id="label-PaymentType-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="PaymentType-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerPaymentTypeWriter()" />
+                                <label for="PaymentType-deleted" class="form-check-label" id="label-PaymentType-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="payment-type-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="paymentTypeForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Payment Type">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !paymentTypeForm.valid || !paymentTypeForm.dirty || paymentTypeForm.pristine || userIsSchedulerPaymentTypeWriter() == false " ngbTooltip="Save Payment Type">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerPaymentTypeReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 payment-type-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="giftService.userIsSchedulerGiftReader()">
+                            <button ngbNavLink>Gifts
+                                <span class="badge bg-primary ms-2">
+                                    {{ (paymentTypeData?.GiftsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-gift-table [queryParams]="{ paymentTypeId: paymentTypeData?.id }"></app-gift-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-gift-add-edit [preSeededData]="{ paymentTypeId: paymentTypeData?.id }" [hiddenFields]="['paymentTypeId']"></app-gift-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

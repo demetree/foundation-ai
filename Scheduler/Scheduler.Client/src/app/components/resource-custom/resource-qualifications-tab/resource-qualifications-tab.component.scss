@@ -1,0 +1,40 @@
+/* Qualifications Tab - Clean list with expiry highlighting */
+
+/* List group styling */
+.list-group-item {
+  border: none;
+  border-bottom: 1px solid #dee2e6;
+  padding: 0.75rem 0;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+/* Badge sizing consistency */
+.badge {
+  font-size: 0.875rem;
+  min-width: 110px;
+}
+
+/* Expiry warning colors */
+.bg-danger {
+  background-color: #dc3545 !important;
+}
+
+.bg-warning {
+  background-color: #ffc107 !important;
+}
+
+.bg-success {
+  background-color: #28a745 !important;
+}
+
+/* Text contrast */
+.text-dark {
+  color: #212529 !important;
+}
+
+.clickable {
+  cursor: pointer;
+}

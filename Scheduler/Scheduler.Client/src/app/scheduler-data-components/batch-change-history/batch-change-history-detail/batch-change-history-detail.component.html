@@ -1,0 +1,66 @@
+<div class="container-fluid p-1 m-0 batch-change-history-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="batch-change-history-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Batch Change History</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Batch Change History' : 'Add Batch Change History'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerBatchChangeHistoryReader()">
+                <div class="col m-2 batch-change-history-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="batchChangeHistoryForm" (ngSubmit)="submitForm()" class="batch-change-history-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('batchId')">
+                                <label for="BatchChangeHistory-batchId" id="label-BatchChangeHistory-batchId"><span class="text-danger">*</span>Batch</label>
+                                <select id="BatchChangeHistory-batchId" formControlName="batchId" class="form-select batch-change-history-select" [disabled]="!userIsSchedulerBatchChangeHistoryWriter()">
+                                    <option [ngValue]="null">Select Batch</option>
+                                    <option *ngFor="let batch of batches$ | async" [ngValue]="batch.id">{{batch.batchNumber}}</option>
+                                </select>
+                                <div *ngIf="batchChangeHistoryForm.get('batchId')?.invalid && batchChangeHistoryForm.get('batchId')?.touched" class="text-danger">
+                                    Batch is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="BatchChangeHistory-versionNumber" id="label-BatchChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="BatchChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control batch-change-history-input" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                                <label for="BatchChangeHistory-timeStamp" id="label-BatchChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                                <input type="datetime-local" id="BatchChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control batch-change-history-input" [disabled]="!userIsSchedulerBatchChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                                <div *ngIf="batchChangeHistoryForm.get('timeStamp')?.invalid && batchChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                                    Time Stamp is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="BatchChangeHistory-userId" id="label-BatchChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="BatchChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control batch-change-history-input" [disabled]="!userIsSchedulerBatchChangeHistoryWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="batchChangeHistoryForm.get('userId')?.invalid && batchChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                                <label for="BatchChangeHistory-data" id="label-BatchChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                                <textarea id="BatchChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control batch-change-history-input" [disabled]="!userIsSchedulerBatchChangeHistoryWriter()"></textarea>
+                                <div *ngIf="batchChangeHistoryForm.get('data')?.invalid && batchChangeHistoryForm.get('data')?.touched" class="text-danger">
+                                    Data is required
+                                </div>
+                            </div>
+                            <div class="batch-change-history-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="batchChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Batch Change History">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !batchChangeHistoryForm.valid || !batchChangeHistoryForm.dirty || batchChangeHistoryForm.pristine || userIsSchedulerBatchChangeHistoryWriter() == false " ngbTooltip="Save Batch Change History">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

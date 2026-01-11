@@ -1,0 +1,66 @@
+<div class="container-fluid p-1 m-0 client-change-history-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="client-change-history-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Client Change History</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Client Change History' : 'Add Client Change History'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerClientChangeHistoryReader()">
+                <div class="col m-2 client-change-history-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="clientChangeHistoryForm" (ngSubmit)="submitForm()" class="client-change-history-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('clientId')">
+                                <label for="ClientChangeHistory-clientId" id="label-ClientChangeHistory-clientId"><span class="text-danger">*</span>Client</label>
+                                <select id="ClientChangeHistory-clientId" formControlName="clientId" class="form-select client-change-history-select" [disabled]="!userIsSchedulerClientChangeHistoryWriter()">
+                                    <option [ngValue]="null">Select Client</option>
+                                    <option *ngFor="let client of clients$ | async" [ngValue]="client.id">{{client.name}}</option>
+                                </select>
+                                <div *ngIf="clientChangeHistoryForm.get('clientId')?.invalid && clientChangeHistoryForm.get('clientId')?.touched" class="text-danger">
+                                    Client is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="ClientChangeHistory-versionNumber" id="label-ClientChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="ClientChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control client-change-history-input" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                                <label for="ClientChangeHistory-timeStamp" id="label-ClientChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                                <input type="datetime-local" id="ClientChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control client-change-history-input" [disabled]="!userIsSchedulerClientChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                                <div *ngIf="clientChangeHistoryForm.get('timeStamp')?.invalid && clientChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                                    Time Stamp is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="ClientChangeHistory-userId" id="label-ClientChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="ClientChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control client-change-history-input" [disabled]="!userIsSchedulerClientChangeHistoryWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="clientChangeHistoryForm.get('userId')?.invalid && clientChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                                <label for="ClientChangeHistory-data" id="label-ClientChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                                <textarea id="ClientChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control client-change-history-input" [disabled]="!userIsSchedulerClientChangeHistoryWriter()"></textarea>
+                                <div *ngIf="clientChangeHistoryForm.get('data')?.invalid && clientChangeHistoryForm.get('data')?.touched" class="text-danger">
+                                    Data is required
+                                </div>
+                            </div>
+                            <div class="client-change-history-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="clientChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Client Change History">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !clientChangeHistoryForm.valid || !clientChangeHistoryForm.dirty || clientChangeHistoryForm.pristine || userIsSchedulerClientChangeHistoryWriter() == false " ngbTooltip="Save Client Change History">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

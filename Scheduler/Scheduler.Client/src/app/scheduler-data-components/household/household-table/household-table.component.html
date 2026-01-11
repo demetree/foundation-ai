@@ -1,0 +1,395 @@
+<app-household-add-edit [showAddButton]="false"></app-household-add-edit>
+<div class="row" *ngIf="userIsSchedulerHouseholdReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerHouseholdWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerHouseholdWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('name')">
+                Name
+                <span *ngIf="sortColumn === 'name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('description')">
+                Description
+                <span *ngIf="sortColumn === 'description'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('schedulingTarget.name')">
+                Scheduling  Target
+                <span *ngIf="sortColumn === 'schedulingTarget.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('formalSalutation')">
+                Formal  Salutation
+                <span *ngIf="sortColumn === 'formalSalutation'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('informalSalutation')">
+                Informal  Salutation
+                <span *ngIf="sortColumn === 'informalSalutation'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('addressee')">
+                Addressee
+                <span *ngIf="sortColumn === 'addressee'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('totalHouseholdGiving')">
+                Total  Household  Giving
+                <span *ngIf="sortColumn === 'totalHouseholdGiving'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('lastHouseholdGiftDate')">
+                Last  Household  Gift  Date
+                <span *ngIf="sortColumn === 'lastHouseholdGiftDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('notes')">
+                Notes
+                <span *ngIf="sortColumn === 'notes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('icon.name')">
+                Icon
+                <span *ngIf="sortColumn === 'icon.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('color')">
+                Color
+                <span *ngIf="sortColumn === 'color'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('avatarFileName')">
+                Avatar  File  Name
+                <span *ngIf="sortColumn === 'avatarFileName'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('avatarSize')">
+                Avatar  Size
+                <span *ngIf="sortColumn === 'avatarSize'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('avatarData')">
+                Avatar  Data
+                <span *ngIf="sortColumn === 'avatarData'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('avatarMimeType')">
+                Avatar  Mime  Type
+                <span *ngIf="sortColumn === 'avatarMimeType'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let household of filteredHouseholds; trackBy: getHouseholdId"
+              [ngClass]="{
+                 'row-inactive': household.active == false,
+                 'row-deleted': household.deleted == true 
+                 }">
+            <td class="header-action-button" *ngIf="userIsSchedulerHouseholdWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleEdit(household)"
+                      ngbTooltip="Edit" 
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsSchedulerHouseholdWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleDelete(household)"
+                      ngbTooltip="Delete" 
+                      placement="top"
+                      *ngIf="household.deleted == false">
+                <i class="fa fa-trash"></i>
+              </button>
+              <button class="btn btn-sm"
+                      (click)="handleUndelete(household)"
+                      ngbTooltip="Undelete" 
+                      placement="top"
+                      *ngIf="household.deleted == true">
+                <i class="fa fa-trash-arrow-up"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(household, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(household, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(household, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(household, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(household, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(household, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(household, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(household, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/household', household.id]" class="btn btn-link text-left" ngbTooltip="Open Household details">{{household.name}}</a></td>
+            <td class="text-truncate">{{household.description}}</td>
+            <td class="text-truncate"><a [routerLink]="['/schedulingtarget', household.schedulingTargetId]" class="btn btn-link text-left" ngbTooltip="Open Scheduling Target details">{{household.schedulingTarget?.name}}</a></td>
+            <td class="text-truncate">{{household.formalSalutation}}</td>
+            <td class="text-truncate">{{household.informalSalutation}}</td>
+            <td class="text-truncate">{{household.addressee}}</td>
+            <td class="text-truncate">{{household.totalHouseholdGiving | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{household.lastHouseholdGiftDate | date:'YYYY-MM-dd'}}</td>
+            <td class="text-truncate">{{household.notes}}</td>
+            <td class="text-truncate"><a [routerLink]="['/icon', household.iconId]" class="btn btn-link text-left" ngbTooltip="Open Icon details">{{household.icon?.name}}</a></td>
+            <td class="text-truncate">{{household.color}}</td>
+            <td class="text-truncate">{{household.avatarFileName}}</td>
+            <td class="text-truncate">{{household.avatarSize | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{household.avatarData}}</td>
+            <td class="text-truncate">{{household.avatarMimeType}}</td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let household of filteredHouseholds; trackBy: getHouseholdId" class="card my-2"
+              [ngClass]="{
+                 'row-inactive': household.active == false,
+                 'row-deleted': household.deleted == true 
+                 }">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(household, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(household, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(household, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(household, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(household, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(household, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(household, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(household, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(household, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(household, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(household, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(household, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(household, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/household', household.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(household)" *ngIf="userIsSchedulerHouseholdWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(household)" *ngIf="userIsSchedulerHouseholdWriter() && household.deleted == false" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+            <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(household)" *ngIf="userIsSchedulerHouseholdWriter() && household.deleted == true" ngbTooltip="Undelete">
+              <i class="fa fa-trash-arrow-upp"></i> UnDelete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{household.name}}</strong>
+               <small class="text-muted d-block">{{household.schedulingTarget?.name}}</small>
+             </div>
+             <div>
+                <button class="btn btn-sm"
+                        [routerLink]="['/household', household.id]"
+                        ngbTooltip="Household Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="btn btn-sm"
+                        (click)="handleEdit(household)"
+                        ngbTooltip="Edit Household">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleDelete(household)"
+                      ngbTooltip="Delete Household" 
+                      placement="top"
+                      *ngIf="household.deleted == false">
+                  <i class="fa fa-trash"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleUndelete(household)"
+                      ngbTooltip="Undelete Household" 
+                      placement="top"
+                      *ngIf="household.deleted == true">
+                 <i class="fa fa-trash-arrow-up"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="household-info" *ngIf="household.name != null">
+              <strong>Name: </strong>
+              {{household.name}}
+            </p>
+            <p class="household-info" *ngIf="household.description != null">
+              <strong>Description: </strong>
+              {{household.description}}
+            </p>
+            <p class="household-info" *ngIf="household.schedulingTargetId != null">
+              <strong>Scheduling Target: </strong>
+              <a [routerLink]="['/schedulingtarget', household.schedulingTargetId]" class="text-left p-0 m-0" ngbTooltip="Open Scheduling Target details">{{household.schedulingTarget?.name}}</a>
+            </p>
+            <p class="household-info" *ngIf="household.formalSalutation != null">
+              <strong>Formal Salutation: </strong>
+              {{household.formalSalutation}}
+            </p>
+            <p class="household-info" *ngIf="household.informalSalutation != null">
+              <strong>Informal Salutation: </strong>
+              {{household.informalSalutation}}
+            </p>
+            <p class="household-info" *ngIf="household.addressee != null">
+              <strong>Addressee: </strong>
+              {{household.addressee}}
+            </p>
+            <p class="household-info" *ngIf="household.totalHouseholdGiving != null">
+              <strong>Total Household Giving: </strong>
+              {{household.totalHouseholdGiving | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="household-info" *ngIf="household.lastHouseholdGiftDate != null">
+              <strong>Last Household Gift Date: </strong>
+              {{household.lastHouseholdGiftDate | date:'YYYY-MM-dd'}}
+            </p>
+            <p class="household-info" *ngIf="household.notes != null">
+              <strong>Notes: </strong>
+              {{household.notes}}
+            </p>
+            <p class="household-info" *ngIf="household.iconId != null">
+              <strong>Icon: </strong>
+              <a [routerLink]="['/icon', household.iconId]" class="text-left p-0 m-0" ngbTooltip="Open Icon details">{{household.icon?.name}}</a>
+            </p>
+            <p class="household-info" *ngIf="household.color != null">
+              <strong>Color: </strong>
+              {{household.color}}
+            </p>
+            <p class="household-info" *ngIf="household.avatarFileName != null">
+              <strong>Avatar File Name: </strong>
+              {{household.avatarFileName}}
+            </p>
+            <p class="household-info" *ngIf="household.avatarSize != null">
+              <strong>Avatar Size: </strong>
+              {{household.avatarSize | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="household-info" *ngIf="household.avatarData != null">
+              <strong>Avatar Data: </strong>
+              {{household.avatarData}}
+            </p>
+            <p class="household-info" *ngIf="household.avatarMimeType != null">
+              <strong>Avatar Mime Type: </strong>
+              {{household.avatarMimeType}}
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+   </div>
+</div>

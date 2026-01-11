@@ -1,0 +1,66 @@
+<div class="container-fluid p-1 m-0 scheduled-event-template-charge-change-history-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="scheduled-event-template-charge-change-history-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Scheduled Event Template Charge Change History</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Scheduled Event Template Charge Change History' : 'Add Scheduled Event Template Charge Change History'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerScheduledEventTemplateChargeChangeHistoryReader()">
+                <div class="col m-2 scheduled-event-template-charge-change-history-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="scheduledEventTemplateChargeChangeHistoryForm" (ngSubmit)="submitForm()" class="scheduled-event-template-charge-change-history-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('scheduledEventTemplateChargeId')">
+                                <label for="ScheduledEventTemplateChargeChangeHistory-scheduledEventTemplateChargeId" id="label-ScheduledEventTemplateChargeChangeHistory-scheduledEventTemplateChargeId"><span class="text-danger">*</span>Scheduled Event Template Charge</label>
+                                <select id="ScheduledEventTemplateChargeChangeHistory-scheduledEventTemplateChargeId" formControlName="scheduledEventTemplateChargeId" class="form-select scheduled-event-template-charge-change-history-select" [disabled]="!userIsSchedulerScheduledEventTemplateChargeChangeHistoryWriter()">
+                                    <option [ngValue]="null">Select Scheduled Event Template Charge</option>
+                                    <option *ngFor="let scheduledEventTemplateCharge of scheduledEventTemplateCharges$ | async" [ngValue]="scheduledEventTemplateCharge.id">{{scheduledEventTemplateCharge.id}}</option>
+                                </select>
+                                <div *ngIf="scheduledEventTemplateChargeChangeHistoryForm.get('scheduledEventTemplateChargeId')?.invalid && scheduledEventTemplateChargeChangeHistoryForm.get('scheduledEventTemplateChargeId')?.touched" class="text-danger">
+                                    Scheduled Event Template Charge is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="ScheduledEventTemplateChargeChangeHistory-versionNumber" id="label-ScheduledEventTemplateChargeChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="ScheduledEventTemplateChargeChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control scheduled-event-template-charge-change-history-input" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                                <label for="ScheduledEventTemplateChargeChangeHistory-timeStamp" id="label-ScheduledEventTemplateChargeChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                                <input type="datetime-local" id="ScheduledEventTemplateChargeChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control scheduled-event-template-charge-change-history-input" [disabled]="!userIsSchedulerScheduledEventTemplateChargeChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                                <div *ngIf="scheduledEventTemplateChargeChangeHistoryForm.get('timeStamp')?.invalid && scheduledEventTemplateChargeChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                                    Time Stamp is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="ScheduledEventTemplateChargeChangeHistory-userId" id="label-ScheduledEventTemplateChargeChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="ScheduledEventTemplateChargeChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control scheduled-event-template-charge-change-history-input" [disabled]="!userIsSchedulerScheduledEventTemplateChargeChangeHistoryWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="scheduledEventTemplateChargeChangeHistoryForm.get('userId')?.invalid && scheduledEventTemplateChargeChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                                <label for="ScheduledEventTemplateChargeChangeHistory-data" id="label-ScheduledEventTemplateChargeChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                                <textarea id="ScheduledEventTemplateChargeChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control scheduled-event-template-charge-change-history-input" [disabled]="!userIsSchedulerScheduledEventTemplateChargeChangeHistoryWriter()"></textarea>
+                                <div *ngIf="scheduledEventTemplateChargeChangeHistoryForm.get('data')?.invalid && scheduledEventTemplateChargeChangeHistoryForm.get('data')?.touched" class="text-danger">
+                                    Data is required
+                                </div>
+                            </div>
+                            <div class="scheduled-event-template-charge-change-history-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="scheduledEventTemplateChargeChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Scheduled Event Template Charge Change History">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !scheduledEventTemplateChargeChangeHistoryForm.valid || !scheduledEventTemplateChargeChangeHistoryForm.dirty || scheduledEventTemplateChargeChangeHistoryForm.pristine || userIsSchedulerScheduledEventTemplateChargeChangeHistoryWriter() == false " ngbTooltip="Save Scheduled Event Template Charge Change History">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

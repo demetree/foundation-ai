@@ -1,0 +1,302 @@
+<div class="container-fluid p-1 m-0 security-user-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="security-user-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Security User</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Security User' : 'Add Security User'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSecuritySecurityUserReader()">
+                <div class="col m-2 security-user-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="securityUserForm" (ngSubmit)="submitForm()" class="security-user-details-form">
+                            <div class="form-group">
+                                <label for="accountName" id="label-accountName"><span class="text-danger">*</span>Account Name</label>
+                                <input type="text" id="accountName" formControlName="accountName" placeholder="Enter Account Name" class="form-control security-user-input" [disabled]="!userIsSecuritySecurityUserWriter()" aria-labelledby="label-accountName" />
+                                <div *ngIf="securityUserForm.get('accountName')?.invalid && securityUserForm.get('accountName')?.touched" class="text-danger">
+                                    Account Name is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2">
+                                <input type="checkbox" id="activeDirectoryAccount" formControlName="activeDirectoryAccount" class="form-check-input" [disabled]="!userIsSecuritySecurityUserWriter()" />
+                                <label for="activeDirectoryAccount" class="form-check-label" id="label-activeDirectoryAccount"><span class="text-danger">*</span>Active Directory Account</label>
+                            </div>
+                            <div class="form-check my-2">
+                                <input type="checkbox" id="canLogin" formControlName="canLogin" class="form-check-input" [disabled]="!userIsSecuritySecurityUserWriter()" />
+                                <label for="canLogin" class="form-check-label" id="label-canLogin"><span class="text-danger">*</span>Can Login</label>
+                            </div>
+                            <div class="form-check my-2">
+                                <input type="checkbox" id="mustChangePassword" formControlName="mustChangePassword" class="form-check-input" [disabled]="!userIsSecuritySecurityUserWriter()" />
+                                <label for="mustChangePassword" class="form-check-label" id="label-mustChangePassword"><span class="text-danger">*</span>Must Change Password</label>
+                            </div>
+                            <div class="form-group">
+                                <label for="firstName" id="label-firstName">First Name</label>
+                                <input type="text" id="firstName" formControlName="firstName" placeholder="Enter First Name" class="form-control security-user-input" [disabled]="!userIsSecuritySecurityUserWriter()" aria-labelledby="label-firstName" />
+                            </div>
+                            <div class="form-group">
+                                <label for="middleName" id="label-middleName">Middle Name</label>
+                                <input type="text" id="middleName" formControlName="middleName" placeholder="Enter Middle Name" class="form-control security-user-input" [disabled]="!userIsSecuritySecurityUserWriter()" aria-labelledby="label-middleName" />
+                            </div>
+                            <div class="form-group">
+                                <label for="lastName" id="label-lastName">Last Name</label>
+                                <input type="text" id="lastName" formControlName="lastName" placeholder="Enter Last Name" class="form-control security-user-input" [disabled]="!userIsSecuritySecurityUserWriter()" aria-labelledby="label-lastName" />
+                            </div>
+                            <div class="form-group">
+                                <label for="dateOfBirth" id="label-dateOfBirth">Date Of Birth</label>
+                                <input type="datetime-local" id="dateOfBirth" formControlName="dateOfBirth" placeholder="Enter Date Of Birth" class="form-control security-user-input" [disabled]="!userIsSecuritySecurityUserWriter()" aria-labelledby="label-dateOfBirth" />
+                            </div>
+                            <div class="form-group">
+<label for="emailAddress" id="label-emailAddress"><a href="mailto:{{securityUserData?.emailAddress}}" ngbTooltip="Send Email to {{securityUserData?.emailAddress}}">Email Address</a></label>
+                                <input type="text" id="emailAddress" formControlName="emailAddress" placeholder="Enter Email Address" class="form-control security-user-input" [disabled]="!userIsSecuritySecurityUserWriter()" aria-labelledby="label-emailAddress" />
+                            </div>
+                            <div class="form-group">
+                                <label for="cellPhoneNumber" id="label-cellPhoneNumber"><a href="tel:{{securityUserData?.cellPhoneNumber}}" ngbTooltip="Phone {{securityUserData?.cellPhoneNumber}}">Cell Phone Number</a></label>
+                                <input type="text" id="cellPhoneNumber" formControlName="cellPhoneNumber" placeholder="Enter Cell Phone Number" class="form-control security-user-input" [disabled]="!userIsSecuritySecurityUserWriter()" aria-labelledby="label-cellPhoneNumber" />
+                            </div>
+                            <div class="form-group">
+                                <label for="phoneNumber" id="label-phoneNumber"><a href="tel:{{securityUserData?.phoneNumber}}" ngbTooltip="Phone {{securityUserData?.phoneNumber}}">Phone Number</a></label>
+                                <input type="text" id="phoneNumber" formControlName="phoneNumber" placeholder="Enter Phone Number" class="form-control security-user-input" [disabled]="!userIsSecuritySecurityUserWriter()" aria-labelledby="label-phoneNumber" />
+                            </div>
+                            <div class="form-group">
+                                <label for="phoneExtension" id="label-phoneExtension"><a href="tel:{{securityUserData?.phoneExtension}}" ngbTooltip="Phone {{securityUserData?.phoneExtension}}">Phone Extension</a></label>
+                                <input type="text" id="phoneExtension" formControlName="phoneExtension" placeholder="Enter Phone Extension" class="form-control security-user-input" [disabled]="!userIsSecuritySecurityUserWriter()" aria-labelledby="label-phoneExtension" />
+                            </div>
+                            <div class="form-group">
+                                <label for="description" id="label-description">Description</label>
+                                <textarea id="description" formControlName="description" placeholder="Enter Description" class="form-control security-user-input" [disabled]="!userIsSecuritySecurityUserWriter()"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="securityUserTitleId" id="label-securityUserTitleId">Security User Title</label>
+                                <select id="securityUserTitleId" formControlName="securityUserTitleId" class="form-select security-user-select" [disabled]="!userIsSecuritySecurityUserWriter()">
+                                    <option [ngValue]="null">Select Security User Title</option>
+                                    <option *ngFor="let securityUserTitle of securityUserTitles$ | async" [ngValue]="securityUserTitle.id">{{securityUserTitle.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="reportsToSecurityUserId" id="label-reportsToSecurityUserId">Reports To Security User</label>
+                                <select id="reportsToSecurityUserId" formControlName="reportsToSecurityUserId" class="form-select security-user-select" [disabled]="!userIsSecuritySecurityUserWriter()">
+                                    <option [ngValue]="null">Select Security User</option>
+                                    <option *ngFor="let securityUser of securityUsers$ | async" [ngValue]="securityUser.id">{{[securityUser.accountName] | filterAndJoin}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="authenticationDomain" id="label-authenticationDomain">Authentication Domain</label>
+                                <input type="text" id="authenticationDomain" formControlName="authenticationDomain" placeholder="Enter Authentication Domain" class="form-control security-user-input" [disabled]="!userIsSecuritySecurityUserWriter()" aria-labelledby="label-authenticationDomain" />
+                            </div>
+                            <div class="form-group">
+                                <label for="failedLoginCount" id="label-failedLoginCount">Failed Login Count</label>
+                                <input type="number" id="failedLoginCount" formControlName="failedLoginCount" placeholder="Enter Failed Login Count" class="form-control security-user-input" [disabled]="!userIsSecuritySecurityUserWriter()" aria-labelledby="label-failedLoginCount" />
+                            </div>
+                            <div class="form-group">
+                                <label for="lastLoginAttempt" id="label-lastLoginAttempt">Last Login Attempt</label>
+                                <input type="datetime-local" id="lastLoginAttempt" formControlName="lastLoginAttempt" placeholder="Enter Last Login Attempt" class="form-control security-user-input" [disabled]="!userIsSecuritySecurityUserWriter()" aria-labelledby="label-lastLoginAttempt" />
+                            </div>
+                            <div class="form-group">
+                                <label for="mostRecentActivity" id="label-mostRecentActivity">Most Recent Activity</label>
+                                <input type="datetime-local" id="mostRecentActivity" formControlName="mostRecentActivity" placeholder="Enter Most Recent Activity" class="form-control security-user-input" [disabled]="!userIsSecuritySecurityUserWriter()" aria-labelledby="label-mostRecentActivity" />
+                            </div>
+                            <div class="form-group">
+                                <label for="alternateIdentifier" id="label-alternateIdentifier">Alternate Identifier</label>
+                                <input type="text" id="alternateIdentifier" formControlName="alternateIdentifier" placeholder="Enter Alternate Identifier" class="form-control security-user-input" [disabled]="!userIsSecuritySecurityUserWriter()" aria-labelledby="label-alternateIdentifier" />
+                            </div>
+                            <div class="form-group">
+                                <label for="image" id="label-image">Image</label>
+                                <input type="text" id="image" formControlName="image" placeholder="Enter Image" class="form-control security-user-input" [disabled]="!userIsSecuritySecurityUserWriter()" aria-labelledby="label-image" />
+                            </div>
+                            <div class="form-group">
+                                <label for="settings" id="label-settings">Settings</label>
+                                <textarea id="settings" formControlName="settings" placeholder="Enter Settings" class="form-control security-user-input" [disabled]="!userIsSecuritySecurityUserWriter()"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="securityTenantId" id="label-securityTenantId">Security Tenant</label>
+                                <select id="securityTenantId" formControlName="securityTenantId" class="form-select security-user-select" [disabled]="!userIsSecuritySecurityUserWriter()">
+                                    <option [ngValue]="null">Select Security Tenant</option>
+                                    <option *ngFor="let securityTenant of securityTenants$ | async" [ngValue]="securityTenant.id">{{securityTenant.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="readPermissionLevel" id="label-readPermissionLevel"><span class="text-danger">*</span>Read Permission Level</label>
+                                <input type="number" id="readPermissionLevel" formControlName="readPermissionLevel" placeholder="Enter Read Permission Level" class="form-control security-user-input" [disabled]="!userIsSecuritySecurityUserWriter()" aria-labelledby="label-readPermissionLevel" />
+                                <div *ngIf="securityUserForm.get('readPermissionLevel')?.invalid && securityUserForm.get('readPermissionLevel')?.touched" class="text-danger">
+                                    Read Permission Level is required
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="writePermissionLevel" id="label-writePermissionLevel"><span class="text-danger">*</span>Write Permission Level</label>
+                                <input type="number" id="writePermissionLevel" formControlName="writePermissionLevel" placeholder="Enter Write Permission Level" class="form-control security-user-input" [disabled]="!userIsSecuritySecurityUserWriter()" aria-labelledby="label-writePermissionLevel" />
+                                <div *ngIf="securityUserForm.get('writePermissionLevel')?.invalid && securityUserForm.get('writePermissionLevel')?.touched" class="text-danger">
+                                    Write Permission Level is required
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="securityOrganizationId" id="label-securityOrganizationId">Security Organization</label>
+                                <select id="securityOrganizationId" formControlName="securityOrganizationId" class="form-select security-user-select" [disabled]="!userIsSecuritySecurityUserWriter()">
+                                    <option [ngValue]="null">Select Security Organization</option>
+                                    <option *ngFor="let securityOrganization of securityOrganizations$ | async" [ngValue]="securityOrganization.id">{{securityOrganization.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="securityDepartmentId" id="label-securityDepartmentId">Security Department</label>
+                                <select id="securityDepartmentId" formControlName="securityDepartmentId" class="form-select security-user-select" [disabled]="!userIsSecuritySecurityUserWriter()">
+                                    <option [ngValue]="null">Select Security Department</option>
+                                    <option *ngFor="let securityDepartment of securityDepartments$ | async" [ngValue]="securityDepartment.id">{{securityDepartment.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="securityTeamId" id="label-securityTeamId">Security Team</label>
+                                <select id="securityTeamId" formControlName="securityTeamId" class="form-select security-user-select" [disabled]="!userIsSecuritySecurityUserWriter()">
+                                    <option [ngValue]="null">Select Security Team</option>
+                                    <option *ngFor="let securityTeam of securityTeams$ | async" [ngValue]="securityTeam.id">{{securityTeam.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="authenticationToken" id="label-authenticationToken">Authentication Token</label>
+                                <input type="text" id="authenticationToken" formControlName="authenticationToken" placeholder="Enter Authentication Token" class="form-control security-user-input" [disabled]="!userIsSecuritySecurityUserWriter()" aria-labelledby="label-authenticationToken" />
+                            </div>
+                            <div class="form-group">
+                                <label for="authenticationTokenExpiry" id="label-authenticationTokenExpiry">Authentication Token Expiry</label>
+                                <input type="datetime-local" id="authenticationTokenExpiry" formControlName="authenticationTokenExpiry" placeholder="Enter Authentication Token Expiry" class="form-control security-user-input" [disabled]="!userIsSecuritySecurityUserWriter()" aria-labelledby="label-authenticationTokenExpiry" />
+                            </div>
+                            <div class="form-group">
+                                <label for="twoFactorToken" id="label-twoFactorToken">Two Factor Token</label>
+                                <input type="text" id="twoFactorToken" formControlName="twoFactorToken" placeholder="Enter Two Factor Token" class="form-control security-user-input" [disabled]="!userIsSecuritySecurityUserWriter()" aria-labelledby="label-twoFactorToken" />
+                            </div>
+                            <div class="form-group">
+                                <label for="twoFactorTokenExpiry" id="label-twoFactorTokenExpiry">Two Factor Token Expiry</label>
+                                <input type="datetime-local" id="twoFactorTokenExpiry" formControlName="twoFactorTokenExpiry" placeholder="Enter Two Factor Token Expiry" class="form-control security-user-input" [disabled]="!userIsSecuritySecurityUserWriter()" aria-labelledby="label-twoFactorTokenExpiry" />
+                            </div>
+                            <div class="form-check my-2">
+                                <input type="checkbox" id="twoFactorSendByEmail" formControlName="twoFactorSendByEmail" class="form-check-input" [disabled]="!userIsSecuritySecurityUserWriter()" />
+                                <label for="twoFactorSendByEmail" class="form-check-label" id="label-twoFactorSendByEmail">Two Factor Send By Email</label>
+                            </div>
+                            <div class="form-check my-2">
+                                <input type="checkbox" id="twoFactorSendBySMS" formControlName="twoFactorSendBySMS" class="form-check-input" [disabled]="!userIsSecuritySecurityUserWriter()" />
+                                <label for="twoFactorSendBySMS" class="form-check-label" id="label-twoFactorSendBySMS">Two Factor Send By S M S</label>
+                            </div>
+                            <div class="form-check my-2">
+                                <input type="checkbox" id="active" formControlName="active" class="form-check-input" [disabled]="!userIsSecuritySecurityUserWriter()" />
+                                <label for="active" class="form-check-label" id="label-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2">
+                                <input type="checkbox" id="deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSecuritySecurityUserWriter()" />
+                                <label for="deleted" class="form-check-label" id="label-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="security-user-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="securityUserForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Security User">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !securityUserForm.valid || !securityUserForm.dirty || securityUserForm.pristine || userIsSecuritySecurityUserWriter() == false " ngbTooltip="Save Security User">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSecuritySecurityUserReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 security-user-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="securityTenantUserService.userIsSecuritySecurityTenantUserReader()">
+                            <button ngbNavLink>SecurityTenantUsers
+                                <span class="badge bg-primary ms-2">
+                                    {{ (securityUserData?.SecurityTenantUsersCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <app-security-tenant-user-table [queryParams]="GetQueryParameters()"></app-security-tenant-user-table>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="securityOrganizationUserService.userIsSecuritySecurityOrganizationUserReader()">
+                            <button ngbNavLink>SecurityOrganizationUsers
+                                <span class="badge bg-primary ms-2">
+                                    {{ (securityUserData?.SecurityOrganizationUsersCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <app-security-organization-user-table [queryParams]="GetQueryParameters()"></app-security-organization-user-table>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="securityDepartmentUserService.userIsSecuritySecurityDepartmentUserReader()">
+                            <button ngbNavLink>SecurityDepartmentUsers
+                                <span class="badge bg-primary ms-2">
+                                    {{ (securityUserData?.SecurityDepartmentUsersCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <app-security-department-user-table [queryParams]="GetQueryParameters()"></app-security-department-user-table>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="securityTeamUserService.userIsSecuritySecurityTeamUserReader()">
+                            <button ngbNavLink>SecurityTeamUsers
+                                <span class="badge bg-primary ms-2">
+                                    {{ (securityUserData?.SecurityTeamUsersCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <app-security-team-user-table [queryParams]="GetQueryParameters()"></app-security-team-user-table>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="securityUserEventService.userIsSecuritySecurityUserEventReader()">
+                            <button ngbNavLink>SecurityUserEvents
+                                <span class="badge bg-primary ms-2">
+                                    {{ (securityUserData?.SecurityUserEventsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <app-security-user-event-table [queryParams]="GetQueryParameters()"></app-security-user-event-table>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="securityUserPasswordResetTokenService.userIsSecuritySecurityUserPasswordResetTokenReader()">
+                            <button ngbNavLink>SecurityUserPasswordResetTokens
+                                <span class="badge bg-primary ms-2">
+                                    {{ (securityUserData?.SecurityUserPasswordResetTokensCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <app-security-user-password-reset-token-table [queryParams]="GetQueryParameters()"></app-security-user-password-reset-token-table>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="securityUserSecurityGroupService.userIsSecuritySecurityUserSecurityGroupReader()">
+                            <button ngbNavLink>SecurityUserSecurityGroups
+                                <span class="badge bg-primary ms-2">
+                                    {{ (securityUserData?.SecurityUserSecurityGroupsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <app-security-user-security-group-table [queryParams]="GetQueryParameters()"></app-security-user-security-group-table>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="securityUserSecurityRoleService.userIsSecuritySecurityUserSecurityRoleReader()">
+                            <button ngbNavLink>SecurityUserSecurityRoles
+                                <span class="badge bg-primary ms-2">
+                                    {{ (securityUserData?.SecurityUserSecurityRolesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <app-security-user-security-role-table [queryParams]="GetQueryParameters()"></app-security-user-security-role-table>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="entityDataTokenService.userIsSecurityEntityDataTokenReader()">
+                            <button ngbNavLink>EntityDataTokens
+                                <span class="badge bg-primary ms-2">
+                                    {{ (securityUserData?.EntityDataTokensCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <app-entity-data-token-table [queryParams]="GetQueryParameters()"></app-entity-data-token-table>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

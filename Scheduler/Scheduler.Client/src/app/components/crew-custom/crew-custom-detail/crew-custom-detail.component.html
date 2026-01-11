@@ -1,0 +1,148 @@
+<div class="container-fluid p-1 m-0 crew-details-container">
+  <div class="p-2 detail-background">
+
+    <!-- Header with Avatar and Key Info -->
+    <div class="card mb-4 header-card shadow-sm">
+      <div class="card-body d-flex align-items-center gap-4">
+
+        <!-- Avatar -->
+        <div class="avatar rounded-circle overflow-hidden border shadow clickable"
+             style="width: 120px; height: 120px; background: #f8f9fa;"
+             (click)="openEditModal()">
+          <ng-container *ngIf="crew?.avatarData; else defaultAvatar">
+            <img [src]="'data:' + (crew?.avatarMimeType || 'image/png') + ';base64,' + (crew?.avatarData || '')"
+                 class="w-100 h-100 object-fit-cover"
+                 alt="{{ crew?.name }} avatar">
+          </ng-container>
+
+          <ng-template #defaultAvatar>
+            <div class="w-100 h-100 d-flex align-items-center justify-content-center text-white fw-bold fs-3"
+                 [style.background-color]="crew?.color || '#6c757d'">
+              <i class="fa-2x text-white opacity-75" 
+                 [class]="crew?.icon?.fontAwesomeCode || 'fa-solid fa-users'">
+              </i>
+            </div>
+          </ng-template>
+        </div>
+
+        <!-- Details -->
+        <div class="flex-grow-1">
+          <div class="d-flex align-items-center gap-3 mb-2">
+            <span class="text-uppercase text-muted small fw-semibold">Crew</span>
+            <span class="text-muted small">•</span>
+            <h3 class="mb-0">{{ crew?.name || 'Loading...' }}</h3>
+
+            <!-- Active / Deleted Status -->
+            <span class="badge" [ngClass]="crew?.active ? 'bg-success' : 'bg-secondary'">
+              {{ crew?.active ? 'Active' : 'Inactive' }}
+            </span>
+
+            <span *ngIf="crew?.deleted == true" class="badge " [ngClass]="crew?.deleted ? 'bg-danger' : 'bg-secondary'">
+              {{ crew?.deleted ? 'Deleted' : 'Not Deleted' }}
+            </span>
+
+            <span class="badge bg-secondary">Version: {{ crew?.versionNumber }}</span>
+          </div>
+
+          <div class="text-muted small">
+            <div *ngIf="crew?.description"><strong>Description: </strong>{{ crew?.description }}</div>
+            <div *ngIf="officeCount$ != null && ((officeCount$ | async) ?? 0) > 0" class="clickable" (click)="navigateToOffice(crew?.officeId)"><strong>Office:</strong> {{ crew?.office?.name || '—' }}</div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="text-end">
+          <button class="btn btn-primary" (click)="openEditModal()" *ngIf="userIsSchedulerCrewWriter()">
+            <i class="fa fa-pen me-2"></i> Edit
+          </button>
+          <button class="btn btn-outline-secondary ms-2" (click)="goBack()" ngbTooltip="Go Back" *ngIf="canGoBack()">
+            <i class="fa fa-arrow-left me-2"></i> Back
+          </button>
+
+          <app-crew-custom-add-edit [navigateToDetailsAfterAdd]="false" (crewChanged)="crewChanged($event)" style="display: none"></app-crew-custom-add-edit>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading / Error -->
+    <div class="text-center py-5" *ngIf="isLoading$ | async">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading crew...</span>
+      </div>
+    </div>
+
+    <div class="alert alert-danger" *ngIf="error">
+      <i class="fa-solid fa-exclamation-triangle me-2"></i>
+      {{ error }}
+    </div>
+
+    <!-- Tabs -->
+    <ul ngbNav #nav="ngbNav" class="nav-tabs" [(activeId)]="activeTab">
+
+      <li ngbNavItem="overview">
+        <button ngbNavLink>Overview</button>
+        <ng-template ngbNavContent>
+          <div *ngIf="crew; else loadingTemplate">
+            <app-crew-overview-tab [crew]="crew"></app-crew-overview-tab>
+          </div>
+          <ng-template #loadingTemplate>
+            <div class="text-center py-5 text-muted">
+              <div class="spinner-border spinner-border-sm" role="status">
+                <span class="visually-hidden">Loading overview...</span>
+              </div>
+            </div>
+            <div class="mt-3">Loading crew details...</div>
+          </ng-template>
+        </ng-template>
+      </li>
+
+      <li ngbNavItem="assignments">
+        <button ngbNavLink>
+          Assignments
+          <span class="badge bg-primary ms-2">
+            {{ (CrewAssignmentCount$ | async) ?? '-' }}
+          </span>
+        </button>
+        <ng-template ngbNavContent>
+          <div *ngIf="crew; else loadingTemplate">
+            <app-crew-assignments-tab [crew]="crew"
+                                      (crewAssignmentChanged)="refreshRowCountObservables()"></app-crew-assignments-tab>
+          </div>
+          <ng-template #loadingTemplate>
+            <div class="text-center py-5 text-muted">
+              <div class="spinner-border spinner-border-sm" role="status">
+                <span class="visually-hidden">Loading assignments...</span>
+              </div>
+            </div>
+            <div class="mt-3">Loading assignments...</div>
+          </ng-template>
+        </ng-template>
+      </li>
+
+      <li ngbNavItem="members">
+        <button ngbNavLink>
+          Members
+          <span class="badge bg-info ms-2" *ngIf="crew != null">
+            {{ (crew.CrewMembersCount$ | async) ?? '-' }}
+          </span>
+        </button>
+        <ng-template ngbNavContent>
+          <div *ngIf="crew; else loadingTemplate">
+            <app-crew-members-tab [crew]="crew"
+                                  (crewMemberChanged)="refreshRowCountObservables()"></app-crew-members-tab>
+          </div>
+          <ng-template #loadingTemplate>
+            <div class="text-center py-5 text-muted">
+              <div class="spinner-border spinner-border-sm" role="status">
+                <span class="visually-hidden">Loading crew members...</span>
+              </div>
+            </div>
+            <div class="mt-3">Loading crew member details...</div>
+          </ng-template>
+        </ng-template>
+      </li>
+
+    </ul>
+    <div [ngbNavOutlet]="nav" class="mt-4"></div>
+  </div>
+</div>

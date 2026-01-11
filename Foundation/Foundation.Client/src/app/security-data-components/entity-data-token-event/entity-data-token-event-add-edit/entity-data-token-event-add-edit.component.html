@@ -1,0 +1,69 @@
+<div class="add-entity-data-token-event" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-entity-data-token-event me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Entity Data Token Event" 
+        *ngIf="userIsSecurityEntityDataTokenEventWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #entityDataTokenEventModal let-modal>
+   <div class="modal-header bg-dark text-light entity-data-token-event-modal-header">
+      <h5 class="modal-title mb-0" id="entityDataTokenEventModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Entity Data Token Event' : 'Add Entity Data Token Event' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body entity-data-token-event-modal-body">
+      <form [formGroup]="entityDataTokenEventForm" (ngSubmit)="submitForm()">
+            <div class="form-group">
+                <label for="entityDataTokenId" id="label-entityDataTokenId"><span class="text-danger">*</span>Entity Data Token</label>
+                <select id="entityDataTokenId" formControlName="entityDataTokenId" class="form-select entity-data-token-event-select" [disabled]="!userIsSecurityEntityDataTokenEventWriter()">
+                    <option [ngValue]="null">Select Entity Data Token</option>
+                    <option *ngFor="let entityDataToken of entityDataTokens$ | async" [ngValue]="entityDataToken.id">{{[entityDataToken.token] | filterAndJoin}}</option>
+                </select>
+                <div *ngIf="entityDataTokenEventForm.get('entityDataTokenId')?.invalid && entityDataTokenEventForm.get('entityDataTokenId')?.touched" class="text-danger">
+                    Entity Data Token is required
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="entityDataTokenEventTypeId" id="label-entityDataTokenEventTypeId"><span class="text-danger">*</span>Entity Data Token Event Type</label>
+                <select id="entityDataTokenEventTypeId" formControlName="entityDataTokenEventTypeId" class="form-select entity-data-token-event-select" [disabled]="!userIsSecurityEntityDataTokenEventWriter()">
+                    <option [ngValue]="null">Select Entity Data Token Event Type</option>
+                    <option *ngFor="let entityDataTokenEventType of entityDataTokenEventTypes$ | async" [ngValue]="entityDataTokenEventType.id">{{entityDataTokenEventType.name}}</option>
+                </select>
+                <div *ngIf="entityDataTokenEventForm.get('entityDataTokenEventTypeId')?.invalid && entityDataTokenEventForm.get('entityDataTokenEventTypeId')?.touched" class="text-danger">
+                    Entity Data Token Event Type is required
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="timeStamp" id="label-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                <input type="datetime-local" id="timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control entity-data-token-event-input" [disabled]="!userIsSecurityEntityDataTokenEventWriter()" aria-labelledby="label-timeStamp" />
+                <div *ngIf="entityDataTokenEventForm.get('timeStamp')?.invalid && entityDataTokenEventForm.get('timeStamp')?.touched" class="text-danger">
+                    Time Stamp is required
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="comments" id="label-comments">Comments</label>
+                <textarea id="comments" formControlName="comments" placeholder="Enter Comments" class="form-control entity-data-token-event-input" [disabled]="!userIsSecurityEntityDataTokenEventWriter()"></textarea>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode">
+                <input type="checkbox" id="active" formControlName="active" class="form-check-input" [disabled]="!userIsSecurityEntityDataTokenEventWriter()" />
+                <label for="active" class="form-check-label" id="label-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode">
+                <input type="checkbox" id="deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSecurityEntityDataTokenEventWriter()" />
+                <label for="deleted" class="form-check-label" id="label-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer entity-data-token-event-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Entity Data Token Event changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !entityDataTokenEventForm.valid || entityDataTokenEventForm.pristine || !userIsSecurityEntityDataTokenEventWriter()" ngbTooltip="Save the Entity Data Token Event changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

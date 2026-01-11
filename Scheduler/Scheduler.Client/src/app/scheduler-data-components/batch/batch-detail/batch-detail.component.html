@@ -1,0 +1,158 @@
+<div class="container-fluid p-1 m-0 batch-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="batch-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Batch</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Batch' : 'Add Batch'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerBatchReader()">
+                <div class="col m-2 batch-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="batchForm" (ngSubmit)="submitForm()" class="batch-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('batchNumber')">
+                                <label for="Batch-batchNumber" id="label-Batch-batchNumber"><span class="text-danger">*</span>Batch Number</label>
+                                <input type="text" id="Batch-batchNumber" formControlName="batchNumber" placeholder="Enter Batch Number" class="form-control batch-input" [disabled]="!userIsSchedulerBatchWriter()" aria-labelledby="label-batchNumber" />
+                                <div *ngIf="batchForm.get('batchNumber')?.invalid && batchForm.get('batchNumber')?.touched" class="text-danger">
+                                    Batch Number is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="Batch-description" id="label-Batch-description">Description</label>
+                                <textarea id="Batch-description" formControlName="description" placeholder="Enter Description" class="form-control batch-input" [disabled]="!userIsSchedulerBatchWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('dateOpened')">
+                                <label for="Batch-dateOpened" id="label-Batch-dateOpened"><span class="text-danger">*</span>Date Opened</label>
+                                <input type="datetime-local" id="Batch-dateOpened" formControlName="dateOpened" placeholder="Enter Date Opened" class="form-control batch-input" [disabled]="!userIsSchedulerBatchWriter()" aria-labelledby="label-dateOpened" />
+                                <div *ngIf="batchForm.get('dateOpened')?.invalid && batchForm.get('dateOpened')?.touched" class="text-danger">
+                                    Date Opened is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('datePosted')">
+                                <label for="Batch-datePosted" id="label-Batch-datePosted">Date Posted</label>
+                                <input type="datetime-local" id="Batch-datePosted" formControlName="datePosted" placeholder="Enter Date Posted" class="form-control batch-input" [disabled]="!userIsSchedulerBatchWriter()" aria-labelledby="label-datePosted" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('batchStatusId')">
+                                <label for="Batch-batchStatusId" id="label-Batch-batchStatusId"><span class="text-danger">*</span>Batch Status</label>
+                                <select id="Batch-batchStatusId" formControlName="batchStatusId" class="form-select batch-select" [disabled]="!userIsSchedulerBatchWriter()">
+                                    <option [ngValue]="null">Select Batch Status</option>
+                                    <option *ngFor="let batchStatus of batchStatuses$ | async" [ngValue]="batchStatus.id">{{batchStatus.name}}</option>
+                                </select>
+                                <div *ngIf="batchForm.get('batchStatusId')?.invalid && batchForm.get('batchStatusId')?.touched" class="text-danger">
+                                    Batch Status is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('controlAmount')">
+                                <label for="Batch-controlAmount" id="label-Batch-controlAmount"><span class="text-danger">*</span>Control Amount</label>
+                                <input type="number" id="Batch-controlAmount" formControlName="controlAmount" placeholder="Enter Control Amount" class="form-control batch-input" [disabled]="!userIsSchedulerBatchWriter()" aria-labelledby="label-controlAmount" />
+                                <div *ngIf="batchForm.get('controlAmount')?.invalid && batchForm.get('controlAmount')?.touched" class="text-danger">
+                                    Control Amount is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('controlCount')">
+                                <label for="Batch-controlCount" id="label-Batch-controlCount"><span class="text-danger">*</span>Control Count</label>
+                                <input type="number" id="Batch-controlCount" formControlName="controlCount" placeholder="Enter Control Count" class="form-control batch-input" [disabled]="!userIsSchedulerBatchWriter()" aria-labelledby="label-controlCount" />
+                                <div *ngIf="batchForm.get('controlCount')?.invalid && batchForm.get('controlCount')?.touched" class="text-danger">
+                                    Control Count is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('defaultFundId')">
+                                <label for="Batch-defaultFundId" id="label-Batch-defaultFundId">Default Fund</label>
+                                <select id="Batch-defaultFundId" formControlName="defaultFundId" class="form-select batch-select" [disabled]="!userIsSchedulerBatchWriter()">
+                                    <option [ngValue]="null">Select Fund</option>
+                                    <option *ngFor="let fund of funds$ | async" [ngValue]="fund.id">{{fund.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('defaultCampaignId')">
+                                <label for="Batch-defaultCampaignId" id="label-Batch-defaultCampaignId">Default Campaign</label>
+                                <select id="Batch-defaultCampaignId" formControlName="defaultCampaignId" class="form-select batch-select" [disabled]="!userIsSchedulerBatchWriter()">
+                                    <option [ngValue]="null">Select Campaign</option>
+                                    <option *ngFor="let campaign of campaigns$ | async" [ngValue]="campaign.id">{{campaign.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('defaultAppealId')">
+                                <label for="Batch-defaultAppealId" id="label-Batch-defaultAppealId">Default Appeal</label>
+                                <select id="Batch-defaultAppealId" formControlName="defaultAppealId" class="form-select batch-select" [disabled]="!userIsSchedulerBatchWriter()">
+                                    <option [ngValue]="null">Select Appeal</option>
+                                    <option *ngFor="let appeal of appeals$ | async" [ngValue]="appeal.id">{{appeal.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('defaultDate')">
+                                <label for="Batch-defaultDate" id="label-Batch-defaultDate">Default Date</label>
+                                <input type="date" id="Batch-defaultDate" formControlName="defaultDate" placeholder="Enter Default Date" class="form-control batch-input" [disabled]="!userIsSchedulerBatchWriter()" aria-labelledby="label-defaultDate" />
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="Batch-versionNumber" id="label-Batch-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="Batch-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control batch-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="Batch-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerBatchWriter()" />
+                                <label for="Batch-active" class="form-check-label" id="label-Batch-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="Batch-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerBatchWriter()" />
+                                <label for="Batch-deleted" class="form-check-label" id="label-Batch-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="batch-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="batchForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Batch">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !batchForm.valid || !batchForm.dirty || batchForm.pristine || userIsSchedulerBatchWriter() == false " ngbTooltip="Save Batch">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerBatchReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 batch-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="batchChangeHistoryService.userIsSchedulerBatchChangeHistoryReader()">
+                            <button ngbNavLink>Batch Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (batchData?.BatchChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-batch-change-history-table [queryParams]="{ batchId: batchData?.id }"></app-batch-change-history-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-batch-change-history-add-edit [preSeededData]="{ batchId: batchData?.id }" [hiddenFields]="['batchId']"></app-batch-change-history-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="giftService.userIsSchedulerGiftReader()">
+                            <button ngbNavLink>Gifts
+                                <span class="badge bg-primary ms-2">
+                                    {{ (batchData?.GiftsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-gift-table [queryParams]="{ batchId: batchData?.id }"></app-gift-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-gift-add-edit [preSeededData]="{ batchId: batchData?.id }" [hiddenFields]="['batchId']"></app-gift-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

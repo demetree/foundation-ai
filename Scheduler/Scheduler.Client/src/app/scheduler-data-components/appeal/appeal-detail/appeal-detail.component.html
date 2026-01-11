@@ -1,0 +1,176 @@
+<div class="container-fluid p-1 m-0 appeal-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="appeal-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Appeal</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Appeal' : 'Add Appeal'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerAppealReader()">
+                <div class="col m-2 appeal-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="appealForm" (ngSubmit)="submitForm()" class="appeal-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('campaignId')">
+                                <label for="Appeal-campaignId" id="label-Appeal-campaignId">Campaign</label>
+                                <select id="Appeal-campaignId" formControlName="campaignId" class="form-select appeal-select" [disabled]="!userIsSchedulerAppealWriter()">
+                                    <option [ngValue]="null">Select Campaign</option>
+                                    <option *ngFor="let campaign of campaigns$ | async" [ngValue]="campaign.id">{{campaign.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="Appeal-name" id="label-Appeal-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="Appeal-name" formControlName="name" placeholder="Enter Name" class="form-control appeal-input" [disabled]="!userIsSchedulerAppealWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="appealForm.get('name')?.invalid && appealForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="Appeal-description" id="label-Appeal-description">Description</label>
+                                <textarea id="Appeal-description" formControlName="description" placeholder="Enter Description" class="form-control appeal-input" [disabled]="!userIsSchedulerAppealWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('costPerUnit')">
+                                <label for="Appeal-costPerUnit" id="label-Appeal-costPerUnit">Cost Per Unit</label>
+                                <input type="number" id="Appeal-costPerUnit" formControlName="costPerUnit" placeholder="Enter Cost Per Unit" class="form-control appeal-input" [disabled]="!userIsSchedulerAppealWriter()" aria-labelledby="label-costPerUnit" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('notes')">
+                                <label for="Appeal-notes" id="label-Appeal-notes">Notes</label>
+                                <textarea id="Appeal-notes" formControlName="notes" placeholder="Enter Notes" class="form-control appeal-input" [disabled]="!userIsSchedulerAppealWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('iconId')">
+                                <label for="Appeal-iconId" id="label-Appeal-iconId">Icon</label>
+                                <select id="Appeal-iconId" formControlName="iconId" class="form-select appeal-select" [disabled]="!userIsSchedulerAppealWriter()">
+                                    <option [ngValue]="null">Select Icon</option>
+                                    <option *ngFor="let icon of icons$ | async" [ngValue]="icon.id">{{icon.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('color')">
+                                <label for="Appeal-color" id="label-Appeal-color">Color</label>
+                                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="Appeal-color" 
+                        formControlName="color" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerAppealWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="appealForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="Appeal-versionNumber" id="label-Appeal-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="Appeal-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control appeal-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="Appeal-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerAppealWriter()" />
+                                <label for="Appeal-active" class="form-check-label" id="label-Appeal-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="Appeal-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerAppealWriter()" />
+                                <label for="Appeal-deleted" class="form-check-label" id="label-Appeal-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="appeal-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="appealForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Appeal">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !appealForm.valid || !appealForm.dirty || appealForm.pristine || userIsSchedulerAppealWriter() == false " ngbTooltip="Save Appeal">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerAppealReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 appeal-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="appealChangeHistoryService.userIsSchedulerAppealChangeHistoryReader()">
+                            <button ngbNavLink>Appeal Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (appealData?.AppealChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-appeal-change-history-table [queryParams]="{ appealId: appealData?.id }"></app-appeal-change-history-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-appeal-change-history-add-edit [preSeededData]="{ appealId: appealData?.id }" [hiddenFields]="['appealId']"></app-appeal-change-history-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="pledgeService.userIsSchedulerPledgeReader()">
+                            <button ngbNavLink>Pledges
+                                <span class="badge bg-primary ms-2">
+                                    {{ (appealData?.PledgesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-pledge-table [queryParams]="{ appealId: appealData?.id }"></app-pledge-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-pledge-add-edit [preSeededData]="{ appealId: appealData?.id }" [hiddenFields]="['appealId']"></app-pledge-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="batchService.userIsSchedulerBatchReader()">
+                            <button ngbNavLink>Batches Default Appeals
+                                <span class="badge bg-primary ms-2">
+                                    {{ (appealData?.DefaultAppealsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-batch-table [queryParams]="{ defaultAppealId: appealData?.id }"></app-batch-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-batch-add-edit [preSeededData]="{ defaultAppealId: appealData?.id }" [hiddenFields]="['defaultAppealId']"></app-batch-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="giftService.userIsSchedulerGiftReader()">
+                            <button ngbNavLink>Gifts
+                                <span class="badge bg-primary ms-2">
+                                    {{ (appealData?.GiftsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-gift-table [queryParams]="{ appealId: appealData?.id }"></app-gift-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-gift-add-edit [preSeededData]="{ appealId: appealData?.id }" [hiddenFields]="['appealId']"></app-gift-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,116 @@
+<div class="add-audit-plan-b" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-audit-plan-b me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Audit Plan B" 
+        *ngIf="userIsAuditorAuditPlanBWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #auditPlanBModal let-modal>
+   <div class="modal-header bg-dark text-light audit-plan-b-modal-header">
+      <h5 class="modal-title mb-0" id="auditPlanBModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Audit Plan B' : 'Add Audit Plan B' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body audit-plan-b-modal-body">
+      <form [formGroup]="auditPlanBForm" (ngSubmit)="submitForm()">
+            <div class="form-group">
+                <label for="startTime" id="label-startTime"><span class="text-danger">*</span>Start Time</label>
+                <input type="datetime-local" id="startTime" formControlName="startTime" placeholder="Enter Start Time" class="form-control audit-plan-b-input" [disabled]="!userIsAuditorAuditPlanBWriter()" aria-labelledby="label-startTime" />
+                <div *ngIf="auditPlanBForm.get('startTime')?.invalid && auditPlanBForm.get('startTime')?.touched" class="text-danger">
+                    Start Time is required
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="stopTime" id="label-stopTime"><span class="text-danger">*</span>Stop Time</label>
+                <input type="datetime-local" id="stopTime" formControlName="stopTime" placeholder="Enter Stop Time" class="form-control audit-plan-b-input" [disabled]="!userIsAuditorAuditPlanBWriter()" aria-labelledby="label-stopTime" />
+                <div *ngIf="auditPlanBForm.get('stopTime')?.invalid && auditPlanBForm.get('stopTime')?.touched" class="text-danger">
+                    Stop Time is required
+                </div>
+            </div>
+            <div class="form-check my-2">
+                <input type="checkbox" id="completedSuccessfully" formControlName="completedSuccessfully" class="form-check-input" [disabled]="!userIsAuditorAuditPlanBWriter()" />
+                <label for="completedSuccessfully" class="form-check-label" id="label-completedSuccessfully"><span class="text-danger">*</span>Completed Successfully</label>
+            </div>
+            <div class="form-group">
+                <label for="user" id="label-user">User</label>
+                <input type="text" id="user" formControlName="user" placeholder="Enter User" class="form-control audit-plan-b-input" [disabled]="!userIsAuditorAuditPlanBWriter()" aria-labelledby="label-user" />
+            </div>
+            <div class="form-group">
+                <label for="session" id="label-session">Session</label>
+                <input type="text" id="session" formControlName="session" placeholder="Enter Session" class="form-control audit-plan-b-input" [disabled]="!userIsAuditorAuditPlanBWriter()" aria-labelledby="label-session" />
+            </div>
+            <div class="form-group">
+                <label for="type" id="label-type">Type</label>
+                <input type="text" id="type" formControlName="type" placeholder="Enter Type" class="form-control audit-plan-b-input" [disabled]="!userIsAuditorAuditPlanBWriter()" aria-labelledby="label-type" />
+            </div>
+            <div class="form-group">
+                <label for="accessType" id="label-accessType">Access Type</label>
+                <input type="text" id="accessType" formControlName="accessType" placeholder="Enter Access Type" class="form-control audit-plan-b-input" [disabled]="!userIsAuditorAuditPlanBWriter()" aria-labelledby="label-accessType" />
+            </div>
+            <div class="form-group">
+                <label for="source" id="label-source">Source</label>
+                <input type="text" id="source" formControlName="source" placeholder="Enter Source" class="form-control audit-plan-b-input" [disabled]="!userIsAuditorAuditPlanBWriter()" aria-labelledby="label-source" />
+            </div>
+            <div class="form-group">
+                <label for="userAgent" id="label-userAgent">User Agent</label>
+                <input type="text" id="userAgent" formControlName="userAgent" placeholder="Enter User Agent" class="form-control audit-plan-b-input" [disabled]="!userIsAuditorAuditPlanBWriter()" aria-labelledby="label-userAgent" />
+            </div>
+            <div class="form-group">
+                <label for="module" id="label-module">Module</label>
+                <input type="text" id="module" formControlName="module" placeholder="Enter Module" class="form-control audit-plan-b-input" [disabled]="!userIsAuditorAuditPlanBWriter()" aria-labelledby="label-module" />
+            </div>
+            <div class="form-group">
+                <label for="moduleEntity" id="label-moduleEntity">Module Entity</label>
+                <input type="text" id="moduleEntity" formControlName="moduleEntity" placeholder="Enter Module Entity" class="form-control audit-plan-b-input" [disabled]="!userIsAuditorAuditPlanBWriter()" aria-labelledby="label-moduleEntity" />
+            </div>
+            <div class="form-group">
+                <label for="resource" id="label-resource">Resource</label>
+                <textarea id="resource" formControlName="resource" placeholder="Enter Resource" class="form-control audit-plan-b-input" [disabled]="!userIsAuditorAuditPlanBWriter()"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="hostSystem" id="label-hostSystem">Host System</label>
+                <input type="text" id="hostSystem" formControlName="hostSystem" placeholder="Enter Host System" class="form-control audit-plan-b-input" [disabled]="!userIsAuditorAuditPlanBWriter()" aria-labelledby="label-hostSystem" />
+            </div>
+            <div class="form-group">
+                <label for="primaryKey" id="label-primaryKey">Primary Key</label>
+                <input type="text" id="primaryKey" formControlName="primaryKey" placeholder="Enter Primary Key" class="form-control audit-plan-b-input" [disabled]="!userIsAuditorAuditPlanBWriter()" aria-labelledby="label-primaryKey" />
+            </div>
+            <div class="form-group">
+                <label for="threadId" id="label-threadId">Thread Id</label>
+                <input type="number" id="threadId" formControlName="threadId" placeholder="Enter Thread Id" class="form-control audit-plan-b-input" [disabled]="!userIsAuditorAuditPlanBWriter()" aria-labelledby="label-threadId" />
+            </div>
+            <div class="form-group">
+                <label for="message" id="label-message">Message</label>
+                <textarea id="message" formControlName="message" placeholder="Enter Message" class="form-control audit-plan-b-input" [disabled]="!userIsAuditorAuditPlanBWriter()"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="beforeState" id="label-beforeState">Before State</label>
+                <textarea id="beforeState" formControlName="beforeState" placeholder="Enter Before State" class="form-control audit-plan-b-input" [disabled]="!userIsAuditorAuditPlanBWriter()"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="afterState" id="label-afterState">After State</label>
+                <textarea id="afterState" formControlName="afterState" placeholder="Enter After State" class="form-control audit-plan-b-input" [disabled]="!userIsAuditorAuditPlanBWriter()"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="errorMessage" id="label-errorMessage">Error Message</label>
+                <textarea id="errorMessage" formControlName="errorMessage" placeholder="Enter Error Message" class="form-control audit-plan-b-input" [disabled]="!userIsAuditorAuditPlanBWriter()"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="exceptionText" id="label-exceptionText">Exception Text</label>
+                <textarea id="exceptionText" formControlName="exceptionText" placeholder="Enter Exception Text" class="form-control audit-plan-b-input" [disabled]="!userIsAuditorAuditPlanBWriter()"></textarea>
+            </div>
+         <div class="modal-footer audit-plan-b-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Audit Plan B changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !auditPlanBForm.valid || auditPlanBForm.pristine || !userIsAuditorAuditPlanBWriter()" ngbTooltip="Save the Audit Plan B changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

@@ -1,0 +1,56 @@
+<div class="add-receipt-type" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-receipt-type me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Receipt Type" 
+        *ngIf="userIsSchedulerReceiptTypeWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #receiptTypeModal let-modal>
+   <div class="modal-header bg-dark text-light receipt-type-modal-header">
+      <h5 class="modal-title mb-0" id="receiptTypeModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Receipt Type' : 'Add Receipt Type' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body receipt-type-modal-body">
+      <form [formGroup]="receiptTypeForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="ReceiptType-name" id="label-ReceiptType-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="ReceiptType-name" formControlName="name" placeholder="Enter Name" class="form-control receipt-type-input" [disabled]="!userIsSchedulerReceiptTypeWriter()" aria-labelledby="label-name" />
+                <div *ngIf="receiptTypeForm.get('name')?.invalid && receiptTypeForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="ReceiptType-description" id="label-ReceiptType-description"><span class="text-danger">*</span>Description</label>
+                <textarea id="ReceiptType-description" formControlName="description" placeholder="Enter Description" class="form-control receipt-type-input" [disabled]="!userIsSchedulerReceiptTypeWriter()"></textarea>
+                <div *ngIf="receiptTypeForm.get('description')?.invalid && receiptTypeForm.get('description')?.touched" class="text-danger">
+                    Description is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                <label for="ReceiptType-sequence" id="label-ReceiptType-sequence">Sequence</label>
+                <input type="number" id="ReceiptType-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control receipt-type-input" [disabled]="!userIsSchedulerReceiptTypeWriter()" aria-labelledby="label-sequence" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ReceiptType-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerReceiptTypeWriter()" />
+                <label for="ReceiptType-active" class="form-check-label" id="label-ReceiptType-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ReceiptType-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerReceiptTypeWriter()" />
+                <label for="ReceiptType-deleted" class="form-check-label" id="label-ReceiptType-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer receipt-type-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Receipt Type changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !receiptTypeForm.valid || receiptTypeForm.pristine || !userIsSchedulerReceiptTypeWriter()" ngbTooltip="Save the Receipt Type changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

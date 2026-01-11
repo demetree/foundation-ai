@@ -1,0 +1,87 @@
+<div class="page-container">
+    <div class="card mb-3 header-card shadow-sm">
+        <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div class="header-left">
+                <!-- Back Button -->
+                <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back" *ngIf="canGoBack()">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+
+                <!-- Title -->
+                <div>
+                    <h3 class="page-title mb-0">System Settings</h3>
+                    <small class="text-muted">View System Settings</small>
+                </div>
+            </div>
+
+            <div class="header-right">
+              <span class="badge bg-secondary mx-2" *ngIf="loadingTotalCount || loadingFilteredCount">
+                <i class="fa fa-spinner fa-spin me-1"></i> Loading...
+              </span>
+
+              <span *ngIf="!(loadingTotalCount || loadingFilteredCount)">
+                <ng-container *ngIf="totalSystemSettingCount$ | async as total; else falsyObservable">
+                  <span class="badge bg-secondary mx-2">
+
+                    <!-- Filtered: some results -->
+                    <ng-container *ngIf="filteredSystemSettingCount$ | async as filteredCount">
+                      <span *ngIf="filterText && (filteredCount ?? 0) > 0">
+                        {{ filteredCount }} of {{ total }} {{ total !== 1 ? 'System Settings' : 'System Setting' }}
+                      </span>
+                    </ng-container>
+                    <!-- Filtered: 0 results -->
+                    <span *ngIf="total > 0 && filterText && (filteredSystemSettingCount$ | async) === 0">
+                      No matching System Settings
+                    </span>
+                    <!-- No filter: normal count -->
+                    <span *ngIf="!filterText">
+                      {{ total }} {{ total !== 1 ? 'System Settings' : 'System Setting' }}
+                    </span>
+                    <!-- No System Settings at all (even unfiltered) -->
+                    <span *ngIf="total === 0">
+                      No System Settings
+                    </span>
+
+                  </span>
+                </ng-container>
+
+                <!-- when observable is falsy, then decide whether to show a spinner or a loading spinner..-->
+                <ng-template #falsyObservable>
+                  <span class="badge bg-secondary mx-2" *ngIf="(loadingTotalCount || loadingFilteredCount)">
+                    <i class="fa fa-spinner fa-spin me-1"></i> Loading...
+                  </span>
+                  <span class="badge bg-secondary mx-2" *ngIf="!(loadingTotalCount || loadingFilteredCount)">
+                    No System Settings
+                  </span>
+                </ng-template>
+
+              </span>
+
+                <!-- Quick Search Input -->
+                <div class="search-bar me-2 position-relative">  
+                <i class="fa fa-search search-icon"></i>
+                <input type="text"
+                   class="form-control search-input"
+                   placeholder="Search SystemSettings..."
+                   [(ngModel)]="filterText"
+                   (ngModelChange)="onFilterChange()">
+                <button *ngIf="filterText"
+                    class="clear-search btn"
+                    (click)="filterText=''; onFilterChange()"
+                    title="Clear Search">
+                <i class="fa fa-times"></i>
+                </button>
+            </div>
+
+             <!-- Add/Edit Button -->
+             <app-system-setting-add-edit [navigateToDetailsAfterAdd]="false"></app-system-setting-add-edit>
+          </div>
+      </div>
+    </div>
+
+  <app-system-setting-table
+    *ngIf="userIsSecuritySystemSettingReader() == true"
+    [filterText]="filterText"
+    [isSmallScreen]="isSmallScreen">
+  </app-system-setting-table>
+</div>

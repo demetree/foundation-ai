@@ -1,0 +1,65 @@
+<div class="add-contact-tag-change-history" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-contact-tag-change-history me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Contact Tag Change History" 
+        *ngIf="userIsSchedulerContactTagChangeHistoryWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #contactTagChangeHistoryModal let-modal>
+   <div class="modal-header bg-dark text-light contact-tag-change-history-modal-header">
+      <h5 class="modal-title mb-0" id="contactTagChangeHistoryModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Contact Tag Change History' : 'Add Contact Tag Change History' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body contact-tag-change-history-modal-body">
+      <form [formGroup]="contactTagChangeHistoryForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('contactTagId')">
+                <label for="ContactTagChangeHistory-contactTagId" id="label-ContactTagChangeHistory-contactTagId"><span class="text-danger">*</span>Contact Tag</label>
+                <select id="ContactTagChangeHistory-contactTagId" formControlName="contactTagId" class="form-select contact-tag-change-history-select" [disabled]="!userIsSchedulerContactTagChangeHistoryWriter()">
+                    <option [ngValue]="null">Select Contact Tag</option>
+                    <option *ngFor="let contactTag of contactTags$ | async" [ngValue]="contactTag.id">{{contactTag.id}}</option>
+                </select>
+                <div *ngIf="contactTagChangeHistoryForm.get('contactTagId')?.invalid && contactTagChangeHistoryForm.get('contactTagId')?.touched" class="text-danger">
+                    Contact Tag is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="ContactTagChangeHistory-versionNumber" id="label-ContactTagChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="ContactTagChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control contact-tag-change-history-input" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                <label for="ContactTagChangeHistory-timeStamp" id="label-ContactTagChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                <input type="datetime-local" id="ContactTagChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control contact-tag-change-history-input" [disabled]="!userIsSchedulerContactTagChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                <div *ngIf="contactTagChangeHistoryForm.get('timeStamp')?.invalid && contactTagChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                    Time Stamp is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                <label for="ContactTagChangeHistory-userId" id="label-ContactTagChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                <input type="number" id="ContactTagChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control contact-tag-change-history-input" [disabled]="!userIsSchedulerContactTagChangeHistoryWriter()" aria-labelledby="label-userId" />
+                <div *ngIf="contactTagChangeHistoryForm.get('userId')?.invalid && contactTagChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                    User Id is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                <label for="ContactTagChangeHistory-data" id="label-ContactTagChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                <textarea id="ContactTagChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control contact-tag-change-history-input" [disabled]="!userIsSchedulerContactTagChangeHistoryWriter()"></textarea>
+                <div *ngIf="contactTagChangeHistoryForm.get('data')?.invalid && contactTagChangeHistoryForm.get('data')?.touched" class="text-danger">
+                    Data is required
+                </div>
+            </div>
+         <div class="modal-footer contact-tag-change-history-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Contact Tag Change History changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !contactTagChangeHistoryForm.valid || contactTagChangeHistoryForm.pristine || !userIsSchedulerContactTagChangeHistoryWriter()" ngbTooltip="Save the Contact Tag Change History changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

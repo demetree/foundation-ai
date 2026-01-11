@@ -1,0 +1,88 @@
+<app-scheduling-target-add-edit [showAddButton]="false" (schedulingTargetChanged)="reload($event)"></app-scheduling-target-add-edit>
+<div class="card h-100">
+  <div class="card-header bg-light d-flex justify-content-between align-items-center">
+    <h6 class="mb-0 fw-semibold">
+      <i class="fa-solid fa-users-gear me-2"></i>
+      Targets
+    </h6>
+    <div class="d-flex gap-2">
+      <!-- Add Target Button -->
+      <button class="btn btn-sm btn-primary"
+              (click)="openAddTargetModal()"
+              *ngIf="userIsSchedulerTargetWriter()">
+        <i class="fa fa-plus me-1"></i> Add Target
+      </button>
+      <!-- Refresh Button -->
+      <button class="btn btn-sm btn-outline-secondary" (click)="loadSchedulingTargets()">
+        <i class="fa fa-sync" [ngClass]="{'fa-spin': isLoading}"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <!-- Loading -->
+    <div class="text-center py-4" *ngIf="isLoading">
+      <div class="spinner-border spinner-border-sm text-primary" role="status">
+        <span class="visually-hidden">Loading targets...</span>
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div class="alert alert-danger small" *ngIf="error">
+      <i class="fa-solid fa-exclamation-triangle me-2"></i>
+      {{ error }}
+    </div>
+
+    <!-- Empty -->
+    <div class="text-center py-5 text-muted" *ngIf="!isLoading && (!schedulingTargets || schedulingTargets.length === 0)">
+      <i class="fa-solid fa-users-slash fa-3x mb-3 opacity-50"></i>
+      <div>No targets</div>
+    </div>
+
+    <!-- Target List -->
+    <div class="list-group list-group-flush" *ngIf="!isLoading && schedulingTargets && schedulingTargets.length > 0">
+      <div class="list-group-item px-0 py-3 border-start border-4"
+           *ngFor="let schedulingTarget of schedulingTargets"
+           [style.border-left-color]="schedulingTarget.color || '#dee2e6'">
+        <div class="d-flex align-items-center">
+
+          <!-- Target Avatar -->
+          <div class="avatar-preview rounded-circle overflow-hidden flex-shrink-0 me-3 clickable mx-3"
+               ngbTooltip="Target Details"
+               (click)="navigateToSchedulingTarget(schedulingTarget.id)"
+               style="width: 50px; height: 50px;"
+               [style.background-image]="schedulingTarget.avatarData ? 'url(data:' + schedulingTarget.avatarMimeType + ';base64,' + schedulingTarget.avatarData + ')' : null"
+               [style.background-color]="schedulingTarget.color || schedulingTarget.color || '#6c757d'">
+            <i [class]="'fa-solid fa-user'"
+               class="fa-2x text-white d-flex align-items-center justify-content-center w-100 h-100"
+               *ngIf="!schedulingTarget.avatarData"></i>
+          </div>
+
+
+          <!-- Info -->
+          <div class="flex-grow-1">
+            <div class="d-flex align-items-center gap-2">
+              <a class="fw-bold fs-5 text-decoration-none"
+                 ngbTooltip="Edit Target"
+                 (click)="openSchedulingTargetModal(schedulingTarget)"
+                 [style.color]="'#000000'">
+                {{ schedulingTarget.name }}
+              </a>
+              <span class="badge"
+                    [style.background-color]="schedulingTarget.color || '#0d6efd'"
+                    [style.color]="(schedulingTarget.color ? (schedulingTarget.color | contrastColor) :
+                                   '#FFFFFF') || 'inherit'"
+                    *ngIf="schedulingTarget.schedulingTargetType">
+                {{ schedulingTarget.schedulingTargetType.name }}
+              </span>
+            </div>
+            <div class="small text-muted" *ngIf="schedulingTarget.description">
+              {{ schedulingTarget.description }}
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

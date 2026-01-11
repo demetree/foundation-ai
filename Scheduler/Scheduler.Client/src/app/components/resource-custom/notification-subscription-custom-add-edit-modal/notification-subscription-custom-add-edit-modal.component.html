@@ -1,0 +1,68 @@
+<div class="modal-header bg-dark text-light">
+  <h5 class="modal-title mb-0">
+    {{ isEditMode ? 'Edit Notification Subscription' : 'Add Notification Subscription' }}
+  </h5>
+  <button type="button" class="btn-close btn-close-white" (click)="closeModal()"></button>
+</div>
+
+<div class="modal-body">
+  <form [formGroup]="subscriptionForm" (ngSubmit)="submitForm()">
+    <!-- Notification Type -->
+    <div class="mb-3">
+      <label class="form-label fw-semibold">
+        <span class="text-danger">*</span> Notification Type
+      </label>
+      <select class="form-select" formControlName="notificationTypeId">
+        <option [ngValue]="null">Select type...</option>
+        <option *ngFor="let type of notificationTypes$ | async" [ngValue]="type.id">
+          {{ type.name }}
+        </option>
+      </select>
+    </div>
+
+    <!-- Recipient Address -->
+    <div class="mb-3">
+      <label class="form-label fw-semibold">
+        <span class="text-danger">*</span> Recipient
+      </label>
+      <input type="text"
+             class="form-control"
+             formControlName="recipientAddress"
+             placeholder="email@domain.com or +1-555-123-4567">
+      <small class="text-muted">
+        Email address or phone number (for SMS)
+      </small>
+    </div>
+
+    <!-- Trigger Checkboxes -->
+    <div class="mb-4">
+      <label class="form-label fw-semibold">Trigger Events</label>
+      <div class="form-check" *ngFor="let trigger of ['Assigned', 'Canceled', 'Modified', 'Reminder']">
+        <input class="form-check-input"
+               type="checkbox"
+               [id]="'trigger' + trigger"
+               [formControlName]="'trigger' + trigger">
+        <label class="form-check-label" [for]="'trigger' + trigger">
+          Notify when event is {{ trigger.toLowerCase() }}
+        </label>
+      </div>
+      <small class="text-muted">
+        At least one trigger recommended
+      </small>
+    </div>
+
+    <div class="modal-footer border-top-0">
+      <button type="button"
+              class="btn btn-secondary"
+              (click)="closeModal()"
+              [disabled]="isSaving">
+        Cancel
+      </button>
+      <button type="submit"
+              class="btn btn-primary"
+              [disabled]="isSaving || subscriptionForm.invalid">
+        {{ isEditMode ? 'Save Changes' : 'Add Subscription' }}
+      </button>
+    </div>
+  </form>
+</div>

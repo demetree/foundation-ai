@@ -1,0 +1,23 @@
+#forgot-email::placeholder {
+  color: grey;
+}
+#login-username::placeholder,
+#login-password::placeholder {
+  color: #e0e0e0;
+  opacity: 1;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-text-fill-color: #ffffff;
+  caret-color: #ffffff;
+  -webkit-box-shadow: 0 0 0px 1000px #212529 inset;
+  box-shadow: 0 0 0px 1000px #212529 inset;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  transition: background-color 9999s ease-in-out 0s;
+}

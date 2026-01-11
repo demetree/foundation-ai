@@ -1,0 +1,368 @@
+<div class="container-fluid p-1 m-0 scheduled-event-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="scheduled-event-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Scheduled Event</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Scheduled Event' : 'Add Scheduled Event'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerScheduledEventReader()">
+                <div class="col m-2 scheduled-event-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="scheduledEventForm" (ngSubmit)="submitForm()" class="scheduled-event-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('officeId')">
+                                <label for="ScheduledEvent-officeId" id="label-ScheduledEvent-officeId">Office</label>
+                                <select id="ScheduledEvent-officeId" formControlName="officeId" class="form-select scheduled-event-select" [disabled]="!userIsSchedulerScheduledEventWriter()">
+                                    <option [ngValue]="null">Select Office</option>
+                                    <option *ngFor="let office of offices$ | async" [ngValue]="office.id">{{office.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('clientId')">
+                                <label for="ScheduledEvent-clientId" id="label-ScheduledEvent-clientId">Client</label>
+                                <select id="ScheduledEvent-clientId" formControlName="clientId" class="form-select scheduled-event-select" [disabled]="!userIsSchedulerScheduledEventWriter()">
+                                    <option [ngValue]="null">Select Client</option>
+                                    <option *ngFor="let client of clients$ | async" [ngValue]="client.id">{{client.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('scheduledEventTemplateId')">
+                                <label for="ScheduledEvent-scheduledEventTemplateId" id="label-ScheduledEvent-scheduledEventTemplateId">Scheduled Event Template</label>
+                                <select id="ScheduledEvent-scheduledEventTemplateId" formControlName="scheduledEventTemplateId" class="form-select scheduled-event-select" [disabled]="!userIsSchedulerScheduledEventWriter()">
+                                    <option [ngValue]="null">Select Scheduled Event Template</option>
+                                    <option *ngFor="let scheduledEventTemplate of scheduledEventTemplates$ | async" [ngValue]="scheduledEventTemplate.id">{{scheduledEventTemplate.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('recurrenceRuleId')">
+                                <label for="ScheduledEvent-recurrenceRuleId" id="label-ScheduledEvent-recurrenceRuleId">Recurrence Rule</label>
+                                <select id="ScheduledEvent-recurrenceRuleId" formControlName="recurrenceRuleId" class="form-select scheduled-event-select" [disabled]="!userIsSchedulerScheduledEventWriter()">
+                                    <option [ngValue]="null">Select Recurrence Rule</option>
+                                    <option *ngFor="let recurrenceRule of recurrenceRules$ | async" [ngValue]="recurrenceRule.id">{{recurrenceRule.id}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('schedulingTargetId')">
+                                <label for="ScheduledEvent-schedulingTargetId" id="label-ScheduledEvent-schedulingTargetId">Scheduling Target</label>
+                                <select id="ScheduledEvent-schedulingTargetId" formControlName="schedulingTargetId" class="form-select scheduled-event-select" [disabled]="!userIsSchedulerScheduledEventWriter()">
+                                    <option [ngValue]="null">Select Scheduling Target</option>
+                                    <option *ngFor="let schedulingTarget of schedulingTargets$ | async" [ngValue]="schedulingTarget.id">{{[schedulingTarget.name] | filterAndJoin}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeZoneId')">
+                                <label for="ScheduledEvent-timeZoneId" id="label-ScheduledEvent-timeZoneId">Time Zone</label>
+                                <select id="ScheduledEvent-timeZoneId" formControlName="timeZoneId" class="form-select scheduled-event-select" [disabled]="!userIsSchedulerScheduledEventWriter()">
+                                    <option [ngValue]="null">Select Time Zone</option>
+                                    <option *ngFor="let timeZone of timeZones$ | async" [ngValue]="timeZone.id">{{timeZone.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('parentScheduledEventId')">
+                                <label for="ScheduledEvent-parentScheduledEventId" id="label-ScheduledEvent-parentScheduledEventId">Parent Scheduled Event</label>
+                                <select id="ScheduledEvent-parentScheduledEventId" formControlName="parentScheduledEventId" class="form-select scheduled-event-select" [disabled]="!userIsSchedulerScheduledEventWriter()">
+                                    <option [ngValue]="null">Select Scheduled Event</option>
+                                    <option *ngFor="let scheduledEvent of scheduledEvents$ | async" [ngValue]="scheduledEvent.id">{{[scheduledEvent.name] | filterAndJoin}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('recurrenceInstanceDate')">
+                                <label for="ScheduledEvent-recurrenceInstanceDate" id="label-ScheduledEvent-recurrenceInstanceDate">Recurrence Instance Date</label>
+                                <input type="datetime-local" id="ScheduledEvent-recurrenceInstanceDate" formControlName="recurrenceInstanceDate" placeholder="Enter Recurrence Instance Date" class="form-control scheduled-event-input" [disabled]="!userIsSchedulerScheduledEventWriter()" aria-labelledby="label-recurrenceInstanceDate" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="ScheduledEvent-name" id="label-ScheduledEvent-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="ScheduledEvent-name" formControlName="name" placeholder="Enter Name" class="form-control scheduled-event-input" [disabled]="!userIsSchedulerScheduledEventWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="scheduledEventForm.get('name')?.invalid && scheduledEventForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="ScheduledEvent-description" id="label-ScheduledEvent-description">Description</label>
+                                <textarea id="ScheduledEvent-description" formControlName="description" placeholder="Enter Description" class="form-control scheduled-event-input" [disabled]="!userIsSchedulerScheduledEventWriter()"></textarea>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isAllDay')">
+                                <input type="checkbox" id="ScheduledEvent-isAllDay" formControlName="isAllDay" class="form-check-input" [disabled]="!userIsSchedulerScheduledEventWriter()" />
+                                <label for="ScheduledEvent-isAllDay" class="form-check-label" id="label-ScheduledEvent-isAllDay">Is All Day</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('startDateTime')">
+                                <label for="ScheduledEvent-startDateTime" id="label-ScheduledEvent-startDateTime"><span class="text-danger">*</span>Start Date Time</label>
+                                <input type="datetime-local" id="ScheduledEvent-startDateTime" formControlName="startDateTime" placeholder="Enter Start Date Time" class="form-control scheduled-event-input" [disabled]="!userIsSchedulerScheduledEventWriter()" aria-labelledby="label-startDateTime" />
+                                <div *ngIf="scheduledEventForm.get('startDateTime')?.invalid && scheduledEventForm.get('startDateTime')?.touched" class="text-danger">
+                                    Start Date Time is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('endDateTime')">
+                                <label for="ScheduledEvent-endDateTime" id="label-ScheduledEvent-endDateTime"><span class="text-danger">*</span>End Date Time</label>
+                                <input type="datetime-local" id="ScheduledEvent-endDateTime" formControlName="endDateTime" placeholder="Enter End Date Time" class="form-control scheduled-event-input" [disabled]="!userIsSchedulerScheduledEventWriter()" aria-labelledby="label-endDateTime" />
+                                <div *ngIf="scheduledEventForm.get('endDateTime')?.invalid && scheduledEventForm.get('endDateTime')?.touched" class="text-danger">
+                                    End Date Time is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('location')">
+                                <label for="ScheduledEvent-location" id="label-ScheduledEvent-location">Location</label>
+                                <input type="text" id="ScheduledEvent-location" formControlName="location" placeholder="Enter Location" class="form-control scheduled-event-input" [disabled]="!userIsSchedulerScheduledEventWriter()" aria-labelledby="label-location" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('eventStatusId')">
+                                <label for="ScheduledEvent-eventStatusId" id="label-ScheduledEvent-eventStatusId"><span class="text-danger">*</span>Event Status</label>
+                                <select id="ScheduledEvent-eventStatusId" formControlName="eventStatusId" class="form-select scheduled-event-select" [disabled]="!userIsSchedulerScheduledEventWriter()">
+                                    <option [ngValue]="null">Select Event Status</option>
+                                    <option *ngFor="let eventStatus of eventStatuses$ | async" [ngValue]="eventStatus.id">{{eventStatus.name}}</option>
+                                </select>
+                                <div *ngIf="scheduledEventForm.get('eventStatusId')?.invalid && scheduledEventForm.get('eventStatusId')?.touched" class="text-danger">
+                                    Event Status is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('resourceId')">
+                                <label for="ScheduledEvent-resourceId" id="label-ScheduledEvent-resourceId">Resource</label>
+                                <select id="ScheduledEvent-resourceId" formControlName="resourceId" class="form-select scheduled-event-select" [disabled]="!userIsSchedulerScheduledEventWriter()">
+                                    <option [ngValue]="null">Select Resource</option>
+                                    <option *ngFor="let resource of resources$ | async" [ngValue]="resource.id">{{[resource.name] | filterAndJoin}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('crewId')">
+                                <label for="ScheduledEvent-crewId" id="label-ScheduledEvent-crewId">Crew</label>
+                                <select id="ScheduledEvent-crewId" formControlName="crewId" class="form-select scheduled-event-select" [disabled]="!userIsSchedulerScheduledEventWriter()">
+                                    <option [ngValue]="null">Select Crew</option>
+                                    <option *ngFor="let crew of crews$ | async" [ngValue]="crew.id">{{[crew.name] | filterAndJoin}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('priorityId')">
+                                <label for="ScheduledEvent-priorityId" id="label-ScheduledEvent-priorityId">Priority</label>
+                                <select id="ScheduledEvent-priorityId" formControlName="priorityId" class="form-select scheduled-event-select" [disabled]="!userIsSchedulerScheduledEventWriter()">
+                                    <option [ngValue]="null">Select Priority</option>
+                                    <option *ngFor="let priority of priorities$ | async" [ngValue]="priority.id">{{priority.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('bookingSourceTypeId')">
+                                <label for="ScheduledEvent-bookingSourceTypeId" id="label-ScheduledEvent-bookingSourceTypeId">Booking Source Type</label>
+                                <select id="ScheduledEvent-bookingSourceTypeId" formControlName="bookingSourceTypeId" class="form-select scheduled-event-select" [disabled]="!userIsSchedulerScheduledEventWriter()">
+                                    <option [ngValue]="null">Select Booking Source Type</option>
+                                    <option *ngFor="let bookingSourceType of bookingSourceTypes$ | async" [ngValue]="bookingSourceType.id">{{bookingSourceType.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('partySize')">
+                                <label for="ScheduledEvent-partySize" id="label-ScheduledEvent-partySize">Party Size</label>
+                                <input type="number" id="ScheduledEvent-partySize" formControlName="partySize" placeholder="Enter Party Size" class="form-control scheduled-event-input" [disabled]="!userIsSchedulerScheduledEventWriter()" aria-labelledby="label-partySize" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('notes')">
+                                <label for="ScheduledEvent-notes" id="label-ScheduledEvent-notes">Notes</label>
+                                <textarea id="ScheduledEvent-notes" formControlName="notes" placeholder="Enter Notes" class="form-control scheduled-event-input" [disabled]="!userIsSchedulerScheduledEventWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('color')">
+                                <label for="ScheduledEvent-color" id="label-ScheduledEvent-color">Color</label>
+                                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="ScheduledEvent-color" 
+                        formControlName="color" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerScheduledEventWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="scheduledEventForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('externalId')">
+                                <label for="ScheduledEvent-externalId" id="label-ScheduledEvent-externalId">External Id</label>
+                                <input type="text" id="ScheduledEvent-externalId" formControlName="externalId" placeholder="Enter External Id" class="form-control scheduled-event-input" [disabled]="!userIsSchedulerScheduledEventWriter()" aria-labelledby="label-externalId" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('attributes')">
+                                <label for="ScheduledEvent-attributes" id="label-ScheduledEvent-attributes">Attributes</label>
+                                <textarea id="ScheduledEvent-attributes" formControlName="attributes" placeholder="Enter Attributes" class="form-control scheduled-event-input" [disabled]="!userIsSchedulerScheduledEventWriter()"></textarea>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="ScheduledEvent-versionNumber" id="label-ScheduledEvent-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="ScheduledEvent-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control scheduled-event-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ScheduledEvent-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerScheduledEventWriter()" />
+                                <label for="ScheduledEvent-active" class="form-check-label" id="label-ScheduledEvent-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ScheduledEvent-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerScheduledEventWriter()" />
+                                <label for="ScheduledEvent-deleted" class="form-check-label" id="label-ScheduledEvent-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="scheduled-event-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="scheduledEventForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Scheduled Event">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !scheduledEventForm.valid || !scheduledEventForm.dirty || scheduledEventForm.pristine || userIsSchedulerScheduledEventWriter() == false " ngbTooltip="Save Scheduled Event">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerScheduledEventReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 scheduled-event-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="scheduledEventChangeHistoryService.userIsSchedulerScheduledEventChangeHistoryReader()">
+                            <button ngbNavLink>Scheduled Event Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (scheduledEventData?.ScheduledEventChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-scheduled-event-change-history-table [queryParams]="{ scheduledEventId: scheduledEventData?.id }"></app-scheduled-event-change-history-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-scheduled-event-change-history-add-edit [preSeededData]="{ scheduledEventId: scheduledEventData?.id }" [hiddenFields]="['scheduledEventId']"></app-scheduled-event-change-history-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="eventChargeService.userIsSchedulerEventChargeReader()">
+                            <button ngbNavLink>Event Charges
+                                <span class="badge bg-primary ms-2">
+                                    {{ (scheduledEventData?.EventChargesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-event-charge-table [queryParams]="{ scheduledEventId: scheduledEventData?.id }"></app-event-charge-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-event-charge-add-edit [preSeededData]="{ scheduledEventId: scheduledEventData?.id }" [hiddenFields]="['scheduledEventId']"></app-event-charge-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="contactInteractionService.userIsSchedulerContactInteractionReader()">
+                            <button ngbNavLink>Contact Interactions
+                                <span class="badge bg-primary ms-2">
+                                    {{ (scheduledEventData?.ContactInteractionsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-contact-interaction-table [queryParams]="{ scheduledEventId: scheduledEventData?.id }"></app-contact-interaction-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-contact-interaction-add-edit [preSeededData]="{ scheduledEventId: scheduledEventData?.id }" [hiddenFields]="['scheduledEventId']"></app-contact-interaction-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="eventCalendarService.userIsSchedulerEventCalendarReader()">
+                            <button ngbNavLink>Event Calendars
+                                <span class="badge bg-primary ms-2">
+                                    {{ (scheduledEventData?.EventCalendarsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-event-calendar-table [queryParams]="{ scheduledEventId: scheduledEventData?.id }"></app-event-calendar-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-event-calendar-add-edit [preSeededData]="{ scheduledEventId: scheduledEventData?.id }" [hiddenFields]="['scheduledEventId']"></app-event-calendar-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="scheduledEventDependencyService.userIsSchedulerScheduledEventDependencyReader()">
+                            <button ngbNavLink>Scheduled Event Dependencies Predecessor Events
+                                <span class="badge bg-primary ms-2">
+                                    {{ (scheduledEventData?.PredecessorEventsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-scheduled-event-dependency-table [queryParams]="{ predecessorEventId: scheduledEventData?.id }"></app-scheduled-event-dependency-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-scheduled-event-dependency-add-edit [preSeededData]="{ predecessorEventId: scheduledEventData?.id }" [hiddenFields]="['predecessorEventId']"></app-scheduled-event-dependency-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="scheduledEventDependencyService.userIsSchedulerScheduledEventDependencyReader()">
+                            <button ngbNavLink>Scheduled Event Dependencies Successor Events
+                                <span class="badge bg-primary ms-2">
+                                    {{ (scheduledEventData?.SuccessorEventsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-scheduled-event-dependency-table [queryParams]="{ successorEventId: scheduledEventData?.id }"></app-scheduled-event-dependency-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-scheduled-event-dependency-add-edit [preSeededData]="{ successorEventId: scheduledEventData?.id }" [hiddenFields]="['successorEventId']"></app-scheduled-event-dependency-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="scheduledEventQualificationRequirementService.userIsSchedulerScheduledEventQualificationRequirementReader()">
+                            <button ngbNavLink>Scheduled Event Qualification Requirements
+                                <span class="badge bg-primary ms-2">
+                                    {{ (scheduledEventData?.ScheduledEventQualificationRequirementsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-scheduled-event-qualification-requirement-table [queryParams]="{ scheduledEventId: scheduledEventData?.id }"></app-scheduled-event-qualification-requirement-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-scheduled-event-qualification-requirement-add-edit [preSeededData]="{ scheduledEventId: scheduledEventData?.id }" [hiddenFields]="['scheduledEventId']"></app-scheduled-event-qualification-requirement-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="recurrenceExceptionService.userIsSchedulerRecurrenceExceptionReader()">
+                            <button ngbNavLink>Recurrence Exceptions
+                                <span class="badge bg-primary ms-2">
+                                    {{ (scheduledEventData?.RecurrenceExceptionsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-recurrence-exception-table [queryParams]="{ scheduledEventId: scheduledEventData?.id }"></app-recurrence-exception-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-recurrence-exception-add-edit [preSeededData]="{ scheduledEventId: scheduledEventData?.id }" [hiddenFields]="['scheduledEventId']"></app-recurrence-exception-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="eventResourceAssignmentService.userIsSchedulerEventResourceAssignmentReader()">
+                            <button ngbNavLink>Event Resource Assignments
+                                <span class="badge bg-primary ms-2">
+                                    {{ (scheduledEventData?.EventResourceAssignmentsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-event-resource-assignment-table [queryParams]="{ scheduledEventId: scheduledEventData?.id }"></app-event-resource-assignment-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-event-resource-assignment-add-edit [preSeededData]="{ scheduledEventId: scheduledEventData?.id }" [hiddenFields]="['scheduledEventId']"></app-event-resource-assignment-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

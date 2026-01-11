@@ -1,0 +1,56 @@
+<div class="add-batch-status" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-batch-status me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Batch Status" 
+        *ngIf="userIsSchedulerBatchStatusWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #batchStatusModal let-modal>
+   <div class="modal-header bg-dark text-light batch-status-modal-header">
+      <h5 class="modal-title mb-0" id="batchStatusModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Batch Status' : 'Add Batch Status' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body batch-status-modal-body">
+      <form [formGroup]="batchStatusForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="BatchStatus-name" id="label-BatchStatus-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="BatchStatus-name" formControlName="name" placeholder="Enter Name" class="form-control batch-status-input" [disabled]="!userIsSchedulerBatchStatusWriter()" aria-labelledby="label-name" />
+                <div *ngIf="batchStatusForm.get('name')?.invalid && batchStatusForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="BatchStatus-description" id="label-BatchStatus-description"><span class="text-danger">*</span>Description</label>
+                <textarea id="BatchStatus-description" formControlName="description" placeholder="Enter Description" class="form-control batch-status-input" [disabled]="!userIsSchedulerBatchStatusWriter()"></textarea>
+                <div *ngIf="batchStatusForm.get('description')?.invalid && batchStatusForm.get('description')?.touched" class="text-danger">
+                    Description is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                <label for="BatchStatus-sequence" id="label-BatchStatus-sequence">Sequence</label>
+                <input type="number" id="BatchStatus-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control batch-status-input" [disabled]="!userIsSchedulerBatchStatusWriter()" aria-labelledby="label-sequence" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="BatchStatus-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerBatchStatusWriter()" />
+                <label for="BatchStatus-active" class="form-check-label" id="label-BatchStatus-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="BatchStatus-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerBatchStatusWriter()" />
+                <label for="BatchStatus-deleted" class="form-check-label" id="label-BatchStatus-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer batch-status-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Batch Status changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !batchStatusForm.valid || batchStatusForm.pristine || !userIsSchedulerBatchStatusWriter()" ngbTooltip="Save the Batch Status changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

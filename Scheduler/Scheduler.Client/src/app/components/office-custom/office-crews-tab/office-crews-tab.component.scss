@@ -1,0 +1,34 @@
+/* Crews Tab - Clean list with hierarchy */
+
+.list-group-item {
+  border: none;
+  border-bottom: 1px solid #dee2e6;
+  padding: 0.75rem 0;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.avatar-preview {
+  width: 48px; // or whatever size you're using
+  height: 48px;
+  border-radius: 50%; // circular avatar
+  background-size: cover; // ← This is the key: scales to cover entire div
+  background-position: center; // centers the image
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid #fff; // optional: nice border
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+// Fallback when no image (shows icon centered)
+.no-avatar {
+  background-color: #6c757d; // muted gray fallback
+}

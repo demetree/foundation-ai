@@ -1,0 +1,89 @@
+<div class="add-currency" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-currency me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Currency" 
+        *ngIf="userIsSchedulerCurrencyWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #currencyModal let-modal>
+   <div class="modal-header bg-dark text-light currency-modal-header">
+      <h5 class="modal-title mb-0" id="currencyModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Currency' : 'Add Currency' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body currency-modal-body">
+      <form [formGroup]="currencyForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="Currency-name" id="label-Currency-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="Currency-name" formControlName="name" placeholder="Enter Name" class="form-control currency-input" [disabled]="!userIsSchedulerCurrencyWriter()" aria-labelledby="label-name" />
+                <div *ngIf="currencyForm.get('name')?.invalid && currencyForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="Currency-description" id="label-Currency-description"><span class="text-danger">*</span>Description</label>
+                <textarea id="Currency-description" formControlName="description" placeholder="Enter Description" class="form-control currency-input" [disabled]="!userIsSchedulerCurrencyWriter()"></textarea>
+                <div *ngIf="currencyForm.get('description')?.invalid && currencyForm.get('description')?.touched" class="text-danger">
+                    Description is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('code')">
+                <label for="Currency-code" id="label-Currency-code"><span class="text-danger">*</span>Code</label>
+                <input type="text" id="Currency-code" formControlName="code" placeholder="Enter Code" class="form-control currency-input" [disabled]="!userIsSchedulerCurrencyWriter()" aria-labelledby="label-code" />
+                <div *ngIf="currencyForm.get('code')?.invalid && currencyForm.get('code')?.touched" class="text-danger">
+                    Code is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('color')">
+                <label for="Currency-color" id="label-Currency-color">Color</label>
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="Currency-color" 
+                        formControlName="color" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerCurrencyWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="currencyForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isDefault')">
+                <input type="checkbox" id="Currency-isDefault" formControlName="isDefault" class="form-check-input" [disabled]="!userIsSchedulerCurrencyWriter()" />
+                <label for="Currency-isDefault" class="form-check-label" id="label-Currency-isDefault"><span class="text-danger">*</span>Is Default</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                <label for="Currency-sequence" id="label-Currency-sequence">Sequence</label>
+                <input type="number" id="Currency-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control currency-input" [disabled]="!userIsSchedulerCurrencyWriter()" aria-labelledby="label-sequence" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="Currency-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerCurrencyWriter()" />
+                <label for="Currency-active" class="form-check-label" id="label-Currency-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="Currency-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerCurrencyWriter()" />
+                <label for="Currency-deleted" class="form-check-label" id="label-Currency-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer currency-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Currency changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !currencyForm.valid || currencyForm.pristine || !userIsSchedulerCurrencyWriter()" ngbTooltip="Save the Currency changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

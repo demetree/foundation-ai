@@ -1,0 +1,98 @@
+<div class="add-campaign" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-campaign me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Campaign" 
+        *ngIf="userIsSchedulerCampaignWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #campaignModal let-modal>
+   <div class="modal-header bg-dark text-light campaign-modal-header">
+      <h5 class="modal-title mb-0" id="campaignModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Campaign' : 'Add Campaign' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body campaign-modal-body">
+      <form [formGroup]="campaignForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="Campaign-name" id="label-Campaign-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="Campaign-name" formControlName="name" placeholder="Enter Name" class="form-control campaign-input" [disabled]="!userIsSchedulerCampaignWriter()" aria-labelledby="label-name" />
+                <div *ngIf="campaignForm.get('name')?.invalid && campaignForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="Campaign-description" id="label-Campaign-description">Description</label>
+                <textarea id="Campaign-description" formControlName="description" placeholder="Enter Description" class="form-control campaign-input" [disabled]="!userIsSchedulerCampaignWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('startDate')">
+                <label for="Campaign-startDate" id="label-Campaign-startDate">Start Date</label>
+                <input type="date" id="Campaign-startDate" formControlName="startDate" placeholder="Enter Start Date" class="form-control campaign-input" [disabled]="!userIsSchedulerCampaignWriter()" aria-labelledby="label-startDate" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('endDate')">
+                <label for="Campaign-endDate" id="label-Campaign-endDate">End Date</label>
+                <input type="date" id="Campaign-endDate" formControlName="endDate" placeholder="Enter End Date" class="form-control campaign-input" [disabled]="!userIsSchedulerCampaignWriter()" aria-labelledby="label-endDate" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('fundRaisingGoal')">
+                <label for="Campaign-fundRaisingGoal" id="label-Campaign-fundRaisingGoal">Fund Raising Goal</label>
+                <input type="number" id="Campaign-fundRaisingGoal" formControlName="fundRaisingGoal" placeholder="Enter Fund Raising Goal" class="form-control campaign-input" [disabled]="!userIsSchedulerCampaignWriter()" aria-labelledby="label-fundRaisingGoal" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('notes')">
+                <label for="Campaign-notes" id="label-Campaign-notes">Notes</label>
+                <textarea id="Campaign-notes" formControlName="notes" placeholder="Enter Notes" class="form-control campaign-input" [disabled]="!userIsSchedulerCampaignWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('iconId')">
+                <label for="Campaign-iconId" id="label-Campaign-iconId">Icon</label>
+                <select id="Campaign-iconId" formControlName="iconId" class="form-select campaign-select" [disabled]="!userIsSchedulerCampaignWriter()">
+                    <option [ngValue]="null">Select Icon</option>
+                    <option *ngFor="let icon of icons$ | async" [ngValue]="icon.id">{{icon.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('color')">
+                <label for="Campaign-color" id="label-Campaign-color">Color</label>
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="Campaign-color" 
+                        formControlName="color" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerCampaignWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="campaignForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="Campaign-versionNumber" id="label-Campaign-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="Campaign-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control campaign-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="Campaign-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerCampaignWriter()" />
+                <label for="Campaign-active" class="form-check-label" id="label-Campaign-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="Campaign-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerCampaignWriter()" />
+                <label for="Campaign-deleted" class="form-check-label" id="label-Campaign-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer campaign-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Campaign changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !campaignForm.valid || campaignForm.pristine || !userIsSchedulerCampaignWriter()" ngbTooltip="Save the Campaign changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

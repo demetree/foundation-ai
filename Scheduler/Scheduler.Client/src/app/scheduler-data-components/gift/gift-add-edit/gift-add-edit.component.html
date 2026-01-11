@@ -1,0 +1,151 @@
+<div class="add-gift" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-gift me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Gift" 
+        *ngIf="userIsSchedulerGiftWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #giftModal let-modal>
+   <div class="modal-header bg-dark text-light gift-modal-header">
+      <h5 class="modal-title mb-0" id="giftModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Gift' : 'Add Gift' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body gift-modal-body">
+      <form [formGroup]="giftForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('officeId')">
+                <label for="Gift-officeId" id="label-Gift-officeId">Office</label>
+                <select id="Gift-officeId" formControlName="officeId" class="form-select gift-select" [disabled]="!userIsSchedulerGiftWriter()">
+                    <option [ngValue]="null">Select Office</option>
+                    <option *ngFor="let office of offices$ | async" [ngValue]="office.id">{{office.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('constituentId')">
+                <label for="Gift-constituentId" id="label-Gift-constituentId"><span class="text-danger">*</span>Constituent</label>
+                <select id="Gift-constituentId" formControlName="constituentId" class="form-select gift-select" [disabled]="!userIsSchedulerGiftWriter()">
+                    <option [ngValue]="null">Select Constituent</option>
+                    <option *ngFor="let constituent of constituents$ | async" [ngValue]="constituent.id">{{constituent.constituentNumber}}</option>
+                </select>
+                <div *ngIf="giftForm.get('constituentId')?.invalid && giftForm.get('constituentId')?.touched" class="text-danger">
+                    Constituent is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('pledgeId')">
+                <label for="Gift-pledgeId" id="label-Gift-pledgeId">Pledge</label>
+                <select id="Gift-pledgeId" formControlName="pledgeId" class="form-select gift-select" [disabled]="!userIsSchedulerGiftWriter()">
+                    <option [ngValue]="null">Select Pledge</option>
+                    <option *ngFor="let pledge of pledges$ | async" [ngValue]="pledge.id">{{pledge.notes}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('amount')">
+                <label for="Gift-amount" id="label-Gift-amount"><span class="text-danger">*</span>Amount</label>
+                <input type="number" id="Gift-amount" formControlName="amount" placeholder="Enter Amount" class="form-control gift-input" [disabled]="!userIsSchedulerGiftWriter()" aria-labelledby="label-amount" />
+                <div *ngIf="giftForm.get('amount')?.invalid && giftForm.get('amount')?.touched" class="text-danger">
+                    Amount is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('receivedDate')">
+                <label for="Gift-receivedDate" id="label-Gift-receivedDate"><span class="text-danger">*</span>Received Date</label>
+                <input type="datetime-local" id="Gift-receivedDate" formControlName="receivedDate" placeholder="Enter Received Date" class="form-control gift-input" [disabled]="!userIsSchedulerGiftWriter()" aria-labelledby="label-receivedDate" />
+                <div *ngIf="giftForm.get('receivedDate')?.invalid && giftForm.get('receivedDate')?.touched" class="text-danger">
+                    Received Date is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('postedDate')">
+                <label for="Gift-postedDate" id="label-Gift-postedDate">Posted Date</label>
+                <input type="datetime-local" id="Gift-postedDate" formControlName="postedDate" placeholder="Enter Posted Date" class="form-control gift-input" [disabled]="!userIsSchedulerGiftWriter()" aria-labelledby="label-postedDate" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('fundId')">
+                <label for="Gift-fundId" id="label-Gift-fundId"><span class="text-danger">*</span>Fund</label>
+                <select id="Gift-fundId" formControlName="fundId" class="form-select gift-select" [disabled]="!userIsSchedulerGiftWriter()">
+                    <option [ngValue]="null">Select Fund</option>
+                    <option *ngFor="let fund of funds$ | async" [ngValue]="fund.id">{{fund.name}}</option>
+                </select>
+                <div *ngIf="giftForm.get('fundId')?.invalid && giftForm.get('fundId')?.touched" class="text-danger">
+                    Fund is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('campaignId')">
+                <label for="Gift-campaignId" id="label-Gift-campaignId">Campaign</label>
+                <select id="Gift-campaignId" formControlName="campaignId" class="form-select gift-select" [disabled]="!userIsSchedulerGiftWriter()">
+                    <option [ngValue]="null">Select Campaign</option>
+                    <option *ngFor="let campaign of campaigns$ | async" [ngValue]="campaign.id">{{campaign.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('appealId')">
+                <label for="Gift-appealId" id="label-Gift-appealId">Appeal</label>
+                <select id="Gift-appealId" formControlName="appealId" class="form-select gift-select" [disabled]="!userIsSchedulerGiftWriter()">
+                    <option [ngValue]="null">Select Appeal</option>
+                    <option *ngFor="let appeal of appeals$ | async" [ngValue]="appeal.id">{{appeal.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('paymentTypeId')">
+                <label for="Gift-paymentTypeId" id="label-Gift-paymentTypeId"><span class="text-danger">*</span>Payment Type</label>
+                <select id="Gift-paymentTypeId" formControlName="paymentTypeId" class="form-select gift-select" [disabled]="!userIsSchedulerGiftWriter()">
+                    <option [ngValue]="null">Select Payment Type</option>
+                    <option *ngFor="let paymentType of paymentTypes$ | async" [ngValue]="paymentType.id">{{paymentType.name}}</option>
+                </select>
+                <div *ngIf="giftForm.get('paymentTypeId')?.invalid && giftForm.get('paymentTypeId')?.touched" class="text-danger">
+                    Payment Type is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('referenceNumber')">
+                <label for="Gift-referenceNumber" id="label-Gift-referenceNumber">Reference Number</label>
+                <input type="text" id="Gift-referenceNumber" formControlName="referenceNumber" placeholder="Enter Reference Number" class="form-control gift-input" [disabled]="!userIsSchedulerGiftWriter()" aria-labelledby="label-referenceNumber" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('batchId')">
+                <label for="Gift-batchId" id="label-Gift-batchId">Batch</label>
+                <select id="Gift-batchId" formControlName="batchId" class="form-select gift-select" [disabled]="!userIsSchedulerGiftWriter()">
+                    <option [ngValue]="null">Select Batch</option>
+                    <option *ngFor="let batch of batches$ | async" [ngValue]="batch.id">{{batch.batchNumber}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('receiptTypeId')">
+                <label for="Gift-receiptTypeId" id="label-Gift-receiptTypeId">Receipt Type</label>
+                <select id="Gift-receiptTypeId" formControlName="receiptTypeId" class="form-select gift-select" [disabled]="!userIsSchedulerGiftWriter()">
+                    <option [ngValue]="null">Select Receipt Type</option>
+                    <option *ngFor="let receiptType of receiptTypes$ | async" [ngValue]="receiptType.id">{{receiptType.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('receiptDate')">
+                <label for="Gift-receiptDate" id="label-Gift-receiptDate">Receipt Date</label>
+                <input type="datetime-local" id="Gift-receiptDate" formControlName="receiptDate" placeholder="Enter Receipt Date" class="form-control gift-input" [disabled]="!userIsSchedulerGiftWriter()" aria-labelledby="label-receiptDate" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('tributeId')">
+                <label for="Gift-tributeId" id="label-Gift-tributeId">Tribute</label>
+                <select id="Gift-tributeId" formControlName="tributeId" class="form-select gift-select" [disabled]="!userIsSchedulerGiftWriter()">
+                    <option [ngValue]="null">Select Tribute</option>
+                    <option *ngFor="let tribute of tributes$ | async" [ngValue]="tribute.id">{{tribute.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('notes')">
+                <label for="Gift-notes" id="label-Gift-notes">Notes</label>
+                <textarea id="Gift-notes" formControlName="notes" placeholder="Enter Notes" class="form-control gift-input" [disabled]="!userIsSchedulerGiftWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="Gift-versionNumber" id="label-Gift-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="Gift-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control gift-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="Gift-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerGiftWriter()" />
+                <label for="Gift-active" class="form-check-label" id="label-Gift-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="Gift-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerGiftWriter()" />
+                <label for="Gift-deleted" class="form-check-label" id="label-Gift-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer gift-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Gift changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !giftForm.valid || giftForm.pristine || !userIsSchedulerGiftWriter()" ngbTooltip="Save the Gift changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

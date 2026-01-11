@@ -1,0 +1,100 @@
+<app-contact-custom-add-edit [showAddButton]="false" (contactChanged)="reloadContact($event)"></app-contact-custom-add-edit>
+<app-office-contact-add-edit [showAddButton]="false" (officeContactChanged)="reloadOfficeContact($event)"></app-office-contact-add-edit>
+<div class="card h-100">
+  <div class="card-header bg-light d-flex justify-content-between align-items-center">
+    <h6 class="mb-0 fw-semibold">
+      <i class="fa-solid fa-address-book me-2"></i>
+      Contacts
+      <!--<span class="badge bg-primary ms-2" *ngIf="contacts !== null">
+        {{ contacts.length }}
+      </span>-->
+    </h6>
+    <button class="btn btn-sm btn-outline-primary"
+            (click)="openAddContactModal()"
+            *ngIf="office">
+      <i class="fa fa-plus me-1"></i>
+      Add Contact
+    </button>
+  </div>
+
+  <div class="card-body">
+    <!-- Loading State -->
+    <div class="text-center py-4" *ngIf="isLoading">
+      <div class="spinner-border spinner-border-sm text-primary" role="status">
+        <span class="visually-hidden">Loading contacts...</span>
+      </div>
+      <div class="text-muted small mt-2">Loading contacts...</div>
+    </div>
+
+    <!-- Error State -->
+    <div class="alert alert-danger small" *ngIf="error">
+      <i class="fa-solid fa-exclamation-triangle me-2"></i>
+      {{ error }}
+    </div>
+
+    <!-- Empty State -->
+    <div class="text-center py-5 text-muted" *ngIf="!isLoading && (!contacts || contacts.length === 0)">
+      <i class="fa-solid fa-users-slash fa-3x mb-3 opacity-50"></i>
+      <div>No contacts configured</div>
+      <div class="small mt-2">Emergency contacts, next-of-kin, or personal contacts can be added here.</div>
+    </div>
+
+    <!-- Contacts Table -->
+    <div class="table-responsive" *ngIf="!isLoading && contacts && contacts.length > 0">
+      <table class="table table-hover align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Name</th>
+            <th>Relationship</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th>Notes</th>
+            <th>Primary</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let rc of contacts">
+            <td>
+              <a class="text-decoration-none fw-semibold clickable"
+                 (click)="openContactModal(rc.contact)">
+                {{ getFullName(rc) }}
+                <i *ngIf="rc.contact?.icon?.fontAwesomeCode"
+                   [class]="rc.contact?.icon?.fontAwesomeCode"
+                   [style.color]="rc.contact?.color || '#6c757d'"
+                   class="fs-7"></i>
+              </a>
+              <div class="small text-muted" *ngIf="rc.contact">
+                <div>{{ rc.contact.contactType?.name || '—' }}</div>
+                <div>{{ rc.contact.company}}</div>
+              </div>
+            </td>
+            <td>
+              {{ rc.relationshipType?.name || '—' }}
+            </td>
+            <td>
+              {{ getPhone(rc) }}
+            </td>
+            <td>
+              {{ rc.contact?.email || '—' }}
+            </td>
+            <td>
+              {{ rc.contact?.notes || '—' }}
+            </td>
+            <td class="text-center">
+              <i class="fa fa-check text-success fs-5"
+                 *ngIf="rc.isPrimary"
+                 title="Primary Contact"></i>
+            </td>
+            <td class="text-end">
+              <button class="btn btn-sm btn-outline-secondary clickable"
+                      (click)="openOfficeContactModal(rc)">
+                <i class="fa fa-external-link-alt"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

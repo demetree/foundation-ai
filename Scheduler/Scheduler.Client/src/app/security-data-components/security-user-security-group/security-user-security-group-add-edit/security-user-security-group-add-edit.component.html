@@ -1,0 +1,62 @@
+<div class="add-security-user-security-group" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-security-user-security-group me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Security User Security Group" 
+        *ngIf="userIsSecuritySecurityUserSecurityGroupWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #securityUserSecurityGroupModal let-modal>
+   <div class="modal-header bg-dark text-light security-user-security-group-modal-header">
+      <h5 class="modal-title mb-0" id="securityUserSecurityGroupModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Security User Security Group' : 'Add Security User Security Group' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body security-user-security-group-modal-body">
+      <form [formGroup]="securityUserSecurityGroupForm" (ngSubmit)="submitForm()">
+            <div class="form-group">
+                <label for="securityUserId" id="label-securityUserId"><span class="text-danger">*</span>Security User</label>
+                <select id="securityUserId" formControlName="securityUserId" class="form-select security-user-security-group-select" [disabled]="!userIsSecuritySecurityUserSecurityGroupWriter()">
+                    <option [ngValue]="null">Select Security User</option>
+                    <option *ngFor="let securityUser of securityUsers$ | async" [ngValue]="securityUser.id">{{[securityUser.accountName] | filterAndJoin}}</option>
+                </select>
+                <div *ngIf="securityUserSecurityGroupForm.get('securityUserId')?.invalid && securityUserSecurityGroupForm.get('securityUserId')?.touched" class="text-danger">
+                    Security User is required
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="securityGroupId" id="label-securityGroupId"><span class="text-danger">*</span>Security Group</label>
+                <select id="securityGroupId" formControlName="securityGroupId" class="form-select security-user-security-group-select" [disabled]="!userIsSecuritySecurityUserSecurityGroupWriter()">
+                    <option [ngValue]="null">Select Security Group</option>
+                    <option *ngFor="let securityGroup of securityGroups$ | async" [ngValue]="securityGroup.id">{{securityGroup.name}}</option>
+                </select>
+                <div *ngIf="securityUserSecurityGroupForm.get('securityGroupId')?.invalid && securityUserSecurityGroupForm.get('securityGroupId')?.touched" class="text-danger">
+                    Security Group is required
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="comments" id="label-comments">Comments</label>
+                <textarea id="comments" formControlName="comments" placeholder="Enter Comments" class="form-control security-user-security-group-input" [disabled]="!userIsSecuritySecurityUserSecurityGroupWriter()"></textarea>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode">
+                <input type="checkbox" id="active" formControlName="active" class="form-check-input" [disabled]="!userIsSecuritySecurityUserSecurityGroupWriter()" />
+                <label for="active" class="form-check-label" id="label-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode">
+                <input type="checkbox" id="deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSecuritySecurityUserSecurityGroupWriter()" />
+                <label for="deleted" class="form-check-label" id="label-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer security-user-security-group-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Security User Security Group changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !securityUserSecurityGroupForm.valid || securityUserSecurityGroupForm.pristine || !userIsSecuritySecurityUserSecurityGroupWriter()" ngbTooltip="Save the Security User Security Group changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

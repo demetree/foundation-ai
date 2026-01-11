@@ -1,0 +1,135 @@
+<div class="row g-4" *ngIf="resource; else loading">
+  <!-- Core Information Card -->
+  <div class="col-lg-7">
+    <div class="card h-100">
+      <div class="card-header bg-light">
+        <h6 class="mb-0 fw-semibold">
+          <i class="fa-solid fa-info-circle me-2"></i>
+          Core Information
+        </h6>
+      </div>
+      <div class="card-body">
+        <dl class="row mb-0">
+          <dt class="col-sm-4 text-muted">Name</dt>
+          <dd class="col-sm-8 fw-medium">{{ resource.name }}</dd>
+
+          <dt class="col-sm-4 text-muted">Description</dt>
+          <dd class="col-sm-8">{{ resource.description || '—' }}</dd>
+
+          <dt class="col-sm-4 text-muted">Type</dt>
+          <dd class="col-sm-8">
+            {{ resource.resourceType?.name || 'Unknown' }}
+          </dd>
+
+          <dt class="col-sm-4 text-muted" *ngIf="officeCount$ != null && ((officeCount$ | async) ?? 0) > 0">Office</dt>
+          <dd class="col-sm-8" *ngIf="officeCount$ != null && ((officeCount$ | async) ?? 0) > 0">{{ resource.office?.name || '—' }}</dd>
+
+          <dt class="col-sm-4 text-muted">Time Zone</dt>
+          <dd class="col-sm-8">{{ resource.timeZone?.name || '—' }}</dd>
+
+          <dt class="col-sm-4 text-muted">Weekly Target Hours</dt>
+          <dd class="col-sm-8">{{ resource.targetWeeklyWorkHours ? (resource.targetWeeklyWorkHours + ' hours') : '—' }}</dd>
+
+          <dt class="col-sm-4 text-muted">Color</dt>
+          <dd class="col-sm-8"><span class="color-swatch"
+                                     [style.background-color]="resource.color || '#cccccc'"></span></dd>
+
+          
+
+
+          <dt class="col-sm-4 text-muted">External ID</dt>
+          <dd class="col-sm-8">{{ resource.externalId || '—' }}</dd>
+
+          <dt class="col-sm-4 text-muted">Status</dt>
+          <dd class="col-sm-8">
+            <span class="badge me-2" [ngClass]="resource.active ? 'bg-success' : 'bg-secondary'">
+              {{ resource.active ? 'Active' : 'Inactive' }}
+            </span>
+            <span *ngIf="resource.deleted == true" class="badge me-2" [ngClass]="resource.deleted ? 'bg-danger' : 'bg-secondary'">
+              {{ resource.deleted ? 'Deleted' : 'Not Deleted' }}
+            </span>
+            <span class="badge me-2 bg-secondary">
+              Version: {{ resource.versionNumber }}
+            </span>
+          </dd>
+
+
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Stats Card -->
+  <div class="col-lg-5">
+    <div class="card h-100">
+      <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <h6 class="mb-0 fw-semibold">
+          <i class="fa-solid fa-chart-simple me-2"></i>
+          Quick Stats
+        </h6>
+        <button class="btn btn-sm btn-outline-secondary" (click)="loadQuickStats()">
+          <i class="fa fa-sync"></i>
+        </button>
+      </div>
+      <div class="card-body">
+        <div class="row text-center g-4">
+          <!-- Assignments -->
+          <div class="col-6">
+            <div class="fs-3 fw-bold text-primary">
+              {{ assignmentCount$ | async }}
+            </div>
+            <div class="small text-muted">Assignments</div>
+          </div>
+
+          <!-- Crews -->
+          <div class="col-6">
+            <div class="fs-3 fw-bold text-info">
+              {{ crewCount$ | async }}
+            </div>
+            <div class="small text-muted">Crews</div>
+          </div>
+
+          <!-- Blackouts -->
+          <div class="col-6">
+            <div class="fs-3 fw-bold text-warning">
+              {{ blackoutCount$ | async }}
+            </div>
+            <div class="small text-muted">Availablity Blackouts</div>
+          </div>
+
+          <!-- Qualifications -->
+          <div class="col-6">
+            <div class="fs-3 fw-bold text-danger">
+              {{ qualificationCount$ | async }}
+            </div>
+            <div class="small text-muted">Qualifications</div>
+          </div>
+
+          <!-- Contacts -->
+          <div class="col-6">
+            <div class="fs-3 fw-bold text-success">
+              {{ contactCount$ | async }}
+            </div>
+            <div class="small text-muted">Contacts</div>
+          </div>
+
+          <!-- Rate Sheet Overrides -->
+          <div class="col-6">
+            <div class="fs-3 fw-bold text-primary">
+              {{ rateSheetCount$ | async }}
+            </div>
+            <div class="small text-muted">Rate Overrides</div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #loading>
+  <div class="text-center py-5 text-muted">
+    <i class="fa-solid fa-spinner fa-spin fa-2x mb-3"></i>
+    <div>Loading overview...</div>
+  </div>
+</ng-template>

@@ -1,0 +1,218 @@
+<div class="position-absolute top-50 start-50 translate-middle w-100" style="max-width: 600px;">
+  <div class="w-100">
+    <div class="card text-bg-dark shadow border-0 rounded-4 overflow-hidden w-100">
+      <div class="card-header d-flex align-items-center justify-content-between bg-dark border-bottom border-secondary px-4 py-3">
+        <h5 class="mb-0">
+          <i class="fa fa-user-plus me-2"></i> Edit your information
+        </h5>
+        <button *ngIf="isModal" type="button" class="btn-close btn-close-white" aria-label="Close" (click)="closeModal()" tabindex="-1"></button>
+      </div>
+
+      <div class="card-body p-4">
+        <form name="securityUserForm" #su="ngForm" novalidate (ngSubmit)="onSubmitForm(su)">
+          <!-- Email (User Login ID) -->
+          <div class="mb-3">
+            <label class="form-label fw-medium">Email (User Login ID)</label>
+            <input type="email" class="form-control bg-dark text-light border-secondary"
+                   [(ngModel)]="securityUser.accountName" name="accountName" required
+                   placeholder="Enter your email" readonly />
+            <div class="invalid-feedback" *ngIf="su.submitted && !su.form.controls['accountName']?.valid">
+              A valid email is required
+            </div>
+          </div>
+
+          <!-- First Name, Middle Name, Last Name -->
+          <div class="row g-3 mb-3">
+            <div class="col-md-4">
+              <label class="form-label fw-medium">
+                First Name <span class="text-danger">*</span>
+              </label>
+              <input type="text" class="form-control bg-dark text-light border-secondary"
+                     [(ngModel)]="securityUser.firstName" name="firstName" required />
+              <div class="invalid-feedback" *ngIf="su.submitted && !su.form.controls['firstName']?.valid">
+                First name is required
+              </div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-medium">Middle Name</label>
+              <input type="text" class="form-control bg-dark text-light border-secondary"
+                     [(ngModel)]="securityUser.middleName" name="middleName" />
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-medium">
+                Last Name <span class="text-danger">*</span>
+              </label>
+              <input type="text" class="form-control bg-dark text-light border-secondary"
+                     [(ngModel)]="securityUser.lastName" name="lastName" required />
+              <div class="invalid-feedback" *ngIf="su.submitted && !su.form.controls['lastName']?.valid">
+                Last name is required
+              </div>
+            </div>
+          </div>
+
+          <!-- Date of Birth -->
+          <div class="mb-3">
+            <label class="form-label fw-medium">Date of Birth</label>
+            <input type="date" class="form-control bg-dark text-light border-secondary"
+                   [(ngModel)]="securityUser.dateOfBirth" name="dateOfBirth" />
+            <div class="invalid-feedback" *ngIf="su.submitted && !su.form.controls['dateOfBirth']?.valid">
+              Date of birth is required
+            </div>
+          </div>
+
+          <!-- Phone Number -->
+          <div class="mb-3">
+            <label class="form-label fw-medium">
+              Phone Number <span class="text-danger">*</span>
+            </label>
+            <input type="tel" class="form-control bg-dark text-light border-secondary"
+                   [(ngModel)]="securityUser.phoneNumber" name="phoneNumber" required />
+          </div>
+
+          <!-- New Password -->
+          <div class="mb-3">
+            <label class="form-label fw-medium">
+              New Password <span class="text-danger">*</span>
+            </label>
+            <input type="password" class="form-control bg-dark text-light border-secondary"
+                   [(ngModel)]="securityUser.password" name="password" required
+                   placeholder="Enter new password"
+                   [ngClass]="{
+                     'is-valid': password.dirty && isPasswordValid(securityUser.password),
+                     'is-invalid': password.dirty && !isPasswordValid(securityUser.password)
+                   }" #password="ngModel" />
+            <div class="invalid-feedback" *ngIf="password.dirty && !isPasswordValid(securityUser.password)">
+              Password does not meet complexity requirements (at least 8 characters, including uppercase, lowercase, numbers, and special characters)
+            </div>
+            <div class="invalid-feedback" *ngIf="su.submitted && !password.valid">
+              Password is required
+            </div>
+          </div>
+
+          <!-- Confirm Password -->
+          <div class="mb-3">
+            <label class="form-label fw-medium">
+              Confirm Password <span class="text-danger">*</span>
+            </label>
+            <input type="password" class="form-control bg-dark text-light border-secondary"
+                   [(ngModel)]="securityUser.confirmPassword" name="confirmPassword" required
+                   placeholder="Confirm new password"
+                   [ngClass]="{
+                     'is-valid': confirmPassword.dirty && isConfirmPasswordValid(),
+                     'is-invalid': confirmPassword.dirty && !isConfirmPasswordValid()
+                   }" #confirmPassword="ngModel" />
+            <div class="invalid-feedback" *ngIf="confirmPassword.dirty && !isConfirmPasswordValid()">
+              Passwords do not match
+            </div>
+            <div class="invalid-feedback" *ngIf="su.submitted && !confirmPassword.valid">
+              Password confirmation is required
+            </div>
+          </div>
+
+          <!-- Terms and Conditions Checkbox -->
+          <div class="mb-4">
+            <div class="form-check" (click)="onTermsCheckboxClick($event)">
+              <input type="checkbox"
+                     class="form-check-input bg-dark border-secondary"
+                     [(ngModel)]="securityUser.termsAgreed"
+                     name="termsAgreed"
+                     id="termsAgreed"
+                     [disabled]="!scrolledToBottom"
+                     required />
+
+              <label class="form-check-label text-light" for="termsAgreed">
+                I agree to the
+                <span class="text-light text-decoration-underline" style="cursor: pointer;" (click)="showTerms = true">
+                  Terms and Conditions <span class="text-danger">*</span>
+
+                </span>
+              </label>
+
+              <div class="invalid-feedback" *ngIf="su.submitted && !su.form.controls['termsAgreed']?.valid">
+                You must agree to the terms and conditions
+              </div>
+            </div>
+          </div>
+
+
+          <!-- Submit Button -->
+          <div class="d-flex justify-content-end">
+            <button type="submit" class="btn btn-secondary rounded-2 px-4 py-2 fw-medium" [disabled]="isLoading">
+              <i *ngIf="isLoading" class="fa-solid fa-circle-notch fa-spin me-2"></i> Save User
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Scrollable Terms Modal (shown when user clicks "Terms and Conditions") -->
+<div class="modal fade show d-block" *ngIf="showTerms" style="background-color: rgba(0, 0, 0, 0.5);">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content bg-dark text-light border-secondary rounded-4 shadow">
+      <div class="modal-header border-bottom border-secondary">
+        <h5 class="modal-title">Terms and Conditions</h5>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="showTerms = false"></button>
+      </div>
+      <div class="modal-body overflow-auto" style="max-height: 400px;" (scroll)="onTermsScroll($event)" #termsContent>
+        <p class="mb-3"><strong>Last Updated:</strong> [Insert Date]</p>
+
+        <p>Welcome to <strong>K2 Research</strong> and thank you for using <strong>Scheduler</strong> ("the Service"), a cloud-based software-as-a-service (SaaS) platform designed to manage, monitor, and optimize soil and material compaction for construction projects.</p>
+
+        <p>By accessing or using our Service, you ("User", "you", or "your") agree to be bound by the following terms and conditions ("Terms"). Please read them carefully. If you do not agree to these Terms, you may not access or use the Service.</p>
+
+        <h5 class="mt-4">1. Account Registration</h5>
+        <p>To access the Service, you must register and create an account. You agree to provide accurate and complete information and to keep this information up-to-date. You are responsible for maintaining the confidentiality of your account credentials and for any activity that occurs under your account.</p>
+
+        <h5 class="mt-4">2. Use of the Service</h5>
+        <p>You agree to use the Service only for lawful purposes related to your business activities. You shall not:</p>
+        <ul>
+          <li>Reverse engineer, decompile, or otherwise attempt to discover the source code of the Service;</li>
+          <li>Use the Service to transmit malicious software or unauthorized data;</li>
+          <li>Interfere with or disrupt the integrity or performance of the Service;</li>
+          <li>Use the Service in violation of any applicable laws or regulations.</li>
+        </ul>
+
+        <h5 class="mt-4">3. Data Ownership and Usage</h5>
+        <p>You retain ownership of the data you upload to the Service. By using the Service, you grant us a limited license to use, host, and process your data solely to provide the Service. We do not sell or share your data with third parties, except as required by law or with your explicit consent.</p>
+
+        <h5 class="mt-4">4. Subscription and Payment</h5>
+        <p>The Service may be offered under different subscription plans. Fees are billed in advance and are non-refundable, unless otherwise specified. You agree to pay all applicable fees and taxes associated with your use of the Service.</p>
+
+        <h5 class="mt-4">5. Availability and Support</h5>
+        <p>We strive to maintain the availability of the Service but do not guarantee uninterrupted or error-free operation. Maintenance and updates may be performed from time to time. Support is provided during business hours as described in your subscription plan.</p>
+
+        <h5 class="mt-4">6. Confidentiality</h5>
+        <p>Each party agrees to maintain the confidentiality of all confidential information disclosed by the other party in connection with the use of the Service, and to not disclose such information to any third party without prior written consent.</p>
+
+        <h5 class="mt-4">7. Limitation of Liability</h5>
+        <p>To the fullest extent permitted by law, <strong>K2 Research</strong> shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including loss of profits, data, or business opportunities, arising out of or related to the use or inability to use the Service.</p>
+
+        <h5 class="mt-4">8. Termination</h5>
+        <p>We reserve the right to suspend or terminate your account and access to the Service at our sole discretion if you violate these Terms. Upon termination, your right to use the Service will cease immediately.</p>
+
+        <h5 class="mt-4">9. Modifications</h5>
+        <p>We may update these Terms from time to time. We will notify you of any material changes through the Service or by email. Continued use of the Service after such changes constitutes your acceptance of the revised Terms.</p>
+
+        <h5 class="mt-4">10. Governing Law</h5>
+        <p>These Terms shall be governed by and construed in accordance with the laws of <strong>your respected conutry</strong>, without regard to its conflict of laws principles.</p>
+
+        <h5 class="mt-4">11. Contact Us</h5>
+        <p>If you have any questions about these Terms, please contact us at:</p>
+        <ul>
+          <li><strong>[Your Company Name]</strong></li>
+          <li>[Your Company Address]</li>
+          <li>Email: <a href="mailto:support@example.com" class="text-secondary">support&#64;k2research.ca</a></li>
+          <li>Phone: [Insert Phone Number]</li>
+        </ul>        <!-- Add more as needed -->
+      </div>
+      <div class="modal-footer border-top border-secondary">
+        <button class="btn btn-secondary" (click)="showTerms = false" [disabled]="!scrolledToBottom">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

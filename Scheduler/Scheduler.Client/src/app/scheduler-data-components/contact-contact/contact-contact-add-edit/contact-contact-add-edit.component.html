@@ -1,0 +1,76 @@
+<div class="add-contact-contact" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-contact-contact me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Contact Contact" 
+        *ngIf="userIsSchedulerContactContactWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #contactContactModal let-modal>
+   <div class="modal-header bg-dark text-light contact-contact-modal-header">
+      <h5 class="modal-title mb-0" id="contactContactModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Contact Contact' : 'Add Contact Contact' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body contact-contact-modal-body">
+      <form [formGroup]="contactContactForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('contactId')">
+                <label for="ContactContact-contactId" id="label-ContactContact-contactId"><span class="text-danger">*</span>Contact</label>
+                <select id="ContactContact-contactId" formControlName="contactId" class="form-select contact-contact-select" [disabled]="!userIsSchedulerContactContactWriter()">
+                    <option [ngValue]="null">Select Contact</option>
+                    <option *ngFor="let contact of contacts$ | async" [ngValue]="contact.id">{{contact.firstName}}</option>
+                </select>
+                <div *ngIf="contactContactForm.get('contactId')?.invalid && contactContactForm.get('contactId')?.touched" class="text-danger">
+                    Contact is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('relatedContactId')">
+                <label for="ContactContact-relatedContactId" id="label-ContactContact-relatedContactId"><span class="text-danger">*</span>Related Contact</label>
+                <select id="ContactContact-relatedContactId" formControlName="relatedContactId" class="form-select contact-contact-select" [disabled]="!userIsSchedulerContactContactWriter()">
+                    <option [ngValue]="null">Select Contact</option>
+                    <option *ngFor="let contact of contacts$ | async" [ngValue]="contact.id">{{contact.firstName}}</option>
+                </select>
+                <div *ngIf="contactContactForm.get('relatedContactId')?.invalid && contactContactForm.get('relatedContactId')?.touched" class="text-danger">
+                    Related Contact is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isPrimary')">
+                <input type="checkbox" id="ContactContact-isPrimary" formControlName="isPrimary" class="form-check-input" [disabled]="!userIsSchedulerContactContactWriter()" />
+                <label for="ContactContact-isPrimary" class="form-check-label" id="label-ContactContact-isPrimary"><span class="text-danger">*</span>Is Primary</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('relationshipTypeId')">
+                <label for="ContactContact-relationshipTypeId" id="label-ContactContact-relationshipTypeId"><span class="text-danger">*</span>Relationship Type</label>
+                <select id="ContactContact-relationshipTypeId" formControlName="relationshipTypeId" class="form-select contact-contact-select" [disabled]="!userIsSchedulerContactContactWriter()">
+                    <option [ngValue]="null">Select Relationship Type</option>
+                    <option *ngFor="let relationshipType of relationshipTypes$ | async" [ngValue]="relationshipType.id">{{relationshipType.name}}</option>
+                </select>
+                <div *ngIf="contactContactForm.get('relationshipTypeId')?.invalid && contactContactForm.get('relationshipTypeId')?.touched" class="text-danger">
+                    Relationship Type is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="ContactContact-versionNumber" id="label-ContactContact-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="ContactContact-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control contact-contact-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ContactContact-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerContactContactWriter()" />
+                <label for="ContactContact-active" class="form-check-label" id="label-ContactContact-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ContactContact-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerContactContactWriter()" />
+                <label for="ContactContact-deleted" class="form-check-label" id="label-ContactContact-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer contact-contact-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Contact Contact changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !contactContactForm.valid || contactContactForm.pristine || !userIsSchedulerContactContactWriter()" ngbTooltip="Save the Contact Contact changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

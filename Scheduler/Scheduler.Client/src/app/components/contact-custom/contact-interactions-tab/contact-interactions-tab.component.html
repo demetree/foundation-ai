@@ -1,0 +1,73 @@
+<!-- app-contact-interactions-tab.component.html -->
+<div class="contact-interactions-tab">
+  <!-- Header with Add Button -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="mb-0 fw-semibold">Interaction History</h5>
+    <button class="btn btn-primary btn-sm"
+            (click)="openLogInteractionModal()"
+            *ngIf="userCanLogInteraction()">
+      <i class="fa-solid fa-plus me-2"></i> Log Interaction
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div class="text-center py-5" *ngIf="isLoading$ | async">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading interactions...</span>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="alert alert-info" *ngIf="(interactions$ | async)?.length === 0 && !(isLoading$ | async)">
+    <i class="fa-solid fa-info-circle me-2"></i>
+    No interactions recorded yet.
+    <a href="javascript:void(0)" class="alert-link" (click)="openLogInteractionModal()">Log the first one</a>.
+  </div>
+
+  <!-- Timeline -->
+  <div class="timeline" *ngIf="interactions$ | async as interactions">
+    <div class="timeline-item" *ngFor="let interaction of interactions; let i = index">
+      <!-- Timeline Dot + Line -->
+      <div class="timeline-dot" [style.background-color]="interaction.interactionType?.color || '#6c757d'"></div>
+      <div class="timeline-line" *ngIf="i < interactions.length - 1"></div>
+
+      <!-- Content Card -->
+      <div class="timeline-content card shadow-sm mb-3">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <div>
+              <span class="badge me-2"
+                    [style.background-color]="interaction.interactionType?.color || '#6c757d'"
+                    [style.color]="interaction.interactionType?.color | contrastColor">
+                <i *ngIf="interaction.interactionType?.icon?.fontAwesomeCode"
+                   [class]="interaction.interactionType?.icon?.fontAwesomeCode"
+                   class="me-1"></i>
+                {{ interaction.interactionType?.name || 'Note' }}
+              </span>
+              <span class="text-muted small">
+                {{ interaction.startTime | date:'medium' }}
+                <span *ngIf="interaction.endTime">
+                  — {{ interaction.endTime | date:'shortTime' }}
+                </span>
+              </span>
+            </div>
+            <div class="text-muted small" *ngIf="interaction.initiatingContact">
+              by {{ interaction.initiatingContact | contactFullName }}
+            </div>
+          </div>
+
+          <p class="mb-2" *ngIf="interaction.notes">{{ interaction.notes }}</p>
+
+          <div class="small text-muted" *ngIf="interaction.location">
+            <i class="fa-solid fa-location-dot me-1"></i> {{ interaction.location }}
+          </div>
+
+          <div class="small text-muted mt-2" *ngIf="interaction.scheduledEvent">
+            <i class="fa-solid fa-calendar me-1"></i>
+            Related to event: <a [routerLink]="['/event', interaction.scheduledEvent.id]">{{ interaction.scheduledEvent.name }}</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

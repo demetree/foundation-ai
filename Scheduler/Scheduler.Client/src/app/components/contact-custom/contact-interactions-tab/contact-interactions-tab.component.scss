@@ -1,0 +1,33 @@
+.timeline {
+  position: relative;
+  padding-left: 30px;
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.timeline-dot {
+  position: absolute;
+  left: -30px;
+  top: 8px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 3px solid white;
+  box-shadow: 0 0 0 2px currentColor;
+}
+
+.timeline-line {
+  position: absolute;
+  left: -24px;
+  top: 24px;
+  bottom: -20px;
+  width: 2px;
+  background-color: #dee2e6;
+}
+
+.timeline-content {
+  margin-left: 10px;
+}

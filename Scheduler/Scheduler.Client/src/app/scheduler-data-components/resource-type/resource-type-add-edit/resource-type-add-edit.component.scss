@@ -1,0 +1,70 @@
+.add-resource-type {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.btn-add-resource-type {
+  background-color: #0176d3;
+  border-color: #0176d3;
+  height: 37px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  width: 60px;
+}
+
+.resource-type-modal-header {
+}
+
+.resource-type-modal-body {
+  padding: 15px;
+  font-size: 1rem;
+}
+
+.section-heading {
+  font-weight: bold;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  color: black;
+}
+
+.resource-type-input, .resource-type-select {
+  margin-bottom: 15px;
+  border-radius: 5px;
+}
+
+.resource-type-input::placeholder, .resource-type-select::placeholder {
+  color: #6c757d;
+}
+
+
+
+// Styles for the color picker
+.color-picker {
+  // Native color inputs are usually square and small; make it a reasonable size
+  width: 60px;
+  height: 42px;
+  padding: 4px;
+  cursor: pointer;
+}
+
+// Style for the read-only hex display next to the picker
+.input-color-display {
+  margin-bottom: 0; // Align properly with the picker
+}
+
+
+.resource-type-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 10px;
+  padding-bottom: 0px;
+  border: none;
+}
+
+.text-danger {
+  color: #dc3545 !important;
+}

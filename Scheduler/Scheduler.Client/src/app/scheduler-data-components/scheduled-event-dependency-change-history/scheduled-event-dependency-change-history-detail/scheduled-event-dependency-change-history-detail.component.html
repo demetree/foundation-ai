@@ -1,0 +1,66 @@
+<div class="container-fluid p-1 m-0 scheduled-event-dependency-change-history-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="scheduled-event-dependency-change-history-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Scheduled Event Dependency Change History</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Scheduled Event Dependency Change History' : 'Add Scheduled Event Dependency Change History'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerScheduledEventDependencyChangeHistoryReader()">
+                <div class="col m-2 scheduled-event-dependency-change-history-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="scheduledEventDependencyChangeHistoryForm" (ngSubmit)="submitForm()" class="scheduled-event-dependency-change-history-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('scheduledEventDependencyId')">
+                                <label for="ScheduledEventDependencyChangeHistory-scheduledEventDependencyId" id="label-ScheduledEventDependencyChangeHistory-scheduledEventDependencyId"><span class="text-danger">*</span>Scheduled Event Dependency</label>
+                                <select id="ScheduledEventDependencyChangeHistory-scheduledEventDependencyId" formControlName="scheduledEventDependencyId" class="form-select scheduled-event-dependency-change-history-select" [disabled]="!userIsSchedulerScheduledEventDependencyChangeHistoryWriter()">
+                                    <option [ngValue]="null">Select Scheduled Event Dependency</option>
+                                    <option *ngFor="let scheduledEventDependency of scheduledEventDependencies$ | async" [ngValue]="scheduledEventDependency.id">{{scheduledEventDependency.id}}</option>
+                                </select>
+                                <div *ngIf="scheduledEventDependencyChangeHistoryForm.get('scheduledEventDependencyId')?.invalid && scheduledEventDependencyChangeHistoryForm.get('scheduledEventDependencyId')?.touched" class="text-danger">
+                                    Scheduled Event Dependency is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="ScheduledEventDependencyChangeHistory-versionNumber" id="label-ScheduledEventDependencyChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="ScheduledEventDependencyChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control scheduled-event-dependency-change-history-input" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                                <label for="ScheduledEventDependencyChangeHistory-timeStamp" id="label-ScheduledEventDependencyChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                                <input type="datetime-local" id="ScheduledEventDependencyChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control scheduled-event-dependency-change-history-input" [disabled]="!userIsSchedulerScheduledEventDependencyChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                                <div *ngIf="scheduledEventDependencyChangeHistoryForm.get('timeStamp')?.invalid && scheduledEventDependencyChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                                    Time Stamp is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="ScheduledEventDependencyChangeHistory-userId" id="label-ScheduledEventDependencyChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="ScheduledEventDependencyChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control scheduled-event-dependency-change-history-input" [disabled]="!userIsSchedulerScheduledEventDependencyChangeHistoryWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="scheduledEventDependencyChangeHistoryForm.get('userId')?.invalid && scheduledEventDependencyChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                                <label for="ScheduledEventDependencyChangeHistory-data" id="label-ScheduledEventDependencyChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                                <textarea id="ScheduledEventDependencyChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control scheduled-event-dependency-change-history-input" [disabled]="!userIsSchedulerScheduledEventDependencyChangeHistoryWriter()"></textarea>
+                                <div *ngIf="scheduledEventDependencyChangeHistoryForm.get('data')?.invalid && scheduledEventDependencyChangeHistoryForm.get('data')?.touched" class="text-danger">
+                                    Data is required
+                                </div>
+                            </div>
+                            <div class="scheduled-event-dependency-change-history-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="scheduledEventDependencyChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Scheduled Event Dependency Change History">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !scheduledEventDependencyChangeHistoryForm.valid || !scheduledEventDependencyChangeHistoryForm.dirty || scheduledEventDependencyChangeHistoryForm.pristine || userIsSchedulerScheduledEventDependencyChangeHistoryWriter() == false " ngbTooltip="Save Scheduled Event Dependency Change History">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

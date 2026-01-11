@@ -1,0 +1,41 @@
+<div class="add-privilege" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-privilege me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Privilege" 
+        *ngIf="userIsSecurityPrivilegeWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #privilegeModal let-modal>
+   <div class="modal-header bg-dark text-light privilege-modal-header">
+      <h5 class="modal-title mb-0" id="privilegeModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Privilege' : 'Add Privilege' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body privilege-modal-body">
+      <form [formGroup]="privilegeForm" (ngSubmit)="submitForm()">
+            <div class="form-group">
+                <label for="name" id="label-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="name" formControlName="name" placeholder="Enter Name" class="form-control privilege-input" [disabled]="!userIsSecurityPrivilegeWriter()" aria-labelledby="label-name" />
+                <div *ngIf="privilegeForm.get('name')?.invalid && privilegeForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="description" id="label-description">Description</label>
+                <textarea id="description" formControlName="description" placeholder="Enter Description" class="form-control privilege-input" [disabled]="!userIsSecurityPrivilegeWriter()"></textarea>
+            </div>
+         <div class="modal-footer privilege-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Privilege changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !privilegeForm.valid || privilegeForm.pristine || !userIsSecurityPrivilegeWriter()" ngbTooltip="Save the Privilege changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

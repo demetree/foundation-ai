@@ -1,0 +1,73 @@
+<div class="add-login-attempt" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-login-attempt me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Login Attempt" 
+        *ngIf="userIsSecurityLoginAttemptWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #loginAttemptModal let-modal>
+   <div class="modal-header bg-dark text-light login-attempt-modal-header">
+      <h5 class="modal-title mb-0" id="loginAttemptModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Login Attempt' : 'Add Login Attempt' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body login-attempt-modal-body">
+      <form [formGroup]="loginAttemptForm" (ngSubmit)="submitForm()">
+            <div class="form-group">
+                <label for="timeStamp" id="label-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                <input type="datetime-local" id="timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control login-attempt-input" [disabled]="!userIsSecurityLoginAttemptWriter()" aria-labelledby="label-timeStamp" />
+                <div *ngIf="loginAttemptForm.get('timeStamp')?.invalid && loginAttemptForm.get('timeStamp')?.touched" class="text-danger">
+                    Time Stamp is required
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="userName" id="label-userName">User Name</label>
+                <input type="text" id="userName" formControlName="userName" placeholder="Enter User Name" class="form-control login-attempt-input" [disabled]="!userIsSecurityLoginAttemptWriter()" aria-labelledby="label-userName" />
+            </div>
+            <div class="form-group">
+                <label for="passwordHash" id="label-passwordHash">Password Hash</label>
+                <input type="number" id="passwordHash" formControlName="passwordHash" placeholder="Enter Password Hash" class="form-control login-attempt-input" [disabled]="!userIsSecurityLoginAttemptWriter()" aria-labelledby="label-passwordHash" />
+            </div>
+            <div class="form-group">
+                <label for="resource" id="label-resource">Resource</label>
+                <textarea id="resource" formControlName="resource" placeholder="Enter Resource" class="form-control login-attempt-input" [disabled]="!userIsSecurityLoginAttemptWriter()"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="sessionId" id="label-sessionId">Session Id</label>
+                <input type="text" id="sessionId" formControlName="sessionId" placeholder="Enter Session Id" class="form-control login-attempt-input" [disabled]="!userIsSecurityLoginAttemptWriter()" aria-labelledby="label-sessionId" />
+            </div>
+            <div class="form-group">
+                <label for="ipAddress" id="label-ipAddress">Ip Address</label>
+                <input type="text" id="ipAddress" formControlName="ipAddress" placeholder="Enter Ip Address" class="form-control login-attempt-input" [disabled]="!userIsSecurityLoginAttemptWriter()" aria-labelledby="label-ipAddress" />
+            </div>
+            <div class="form-group">
+                <label for="userAgent" id="label-userAgent">User Agent</label>
+                <input type="text" id="userAgent" formControlName="userAgent" placeholder="Enter User Agent" class="form-control login-attempt-input" [disabled]="!userIsSecurityLoginAttemptWriter()" aria-labelledby="label-userAgent" />
+            </div>
+            <div class="form-group">
+                <label for="value" id="label-value">Value</label>
+                <textarea id="value" formControlName="value" placeholder="Enter Value" class="form-control login-attempt-input" [disabled]="!userIsSecurityLoginAttemptWriter()"></textarea>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode">
+                <input type="checkbox" id="active" formControlName="active" class="form-check-input" [disabled]="!userIsSecurityLoginAttemptWriter()" />
+                <label for="active" class="form-check-label" id="label-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode">
+                <input type="checkbox" id="deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSecurityLoginAttemptWriter()" />
+                <label for="deleted" class="form-check-label" id="label-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer login-attempt-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Login Attempt changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !loginAttemptForm.valid || loginAttemptForm.pristine || !userIsSecurityLoginAttemptWriter()" ngbTooltip="Save the Login Attempt changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

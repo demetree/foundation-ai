@@ -1,0 +1,546 @@
+﻿{
+   "CodeGenerationMode": 4,
+   "ContextClassName": "SchedulerContext",
+   "ContextNamespace": null,
+   "FilterSchemas": false,
+   "IncludeConnectionString": false,
+   "MinimumProductVersion": "2.6.1186",
+   "ModelNamespace": null,
+   "OutputContextPath": null,
+   "OutputPath": "Database",
+   "PreserveCasingWithRegex": true,
+   "ProjectRootNamespace": "Foundation.Scheduler",
+   "Schemas": null,
+   "SelectedHandlebarsLanguage": 2,
+   "SelectedToBeGenerated": 0,
+   "T4TemplatePath": null,
+   "Tables": [
+      {
+         "Name": "[Scheduler].[Appeal]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[AppealChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[AssignmentRole]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[AssignmentRoleQualificationRequirement]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[AssignmentRoleQualificationRequirementChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[AssignmentStatus]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[Batch]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[BatchChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[BatchStatus]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[BookingSourceType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[Calendar]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[CalendarChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[Campaign]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[CampaignChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ChargeStatus]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ChargeType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ChargeTypeChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[Client]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ClientChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ClientContact]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ClientContactChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ClientType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[Constituent]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ConstituentChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[Contact]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ContactChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ContactContact]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ContactContactChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ContactInteraction]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ContactInteractionChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ContactMethod]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ContactTag]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ContactTagChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ContactType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[Country]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[Crew]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[CrewChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[CrewMember]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[CrewMemberChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[Currency]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[DependencyType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[EventCalendar]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[EventCharge]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[EventChargeChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[EventResourceAssignment]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[EventResourceAssignmentChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[EventStatus]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[Fund]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[FundChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[Gift]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[GiftChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[Household]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[HouseholdChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[Icon]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[InteractionType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[NotificationSubscription]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[NotificationSubscriptionChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[NotificationType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[Office]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[OfficeChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[OfficeContact]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[OfficeContactChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[OfficeType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[PaymentType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[Pledge]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[PledgeChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[Priority]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[Qualification]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[RateSheet]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[RateSheetChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[RateType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ReceiptType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[RecurrenceException]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[RecurrenceExceptionChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[RecurrenceFrequency]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[RecurrenceRule]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[RecurrenceRuleChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[RelationshipType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[Resource]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ResourceAvailability]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ResourceAvailabilityChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ResourceChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ResourceContact]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ResourceContactChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ResourceQualification]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ResourceQualificationChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ResourceShift]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ResourceShiftChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ResourceType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[Salutation]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ScheduledEvent]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ScheduledEventChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ScheduledEventDependency]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ScheduledEventDependencyChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ScheduledEventQualificationRequirement]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ScheduledEventQualificationRequirementChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ScheduledEventTemplate]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ScheduledEventTemplateChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ScheduledEventTemplateCharge]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ScheduledEventTemplateChargeChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ScheduledEventTemplateQualificationRequirement]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ScheduledEventTemplateQualificationRequirementChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[SchedulingTarget]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[SchedulingTargetAddress]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[SchedulingTargetAddressChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[SchedulingTargetChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[SchedulingTargetContact]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[SchedulingTargetContactChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[SchedulingTargetQualificationRequirement]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[SchedulingTargetQualificationRequirementChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[SchedulingTargetType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ShiftPattern]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ShiftPatternChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ShiftPatternDay]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ShiftPatternDayChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[SoftCredit]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[SoftCreditChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[StateProvince]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[Tag]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[TenantProfile]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[TenantProfileChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[TimeZone]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[Tribute]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[TributeChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[TributeType]",
+         "ObjectType": 0
+      }
+   ],
+   "UiHint": null,
+   "UncountableWords": null,
+   "UseAsyncStoredProcedureCalls": true,
+   "UseBoolPropertiesWithoutDefaultSql": false,
+   "UseDatabaseNames": true,
+   "UseDatabaseNamesForRoutines": true,
+   "UseDateOnlyTimeOnly": true,
+   "UseDbContextSplitting": false,
+   "UseDecimalDataAnnotationForSprocResult": true,
+   "UseFluentApiOnly": true,
+   "UseHandleBars": false,
+   "UseHierarchyId": false,
+   "UseInflector": true,
+   "UseInternalAccessModifiersForSprocsAndFunctions": false,
+   "UseLegacyPluralizer": false,
+   "UseManyToManyEntity": false,
+   "UseNoDefaultConstructor": false,
+   "UseNoNavigations": false,
+   "UseNoObjectFilter": false,
+   "UseNodaTime": false,
+   "UseNullableReferences": false,
+   "UsePrefixNavigationNaming": false,
+   "UseSchemaFolders": false,
+   "UseSchemaNamespaces": false,
+   "UseSpatial": false,
+   "UseT4": false,
+   "UseT4Split": false
+}

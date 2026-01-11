@@ -1,0 +1,66 @@
+<div class="container-fluid p-1 m-0 audit-user-agent-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="audit-user-agent-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Audit User Agent</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Audit User Agent' : 'Add Audit User Agent'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsAuditorAuditUserAgentReader()">
+                <div class="col m-2 audit-user-agent-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="auditUserAgentForm" (ngSubmit)="submitForm()" class="audit-user-agent-details-form">
+                            <div class="form-group">
+                                <label for="name" id="label-name"><span class="text-danger">*</span>Name</label>
+                                <textarea id="name" formControlName="name" placeholder="Enter Name" class="form-control audit-user-agent-input" [disabled]="!userIsAuditorAuditUserAgentWriter()"></textarea>
+                                <div *ngIf="auditUserAgentForm.get('name')?.invalid && auditUserAgentForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="comments" id="label-comments">Comments</label>
+                                <textarea id="comments" formControlName="comments" placeholder="Enter Comments" class="form-control audit-user-agent-input" [disabled]="!userIsAuditorAuditUserAgentWriter()"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="firstAccess" id="label-firstAccess">First Access</label>
+                                <input type="datetime-local" id="firstAccess" formControlName="firstAccess" placeholder="Enter First Access" class="form-control audit-user-agent-input" [disabled]="!userIsAuditorAuditUserAgentWriter()" aria-labelledby="label-firstAccess" />
+                            </div>
+                            <div class="audit-user-agent-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="auditUserAgentForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Audit User Agent">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !auditUserAgentForm.valid || !auditUserAgentForm.dirty || auditUserAgentForm.pristine || userIsAuditorAuditUserAgentWriter() == false " ngbTooltip="Save Audit User Agent">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsAuditorAuditUserAgentReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 audit-user-agent-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="auditEventService.userIsAuditorAuditEventReader()">
+                            <button ngbNavLink>AuditEvents
+                                <span class="badge bg-primary ms-2">
+                                    {{ (auditUserAgentData?.AuditEventsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <app-audit-event-table [queryParams]="GetQueryParameters()"></app-audit-event-table>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,78 @@
+<div class="add-booking-source-type" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-booking-source-type me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Booking Source Type" 
+        *ngIf="userIsSchedulerBookingSourceTypeWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #bookingSourceTypeModal let-modal>
+   <div class="modal-header bg-dark text-light booking-source-type-modal-header">
+      <h5 class="modal-title mb-0" id="bookingSourceTypeModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Booking Source Type' : 'Add Booking Source Type' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body booking-source-type-modal-body">
+      <form [formGroup]="bookingSourceTypeForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="BookingSourceType-name" id="label-BookingSourceType-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="BookingSourceType-name" formControlName="name" placeholder="Enter Name" class="form-control booking-source-type-input" [disabled]="!userIsSchedulerBookingSourceTypeWriter()" aria-labelledby="label-name" />
+                <div *ngIf="bookingSourceTypeForm.get('name')?.invalid && bookingSourceTypeForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="BookingSourceType-description" id="label-BookingSourceType-description"><span class="text-danger">*</span>Description</label>
+                <textarea id="BookingSourceType-description" formControlName="description" placeholder="Enter Description" class="form-control booking-source-type-input" [disabled]="!userIsSchedulerBookingSourceTypeWriter()"></textarea>
+                <div *ngIf="bookingSourceTypeForm.get('description')?.invalid && bookingSourceTypeForm.get('description')?.touched" class="text-danger">
+                    Description is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('color')">
+                <label for="BookingSourceType-color" id="label-BookingSourceType-color">Color</label>
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="BookingSourceType-color" 
+                        formControlName="color" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerBookingSourceTypeWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="bookingSourceTypeForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                <label for="BookingSourceType-sequence" id="label-BookingSourceType-sequence">Sequence</label>
+                <input type="number" id="BookingSourceType-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control booking-source-type-input" [disabled]="!userIsSchedulerBookingSourceTypeWriter()" aria-labelledby="label-sequence" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="BookingSourceType-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerBookingSourceTypeWriter()" />
+                <label for="BookingSourceType-active" class="form-check-label" id="label-BookingSourceType-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="BookingSourceType-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerBookingSourceTypeWriter()" />
+                <label for="BookingSourceType-deleted" class="form-check-label" id="label-BookingSourceType-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer booking-source-type-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Booking Source Type changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !bookingSourceTypeForm.valid || bookingSourceTypeForm.pristine || !userIsSchedulerBookingSourceTypeWriter()" ngbTooltip="Save the Booking Source Type changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

@@ -1,0 +1,63 @@
+/* Resource Overview Tab - Clean, readable layout */
+
+/* Ensure definition lists have consistent spacing */
+dl.row {
+  margin-bottom: 0;
+
+  dt {
+    font-weight: 500;
+  }
+
+  dd {
+    margin-bottom: 0.75rem;
+  }
+}
+
+.color-swatch {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 1px solid #ced4da; /* Matches form-control border for consistency */
+  border-radius: 4px; /* Slight rounding for modern look */
+  flex-shrink: 0; /* Prevents shrinking in flex layouts */
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1); /* Subtle depth */
+}
+
+
+
+/* Card headers - subtle background */
+.card-header.bg-light {
+  background-color: #f8f9fa !important;
+  border-bottom: 1px solid #dee2e6;
+}
+
+/* Quick stats - larger numbers, balanced colors */
+.fs-3 {
+  font-size: 2rem !important;
+}
+
+.text-primary {
+  color: #0d6efd;
+}
+
+.text-info {
+  color: #17a2b8;
+}
+
+.text-warning {
+  color: #ffc107;
+}
+
+.text-danger {
+  color: #dc3545;
+}
+
+/* Badge styling consistency */
+.badge {
+  font-size: 0.875rem;
+}
+
+
+.clickable {
+  cursor: pointer;
+}

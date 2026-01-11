@@ -1,0 +1,1256 @@
+using System;
+using System.Threading;
+using System.Data;
+using System.Text.Json;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Storage;
+using Foundation.Security;
+using Foundation.Auditor;
+using Foundation.Controllers;
+using Foundation.Security.Database;
+using static Foundation.Auditor.AuditEngine;
+using Foundation.Scheduler.Database;
+
+namespace Foundation.Scheduler.Controllers.WebAPI
+{
+    /// <summary>
+    /// 
+    /// This auto generated class provides the basic CRUD operations for the RecurrenceRule entity via a Web API.
+	/// 
+	/// It can be used as-is, or as a starting point for customizations in a new partial class, or a new class entirely.
+    ///
+    /// It demonstrates the features available for the RecurrenceRule entity, possibly including: multi tenancy, data visibility, version control with rollback, and favouriting.
+	/// 
+    /// </summary>
+	public partial class RecurrenceRulesController : SecureWebAPIController
+	{
+		public const int READ_PERMISSION_LEVEL_REQUIRED = 1;
+		public const int WRITE_PERMISSION_LEVEL_REQUIRED = 1;
+
+		static object recurrenceRulePutSyncRoot = new object();
+		static object recurrenceRuleDeleteSyncRoot = new object();
+
+		private SchedulerContext _context;
+
+		private ILogger<RecurrenceRulesController> _logger;
+
+		public RecurrenceRulesController(SchedulerContext context, ILogger<RecurrenceRulesController> logger) : base("Scheduler", "RecurrenceRule")
+		{
+			this._context = context;
+			this._logger = logger;
+
+			this._context.Database.SetCommandTimeout(60);
+
+			return;
+		}
+
+		/// <summary>
+		/// 
+		/// This gets a list of RecurrenceRules filtered by the parameters provided.
+		/// 
+		/// There is a filter parameter for every field, and an 'anyStringContains' parameter for cross field string partial searches.
+		/// 
+		/// Note also the pagination control in the pageSize and pageNumber parameters.
+		/// 
+		/// The rate limit is 2 per second per user.
+		/// 
+		/// </summary>
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/RecurrenceRules")]
+		public async Task<IActionResult> GetRecurrenceRules(
+			int? recurrenceFrequencyId = null,
+			int? interval = null,
+			DateTime? untilDateTime = null,
+			int? count = null,
+			int? dayOfWeekMask = null,
+			int? dayOfMonth = null,
+			int? dayOfWeekInMonth = null,
+			int? versionNumber = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
+			int? pageSize = null,
+			int? pageNumber = null,
+			string anyStringContains = null,
+			bool includeRelations = true,
+			CancellationToken cancellationToken = default)
+		{
+			StartAuditEventClock();
+
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 1, cancellationToken);
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+
+			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+			if (pageNumber.HasValue == true &&
+			    pageNumber < 1)
+			{
+			    pageNumber = null;
+			}
+
+			if (pageSize.HasValue == true &&
+			    pageSize <= 0)
+			{
+			    pageSize = null;
+			}
+
+			//
+			// Turn any local time kinded parameters to UTC.
+			//
+			if (untilDateTime.HasValue == true && untilDateTime.Value.Kind != DateTimeKind.Utc)
+			{
+				untilDateTime = untilDateTime.Value.ToUniversalTime();
+			}
+
+			IQueryable<Database.RecurrenceRule> query = (from rr in _context.RecurrenceRules select rr);
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+			if (recurrenceFrequencyId.HasValue == true)
+			{
+				query = query.Where(rr => rr.recurrenceFrequencyId == recurrenceFrequencyId.Value);
+			}
+			if (interval.HasValue == true)
+			{
+				query = query.Where(rr => rr.interval == interval.Value);
+			}
+			if (untilDateTime.HasValue == true)
+			{
+				query = query.Where(rr => rr.untilDateTime == untilDateTime.Value);
+			}
+			if (count.HasValue == true)
+			{
+				query = query.Where(rr => rr.count == count.Value);
+			}
+			if (dayOfWeekMask.HasValue == true)
+			{
+				query = query.Where(rr => rr.dayOfWeekMask == dayOfWeekMask.Value);
+			}
+			if (dayOfMonth.HasValue == true)
+			{
+				query = query.Where(rr => rr.dayOfMonth == dayOfMonth.Value);
+			}
+			if (dayOfWeekInMonth.HasValue == true)
+			{
+				query = query.Where(rr => rr.dayOfWeekInMonth == dayOfWeekInMonth.Value);
+			}
+			if (versionNumber.HasValue == true)
+			{
+				query = query.Where(rr => rr.versionNumber == versionNumber.Value);
+			}
+			if (objectGuid.HasValue == true)
+			{
+				query = query.Where(rr => rr.objectGuid == objectGuid);
+			}
+			if (userIsWriter == true)
+			{
+				if (active.HasValue == true)
+				{
+					query = query.Where(rr => rr.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(rr => rr.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(rr => rr.deleted == false);
+				}
+			}
+			else
+			{
+				query = query.Where(rr => rr.active == true);
+				query = query.Where(rr => rr.deleted == false);
+			}
+
+			query = query.OrderBy(rr => rr.id);
+
+			if (pageNumber.HasValue == true &&
+			    pageSize.HasValue == true)
+			{
+			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
+			}
+			
+			if (includeRelations == true)
+			{
+				query = query.Include(x => x.recurrenceFrequency);
+				query = query.AsSplitQuery();
+			}
+
+
+			//
+			// Add the any string contains parameter to span all the string fields on the Recurrence Rule, or on an any of the string fields on its immediate relations
+			//
+			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
+			//
+			if (!string.IsNullOrEmpty(anyStringContains))
+			{
+			   query = query.Where(x =>
+			       (includeRelations == true && x.recurrenceFrequency.name.Contains(anyStringContains))
+			       || (includeRelations == true && x.recurrenceFrequency.description.Contains(anyStringContains))
+			   );
+			}
+
+			query = query.AsNoTracking();
+			
+			List<Database.RecurrenceRule> materialized = await query.ToListAsync(cancellationToken);
+
+			// Convert all the date properties to be of kind UTC.
+			bool databaseStoresDateWithTimeZone = _context.DoesDatabaseStoreDateWithTimeZone();
+			foreach (Database.RecurrenceRule recurrenceRule in materialized)
+			{
+			    Foundation.DateTimeUtility.ConvertAllDateTimePropertiesToUTC(recurrenceRule, databaseStoresDateWithTimeZone);
+			}
+
+
+			await CreateAuditEventAsync(AuditEngine.AuditType.ReadList, userIsAdmin == true ? "Scheduler.RecurrenceRule Entity list was read with Admin privilege.  Returning " + materialized.Count + " rows of data." : "Scheduler.RecurrenceRule Entity list was read.  Returning " + materialized.Count + " rows of data.");
+
+			// Create a new output object that only includes the relations if necessary, and doesn't include the empty list objects, so that we can reduce the amount of data being transferred.
+			if (includeRelations == true)
+			{
+				// Return a DTO with nav properties.
+				return Ok((from materializedData in materialized select materializedData.ToOutputDTO()).ToList());
+			}
+			else
+			{
+				// Return a DTO without nav properties.
+				return Ok((from materializedData in materialized select materializedData.ToDTO()).ToList());
+			}
+		}
+		
+		
+        /// <summary>
+        /// 
+        /// This returns a row count of RecurrenceRules filtered by the parameters provided.  Its query is similar to the GetRecurrenceRules method, but it only returns the count of rows that would be returned.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/RecurrenceRules/RowCount")]
+		public async Task<IActionResult> GetRowCount(
+			int? recurrenceFrequencyId = null,
+			int? interval = null,
+			DateTime? untilDateTime = null,
+			int? count = null,
+			int? dayOfWeekMask = null,
+			int? dayOfMonth = null,
+			int? dayOfWeekInMonth = null,
+			int? versionNumber = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
+			string anyStringContains = null,
+			CancellationToken cancellationToken = default)
+		{
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 1, cancellationToken);
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			//
+			// Fix any non-UTC date parameters that come in.
+			//
+			if (untilDateTime.HasValue == true && untilDateTime.Value.Kind != DateTimeKind.Utc)
+			{
+				untilDateTime = untilDateTime.Value.ToUniversalTime();
+			}
+
+			IQueryable<Database.RecurrenceRule> query = (from rr in _context.RecurrenceRules select rr);
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+			if (recurrenceFrequencyId.HasValue == true)
+			{
+				query = query.Where(rr => rr.recurrenceFrequencyId == recurrenceFrequencyId.Value);
+			}
+			if (interval.HasValue == true)
+			{
+				query = query.Where(rr => rr.interval == interval.Value);
+			}
+			if (untilDateTime.HasValue == true)
+			{
+				query = query.Where(rr => rr.untilDateTime == untilDateTime.Value);
+			}
+			if (count.HasValue == true)
+			{
+				query = query.Where(rr => rr.count == count.Value);
+			}
+			if (dayOfWeekMask.HasValue == true)
+			{
+				query = query.Where(rr => rr.dayOfWeekMask == dayOfWeekMask.Value);
+			}
+			if (dayOfMonth.HasValue == true)
+			{
+				query = query.Where(rr => rr.dayOfMonth == dayOfMonth.Value);
+			}
+			if (dayOfWeekInMonth.HasValue == true)
+			{
+				query = query.Where(rr => rr.dayOfWeekInMonth == dayOfWeekInMonth.Value);
+			}
+			if (versionNumber.HasValue == true)
+			{
+				query = query.Where(rr => rr.versionNumber == versionNumber.Value);
+			}
+			if (objectGuid.HasValue == true)
+			{
+				query = query.Where(rr => rr.objectGuid == objectGuid);
+			}
+			if (userIsWriter == true)
+			{
+				if (active.HasValue == true)
+				{
+					query = query.Where(rr => rr.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(rr => rr.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(rr => rr.deleted == false);
+				}
+			}
+			else
+			{
+				query = query.Where(rr => rr.active == true);
+				query = query.Where(rr => rr.deleted == false);
+			}
+
+			//
+			// Add the any string contains parameter to span all the string fields on the Recurrence Rule, or on an any of the string fields on its immediate relations
+			//
+			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
+			//
+			if (!string.IsNullOrEmpty(anyStringContains))
+			{
+			   query = query.Where(x =>
+			       x.recurrenceFrequency.name.Contains(anyStringContains)
+			       || x.recurrenceFrequency.description.Contains(anyStringContains)
+			   );
+			}
+
+
+			int output = await query.CountAsync(cancellationToken);
+
+			return Ok(output);
+		}
+
+
+        /// <summary>
+        /// 
+        /// This gets a single RecurrenceRule by primary key.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/RecurrenceRule/{id}")]
+		public async Task<IActionResult> GetRecurrenceRule(int id, bool includeRelations = true, CancellationToken cancellationToken = default)
+		{
+			StartAuditEventClock();
+
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 1, cancellationToken);
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
+			
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			try
+			{
+				IQueryable<Database.RecurrenceRule> query = (from rr in _context.RecurrenceRules where
+							(rr.id == id) &&
+							(userIsAdmin == true || rr.deleted == false) &&
+							(userIsWriter == true || rr.active == true)
+					select rr);
+
+
+				query = query.Where(x => x.tenantGuid == userTenantGuid);
+				if (includeRelations == true)
+				{
+					query = query.Include(x => x.recurrenceFrequency);
+					query = query.AsSplitQuery();
+				}
+
+				Database.RecurrenceRule materialized = await query.FirstOrDefaultAsync(cancellationToken);
+
+				if (materialized != null)
+				{
+					
+					// Convert all the date properties to be of kind UTC.
+					Foundation.DateTimeUtility.ConvertAllDateTimePropertiesToUTC(materialized, _context.DoesDatabaseStoreDateWithTimeZone());
+
+					await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, userIsAdmin == true ? "Scheduler.RecurrenceRule Entity was read with Admin privilege." : "Scheduler.RecurrenceRule Entity was read.");
+
+					BackgroundJob.Enqueue(() => SecurityLogic.AddToUserMostRecents(securityUser.id, "RecurrenceRule", materialized.id, materialized.id.ToString()));
+
+
+					// Create a new output object that only includes the relations if necessary, and doesn't include the empty list objects, so that we can reduce the amount of data being transferred.
+					if (includeRelations == true)
+					{
+						return Ok(materialized.ToOutputDTO());             // DTO with nav properties
+					}
+					else
+					{
+						return Ok(materialized.ToDTO());                   // DTO without nav properties
+					}
+				}
+				else
+				{
+					await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt to read a Scheduler.RecurrenceRule entity that does not exist.", id.ToString());
+					return BadRequest();
+				}
+			}
+			catch (Exception ex)
+			{
+				await CreateAuditEventAsync(AuditEngine.AuditType.Error, userIsAdmin == true ? "Exception caught during entity read of Scheduler.RecurrenceRule.   Entity was read with Admin privilege." : "Exception caught during entity read of Scheduler.RecurrenceRule.", id.ToString(), ex);
+				return Problem(ex.ToString());
+			}
+		}
+
+
+		/// <summary>
+		/// 
+		/// This updates an existing RecurrenceRule record
+        ///
+        /// The rate limit is 2 per second per user.
+		/// 
+		/// </summary>
+		[Route("api/RecurrenceRule/{id}")]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[HttpPost]
+		[HttpPut]
+		public async Task<IActionResult> PutRecurrenceRule(int id, [FromBody]Database.RecurrenceRule.RecurrenceRuleDTO recurrenceRuleDTO, CancellationToken cancellationToken = default)
+		{
+			if (recurrenceRuleDTO == null)
+			{
+			   return BadRequest();
+			}
+
+			StartAuditEventClock();
+
+			if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+
+			if (id != recurrenceRuleDTO.id)
+			{
+				return BadRequest();
+			}
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 1, cancellationToken);
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			IQueryable<Database.RecurrenceRule> query = (from x in _context.RecurrenceRules
+				where
+				(x.id == id)
+				select x);
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+			Database.RecurrenceRule existing = await query.FirstOrDefaultAsync(cancellationToken);
+
+			if (existing == null)
+			{
+				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for Scheduler.RecurrenceRule PUT", id.ToString(), new Exception("No Scheduler.RecurrenceRule entity could be found with the primary key provided."));
+				return NotFound();
+			}
+
+
+            //
+            // Validate the object guid.  If it comes in as empty Guid in the DTO, then set it to the actual value from the existing record.  If the DTO has a value then it must match the existing value.
+            // 
+            if (recurrenceRuleDTO.objectGuid == Guid.Empty)
+            {
+                recurrenceRuleDTO.objectGuid = existing.objectGuid;
+            }
+            else if (recurrenceRuleDTO.objectGuid != existing.objectGuid)
+            {
+                await CreateAuditEventAsync(AuditEngine.AuditType.Error, $"Attempt was made to change object guid on a RecurrenceRule record.  This is not allowed.  The User is " + securityUser.accountName, existing.id.ToString());
+                return Problem("Invalid Operation.");
+            }
+
+
+			// Copy the existing object so it can be serialized as-is in the audit and history logs.
+			Database.RecurrenceRule cloneOfExisting = (Database.RecurrenceRule)_context.Entry(existing).GetDatabaseValues().ToObject();
+
+			//
+			// Create a new RecurrenceRule object using the data from the existing record, updated with what is in the DTO.
+			//
+			Database.RecurrenceRule recurrenceRule = (Database.RecurrenceRule)_context.Entry(existing).GetDatabaseValues().ToObject();
+			recurrenceRule.ApplyDTO(recurrenceRuleDTO);
+			//
+			// The tenant guid for any RecurrenceRule being saved must match the tenant guid of the user.  
+			//
+			if (existing.tenantGuid != userTenantGuid)
+			{
+				await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to save a record with a tenant guid that is not the user's tenant guid.", false);
+				return Problem("Data integrity violation detected while attempting to save.");
+			}
+			else
+			{
+				// Assign the tenantGuid to the RecurrenceRule because it shouldn't be on the input object, and we want to ensure that it always is what the correct value in case it is.
+				recurrenceRule.tenantGuid = existing.tenantGuid;
+			}
+
+			lock (recurrenceRulePutSyncRoot)
+			{
+				//
+				// Validate the version number for the recurrenceRule being saved.  Error out if the database version is different than what is being saved.  If they are the same, then increment the version for this save.
+				//
+				if (existing.versionNumber != recurrenceRule.versionNumber)
+				{
+					// Record has changed
+					CreateAuditEvent(AuditEngine.AuditType.Miscellaneous, "RecurrenceRule save attempt was made but save request was with version " + recurrenceRule.versionNumber + " and the current version number is " + existing.versionNumber, false);
+					return Problem("The RecurrenceRule you are trying to update has already changed.  Please try your save again after reloading the RecurrenceRule.");
+				}
+				else
+				{
+					// Same record.  Increase version.
+					recurrenceRule.versionNumber++;
+				}
+
+
+				// Is user who is not an admin trying to delete, or to work on a deleted record, or to delete a record by flipping it's deleted flag to true?
+				if (userIsAdmin == false && (recurrenceRule.deleted == true || existing.deleted == true))
+				{
+					// we're not recording state here because it is not being changed.
+					CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, "Attempt to delete a record or work on a deleted Scheduler.RecurrenceRule record.", id.ToString());
+					DestroySessionAndAuthentication();
+					return Forbid();
+				}
+
+				if (recurrenceRule.untilDateTime.HasValue == true && recurrenceRule.untilDateTime.Value.Kind != DateTimeKind.Utc)
+				{
+					recurrenceRule.untilDateTime = recurrenceRule.untilDateTime.Value.ToUniversalTime();
+				}
+
+				try
+				{
+				    EntityEntry<Database.RecurrenceRule> attached = _context.Entry(existing);
+				    attached.CurrentValues.SetValues(recurrenceRule);
+
+				    using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+				    {
+				        _context.SaveChanges();
+
+				        //
+				        // Now add the change history
+				        //
+				        RecurrenceRuleChangeHistory recurrenceRuleChangeHistory = new RecurrenceRuleChangeHistory();
+				        recurrenceRuleChangeHistory.recurrenceRuleId = recurrenceRule.id;
+				        recurrenceRuleChangeHistory.versionNumber = recurrenceRule.versionNumber;
+				        recurrenceRuleChangeHistory.timeStamp = DateTime.UtcNow;
+				        recurrenceRuleChangeHistory.userId = securityUser.id;
+				        recurrenceRuleChangeHistory.tenantGuid = userTenantGuid;
+				        recurrenceRuleChangeHistory.data = JsonSerializer.Serialize(Database.RecurrenceRule.CreateAnonymousWithFirstLevelSubObjects(recurrenceRule));
+				        _context.RecurrenceRuleChangeHistories.Add(recurrenceRuleChangeHistory);
+
+				        _context.SaveChanges();
+
+				        transaction.Commit();
+				    }
+
+					CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
+						"Scheduler.RecurrenceRule entity successfully updated.",
+						true,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.RecurrenceRule.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.RecurrenceRule.CreateAnonymousWithFirstLevelSubObjects(recurrenceRule)),
+						null);
+
+				return Ok(Database.RecurrenceRule.CreateAnonymous(recurrenceRule));
+				}
+				catch (Exception ex)
+				{
+					CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
+						"Scheduler.RecurrenceRule entity update failed",
+						false,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.RecurrenceRule.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.RecurrenceRule.CreateAnonymousWithFirstLevelSubObjects(recurrenceRule)),
+						ex);
+
+					return Problem(ex.Message);
+				}
+
+			}
+		}
+
+        /// <summary>
+        /// 
+        /// This creates a new RecurrenceRule record
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+		[HttpPost]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/RecurrenceRule", Name = "RecurrenceRule")]
+		public async Task<IActionResult> PostRecurrenceRule([FromBody]Database.RecurrenceRule.RecurrenceRuleDTO recurrenceRuleDTO, CancellationToken cancellationToken = default)
+		{
+			if (recurrenceRuleDTO == null)
+			{
+			   return BadRequest();
+			}
+
+			StartAuditEventClock();
+
+			if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+			//
+			// Create a new RecurrenceRule object using the data from the DTO
+			//
+			Database.RecurrenceRule recurrenceRule = Database.RecurrenceRule.FromDTO(recurrenceRuleDTO);
+
+			try
+			{
+				//
+				// Ensure that the tenant data is correct.
+				//
+				recurrenceRule.tenantGuid = userTenantGuid;
+
+				if (recurrenceRule.untilDateTime.HasValue == true && recurrenceRule.untilDateTime.Value.Kind != DateTimeKind.Utc)
+				{
+					recurrenceRule.untilDateTime = recurrenceRule.untilDateTime.Value.ToUniversalTime();
+				}
+
+				recurrenceRule.objectGuid = Guid.NewGuid();
+				recurrenceRule.versionNumber = 1;
+
+				_context.RecurrenceRules.Add(recurrenceRule);
+
+				await using (IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync(cancellationToken))
+				{
+				    await _context.SaveChangesAsync(cancellationToken);
+
+				    //
+				    // Now add the change history
+				    //
+
+				    //
+				    // Detach the recurrenceRule object so that no further changes will be written to the database
+				    //
+				    _context.Entry(recurrenceRule).State = EntityState.Detached;
+
+				    //
+				    // Nullify all object properties before serializing.
+				    //
+					recurrenceRule.RecurrenceRuleChangeHistories = null;
+					recurrenceRule.ScheduledEvents = null;
+					recurrenceRule.recurrenceFrequency = null;
+
+
+				    RecurrenceRuleChangeHistory recurrenceRuleChangeHistory = new RecurrenceRuleChangeHistory();
+				    recurrenceRuleChangeHistory.recurrenceRuleId = recurrenceRule.id;
+				    recurrenceRuleChangeHistory.versionNumber = recurrenceRule.versionNumber;
+				    recurrenceRuleChangeHistory.timeStamp = DateTime.UtcNow;
+				    recurrenceRuleChangeHistory.userId = securityUser.id;
+				    recurrenceRuleChangeHistory.tenantGuid = userTenantGuid;
+				    recurrenceRuleChangeHistory.data = JsonSerializer.Serialize(Database.RecurrenceRule.CreateAnonymousWithFirstLevelSubObjects(recurrenceRule));
+				    _context.RecurrenceRuleChangeHistories.Add(recurrenceRuleChangeHistory);
+				    await _context.SaveChangesAsync(cancellationToken);
+
+				    await transaction.CommitAsync(cancellationToken);
+
+					await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
+						"Scheduler.RecurrenceRule entity successfully created.",
+						true,
+						recurrenceRule. id.ToString(),
+						"",
+						JsonSerializer.Serialize(Database.RecurrenceRule.CreateAnonymousWithFirstLevelSubObjects(recurrenceRule)),
+						null);
+
+
+				}
+			}
+			catch (Exception ex)
+			{
+				await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity, "Scheduler.RecurrenceRule entity creation failed.", false, recurrenceRule.id.ToString(), "", JsonSerializer.Serialize(Database.RecurrenceRule.CreateAnonymousWithFirstLevelSubObjects(recurrenceRule)), ex);
+
+				return Problem(ex.Message);
+			}
+
+
+			BackgroundJob.Enqueue(() => SecurityLogic.AddToUserMostRecents(securityUser.id, "RecurrenceRule", recurrenceRule.id, recurrenceRule.id.ToString()));
+
+			return CreatedAtRoute("RecurrenceRule", new { id = recurrenceRule.id }, Database.RecurrenceRule.CreateAnonymousWithFirstLevelSubObjects(recurrenceRule));
+		}
+
+
+
+        /// <summary>
+        /// 
+        /// This rolls a RecurrenceRule entity back to the state it was in at a prior version number.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+		[HttpPut]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/RecurrenceRule/Rollback/{id}")]
+		[Route("api/RecurrenceRule/Rollback")]
+		public async Task<IActionResult> RollbackToRecurrenceRuleVersion(int id, int versionNumber, CancellationToken cancellationToken = default)
+		{
+			//
+			// Data rollback is an admin only function, like Deletes.
+			//
+			StartAuditEventClock();
+			
+			if (await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+			
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+			
+
+			
+			IQueryable <Database.RecurrenceRule> query = (from x in _context.RecurrenceRules
+			        where
+			        (x.id == id)
+			        select x);
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+
+			//
+			// Make sure nobody else is editing this RecurrenceRule concurrently
+			//
+			lock (recurrenceRulePutSyncRoot)
+			{
+				
+				Database.RecurrenceRule recurrenceRule = query.FirstOrDefault();
+				
+				if (recurrenceRule == null)
+				{
+				    CreateAuditEvent(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for Scheduler.RecurrenceRule rollback", id.ToString(), new Exception("No Scheduler.RecurrenceRule entity could be find with the primary key provided for the rollback operation."));
+				    return NotFound();
+				}
+				
+				//
+				// Make a copy of the RecurrenceRule current state so we can log it.
+				//
+				Database.RecurrenceRule cloneOfExisting = (Database.RecurrenceRule)_context.Entry(recurrenceRule).GetDatabaseValues().ToObject();
+				
+				//
+				// Remove any object fields from the clone object so that it can serialize effectively
+				//
+				cloneOfExisting.RecurrenceRuleChangeHistories = null;
+				cloneOfExisting.ScheduledEvents = null;
+				cloneOfExisting.recurrenceFrequency = null;
+
+				if (versionNumber >= recurrenceRule.versionNumber)
+				{
+				    CreateAuditEvent(AuditEngine.AuditType.UpdateEntity, "Invalid version number provided for Scheduler.RecurrenceRule rollback.  Version number provided is " + versionNumber, id.ToString(), new Exception("Invalid version number provided for Scheduler.RecurrenceRule rollback operation.Version number provided is " + versionNumber));
+				    return NotFound();
+				}
+				
+				RecurrenceRuleChangeHistory recurrenceRuleChangeHistory = (from x in _context.RecurrenceRuleChangeHistories
+				                                               where
+				                                               x.recurrenceRuleId == id &&
+				                                               x.versionNumber == versionNumber &&
+				                                               x.tenantGuid == userTenantGuid
+				                                               select x)
+				                                               .AsNoTracking()
+				                                               .FirstOrDefault();
+
+				if (recurrenceRuleChangeHistory != null)
+				{
+				    Database.RecurrenceRule oldRecurrenceRule = JsonSerializer.Deserialize<Database.RecurrenceRule>(recurrenceRuleChangeHistory.data);
+				
+				    //
+				    // Increase the version number
+				    //
+				    recurrenceRule.versionNumber++;
+				
+				    //
+				    // Put all other fields back the way that they were 
+				    //
+				    recurrenceRule.recurrenceFrequencyId = oldRecurrenceRule.recurrenceFrequencyId;
+				    recurrenceRule.interval = oldRecurrenceRule.interval;
+				    recurrenceRule.untilDateTime = oldRecurrenceRule.untilDateTime;
+				    recurrenceRule.count = oldRecurrenceRule.count;
+				    recurrenceRule.dayOfWeekMask = oldRecurrenceRule.dayOfWeekMask;
+				    recurrenceRule.dayOfMonth = oldRecurrenceRule.dayOfMonth;
+				    recurrenceRule.dayOfWeekInMonth = oldRecurrenceRule.dayOfWeekInMonth;
+				    recurrenceRule.objectGuid = oldRecurrenceRule.objectGuid;
+				    recurrenceRule.active = oldRecurrenceRule.active;
+				    recurrenceRule.deleted = oldRecurrenceRule.deleted;
+
+				    string serializedRecurrenceRule = JsonSerializer.Serialize(recurrenceRule);
+
+				    using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+				    {
+
+				        _context.SaveChanges();
+
+				        //
+				        // Now add the change history
+				        //
+				        RecurrenceRuleChangeHistory newRecurrenceRuleChangeHistory = new RecurrenceRuleChangeHistory();
+				        newRecurrenceRuleChangeHistory.recurrenceRuleId = recurrenceRule.id;
+				        newRecurrenceRuleChangeHistory.versionNumber = recurrenceRule.versionNumber;
+				        newRecurrenceRuleChangeHistory.timeStamp = DateTime.UtcNow;
+				        newRecurrenceRuleChangeHistory.userId = securityUser.id;
+				        newRecurrenceRuleChangeHistory.tenantGuid = userTenantGuid;
+				        newRecurrenceRuleChangeHistory.data = JsonSerializer.Serialize(Database.RecurrenceRule.CreateAnonymousWithFirstLevelSubObjects(recurrenceRule));
+				        _context.RecurrenceRuleChangeHistories.Add(newRecurrenceRuleChangeHistory);
+
+				        _context.SaveChanges();
+
+				        transaction.Commit();
+				    }
+
+					CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
+						"Scheduler.RecurrenceRule rollback process successfully rolled back to version number " + versionNumber,
+						true,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.RecurrenceRule.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.RecurrenceRule.CreateAnonymousWithFirstLevelSubObjects(recurrenceRule)),
+						null);
+
+
+				    return Ok(Database.RecurrenceRule.CreateAnonymous(recurrenceRule));
+				}
+				else
+				{
+				    CreateAuditEvent(AuditEngine.AuditType.UpdateEntity, "Could not find version number provided for Scheduler.RecurrenceRule rollback.  Version number provided is " + versionNumber, id.ToString(), new Exception("Could not find version number provided for Scheduler.RecurrenceRule rollback.  Version number provided is " + versionNumber));
+
+				    return BadRequest();
+				}
+			}
+		}
+
+
+        /// <summary>
+        /// 
+        /// This deletes a RecurrenceRule record
+		/// 
+		/// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+		[HttpDelete]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/RecurrenceRule/{id}")]
+		[Route("api/RecurrenceRule")]
+		public async Task<IActionResult> DeleteRecurrenceRule(int id, CancellationToken cancellationToken = default)
+		{
+			StartAuditEventClock();
+
+			if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(cancellationToken);
+			
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+			IQueryable<Database.RecurrenceRule> query = (from x in _context.RecurrenceRules
+				where
+				(x.id == id)
+				select x);
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+			Database.RecurrenceRule recurrenceRule = await query.FirstOrDefaultAsync(cancellationToken);
+
+			if (recurrenceRule == null)
+			{
+				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for Scheduler.RecurrenceRule DELETE", id.ToString(), new Exception("No Scheduler.RecurrenceRule entity could be find with the primary key provided."));
+				return NotFound();
+			}
+			Database.RecurrenceRule cloneOfExisting = (Database.RecurrenceRule)_context.Entry(recurrenceRule).GetDatabaseValues().ToObject();
+
+
+			lock (recurrenceRuleDeleteSyncRoot)
+			{
+			    try
+			    {
+			        recurrenceRule.deleted = true;
+			        recurrenceRule.versionNumber++;
+
+			        _context.SaveChanges();
+
+			        //
+			        // Now add the change history
+			        //
+			        RecurrenceRuleChangeHistory recurrenceRuleChangeHistory = new RecurrenceRuleChangeHistory();
+			        recurrenceRuleChangeHistory.recurrenceRuleId = recurrenceRule.id;
+			        recurrenceRuleChangeHistory.versionNumber = recurrenceRule.versionNumber;
+			        recurrenceRuleChangeHistory.timeStamp = DateTime.UtcNow;
+			        recurrenceRuleChangeHistory.userId = securityUser.id;
+			        recurrenceRuleChangeHistory.tenantGuid = userTenantGuid;
+			        recurrenceRuleChangeHistory.data = JsonSerializer.Serialize(Database.RecurrenceRule.CreateAnonymousWithFirstLevelSubObjects(recurrenceRule));
+			        _context.RecurrenceRuleChangeHistories.Add(recurrenceRuleChangeHistory);
+
+			        _context.SaveChanges();
+
+					CreateAuditEvent(AuditEngine.AuditType.DeleteEntity,
+						"Scheduler.RecurrenceRule entity successfully deleted.",
+						true,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.RecurrenceRule.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.RecurrenceRule.CreateAnonymousWithFirstLevelSubObjects(recurrenceRule)),
+						null);
+
+			    }
+			    catch (Exception ex)
+			    {
+					CreateAuditEvent(AuditEngine.AuditType.DeleteEntity,
+						"Scheduler.RecurrenceRule entity delete failed",
+						false,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.RecurrenceRule.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.RecurrenceRule.CreateAnonymousWithFirstLevelSubObjects(recurrenceRule)),
+						ex);
+
+			        return Problem(ex.Message);
+			    }
+			    return Ok();
+			}
+		}
+
+
+        /// <summary>
+        /// 
+        /// This gets a list of RecurrenceRule records, filtered by the parameters provided in a simple minimal format that is useful for drop down boxes and similar.
+		/// 
+		/// It has the same filtering paramfeters as the full ListData method, but only returns the id and name fields.
+        /// 
+		/// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+		[Route("api/RecurrenceRules/ListData")]
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		public async Task<IActionResult> GetListData(
+			int? recurrenceFrequencyId = null,
+			int? interval = null,
+			DateTime? untilDateTime = null,
+			int? count = null,
+			int? dayOfWeekMask = null,
+			int? dayOfMonth = null,
+			int? dayOfWeekInMonth = null,
+			int? versionNumber = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
+			string anyStringContains = null,
+			int? pageSize = null,
+			int? pageNumber = null,
+			CancellationToken cancellationToken = default)
+		{
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 1, cancellationToken);
+
+			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			if (pageNumber.HasValue == true &&
+			    pageNumber < 1)
+			{
+			    pageNumber = null;
+			}
+
+			if (pageSize.HasValue == true &&
+			    pageSize <= 0)
+			{
+			    pageSize = null;
+			}
+
+			//
+			// Turn any local time kinded parameters to UTC.
+			//
+			if (untilDateTime.HasValue == true && untilDateTime.Value.Kind != DateTimeKind.Utc)
+			{
+				untilDateTime = untilDateTime.Value.ToUniversalTime();
+			}
+
+			IQueryable<Database.RecurrenceRule> query = (from rr in _context.RecurrenceRules select rr);
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+			if (recurrenceFrequencyId.HasValue == true)
+			{
+				query = query.Where(rr => rr.recurrenceFrequencyId == recurrenceFrequencyId.Value);
+			}
+			if (interval.HasValue == true)
+			{
+				query = query.Where(rr => rr.interval == interval.Value);
+			}
+			if (untilDateTime.HasValue == true)
+			{
+				query = query.Where(rr => rr.untilDateTime == untilDateTime.Value);
+			}
+			if (count.HasValue == true)
+			{
+				query = query.Where(rr => rr.count == count.Value);
+			}
+			if (dayOfWeekMask.HasValue == true)
+			{
+				query = query.Where(rr => rr.dayOfWeekMask == dayOfWeekMask.Value);
+			}
+			if (dayOfMonth.HasValue == true)
+			{
+				query = query.Where(rr => rr.dayOfMonth == dayOfMonth.Value);
+			}
+			if (dayOfWeekInMonth.HasValue == true)
+			{
+				query = query.Where(rr => rr.dayOfWeekInMonth == dayOfWeekInMonth.Value);
+			}
+			if (versionNumber.HasValue == true)
+			{
+				query = query.Where(rr => rr.versionNumber == versionNumber.Value);
+			}
+			if (objectGuid.HasValue == true)
+			{
+				query = query.Where(rr => rr.objectGuid == objectGuid);
+			}
+			if (userIsWriter == true)
+			{
+				if (active.HasValue == true)
+				{
+					query = query.Where(rr => rr.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(rr => rr.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(rr => rr.deleted == false);
+				}
+			}
+			else
+			{
+				query = query.Where(rr => rr.active == true);
+				query = query.Where(rr => rr.deleted == false);
+			}
+
+
+			//
+			// Add the any string contains parameter to span all the string fields on the Recurrence Rule, or on an any of the string fields on its immediate relations
+			//
+			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
+			//
+			if (!string.IsNullOrEmpty(anyStringContains))
+			{
+			   query = query.Where(x =>
+			       x.recurrenceFrequency.name.Contains(anyStringContains)
+			       || x.recurrenceFrequency.description.Contains(anyStringContains)
+			   );
+			}
+
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+
+			query = query.OrderBy(x => x.id);
+			if (pageNumber.HasValue == true &&
+			    pageSize.HasValue == true)
+			{
+			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
+			}
+			return Ok(await (from queryData in query select Database.RecurrenceRule.CreateMinimalAnonymous(queryData)).ToListAsync(cancellationToken));
+		}
+
+
+        /// <summary>
+        /// 
+        /// This method creates an audit event from within the controller.  It is intended for use by custom logic in client applications that needs to create audit events.
+        /// 
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="message"></param>
+        /// <param name="primaryKey"></param>
+        /// <returns></returns>
+		[HttpPost]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/RecurrenceRule/CreateAuditEvent")]
+		public async Task<IActionResult> CreateControllerAuditEvent(AuditEngine.AuditType type, string message, string primaryKey = null)
+		{
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED) == false)
+			{
+			   return Forbid();
+			}
+
+		    await CreateAuditEventAsync(type, message, primaryKey);
+
+		    return Ok();
+		}
+
+
+	}
+}

@@ -1,0 +1,91 @@
+<div class="modal-header">
+  <h4 class="modal-title">
+    {{ isAddMode ? 'Log New Interaction' : 'Edit Interaction' }}
+  </h4>
+  <button type="button" class="btn-close" (click)="cancel()" aria-label="Close"></button>
+</div>
+
+<div class="modal-body">
+  <form [formGroup]="interactionForm" (ngSubmit)="submit()">
+    <div class="row g-3">
+      <!-- Interaction Type -->
+      <div class="col-md-12">
+        <label for="interactionTypeId" class="form-label">
+          <span class="text-danger">*</span> Type
+        </label>
+        <select id="interactionTypeId"
+                formControlName="interactionTypeId"
+                class="form-select"
+                [disabled]="isSaving">
+          <option [ngValue]="null">Select Type</option>
+          <option *ngFor="let type of interactionTypes$ | async" [ngValue]="type.id">
+            {{ type.name }}
+          </option>
+        </select>
+        <div *ngIf="interactionForm.get('interactionTypeId')?.invalid && interactionForm.get('interactionTypeId')?.touched"
+             class="text-danger small mt-1">
+          Interaction type is required.
+        </div>
+      </div>
+
+      <!-- Start Time -->
+      <div class="col-md-6">
+        <label for="startTime" class="form-label">
+          <span class="text-danger">*</span> Start Time
+        </label>
+        <input type="datetime-local"
+               id="startTime"
+               formControlName="startTime"
+               class="form-control"
+               [disabled]="isSaving" />
+      </div>
+
+      <!-- End Time -->
+      <div class="col-md-6">
+        <label for="endTime" class="form-label">End Time</label>
+        <input type="datetime-local"
+               id="endTime"
+               formControlName="endTime"
+               class="form-control"
+               [disabled]="isSaving" />
+      </div>
+
+      <!-- Location -->
+      <div class="col-12">
+        <label for="location" class="form-label">Location</label>
+        <input type="text"
+               id="location"
+               formControlName="location"
+               class="form-control"
+               placeholder="e.g., Office, Phone, Zoom"
+               [disabled]="isSaving" />
+      </div>
+
+      <!-- Notes -->
+      <div class="col-12">
+        <label for="notes" class="form-label">Notes</label>
+        <textarea id="notes"
+                  formControlName="notes"
+                  class="form-control"
+                  rows="4"
+                  placeholder="Details about the interaction..."
+                  [disabled]="isSaving"></textarea>
+      </div>
+    </div>
+  </form>
+</div>
+
+<div class="modal-footer">
+  <button type="button"
+          class="btn btn-secondary"
+          (click)="cancel()"
+          [disabled]="isSaving">
+    Cancel
+  </button>
+  <button type="button"
+          class="btn btn-primary"
+          (click)="submit()"
+          [disabled]="isSaving || !interactionForm.valid">
+    {{ isSaving ? 'Saving...' : (isAddMode ? 'Log Interaction' : 'Save Changes') }}
+  </button>
+</div>

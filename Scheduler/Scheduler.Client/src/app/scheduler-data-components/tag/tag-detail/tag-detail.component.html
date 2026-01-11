@@ -1,0 +1,124 @@
+<div class="container-fluid p-1 m-0 tag-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="tag-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Tag</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Tag' : 'Add Tag'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerTagReader()">
+                <div class="col m-2 tag-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="tagForm" (ngSubmit)="submitForm()" class="tag-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="Tag-name" id="label-Tag-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="Tag-name" formControlName="name" placeholder="Enter Name" class="form-control tag-input" [disabled]="!userIsSchedulerTagWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="tagForm.get('name')?.invalid && tagForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="Tag-description" id="label-Tag-description"><span class="text-danger">*</span>Description</label>
+                                <textarea id="Tag-description" formControlName="description" placeholder="Enter Description" class="form-control tag-input" [disabled]="!userIsSchedulerTagWriter()"></textarea>
+                                <div *ngIf="tagForm.get('description')?.invalid && tagForm.get('description')?.touched" class="text-danger">
+                                    Description is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                                <label for="Tag-sequence" id="label-Tag-sequence">Sequence</label>
+                                <input type="number" id="Tag-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control tag-input" [disabled]="!userIsSchedulerTagWriter()" aria-labelledby="label-sequence" />
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isSystem')">
+                                <input type="checkbox" id="Tag-isSystem" formControlName="isSystem" class="form-check-input" [disabled]="!userIsSchedulerTagWriter()" />
+                                <label for="Tag-isSystem" class="form-check-label" id="label-Tag-isSystem">Is System</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('priorityId')">
+                                <label for="Tag-priorityId" id="label-Tag-priorityId">Priority</label>
+                                <select id="Tag-priorityId" formControlName="priorityId" class="form-select tag-select" [disabled]="!userIsSchedulerTagWriter()">
+                                    <option [ngValue]="null">Select Priority</option>
+                                    <option *ngFor="let priority of priorities$ | async" [ngValue]="priority.id">{{priority.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('iconId')">
+                                <label for="Tag-iconId" id="label-Tag-iconId">Icon</label>
+                                <select id="Tag-iconId" formControlName="iconId" class="form-select tag-select" [disabled]="!userIsSchedulerTagWriter()">
+                                    <option [ngValue]="null">Select Icon</option>
+                                    <option *ngFor="let icon of icons$ | async" [ngValue]="icon.id">{{icon.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('color')">
+                                <label for="Tag-color" id="label-Tag-color">Color</label>
+                                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="Tag-color" 
+                        formControlName="color" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerTagWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="tagForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="Tag-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerTagWriter()" />
+                                <label for="Tag-active" class="form-check-label" id="label-Tag-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="Tag-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerTagWriter()" />
+                                <label for="Tag-deleted" class="form-check-label" id="label-Tag-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="tag-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="tagForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Tag">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !tagForm.valid || !tagForm.dirty || tagForm.pristine || userIsSchedulerTagWriter() == false " ngbTooltip="Save Tag">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerTagReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 tag-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="contactTagService.userIsSchedulerContactTagReader()">
+                            <button ngbNavLink>Contact Tags
+                                <span class="badge bg-primary ms-2">
+                                    {{ (tagData?.ContactTagsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-contact-tag-table [queryParams]="{ tagId: tagData?.id }"></app-contact-tag-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-contact-tag-add-edit [preSeededData]="{ tagId: tagData?.id }" [hiddenFields]="['tagId']"></app-contact-tag-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

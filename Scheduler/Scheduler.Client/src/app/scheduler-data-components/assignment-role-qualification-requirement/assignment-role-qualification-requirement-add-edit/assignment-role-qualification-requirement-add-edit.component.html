@@ -1,0 +1,66 @@
+<div class="add-assignment-role-qualification-requirement" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-assignment-role-qualification-requirement me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Assignment Role Qualification Requirement" 
+        *ngIf="userIsSchedulerAssignmentRoleQualificationRequirementWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #assignmentRoleQualificationRequirementModal let-modal>
+   <div class="modal-header bg-dark text-light assignment-role-qualification-requirement-modal-header">
+      <h5 class="modal-title mb-0" id="assignmentRoleQualificationRequirementModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Assignment Role Qualification Requirement' : 'Add Assignment Role Qualification Requirement' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body assignment-role-qualification-requirement-modal-body">
+      <form [formGroup]="assignmentRoleQualificationRequirementForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('assignmentRoleId')">
+                <label for="AssignmentRoleQualificationRequirement-assignmentRoleId" id="label-AssignmentRoleQualificationRequirement-assignmentRoleId"><span class="text-danger">*</span>Assignment Role</label>
+                <select id="AssignmentRoleQualificationRequirement-assignmentRoleId" formControlName="assignmentRoleId" class="form-select assignment-role-qualification-requirement-select" [disabled]="!userIsSchedulerAssignmentRoleQualificationRequirementWriter()">
+                    <option [ngValue]="null">Select Assignment Role</option>
+                    <option *ngFor="let assignmentRole of assignmentRoles$ | async" [ngValue]="assignmentRole.id">{{assignmentRole.name}}</option>
+                </select>
+                <div *ngIf="assignmentRoleQualificationRequirementForm.get('assignmentRoleId')?.invalid && assignmentRoleQualificationRequirementForm.get('assignmentRoleId')?.touched" class="text-danger">
+                    Assignment Role is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('qualificationId')">
+                <label for="AssignmentRoleQualificationRequirement-qualificationId" id="label-AssignmentRoleQualificationRequirement-qualificationId"><span class="text-danger">*</span>Qualification</label>
+                <select id="AssignmentRoleQualificationRequirement-qualificationId" formControlName="qualificationId" class="form-select assignment-role-qualification-requirement-select" [disabled]="!userIsSchedulerAssignmentRoleQualificationRequirementWriter()">
+                    <option [ngValue]="null">Select Qualification</option>
+                    <option *ngFor="let qualification of qualifications$ | async" [ngValue]="qualification.id">{{qualification.name}}</option>
+                </select>
+                <div *ngIf="assignmentRoleQualificationRequirementForm.get('qualificationId')?.invalid && assignmentRoleQualificationRequirementForm.get('qualificationId')?.touched" class="text-danger">
+                    Qualification is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isRequired')">
+                <input type="checkbox" id="AssignmentRoleQualificationRequirement-isRequired" formControlName="isRequired" class="form-check-input" [disabled]="!userIsSchedulerAssignmentRoleQualificationRequirementWriter()" />
+                <label for="AssignmentRoleQualificationRequirement-isRequired" class="form-check-label" id="label-AssignmentRoleQualificationRequirement-isRequired"><span class="text-danger">*</span>Is Required</label>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="AssignmentRoleQualificationRequirement-versionNumber" id="label-AssignmentRoleQualificationRequirement-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="AssignmentRoleQualificationRequirement-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control assignment-role-qualification-requirement-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="AssignmentRoleQualificationRequirement-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerAssignmentRoleQualificationRequirementWriter()" />
+                <label for="AssignmentRoleQualificationRequirement-active" class="form-check-label" id="label-AssignmentRoleQualificationRequirement-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="AssignmentRoleQualificationRequirement-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerAssignmentRoleQualificationRequirementWriter()" />
+                <label for="AssignmentRoleQualificationRequirement-deleted" class="form-check-label" id="label-AssignmentRoleQualificationRequirement-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer assignment-role-qualification-requirement-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Assignment Role Qualification Requirement changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !assignmentRoleQualificationRequirementForm.valid || assignmentRoleQualificationRequirementForm.pristine || !userIsSchedulerAssignmentRoleQualificationRequirementWriter()" ngbTooltip="Save the Assignment Role Qualification Requirement changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

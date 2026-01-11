@@ -1,0 +1,117 @@
+<div class="container-fluid p-1 m-0 resource-type-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="resource-type-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Resource Type</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Resource Type' : 'Add Resource Type'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerResourceTypeReader()">
+                <div class="col m-2 resource-type-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="resourceTypeForm" (ngSubmit)="submitForm()" class="resource-type-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="ResourceType-name" id="label-ResourceType-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="ResourceType-name" formControlName="name" placeholder="Enter Name" class="form-control resource-type-input" [disabled]="!userIsSchedulerResourceTypeWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="resourceTypeForm.get('name')?.invalid && resourceTypeForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="ResourceType-description" id="label-ResourceType-description"><span class="text-danger">*</span>Description</label>
+                                <textarea id="ResourceType-description" formControlName="description" placeholder="Enter Description" class="form-control resource-type-input" [disabled]="!userIsSchedulerResourceTypeWriter()"></textarea>
+                                <div *ngIf="resourceTypeForm.get('description')?.invalid && resourceTypeForm.get('description')?.touched" class="text-danger">
+                                    Description is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isBillable')">
+                                <input type="checkbox" id="ResourceType-isBillable" formControlName="isBillable" class="form-check-input" [disabled]="!userIsSchedulerResourceTypeWriter()" />
+                                <label for="ResourceType-isBillable" class="form-check-label" id="label-ResourceType-isBillable">Is Billable</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                                <label for="ResourceType-sequence" id="label-ResourceType-sequence">Sequence</label>
+                                <input type="number" id="ResourceType-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control resource-type-input" [disabled]="!userIsSchedulerResourceTypeWriter()" aria-labelledby="label-sequence" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('iconId')">
+                                <label for="ResourceType-iconId" id="label-ResourceType-iconId">Icon</label>
+                                <select id="ResourceType-iconId" formControlName="iconId" class="form-select resource-type-select" [disabled]="!userIsSchedulerResourceTypeWriter()">
+                                    <option [ngValue]="null">Select Icon</option>
+                                    <option *ngFor="let icon of icons$ | async" [ngValue]="icon.id">{{icon.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('color')">
+                                <label for="ResourceType-color" id="label-ResourceType-color">Color</label>
+                                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="ResourceType-color" 
+                        formControlName="color" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerResourceTypeWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="resourceTypeForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ResourceType-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerResourceTypeWriter()" />
+                                <label for="ResourceType-active" class="form-check-label" id="label-ResourceType-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ResourceType-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerResourceTypeWriter()" />
+                                <label for="ResourceType-deleted" class="form-check-label" id="label-ResourceType-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="resource-type-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="resourceTypeForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Resource Type">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !resourceTypeForm.valid || !resourceTypeForm.dirty || resourceTypeForm.pristine || userIsSchedulerResourceTypeWriter() == false " ngbTooltip="Save Resource Type">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerResourceTypeReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 resource-type-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="resourceService.userIsSchedulerResourceReader()">
+                            <button ngbNavLink>Resources
+                                <span class="badge bg-primary ms-2">
+                                    {{ (resourceTypeData?.ResourcesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-resource-table [queryParams]="{ resourceTypeId: resourceTypeData?.id }"></app-resource-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-resource-add-edit [preSeededData]="{ resourceTypeId: resourceTypeData?.id }" [hiddenFields]="['resourceTypeId']"></app-resource-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

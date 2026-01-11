@@ -1,0 +1,266 @@
+<div class="container-fluid p-1 m-0 resource-details-container">
+  <div class="p-2 detail-background">
+
+    <!-- Header with Avatar and Key Info -->
+    <div class="card mb-4 header-card shadow-sm">
+      <div class="card-body d-flex align-items-center gap-4">
+
+        <!-- Avatar -->
+        <div class="avatar rounded-circle overflow-hidden border shadow clickable"
+             style="width: 120px; height: 120px; background: #f8f9fa;"
+             (click)="openEditModal()">
+          <ng-container *ngIf="resource?.avatarData; else defaultAvatar">
+            <img [src]="'data:' + (resource?.avatarMimeType || 'image/png') + ';base64,' + (resource?.avatarData || '')"
+                 class="w-100 h-100 object-fit-cover"
+                 alt="{{ resource?.name }} avatar">
+          </ng-container>
+
+          <ng-template #defaultAvatar>
+            <div class="w-100 h-100 d-flex align-items-center justify-content-center text-white fw-bold fs-3"
+                 [style.background-color]="resource?.color || '#6c757d'">
+              {{ resource?.name | slice:0:2 | uppercase }}
+            </div>
+          </ng-template>
+        </div>
+
+        <!-- Details -->
+        <div class="flex-grow-1">
+          <div class="d-flex align-items-center gap-3 mb-2">
+
+            <span class="text-uppercase text-muted small fw-semibold">Resource</span>
+            <span class="text-muted small">•</span>
+            <h3 class="mb-0">{{ resource?.name || 'Loading...' }}</h3>
+
+            <!-- Active / Deleted Status -->
+            <span class="badge" [ngClass]="resource?.active ? 'bg-success' : 'bg-secondary'">
+              {{ resource?.active ? 'Active' : 'Inactive' }}
+            </span>
+
+            <span *ngIf="resource?.deleted == true" class="badge " [ngClass]="resource?.deleted ? 'bg-danger' : 'bg-secondary'">
+              {{ resource?.deleted ? 'Deleted' : 'Not Deleted' }}
+            </span>
+
+            <span class="badge bg-secondary">Version: {{ resource?.versionNumber }}</span>
+          </div>
+
+          <div class="text-muted small">
+            <div *ngIf="resource?.description"><strong>Description: </strong>{{ resource?.description }}</div>
+            <div class="clickable" (click)="navigateToOffice(resource?.officeId)" *ngIf="officeCount$ != null && ((officeCount$ | async) ?? 0) > 0"><strong>Office:</strong> {{ resource?.office?.name || '—' }}</div>
+            <div><strong>Type:</strong> {{ resource?.resourceType?.name || '—' }}</div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="text-end">
+          <button class="btn btn-primary" (click)="openEditModal()" *ngIf="userIsSchedulerResourceWriter()">
+            <i class="fa fa-pen me-2"></i> Edit
+          </button>
+          <button class="btn btn-outline-secondary ms-2" (click)="goBack()" ngbTooltip="Go Back" *ngIf="canGoBack()">
+            <i class="fa fa-arrow-left me-2"></i> Back
+          </button>
+
+          <app-resource-custom-add-edit [navigateToDetailsAfterAdd]="false" (resourceChanged)="resourceChanged($event)" style="display: none"></app-resource-custom-add-edit>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading / Error -->
+    <div class="text-center py-5" *ngIf="isLoading$ | async">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading resource...</span>
+      </div>
+    </div>
+
+    <div class="alert alert-danger" *ngIf="error">
+      <i class="fa-solid fa-exclamation-triangle me-2"></i>
+      {{ error }}
+    </div>
+
+    <!-- Tabs -->
+    <ul ngbNav #nav="ngbNav" class="nav-tabs" [(activeId)]="activeTab">
+      <li ngbNavItem="overview">
+        <button ngbNavLink>Overview</button>
+        <ng-template ngbNavContent>
+          <div *ngIf="resource; else loadingTemplate">
+            <app-resource-overview-tab [resource]="resource"></app-resource-overview-tab>
+          </div>
+          <ng-template #loadingTemplate>
+            <div class="text-center py-5 text-muted">
+              <div class="spinner-border spinner-border-sm" role="status">
+                <span class="visually-hidden">Loading overview...</span>
+              </div>
+            </div>
+            <div class="mt-3">Loading resource details...</div>
+          </ng-template>
+        </ng-template>
+      </li>
+
+      <li ngbNavItem="assignments">
+        <button ngbNavLink>
+          Assignments
+          <span class="badge bg-primary ms-2">
+            {{ (ResourceAssignmentCount$ | async) ?? '-' }}
+          </span>
+        </button>
+        <ng-template ngbNavContent>
+          <div *ngIf="resource; else loadingTemplate">
+            <app-resource-assignments-tab [resource]="resource"
+                                          (resourceAssignmentChanged)="refreshRowCountObservables()"></app-resource-assignments-tab>
+          </div>
+          <ng-template #loadingTemplate>
+            <div class="text-center py-5 text-muted">
+              <div class="spinner-border spinner-border-sm" role="status">
+                <span class="visually-hidden">Loading assignments...</span>
+              </div>
+            </div>
+            <div class="mt-3">Loading assignments...</div>
+          </ng-template>
+        </ng-template>
+      </li>
+
+      <li ngbNavItem="crews">
+        <button ngbNavLink>
+          Crews
+          <span class="badge bg-info ms-2">
+            {{ (resource?.CrewMembersCount$ | async) ?? '-' }}
+          </span>
+        </button>
+        <ng-template ngbNavContent>
+          <div *ngIf="resource; else loadingTemplate">
+            <app-resource-crews-tab [resource]="resource"
+                                    (crewMembersChanged)="refreshRowCountObservables()"></app-resource-crews-tab>
+          </div>
+          <ng-template #loadingTemplate>
+            <div class="text-center py-5 text-muted">
+              <div class="spinner-border spinner-border-sm" role="status">
+                <span class="visually-hidden">Loading crews...</span>
+              </div>
+            </div>
+            <div class="mt-3">Loading resource crew details...</div>
+          </ng-template>
+        </ng-template>
+      </li>
+
+      <li ngbNavItem="availability">
+        <button ngbNavLink>
+          Availability
+          <span class="badge bg-warning ms-2">
+            {{ (resource?.ResourceAvailabilitiesCount$ | async) ?? '-' }}
+          </span>
+        </button>
+        <ng-template ngbNavContent>
+          <div *ngIf="resource; else loadingTemplate">
+            <app-resource-availability-tab [resource]="resource"
+                                           (resourceAvailabilityChanged)="refreshRowCountObservables()"></app-resource-availability-tab>
+          </div>
+          <ng-template #loadingTemplate>
+            <div class="text-center py-5 text-muted">
+              <div class="spinner-border spinner-border-sm" role="status">
+                <span class="visually-hidden">Loading availability...</span>
+              </div>
+            </div>
+            <div class="mt-3">Loading availablity details...</div>
+          </ng-template>
+        </ng-template>
+      </li>
+
+      <li ngbNavItem="qualifications">
+        <button ngbNavLink>
+          Qualifications
+          <span class="badge bg-danger text-light ms-2">
+            {{ (resource?.ResourceQualificationsCount$ | async) ?? '-' }}
+          </span>
+        </button>
+        <ng-template ngbNavContent>
+          <div *ngIf="resource; else loadingTemplate">
+            <app-resource-qualifications-tab [resource]="resource"
+                                             (resourceQualificationChanged)="refreshRowCountObservables()"></app-resource-qualifications-tab>
+          </div>
+          <ng-template #loadingTemplate>
+            <div class="text-center py-5 text-muted">
+              <div class="spinner-border spinner-border-sm" role="status">
+                <span class="visually-hidden">Loading qualifications...</span>
+              </div>
+            </div>
+            <div class="mt-3">Loading resource qualification details...</div>
+          </ng-template>
+        </ng-template>
+      </li>
+
+
+      <li ngbNavItem="contacts">
+        <button ngbNavLink>
+          Contacts
+          <span class="badge bg-success ms-2">
+            {{ (resource?.ResourceContactsCount$ | async) ?? '-' }}
+          </span>
+        </button>
+        <ng-template ngbNavContent>
+          <div *ngIf="resource; else loadingTemplate">
+            <app-resource-contacts-tab [resource]="resource"
+                                       (resourceContactChanged)="refreshRowCountObservables()"
+                                       (contactChanged)="refreshRowCountObservables()"
+                                       ></app-resource-contacts-tab>
+          </div>
+          <ng-template #loadingTemplate>
+            <div class="text-center py-5 text-muted">
+              <div class="spinner-border spinner-border-sm" role="status">
+                <span class="visually-hidden">Loading contacts...</span>
+              </div>
+            </div>
+            <div class="mt-3">Loading contacts...</div>
+          </ng-template>
+        </ng-template>
+      </li>
+
+
+      <li ngbNavItem="notifications">
+        <button ngbNavLink>
+          Notifications
+          <span class="badge bg-secondary ms-2">
+            {{ (resource?.NotificationSubscriptionsCount$| async) ?? '-' }}
+          </span>
+        </button>
+        <ng-template ngbNavContent>
+          <div *ngIf="resource; else loadingTemplate">
+            <app-resource-notifications-tab [resource]="resource"
+                                            (resourceNotificationSubscriptionChanged)="refreshRowCountObservables()" ></app-resource-notifications-tab>
+          </div>
+          <ng-template #loadingTemplate>
+            <div class="text-center py-5 text-muted">
+              <div class="spinner-border spinner-border-sm" role="status">
+                <span class="visually-hidden">Loading notification subscriptions...</span>
+              </div>
+            </div>
+            <div class="mt-3">Loading notification subscriptions...</div>
+          </ng-template>
+        </ng-template>
+      </li>
+
+      <li ngbNavItem="rates">
+        <button ngbNavLink>
+          Rate Overrides
+          <span class="badge bg-primary ms-2">
+            {{ (resource?.RateSheetsCount$| async) ?? '-' }}
+          </span>
+        </button>
+        <ng-template ngbNavContent>
+          <div *ngIf="resource; else loadingTemplate">
+            <app-resource-rates-tab [resource]="resource" (resourceRateSheetChanged)="refreshRowCountObservables()"></app-resource-rates-tab>
+          </div>
+          <ng-template #loadingTemplate>
+            <div class="text-center py-5 text-muted">
+              <div class="spinner-border spinner-border-sm" role="status">
+                <span class="visually-hidden">Loading rate overrides...</span>
+              </div>
+            </div>
+            <div class="mt-3">Loading rate overrides...</div>
+          </ng-template>
+        </ng-template>
+      </li>
+
+
+    </ul>
+    <div [ngbNavOutlet]="nav" class="mt-4"></div>
+  </div>
+</div>

@@ -1,0 +1,74 @@
+<div class="modal-header">
+  <h5 class="modal-title">
+    Add Blackout Period
+    <small class="text-muted d-block" *ngIf="resourceName">
+      for {{ resourceName }}
+    </small>
+  </h5>
+  <button type="button" class="btn-close" (click)="cancel()" aria-label="Close"></button>
+</div>
+
+<div class="modal-body">
+  <form [formGroup]="blackoutForm">
+    <div class="row">
+      <div class="col-md-6">
+        <div class="mb-3">
+          <label for="startDateTime" class="form-label">
+            <span class="text-danger">*</span> Start Date & Time
+          </label>
+          <input type="datetime-local"
+                 id="startDateTime"
+                 formControlName="startDateTime"
+                 class="form-control" />
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="mb-3">
+          <label for="endDateTime" class="form-label">
+            <span class="text-danger">*</span> End Date & Time
+          </label>
+          <input type="datetime-local"
+                 id="endDateTime"
+                 formControlName="endDateTime"
+                 class="form-control" />
+          <small class="form-text text-muted">
+            Must be after start time
+          </small>
+        </div>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label for="reason" class="form-label">
+        <span class="text-danger">*</span> Reason
+      </label>
+      <textarea id="reason"
+                formControlName="reason"
+                class="form-control"
+                rows="3"
+                placeholder="e.g., Vacation, Training, Maintenance"></textarea>
+    </div>
+
+
+    <div class="mb-3">
+      <label for="reason" class="form-label">
+        Notes
+      </label>
+      <textarea id="notes"
+                formControlName="notes"
+                class="form-control"
+                rows="3"
+                placeholder="Any additional notes to include separately from the reason."></textarea>
+    </div>
+  </form>
+</div>
+
+<div class="modal-footer">
+  <button type="button" class="btn btn-secondary" (click)="cancel()" [disabled]="isSaving">
+    Cancel
+  </button>
+  <button type="button" class="btn btn-primary" (click)="submit()" [disabled]="isSaving || !blackoutForm.valid">
+    <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2" role="status"></span>
+    Add Blackout
+  </button>
+</div>

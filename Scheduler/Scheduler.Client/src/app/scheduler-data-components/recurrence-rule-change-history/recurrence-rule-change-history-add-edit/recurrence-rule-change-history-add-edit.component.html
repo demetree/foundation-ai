@@ -1,0 +1,65 @@
+<div class="add-recurrence-rule-change-history" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-recurrence-rule-change-history me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Recurrence Rule Change History" 
+        *ngIf="userIsSchedulerRecurrenceRuleChangeHistoryWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #recurrenceRuleChangeHistoryModal let-modal>
+   <div class="modal-header bg-dark text-light recurrence-rule-change-history-modal-header">
+      <h5 class="modal-title mb-0" id="recurrenceRuleChangeHistoryModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Recurrence Rule Change History' : 'Add Recurrence Rule Change History' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body recurrence-rule-change-history-modal-body">
+      <form [formGroup]="recurrenceRuleChangeHistoryForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('recurrenceRuleId')">
+                <label for="RecurrenceRuleChangeHistory-recurrenceRuleId" id="label-RecurrenceRuleChangeHistory-recurrenceRuleId"><span class="text-danger">*</span>Recurrence Rule</label>
+                <select id="RecurrenceRuleChangeHistory-recurrenceRuleId" formControlName="recurrenceRuleId" class="form-select recurrence-rule-change-history-select" [disabled]="!userIsSchedulerRecurrenceRuleChangeHistoryWriter()">
+                    <option [ngValue]="null">Select Recurrence Rule</option>
+                    <option *ngFor="let recurrenceRule of recurrenceRules$ | async" [ngValue]="recurrenceRule.id">{{recurrenceRule.id}}</option>
+                </select>
+                <div *ngIf="recurrenceRuleChangeHistoryForm.get('recurrenceRuleId')?.invalid && recurrenceRuleChangeHistoryForm.get('recurrenceRuleId')?.touched" class="text-danger">
+                    Recurrence Rule is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="RecurrenceRuleChangeHistory-versionNumber" id="label-RecurrenceRuleChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="RecurrenceRuleChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control recurrence-rule-change-history-input" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                <label for="RecurrenceRuleChangeHistory-timeStamp" id="label-RecurrenceRuleChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                <input type="datetime-local" id="RecurrenceRuleChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control recurrence-rule-change-history-input" [disabled]="!userIsSchedulerRecurrenceRuleChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                <div *ngIf="recurrenceRuleChangeHistoryForm.get('timeStamp')?.invalid && recurrenceRuleChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                    Time Stamp is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                <label for="RecurrenceRuleChangeHistory-userId" id="label-RecurrenceRuleChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                <input type="number" id="RecurrenceRuleChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control recurrence-rule-change-history-input" [disabled]="!userIsSchedulerRecurrenceRuleChangeHistoryWriter()" aria-labelledby="label-userId" />
+                <div *ngIf="recurrenceRuleChangeHistoryForm.get('userId')?.invalid && recurrenceRuleChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                    User Id is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                <label for="RecurrenceRuleChangeHistory-data" id="label-RecurrenceRuleChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                <textarea id="RecurrenceRuleChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control recurrence-rule-change-history-input" [disabled]="!userIsSchedulerRecurrenceRuleChangeHistoryWriter()"></textarea>
+                <div *ngIf="recurrenceRuleChangeHistoryForm.get('data')?.invalid && recurrenceRuleChangeHistoryForm.get('data')?.touched" class="text-danger">
+                    Data is required
+                </div>
+            </div>
+         <div class="modal-footer recurrence-rule-change-history-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Recurrence Rule Change History changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !recurrenceRuleChangeHistoryForm.valid || recurrenceRuleChangeHistoryForm.pristine || !userIsSchedulerRecurrenceRuleChangeHistoryWriter()" ngbTooltip="Save the Recurrence Rule Change History changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

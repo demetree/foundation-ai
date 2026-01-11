@@ -1,0 +1,13 @@
+# ScheduleDatabaseGenerator
+
+This is a simple project that defines the Scheduler system's database.
+
+This is a *.Net Standard class library that uses *CodeGenerationCommon*'s database generator to implement the Alert system's tables.
+
+It is to be used by all  projects built on either .Net Core or .Net framework that want to use the Alert database model.
+
+
+Scheduler is a purpose-built, multi-tenant resource scheduling system designed primarily for construction operations but flexible enough to serve any domain that needs to plan people, equipment, vehicles, or other assets over time. At its core, it allows users to create scheduled events of arbitrary duration and assign resources to those events—either individually or as pre-defined crews—for the full event timeframe or any partial overlapping interval. This partial-assignment capability is particularly valuable in construction, where shift hand-offs, staggered arrivals, or shared equipment usage are common.
+A key strength of Scheduler is its support for persistent crews. Rather than forcing users to manually re-assign the same group of resources every time, crews are defined once (e.g., “Roller Crew Alpha” consisting of a specific roller, operator, supervisor, and spotter, each with an optional default role). Once defined, an entire crew can be assigned to an event with a single action, dramatically reducing scheduling effort and minimizing errors. Individual resources can still be assigned independently when needed, giving planners maximum flexibility.
+The system also provides robust availability management through resource blackout periods (vacations, maintenance windows, training, etc.), role-based assignments for clearer responsibility tracking, and optional calendar grouping for logical separation of schedules (e.g., “2026 Road Projects” vs. “Equipment Maintenance”). All data is versioned with full change history, multi-tenant isolated, and secured via granular permission controls—consistent with the rest of our Foundation platform.
+In practice, Scheduler serves as the central planning hub that lets superintendents, dispatchers, and project managers visualize upcoming work, spot conflicts early, and ensure the right people and equipment are in the right place at the right time. It is deliberately kept as a focused, independent module so it can evolve quickly and integrate cleanly with downstream systems (such as Basecamp project creation) via background processes. The result is a clean, maintainable scheduling backbone that directly supports efficient, conflict-free field operations.

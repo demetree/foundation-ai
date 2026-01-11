@@ -1,0 +1,194 @@
+<div class="container-fluid p-1 m-0 audit-event-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="audit-event-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Audit Event</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Audit Event' : 'Add Audit Event'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsAuditorAuditEventReader()">
+                <div class="col m-2 audit-event-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="auditEventForm" (ngSubmit)="submitForm()" class="audit-event-details-form">
+                            <div class="form-group">
+                                <label for="startTime" id="label-startTime"><span class="text-danger">*</span>Start Time</label>
+                                <input type="datetime-local" id="startTime" formControlName="startTime" placeholder="Enter Start Time" class="form-control audit-event-input" [disabled]="!userIsAuditorAuditEventWriter()" aria-labelledby="label-startTime" />
+                                <div *ngIf="auditEventForm.get('startTime')?.invalid && auditEventForm.get('startTime')?.touched" class="text-danger">
+                                    Start Time is required
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="stopTime" id="label-stopTime"><span class="text-danger">*</span>Stop Time</label>
+                                <input type="datetime-local" id="stopTime" formControlName="stopTime" placeholder="Enter Stop Time" class="form-control audit-event-input" [disabled]="!userIsAuditorAuditEventWriter()" aria-labelledby="label-stopTime" />
+                                <div *ngIf="auditEventForm.get('stopTime')?.invalid && auditEventForm.get('stopTime')?.touched" class="text-danger">
+                                    Stop Time is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2">
+                                <input type="checkbox" id="completedSuccessfully" formControlName="completedSuccessfully" class="form-check-input" [disabled]="!userIsAuditorAuditEventWriter()" />
+                                <label for="completedSuccessfully" class="form-check-label" id="label-completedSuccessfully"><span class="text-danger">*</span>Completed Successfully</label>
+                            </div>
+                            <div class="form-group">
+                                <label for="auditUserId" id="label-auditUserId"><span class="text-danger">*</span>Audit User</label>
+                                <select id="auditUserId" formControlName="auditUserId" class="form-select audit-event-select" [disabled]="!userIsAuditorAuditEventWriter()">
+                                    <option [ngValue]="null">Select Audit User</option>
+                                    <option *ngFor="let auditUser of auditUsers$ | async" [ngValue]="auditUser.id">{{auditUser.name}}</option>
+                                </select>
+                                <div *ngIf="auditEventForm.get('auditUserId')?.invalid && auditEventForm.get('auditUserId')?.touched" class="text-danger">
+                                    Audit User is required
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="auditSessionId" id="label-auditSessionId"><span class="text-danger">*</span>Audit Session</label>
+                                <select id="auditSessionId" formControlName="auditSessionId" class="form-select audit-event-select" [disabled]="!userIsAuditorAuditEventWriter()">
+                                    <option [ngValue]="null">Select Audit Session</option>
+                                    <option *ngFor="let auditSession of auditSessions$ | async" [ngValue]="auditSession.id">{{auditSession.name}}</option>
+                                </select>
+                                <div *ngIf="auditEventForm.get('auditSessionId')?.invalid && auditEventForm.get('auditSessionId')?.touched" class="text-danger">
+                                    Audit Session is required
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="auditTypeId" id="label-auditTypeId"><span class="text-danger">*</span>Audit Type</label>
+                                <select id="auditTypeId" formControlName="auditTypeId" class="form-select audit-event-select" [disabled]="!userIsAuditorAuditEventWriter()">
+                                    <option [ngValue]="null">Select Audit Type</option>
+                                    <option *ngFor="let auditType of auditTypes$ | async" [ngValue]="auditType.id">{{auditType.name}}</option>
+                                </select>
+                                <div *ngIf="auditEventForm.get('auditTypeId')?.invalid && auditEventForm.get('auditTypeId')?.touched" class="text-danger">
+                                    Audit Type is required
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="auditAccessTypeId" id="label-auditAccessTypeId"><span class="text-danger">*</span>Audit Access Type</label>
+                                <select id="auditAccessTypeId" formControlName="auditAccessTypeId" class="form-select audit-event-select" [disabled]="!userIsAuditorAuditEventWriter()">
+                                    <option [ngValue]="null">Select Audit Access Type</option>
+                                    <option *ngFor="let auditAccessType of auditAccessTypes$ | async" [ngValue]="auditAccessType.id">{{auditAccessType.name}}</option>
+                                </select>
+                                <div *ngIf="auditEventForm.get('auditAccessTypeId')?.invalid && auditEventForm.get('auditAccessTypeId')?.touched" class="text-danger">
+                                    Audit Access Type is required
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="auditSourceId" id="label-auditSourceId"><span class="text-danger">*</span>Audit Source</label>
+                                <select id="auditSourceId" formControlName="auditSourceId" class="form-select audit-event-select" [disabled]="!userIsAuditorAuditEventWriter()">
+                                    <option [ngValue]="null">Select Audit Source</option>
+                                    <option *ngFor="let auditSource of auditSources$ | async" [ngValue]="auditSource.id">{{auditSource.name}}</option>
+                                </select>
+                                <div *ngIf="auditEventForm.get('auditSourceId')?.invalid && auditEventForm.get('auditSourceId')?.touched" class="text-danger">
+                                    Audit Source is required
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="auditUserAgentId" id="label-auditUserAgentId"><span class="text-danger">*</span>Audit User Agent</label>
+                                <select id="auditUserAgentId" formControlName="auditUserAgentId" class="form-select audit-event-select" [disabled]="!userIsAuditorAuditEventWriter()">
+                                    <option [ngValue]="null">Select Audit User Agent</option>
+                                    <option *ngFor="let auditUserAgent of auditUserAgents$ | async" [ngValue]="auditUserAgent.id">{{auditUserAgent.name}}</option>
+                                </select>
+                                <div *ngIf="auditEventForm.get('auditUserAgentId')?.invalid && auditEventForm.get('auditUserAgentId')?.touched" class="text-danger">
+                                    Audit User Agent is required
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="auditModuleId" id="label-auditModuleId"><span class="text-danger">*</span>Audit Module</label>
+                                <select id="auditModuleId" formControlName="auditModuleId" class="form-select audit-event-select" [disabled]="!userIsAuditorAuditEventWriter()">
+                                    <option [ngValue]="null">Select Audit Module</option>
+                                    <option *ngFor="let auditModule of auditModules$ | async" [ngValue]="auditModule.id">{{auditModule.name}}</option>
+                                </select>
+                                <div *ngIf="auditEventForm.get('auditModuleId')?.invalid && auditEventForm.get('auditModuleId')?.touched" class="text-danger">
+                                    Audit Module is required
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="auditModuleEntityId" id="label-auditModuleEntityId"><span class="text-danger">*</span>Audit Module Entity</label>
+                                <select id="auditModuleEntityId" formControlName="auditModuleEntityId" class="form-select audit-event-select" [disabled]="!userIsAuditorAuditEventWriter()">
+                                    <option [ngValue]="null">Select Audit Module Entity</option>
+                                    <option *ngFor="let auditModuleEntity of auditModuleEntities$ | async" [ngValue]="auditModuleEntity.id">{{auditModuleEntity.name}}</option>
+                                </select>
+                                <div *ngIf="auditEventForm.get('auditModuleEntityId')?.invalid && auditEventForm.get('auditModuleEntityId')?.touched" class="text-danger">
+                                    Audit Module Entity is required
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="auditResourceId" id="label-auditResourceId"><span class="text-danger">*</span>Audit Resource</label>
+                                <select id="auditResourceId" formControlName="auditResourceId" class="form-select audit-event-select" [disabled]="!userIsAuditorAuditEventWriter()">
+                                    <option [ngValue]="null">Select Audit Resource</option>
+                                    <option *ngFor="let auditResource of auditResources$ | async" [ngValue]="auditResource.id">{{auditResource.name}}</option>
+                                </select>
+                                <div *ngIf="auditEventForm.get('auditResourceId')?.invalid && auditEventForm.get('auditResourceId')?.touched" class="text-danger">
+                                    Audit Resource is required
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="auditHostSystemId" id="label-auditHostSystemId"><span class="text-danger">*</span>Audit Host System</label>
+                                <select id="auditHostSystemId" formControlName="auditHostSystemId" class="form-select audit-event-select" [disabled]="!userIsAuditorAuditEventWriter()">
+                                    <option [ngValue]="null">Select Audit Host System</option>
+                                    <option *ngFor="let auditHostSystem of auditHostSystems$ | async" [ngValue]="auditHostSystem.id">{{auditHostSystem.name}}</option>
+                                </select>
+                                <div *ngIf="auditEventForm.get('auditHostSystemId')?.invalid && auditEventForm.get('auditHostSystemId')?.touched" class="text-danger">
+                                    Audit Host System is required
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="primaryKey" id="label-primaryKey">Primary Key</label>
+                                <input type="text" id="primaryKey" formControlName="primaryKey" placeholder="Enter Primary Key" class="form-control audit-event-input" [disabled]="!userIsAuditorAuditEventWriter()" aria-labelledby="label-primaryKey" />
+                            </div>
+                            <div class="form-group">
+                                <label for="threadId" id="label-threadId">Thread Id</label>
+                                <input type="number" id="threadId" formControlName="threadId" placeholder="Enter Thread Id" class="form-control audit-event-input" [disabled]="!userIsAuditorAuditEventWriter()" aria-labelledby="label-threadId" />
+                            </div>
+                            <div class="form-group">
+                                <label for="message" id="label-message"><span class="text-danger">*</span>Message</label>
+                                <textarea id="message" formControlName="message" placeholder="Enter Message" class="form-control audit-event-input" [disabled]="!userIsAuditorAuditEventWriter()"></textarea>
+                                <div *ngIf="auditEventForm.get('message')?.invalid && auditEventForm.get('message')?.touched" class="text-danger">
+                                    Message is required
+                                </div>
+                            </div>
+                            <div class="audit-event-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="auditEventForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Audit Event">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !auditEventForm.valid || !auditEventForm.dirty || auditEventForm.pristine || userIsAuditorAuditEventWriter() == false " ngbTooltip="Save Audit Event">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsAuditorAuditEventReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 audit-event-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="auditEventEntityStateService.userIsAuditorAuditEventEntityStateReader()">
+                            <button ngbNavLink>AuditEventEntityStates
+                                <span class="badge bg-primary ms-2">
+                                    {{ (auditEventData?.AuditEventEntityStatesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <app-audit-event-entity-state-table [queryParams]="GetQueryParameters()"></app-audit-event-entity-state-table>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="auditEventErrorMessageService.userIsAuditorAuditEventErrorMessageReader()">
+                            <button ngbNavLink>AuditEventErrorMessages
+                                <span class="badge bg-primary ms-2">
+                                    {{ (auditEventData?.AuditEventErrorMessagesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <app-audit-event-error-message-table [queryParams]="GetQueryParameters()"></app-audit-event-error-message-table>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

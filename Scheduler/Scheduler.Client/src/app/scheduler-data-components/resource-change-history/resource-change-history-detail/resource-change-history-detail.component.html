@@ -1,0 +1,66 @@
+<div class="container-fluid p-1 m-0 resource-change-history-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="resource-change-history-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Resource Change History</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Resource Change History' : 'Add Resource Change History'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerResourceChangeHistoryReader()">
+                <div class="col m-2 resource-change-history-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="resourceChangeHistoryForm" (ngSubmit)="submitForm()" class="resource-change-history-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('resourceId')">
+                                <label for="ResourceChangeHistory-resourceId" id="label-ResourceChangeHistory-resourceId"><span class="text-danger">*</span>Resource</label>
+                                <select id="ResourceChangeHistory-resourceId" formControlName="resourceId" class="form-select resource-change-history-select" [disabled]="!userIsSchedulerResourceChangeHistoryWriter()">
+                                    <option [ngValue]="null">Select Resource</option>
+                                    <option *ngFor="let resource of resources$ | async" [ngValue]="resource.id">{{[resource.name] | filterAndJoin}}</option>
+                                </select>
+                                <div *ngIf="resourceChangeHistoryForm.get('resourceId')?.invalid && resourceChangeHistoryForm.get('resourceId')?.touched" class="text-danger">
+                                    Resource is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="ResourceChangeHistory-versionNumber" id="label-ResourceChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="ResourceChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control resource-change-history-input" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                                <label for="ResourceChangeHistory-timeStamp" id="label-ResourceChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                                <input type="datetime-local" id="ResourceChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control resource-change-history-input" [disabled]="!userIsSchedulerResourceChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                                <div *ngIf="resourceChangeHistoryForm.get('timeStamp')?.invalid && resourceChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                                    Time Stamp is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="ResourceChangeHistory-userId" id="label-ResourceChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="ResourceChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control resource-change-history-input" [disabled]="!userIsSchedulerResourceChangeHistoryWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="resourceChangeHistoryForm.get('userId')?.invalid && resourceChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                                <label for="ResourceChangeHistory-data" id="label-ResourceChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                                <textarea id="ResourceChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control resource-change-history-input" [disabled]="!userIsSchedulerResourceChangeHistoryWriter()"></textarea>
+                                <div *ngIf="resourceChangeHistoryForm.get('data')?.invalid && resourceChangeHistoryForm.get('data')?.touched" class="text-danger">
+                                    Data is required
+                                </div>
+                            </div>
+                            <div class="resource-change-history-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="resourceChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Resource Change History">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !resourceChangeHistoryForm.valid || !resourceChangeHistoryForm.dirty || resourceChangeHistoryForm.pristine || userIsSchedulerResourceChangeHistoryWriter() == false " ngbTooltip="Save Resource Change History">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

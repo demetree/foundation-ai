@@ -1,0 +1,119 @@
+<div class="add-charge-type" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-charge-type me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Charge Type" 
+        *ngIf="userIsSchedulerChargeTypeWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #chargeTypeModal let-modal>
+   <div class="modal-header bg-dark text-light charge-type-modal-header">
+      <h5 class="modal-title mb-0" id="chargeTypeModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Charge Type' : 'Add Charge Type' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body charge-type-modal-body">
+      <form [formGroup]="chargeTypeForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="ChargeType-name" id="label-ChargeType-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="ChargeType-name" formControlName="name" placeholder="Enter Name" class="form-control charge-type-input" [disabled]="!userIsSchedulerChargeTypeWriter()" aria-labelledby="label-name" />
+                <div *ngIf="chargeTypeForm.get('name')?.invalid && chargeTypeForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="ChargeType-description" id="label-ChargeType-description"><span class="text-danger">*</span>Description</label>
+                <textarea id="ChargeType-description" formControlName="description" placeholder="Enter Description" class="form-control charge-type-input" [disabled]="!userIsSchedulerChargeTypeWriter()"></textarea>
+                <div *ngIf="chargeTypeForm.get('description')?.invalid && chargeTypeForm.get('description')?.touched" class="text-danger">
+                    Description is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('externalId')">
+                <label for="ChargeType-externalId" id="label-ChargeType-externalId">External Id</label>
+                <input type="text" id="ChargeType-externalId" formControlName="externalId" placeholder="Enter External Id" class="form-control charge-type-input" [disabled]="!userIsSchedulerChargeTypeWriter()" aria-labelledby="label-externalId" />
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isRevenue')">
+                <input type="checkbox" id="ChargeType-isRevenue" formControlName="isRevenue" class="form-check-input" [disabled]="!userIsSchedulerChargeTypeWriter()" />
+                <label for="ChargeType-isRevenue" class="form-check-label" id="label-ChargeType-isRevenue"><span class="text-danger">*</span>Is Revenue</label>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isTaxable')">
+                <input type="checkbox" id="ChargeType-isTaxable" formControlName="isTaxable" class="form-check-input" [disabled]="!userIsSchedulerChargeTypeWriter()" />
+                <label for="ChargeType-isTaxable" class="form-check-label" id="label-ChargeType-isTaxable">Is Taxable</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('defaultAmount')">
+                <label for="ChargeType-defaultAmount" id="label-ChargeType-defaultAmount">Default Amount</label>
+                <input type="number" id="ChargeType-defaultAmount" formControlName="defaultAmount" placeholder="Enter Default Amount" class="form-control charge-type-input" [disabled]="!userIsSchedulerChargeTypeWriter()" aria-labelledby="label-defaultAmount" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('defaultDescription')">
+                <label for="ChargeType-defaultDescription" id="label-ChargeType-defaultDescription">Default Description</label>
+                <textarea id="ChargeType-defaultDescription" formControlName="defaultDescription" placeholder="Enter Default Description" class="form-control charge-type-input" [disabled]="!userIsSchedulerChargeTypeWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('rateTypeId')">
+                <label for="ChargeType-rateTypeId" id="label-ChargeType-rateTypeId">Rate Type</label>
+                <select id="ChargeType-rateTypeId" formControlName="rateTypeId" class="form-select charge-type-select" [disabled]="!userIsSchedulerChargeTypeWriter()">
+                    <option [ngValue]="null">Select Rate Type</option>
+                    <option *ngFor="let rateType of rateTypes$ | async" [ngValue]="rateType.id">{{rateType.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('currencyId')">
+                <label for="ChargeType-currencyId" id="label-ChargeType-currencyId"><span class="text-danger">*</span>Currency</label>
+                <select id="ChargeType-currencyId" formControlName="currencyId" class="form-select charge-type-select" [disabled]="!userIsSchedulerChargeTypeWriter()">
+                    <option [ngValue]="null">Select Currency</option>
+                    <option *ngFor="let currency of currencies$ | async" [ngValue]="currency.id">{{currency.name}}</option>
+                </select>
+                <div *ngIf="chargeTypeForm.get('currencyId')?.invalid && chargeTypeForm.get('currencyId')?.touched" class="text-danger">
+                    Currency is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                <label for="ChargeType-sequence" id="label-ChargeType-sequence">Sequence</label>
+                <input type="number" id="ChargeType-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control charge-type-input" [disabled]="!userIsSchedulerChargeTypeWriter()" aria-labelledby="label-sequence" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('color')">
+                <label for="ChargeType-color" id="label-ChargeType-color">Color</label>
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="ChargeType-color" 
+                        formControlName="color" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerChargeTypeWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="chargeTypeForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="ChargeType-versionNumber" id="label-ChargeType-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="ChargeType-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control charge-type-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ChargeType-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerChargeTypeWriter()" />
+                <label for="ChargeType-active" class="form-check-label" id="label-ChargeType-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ChargeType-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerChargeTypeWriter()" />
+                <label for="ChargeType-deleted" class="form-check-label" id="label-ChargeType-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer charge-type-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Charge Type changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !chargeTypeForm.valid || chargeTypeForm.pristine || !userIsSchedulerChargeTypeWriter()" ngbTooltip="Save the Charge Type changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

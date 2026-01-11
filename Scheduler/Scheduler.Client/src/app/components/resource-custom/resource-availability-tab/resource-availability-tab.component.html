@@ -1,0 +1,61 @@
+<div class="card h-100">
+  <div class="card-header bg-light d-flex justify-content-between align-items-center">
+    <h6 class="mb-0 fw-semibold">
+      <i class="fa-solid fa-calendar-xmark me-2"></i>
+      Blackouts / Unavailability
+    </h6>
+    <div class="d-flex gap-2">
+      <button class="btn btn-sm btn-primary" (click)="openAddBlackoutModal()">
+        <i class="fa fa-plus me-1"></i> Add Blackout
+      </button>
+      <button class="btn btn-sm btn-outline-secondary" (click)="loadAvailabilities()">
+        <i class="fa fa-sync" [ngClass]="{'fa-spin': isLoading}"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <!-- Loading -->
+    <div class="text-center py-4" *ngIf="isLoading">
+      <div class="spinner-border spinner-border-sm text-primary" role="status">
+        <span class="visually-hidden">Loading blackouts...</span>
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div class="alert alert-danger small" *ngIf="error">
+      <i class="fa-solid fa-exclamation-triangle me-2"></i>
+      {{ error }}
+    </div>
+
+    <!-- Empty -->
+    <div class="text-center py-5 text-muted" *ngIf="!isLoading && (!availabilities || availabilities.length === 0)">
+      <i class="fa-solid fa-calendar-check fa-3x mb-3 opacity-50"></i>
+      <div>No blackout periods recorded</div>
+      <div class="small mt-2">Resource is fully available</div>
+    </div>
+
+    <!-- Blackout List -->
+    <div class="list-group list-group-flush" *ngIf="!isLoading && availabilities && availabilities.length > 0">
+      <div class="list-group-item px-0 py-3" *ngFor="let avail of availabilities">
+        <div class="d-flex align-items-start justify-content-between">
+          <div class="flex-grow-1">
+            <div class="fw-semibold d-flex align-items-center gap-2 clickable" (click)="navigateToResourceAvailability(avail.id)">
+              <span class="badge rounded-pill {{ getBlackoutStatus(avail).badgeClass }}">
+                {{ getBlackoutStatus(avail).text }}
+              </span>
+              {{ avail.reason || 'No reason specified' }}
+            </div>
+            <div class="small text-muted mt-2">
+              <i class="fa fa-clock me-1"></i>
+              {{ formatDateTime(avail.startDateTime) }} → {{ formatDateTime(avail.endDateTime) }}
+            </div>
+            <div *ngIf="avail.notes">
+              <small>{{ avail.notes }}</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,84 @@
+<div class="container-fluid p-1 m-0 salutation-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="salutation-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Salutation</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Salutation' : 'Add Salutation'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerSalutationReader()">
+                <div class="col m-2 salutation-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="salutationForm" (ngSubmit)="submitForm()" class="salutation-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="Salutation-name" id="label-Salutation-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="Salutation-name" formControlName="name" placeholder="Enter Name" class="form-control salutation-input" [disabled]="!userIsSchedulerSalutationWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="salutationForm.get('name')?.invalid && salutationForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="Salutation-description" id="label-Salutation-description"><span class="text-danger">*</span>Description</label>
+                                <textarea id="Salutation-description" formControlName="description" placeholder="Enter Description" class="form-control salutation-input" [disabled]="!userIsSchedulerSalutationWriter()"></textarea>
+                                <div *ngIf="salutationForm.get('description')?.invalid && salutationForm.get('description')?.touched" class="text-danger">
+                                    Description is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                                <label for="Salutation-sequence" id="label-Salutation-sequence">Sequence</label>
+                                <input type="number" id="Salutation-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control salutation-input" [disabled]="!userIsSchedulerSalutationWriter()" aria-labelledby="label-sequence" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="Salutation-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerSalutationWriter()" />
+                                <label for="Salutation-active" class="form-check-label" id="label-Salutation-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="Salutation-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerSalutationWriter()" />
+                                <label for="Salutation-deleted" class="form-check-label" id="label-Salutation-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="salutation-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="salutationForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Salutation">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !salutationForm.valid || !salutationForm.dirty || salutationForm.pristine || userIsSchedulerSalutationWriter() == false " ngbTooltip="Save Salutation">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerSalutationReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 salutation-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="contactService.userIsSchedulerContactReader()">
+                            <button ngbNavLink>Contacts
+                                <span class="badge bg-primary ms-2">
+                                    {{ (salutationData?.ContactsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-contact-table [queryParams]="{ salutationId: salutationData?.id }"></app-contact-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-contact-add-edit [preSeededData]="{ salutationId: salutationData?.id }" [hiddenFields]="['salutationId']"></app-contact-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

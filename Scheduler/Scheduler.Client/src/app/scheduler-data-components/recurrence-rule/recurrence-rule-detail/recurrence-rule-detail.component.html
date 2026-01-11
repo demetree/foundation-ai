@@ -1,0 +1,124 @@
+<div class="container-fluid p-1 m-0 recurrence-rule-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="recurrence-rule-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Recurrence Rule</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Recurrence Rule' : 'Add Recurrence Rule'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerRecurrenceRuleReader()">
+                <div class="col m-2 recurrence-rule-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="recurrenceRuleForm" (ngSubmit)="submitForm()" class="recurrence-rule-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('recurrenceFrequencyId')">
+                                <label for="RecurrenceRule-recurrenceFrequencyId" id="label-RecurrenceRule-recurrenceFrequencyId"><span class="text-danger">*</span>Recurrence Frequency</label>
+                                <select id="RecurrenceRule-recurrenceFrequencyId" formControlName="recurrenceFrequencyId" class="form-select recurrence-rule-select" [disabled]="!userIsSchedulerRecurrenceRuleWriter()">
+                                    <option [ngValue]="null">Select Recurrence Frequency</option>
+                                    <option *ngFor="let recurrenceFrequency of recurrenceFrequencies$ | async" [ngValue]="recurrenceFrequency.id">{{recurrenceFrequency.name}}</option>
+                                </select>
+                                <div *ngIf="recurrenceRuleForm.get('recurrenceFrequencyId')?.invalid && recurrenceRuleForm.get('recurrenceFrequencyId')?.touched" class="text-danger">
+                                    Recurrence Frequency is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('interval')">
+                                <label for="RecurrenceRule-interval" id="label-RecurrenceRule-interval"><span class="text-danger">*</span>Interval</label>
+                                <input type="number" id="RecurrenceRule-interval" formControlName="interval" placeholder="Enter Interval" class="form-control recurrence-rule-input" [disabled]="!userIsSchedulerRecurrenceRuleWriter()" aria-labelledby="label-interval" />
+                                <div *ngIf="recurrenceRuleForm.get('interval')?.invalid && recurrenceRuleForm.get('interval')?.touched" class="text-danger">
+                                    Interval is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('untilDateTime')">
+                                <label for="RecurrenceRule-untilDateTime" id="label-RecurrenceRule-untilDateTime">Until Date Time</label>
+                                <input type="datetime-local" id="RecurrenceRule-untilDateTime" formControlName="untilDateTime" placeholder="Enter Until Date Time" class="form-control recurrence-rule-input" [disabled]="!userIsSchedulerRecurrenceRuleWriter()" aria-labelledby="label-untilDateTime" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('count')">
+                                <label for="RecurrenceRule-count" id="label-RecurrenceRule-count">Count</label>
+                                <input type="number" id="RecurrenceRule-count" formControlName="count" placeholder="Enter Count" class="form-control recurrence-rule-input" [disabled]="!userIsSchedulerRecurrenceRuleWriter()" aria-labelledby="label-count" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('dayOfWeekMask')">
+                                <label for="RecurrenceRule-dayOfWeekMask" id="label-RecurrenceRule-dayOfWeekMask">Day Of Week Mask</label>
+                                <input type="number" id="RecurrenceRule-dayOfWeekMask" formControlName="dayOfWeekMask" placeholder="Enter Day Of Week Mask" class="form-control recurrence-rule-input" [disabled]="!userIsSchedulerRecurrenceRuleWriter()" aria-labelledby="label-dayOfWeekMask" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('dayOfMonth')">
+                                <label for="RecurrenceRule-dayOfMonth" id="label-RecurrenceRule-dayOfMonth">Day Of Month</label>
+                                <input type="number" id="RecurrenceRule-dayOfMonth" formControlName="dayOfMonth" placeholder="Enter Day Of Month" class="form-control recurrence-rule-input" [disabled]="!userIsSchedulerRecurrenceRuleWriter()" aria-labelledby="label-dayOfMonth" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('dayOfWeekInMonth')">
+                                <label for="RecurrenceRule-dayOfWeekInMonth" id="label-RecurrenceRule-dayOfWeekInMonth">Day Of Week In Month</label>
+                                <input type="number" id="RecurrenceRule-dayOfWeekInMonth" formControlName="dayOfWeekInMonth" placeholder="Enter Day Of Week In Month" class="form-control recurrence-rule-input" [disabled]="!userIsSchedulerRecurrenceRuleWriter()" aria-labelledby="label-dayOfWeekInMonth" />
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="RecurrenceRule-versionNumber" id="label-RecurrenceRule-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="RecurrenceRule-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control recurrence-rule-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="RecurrenceRule-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerRecurrenceRuleWriter()" />
+                                <label for="RecurrenceRule-active" class="form-check-label" id="label-RecurrenceRule-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="RecurrenceRule-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerRecurrenceRuleWriter()" />
+                                <label for="RecurrenceRule-deleted" class="form-check-label" id="label-RecurrenceRule-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="recurrence-rule-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="recurrenceRuleForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Recurrence Rule">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !recurrenceRuleForm.valid || !recurrenceRuleForm.dirty || recurrenceRuleForm.pristine || userIsSchedulerRecurrenceRuleWriter() == false " ngbTooltip="Save Recurrence Rule">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerRecurrenceRuleReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 recurrence-rule-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="recurrenceRuleChangeHistoryService.userIsSchedulerRecurrenceRuleChangeHistoryReader()">
+                            <button ngbNavLink>Recurrence Rule Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (recurrenceRuleData?.RecurrenceRuleChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-recurrence-rule-change-history-table [queryParams]="{ recurrenceRuleId: recurrenceRuleData?.id }"></app-recurrence-rule-change-history-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-recurrence-rule-change-history-add-edit [preSeededData]="{ recurrenceRuleId: recurrenceRuleData?.id }" [hiddenFields]="['recurrenceRuleId']"></app-recurrence-rule-change-history-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="scheduledEventService.userIsSchedulerScheduledEventReader()">
+                            <button ngbNavLink>Scheduled Events
+                                <span class="badge bg-primary ms-2">
+                                    {{ (recurrenceRuleData?.ScheduledEventsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-scheduled-event-table [queryParams]="{ recurrenceRuleId: recurrenceRuleData?.id }"></app-scheduled-event-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-scheduled-event-add-edit [preSeededData]="{ recurrenceRuleId: recurrenceRuleData?.id }" [hiddenFields]="['recurrenceRuleId']"></app-scheduled-event-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

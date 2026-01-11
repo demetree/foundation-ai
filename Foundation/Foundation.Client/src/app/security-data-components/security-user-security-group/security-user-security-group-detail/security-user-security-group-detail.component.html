@@ -1,0 +1,63 @@
+<div class="container-fluid p-1 m-0 security-user-security-group-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="security-user-security-group-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Security User Security Group</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Security User Security Group' : 'Add Security User Security Group'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSecuritySecurityUserSecurityGroupReader()">
+                <div class="col m-2 security-user-security-group-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="securityUserSecurityGroupForm" (ngSubmit)="submitForm()" class="security-user-security-group-details-form">
+                            <div class="form-group">
+                                <label for="securityUserId" id="label-securityUserId"><span class="text-danger">*</span>Security User</label>
+                                <select id="securityUserId" formControlName="securityUserId" class="form-select security-user-security-group-select" [disabled]="!userIsSecuritySecurityUserSecurityGroupWriter()">
+                                    <option [ngValue]="null">Select Security User</option>
+                                    <option *ngFor="let securityUser of securityUsers$ | async" [ngValue]="securityUser.id">{{[securityUser.accountName] | filterAndJoin}}</option>
+                                </select>
+                                <div *ngIf="securityUserSecurityGroupForm.get('securityUserId')?.invalid && securityUserSecurityGroupForm.get('securityUserId')?.touched" class="text-danger">
+                                    Security User is required
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="securityGroupId" id="label-securityGroupId"><span class="text-danger">*</span>Security Group</label>
+                                <select id="securityGroupId" formControlName="securityGroupId" class="form-select security-user-security-group-select" [disabled]="!userIsSecuritySecurityUserSecurityGroupWriter()">
+                                    <option [ngValue]="null">Select Security Group</option>
+                                    <option *ngFor="let securityGroup of securityGroups$ | async" [ngValue]="securityGroup.id">{{securityGroup.name}}</option>
+                                </select>
+                                <div *ngIf="securityUserSecurityGroupForm.get('securityGroupId')?.invalid && securityUserSecurityGroupForm.get('securityGroupId')?.touched" class="text-danger">
+                                    Security Group is required
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="comments" id="label-comments">Comments</label>
+                                <textarea id="comments" formControlName="comments" placeholder="Enter Comments" class="form-control security-user-security-group-input" [disabled]="!userIsSecuritySecurityUserSecurityGroupWriter()"></textarea>
+                            </div>
+                            <div class="form-check my-2">
+                                <input type="checkbox" id="active" formControlName="active" class="form-check-input" [disabled]="!userIsSecuritySecurityUserSecurityGroupWriter()" />
+                                <label for="active" class="form-check-label" id="label-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2">
+                                <input type="checkbox" id="deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSecuritySecurityUserSecurityGroupWriter()" />
+                                <label for="deleted" class="form-check-label" id="label-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="security-user-security-group-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="securityUserSecurityGroupForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Security User Security Group">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !securityUserSecurityGroupForm.valid || !securityUserSecurityGroupForm.dirty || securityUserSecurityGroupForm.pristine || userIsSecuritySecurityUserSecurityGroupWriter() == false " ngbTooltip="Save Security User Security Group">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

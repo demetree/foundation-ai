@@ -1,0 +1,66 @@
+<div class="container-fluid p-1 m-0 scheduled-event-template-qualification-requirement-change-history-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="scheduled-event-template-qualification-requirement-change-history-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Scheduled Event Template Qualification Requirement Change History</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Scheduled Event Template Qualification Requirement Change History' : 'Add Scheduled Event Template Qualification Requirement Change History'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerScheduledEventTemplateQualificationRequirementChangeHistoryReader()">
+                <div class="col m-2 scheduled-event-template-qualification-requirement-change-history-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="scheduledEventTemplateQualificationRequirementChangeHistoryForm" (ngSubmit)="submitForm()" class="scheduled-event-template-qualification-requirement-change-history-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('scheduledEventTemplateQualificationRequirementId')">
+                                <label for="ScheduledEventTemplateQualificationRequirementChangeHistory-scheduledEventTemplateQualificationRequirementId" id="label-ScheduledEventTemplateQualificationRequirementChangeHistory-scheduledEventTemplateQualificationRequirementId"><span class="text-danger">*</span>Scheduled Event Template Qualification Requirement</label>
+                                <select id="ScheduledEventTemplateQualificationRequirementChangeHistory-scheduledEventTemplateQualificationRequirementId" formControlName="scheduledEventTemplateQualificationRequirementId" class="form-select scheduled-event-template-qualification-requirement-change-history-select" [disabled]="!userIsSchedulerScheduledEventTemplateQualificationRequirementChangeHistoryWriter()">
+                                    <option [ngValue]="null">Select Scheduled Event Template Qualification Requirement</option>
+                                    <option *ngFor="let scheduledEventTemplateQualificationRequirement of scheduledEventTemplateQualificationRequirements$ | async" [ngValue]="scheduledEventTemplateQualificationRequirement.id">{{scheduledEventTemplateQualificationRequirement.id}}</option>
+                                </select>
+                                <div *ngIf="scheduledEventTemplateQualificationRequirementChangeHistoryForm.get('scheduledEventTemplateQualificationRequirementId')?.invalid && scheduledEventTemplateQualificationRequirementChangeHistoryForm.get('scheduledEventTemplateQualificationRequirementId')?.touched" class="text-danger">
+                                    Scheduled Event Template Qualification Requirement is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="ScheduledEventTemplateQualificationRequirementChangeHistory-versionNumber" id="label-ScheduledEventTemplateQualificationRequirementChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="ScheduledEventTemplateQualificationRequirementChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control scheduled-event-template-qualification-requirement-change-history-input" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                                <label for="ScheduledEventTemplateQualificationRequirementChangeHistory-timeStamp" id="label-ScheduledEventTemplateQualificationRequirementChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                                <input type="datetime-local" id="ScheduledEventTemplateQualificationRequirementChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control scheduled-event-template-qualification-requirement-change-history-input" [disabled]="!userIsSchedulerScheduledEventTemplateQualificationRequirementChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                                <div *ngIf="scheduledEventTemplateQualificationRequirementChangeHistoryForm.get('timeStamp')?.invalid && scheduledEventTemplateQualificationRequirementChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                                    Time Stamp is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="ScheduledEventTemplateQualificationRequirementChangeHistory-userId" id="label-ScheduledEventTemplateQualificationRequirementChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="ScheduledEventTemplateQualificationRequirementChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control scheduled-event-template-qualification-requirement-change-history-input" [disabled]="!userIsSchedulerScheduledEventTemplateQualificationRequirementChangeHistoryWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="scheduledEventTemplateQualificationRequirementChangeHistoryForm.get('userId')?.invalid && scheduledEventTemplateQualificationRequirementChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                                <label for="ScheduledEventTemplateQualificationRequirementChangeHistory-data" id="label-ScheduledEventTemplateQualificationRequirementChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                                <textarea id="ScheduledEventTemplateQualificationRequirementChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control scheduled-event-template-qualification-requirement-change-history-input" [disabled]="!userIsSchedulerScheduledEventTemplateQualificationRequirementChangeHistoryWriter()"></textarea>
+                                <div *ngIf="scheduledEventTemplateQualificationRequirementChangeHistoryForm.get('data')?.invalid && scheduledEventTemplateQualificationRequirementChangeHistoryForm.get('data')?.touched" class="text-danger">
+                                    Data is required
+                                </div>
+                            </div>
+                            <div class="scheduled-event-template-qualification-requirement-change-history-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="scheduledEventTemplateQualificationRequirementChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Scheduled Event Template Qualification Requirement Change History">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !scheduledEventTemplateQualificationRequirementChangeHistoryForm.valid || !scheduledEventTemplateQualificationRequirementChangeHistoryForm.dirty || scheduledEventTemplateQualificationRequirementChangeHistoryForm.pristine || userIsSchedulerScheduledEventTemplateQualificationRequirementChangeHistoryWriter() == false " ngbTooltip="Save Scheduled Event Template Qualification Requirement Change History">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

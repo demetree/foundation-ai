@@ -1,0 +1,76 @@
+<div class="add-office-contact" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-office-contact me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Office Contact" 
+        *ngIf="userIsSchedulerOfficeContactWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #officeContactModal let-modal>
+   <div class="modal-header bg-dark text-light office-contact-modal-header">
+      <h5 class="modal-title mb-0" id="officeContactModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Office Contact' : 'Add Office Contact' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body office-contact-modal-body">
+      <form [formGroup]="officeContactForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('officeId')">
+                <label for="OfficeContact-officeId" id="label-OfficeContact-officeId"><span class="text-danger">*</span>Office</label>
+                <select id="OfficeContact-officeId" formControlName="officeId" class="form-select office-contact-select" [disabled]="!userIsSchedulerOfficeContactWriter()">
+                    <option [ngValue]="null">Select Office</option>
+                    <option *ngFor="let office of offices$ | async" [ngValue]="office.id">{{office.name}}</option>
+                </select>
+                <div *ngIf="officeContactForm.get('officeId')?.invalid && officeContactForm.get('officeId')?.touched" class="text-danger">
+                    Office is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('contactId')">
+                <label for="OfficeContact-contactId" id="label-OfficeContact-contactId"><span class="text-danger">*</span>Contact</label>
+                <select id="OfficeContact-contactId" formControlName="contactId" class="form-select office-contact-select" [disabled]="!userIsSchedulerOfficeContactWriter()">
+                    <option [ngValue]="null">Select Contact</option>
+                    <option *ngFor="let contact of contacts$ | async" [ngValue]="contact.id">{{contact.firstName}}</option>
+                </select>
+                <div *ngIf="officeContactForm.get('contactId')?.invalid && officeContactForm.get('contactId')?.touched" class="text-danger">
+                    Contact is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isPrimary')">
+                <input type="checkbox" id="OfficeContact-isPrimary" formControlName="isPrimary" class="form-check-input" [disabled]="!userIsSchedulerOfficeContactWriter()" />
+                <label for="OfficeContact-isPrimary" class="form-check-label" id="label-OfficeContact-isPrimary"><span class="text-danger">*</span>Is Primary</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('relationshipTypeId')">
+                <label for="OfficeContact-relationshipTypeId" id="label-OfficeContact-relationshipTypeId"><span class="text-danger">*</span>Relationship Type</label>
+                <select id="OfficeContact-relationshipTypeId" formControlName="relationshipTypeId" class="form-select office-contact-select" [disabled]="!userIsSchedulerOfficeContactWriter()">
+                    <option [ngValue]="null">Select Relationship Type</option>
+                    <option *ngFor="let relationshipType of relationshipTypes$ | async" [ngValue]="relationshipType.id">{{relationshipType.name}}</option>
+                </select>
+                <div *ngIf="officeContactForm.get('relationshipTypeId')?.invalid && officeContactForm.get('relationshipTypeId')?.touched" class="text-danger">
+                    Relationship Type is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="OfficeContact-versionNumber" id="label-OfficeContact-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="OfficeContact-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control office-contact-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="OfficeContact-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerOfficeContactWriter()" />
+                <label for="OfficeContact-active" class="form-check-label" id="label-OfficeContact-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="OfficeContact-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerOfficeContactWriter()" />
+                <label for="OfficeContact-deleted" class="form-check-label" id="label-OfficeContact-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer office-contact-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Office Contact changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !officeContactForm.valid || officeContactForm.pristine || !userIsSchedulerOfficeContactWriter()" ngbTooltip="Save the Office Contact changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

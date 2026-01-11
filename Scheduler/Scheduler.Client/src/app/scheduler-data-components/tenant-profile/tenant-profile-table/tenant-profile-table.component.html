@@ -1,0 +1,467 @@
+<app-tenant-profile-add-edit [showAddButton]="false"></app-tenant-profile-add-edit>
+<div class="row" *ngIf="userIsSchedulerTenantProfileReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerTenantProfileWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerTenantProfileWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('name')">
+                Name
+                <span *ngIf="sortColumn === 'name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('description')">
+                Description
+                <span *ngIf="sortColumn === 'description'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('companyLogoFileName')">
+                Company  Logo  File  Name
+                <span *ngIf="sortColumn === 'companyLogoFileName'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('companyLogoSize')">
+                Company  Logo  Size
+                <span *ngIf="sortColumn === 'companyLogoSize'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('companyLogoData')">
+                Company  Logo  Data
+                <span *ngIf="sortColumn === 'companyLogoData'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('companyLogoMimeType')">
+                Company  Logo  Mime  Type
+                <span *ngIf="sortColumn === 'companyLogoMimeType'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('addressLine1')">
+                Address  Line  1
+                <span *ngIf="sortColumn === 'addressLine1'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('addressLine2')">
+                Address  Line  2
+                <span *ngIf="sortColumn === 'addressLine2'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('addressLine3')">
+                Address  Line  3
+                <span *ngIf="sortColumn === 'addressLine3'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('city')">
+                City
+                <span *ngIf="sortColumn === 'city'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('postalCode')">
+                Postal  Code
+                <span *ngIf="sortColumn === 'postalCode'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('stateProvince.name')">
+                State  Province
+                <span *ngIf="sortColumn === 'stateProvince.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('country.name')">
+                Country
+                <span *ngIf="sortColumn === 'country.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('timeZone.name')">
+                Time  Zone
+                <span *ngIf="sortColumn === 'timeZone.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('phoneNumber')">
+                Phone  Number
+                <span *ngIf="sortColumn === 'phoneNumber'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('email')">
+                Email
+                <span *ngIf="sortColumn === 'email'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('website')">
+                Website
+                <span *ngIf="sortColumn === 'website'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('latitude')">
+                Latitude
+                <span *ngIf="sortColumn === 'latitude'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('longitude')">
+                Longitude
+                <span *ngIf="sortColumn === 'longitude'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('primaryColor')">
+                Primary  Color
+                <span *ngIf="sortColumn === 'primaryColor'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('secondaryColor')">
+                Secondary  Color
+                <span *ngIf="sortColumn === 'secondaryColor'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('displaysMetric')">
+                Displays  Metric
+                <span *ngIf="sortColumn === 'displaysMetric'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('displaysUSTerms')">
+                Displays  U  S  Terms
+                <span *ngIf="sortColumn === 'displaysUSTerms'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let tenantProfile of filteredTenantProfiles; trackBy: getTenantProfileId"
+              [ngClass]="{
+                 'row-inactive': tenantProfile.active == false,
+                 'row-deleted': tenantProfile.deleted == true 
+                 }">
+            <td class="header-action-button" *ngIf="userIsSchedulerTenantProfileWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleEdit(tenantProfile)"
+                      ngbTooltip="Edit" 
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsSchedulerTenantProfileWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleDelete(tenantProfile)"
+                      ngbTooltip="Delete" 
+                      placement="top"
+                      *ngIf="tenantProfile.deleted == false">
+                <i class="fa fa-trash"></i>
+              </button>
+              <button class="btn btn-sm"
+                      (click)="handleUndelete(tenantProfile)"
+                      ngbTooltip="Undelete" 
+                      placement="top"
+                      *ngIf="tenantProfile.deleted == true">
+                <i class="fa fa-trash-arrow-up"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(tenantProfile, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(tenantProfile, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(tenantProfile, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(tenantProfile, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(tenantProfile, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(tenantProfile, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(tenantProfile, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(tenantProfile, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/tenantprofile', tenantProfile.id]" class="btn btn-link text-left" ngbTooltip="Open Tenant Profile details">{{tenantProfile.name}}</a></td>
+            <td class="text-truncate">{{tenantProfile.description}}</td>
+            <td class="text-truncate">{{tenantProfile.companyLogoFileName}}</td>
+            <td class="text-truncate">{{tenantProfile.companyLogoSize | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{tenantProfile.companyLogoData}}</td>
+            <td class="text-truncate">{{tenantProfile.companyLogoMimeType}}</td>
+            <td class="text-truncate">{{tenantProfile.addressLine1}}</td>
+            <td class="text-truncate">{{tenantProfile.addressLine2}}</td>
+            <td class="text-truncate">{{tenantProfile.addressLine3}}</td>
+            <td class="text-truncate">{{tenantProfile.city}}</td>
+            <td class="text-truncate">{{tenantProfile.postalCode}}</td>
+            <td class="text-truncate"><a [routerLink]="['/stateprovince', tenantProfile.stateProvinceId]" class="btn btn-link text-left" ngbTooltip="Open State Province details">{{tenantProfile.stateProvince?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/country', tenantProfile.countryId]" class="btn btn-link text-left" ngbTooltip="Open Country details">{{tenantProfile.country?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/timezone', tenantProfile.timeZoneId]" class="btn btn-link text-left" ngbTooltip="Open Time Zone details">{{tenantProfile.timeZone?.name}}</a></td>
+            <td class="text-truncate"><a href="tel:{{tenantProfile?.phoneNumber}}" ngbTooltip="Call {{tenantProfile?.phoneNumber}}">{{tenantProfile.phoneNumber}}</a></td>
+            <td class="text-truncate"><a href="mailto:{{tenantProfile?.email}}" ngbTooltip="Send Email to {{tenantProfile?.email}}">{{tenantProfile.email}}</a></td>
+            <td class="text-truncate">{{tenantProfile.website}}</td>
+            <td class="text-truncate">{{tenantProfile.latitude | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{tenantProfile.longitude | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{tenantProfile.primaryColor}}</td>
+            <td class="text-truncate">{{tenantProfile.secondaryColor}}</td>
+            <td class="text-truncate"><boolean-icon [value]="tenantProfile.displaysMetric"/></td>
+            <td class="text-truncate"><boolean-icon [value]="tenantProfile.displaysUSTerms"/></td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let tenantProfile of filteredTenantProfiles; trackBy: getTenantProfileId" class="card my-2"
+              [ngClass]="{
+                 'row-inactive': tenantProfile.active == false,
+                 'row-deleted': tenantProfile.deleted == true 
+                 }">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(tenantProfile, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(tenantProfile, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(tenantProfile, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(tenantProfile, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(tenantProfile, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(tenantProfile, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(tenantProfile, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(tenantProfile, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(tenantProfile, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(tenantProfile, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(tenantProfile, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(tenantProfile, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(tenantProfile, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/tenantprofile', tenantProfile.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(tenantProfile)" *ngIf="userIsSchedulerTenantProfileWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(tenantProfile)" *ngIf="userIsSchedulerTenantProfileWriter() && tenantProfile.deleted == false" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+            <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(tenantProfile)" *ngIf="userIsSchedulerTenantProfileWriter() && tenantProfile.deleted == true" ngbTooltip="Undelete">
+              <i class="fa fa-trash-arrow-upp"></i> UnDelete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{tenantProfile.name}}</strong>
+               <small class="text-muted d-block">{{tenantProfile.stateProvince?.name}}</small>
+             </div>
+             <div>
+                <button class="btn btn-sm"
+                        [routerLink]="['/tenantprofile', tenantProfile.id]"
+                        ngbTooltip="Tenant Profile Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="btn btn-sm"
+                        (click)="handleEdit(tenantProfile)"
+                        ngbTooltip="Edit Tenant Profile">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleDelete(tenantProfile)"
+                      ngbTooltip="Delete Tenant Profile" 
+                      placement="top"
+                      *ngIf="tenantProfile.deleted == false">
+                  <i class="fa fa-trash"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleUndelete(tenantProfile)"
+                      ngbTooltip="Undelete Tenant Profile" 
+                      placement="top"
+                      *ngIf="tenantProfile.deleted == true">
+                 <i class="fa fa-trash-arrow-up"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="tenant-profile-info" *ngIf="tenantProfile.name != null">
+              <strong>Name: </strong>
+              {{tenantProfile.name}}
+            </p>
+            <p class="tenant-profile-info" *ngIf="tenantProfile.description != null">
+              <strong>Description: </strong>
+              {{tenantProfile.description}}
+            </p>
+            <p class="tenant-profile-info" *ngIf="tenantProfile.companyLogoFileName != null">
+              <strong>Company Logo File Name: </strong>
+              {{tenantProfile.companyLogoFileName}}
+            </p>
+            <p class="tenant-profile-info" *ngIf="tenantProfile.companyLogoSize != null">
+              <strong>Company Logo Size: </strong>
+              {{tenantProfile.companyLogoSize | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="tenant-profile-info" *ngIf="tenantProfile.companyLogoData != null">
+              <strong>Company Logo Data: </strong>
+              {{tenantProfile.companyLogoData}}
+            </p>
+            <p class="tenant-profile-info" *ngIf="tenantProfile.companyLogoMimeType != null">
+              <strong>Company Logo Mime Type: </strong>
+              {{tenantProfile.companyLogoMimeType}}
+            </p>
+            <p class="tenant-profile-info" *ngIf="tenantProfile.addressLine1 != null">
+              <strong>Address Line 1: </strong>
+              {{tenantProfile.addressLine1}}
+            </p>
+            <p class="tenant-profile-info" *ngIf="tenantProfile.addressLine2 != null">
+              <strong>Address Line 2: </strong>
+              {{tenantProfile.addressLine2}}
+            </p>
+            <p class="tenant-profile-info" *ngIf="tenantProfile.addressLine3 != null">
+              <strong>Address Line 3: </strong>
+              {{tenantProfile.addressLine3}}
+            </p>
+            <p class="tenant-profile-info" *ngIf="tenantProfile.city != null">
+              <strong>City: </strong>
+              {{tenantProfile.city}}
+            </p>
+            <p class="tenant-profile-info" *ngIf="tenantProfile.postalCode != null">
+              <strong>Postal Code: </strong>
+              {{tenantProfile.postalCode}}
+            </p>
+            <p class="tenant-profile-info" *ngIf="tenantProfile.stateProvinceId != null">
+              <strong>State Province: </strong>
+              <a [routerLink]="['/stateprovince', tenantProfile.stateProvinceId]" class="text-left p-0 m-0" ngbTooltip="Open State Province details">{{tenantProfile.stateProvince?.name}}</a>
+            </p>
+            <p class="tenant-profile-info" *ngIf="tenantProfile.countryId != null">
+              <strong>Country: </strong>
+              <a [routerLink]="['/country', tenantProfile.countryId]" class="text-left p-0 m-0" ngbTooltip="Open Country details">{{tenantProfile.country?.name}}</a>
+            </p>
+            <p class="tenant-profile-info" *ngIf="tenantProfile.timeZoneId != null">
+              <strong>Time Zone: </strong>
+              <a [routerLink]="['/timezone', tenantProfile.timeZoneId]" class="text-left p-0 m-0" ngbTooltip="Open Time Zone details">{{tenantProfile.timeZone?.name}}</a>
+            </p>
+            <p class="tenant-profile-info" *ngIf="tenantProfile.phoneNumber != null">
+              <strong>Phone Number: </strong>
+              <a href="tel:{{tenantProfile?.phoneNumber}}" ngbTooltip="Call {{tenantProfile?.phoneNumber}}">{{tenantProfile.phoneNumber}}</a>
+            </p>
+            <p class="tenant-profile-info" *ngIf="tenantProfile.email != null">
+              <strong>Email: </strong>
+              <a href="mailto:{{tenantProfile?.email}}" ngbTooltip="Send Email to {{tenantProfile?.email}}">{{tenantProfile.email}}</a>
+            </p>
+            <p class="tenant-profile-info" *ngIf="tenantProfile.website != null">
+              <strong>Website: </strong>
+              {{tenantProfile.website}}
+            </p>
+            <p class="tenant-profile-info" *ngIf="tenantProfile.latitude != null">
+              <strong>Latitude: </strong>
+              {{tenantProfile.latitude | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="tenant-profile-info" *ngIf="tenantProfile.longitude != null">
+              <strong>Longitude: </strong>
+              {{tenantProfile.longitude | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="tenant-profile-info" *ngIf="tenantProfile.primaryColor != null">
+              <strong>Primary Color: </strong>
+              {{tenantProfile.primaryColor}}
+            </p>
+            <p class="tenant-profile-info" *ngIf="tenantProfile.secondaryColor != null">
+              <strong>Secondary Color: </strong>
+              {{tenantProfile.secondaryColor}}
+            </p>
+            <p class="tenant-profile-info" *ngIf="tenantProfile.displaysMetric != null">
+              <strong>Displays Metric: </strong>
+              <boolean-icon [value]="tenantProfile.displaysMetric"/>
+            </p>
+            <p class="tenant-profile-info" *ngIf="tenantProfile.displaysUSTerms != null">
+              <strong>Displays U S Terms: </strong>
+              <boolean-icon [value]="tenantProfile.displaysUSTerms"/>
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+   </div>
+</div>

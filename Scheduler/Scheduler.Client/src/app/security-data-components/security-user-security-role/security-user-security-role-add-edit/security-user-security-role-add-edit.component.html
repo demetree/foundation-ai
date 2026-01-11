@@ -1,0 +1,62 @@
+<div class="add-security-user-security-role" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-security-user-security-role me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Security User Security Role" 
+        *ngIf="userIsSecuritySecurityUserSecurityRoleWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #securityUserSecurityRoleModal let-modal>
+   <div class="modal-header bg-dark text-light security-user-security-role-modal-header">
+      <h5 class="modal-title mb-0" id="securityUserSecurityRoleModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Security User Security Role' : 'Add Security User Security Role' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body security-user-security-role-modal-body">
+      <form [formGroup]="securityUserSecurityRoleForm" (ngSubmit)="submitForm()">
+            <div class="form-group">
+                <label for="securityUserId" id="label-securityUserId"><span class="text-danger">*</span>Security User</label>
+                <select id="securityUserId" formControlName="securityUserId" class="form-select security-user-security-role-select" [disabled]="!userIsSecuritySecurityUserSecurityRoleWriter()">
+                    <option [ngValue]="null">Select Security User</option>
+                    <option *ngFor="let securityUser of securityUsers$ | async" [ngValue]="securityUser.id">{{[securityUser.accountName] | filterAndJoin}}</option>
+                </select>
+                <div *ngIf="securityUserSecurityRoleForm.get('securityUserId')?.invalid && securityUserSecurityRoleForm.get('securityUserId')?.touched" class="text-danger">
+                    Security User is required
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="securityRoleId" id="label-securityRoleId"><span class="text-danger">*</span>Security Role</label>
+                <select id="securityRoleId" formControlName="securityRoleId" class="form-select security-user-security-role-select" [disabled]="!userIsSecuritySecurityUserSecurityRoleWriter()">
+                    <option [ngValue]="null">Select Security Role</option>
+                    <option *ngFor="let securityRole of securityRoles$ | async" [ngValue]="securityRole.id">{{securityRole.name}}</option>
+                </select>
+                <div *ngIf="securityUserSecurityRoleForm.get('securityRoleId')?.invalid && securityUserSecurityRoleForm.get('securityRoleId')?.touched" class="text-danger">
+                    Security Role is required
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="comments" id="label-comments">Comments</label>
+                <textarea id="comments" formControlName="comments" placeholder="Enter Comments" class="form-control security-user-security-role-input" [disabled]="!userIsSecuritySecurityUserSecurityRoleWriter()"></textarea>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode">
+                <input type="checkbox" id="active" formControlName="active" class="form-check-input" [disabled]="!userIsSecuritySecurityUserSecurityRoleWriter()" />
+                <label for="active" class="form-check-label" id="label-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode">
+                <input type="checkbox" id="deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSecuritySecurityUserSecurityRoleWriter()" />
+                <label for="deleted" class="form-check-label" id="label-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer security-user-security-role-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Security User Security Role changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !securityUserSecurityRoleForm.valid || securityUserSecurityRoleForm.pristine || !userIsSecuritySecurityUserSecurityRoleWriter()" ngbTooltip="Save the Security User Security Role changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

@@ -1,0 +1,93 @@
+<div class="add-calendar" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-calendar me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Calendar" 
+        *ngIf="userIsSchedulerCalendarWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #calendarModal let-modal>
+   <div class="modal-header bg-dark text-light calendar-modal-header">
+      <h5 class="modal-title mb-0" id="calendarModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Calendar' : 'Add Calendar' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body calendar-modal-body">
+      <form [formGroup]="calendarForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="Calendar-name" id="label-Calendar-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="Calendar-name" formControlName="name" placeholder="Enter Name" class="form-control calendar-input" [disabled]="!userIsSchedulerCalendarWriter()" aria-labelledby="label-name" />
+                <div *ngIf="calendarForm.get('name')?.invalid && calendarForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="Calendar-description" id="label-Calendar-description">Description</label>
+                <textarea id="Calendar-description" formControlName="description" placeholder="Enter Description" class="form-control calendar-input" [disabled]="!userIsSchedulerCalendarWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('officeId')">
+                <label for="Calendar-officeId" id="label-Calendar-officeId">Office</label>
+                <select id="Calendar-officeId" formControlName="officeId" class="form-select calendar-select" [disabled]="!userIsSchedulerCalendarWriter()">
+                    <option [ngValue]="null">Select Office</option>
+                    <option *ngFor="let office of offices$ | async" [ngValue]="office.id">{{office.name}}</option>
+                </select>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isDefault')">
+                <input type="checkbox" id="Calendar-isDefault" formControlName="isDefault" class="form-check-input" [disabled]="!userIsSchedulerCalendarWriter()" />
+                <label for="Calendar-isDefault" class="form-check-label" id="label-Calendar-isDefault">Is Default</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('iconId')">
+                <label for="Calendar-iconId" id="label-Calendar-iconId">Icon</label>
+                <select id="Calendar-iconId" formControlName="iconId" class="form-select calendar-select" [disabled]="!userIsSchedulerCalendarWriter()">
+                    <option [ngValue]="null">Select Icon</option>
+                    <option *ngFor="let icon of icons$ | async" [ngValue]="icon.id">{{icon.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('color')">
+                <label for="Calendar-color" id="label-Calendar-color">Color</label>
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="Calendar-color" 
+                        formControlName="color" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerCalendarWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="calendarForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="Calendar-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerCalendarWriter()" />
+                <label for="Calendar-active" class="form-check-label" id="label-Calendar-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="Calendar-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerCalendarWriter()" />
+                <label for="Calendar-deleted" class="form-check-label" id="label-Calendar-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="Calendar-versionNumber" id="label-Calendar-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="Calendar-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control calendar-input" />
+            </div>
+         <div class="modal-footer calendar-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Calendar changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !calendarForm.valid || calendarForm.pristine || !userIsSchedulerCalendarWriter()" ngbTooltip="Save the Calendar changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

@@ -1,0 +1,2150 @@
+using System;
+using System.Threading;
+using System.Data;
+using System.Text.Json;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Storage;
+using Foundation.Security;
+using Foundation.Auditor;
+using Foundation.Controllers;
+using Foundation.Security.Database;
+using static Foundation.Auditor.AuditEngine;
+using Foundation.Scheduler.Database;
+using System.IO;
+using System.Net;
+using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Net.Http.Headers;
+
+namespace Foundation.Scheduler.Controllers.WebAPI
+{
+    /// <summary>
+    /// 
+    /// This auto generated class provides the basic CRUD operations for the Constituent entity via a Web API.
+	/// 
+	/// It can be used as-is, or as a starting point for customizations in a new partial class, or a new class entirely.
+    ///
+    /// It demonstrates the features available for the Constituent entity, possibly including: multi tenancy, data visibility, version control with rollback, and favouriting.
+	/// 
+    /// </summary>
+	public partial class ConstituentsController : SecureWebAPIController
+	{
+		public const int READ_PERMISSION_LEVEL_REQUIRED = 1;
+		public const int WRITE_PERMISSION_LEVEL_REQUIRED = 1;
+
+		static object constituentPutSyncRoot = new object();
+		static object constituentDeleteSyncRoot = new object();
+
+		private SchedulerContext _context;
+
+		private ILogger<ConstituentsController> _logger;
+
+		public ConstituentsController(SchedulerContext context, ILogger<ConstituentsController> logger) : base("Scheduler", "Constituent")
+		{
+			this._context = context;
+			this._logger = logger;
+
+			this._context.Database.SetCommandTimeout(60);
+
+			return;
+		}
+
+		/// <summary>
+		/// 
+		/// This gets a list of Constituents filtered by the parameters provided.
+		/// 
+		/// There is a filter parameter for every field, and an 'anyStringContains' parameter for cross field string partial searches.
+		/// 
+		/// Note also the pagination control in the pageSize and pageNumber parameters.
+		/// 
+		/// The rate limit is 2 per second per user.
+		/// 
+		/// </summary>
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/Constituents")]
+		public async Task<IActionResult> GetConstituents(
+			int? contactId = null,
+			int? clientId = null,
+			int? householdId = null,
+			string constituentNumber = null,
+			bool? doNotSolicit = null,
+			bool? doNotEmail = null,
+			bool? doNotMail = null,
+			decimal? totalLifetimeGiving = null,
+			decimal? totalYTDGiving = null,
+			decimal? lastGiftAmount = null,
+			decimal? largestGiftAmount = null,
+			int? totalGiftCount = null,
+			string externalId = null,
+			string notes = null,
+			string attributes = null,
+			int? iconId = null,
+			string color = null,
+			string avatarFileName = null,
+			long? avatarSize = null,
+			string avatarMimeType = null,
+			int? versionNumber = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
+			int? pageSize = null,
+			int? pageNumber = null,
+			string anyStringContains = null,
+			bool includeRelations = true,
+			CancellationToken cancellationToken = default)
+		{
+			StartAuditEventClock();
+
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 1, cancellationToken);
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+
+			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+			if (pageNumber.HasValue == true &&
+			    pageNumber < 1)
+			{
+			    pageNumber = null;
+			}
+
+			if (pageSize.HasValue == true &&
+			    pageSize <= 0)
+			{
+			    pageSize = null;
+			}
+
+			IQueryable<Database.Constituent> query = (from c in _context.Constituents select c);
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+			if (contactId.HasValue == true)
+			{
+				query = query.Where(c => c.contactId == contactId.Value);
+			}
+			if (clientId.HasValue == true)
+			{
+				query = query.Where(c => c.clientId == clientId.Value);
+			}
+			if (householdId.HasValue == true)
+			{
+				query = query.Where(c => c.householdId == householdId.Value);
+			}
+			if (string.IsNullOrEmpty(constituentNumber) == false)
+			{
+				query = query.Where(c => c.constituentNumber == constituentNumber);
+			}
+			if (doNotSolicit.HasValue == true)
+			{
+				query = query.Where(c => c.doNotSolicit == doNotSolicit.Value);
+			}
+			if (doNotEmail.HasValue == true)
+			{
+				query = query.Where(c => c.doNotEmail == doNotEmail.Value);
+			}
+			if (doNotMail.HasValue == true)
+			{
+				query = query.Where(c => c.doNotMail == doNotMail.Value);
+			}
+			if (totalLifetimeGiving.HasValue == true)
+			{
+				query = query.Where(c => c.totalLifetimeGiving == totalLifetimeGiving.Value);
+			}
+			if (totalYTDGiving.HasValue == true)
+			{
+				query = query.Where(c => c.totalYTDGiving == totalYTDGiving.Value);
+			}
+			if (lastGiftAmount.HasValue == true)
+			{
+				query = query.Where(c => c.lastGiftAmount == lastGiftAmount.Value);
+			}
+			if (largestGiftAmount.HasValue == true)
+			{
+				query = query.Where(c => c.largestGiftAmount == largestGiftAmount.Value);
+			}
+			if (totalGiftCount.HasValue == true)
+			{
+				query = query.Where(c => c.totalGiftCount == totalGiftCount.Value);
+			}
+			if (string.IsNullOrEmpty(externalId) == false)
+			{
+				query = query.Where(c => c.externalId == externalId);
+			}
+			if (string.IsNullOrEmpty(notes) == false)
+			{
+				query = query.Where(c => c.notes == notes);
+			}
+			if (string.IsNullOrEmpty(attributes) == false)
+			{
+				query = query.Where(c => c.attributes == attributes);
+			}
+			if (iconId.HasValue == true)
+			{
+				query = query.Where(c => c.iconId == iconId.Value);
+			}
+			if (string.IsNullOrEmpty(color) == false)
+			{
+				query = query.Where(c => c.color == color);
+			}
+			if (string.IsNullOrEmpty(avatarFileName) == false)
+			{
+				query = query.Where(c => c.avatarFileName == avatarFileName);
+			}
+			if (avatarSize.HasValue == true)
+			{
+				query = query.Where(c => c.avatarSize == avatarSize.Value);
+			}
+			if (string.IsNullOrEmpty(avatarMimeType) == false)
+			{
+				query = query.Where(c => c.avatarMimeType == avatarMimeType);
+			}
+			if (versionNumber.HasValue == true)
+			{
+				query = query.Where(c => c.versionNumber == versionNumber.Value);
+			}
+			if (objectGuid.HasValue == true)
+			{
+				query = query.Where(c => c.objectGuid == objectGuid);
+			}
+			if (userIsWriter == true)
+			{
+				if (active.HasValue == true)
+				{
+					query = query.Where(c => c.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(c => c.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(c => c.deleted == false);
+				}
+			}
+			else
+			{
+				query = query.Where(c => c.active == true);
+				query = query.Where(c => c.deleted == false);
+			}
+
+			query = query.OrderBy(c => c.constituentNumber).ThenBy(c => c.externalId).ThenBy(c => c.color);
+
+			if (pageNumber.HasValue == true &&
+			    pageSize.HasValue == true)
+			{
+			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
+			}
+			
+			if (includeRelations == true)
+			{
+				query = query.Include(x => x.client);
+				query = query.Include(x => x.contact);
+				query = query.Include(x => x.household);
+				query = query.Include(x => x.icon);
+				query = query.AsSplitQuery();
+			}
+
+
+			//
+			// Add the any string contains parameter to span all the string fields on the Constituent, or on an any of the string fields on its immediate relations
+			//
+			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
+			//
+			if (!string.IsNullOrEmpty(anyStringContains))
+			{
+			   query = query.Where(x =>
+			       x.constituentNumber.Contains(anyStringContains)
+			       || x.externalId.Contains(anyStringContains)
+			       || x.notes.Contains(anyStringContains)
+			       || x.attributes.Contains(anyStringContains)
+			       || x.color.Contains(anyStringContains)
+			       || x.avatarFileName.Contains(anyStringContains)
+			       || x.avatarMimeType.Contains(anyStringContains)
+			       || (includeRelations == true && x.client.name.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.description.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.addressLine1.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.addressLine2.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.city.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.postalCode.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.phone.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.email.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.notes.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.externalId.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.color.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.attributes.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.avatarFileName.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.avatarMimeType.Contains(anyStringContains))
+			       || (includeRelations == true && x.contact.firstName.Contains(anyStringContains))
+			       || (includeRelations == true && x.contact.middleName.Contains(anyStringContains))
+			       || (includeRelations == true && x.contact.lastName.Contains(anyStringContains))
+			       || (includeRelations == true && x.contact.title.Contains(anyStringContains))
+			       || (includeRelations == true && x.contact.company.Contains(anyStringContains))
+			       || (includeRelations == true && x.contact.email.Contains(anyStringContains))
+			       || (includeRelations == true && x.contact.phone.Contains(anyStringContains))
+			       || (includeRelations == true && x.contact.mobile.Contains(anyStringContains))
+			       || (includeRelations == true && x.contact.position.Contains(anyStringContains))
+			       || (includeRelations == true && x.contact.webSite.Contains(anyStringContains))
+			       || (includeRelations == true && x.contact.notes.Contains(anyStringContains))
+			       || (includeRelations == true && x.contact.color.Contains(anyStringContains))
+			       || (includeRelations == true && x.contact.avatarFileName.Contains(anyStringContains))
+			       || (includeRelations == true && x.contact.avatarMimeType.Contains(anyStringContains))
+			       || (includeRelations == true && x.contact.externalId.Contains(anyStringContains))
+			       || (includeRelations == true && x.household.name.Contains(anyStringContains))
+			       || (includeRelations == true && x.household.description.Contains(anyStringContains))
+			       || (includeRelations == true && x.household.formalSalutation.Contains(anyStringContains))
+			       || (includeRelations == true && x.household.informalSalutation.Contains(anyStringContains))
+			       || (includeRelations == true && x.household.addressee.Contains(anyStringContains))
+			       || (includeRelations == true && x.household.notes.Contains(anyStringContains))
+			       || (includeRelations == true && x.household.color.Contains(anyStringContains))
+			       || (includeRelations == true && x.household.avatarFileName.Contains(anyStringContains))
+			       || (includeRelations == true && x.household.avatarMimeType.Contains(anyStringContains))
+			       || (includeRelations == true && x.icon.name.Contains(anyStringContains))
+			       || (includeRelations == true && x.icon.fontAwesomeCode.Contains(anyStringContains))
+			   );
+			}
+
+			query = query.AsNoTracking();
+			
+			List<Database.Constituent> materialized = await query.ToListAsync(cancellationToken);
+
+			// Convert all the date properties to be of kind UTC.
+			bool databaseStoresDateWithTimeZone = _context.DoesDatabaseStoreDateWithTimeZone();
+			foreach (Database.Constituent constituent in materialized)
+			{
+			    Foundation.DateTimeUtility.ConvertAllDateTimePropertiesToUTC(constituent, databaseStoresDateWithTimeZone);
+			}
+
+
+			bool diskBasedBinaryStorageMode = Foundation.Configuration.GetDiskBasedBinaryStorageMode();
+
+			if (diskBasedBinaryStorageMode == true)
+			{
+				var tasks = materialized.Select(async constituent =>
+				{
+
+					if (constituent.avatarData == null &&
+					    constituent.avatarSize.HasValue == true &&
+					    constituent.avatarSize.Value > 0)
+					{
+					    constituent.avatarData = await LoadDataFromDiskAsync(constituent.objectGuid, constituent.versionNumber, "data");
+					}
+
+				}).ToList();
+
+				// Run tasks concurrently and await their completion
+				await Task.WhenAll(tasks);
+			}
+
+			await CreateAuditEventAsync(AuditEngine.AuditType.ReadList, userIsAdmin == true ? "Scheduler.Constituent Entity list was read with Admin privilege.  Returning " + materialized.Count + " rows of data." : "Scheduler.Constituent Entity list was read.  Returning " + materialized.Count + " rows of data.");
+
+			// Create a new output object that only includes the relations if necessary, and doesn't include the empty list objects, so that we can reduce the amount of data being transferred.
+			if (includeRelations == true)
+			{
+				// Return a DTO with nav properties.
+				return Ok((from materializedData in materialized select materializedData.ToOutputDTO()).ToList());
+			}
+			else
+			{
+				// Return a DTO without nav properties.
+				return Ok((from materializedData in materialized select materializedData.ToDTO()).ToList());
+			}
+		}
+		
+		
+        /// <summary>
+        /// 
+        /// This returns a row count of Constituents filtered by the parameters provided.  Its query is similar to the GetConstituents method, but it only returns the count of rows that would be returned.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/Constituents/RowCount")]
+		public async Task<IActionResult> GetRowCount(
+			int? contactId = null,
+			int? clientId = null,
+			int? householdId = null,
+			string constituentNumber = null,
+			bool? doNotSolicit = null,
+			bool? doNotEmail = null,
+			bool? doNotMail = null,
+			decimal? totalLifetimeGiving = null,
+			decimal? totalYTDGiving = null,
+			decimal? lastGiftAmount = null,
+			decimal? largestGiftAmount = null,
+			int? totalGiftCount = null,
+			string externalId = null,
+			string notes = null,
+			string attributes = null,
+			int? iconId = null,
+			string color = null,
+			string avatarFileName = null,
+			long? avatarSize = null,
+			string avatarMimeType = null,
+			int? versionNumber = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
+			string anyStringContains = null,
+			CancellationToken cancellationToken = default)
+		{
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 1, cancellationToken);
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			IQueryable<Database.Constituent> query = (from c in _context.Constituents select c);
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+			if (contactId.HasValue == true)
+			{
+				query = query.Where(c => c.contactId == contactId.Value);
+			}
+			if (clientId.HasValue == true)
+			{
+				query = query.Where(c => c.clientId == clientId.Value);
+			}
+			if (householdId.HasValue == true)
+			{
+				query = query.Where(c => c.householdId == householdId.Value);
+			}
+			if (constituentNumber != null)
+			{
+				query = query.Where(c => c.constituentNumber == constituentNumber);
+			}
+			if (doNotSolicit.HasValue == true)
+			{
+				query = query.Where(c => c.doNotSolicit == doNotSolicit.Value);
+			}
+			if (doNotEmail.HasValue == true)
+			{
+				query = query.Where(c => c.doNotEmail == doNotEmail.Value);
+			}
+			if (doNotMail.HasValue == true)
+			{
+				query = query.Where(c => c.doNotMail == doNotMail.Value);
+			}
+			if (totalLifetimeGiving.HasValue == true)
+			{
+				query = query.Where(c => c.totalLifetimeGiving == totalLifetimeGiving.Value);
+			}
+			if (totalYTDGiving.HasValue == true)
+			{
+				query = query.Where(c => c.totalYTDGiving == totalYTDGiving.Value);
+			}
+			if (lastGiftAmount.HasValue == true)
+			{
+				query = query.Where(c => c.lastGiftAmount == lastGiftAmount.Value);
+			}
+			if (largestGiftAmount.HasValue == true)
+			{
+				query = query.Where(c => c.largestGiftAmount == largestGiftAmount.Value);
+			}
+			if (totalGiftCount.HasValue == true)
+			{
+				query = query.Where(c => c.totalGiftCount == totalGiftCount.Value);
+			}
+			if (externalId != null)
+			{
+				query = query.Where(c => c.externalId == externalId);
+			}
+			if (notes != null)
+			{
+				query = query.Where(c => c.notes == notes);
+			}
+			if (attributes != null)
+			{
+				query = query.Where(c => c.attributes == attributes);
+			}
+			if (iconId.HasValue == true)
+			{
+				query = query.Where(c => c.iconId == iconId.Value);
+			}
+			if (color != null)
+			{
+				query = query.Where(c => c.color == color);
+			}
+			if (avatarFileName != null)
+			{
+				query = query.Where(c => c.avatarFileName == avatarFileName);
+			}
+			if (avatarSize.HasValue == true)
+			{
+				query = query.Where(c => c.avatarSize == avatarSize.Value);
+			}
+			if (avatarMimeType != null)
+			{
+				query = query.Where(c => c.avatarMimeType == avatarMimeType);
+			}
+			if (versionNumber.HasValue == true)
+			{
+				query = query.Where(c => c.versionNumber == versionNumber.Value);
+			}
+			if (objectGuid.HasValue == true)
+			{
+				query = query.Where(c => c.objectGuid == objectGuid);
+			}
+			if (userIsWriter == true)
+			{
+				if (active.HasValue == true)
+				{
+					query = query.Where(c => c.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(c => c.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(c => c.deleted == false);
+				}
+			}
+			else
+			{
+				query = query.Where(c => c.active == true);
+				query = query.Where(c => c.deleted == false);
+			}
+
+			//
+			// Add the any string contains parameter to span all the string fields on the Constituent, or on an any of the string fields on its immediate relations
+			//
+			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
+			//
+			if (!string.IsNullOrEmpty(anyStringContains))
+			{
+			   query = query.Where(x =>
+			       x.constituentNumber.Contains(anyStringContains)
+			       || x.externalId.Contains(anyStringContains)
+			       || x.notes.Contains(anyStringContains)
+			       || x.attributes.Contains(anyStringContains)
+			       || x.color.Contains(anyStringContains)
+			       || x.avatarFileName.Contains(anyStringContains)
+			       || x.avatarMimeType.Contains(anyStringContains)
+			       || x.client.name.Contains(anyStringContains)
+			       || x.client.description.Contains(anyStringContains)
+			       || x.client.addressLine1.Contains(anyStringContains)
+			       || x.client.addressLine2.Contains(anyStringContains)
+			       || x.client.city.Contains(anyStringContains)
+			       || x.client.postalCode.Contains(anyStringContains)
+			       || x.client.phone.Contains(anyStringContains)
+			       || x.client.email.Contains(anyStringContains)
+			       || x.client.notes.Contains(anyStringContains)
+			       || x.client.externalId.Contains(anyStringContains)
+			       || x.client.color.Contains(anyStringContains)
+			       || x.client.attributes.Contains(anyStringContains)
+			       || x.client.avatarFileName.Contains(anyStringContains)
+			       || x.client.avatarMimeType.Contains(anyStringContains)
+			       || x.contact.firstName.Contains(anyStringContains)
+			       || x.contact.middleName.Contains(anyStringContains)
+			       || x.contact.lastName.Contains(anyStringContains)
+			       || x.contact.title.Contains(anyStringContains)
+			       || x.contact.company.Contains(anyStringContains)
+			       || x.contact.email.Contains(anyStringContains)
+			       || x.contact.phone.Contains(anyStringContains)
+			       || x.contact.mobile.Contains(anyStringContains)
+			       || x.contact.position.Contains(anyStringContains)
+			       || x.contact.webSite.Contains(anyStringContains)
+			       || x.contact.notes.Contains(anyStringContains)
+			       || x.contact.color.Contains(anyStringContains)
+			       || x.contact.avatarFileName.Contains(anyStringContains)
+			       || x.contact.avatarMimeType.Contains(anyStringContains)
+			       || x.contact.externalId.Contains(anyStringContains)
+			       || x.household.name.Contains(anyStringContains)
+			       || x.household.description.Contains(anyStringContains)
+			       || x.household.formalSalutation.Contains(anyStringContains)
+			       || x.household.informalSalutation.Contains(anyStringContains)
+			       || x.household.addressee.Contains(anyStringContains)
+			       || x.household.notes.Contains(anyStringContains)
+			       || x.household.color.Contains(anyStringContains)
+			       || x.household.avatarFileName.Contains(anyStringContains)
+			       || x.household.avatarMimeType.Contains(anyStringContains)
+			       || x.icon.name.Contains(anyStringContains)
+			       || x.icon.fontAwesomeCode.Contains(anyStringContains)
+			   );
+			}
+
+
+			int output = await query.CountAsync(cancellationToken);
+
+			return Ok(output);
+		}
+
+
+        /// <summary>
+        /// 
+        /// This gets a single Constituent by primary key.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/Constituent/{id}")]
+		public async Task<IActionResult> GetConstituent(int id, bool includeRelations = true, CancellationToken cancellationToken = default)
+		{
+			StartAuditEventClock();
+
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 1, cancellationToken);
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
+			
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			try
+			{
+				IQueryable<Database.Constituent> query = (from c in _context.Constituents where
+							(c.id == id) &&
+							(userIsAdmin == true || c.deleted == false) &&
+							(userIsWriter == true || c.active == true)
+					select c);
+
+
+				query = query.Where(x => x.tenantGuid == userTenantGuid);
+				if (includeRelations == true)
+				{
+					query = query.Include(x => x.client);
+					query = query.Include(x => x.contact);
+					query = query.Include(x => x.household);
+					query = query.Include(x => x.icon);
+					query = query.AsSplitQuery();
+				}
+
+				Database.Constituent materialized = await query.FirstOrDefaultAsync(cancellationToken);
+
+				if (materialized != null)
+				{
+					bool diskBasedBinaryStorageMode = Foundation.Configuration.GetDiskBasedBinaryStorageMode();
+
+					if (diskBasedBinaryStorageMode == true &&
+					    materialized.avatarData == null &&
+					    materialized.avatarSize.HasValue == true &&
+					    materialized.avatarSize.Value > 0)
+					{
+					    materialized.avatarData = await LoadDataFromDiskAsync(materialized.objectGuid, materialized.versionNumber, "data", cancellationToken);
+					}
+
+					
+					// Convert all the date properties to be of kind UTC.
+					Foundation.DateTimeUtility.ConvertAllDateTimePropertiesToUTC(materialized, _context.DoesDatabaseStoreDateWithTimeZone());
+
+					await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, userIsAdmin == true ? "Scheduler.Constituent Entity was read with Admin privilege." : "Scheduler.Constituent Entity was read.");
+
+					BackgroundJob.Enqueue(() => SecurityLogic.AddToUserMostRecents(securityUser.id, "Constituent", materialized.id, materialized.constituentNumber));
+
+
+					// Create a new output object that only includes the relations if necessary, and doesn't include the empty list objects, so that we can reduce the amount of data being transferred.
+					if (includeRelations == true)
+					{
+						return Ok(materialized.ToOutputDTO());             // DTO with nav properties
+					}
+					else
+					{
+						return Ok(materialized.ToDTO());                   // DTO without nav properties
+					}
+				}
+				else
+				{
+					await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt to read a Scheduler.Constituent entity that does not exist.", id.ToString());
+					return BadRequest();
+				}
+			}
+			catch (Exception ex)
+			{
+				await CreateAuditEventAsync(AuditEngine.AuditType.Error, userIsAdmin == true ? "Exception caught during entity read of Scheduler.Constituent.   Entity was read with Admin privilege." : "Exception caught during entity read of Scheduler.Constituent.", id.ToString(), ex);
+				return Problem(ex.ToString());
+			}
+		}
+
+
+		/// <summary>
+		/// 
+		/// This updates an existing Constituent record
+        ///
+        /// The rate limit is 2 per second per user.
+		/// 
+		/// </summary>
+		[Route("api/Constituent/{id}")]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[HttpPost]
+		[HttpPut]
+		[RequestSizeLimit(5000000)]
+		public async Task<IActionResult> PutConstituent(int id, [FromBody]Database.Constituent.ConstituentDTO constituentDTO, CancellationToken cancellationToken = default)
+		{
+			if (constituentDTO == null)
+			{
+			   return BadRequest();
+			}
+
+			StartAuditEventClock();
+
+			if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+
+			if (id != constituentDTO.id)
+			{
+				return BadRequest();
+			}
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 1, cancellationToken);
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			IQueryable<Database.Constituent> query = (from x in _context.Constituents
+				where
+				(x.id == id)
+				select x);
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+			Database.Constituent existing = await query.FirstOrDefaultAsync(cancellationToken);
+
+			if (existing == null)
+			{
+				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for Scheduler.Constituent PUT", id.ToString(), new Exception("No Scheduler.Constituent entity could be found with the primary key provided."));
+				return NotFound();
+			}
+
+
+            //
+            // Validate the object guid.  If it comes in as empty Guid in the DTO, then set it to the actual value from the existing record.  If the DTO has a value then it must match the existing value.
+            // 
+            if (constituentDTO.objectGuid == Guid.Empty)
+            {
+                constituentDTO.objectGuid = existing.objectGuid;
+            }
+            else if (constituentDTO.objectGuid != existing.objectGuid)
+            {
+                await CreateAuditEventAsync(AuditEngine.AuditType.Error, $"Attempt was made to change object guid on a Constituent record.  This is not allowed.  The User is " + securityUser.accountName, existing.id.ToString());
+                return Problem("Invalid Operation.");
+            }
+
+
+			// Copy the existing object so it can be serialized as-is in the audit and history logs.
+			Database.Constituent cloneOfExisting = (Database.Constituent)_context.Entry(existing).GetDatabaseValues().ToObject();
+
+			//
+			// Create a new Constituent object using the data from the existing record, updated with what is in the DTO.
+			//
+			Database.Constituent constituent = (Database.Constituent)_context.Entry(existing).GetDatabaseValues().ToObject();
+			constituent.ApplyDTO(constituentDTO);
+			//
+			// The tenant guid for any Constituent being saved must match the tenant guid of the user.  
+			//
+			if (existing.tenantGuid != userTenantGuid)
+			{
+				await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to save a record with a tenant guid that is not the user's tenant guid.", false);
+				return Problem("Data integrity violation detected while attempting to save.");
+			}
+			else
+			{
+				// Assign the tenantGuid to the Constituent because it shouldn't be on the input object, and we want to ensure that it always is what the correct value in case it is.
+				constituent.tenantGuid = existing.tenantGuid;
+			}
+
+			lock (constituentPutSyncRoot)
+			{
+				//
+				// Validate the version number for the constituent being saved.  Error out if the database version is different than what is being saved.  If they are the same, then increment the version for this save.
+				//
+				if (existing.versionNumber != constituent.versionNumber)
+				{
+					// Record has changed
+					CreateAuditEvent(AuditEngine.AuditType.Miscellaneous, "Constituent save attempt was made but save request was with version " + constituent.versionNumber + " and the current version number is " + existing.versionNumber, false);
+					return Problem("The Constituent you are trying to update has already changed.  Please try your save again after reloading the Constituent.");
+				}
+				else
+				{
+					// Same record.  Increase version.
+					constituent.versionNumber++;
+				}
+
+
+				// Is user who is not an admin trying to delete, or to work on a deleted record, or to delete a record by flipping it's deleted flag to true?
+				if (userIsAdmin == false && (constituent.deleted == true || existing.deleted == true))
+				{
+					// we're not recording state here because it is not being changed.
+					CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, "Attempt to delete a record or work on a deleted Scheduler.Constituent record.", id.ToString());
+					DestroySessionAndAuthentication();
+					return Forbid();
+				}
+
+				if (constituent.constituentNumber != null && constituent.constituentNumber.Length > 50)
+				{
+					constituent.constituentNumber = constituent.constituentNumber.Substring(0, 50);
+				}
+
+				if (constituent.externalId != null && constituent.externalId.Length > 100)
+				{
+					constituent.externalId = constituent.externalId.Substring(0, 100);
+				}
+
+				if (constituent.color != null && constituent.color.Length > 10)
+				{
+					constituent.color = constituent.color.Substring(0, 10);
+				}
+
+				if (constituent.avatarFileName != null && constituent.avatarFileName.Length > 250)
+				{
+					constituent.avatarFileName = constituent.avatarFileName.Substring(0, 250);
+				}
+
+				if (constituent.avatarMimeType != null && constituent.avatarMimeType.Length > 100)
+				{
+					constituent.avatarMimeType = constituent.avatarMimeType.Substring(0, 100);
+				}
+
+
+				//
+				// Add default values for any missing data attribute fields.
+				//
+				if (constituent.avatarData != null && string.IsNullOrEmpty(constituent.avatarFileName))
+				{
+				    constituent.avatarFileName = constituent.objectGuid.ToString() + ".data";
+				}
+
+				if (constituent.avatarData != null && (constituent.avatarSize.HasValue == false || constituent.avatarSize != constituent.avatarData.Length))
+				{
+				    constituent.avatarSize = constituent.avatarData.Length;
+				}
+
+				if (constituent.avatarData != null && string.IsNullOrEmpty(constituent.avatarMimeType))
+				{
+				    constituent.avatarMimeType = "application/octet-stream";
+				}
+
+				bool diskBasedBinaryStorageMode = Foundation.Configuration.GetDiskBasedBinaryStorageMode();
+
+				try
+				{
+					byte[] dataReferenceBeforeClearing = constituent.avatarData;
+
+					if (diskBasedBinaryStorageMode == true &&
+					    constituent.avatarFileName != null &&
+					    constituent.avatarData != null &&
+					    constituent.avatarSize.HasValue == true &&
+					    constituent.avatarSize.Value > 0)
+					{
+					    //
+					    // write the bytes to disk
+					    //
+					    WriteDataToDisk(constituent.objectGuid, constituent.versionNumber, constituent.avatarData, "data");
+
+					    //
+					    // Clear the data from the object before we put it into the db
+					    //
+					    constituent.avatarData = null;
+
+					}
+
+				    EntityEntry<Database.Constituent> attached = _context.Entry(existing);
+				    attached.CurrentValues.SetValues(constituent);
+
+				    using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+				    {
+				        _context.SaveChanges();
+
+				        //
+				        // Now add the change history
+				        //
+				        ConstituentChangeHistory constituentChangeHistory = new ConstituentChangeHistory();
+				        constituentChangeHistory.constituentId = constituent.id;
+				        constituentChangeHistory.versionNumber = constituent.versionNumber;
+				        constituentChangeHistory.timeStamp = DateTime.UtcNow;
+				        constituentChangeHistory.userId = securityUser.id;
+				        constituentChangeHistory.tenantGuid = userTenantGuid;
+				        constituentChangeHistory.data = JsonSerializer.Serialize(Database.Constituent.CreateAnonymousWithFirstLevelSubObjects(constituent));
+				        _context.ConstituentChangeHistories.Add(constituentChangeHistory);
+
+				        _context.SaveChanges();
+
+				        transaction.Commit();
+				    }
+
+					if (diskBasedBinaryStorageMode == true)
+					{
+					    //
+					    // Put the data bytes back into the object that will be returned.
+					    //
+					    constituent.avatarData = dataReferenceBeforeClearing;
+					}
+
+					CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
+						"Scheduler.Constituent entity successfully updated.",
+						true,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.Constituent.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.Constituent.CreateAnonymousWithFirstLevelSubObjects(constituent)),
+						null);
+
+				return Ok(Database.Constituent.CreateAnonymous(constituent));
+				}
+				catch (Exception ex)
+				{
+					CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
+						"Scheduler.Constituent entity update failed",
+						false,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.Constituent.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.Constituent.CreateAnonymousWithFirstLevelSubObjects(constituent)),
+						ex);
+
+					return Problem(ex.Message);
+				}
+
+			}
+		}
+
+        /// <summary>
+        /// 
+        /// This creates a new Constituent record
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+		[HttpPost]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/Constituent", Name = "Constituent")]
+		[RequestSizeLimit(5000000)]
+		public async Task<IActionResult> PostConstituent([FromBody]Database.Constituent.ConstituentDTO constituentDTO, CancellationToken cancellationToken = default)
+		{
+			if (constituentDTO == null)
+			{
+			   return BadRequest();
+			}
+
+			StartAuditEventClock();
+
+			if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+			//
+			// Create a new Constituent object using the data from the DTO
+			//
+			Database.Constituent constituent = Database.Constituent.FromDTO(constituentDTO);
+
+			try
+			{
+				//
+				// Ensure that the tenant data is correct.
+				//
+				constituent.tenantGuid = userTenantGuid;
+
+				if (constituent.constituentNumber != null && constituent.constituentNumber.Length > 50)
+				{
+					constituent.constituentNumber = constituent.constituentNumber.Substring(0, 50);
+				}
+
+				if (constituent.externalId != null && constituent.externalId.Length > 100)
+				{
+					constituent.externalId = constituent.externalId.Substring(0, 100);
+				}
+
+				if (constituent.color != null && constituent.color.Length > 10)
+				{
+					constituent.color = constituent.color.Substring(0, 10);
+				}
+
+				if (constituent.avatarFileName != null && constituent.avatarFileName.Length > 250)
+				{
+					constituent.avatarFileName = constituent.avatarFileName.Substring(0, 250);
+				}
+
+				if (constituent.avatarMimeType != null && constituent.avatarMimeType.Length > 100)
+				{
+					constituent.avatarMimeType = constituent.avatarMimeType.Substring(0, 100);
+				}
+
+				constituent.objectGuid = Guid.NewGuid();
+
+				//
+				// Add default values for any missing data attribute fields.
+				//
+				if (constituent.avatarData != null && string.IsNullOrEmpty(constituent.avatarFileName))
+				{
+				    constituent.avatarFileName = constituent.objectGuid.ToString() + ".data";
+				}
+
+				if (constituent.avatarData != null && (constituent.avatarSize.HasValue == false || constituent.avatarSize != constituent.avatarData.Length))
+				{
+				    constituent.avatarSize = constituent.avatarData.Length;
+				}
+
+				if (constituent.avatarData != null && string.IsNullOrEmpty(constituent.avatarMimeType))
+				{
+				    constituent.avatarMimeType = "application/octet-stream";
+				}
+
+				constituent.versionNumber = 1;
+
+				bool diskBasedBinaryStorageMode = Foundation.Configuration.GetDiskBasedBinaryStorageMode();
+
+				byte[] dataReferenceBeforeClearing = constituent.avatarData;
+
+				if (diskBasedBinaryStorageMode == true &&
+				    constituent.avatarData != null &&
+				    constituent.avatarFileName != null &&
+				    constituent.avatarSize.HasValue == true &&
+				    constituent.avatarSize.Value > 0)
+				{
+				    //
+				    // write the bytes to disk
+				    //
+				    await WriteDataToDiskAsync(constituent.objectGuid, constituent.versionNumber, constituent.avatarData, "data", cancellationToken);
+
+				    //
+				    // Clear the data from the object before we put it into the db
+				    //
+				    constituent.avatarData = null;
+
+				}
+
+				_context.Constituents.Add(constituent);
+
+				await using (IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync(cancellationToken))
+				{
+				    await _context.SaveChangesAsync(cancellationToken);
+
+				    //
+				    // Now add the change history
+				    //
+
+				    //
+				    // Detach the constituent object so that no further changes will be written to the database
+				    //
+				    _context.Entry(constituent).State = EntityState.Detached;
+
+				    //
+				    // Nullify all object properties before serializing.
+				    //
+					constituent.avatarData = null;
+					constituent.ConstituentChangeHistories = null;
+					constituent.Gifts = null;
+					constituent.Pledges = null;
+					constituent.SoftCredits = null;
+					constituent.Tributes = null;
+					constituent.client = null;
+					constituent.contact = null;
+					constituent.household = null;
+					constituent.icon = null;
+
+
+				    ConstituentChangeHistory constituentChangeHistory = new ConstituentChangeHistory();
+				    constituentChangeHistory.constituentId = constituent.id;
+				    constituentChangeHistory.versionNumber = constituent.versionNumber;
+				    constituentChangeHistory.timeStamp = DateTime.UtcNow;
+				    constituentChangeHistory.userId = securityUser.id;
+				    constituentChangeHistory.tenantGuid = userTenantGuid;
+				    constituentChangeHistory.data = JsonSerializer.Serialize(Database.Constituent.CreateAnonymousWithFirstLevelSubObjects(constituent));
+				    _context.ConstituentChangeHistories.Add(constituentChangeHistory);
+				    await _context.SaveChangesAsync(cancellationToken);
+
+				    await transaction.CommitAsync(cancellationToken);
+
+					await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
+						"Scheduler.Constituent entity successfully created.",
+						true,
+						constituent. id.ToString(),
+						"",
+						JsonSerializer.Serialize(Database.Constituent.CreateAnonymousWithFirstLevelSubObjects(constituent)),
+						null);
+
+
+
+					if (diskBasedBinaryStorageMode == true)
+					{
+					    //
+					    // Put the data bytes back into the object that will be returned.
+					    //
+					    constituent.avatarData = dataReferenceBeforeClearing;
+					}
+
+				}
+			}
+			catch (Exception ex)
+			{
+				await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity, "Scheduler.Constituent entity creation failed.", false, constituent.id.ToString(), "", JsonSerializer.Serialize(Database.Constituent.CreateAnonymousWithFirstLevelSubObjects(constituent)), ex);
+
+				return Problem(ex.Message);
+			}
+
+
+			BackgroundJob.Enqueue(() => SecurityLogic.AddToUserMostRecents(securityUser.id, "Constituent", constituent.id, constituent.constituentNumber));
+
+			return CreatedAtRoute("Constituent", new { id = constituent.id }, Database.Constituent.CreateAnonymousWithFirstLevelSubObjects(constituent));
+		}
+
+
+
+        /// <summary>
+        /// 
+        /// This rolls a Constituent entity back to the state it was in at a prior version number.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+		[HttpPut]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/Constituent/Rollback/{id}")]
+		[Route("api/Constituent/Rollback")]
+		public async Task<IActionResult> RollbackToConstituentVersion(int id, int versionNumber, CancellationToken cancellationToken = default)
+		{
+			//
+			// Data rollback is an admin only function, like Deletes.
+			//
+			StartAuditEventClock();
+			
+			if (await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+			
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+			
+
+			
+			IQueryable <Database.Constituent> query = (from x in _context.Constituents
+			        where
+			        (x.id == id)
+			        select x);
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+			bool diskBasedBinaryStorageMode = Foundation.Configuration.GetDiskBasedBinaryStorageMode();
+
+
+			//
+			// Make sure nobody else is editing this Constituent concurrently
+			//
+			lock (constituentPutSyncRoot)
+			{
+				
+				Database.Constituent constituent = query.FirstOrDefault();
+				
+				if (constituent == null)
+				{
+				    CreateAuditEvent(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for Scheduler.Constituent rollback", id.ToString(), new Exception("No Scheduler.Constituent entity could be find with the primary key provided for the rollback operation."));
+				    return NotFound();
+				}
+				
+				//
+				// Make a copy of the Constituent current state so we can log it.
+				//
+				Database.Constituent cloneOfExisting = (Database.Constituent)_context.Entry(constituent).GetDatabaseValues().ToObject();
+				
+				//
+				// Remove any object fields from the clone object so that it can serialize effectively
+				//
+				cloneOfExisting.avatarData = null;
+				cloneOfExisting.ConstituentChangeHistories = null;
+				cloneOfExisting.Gifts = null;
+				cloneOfExisting.Pledges = null;
+				cloneOfExisting.SoftCredits = null;
+				cloneOfExisting.Tributes = null;
+				cloneOfExisting.client = null;
+				cloneOfExisting.contact = null;
+				cloneOfExisting.household = null;
+				cloneOfExisting.icon = null;
+
+				if (versionNumber >= constituent.versionNumber)
+				{
+				    CreateAuditEvent(AuditEngine.AuditType.UpdateEntity, "Invalid version number provided for Scheduler.Constituent rollback.  Version number provided is " + versionNumber, id.ToString(), new Exception("Invalid version number provided for Scheduler.Constituent rollback operation.Version number provided is " + versionNumber));
+				    return NotFound();
+				}
+				
+				ConstituentChangeHistory constituentChangeHistory = (from x in _context.ConstituentChangeHistories
+				                                               where
+				                                               x.constituentId == id &&
+				                                               x.versionNumber == versionNumber &&
+				                                               x.tenantGuid == userTenantGuid
+				                                               select x)
+				                                               .AsNoTracking()
+				                                               .FirstOrDefault();
+
+				if (constituentChangeHistory != null)
+				{
+				    Database.Constituent oldConstituent = JsonSerializer.Deserialize<Database.Constituent>(constituentChangeHistory.data);
+				
+				    //
+				    // Increase the version number
+				    //
+				    constituent.versionNumber++;
+				
+				    //
+				    // Put all other fields back the way that they were 
+				    //
+				    constituent.contactId = oldConstituent.contactId;
+				    constituent.clientId = oldConstituent.clientId;
+				    constituent.householdId = oldConstituent.householdId;
+				    constituent.constituentNumber = oldConstituent.constituentNumber;
+				    constituent.doNotSolicit = oldConstituent.doNotSolicit;
+				    constituent.doNotEmail = oldConstituent.doNotEmail;
+				    constituent.doNotMail = oldConstituent.doNotMail;
+				    constituent.totalLifetimeGiving = oldConstituent.totalLifetimeGiving;
+				    constituent.totalYTDGiving = oldConstituent.totalYTDGiving;
+				    constituent.lastGiftDate = oldConstituent.lastGiftDate;
+				    constituent.lastGiftAmount = oldConstituent.lastGiftAmount;
+				    constituent.largestGiftAmount = oldConstituent.largestGiftAmount;
+				    constituent.totalGiftCount = oldConstituent.totalGiftCount;
+				    constituent.externalId = oldConstituent.externalId;
+				    constituent.notes = oldConstituent.notes;
+				    constituent.attributes = oldConstituent.attributes;
+				    constituent.iconId = oldConstituent.iconId;
+				    constituent.color = oldConstituent.color;
+				    constituent.avatarFileName = oldConstituent.avatarFileName;
+				    constituent.avatarSize = oldConstituent.avatarSize;
+				    constituent.avatarData = oldConstituent.avatarData;
+				    constituent.avatarMimeType = oldConstituent.avatarMimeType;
+				    constituent.objectGuid = oldConstituent.objectGuid;
+				    constituent.active = oldConstituent.active;
+				    constituent.deleted = oldConstituent.deleted;
+				    //
+				    // If disk based binary mode is on, then we need to copy the old data file over as well.
+				    //
+				    if (diskBasedBinaryStorageMode == true)
+				    {
+				    	Byte[] binaryData = LoadDataFromDisk(oldConstituent.objectGuid, oldConstituent.versionNumber, "data");
+
+				    	//
+				    	// Write out the data as the new version
+				    	//
+				    	WriteDataToDisk(constituent.objectGuid, constituent.versionNumber, binaryData, "data");
+				    }
+
+				    string serializedConstituent = JsonSerializer.Serialize(constituent);
+
+				    using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+				    {
+
+				        _context.SaveChanges();
+
+				        //
+				        // Now add the change history
+				        //
+				        ConstituentChangeHistory newConstituentChangeHistory = new ConstituentChangeHistory();
+				        newConstituentChangeHistory.constituentId = constituent.id;
+				        newConstituentChangeHistory.versionNumber = constituent.versionNumber;
+				        newConstituentChangeHistory.timeStamp = DateTime.UtcNow;
+				        newConstituentChangeHistory.userId = securityUser.id;
+				        newConstituentChangeHistory.tenantGuid = userTenantGuid;
+				        newConstituentChangeHistory.data = JsonSerializer.Serialize(Database.Constituent.CreateAnonymousWithFirstLevelSubObjects(constituent));
+				        _context.ConstituentChangeHistories.Add(newConstituentChangeHistory);
+
+				        _context.SaveChanges();
+
+				        transaction.Commit();
+				    }
+
+					CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
+						"Scheduler.Constituent rollback process successfully rolled back to version number " + versionNumber,
+						true,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.Constituent.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.Constituent.CreateAnonymousWithFirstLevelSubObjects(constituent)),
+						null);
+
+
+				    return Ok(Database.Constituent.CreateAnonymous(constituent));
+				}
+				else
+				{
+				    CreateAuditEvent(AuditEngine.AuditType.UpdateEntity, "Could not find version number provided for Scheduler.Constituent rollback.  Version number provided is " + versionNumber, id.ToString(), new Exception("Could not find version number provided for Scheduler.Constituent rollback.  Version number provided is " + versionNumber));
+
+				    return BadRequest();
+				}
+			}
+		}
+
+
+        /// <summary>
+        /// 
+        /// This deletes a Constituent record
+		/// 
+		/// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+		[HttpDelete]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/Constituent/{id}")]
+		[Route("api/Constituent")]
+		public async Task<IActionResult> DeleteConstituent(int id, CancellationToken cancellationToken = default)
+		{
+			StartAuditEventClock();
+
+			if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(cancellationToken);
+			
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+			IQueryable<Database.Constituent> query = (from x in _context.Constituents
+				where
+				(x.id == id)
+				select x);
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+			Database.Constituent constituent = await query.FirstOrDefaultAsync(cancellationToken);
+
+			if (constituent == null)
+			{
+				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for Scheduler.Constituent DELETE", id.ToString(), new Exception("No Scheduler.Constituent entity could be find with the primary key provided."));
+				return NotFound();
+			}
+			Database.Constituent cloneOfExisting = (Database.Constituent)_context.Entry(constituent).GetDatabaseValues().ToObject();
+
+
+			bool diskBasedBinaryStorageMode = Foundation.Configuration.GetDiskBasedBinaryStorageMode();
+
+			lock (constituentDeleteSyncRoot)
+			{
+			    try
+			    {
+			        constituent.deleted = true;
+			        constituent.versionNumber++;
+
+			        _context.SaveChanges();
+
+			        //
+			        // If in disk based storage mode, create a copy of the disk data file for the new version.
+			        //
+			        if (diskBasedBinaryStorageMode == true)
+			        {
+			        	Byte[] binaryData = LoadDataFromDisk(constituent.objectGuid, constituent.versionNumber -1, "data");
+
+			        	//
+			        	// Write out the same data
+			        	//
+			        	WriteDataToDisk(constituent.objectGuid, constituent.versionNumber, binaryData, "data");
+			        }
+
+			        //
+			        // Now add the change history
+			        //
+			        ConstituentChangeHistory constituentChangeHistory = new ConstituentChangeHistory();
+			        constituentChangeHistory.constituentId = constituent.id;
+			        constituentChangeHistory.versionNumber = constituent.versionNumber;
+			        constituentChangeHistory.timeStamp = DateTime.UtcNow;
+			        constituentChangeHistory.userId = securityUser.id;
+			        constituentChangeHistory.tenantGuid = userTenantGuid;
+			        constituentChangeHistory.data = JsonSerializer.Serialize(Database.Constituent.CreateAnonymousWithFirstLevelSubObjects(constituent));
+			        _context.ConstituentChangeHistories.Add(constituentChangeHistory);
+
+			        _context.SaveChanges();
+
+					CreateAuditEvent(AuditEngine.AuditType.DeleteEntity,
+						"Scheduler.Constituent entity successfully deleted.",
+						true,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.Constituent.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.Constituent.CreateAnonymousWithFirstLevelSubObjects(constituent)),
+						null);
+
+			    }
+			    catch (Exception ex)
+			    {
+					CreateAuditEvent(AuditEngine.AuditType.DeleteEntity,
+						"Scheduler.Constituent entity delete failed",
+						false,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.Constituent.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.Constituent.CreateAnonymousWithFirstLevelSubObjects(constituent)),
+						ex);
+
+			        return Problem(ex.Message);
+			    }
+			    return Ok();
+			}
+		}
+
+
+        /// <summary>
+        /// 
+        /// This gets a list of Constituent records, filtered by the parameters provided in a simple minimal format that is useful for drop down boxes and similar.
+		/// 
+		/// It has the same filtering paramfeters as the full ListData method, but only returns the id and name fields.
+        /// 
+		/// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+		[Route("api/Constituents/ListData")]
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		public async Task<IActionResult> GetListData(
+			int? contactId = null,
+			int? clientId = null,
+			int? householdId = null,
+			string constituentNumber = null,
+			bool? doNotSolicit = null,
+			bool? doNotEmail = null,
+			bool? doNotMail = null,
+			decimal? totalLifetimeGiving = null,
+			decimal? totalYTDGiving = null,
+			decimal? lastGiftAmount = null,
+			decimal? largestGiftAmount = null,
+			int? totalGiftCount = null,
+			string externalId = null,
+			string notes = null,
+			string attributes = null,
+			int? iconId = null,
+			string color = null,
+			string avatarFileName = null,
+			long? avatarSize = null,
+			string avatarMimeType = null,
+			int? versionNumber = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
+			string anyStringContains = null,
+			int? pageSize = null,
+			int? pageNumber = null,
+			CancellationToken cancellationToken = default)
+		{
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 1, cancellationToken);
+
+			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			if (pageNumber.HasValue == true &&
+			    pageNumber < 1)
+			{
+			    pageNumber = null;
+			}
+
+			if (pageSize.HasValue == true &&
+			    pageSize <= 0)
+			{
+			    pageSize = null;
+			}
+
+			IQueryable<Database.Constituent> query = (from c in _context.Constituents select c);
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+			if (contactId.HasValue == true)
+			{
+				query = query.Where(c => c.contactId == contactId.Value);
+			}
+			if (clientId.HasValue == true)
+			{
+				query = query.Where(c => c.clientId == clientId.Value);
+			}
+			if (householdId.HasValue == true)
+			{
+				query = query.Where(c => c.householdId == householdId.Value);
+			}
+			if (string.IsNullOrEmpty(constituentNumber) == false)
+			{
+				query = query.Where(c => c.constituentNumber == constituentNumber);
+			}
+			if (doNotSolicit.HasValue == true)
+			{
+				query = query.Where(c => c.doNotSolicit == doNotSolicit.Value);
+			}
+			if (doNotEmail.HasValue == true)
+			{
+				query = query.Where(c => c.doNotEmail == doNotEmail.Value);
+			}
+			if (doNotMail.HasValue == true)
+			{
+				query = query.Where(c => c.doNotMail == doNotMail.Value);
+			}
+			if (totalLifetimeGiving.HasValue == true)
+			{
+				query = query.Where(c => c.totalLifetimeGiving == totalLifetimeGiving.Value);
+			}
+			if (totalYTDGiving.HasValue == true)
+			{
+				query = query.Where(c => c.totalYTDGiving == totalYTDGiving.Value);
+			}
+			if (lastGiftAmount.HasValue == true)
+			{
+				query = query.Where(c => c.lastGiftAmount == lastGiftAmount.Value);
+			}
+			if (largestGiftAmount.HasValue == true)
+			{
+				query = query.Where(c => c.largestGiftAmount == largestGiftAmount.Value);
+			}
+			if (totalGiftCount.HasValue == true)
+			{
+				query = query.Where(c => c.totalGiftCount == totalGiftCount.Value);
+			}
+			if (string.IsNullOrEmpty(externalId) == false)
+			{
+				query = query.Where(c => c.externalId == externalId);
+			}
+			if (string.IsNullOrEmpty(notes) == false)
+			{
+				query = query.Where(c => c.notes == notes);
+			}
+			if (string.IsNullOrEmpty(attributes) == false)
+			{
+				query = query.Where(c => c.attributes == attributes);
+			}
+			if (iconId.HasValue == true)
+			{
+				query = query.Where(c => c.iconId == iconId.Value);
+			}
+			if (string.IsNullOrEmpty(color) == false)
+			{
+				query = query.Where(c => c.color == color);
+			}
+			if (string.IsNullOrEmpty(avatarFileName) == false)
+			{
+				query = query.Where(c => c.avatarFileName == avatarFileName);
+			}
+			if (avatarSize.HasValue == true)
+			{
+				query = query.Where(c => c.avatarSize == avatarSize.Value);
+			}
+			if (string.IsNullOrEmpty(avatarMimeType) == false)
+			{
+				query = query.Where(c => c.avatarMimeType == avatarMimeType);
+			}
+			if (versionNumber.HasValue == true)
+			{
+				query = query.Where(c => c.versionNumber == versionNumber.Value);
+			}
+			if (objectGuid.HasValue == true)
+			{
+				query = query.Where(c => c.objectGuid == objectGuid);
+			}
+			if (userIsWriter == true)
+			{
+				if (active.HasValue == true)
+				{
+					query = query.Where(c => c.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(c => c.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(c => c.deleted == false);
+				}
+			}
+			else
+			{
+				query = query.Where(c => c.active == true);
+				query = query.Where(c => c.deleted == false);
+			}
+
+
+			//
+			// Add the any string contains parameter to span all the string fields on the Constituent, or on an any of the string fields on its immediate relations
+			//
+			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
+			//
+			if (!string.IsNullOrEmpty(anyStringContains))
+			{
+			   query = query.Where(x =>
+			       x.constituentNumber.Contains(anyStringContains)
+			       || x.externalId.Contains(anyStringContains)
+			       || x.notes.Contains(anyStringContains)
+			       || x.attributes.Contains(anyStringContains)
+			       || x.color.Contains(anyStringContains)
+			       || x.avatarFileName.Contains(anyStringContains)
+			       || x.avatarMimeType.Contains(anyStringContains)
+			       || x.client.name.Contains(anyStringContains)
+			       || x.client.description.Contains(anyStringContains)
+			       || x.client.addressLine1.Contains(anyStringContains)
+			       || x.client.addressLine2.Contains(anyStringContains)
+			       || x.client.city.Contains(anyStringContains)
+			       || x.client.postalCode.Contains(anyStringContains)
+			       || x.client.phone.Contains(anyStringContains)
+			       || x.client.email.Contains(anyStringContains)
+			       || x.client.notes.Contains(anyStringContains)
+			       || x.client.externalId.Contains(anyStringContains)
+			       || x.client.color.Contains(anyStringContains)
+			       || x.client.attributes.Contains(anyStringContains)
+			       || x.client.avatarFileName.Contains(anyStringContains)
+			       || x.client.avatarMimeType.Contains(anyStringContains)
+			       || x.contact.firstName.Contains(anyStringContains)
+			       || x.contact.middleName.Contains(anyStringContains)
+			       || x.contact.lastName.Contains(anyStringContains)
+			       || x.contact.title.Contains(anyStringContains)
+			       || x.contact.company.Contains(anyStringContains)
+			       || x.contact.email.Contains(anyStringContains)
+			       || x.contact.phone.Contains(anyStringContains)
+			       || x.contact.mobile.Contains(anyStringContains)
+			       || x.contact.position.Contains(anyStringContains)
+			       || x.contact.webSite.Contains(anyStringContains)
+			       || x.contact.notes.Contains(anyStringContains)
+			       || x.contact.color.Contains(anyStringContains)
+			       || x.contact.avatarFileName.Contains(anyStringContains)
+			       || x.contact.avatarMimeType.Contains(anyStringContains)
+			       || x.contact.externalId.Contains(anyStringContains)
+			       || x.household.name.Contains(anyStringContains)
+			       || x.household.description.Contains(anyStringContains)
+			       || x.household.formalSalutation.Contains(anyStringContains)
+			       || x.household.informalSalutation.Contains(anyStringContains)
+			       || x.household.addressee.Contains(anyStringContains)
+			       || x.household.notes.Contains(anyStringContains)
+			       || x.household.color.Contains(anyStringContains)
+			       || x.household.avatarFileName.Contains(anyStringContains)
+			       || x.household.avatarMimeType.Contains(anyStringContains)
+			       || x.icon.name.Contains(anyStringContains)
+			       || x.icon.fontAwesomeCode.Contains(anyStringContains)
+			   );
+			}
+
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+
+			query = query.OrderBy(x => x.constituentNumber).ThenBy(x => x.externalId).ThenBy(x => x.color);
+			if (pageNumber.HasValue == true &&
+			    pageSize.HasValue == true)
+			{
+			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
+			}
+			return Ok(await (from queryData in query select Database.Constituent.CreateMinimalAnonymous(queryData)).ToListAsync(cancellationToken));
+		}
+
+
+        /// <summary>
+        /// 
+        /// This method creates an audit event from within the controller.  It is intended for use by custom logic in client applications that needs to create audit events.
+        /// 
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="message"></param>
+        /// <param name="primaryKey"></param>
+        /// <returns></returns>
+		[HttpPost]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/Constituent/CreateAuditEvent")]
+		public async Task<IActionResult> CreateControllerAuditEvent(AuditEngine.AuditType type, string message, string primaryKey = null)
+		{
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED) == false)
+			{
+			   return Forbid();
+			}
+
+		    await CreateAuditEventAsync(type, message, primaryKey);
+
+		    return Ok();
+		}
+
+
+        /// <summary>
+        /// 
+        /// This makes a Constituent record a favourite for the current user.
+		/// 
+		/// The rate limit is 2 per second per user.
+		/// 
+        /// </summary>
+		[Route("api/Constituent/Favourite/{id}")]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[HttpPut]
+		public async Task<IActionResult> SetFavourite(int id, string description = null, CancellationToken cancellationToken = default)
+		{
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			bool userIsAdmin = await UserCanAdministerAsync(cancellationToken);
+			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			IQueryable<Database.Constituent> query = (from x in _context.Constituents
+			                               where x.id == id
+			                               select x);
+
+
+			Database.Constituent constituent = await query.AsNoTracking().FirstOrDefaultAsync(cancellationToken);
+
+			if (constituent != null)
+			{
+				if (string.IsNullOrEmpty(description) == true)
+				{
+					description = constituent.constituentNumber;
+				}
+
+				//
+				// Add the user favourite Constituent
+				//
+				await SecurityLogic.AddToUserFavouritesAsync(securityUser, "Constituent", id, description, cancellationToken);
+
+				await CreateAuditEventAsync(AuditEngine.AuditType.Miscellaneous, "Favourite 'Constituent' was added for record with id of " + id + " for user " + securityUser.accountName, true);
+
+				//
+				// Return the complete list of user favourites after the addition
+				//
+				return Ok(await SecurityLogic.GetUserFavouritesAsync(securityUser, null, cancellationToken));
+			}
+			else
+			{
+				await CreateAuditEventAsync(AuditEngine.AuditType.Miscellaneous, "Favourite 'Constituent' add request was made with an invalid id value of " + id, false);
+				return BadRequest();
+			}
+		}
+
+
+        /// <summary>
+        /// 
+        /// This removes a Constituent record from the current user's favourites.
+        /// 
+		/// The rate limit is 2 per second per user.
+		/// 
+        /// </summary>
+		[Route("api/Constituent/Favourite/{id}")]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[HttpDelete]
+		public async Task<IActionResult> DeleteFavourite(int id, CancellationToken cancellationToken = default)
+		{
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED) == false)
+			{
+			   return Forbid();
+			}
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			//
+			// Delete the user favourite Constituent
+			//
+			await SecurityLogic.RemoveFromUserFavouritesAsync(securityUser, "Constituent", id, cancellationToken);
+
+			await CreateAuditEventAsync(AuditEngine.AuditType.Miscellaneous, "Favourite 'Constituent' was removed for record with id of " + id + " for user " + securityUser.accountName, true);
+
+			//
+			// Return the complete list of user favourites after the deletion
+			//
+			return Ok(await SecurityLogic.GetUserFavouritesAsync(securityUser, null, cancellationToken));
+		}
+
+
+
+
+        [Route("api/Constituent/Data/{id:int}")]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [HttpPost]
+        [HttpPut]
+        public async Task<IActionResult> UploadData(int id, CancellationToken cancellationToken = default)
+        {
+            if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED) == false)
+            {
+                return Forbid();
+            }
+
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			MediaTypeHeaderValue mediaTypeHeader; 
+
+            if (!HttpContext.Request.HasFormContentType ||
+				!MediaTypeHeaderValue.TryParse(HttpContext.Request.ContentType, out mediaTypeHeader) ||
+                string.IsNullOrEmpty(mediaTypeHeader.Boundary.Value))
+            {
+                return new UnsupportedMediaTypeResult();
+            }
+
+
+            Database.Constituent constituent = await (from x in _context.Constituents where x.id == id && x.active == true && x.deleted == false select x).FirstOrDefaultAsync();
+            if (constituent == null)
+            {
+                return NotFound();
+            }
+
+            bool diskBasedBinaryStorageMode = Foundation.Configuration.GetDiskBasedBinaryStorageMode();
+
+
+            // This will be used to signal whether we are saving data or clearing it.
+            bool foundFileData = false;
+
+
+            //
+            // This will get the first file from the request and save it
+            //
+			try
+			{
+                MultipartReader reader = new MultipartReader(mediaTypeHeader.Boundary.Value, HttpContext.Request.Body);
+                MultipartSection section = await reader.ReadNextSectionAsync();
+
+                while (section != null)
+				{
+					ContentDispositionHeaderValue contentDisposition;
+
+					bool hasContentDispositionHeader = ContentDispositionHeaderValue.TryParse(section.ContentDisposition, out contentDisposition);
+
+
+					if (hasContentDispositionHeader && contentDisposition.DispositionType.Equals("form-data") &&
+						!string.IsNullOrEmpty(contentDisposition.FileName.Value))
+					{
+
+						foundFileData = true;
+						string fileName = contentDisposition.FileName.ToString().Trim('"');
+
+						// default the mime type to be the one for arbitrary binary data unless we have a mime type on the content headers that tells us otherwise.
+						MediaTypeHeaderValue mediaType;
+						bool hasMediaTypeHeader = MediaTypeHeaderValue.TryParse(section.ContentType, out mediaType);
+
+						string mimeType = "application/octet-stream";
+						if (hasMediaTypeHeader && mediaTypeHeader.MediaType != null )
+						{
+							mimeType = mediaTypeHeader.MediaType.ToString();
+						}
+
+						lock (constituentPutSyncRoot)
+						{
+							try
+							{
+								using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+								{
+									constituent.avatarFileName = fileName.Trim();
+									constituent.avatarMimeType = mimeType;
+									constituent.avatarSize = section.Body.Length;
+
+									constituent.versionNumber++;
+
+									if (diskBasedBinaryStorageMode == true &&
+										 constituent.avatarFileName != null &&
+										 constituent.avatarSize > 0)
+									{
+										//
+										// write the bytes to disk
+										//
+										WriteDataToDisk(constituent.objectGuid, constituent.versionNumber, section.Body, "data");
+										//
+										// Clear the data from the object before we put it into the db
+										//
+										constituent.avatarData = null;
+									}
+									else
+									{
+										using (MemoryStream memoryStream = new MemoryStream((int)section.Body.Length))
+										{
+											section.Body.CopyTo(memoryStream);
+											constituent.avatarData = memoryStream.ToArray();
+										}
+									}
+									//
+									// Now add the change history
+									//
+									ConstituentChangeHistory constituentChangeHistory = new ConstituentChangeHistory();
+									constituentChangeHistory.constituentId = constituent.id;
+									constituentChangeHistory.versionNumber = constituent.versionNumber;
+									constituentChangeHistory.timeStamp = DateTime.UtcNow;
+									constituentChangeHistory.userId = securityUser.id;
+									constituentChangeHistory.tenantGuid = constituent.tenantGuid;
+									constituentChangeHistory.data = JsonSerializer.Serialize(Database.Constituent.CreateAnonymousWithFirstLevelSubObjects(constituent));
+									_context.ConstituentChangeHistories.Add(constituentChangeHistory);
+
+									_context.SaveChanges();
+
+									transaction.Commit();
+
+									CreateAuditEvent(AuditEngine.AuditType.Miscellaneous, "Constituent Data Uploaded with filename of " + fileName + " and with size of " + section.Body.Length, id.ToString());
+								}
+							}
+							catch (Exception ex)
+							{
+								CreateAuditEvent(AuditEngine.AuditType.DeleteEntity, "Constituent Data Upload Failed.", false, id.ToString(), "", "", ex);
+
+								return Problem(ex.Message);
+							}
+						}
+
+
+						//
+						// Stop looking for more files.
+						//
+						break;
+					}
+
+					section = await reader.ReadNextSectionAsync();
+				}
+            }
+            catch (Exception ex)
+            {
+                CreateAuditEvent(AuditEngine.AuditType.Miscellaneous, "Caught error in UploadData handler", id.ToString(), ex);
+
+                return Problem(ex.Message);
+            }
+
+            //
+            // Treat the situation where we have a valid ID but no file content as a request to clear the data
+            //
+            if (foundFileData == false)
+            {
+                lock (constituentPutSyncRoot)
+                {
+                    try
+                    {
+                        using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+                        {
+                            if (diskBasedBinaryStorageMode == true)
+                            {
+								DeleteDataFromDisk(constituent.objectGuid, constituent.versionNumber, "data");
+                            }
+
+                            constituent.avatarFileName = null;
+                            constituent.avatarMimeType = null;
+                            constituent.avatarSize = 0;
+                            constituent.avatarData = null;
+                            constituent.versionNumber++;
+
+
+                            //
+                            // Now add the change history
+                            //
+                            ConstituentChangeHistory constituentChangeHistory = new ConstituentChangeHistory();
+                            constituentChangeHistory.constituentId = constituent.id;
+                            constituentChangeHistory.versionNumber = constituent.versionNumber;
+                            constituentChangeHistory.timeStamp = DateTime.UtcNow;
+                            constituentChangeHistory.userId = securityUser.id;
+                                    constituentChangeHistory.tenantGuid = constituent.tenantGuid;
+                                    constituentChangeHistory.data = JsonSerializer.Serialize(Database.Constituent.CreateAnonymousWithFirstLevelSubObjects(constituent));
+                            _context.ConstituentChangeHistories.Add(constituentChangeHistory);
+
+                            _context.SaveChanges();
+
+                            transaction.Commit();
+
+                            CreateAuditEvent(AuditEngine.AuditType.Miscellaneous, "Constituent data cleared.", id.ToString());
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        CreateAuditEvent(AuditEngine.AuditType.DeleteEntity, "Constituent data clear failed.", false, id.ToString(), "", "", ex);
+
+                        return Problem(ex.Message);
+                    }
+                }
+            }
+
+            return Ok();
+        }
+
+        [HttpGet]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/Constituent/Data/{id:int}")]
+        public async Task<IActionResult> DownloadDataAsync(int id)
+        {
+             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED) == false)
+             {
+                 return Forbid();
+             }
+
+
+			using (SchedulerContext context = new SchedulerContext())
+            {
+                //
+                // Return the data to the user as though it was a file.
+                //
+                Database.Constituent constituent = await (from d in context.Constituents
+                                                where d.id == id &&
+                                                d.active == true &&
+                                                d.deleted == false
+                                                select d).FirstOrDefaultAsync();
+
+                if (constituent != null && constituent.avatarData != null)
+                {
+                   return File(constituent.avatarData.ToArray<byte>(), constituent.avatarMimeType, constituent.avatarFileName != null ? constituent.avatarFileName.Trim() : "Constituent_" + constituent.id.ToString(), true);
+                }
+                else
+                {
+                    return BadRequest();
+                }
+            }
+        }
+	}
+}

@@ -1,0 +1,106 @@
+<div class="add-contact-interaction" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-contact-interaction me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Contact Interaction" 
+        *ngIf="userIsSchedulerContactInteractionWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #contactInteractionModal let-modal>
+   <div class="modal-header bg-dark text-light contact-interaction-modal-header">
+      <h5 class="modal-title mb-0" id="contactInteractionModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Contact Interaction' : 'Add Contact Interaction' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body contact-interaction-modal-body">
+      <form [formGroup]="contactInteractionForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('contactId')">
+                <label for="ContactInteraction-contactId" id="label-ContactInteraction-contactId"><span class="text-danger">*</span>Contact</label>
+                <select id="ContactInteraction-contactId" formControlName="contactId" class="form-select contact-interaction-select" [disabled]="!userIsSchedulerContactInteractionWriter()">
+                    <option [ngValue]="null">Select Contact</option>
+                    <option *ngFor="let contact of contacts$ | async" [ngValue]="contact.id">{{contact.firstName}}</option>
+                </select>
+                <div *ngIf="contactInteractionForm.get('contactId')?.invalid && contactInteractionForm.get('contactId')?.touched" class="text-danger">
+                    Contact is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('initiatingContactId')">
+                <label for="ContactInteraction-initiatingContactId" id="label-ContactInteraction-initiatingContactId">Initiating Contact</label>
+                <select id="ContactInteraction-initiatingContactId" formControlName="initiatingContactId" class="form-select contact-interaction-select" [disabled]="!userIsSchedulerContactInteractionWriter()">
+                    <option [ngValue]="null">Select Contact</option>
+                    <option *ngFor="let contact of contacts$ | async" [ngValue]="contact.id">{{contact.firstName}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('interactionTypeId')">
+                <label for="ContactInteraction-interactionTypeId" id="label-ContactInteraction-interactionTypeId"><span class="text-danger">*</span>Interaction Type</label>
+                <select id="ContactInteraction-interactionTypeId" formControlName="interactionTypeId" class="form-select contact-interaction-select" [disabled]="!userIsSchedulerContactInteractionWriter()">
+                    <option [ngValue]="null">Select Interaction Type</option>
+                    <option *ngFor="let interactionType of interactionTypes$ | async" [ngValue]="interactionType.id">{{interactionType.name}}</option>
+                </select>
+                <div *ngIf="contactInteractionForm.get('interactionTypeId')?.invalid && contactInteractionForm.get('interactionTypeId')?.touched" class="text-danger">
+                    Interaction Type is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('scheduledEventId')">
+                <label for="ContactInteraction-scheduledEventId" id="label-ContactInteraction-scheduledEventId">Scheduled Event</label>
+                <select id="ContactInteraction-scheduledEventId" formControlName="scheduledEventId" class="form-select contact-interaction-select" [disabled]="!userIsSchedulerContactInteractionWriter()">
+                    <option [ngValue]="null">Select Scheduled Event</option>
+                    <option *ngFor="let scheduledEvent of scheduledEvents$ | async" [ngValue]="scheduledEvent.id">{{[scheduledEvent.name] | filterAndJoin}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('startTime')">
+                <label for="ContactInteraction-startTime" id="label-ContactInteraction-startTime"><span class="text-danger">*</span>Start Time</label>
+                <input type="datetime-local" id="ContactInteraction-startTime" formControlName="startTime" placeholder="Enter Start Time" class="form-control contact-interaction-input" [disabled]="!userIsSchedulerContactInteractionWriter()" aria-labelledby="label-startTime" />
+                <div *ngIf="contactInteractionForm.get('startTime')?.invalid && contactInteractionForm.get('startTime')?.touched" class="text-danger">
+                    Start Time is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('endTime')">
+                <label for="ContactInteraction-endTime" id="label-ContactInteraction-endTime">End Time</label>
+                <input type="datetime-local" id="ContactInteraction-endTime" formControlName="endTime" placeholder="Enter End Time" class="form-control contact-interaction-input" [disabled]="!userIsSchedulerContactInteractionWriter()" aria-labelledby="label-endTime" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('notes')">
+                <label for="ContactInteraction-notes" id="label-ContactInteraction-notes">Notes</label>
+                <textarea id="ContactInteraction-notes" formControlName="notes" placeholder="Enter Notes" class="form-control contact-interaction-input" [disabled]="!userIsSchedulerContactInteractionWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('location')">
+                <label for="ContactInteraction-location" id="label-ContactInteraction-location">Location</label>
+                <textarea id="ContactInteraction-location" formControlName="location" placeholder="Enter Location" class="form-control contact-interaction-input" [disabled]="!userIsSchedulerContactInteractionWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('priorityId')">
+                <label for="ContactInteraction-priorityId" id="label-ContactInteraction-priorityId">Priority</label>
+                <select id="ContactInteraction-priorityId" formControlName="priorityId" class="form-select contact-interaction-select" [disabled]="!userIsSchedulerContactInteractionWriter()">
+                    <option [ngValue]="null">Select Priority</option>
+                    <option *ngFor="let priority of priorities$ | async" [ngValue]="priority.id">{{priority.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('externalId')">
+                <label for="ContactInteraction-externalId" id="label-ContactInteraction-externalId">External Id</label>
+                <input type="text" id="ContactInteraction-externalId" formControlName="externalId" placeholder="Enter External Id" class="form-control contact-interaction-input" [disabled]="!userIsSchedulerContactInteractionWriter()" aria-labelledby="label-externalId" />
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="ContactInteraction-versionNumber" id="label-ContactInteraction-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="ContactInteraction-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control contact-interaction-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ContactInteraction-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerContactInteractionWriter()" />
+                <label for="ContactInteraction-active" class="form-check-label" id="label-ContactInteraction-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ContactInteraction-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerContactInteractionWriter()" />
+                <label for="ContactInteraction-deleted" class="form-check-label" id="label-ContactInteraction-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer contact-interaction-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Contact Interaction changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !contactInteractionForm.valid || contactInteractionForm.pristine || !userIsSchedulerContactInteractionWriter()" ngbTooltip="Save the Contact Interaction changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

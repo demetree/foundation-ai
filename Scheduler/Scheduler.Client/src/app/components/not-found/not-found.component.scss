@@ -1,0 +1,28 @@
+/* Ensuring the entire page is fully centered */
+.pageHeader {
+  text-align: center; /* Center the header text */
+  margin-bottom: 20px; /* Space between the header and the rest */
+}
+
+.d-flex {
+  display: flex;
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
+  height: 100vh; /* Full viewport height */
+  margin: 0; /* Remove any default margin */
+  padding: 0; /* Remove any default padding */
+}
+
+.icon-container {
+  font-size: 2em; /* Larger icon size */
+  margin-bottom: 10px; /* Space between the icon and the text */
+}
+
+.text-muted {
+  font-size: 1.2em;
+  margin-bottom: 15px; /* Space between the description and the button */
+}
+
+.btn {
+  text-align: center; /* Center the button text */
+}

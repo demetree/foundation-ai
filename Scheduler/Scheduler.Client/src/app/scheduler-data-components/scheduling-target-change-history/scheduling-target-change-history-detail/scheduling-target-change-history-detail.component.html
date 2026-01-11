@@ -1,0 +1,66 @@
+<div class="container-fluid p-1 m-0 scheduling-target-change-history-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="scheduling-target-change-history-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Scheduling Target Change History</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Scheduling Target Change History' : 'Add Scheduling Target Change History'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerSchedulingTargetChangeHistoryReader()">
+                <div class="col m-2 scheduling-target-change-history-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="schedulingTargetChangeHistoryForm" (ngSubmit)="submitForm()" class="scheduling-target-change-history-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('schedulingTargetId')">
+                                <label for="SchedulingTargetChangeHistory-schedulingTargetId" id="label-SchedulingTargetChangeHistory-schedulingTargetId"><span class="text-danger">*</span>Scheduling Target</label>
+                                <select id="SchedulingTargetChangeHistory-schedulingTargetId" formControlName="schedulingTargetId" class="form-select scheduling-target-change-history-select" [disabled]="!userIsSchedulerSchedulingTargetChangeHistoryWriter()">
+                                    <option [ngValue]="null">Select Scheduling Target</option>
+                                    <option *ngFor="let schedulingTarget of schedulingTargets$ | async" [ngValue]="schedulingTarget.id">{{[schedulingTarget.name] | filterAndJoin}}</option>
+                                </select>
+                                <div *ngIf="schedulingTargetChangeHistoryForm.get('schedulingTargetId')?.invalid && schedulingTargetChangeHistoryForm.get('schedulingTargetId')?.touched" class="text-danger">
+                                    Scheduling Target is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="SchedulingTargetChangeHistory-versionNumber" id="label-SchedulingTargetChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="SchedulingTargetChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control scheduling-target-change-history-input" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                                <label for="SchedulingTargetChangeHistory-timeStamp" id="label-SchedulingTargetChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                                <input type="datetime-local" id="SchedulingTargetChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control scheduling-target-change-history-input" [disabled]="!userIsSchedulerSchedulingTargetChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                                <div *ngIf="schedulingTargetChangeHistoryForm.get('timeStamp')?.invalid && schedulingTargetChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                                    Time Stamp is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="SchedulingTargetChangeHistory-userId" id="label-SchedulingTargetChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="SchedulingTargetChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control scheduling-target-change-history-input" [disabled]="!userIsSchedulerSchedulingTargetChangeHistoryWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="schedulingTargetChangeHistoryForm.get('userId')?.invalid && schedulingTargetChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                                <label for="SchedulingTargetChangeHistory-data" id="label-SchedulingTargetChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                                <textarea id="SchedulingTargetChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control scheduling-target-change-history-input" [disabled]="!userIsSchedulerSchedulingTargetChangeHistoryWriter()"></textarea>
+                                <div *ngIf="schedulingTargetChangeHistoryForm.get('data')?.invalid && schedulingTargetChangeHistoryForm.get('data')?.touched" class="text-danger">
+                                    Data is required
+                                </div>
+                            </div>
+                            <div class="scheduling-target-change-history-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="schedulingTargetChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Scheduling Target Change History">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !schedulingTargetChangeHistoryForm.valid || !schedulingTargetChangeHistoryForm.dirty || schedulingTargetChangeHistoryForm.pristine || userIsSchedulerSchedulingTargetChangeHistoryWriter() == false " ngbTooltip="Save Scheduling Target Change History">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

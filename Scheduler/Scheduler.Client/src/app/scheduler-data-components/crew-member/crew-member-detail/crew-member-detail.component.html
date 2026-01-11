@@ -1,0 +1,133 @@
+<div class="container-fluid p-1 m-0 crew-member-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="crew-member-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Crew Member</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Crew Member' : 'Add Crew Member'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerCrewMemberReader()">
+                <div class="col m-2 crew-member-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="crewMemberForm" (ngSubmit)="submitForm()" class="crew-member-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('crewId')">
+                                <label for="CrewMember-crewId" id="label-CrewMember-crewId"><span class="text-danger">*</span>Crew</label>
+                                <select id="CrewMember-crewId" formControlName="crewId" class="form-select crew-member-select" [disabled]="!userIsSchedulerCrewMemberWriter()">
+                                    <option [ngValue]="null">Select Crew</option>
+                                    <option *ngFor="let crew of crews$ | async" [ngValue]="crew.id">{{[crew.name] | filterAndJoin}}</option>
+                                </select>
+                                <div *ngIf="crewMemberForm.get('crewId')?.invalid && crewMemberForm.get('crewId')?.touched" class="text-danger">
+                                    Crew is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('resourceId')">
+                                <label for="CrewMember-resourceId" id="label-CrewMember-resourceId"><span class="text-danger">*</span>Resource</label>
+                                <select id="CrewMember-resourceId" formControlName="resourceId" class="form-select crew-member-select" [disabled]="!userIsSchedulerCrewMemberWriter()">
+                                    <option [ngValue]="null">Select Resource</option>
+                                    <option *ngFor="let resource of resources$ | async" [ngValue]="resource.id">{{[resource.name] | filterAndJoin}}</option>
+                                </select>
+                                <div *ngIf="crewMemberForm.get('resourceId')?.invalid && crewMemberForm.get('resourceId')?.touched" class="text-danger">
+                                    Resource is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('assignmentRoleId')">
+                                <label for="CrewMember-assignmentRoleId" id="label-CrewMember-assignmentRoleId">Assignment Role</label>
+                                <select id="CrewMember-assignmentRoleId" formControlName="assignmentRoleId" class="form-select crew-member-select" [disabled]="!userIsSchedulerCrewMemberWriter()">
+                                    <option [ngValue]="null">Select Assignment Role</option>
+                                    <option *ngFor="let assignmentRole of assignmentRoles$ | async" [ngValue]="assignmentRole.id">{{assignmentRole.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                                <label for="CrewMember-sequence" id="label-CrewMember-sequence"><span class="text-danger">*</span>Sequence</label>
+                                <input type="number" id="CrewMember-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control crew-member-input" [disabled]="!userIsSchedulerCrewMemberWriter()" aria-labelledby="label-sequence" />
+                                <div *ngIf="crewMemberForm.get('sequence')?.invalid && crewMemberForm.get('sequence')?.touched" class="text-danger">
+                                    Sequence is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('iconId')">
+                                <label for="CrewMember-iconId" id="label-CrewMember-iconId">Icon</label>
+                                <select id="CrewMember-iconId" formControlName="iconId" class="form-select crew-member-select" [disabled]="!userIsSchedulerCrewMemberWriter()">
+                                    <option [ngValue]="null">Select Icon</option>
+                                    <option *ngFor="let icon of icons$ | async" [ngValue]="icon.id">{{icon.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('color')">
+                                <label for="CrewMember-color" id="label-CrewMember-color">Color</label>
+                                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="CrewMember-color" 
+                        formControlName="color" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerCrewMemberWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="crewMemberForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="CrewMember-versionNumber" id="label-CrewMember-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="CrewMember-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control crew-member-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="CrewMember-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerCrewMemberWriter()" />
+                                <label for="CrewMember-active" class="form-check-label" id="label-CrewMember-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="CrewMember-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerCrewMemberWriter()" />
+                                <label for="CrewMember-deleted" class="form-check-label" id="label-CrewMember-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="crew-member-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="crewMemberForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Crew Member">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !crewMemberForm.valid || !crewMemberForm.dirty || crewMemberForm.pristine || userIsSchedulerCrewMemberWriter() == false " ngbTooltip="Save Crew Member">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerCrewMemberReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 crew-member-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="crewMemberChangeHistoryService.userIsSchedulerCrewMemberChangeHistoryReader()">
+                            <button ngbNavLink>Crew Member Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (crewMemberData?.CrewMemberChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-crew-member-change-history-table [queryParams]="{ crewMemberId: crewMemberData?.id }"></app-crew-member-change-history-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-crew-member-change-history-add-edit [preSeededData]="{ crewMemberId: crewMemberData?.id }" [hiddenFields]="['crewMemberId']"></app-crew-member-change-history-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

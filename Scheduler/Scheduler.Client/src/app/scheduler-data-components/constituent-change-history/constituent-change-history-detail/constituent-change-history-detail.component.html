@@ -1,0 +1,66 @@
+<div class="container-fluid p-1 m-0 constituent-change-history-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="constituent-change-history-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Constituent Change History</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Constituent Change History' : 'Add Constituent Change History'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerConstituentChangeHistoryReader()">
+                <div class="col m-2 constituent-change-history-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="constituentChangeHistoryForm" (ngSubmit)="submitForm()" class="constituent-change-history-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('constituentId')">
+                                <label for="ConstituentChangeHistory-constituentId" id="label-ConstituentChangeHistory-constituentId"><span class="text-danger">*</span>Constituent</label>
+                                <select id="ConstituentChangeHistory-constituentId" formControlName="constituentId" class="form-select constituent-change-history-select" [disabled]="!userIsSchedulerConstituentChangeHistoryWriter()">
+                                    <option [ngValue]="null">Select Constituent</option>
+                                    <option *ngFor="let constituent of constituents$ | async" [ngValue]="constituent.id">{{constituent.constituentNumber}}</option>
+                                </select>
+                                <div *ngIf="constituentChangeHistoryForm.get('constituentId')?.invalid && constituentChangeHistoryForm.get('constituentId')?.touched" class="text-danger">
+                                    Constituent is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="ConstituentChangeHistory-versionNumber" id="label-ConstituentChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="ConstituentChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control constituent-change-history-input" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                                <label for="ConstituentChangeHistory-timeStamp" id="label-ConstituentChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                                <input type="datetime-local" id="ConstituentChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control constituent-change-history-input" [disabled]="!userIsSchedulerConstituentChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                                <div *ngIf="constituentChangeHistoryForm.get('timeStamp')?.invalid && constituentChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                                    Time Stamp is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="ConstituentChangeHistory-userId" id="label-ConstituentChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="ConstituentChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control constituent-change-history-input" [disabled]="!userIsSchedulerConstituentChangeHistoryWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="constituentChangeHistoryForm.get('userId')?.invalid && constituentChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                                <label for="ConstituentChangeHistory-data" id="label-ConstituentChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                                <textarea id="ConstituentChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control constituent-change-history-input" [disabled]="!userIsSchedulerConstituentChangeHistoryWriter()"></textarea>
+                                <div *ngIf="constituentChangeHistoryForm.get('data')?.invalid && constituentChangeHistoryForm.get('data')?.touched" class="text-danger">
+                                    Data is required
+                                </div>
+                            </div>
+                            <div class="constituent-change-history-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="constituentChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Constituent Change History">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !constituentChangeHistoryForm.valid || !constituentChangeHistoryForm.dirty || constituentChangeHistoryForm.pristine || userIsSchedulerConstituentChangeHistoryWriter() == false " ngbTooltip="Save Constituent Change History">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

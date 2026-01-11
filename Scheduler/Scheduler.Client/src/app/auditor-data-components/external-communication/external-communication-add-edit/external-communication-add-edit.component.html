@@ -1,0 +1,65 @@
+<div class="add-external-communication" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-external-communication me-2"
+        (click)="openModal()"
+        ngbTooltip="Add External Communication" 
+        *ngIf="userIsAuditorExternalCommunicationWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #externalCommunicationModal let-modal>
+   <div class="modal-header bg-dark text-light external-communication-modal-header">
+      <h5 class="modal-title mb-0" id="externalCommunicationModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit External Communication' : 'Add External Communication' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body external-communication-modal-body">
+      <form [formGroup]="externalCommunicationForm" (ngSubmit)="submitForm()">
+            <div class="form-group">
+                <label for="timeStamp" id="label-timeStamp">Time Stamp</label>
+                <input type="datetime-local" id="timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control external-communication-input" [disabled]="!userIsAuditorExternalCommunicationWriter()" aria-labelledby="label-timeStamp" />
+            </div>
+            <div class="form-group">
+                <label for="auditUserId" id="label-auditUserId">Audit User</label>
+                <select id="auditUserId" formControlName="auditUserId" class="form-select external-communication-select" [disabled]="!userIsAuditorExternalCommunicationWriter()">
+                    <option [ngValue]="null">Select Audit User</option>
+                    <option *ngFor="let auditUser of auditUsers$ | async" [ngValue]="auditUser.id">{{auditUser.name}}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="communicationType" id="label-communicationType">Communication Type</label>
+                <input type="text" id="communicationType" formControlName="communicationType" placeholder="Enter Communication Type" class="form-control external-communication-input" [disabled]="!userIsAuditorExternalCommunicationWriter()" aria-labelledby="label-communicationType" />
+            </div>
+            <div class="form-group">
+                <label for="subject" id="label-subject">Subject</label>
+                <textarea id="subject" formControlName="subject" placeholder="Enter Subject" class="form-control external-communication-input" [disabled]="!userIsAuditorExternalCommunicationWriter()"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="message" id="label-message">Message</label>
+                <textarea id="message" formControlName="message" placeholder="Enter Message" class="form-control external-communication-input" [disabled]="!userIsAuditorExternalCommunicationWriter()"></textarea>
+            </div>
+            <div class="form-check my-2">
+                <input type="checkbox" id="completedSuccessfully" formControlName="completedSuccessfully" class="form-check-input" [disabled]="!userIsAuditorExternalCommunicationWriter()" />
+                <label for="completedSuccessfully" class="form-check-label" id="label-completedSuccessfully"><span class="text-danger">*</span>Completed Successfully</label>
+            </div>
+            <div class="form-group">
+                <label for="responseMessage" id="label-responseMessage">Response Message</label>
+                <textarea id="responseMessage" formControlName="responseMessage" placeholder="Enter Response Message" class="form-control external-communication-input" [disabled]="!userIsAuditorExternalCommunicationWriter()"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="exceptionText" id="label-exceptionText">Exception Text</label>
+                <textarea id="exceptionText" formControlName="exceptionText" placeholder="Enter Exception Text" class="form-control external-communication-input" [disabled]="!userIsAuditorExternalCommunicationWriter()"></textarea>
+            </div>
+         <div class="modal-footer external-communication-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the External Communication changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !externalCommunicationForm.valid || externalCommunicationForm.pristine || !userIsAuditorExternalCommunicationWriter()" ngbTooltip="Save the External Communication changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

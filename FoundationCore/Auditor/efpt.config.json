@@ -1,0 +1,106 @@
+﻿{
+   "CodeGenerationMode": 4,
+   "ContextClassName": "AuditorContext",
+   "ContextNamespace": null,
+   "FilterSchemas": false,
+   "IncludeConnectionString": false,
+   "ModelNamespace": null,
+   "OutputContextPath": null,
+   "OutputPath": "Database",
+   "PreserveCasingWithRegex": true,
+   "ProjectRootNamespace": "Foundation.Auditor",
+   "Schemas": null,
+   "SelectedHandlebarsLanguage": 2,
+   "SelectedToBeGenerated": 0,
+   "T4TemplatePath": null,
+   "Tables": [
+      {
+         "Name": "[Auditor].[AuditAccessType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Auditor].[AuditEvent]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Auditor].[AuditEventEntityState]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Auditor].[AuditEventErrorMessage]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Auditor].[AuditHostSystem]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Auditor].[AuditModule]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Auditor].[AuditModuleEntity]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Auditor].[AuditPlanB]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Auditor].[AuditResource]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Auditor].[AuditSession]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Auditor].[AuditSource]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Auditor].[AuditType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Auditor].[AuditUser]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Auditor].[AuditUserAgent]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Auditor].[ExternalCommunication]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Auditor].[ExternalCommunicationRecipient]",
+         "ObjectType": 0
+      }
+   ],
+   "UiHint": null,
+   "UncountableWords": null,
+   "UseAsyncStoredProcedureCalls": true,
+   "UseBoolPropertiesWithoutDefaultSql": false,
+   "UseDatabaseNames": true,
+   "UseDateOnlyTimeOnly": true,
+   "UseDbContextSplitting": false,
+   "UseDecimalDataAnnotationForSprocResult": true,
+   "UseFluentApiOnly": true,
+   "UseHandleBars": false,
+   "UseHierarchyId": false,
+   "UseInflector": true,
+   "UseLegacyPluralizer": false,
+   "UseManyToManyEntity": false,
+   "UseNoDefaultConstructor": false,
+   "UseNoNavigations": false,
+   "UseNoObjectFilter": false,
+   "UseNodaTime": false,
+   "UseNullableReferences": false,
+   "UsePrefixNavigationNaming": false,
+   "UseSchemaFolders": false,
+   "UseSchemaNamespaces": false,
+   "UseSpatial": false,
+   "UseT4": false
+}

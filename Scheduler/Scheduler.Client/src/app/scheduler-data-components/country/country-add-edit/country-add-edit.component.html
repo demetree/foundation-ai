@@ -1,0 +1,71 @@
+<div class="add-country" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-country me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Country" 
+        *ngIf="userIsSchedulerCountryWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #countryModal let-modal>
+   <div class="modal-header bg-dark text-light country-modal-header">
+      <h5 class="modal-title mb-0" id="countryModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Country' : 'Add Country' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body country-modal-body">
+      <form [formGroup]="countryForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="Country-name" id="label-Country-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="Country-name" formControlName="name" placeholder="Enter Name" class="form-control country-input" [disabled]="!userIsSchedulerCountryWriter()" aria-labelledby="label-name" />
+                <div *ngIf="countryForm.get('name')?.invalid && countryForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="Country-description" id="label-Country-description"><span class="text-danger">*</span>Description</label>
+                <textarea id="Country-description" formControlName="description" placeholder="Enter Description" class="form-control country-input" [disabled]="!userIsSchedulerCountryWriter()"></textarea>
+                <div *ngIf="countryForm.get('description')?.invalid && countryForm.get('description')?.touched" class="text-danger">
+                    Description is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('abbreviation')">
+                <label for="Country-abbreviation" id="label-Country-abbreviation"><span class="text-danger">*</span>Abbreviation</label>
+                <input type="text" id="Country-abbreviation" formControlName="abbreviation" placeholder="Enter Abbreviation" class="form-control country-input" [disabled]="!userIsSchedulerCountryWriter()" aria-labelledby="label-abbreviation" />
+                <div *ngIf="countryForm.get('abbreviation')?.invalid && countryForm.get('abbreviation')?.touched" class="text-danger">
+                    Abbreviation is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('postalCodeFormat')">
+                <label for="Country-postalCodeFormat" id="label-Country-postalCodeFormat">Postal Code Format</label>
+                <input type="text" id="Country-postalCodeFormat" formControlName="postalCodeFormat" placeholder="Enter Postal Code Format" class="form-control country-input" [disabled]="!userIsSchedulerCountryWriter()" aria-labelledby="label-postalCodeFormat" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('postalCodeRegEx')">
+                <label for="Country-postalCodeRegEx" id="label-Country-postalCodeRegEx">Postal Code Reg Ex</label>
+                <input type="text" id="Country-postalCodeRegEx" formControlName="postalCodeRegEx" placeholder="Enter Postal Code Reg Ex" class="form-control country-input" [disabled]="!userIsSchedulerCountryWriter()" aria-labelledby="label-postalCodeRegEx" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                <label for="Country-sequence" id="label-Country-sequence">Sequence</label>
+                <input type="number" id="Country-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control country-input" [disabled]="!userIsSchedulerCountryWriter()" aria-labelledby="label-sequence" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="Country-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerCountryWriter()" />
+                <label for="Country-active" class="form-check-label" id="label-Country-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="Country-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerCountryWriter()" />
+                <label for="Country-deleted" class="form-check-label" id="label-Country-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer country-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Country changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !countryForm.valid || countryForm.pristine || !userIsSchedulerCountryWriter()" ngbTooltip="Save the Country changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

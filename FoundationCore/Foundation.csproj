@@ -1,0 +1,49 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <UserSecretsId>dafd67bb-d268-4a64-959f-bbb9ec66ff47</UserSecretsId>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="Foundation.Web" />
+	</ItemGroup>
+
+	<ItemGroup>
+    <PackageReference Include="ClosedXML" Version="0.105.0" />
+    <PackageReference Include="Cronos" Version="0.11.1" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="9.0.10" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.2" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.10" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="9.0.10" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.10" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.10" />
+    <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.14.0" />
+    <PackageReference Include="MySql.Data" Version="9.4.0" />
+    <PackageReference Include="Npgsql" Version="9.0.4" />
+	<PackageReference Include="OpenIddict.AspNetCore" Version="7.1.0" />
+	<PackageReference Include="OpenIddict.EntityFrameworkCore" Version="7.1.0" />
+	<PackageReference Include="OpenIddict.Quartz" Version="7.1.0" />
+	<PackageReference Include="Quartz.Extensions.Hosting" Version="3.15.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.10" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.10">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
+    <PackageReference Include="SendGrid" Version="9.29.3" />
+    <PackageReference Include="System.DirectoryServices" Version="9.0.10" />
+    <PackageReference Include="System.DirectoryServices.AccountManagement" Version="9.0.10" />
+    <PackageReference Include="System.DirectoryServices.Protocols" Version="9.0.10" />
+    <PackageReference Include="System.Runtime.Caching" Version="9.0.10" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DatabaseGenerators\AuditorDatabaseGenerator\AuditorDatabaseGenerator.csproj" />
+    <ProjectReference Include="..\DatabaseGenerators\SecurityDatabaseGenerator\SecurityDatabaseGenerator.csproj" />
+    <ProjectReference Include="..\FoundationCommon\FoundationCommon.csproj" />
+  </ItemGroup>
+
+</Project>

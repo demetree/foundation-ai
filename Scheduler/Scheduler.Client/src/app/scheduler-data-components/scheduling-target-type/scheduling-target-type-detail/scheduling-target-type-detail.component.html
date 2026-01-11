@@ -1,0 +1,130 @@
+<div class="container-fluid p-1 m-0 scheduling-target-type-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="scheduling-target-type-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Scheduling Target Type</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Scheduling Target Type' : 'Add Scheduling Target Type'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerSchedulingTargetTypeReader()">
+                <div class="col m-2 scheduling-target-type-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="schedulingTargetTypeForm" (ngSubmit)="submitForm()" class="scheduling-target-type-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="SchedulingTargetType-name" id="label-SchedulingTargetType-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="SchedulingTargetType-name" formControlName="name" placeholder="Enter Name" class="form-control scheduling-target-type-input" [disabled]="!userIsSchedulerSchedulingTargetTypeWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="schedulingTargetTypeForm.get('name')?.invalid && schedulingTargetTypeForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="SchedulingTargetType-description" id="label-SchedulingTargetType-description"><span class="text-danger">*</span>Description</label>
+                                <textarea id="SchedulingTargetType-description" formControlName="description" placeholder="Enter Description" class="form-control scheduling-target-type-input" [disabled]="!userIsSchedulerSchedulingTargetTypeWriter()"></textarea>
+                                <div *ngIf="schedulingTargetTypeForm.get('description')?.invalid && schedulingTargetTypeForm.get('description')?.touched" class="text-danger">
+                                    Description is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                                <label for="SchedulingTargetType-sequence" id="label-SchedulingTargetType-sequence">Sequence</label>
+                                <input type="number" id="SchedulingTargetType-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control scheduling-target-type-input" [disabled]="!userIsSchedulerSchedulingTargetTypeWriter()" aria-labelledby="label-sequence" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('iconId')">
+                                <label for="SchedulingTargetType-iconId" id="label-SchedulingTargetType-iconId">Icon</label>
+                                <select id="SchedulingTargetType-iconId" formControlName="iconId" class="form-select scheduling-target-type-select" [disabled]="!userIsSchedulerSchedulingTargetTypeWriter()">
+                                    <option [ngValue]="null">Select Icon</option>
+                                    <option *ngFor="let icon of icons$ | async" [ngValue]="icon.id">{{icon.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('color')">
+                                <label for="SchedulingTargetType-color" id="label-SchedulingTargetType-color">Color</label>
+                                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="SchedulingTargetType-color" 
+                        formControlName="color" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerSchedulingTargetTypeWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="schedulingTargetTypeForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="SchedulingTargetType-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerSchedulingTargetTypeWriter()" />
+                                <label for="SchedulingTargetType-active" class="form-check-label" id="label-SchedulingTargetType-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="SchedulingTargetType-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerSchedulingTargetTypeWriter()" />
+                                <label for="SchedulingTargetType-deleted" class="form-check-label" id="label-SchedulingTargetType-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="scheduling-target-type-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="schedulingTargetTypeForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Scheduling Target Type">Reset</button>
+                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !schedulingTargetTypeForm.valid || !schedulingTargetTypeForm.dirty || schedulingTargetTypeForm.pristine || userIsSchedulerSchedulingTargetTypeWriter() == false " ngbTooltip="Save Scheduling Target Type">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerSchedulingTargetTypeReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 scheduling-target-type-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="schedulingTargetService.userIsSchedulerSchedulingTargetReader()">
+                            <button ngbNavLink>Scheduling Targets
+                                <span class="badge bg-primary ms-2">
+                                    {{ (schedulingTargetTypeData?.SchedulingTargetsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-scheduling-target-table [queryParams]="{ schedulingTargetTypeId: schedulingTargetTypeData?.id }"></app-scheduling-target-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-scheduling-target-add-edit [preSeededData]="{ schedulingTargetTypeId: schedulingTargetTypeData?.id }" [hiddenFields]="['schedulingTargetTypeId']"></app-scheduling-target-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="scheduledEventTemplateService.userIsSchedulerScheduledEventTemplateReader()">
+                            <button ngbNavLink>Scheduled Event Templates
+                                <span class="badge bg-primary ms-2">
+                                    {{ (schedulingTargetTypeData?.ScheduledEventTemplatesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-scheduled-event-template-table [queryParams]="{ schedulingTargetTypeId: schedulingTargetTypeData?.id }"></app-scheduled-event-template-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-scheduled-event-template-add-edit [preSeededData]="{ schedulingTargetTypeId: schedulingTargetTypeData?.id }" [hiddenFields]="['schedulingTargetTypeId']"></app-scheduled-event-template-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

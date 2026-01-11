@@ -1,0 +1,147 @@
+<div class="add-scheduling-target" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-scheduling-target me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Scheduling Target" 
+        *ngIf="userIsSchedulerSchedulingTargetWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #schedulingTargetModal let-modal>
+   <div class="modal-header bg-dark text-light scheduling-target-modal-header">
+      <h5 class="modal-title mb-0" id="schedulingTargetModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Scheduling Target' : 'Add Scheduling Target' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body scheduling-target-modal-body">
+      <form [formGroup]="schedulingTargetForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="SchedulingTarget-name" id="label-SchedulingTarget-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="SchedulingTarget-name" formControlName="name" placeholder="Enter Name" class="form-control scheduling-target-input" [disabled]="!userIsSchedulerSchedulingTargetWriter()" aria-labelledby="label-name" />
+                <div *ngIf="schedulingTargetForm.get('name')?.invalid && schedulingTargetForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="SchedulingTarget-description" id="label-SchedulingTarget-description">Description</label>
+                <textarea id="SchedulingTarget-description" formControlName="description" placeholder="Enter Description" class="form-control scheduling-target-input" [disabled]="!userIsSchedulerSchedulingTargetWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('officeId')">
+                <label for="SchedulingTarget-officeId" id="label-SchedulingTarget-officeId">Office</label>
+                <select id="SchedulingTarget-officeId" formControlName="officeId" class="form-select scheduling-target-select" [disabled]="!userIsSchedulerSchedulingTargetWriter()">
+                    <option [ngValue]="null">Select Office</option>
+                    <option *ngFor="let office of offices$ | async" [ngValue]="office.id">{{office.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('clientId')">
+                <label for="SchedulingTarget-clientId" id="label-SchedulingTarget-clientId"><span class="text-danger">*</span>Client</label>
+                <select id="SchedulingTarget-clientId" formControlName="clientId" class="form-select scheduling-target-select" [disabled]="!userIsSchedulerSchedulingTargetWriter()">
+                    <option [ngValue]="null">Select Client</option>
+                    <option *ngFor="let client of clients$ | async" [ngValue]="client.id">{{client.name}}</option>
+                </select>
+                <div *ngIf="schedulingTargetForm.get('clientId')?.invalid && schedulingTargetForm.get('clientId')?.touched" class="text-danger">
+                    Client is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('schedulingTargetTypeId')">
+                <label for="SchedulingTarget-schedulingTargetTypeId" id="label-SchedulingTarget-schedulingTargetTypeId"><span class="text-danger">*</span>Scheduling Target Type</label>
+                <select id="SchedulingTarget-schedulingTargetTypeId" formControlName="schedulingTargetTypeId" class="form-select scheduling-target-select" [disabled]="!userIsSchedulerSchedulingTargetWriter()">
+                    <option [ngValue]="null">Select Scheduling Target Type</option>
+                    <option *ngFor="let schedulingTargetType of schedulingTargetTypes$ | async" [ngValue]="schedulingTargetType.id">{{schedulingTargetType.name}}</option>
+                </select>
+                <div *ngIf="schedulingTargetForm.get('schedulingTargetTypeId')?.invalid && schedulingTargetForm.get('schedulingTargetTypeId')?.touched" class="text-danger">
+                    Scheduling Target Type is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('timeZoneId')">
+                <label for="SchedulingTarget-timeZoneId" id="label-SchedulingTarget-timeZoneId"><span class="text-danger">*</span>Time Zone</label>
+                <select id="SchedulingTarget-timeZoneId" formControlName="timeZoneId" class="form-select scheduling-target-select" [disabled]="!userIsSchedulerSchedulingTargetWriter()">
+                    <option [ngValue]="null">Select Time Zone</option>
+                    <option *ngFor="let timeZone of timeZones$ | async" [ngValue]="timeZone.id">{{timeZone.name}}</option>
+                </select>
+                <div *ngIf="schedulingTargetForm.get('timeZoneId')?.invalid && schedulingTargetForm.get('timeZoneId')?.touched" class="text-danger">
+                    Time Zone is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('calendarId')">
+                <label for="SchedulingTarget-calendarId" id="label-SchedulingTarget-calendarId">Calendar</label>
+                <select id="SchedulingTarget-calendarId" formControlName="calendarId" class="form-select scheduling-target-select" [disabled]="!userIsSchedulerSchedulingTargetWriter()">
+                    <option [ngValue]="null">Select Calendar</option>
+                    <option *ngFor="let calendar of calendars$ | async" [ngValue]="calendar.id">{{calendar.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('notes')">
+                <label for="SchedulingTarget-notes" id="label-SchedulingTarget-notes">Notes</label>
+                <textarea id="SchedulingTarget-notes" formControlName="notes" placeholder="Enter Notes" class="form-control scheduling-target-input" [disabled]="!userIsSchedulerSchedulingTargetWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('externalId')">
+                <label for="SchedulingTarget-externalId" id="label-SchedulingTarget-externalId">External Id</label>
+                <input type="text" id="SchedulingTarget-externalId" formControlName="externalId" placeholder="Enter External Id" class="form-control scheduling-target-input" [disabled]="!userIsSchedulerSchedulingTargetWriter()" aria-labelledby="label-externalId" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('color')">
+                <label for="SchedulingTarget-color" id="label-SchedulingTarget-color">Color</label>
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="SchedulingTarget-color" 
+                        formControlName="color" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerSchedulingTargetWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="schedulingTargetForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('attributes')">
+                <label for="SchedulingTarget-attributes" id="label-SchedulingTarget-attributes">Attributes</label>
+                <textarea id="SchedulingTarget-attributes" formControlName="attributes" placeholder="Enter Attributes" class="form-control scheduling-target-input" [disabled]="!userIsSchedulerSchedulingTargetWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('avatarFileName')">
+                <label for="SchedulingTarget-avatarFileName" id="label-SchedulingTarget-avatarFileName">Avatar File Name</label>
+                <input type="text" id="SchedulingTarget-avatarFileName" formControlName="avatarFileName" placeholder="Enter Avatar File Name" class="form-control scheduling-target-input" [disabled]="!userIsSchedulerSchedulingTargetWriter()" aria-labelledby="label-avatarFileName" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('avatarSize')">
+                <label for="SchedulingTarget-avatarSize" id="label-SchedulingTarget-avatarSize">Avatar Size</label>
+                <input type="number" id="SchedulingTarget-avatarSize" formControlName="avatarSize" placeholder="Enter Avatar Size" class="form-control scheduling-target-input" [disabled]="!userIsSchedulerSchedulingTargetWriter()" aria-labelledby="label-avatarSize" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('avatarData')">
+                <label for="SchedulingTarget-avatarData" id="label-SchedulingTarget-avatarData">Avatar Data</label>
+                <input type="text" id="SchedulingTarget-avatarData" formControlName="avatarData" placeholder="Enter Avatar Data" class="form-control scheduling-target-input" [disabled]="!userIsSchedulerSchedulingTargetWriter()" aria-labelledby="label-avatarData" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('avatarMimeType')">
+                <label for="SchedulingTarget-avatarMimeType" id="label-SchedulingTarget-avatarMimeType">Avatar Mime Type</label>
+                <input type="text" id="SchedulingTarget-avatarMimeType" formControlName="avatarMimeType" placeholder="Enter Avatar Mime Type" class="form-control scheduling-target-input" [disabled]="!userIsSchedulerSchedulingTargetWriter()" aria-labelledby="label-avatarMimeType" />
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="SchedulingTarget-versionNumber" id="label-SchedulingTarget-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="SchedulingTarget-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control scheduling-target-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="SchedulingTarget-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerSchedulingTargetWriter()" />
+                <label for="SchedulingTarget-active" class="form-check-label" id="label-SchedulingTarget-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="SchedulingTarget-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerSchedulingTargetWriter()" />
+                <label for="SchedulingTarget-deleted" class="form-check-label" id="label-SchedulingTarget-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer scheduling-target-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Scheduling Target changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !schedulingTargetForm.valid || schedulingTargetForm.pristine || !userIsSchedulerSchedulingTargetWriter()" ngbTooltip="Save the Scheduling Target changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

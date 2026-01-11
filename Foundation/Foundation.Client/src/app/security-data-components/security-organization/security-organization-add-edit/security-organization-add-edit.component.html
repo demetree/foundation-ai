@@ -1,0 +1,59 @@
+<div class="add-security-organization" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-security-organization me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Security Organization" 
+        *ngIf="userIsSecuritySecurityOrganizationWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #securityOrganizationModal let-modal>
+   <div class="modal-header bg-dark text-light security-organization-modal-header">
+      <h5 class="modal-title mb-0" id="securityOrganizationModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Security Organization' : 'Add Security Organization' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body security-organization-modal-body">
+      <form [formGroup]="securityOrganizationForm" (ngSubmit)="submitForm()">
+            <div class="form-group">
+                <label for="securityTenantId" id="label-securityTenantId"><span class="text-danger">*</span>Security Tenant</label>
+                <select id="securityTenantId" formControlName="securityTenantId" class="form-select security-organization-select" [disabled]="!userIsSecuritySecurityOrganizationWriter()">
+                    <option [ngValue]="null">Select Security Tenant</option>
+                    <option *ngFor="let securityTenant of securityTenants$ | async" [ngValue]="securityTenant.id">{{securityTenant.name}}</option>
+                </select>
+                <div *ngIf="securityOrganizationForm.get('securityTenantId')?.invalid && securityOrganizationForm.get('securityTenantId')?.touched" class="text-danger">
+                    Security Tenant is required
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="name" id="label-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="name" formControlName="name" placeholder="Enter Name" class="form-control security-organization-input" [disabled]="!userIsSecuritySecurityOrganizationWriter()" aria-labelledby="label-name" />
+                <div *ngIf="securityOrganizationForm.get('name')?.invalid && securityOrganizationForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="description" id="label-description">Description</label>
+                <textarea id="description" formControlName="description" placeholder="Enter Description" class="form-control security-organization-input" [disabled]="!userIsSecuritySecurityOrganizationWriter()"></textarea>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode">
+                <input type="checkbox" id="active" formControlName="active" class="form-check-input" [disabled]="!userIsSecuritySecurityOrganizationWriter()" />
+                <label for="active" class="form-check-label" id="label-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode">
+                <input type="checkbox" id="deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSecuritySecurityOrganizationWriter()" />
+                <label for="deleted" class="form-check-label" id="label-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer security-organization-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Security Organization changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !securityOrganizationForm.valid || securityOrganizationForm.pristine || !userIsSecuritySecurityOrganizationWriter()" ngbTooltip="Save the Security Organization changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

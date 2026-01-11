@@ -1,0 +1,96 @@
+<div class="add-tag" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-tag me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Tag" 
+        *ngIf="userIsSchedulerTagWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #tagModal let-modal>
+   <div class="modal-header bg-dark text-light tag-modal-header">
+      <h5 class="modal-title mb-0" id="tagModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Tag' : 'Add Tag' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body tag-modal-body">
+      <form [formGroup]="tagForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="Tag-name" id="label-Tag-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="Tag-name" formControlName="name" placeholder="Enter Name" class="form-control tag-input" [disabled]="!userIsSchedulerTagWriter()" aria-labelledby="label-name" />
+                <div *ngIf="tagForm.get('name')?.invalid && tagForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="Tag-description" id="label-Tag-description"><span class="text-danger">*</span>Description</label>
+                <textarea id="Tag-description" formControlName="description" placeholder="Enter Description" class="form-control tag-input" [disabled]="!userIsSchedulerTagWriter()"></textarea>
+                <div *ngIf="tagForm.get('description')?.invalid && tagForm.get('description')?.touched" class="text-danger">
+                    Description is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                <label for="Tag-sequence" id="label-Tag-sequence">Sequence</label>
+                <input type="number" id="Tag-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control tag-input" [disabled]="!userIsSchedulerTagWriter()" aria-labelledby="label-sequence" />
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isSystem')">
+                <input type="checkbox" id="Tag-isSystem" formControlName="isSystem" class="form-check-input" [disabled]="!userIsSchedulerTagWriter()" />
+                <label for="Tag-isSystem" class="form-check-label" id="label-Tag-isSystem">Is System</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('priorityId')">
+                <label for="Tag-priorityId" id="label-Tag-priorityId">Priority</label>
+                <select id="Tag-priorityId" formControlName="priorityId" class="form-select tag-select" [disabled]="!userIsSchedulerTagWriter()">
+                    <option [ngValue]="null">Select Priority</option>
+                    <option *ngFor="let priority of priorities$ | async" [ngValue]="priority.id">{{priority.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('iconId')">
+                <label for="Tag-iconId" id="label-Tag-iconId">Icon</label>
+                <select id="Tag-iconId" formControlName="iconId" class="form-select tag-select" [disabled]="!userIsSchedulerTagWriter()">
+                    <option [ngValue]="null">Select Icon</option>
+                    <option *ngFor="let icon of icons$ | async" [ngValue]="icon.id">{{icon.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('color')">
+                <label for="Tag-color" id="label-Tag-color">Color</label>
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="Tag-color" 
+                        formControlName="color" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerTagWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="tagForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="Tag-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerTagWriter()" />
+                <label for="Tag-active" class="form-check-label" id="label-Tag-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="Tag-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerTagWriter()" />
+                <label for="Tag-deleted" class="form-check-label" id="label-Tag-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer tag-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Tag changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !tagForm.valid || tagForm.pristine || !userIsSchedulerTagWriter()" ngbTooltip="Save the Tag changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

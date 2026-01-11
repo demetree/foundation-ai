@@ -1,0 +1,78 @@
+<div class="add-assignment-status" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-assignment-status me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Assignment Status" 
+        *ngIf="userIsSchedulerAssignmentStatusWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #assignmentStatusModal let-modal>
+   <div class="modal-header bg-dark text-light assignment-status-modal-header">
+      <h5 class="modal-title mb-0" id="assignmentStatusModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Assignment Status' : 'Add Assignment Status' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body assignment-status-modal-body">
+      <form [formGroup]="assignmentStatusForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="AssignmentStatus-name" id="label-AssignmentStatus-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="AssignmentStatus-name" formControlName="name" placeholder="Enter Name" class="form-control assignment-status-input" [disabled]="!userIsSchedulerAssignmentStatusWriter()" aria-labelledby="label-name" />
+                <div *ngIf="assignmentStatusForm.get('name')?.invalid && assignmentStatusForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="AssignmentStatus-description" id="label-AssignmentStatus-description"><span class="text-danger">*</span>Description</label>
+                <textarea id="AssignmentStatus-description" formControlName="description" placeholder="Enter Description" class="form-control assignment-status-input" [disabled]="!userIsSchedulerAssignmentStatusWriter()"></textarea>
+                <div *ngIf="assignmentStatusForm.get('description')?.invalid && assignmentStatusForm.get('description')?.touched" class="text-danger">
+                    Description is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('color')">
+                <label for="AssignmentStatus-color" id="label-AssignmentStatus-color">Color</label>
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="AssignmentStatus-color" 
+                        formControlName="color" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerAssignmentStatusWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="assignmentStatusForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                <label for="AssignmentStatus-sequence" id="label-AssignmentStatus-sequence">Sequence</label>
+                <input type="number" id="AssignmentStatus-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control assignment-status-input" [disabled]="!userIsSchedulerAssignmentStatusWriter()" aria-labelledby="label-sequence" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="AssignmentStatus-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerAssignmentStatusWriter()" />
+                <label for="AssignmentStatus-active" class="form-check-label" id="label-AssignmentStatus-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="AssignmentStatus-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerAssignmentStatusWriter()" />
+                <label for="AssignmentStatus-deleted" class="form-check-label" id="label-AssignmentStatus-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer assignment-status-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Assignment Status changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !assignmentStatusForm.valid || assignmentStatusForm.pristine || !userIsSchedulerAssignmentStatusWriter()" ngbTooltip="Save the Assignment Status changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>
