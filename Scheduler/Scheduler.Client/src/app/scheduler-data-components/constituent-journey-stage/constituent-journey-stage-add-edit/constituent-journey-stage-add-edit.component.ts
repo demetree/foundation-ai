@@ -43,6 +43,10 @@ interface ConstituentJourneyStageFormValues {
   minLifetimeGiving: string | null,     // Stored as string for form input, converted to number on submit.
   maxLifetimeGiving: string | null,     // Stored as string for form input, converted to number on submit.
   minSingleGiftAmount: string | null,     // Stored as string for form input, converted to number on submit.
+  isDefault: boolean,
+  minAnnualGiving: string | null,     // Stored as string for form input, converted to number on submit.
+  maxDaysSinceLastGift: string | null,     // Stored as string for form input, converted to number on submit.
+  minGiftCount: string | null,     // Stored as string for form input, converted to number on submit.
   versionNumber: string,     // Stored as string for form input, converted to number on submit.
   active: boolean,
   deleted: boolean,
@@ -84,6 +88,10 @@ export class ConstituentJourneyStageAddEditComponent {
         minLifetimeGiving: [''],
         maxLifetimeGiving: [''],
         minSingleGiftAmount: [''],
+        isDefault: [false],
+        minAnnualGiving: [''],
+        maxDaysSinceLastGift: [''],
+        minGiftCount: [''],
         versionNumber: [''],
         active: [true],
         deleted: [false],
@@ -230,6 +238,10 @@ export class ConstituentJourneyStageAddEditComponent {
         minLifetimeGiving: formValue.minLifetimeGiving ? Number(formValue.minLifetimeGiving) : null,
         maxLifetimeGiving: formValue.maxLifetimeGiving ? Number(formValue.maxLifetimeGiving) : null,
         minSingleGiftAmount: formValue.minSingleGiftAmount ? Number(formValue.minSingleGiftAmount) : null,
+        isDefault: !!formValue.isDefault,
+        minAnnualGiving: formValue.minAnnualGiving ? Number(formValue.minAnnualGiving) : null,
+        maxDaysSinceLastGift: formValue.maxDaysSinceLastGift ? Number(formValue.maxDaysSinceLastGift) : null,
+        minGiftCount: formValue.minGiftCount ? Number(formValue.minGiftCount) : null,
         versionNumber: this.constituentJourneyStageSubmitData?.versionNumber ?? 0,
         active: !!formValue.active,
         deleted: !!formValue.deleted,
@@ -367,6 +379,10 @@ export class ConstituentJourneyStageAddEditComponent {
         minLifetimeGiving: '',
         maxLifetimeGiving: '',
         minSingleGiftAmount: '',
+        isDefault: false,
+        minAnnualGiving: '',
+        maxDaysSinceLastGift: '',
+        minGiftCount: '',
         versionNumber: '',
         active: true,
         deleted: false,
@@ -387,6 +403,10 @@ export class ConstituentJourneyStageAddEditComponent {
         minLifetimeGiving: constituentJourneyStageData.minLifetimeGiving?.toString() ?? '',
         maxLifetimeGiving: constituentJourneyStageData.maxLifetimeGiving?.toString() ?? '',
         minSingleGiftAmount: constituentJourneyStageData.minSingleGiftAmount?.toString() ?? '',
+        isDefault: constituentJourneyStageData.isDefault ?? false,
+        minAnnualGiving: constituentJourneyStageData.minAnnualGiving?.toString() ?? '',
+        maxDaysSinceLastGift: constituentJourneyStageData.maxDaysSinceLastGift?.toString() ?? '',
+        minGiftCount: constituentJourneyStageData.minGiftCount?.toString() ?? '',
         versionNumber: constituentJourneyStageData.versionNumber?.toString() ?? '',
         active: constituentJourneyStageData.active ?? true,
         deleted: constituentJourneyStageData.deleted ?? false,

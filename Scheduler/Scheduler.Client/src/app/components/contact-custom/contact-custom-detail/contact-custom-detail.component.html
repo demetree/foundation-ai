@@ -36,6 +36,26 @@
             <span *ngIf="contact?.deleted" class="badge bg-danger">Deleted</span>
             <span class="badge bg-secondary">Version: {{ contact?.versionNumber }}</span>
 
+            <!-- Donor Journey Stage -->
+
+            <ng-container *ngIf="constituent$ | async as constituent">
+              <span class="badge ms-1 clickable"
+                [style.background-color]="constituent?.constituentJourneyStage?.color || '#e0e0e0'"
+                [style.color]="constituent?.constituentJourneyStage?.color ? (constituent.constituentJourneyStage?.color | contrastColor) : '#000'"
+                *ngIf="constituent?.constituentJourneyStage" ngbTooltip="Click to update Donor Journey Stage"
+                (click)="openJourneyUpdateModal(constituent)">
+                <i *ngIf="constituent.constituentJourneyStage?.icon"
+                  [class]="constituent.constituentJourneyStage?.icon?.fontAwesomeCode" class="me-1"></i>
+                {{ constituent.constituentJourneyStage?.name }}
+              </span>
+
+              <!-- If no stage set -->
+              <span class="badge ms-1 bg-secondary clickable" *ngIf="!constituent.constituentJourneyStage"
+                ngbTooltip="Click to set Donor Journey Stage" (click)="openJourneyUpdateModal(constituent)">
+                Set Stage
+              </span>
+            </ng-container>
+
             <!-- note that this depend on the revived/reloaded icon object set in the main load function-->
             <ng-container *ngIf="contact?.ContactTags$ | async as tags">
               <span *ngFor="let ct of tags" class="badge ms-1" [style.background-color]="ct.tag?.color || '#6c757d'"

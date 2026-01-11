@@ -1,0 +1,27 @@
+<div class="modal-header">
+    <h4 class="modal-title">Update Donor Journey Stage</h4>
+    <button type="button" class="btn-close" aria-label="Close" (click)="dismiss()"></button>
+</div>
+<div class="modal-body">
+    <div class="mb-3">
+        <label for="stageSelect" class="form-label">Select New Stage</label>
+        <select class="form-select" id="stageSelect" [(ngModel)]="selectedStageId" [disabled]="isSaving">
+            <option [ngValue]="null">Select a Stage...</option>
+            <ng-container *ngIf="stages$ | async as stages">
+                <option *ngFor="let stage of stages" [ngValue]="stage.id">
+                    {{ stage.name }}
+                </option>
+            </ng-container>
+        </select>
+        <div class="form-text text-muted mt-2">
+            Moving to a new stage will update the "Date Entered Stage" to today.
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="dismiss()" [disabled]="isSaving">Cancel</button>
+    <button type="button" class="btn btn-primary" (click)="save()" [disabled]="!selectedStageId || isSaving">
+        <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+        Save Changes
+    </button>
+</div>

@@ -55,6 +55,22 @@
                 Min  Single  Gift  Amount
                 <span *ngIf="sortColumn === 'minSingleGiftAmount'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('isDefault')">
+                Is  Default
+                <span *ngIf="sortColumn === 'isDefault'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('minAnnualGiving')">
+                Min  Annual  Giving
+                <span *ngIf="sortColumn === 'minAnnualGiving'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('maxDaysSinceLastGift')">
+                Max  Days  Since  Last  Gift
+                <span *ngIf="sortColumn === 'maxDaysSinceLastGift'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('minGiftCount')">
+                Min  Gift  Count
+                <span *ngIf="sortColumn === 'minGiftCount'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
 End of commented block for alternate definition option -->
           </tr>
         </thead>
@@ -145,6 +161,10 @@ End of commented block for alternate definition option -->
             <td class="text-truncate">{{constituentJourneyStage.minLifetimeGiving | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{constituentJourneyStage.maxLifetimeGiving | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{constituentJourneyStage.minSingleGiftAmount | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate"><boolean-icon [value]="constituentJourneyStage.isDefault"/></td>
+            <td class="text-truncate">{{constituentJourneyStage.minAnnualGiving | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{constituentJourneyStage.maxDaysSinceLastGift | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{constituentJourneyStage.minGiftCount | bigNumberFormat : '1.0-2'}}</td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -323,6 +343,22 @@ End of commented block for alternate definition option -->
             <p class="constituent-journey-stage-info" *ngIf="constituentJourneyStage.minSingleGiftAmount != null">
               <strong>Min Single Gift Amount: </strong>
               {{constituentJourneyStage.minSingleGiftAmount | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="constituent-journey-stage-info" *ngIf="constituentJourneyStage.isDefault != null">
+              <strong>Is Default: </strong>
+              <boolean-icon [value]="constituentJourneyStage.isDefault"/>
+            </p>
+            <p class="constituent-journey-stage-info" *ngIf="constituentJourneyStage.minAnnualGiving != null">
+              <strong>Min Annual Giving: </strong>
+              {{constituentJourneyStage.minAnnualGiving | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="constituent-journey-stage-info" *ngIf="constituentJourneyStage.maxDaysSinceLastGift != null">
+              <strong>Max Days Since Last Gift: </strong>
+              {{constituentJourneyStage.maxDaysSinceLastGift | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="constituent-journey-stage-info" *ngIf="constituentJourneyStage.minGiftCount != null">
+              <strong>Min Gift Count: </strong>
+              {{constituentJourneyStage.minGiftCount | bigNumberFormat : '1.0-2'}}
             </p>
             </div>
          </div>

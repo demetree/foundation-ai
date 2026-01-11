@@ -73,6 +73,22 @@
                                 <label for="ConstituentJourneyStage-minSingleGiftAmount" id="label-ConstituentJourneyStage-minSingleGiftAmount">Min Single Gift Amount</label>
                                 <input type="number" id="ConstituentJourneyStage-minSingleGiftAmount" formControlName="minSingleGiftAmount" placeholder="Enter Min Single Gift Amount" class="form-control constituent-journey-stage-input" [disabled]="!userIsSchedulerConstituentJourneyStageWriter()" aria-labelledby="label-minSingleGiftAmount" />
                             </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isDefault')">
+                                <input type="checkbox" id="ConstituentJourneyStage-isDefault" formControlName="isDefault" class="form-check-input" [disabled]="!userIsSchedulerConstituentJourneyStageWriter()" />
+                                <label for="ConstituentJourneyStage-isDefault" class="form-check-label" id="label-ConstituentJourneyStage-isDefault"><span class="text-danger">*</span>Is Default</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('minAnnualGiving')">
+                                <label for="ConstituentJourneyStage-minAnnualGiving" id="label-ConstituentJourneyStage-minAnnualGiving">Min Annual Giving</label>
+                                <input type="number" id="ConstituentJourneyStage-minAnnualGiving" formControlName="minAnnualGiving" placeholder="Enter Min Annual Giving" class="form-control constituent-journey-stage-input" [disabled]="!userIsSchedulerConstituentJourneyStageWriter()" aria-labelledby="label-minAnnualGiving" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('maxDaysSinceLastGift')">
+                                <label for="ConstituentJourneyStage-maxDaysSinceLastGift" id="label-ConstituentJourneyStage-maxDaysSinceLastGift">Max Days Since Last Gift</label>
+                                <input type="number" id="ConstituentJourneyStage-maxDaysSinceLastGift" formControlName="maxDaysSinceLastGift" placeholder="Enter Max Days Since Last Gift" class="form-control constituent-journey-stage-input" [disabled]="!userIsSchedulerConstituentJourneyStageWriter()" aria-labelledby="label-maxDaysSinceLastGift" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('minGiftCount')">
+                                <label for="ConstituentJourneyStage-minGiftCount" id="label-ConstituentJourneyStage-minGiftCount">Min Gift Count</label>
+                                <input type="number" id="ConstituentJourneyStage-minGiftCount" formControlName="minGiftCount" placeholder="Enter Min Gift Count" class="form-control constituent-journey-stage-input" [disabled]="!userIsSchedulerConstituentJourneyStageWriter()" aria-labelledby="label-minGiftCount" />
+                            </div>
                             <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
                                 <label for="ConstituentJourneyStage-versionNumber" id="label-ConstituentJourneyStage-versionNumber"><span class="text-danger">*</span>Version Number</label>
                                 <input type="number" id="ConstituentJourneyStage-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control constituent-journey-stage-input" />

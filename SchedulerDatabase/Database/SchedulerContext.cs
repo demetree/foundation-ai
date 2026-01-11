@@ -271,7 +271,7 @@ public partial class SchedulerContext : DbContext
     {
         modelBuilder.Entity<Appeal>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Appeal__3213E83FFB58D684");
+            entity.HasKey(e => e.id).HasName("PK__Appeal__3213E83F242AD966");
 
             entity.ToTable("Appeal", "Scheduler");
 
@@ -289,7 +289,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_Appeal_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Appeal__3E543F941F25C829").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Appeal__3E543F94F4E7866D").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.color).HasMaxLength(10);
@@ -307,7 +307,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<AppealChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__AppealCh__3213E83F2E730701");
+            entity.HasKey(e => e.id).HasName("PK__AppealCh__3213E83FD871A02C");
 
             entity.ToTable("AppealChangeHistory", "Scheduler");
 
@@ -330,7 +330,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<AssignmentRole>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Assignme__3213E83F47188AF8");
+            entity.HasKey(e => e.id).HasName("PK__Assignme__3213E83FAE877F86");
 
             entity.ToTable("AssignmentRole", "Scheduler");
 
@@ -346,7 +346,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_AssignmentRole_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Assignme__3E543F94E1F9BBCA").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Assignme__3E543F94690786B2").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.color).HasMaxLength(10);
@@ -360,7 +360,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<AssignmentRoleQualificationRequirement>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Assignme__3213E83F44C6BC30");
+            entity.HasKey(e => e.id).HasName("PK__Assignme__3213E83FCD3E769F");
 
             entity.ToTable("AssignmentRoleQualificationRequirement", "Scheduler");
 
@@ -376,7 +376,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.assignmentRoleId, e.qualificationId }, "UC_AssignmentRoleQualificationRequirement_tenantGuid_assignmentRoleId_qualificationId").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Assignme__3E543F948BD0BDC2").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Assignme__3E543F9401BC18F3").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.isRequired).HasDefaultValue(true);
@@ -393,7 +393,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<AssignmentRoleQualificationRequirementChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Assignme__3213E83F443253D5");
+            entity.HasKey(e => e.id).HasName("PK__Assignme__3213E83FFDB38BA8");
 
             entity.ToTable("AssignmentRoleQualificationRequirementChangeHistory", "Scheduler");
 
@@ -417,7 +417,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<AssignmentStatus>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Assignme__3213E83FE300EF50");
+            entity.HasKey(e => e.id).HasName("PK__Assignme__3213E83F6193E2CB");
 
             entity.ToTable("AssignmentStatus", "Scheduler");
 
@@ -427,9 +427,9 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => e.name, "I_AssignmentStatus_name");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Assignme__3E543F94A5CFE578").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Assignme__3E543F945FB689B8").IsUnique();
 
-            entity.HasIndex(e => e.name, "UQ__Assignme__72E12F1B74DC6118").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__Assignme__72E12F1B0944AD1D").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.color).HasMaxLength(10);
@@ -443,7 +443,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<Batch>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Batch__3213E83FC713B39A");
+            entity.HasKey(e => e.id).HasName("PK__Batch__3213E83FD1B1C2E0");
 
             entity.ToTable("Batch", "Scheduler");
 
@@ -461,7 +461,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.deleted }, "I_Batch_tenantGuid_deleted");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Batch__3E543F94FFA800DF").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Batch__3E543F94CC44A232").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.batchNumber)
@@ -484,7 +484,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<BatchChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__BatchCha__3213E83F265AEF35");
+            entity.HasKey(e => e.id).HasName("PK__BatchCha__3213E83FB4ECDE4D");
 
             entity.ToTable("BatchChangeHistory", "Scheduler");
 
@@ -507,7 +507,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<BatchStatus>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__BatchSta__3213E83F60742FFA");
+            entity.HasKey(e => e.id).HasName("PK__BatchSta__3213E83F3FC132EE");
 
             entity.ToTable("BatchStatus", "Scheduler");
 
@@ -517,9 +517,9 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => e.name, "I_BatchStatus_name");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__BatchSta__3E543F944F99EE7A").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__BatchSta__3E543F94D3392F25").IsUnique();
 
-            entity.HasIndex(e => e.name, "UQ__BatchSta__72E12F1B26DEBE8B").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__BatchSta__72E12F1B0DCCC5C4").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.description)
@@ -532,7 +532,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<BookingSourceType>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__BookingS__3213E83FF6973A71");
+            entity.HasKey(e => e.id).HasName("PK__BookingS__3213E83F61F82F5A");
 
             entity.ToTable("BookingSourceType", "Scheduler");
 
@@ -542,9 +542,9 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => e.name, "I_BookingSourceType_name");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__BookingS__3E543F94AAB321FB").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__BookingS__3E543F9474F00785").IsUnique();
 
-            entity.HasIndex(e => e.name, "UQ__BookingS__72E12F1B4AE9C8C2").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__BookingS__72E12F1B72B751AB").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.color).HasMaxLength(10);
@@ -558,7 +558,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<Calendar>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Calendar__3213E83F4BBE4724");
+            entity.HasKey(e => e.id).HasName("PK__Calendar__3213E83FCDBFF46B");
 
             entity.ToTable("Calendar", "Scheduler");
 
@@ -576,7 +576,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_Calendar_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Calendar__3E543F94F99A6957").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Calendar__3E543F946790E15E").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.color).HasMaxLength(10);
@@ -593,7 +593,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<CalendarChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Calendar__3213E83F445C3D95");
+            entity.HasKey(e => e.id).HasName("PK__Calendar__3213E83F29E4EC42");
 
             entity.ToTable("CalendarChangeHistory", "Scheduler");
 
@@ -616,7 +616,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<Campaign>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Campaign__3213E83F3F93D40C");
+            entity.HasKey(e => e.id).HasName("PK__Campaign__3213E83FBCD9AEA8");
 
             entity.ToTable("Campaign", "Scheduler");
 
@@ -632,7 +632,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_Campaign_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Campaign__3E543F9414B6B906").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Campaign__3E543F949AB52BE7").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.color).HasMaxLength(10);
@@ -648,7 +648,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<CampaignChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Campaign__3213E83FB3845958");
+            entity.HasKey(e => e.id).HasName("PK__Campaign__3213E83FF40E9F4A");
 
             entity.ToTable("CampaignChangeHistory", "Scheduler");
 
@@ -671,7 +671,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ChargeStatus>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__ChargeSt__3213E83F28E16C52");
+            entity.HasKey(e => e.id).HasName("PK__ChargeSt__3213E83F0508B110");
 
             entity.ToTable("ChargeStatus", "Scheduler");
 
@@ -681,9 +681,9 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => e.name, "I_ChargeStatus_name");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__ChargeSt__3E543F944FC0E765").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__ChargeSt__3E543F948CA58D4A").IsUnique();
 
-            entity.HasIndex(e => e.name, "UQ__ChargeSt__72E12F1B9D0CD8AB").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__ChargeSt__72E12F1BE80F419C").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.color).HasMaxLength(10);
@@ -697,7 +697,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ChargeType>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__ChargeTy__3213E83F3ECEA0DA");
+            entity.HasKey(e => e.id).HasName("PK__ChargeTy__3213E83F349D30E5");
 
             entity.ToTable("ChargeType", "Scheduler");
 
@@ -717,7 +717,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_ChargeType_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__ChargeTy__3E543F94332908D0").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__ChargeTy__3E543F9420BA88E7").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.color).HasMaxLength(10);
@@ -743,7 +743,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ChargeTypeChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__ChargeTy__3213E83FFBD9E9E9");
+            entity.HasKey(e => e.id).HasName("PK__ChargeTy__3213E83F3E5D716D");
 
             entity.ToTable("ChargeTypeChangeHistory", "Scheduler");
 
@@ -766,7 +766,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<Client>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Client__3213E83F1E7028EA");
+            entity.HasKey(e => e.id).HasName("PK__Client__3213E83FD0E30BC7");
 
             entity.ToTable("Client", "Scheduler");
 
@@ -794,7 +794,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_Client_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Client__3E543F9431827A48").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Client__3E543F94B85B6E70").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.addressLine1)
@@ -842,7 +842,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ClientChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__ClientCh__3213E83FBD9230B4");
+            entity.HasKey(e => e.id).HasName("PK__ClientCh__3213E83F5B131199");
 
             entity.ToTable("ClientChangeHistory", "Scheduler");
 
@@ -865,7 +865,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ClientContact>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__ClientCo__3213E83F5945B9AF");
+            entity.HasKey(e => e.id).HasName("PK__ClientCo__3213E83FB3C25D40");
 
             entity.ToTable("ClientContact", "Scheduler");
 
@@ -883,7 +883,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.clientId, e.contactId }, "UC_ClientContact_tenantGuid_clientId_contactId").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__ClientCo__3E543F9472864BF0").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__ClientCo__3E543F94B6052596").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.versionNumber).HasDefaultValue(1);
@@ -903,7 +903,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ClientContactChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__ClientCo__3213E83F39FA58F4");
+            entity.HasKey(e => e.id).HasName("PK__ClientCo__3213E83F939D40E1");
 
             entity.ToTable("ClientContactChangeHistory", "Scheduler");
 
@@ -926,7 +926,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ClientType>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__ClientTy__3213E83F0DDB9AFE");
+            entity.HasKey(e => e.id).HasName("PK__ClientTy__3213E83F36FB71E8");
 
             entity.ToTable("ClientType", "Scheduler");
 
@@ -942,7 +942,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_ClientType_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__ClientTy__3E543F94B2F27638").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__ClientTy__3E543F949B40DE40").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.color).HasMaxLength(10);
@@ -958,7 +958,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<Constituent>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Constitu__3213E83F6F00DA1C");
+            entity.HasKey(e => e.id).HasName("PK__Constitu__3213E83F45BD343B");
 
             entity.ToTable("Constituent", "Scheduler");
 
@@ -978,7 +978,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.iconId }, "I_Constituent_tenantGuid_iconId");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Constitu__3E543F94383E3CD4").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Constitu__3E543F940BCC872E").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.avatarFileName).HasMaxLength(250);
@@ -1007,7 +1007,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ConstituentChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Constitu__3213E83F0C523FC0");
+            entity.HasKey(e => e.id).HasName("PK__Constitu__3213E83F4A437A4E");
 
             entity.ToTable("ConstituentChangeHistory", "Scheduler");
 
@@ -1030,7 +1030,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ConstituentJourneyStage>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Constitu__3213E83F76FC5173");
+            entity.HasKey(e => e.id).HasName("PK__Constitu__3213E83FBE04603B");
 
             entity.ToTable("ConstituentJourneyStage", "Scheduler");
 
@@ -1046,12 +1046,15 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_ConstituentJourneyStage_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Constitu__3E543F944F8BFD9D").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Constitu__3E543F946CCC6E63").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.color).HasMaxLength(10);
             entity.Property(e => e.description).HasMaxLength(500);
+            entity.Property(e => e.maxDaysSinceLastGift).HasDefaultValue(0);
             entity.Property(e => e.maxLifetimeGiving).HasColumnType("money");
+            entity.Property(e => e.minAnnualGiving).HasColumnType("money");
+            entity.Property(e => e.minGiftCount).HasDefaultValue(0);
             entity.Property(e => e.minLifetimeGiving).HasColumnType("money");
             entity.Property(e => e.minSingleGiftAmount).HasColumnType("money");
             entity.Property(e => e.name)
@@ -1064,7 +1067,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ConstituentJourneyStageChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Constitu__3213E83F58B404DD");
+            entity.HasKey(e => e.id).HasName("PK__Constitu__3213E83F7A2340DA");
 
             entity.ToTable("ConstituentJourneyStageChangeHistory", "Scheduler");
 
@@ -1087,7 +1090,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<Contact>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Contact__3213E83F9817ECB0");
+            entity.HasKey(e => e.id).HasName("PK__Contact__3213E83F23C18A03");
 
             entity.ToTable("Contact", "Scheduler");
 
@@ -1121,7 +1124,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.timeZoneId }, "I_Contact_tenantGuid_timeZoneId");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Contact__3E543F9418372589").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Contact__3E543F943AFA8559").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.avatarFileName).HasMaxLength(250);
@@ -1159,7 +1162,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ContactChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__ContactC__3213E83F2FC3530C");
+            entity.HasKey(e => e.id).HasName("PK__ContactC__3213E83F59FDE716");
 
             entity.ToTable("ContactChangeHistory", "Scheduler");
 
@@ -1182,7 +1185,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ContactContact>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__ContactC__3213E83F84F56B22");
+            entity.HasKey(e => e.id).HasName("PK__ContactC__3213E83FC5A43C0E");
 
             entity.ToTable("ContactContact", "Scheduler");
 
@@ -1200,7 +1203,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.contactId, e.relatedContactId }, "UC_ContactContact_tenantGuid_contactId_relatedContactId").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__ContactC__3E543F9472F256FB").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__ContactC__3E543F943060F4FF").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.versionNumber).HasDefaultValue(1);
@@ -1220,7 +1223,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ContactContactChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__ContactC__3213E83FCBA8474A");
+            entity.HasKey(e => e.id).HasName("PK__ContactC__3213E83F83C77C99");
 
             entity.ToTable("ContactContactChangeHistory", "Scheduler");
 
@@ -1243,7 +1246,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ContactInteraction>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__ContactI__3213E83FA6D1B3FA");
+            entity.HasKey(e => e.id).HasName("PK__ContactI__3213E83F4FFD1872");
 
             entity.ToTable("ContactInteraction", "Scheduler");
 
@@ -1267,7 +1270,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.scheduledEventId }, "I_ContactInteraction_tenantGuid_scheduledEventId");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__ContactI__3E543F94A3E0B94F").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__ContactI__3E543F940DB9539E").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.externalId).HasMaxLength(100);
@@ -1290,7 +1293,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ContactInteractionChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__ContactI__3213E83FDAC52FB5");
+            entity.HasKey(e => e.id).HasName("PK__ContactI__3213E83F24F763AB");
 
             entity.ToTable("ContactInteractionChangeHistory", "Scheduler");
 
@@ -1313,7 +1316,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ContactMethod>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__ContactM__3213E83F1FA319FB");
+            entity.HasKey(e => e.id).HasName("PK__ContactM__3213E83F7C53C723");
 
             entity.ToTable("ContactMethod", "Scheduler");
 
@@ -1325,9 +1328,9 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => e.name, "I_ContactMethod_name");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__ContactM__3E543F94FA37FBAD").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__ContactM__3E543F94B09C0F52").IsUnique();
 
-            entity.HasIndex(e => e.name, "UQ__ContactM__72E12F1BD8B85357").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__ContactM__72E12F1B9E3E9A3F").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.color).HasMaxLength(10);
@@ -1343,7 +1346,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ContactTag>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__ContactT__3213E83F9C67BD23");
+            entity.HasKey(e => e.id).HasName("PK__ContactT__3213E83F66ECE3F3");
 
             entity.ToTable("ContactTag", "Scheduler");
 
@@ -1357,7 +1360,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.tagId }, "I_ContactTag_tenantGuid_tagId");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__ContactT__3E543F94F4132FE9").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__ContactT__3E543F94EC796706").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.versionNumber).HasDefaultValue(1);
@@ -1373,7 +1376,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ContactTagChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__ContactT__3213E83FBBC68B4A");
+            entity.HasKey(e => e.id).HasName("PK__ContactT__3213E83F489D2165");
 
             entity.ToTable("ContactTagChangeHistory", "Scheduler");
 
@@ -1396,7 +1399,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ContactType>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__ContactT__3213E83F690ACE73");
+            entity.HasKey(e => e.id).HasName("PK__ContactT__3213E83FA7374AE8");
 
             entity.ToTable("ContactType", "Scheduler");
 
@@ -1408,9 +1411,9 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => e.name, "I_ContactType_name");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__ContactT__3E543F94D263A3B8").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__ContactT__3E543F948D4B00B7").IsUnique();
 
-            entity.HasIndex(e => e.name, "UQ__ContactT__72E12F1BA21CEF87").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__ContactT__72E12F1B7B349FFF").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.color).HasMaxLength(10);
@@ -1426,7 +1429,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<Country>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Country__3213E83F23073C0E");
+            entity.HasKey(e => e.id).HasName("PK__Country__3213E83F8096E142");
 
             entity.ToTable("Country", "Scheduler");
 
@@ -1436,9 +1439,9 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => e.name, "I_Country_name");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Country__3E543F947686241C").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Country__3E543F944263A0C6").IsUnique();
 
-            entity.HasIndex(e => e.name, "UQ__Country__72E12F1B70B4290B").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__Country__72E12F1BB5AA5FA3").IsUnique();
 
             entity.Property(e => e.abbreviation)
                 .IsRequired()
@@ -1456,7 +1459,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<Crew>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Crew__3213E83F093F3ACE");
+            entity.HasKey(e => e.id).HasName("PK__Crew__3213E83F97564A95");
 
             entity.ToTable("Crew", "Scheduler");
 
@@ -1474,7 +1477,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_Crew_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Crew__3E543F94A07EBFDA").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Crew__3E543F9463894601").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.avatarFileName).HasMaxLength(250);
@@ -1493,7 +1496,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<CrewChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__CrewChan__3213E83FC25A8B8A");
+            entity.HasKey(e => e.id).HasName("PK__CrewChan__3213E83F11C3510C");
 
             entity.ToTable("CrewChangeHistory", "Scheduler");
 
@@ -1516,7 +1519,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<CrewMember>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__CrewMemb__3213E83F2BB568C6");
+            entity.HasKey(e => e.id).HasName("PK__CrewMemb__3213E83F4117B945");
 
             entity.ToTable("CrewMember", "Scheduler");
 
@@ -1536,7 +1539,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.crewId, e.resourceId }, "UC_CrewMember_tenantGuid_crewId_resourceId").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__CrewMemb__3E543F945E0987A3").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__CrewMemb__3E543F94ED87963F").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.color).HasMaxLength(10);
@@ -1558,7 +1561,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<CrewMemberChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__CrewMemb__3213E83F4734979F");
+            entity.HasKey(e => e.id).HasName("PK__CrewMemb__3213E83FC7B17723");
 
             entity.ToTable("CrewMemberChangeHistory", "Scheduler");
 
@@ -1581,7 +1584,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<Currency>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Currency__3213E83F58C216FA");
+            entity.HasKey(e => e.id).HasName("PK__Currency__3213E83F1B108ED7");
 
             entity.ToTable("Currency", "Scheduler");
 
@@ -1597,7 +1600,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_Currency_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Currency__3E543F945EB724E9").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Currency__3E543F94CCD2C4BD").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.code)
@@ -1614,7 +1617,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<DependencyType>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Dependen__3213E83F0DA2DF81");
+            entity.HasKey(e => e.id).HasName("PK__Dependen__3213E83FC5021490");
 
             entity.ToTable("DependencyType", "Scheduler");
 
@@ -1624,9 +1627,9 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => e.name, "I_DependencyType_name");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Dependen__3E543F94EAA082F1").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Dependen__3E543F9475B63E85").IsUnique();
 
-            entity.HasIndex(e => e.name, "UQ__Dependen__72E12F1B7725CB24").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__Dependen__72E12F1B739BDE59").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.color).HasMaxLength(10);
@@ -1640,7 +1643,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<EventCalendar>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__EventCal__3213E83FE29062B1");
+            entity.HasKey(e => e.id).HasName("PK__EventCal__3213E83FD5E22357");
 
             entity.ToTable("EventCalendar", "Scheduler");
 
@@ -1656,7 +1659,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.scheduledEventId, e.calendarId }, "UC_EventCalendar_tenantGuid_scheduledEventId_calendarId").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__EventCal__3E543F9480AC2B85").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__EventCal__3E543F943958816E").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
 
@@ -1671,7 +1674,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<EventCharge>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__EventCha__3213E83FB9D7B086");
+            entity.HasKey(e => e.id).HasName("PK__EventCha__3213E83F051599DE");
 
             entity.ToTable("EventCharge", "Scheduler");
 
@@ -1695,7 +1698,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.scheduledEventId }, "I_EventCharge_tenantGuid_scheduledEventId");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__EventCha__3E543F94455DB6A5").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__EventCha__3E543F9449B6E832").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.extendedAmount).HasColumnType("money");
@@ -1731,7 +1734,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<EventChargeChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__EventCha__3213E83FB126CC6E");
+            entity.HasKey(e => e.id).HasName("PK__EventCha__3213E83FBD8E4E05");
 
             entity.ToTable("EventChargeChangeHistory", "Scheduler");
 
@@ -1754,7 +1757,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<EventResourceAssignment>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__EventRes__3213E83F45E67DAA");
+            entity.HasKey(e => e.id).HasName("PK__EventRes__3213E83F2334BF99");
 
             entity.ToTable("EventResourceAssignment", "Scheduler");
 
@@ -1780,7 +1783,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.scheduledEventId }, "I_EventResourceAssignment_tenantGuid_scheduledEventId");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__EventRes__3E543F9433FA98B0").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__EventRes__3E543F94494102CE").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.assignmentStatusId).HasDefaultValue(1);
@@ -1808,7 +1811,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<EventResourceAssignmentChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__EventRes__3213E83F087F6363");
+            entity.HasKey(e => e.id).HasName("PK__EventRes__3213E83FCB33E1F5");
 
             entity.ToTable("EventResourceAssignmentChangeHistory", "Scheduler");
 
@@ -1831,7 +1834,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<EventStatus>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__EventSta__3213E83FC23B518E");
+            entity.HasKey(e => e.id).HasName("PK__EventSta__3213E83F8192A31F");
 
             entity.ToTable("EventStatus", "Scheduler");
 
@@ -1841,9 +1844,9 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => e.name, "I_EventStatus_name");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__EventSta__3E543F944E38BED6").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__EventSta__3E543F94B1783E8A").IsUnique();
 
-            entity.HasIndex(e => e.name, "UQ__EventSta__72E12F1B8C38767C").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__EventSta__72E12F1BE875AA91").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.color).HasMaxLength(10);
@@ -1857,7 +1860,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<Fund>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Fund__3213E83FCF5F536B");
+            entity.HasKey(e => e.id).HasName("PK__Fund__3213E83FBC33EB87");
 
             entity.ToTable("Fund", "Scheduler");
 
@@ -1873,7 +1876,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_Fund_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Fund__3E543F94FC76D67D").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Fund__3E543F9498A6C7B7").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.color).HasMaxLength(10);
@@ -1890,7 +1893,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<FundChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__FundChan__3213E83F928D8F3A");
+            entity.HasKey(e => e.id).HasName("PK__FundChan__3213E83F928801E0");
 
             entity.ToTable("FundChangeHistory", "Scheduler");
 
@@ -1913,7 +1916,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<Gift>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Gift__3213E83F71F843B6");
+            entity.HasKey(e => e.id).HasName("PK__Gift__3213E83FCC784F15");
 
             entity.ToTable("Gift", "Scheduler");
 
@@ -1943,7 +1946,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.tributeId }, "I_Gift_tenantGuid_tributeId");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Gift__3E543F9411CFAFF4").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Gift__3E543F940F621789").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.amount).HasColumnType("money");
@@ -1979,7 +1982,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<GiftChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__GiftChan__3213E83F213E171C");
+            entity.HasKey(e => e.id).HasName("PK__GiftChan__3213E83FAA03A677");
 
             entity.ToTable("GiftChangeHistory", "Scheduler");
 
@@ -2002,7 +2005,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<Household>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Househol__3213E83FC0213DAB");
+            entity.HasKey(e => e.id).HasName("PK__Househol__3213E83F020B7A8C");
 
             entity.ToTable("Household", "Scheduler");
 
@@ -2020,7 +2023,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_Household_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Househol__3E543F94E8771D01").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Househol__3E543F94045E121E").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.addressee).HasMaxLength(250);
@@ -2043,7 +2046,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<HouseholdChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Househol__3213E83FA7FFBDDF");
+            entity.HasKey(e => e.id).HasName("PK__Househol__3213E83FCA422920");
 
             entity.ToTable("HouseholdChangeHistory", "Scheduler");
 
@@ -2066,7 +2069,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<Icon>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Icon__3213E83FC5488357");
+            entity.HasKey(e => e.id).HasName("PK__Icon__3213E83FE4A47846");
 
             entity.ToTable("Icon", "Scheduler");
 
@@ -2076,9 +2079,9 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => e.name, "I_Icon_name");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Icon__3E543F94FC9B9CEC").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Icon__3E543F947EF9CC05").IsUnique();
 
-            entity.HasIndex(e => e.name, "UQ__Icon__72E12F1B59A188C0").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__Icon__72E12F1B125BC57A").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.fontAwesomeCode).HasMaxLength(50);
@@ -2089,7 +2092,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<InteractionType>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Interact__3213E83FC601E9CE");
+            entity.HasKey(e => e.id).HasName("PK__Interact__3213E83F08C3C359");
 
             entity.ToTable("InteractionType", "Scheduler");
 
@@ -2101,9 +2104,9 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => e.name, "I_InteractionType_name");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Interact__3E543F94E1661B19").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Interact__3E543F94031BCA4B").IsUnique();
 
-            entity.HasIndex(e => e.name, "UQ__Interact__72E12F1B164851D9").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__Interact__72E12F1BDB3EC27C").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.color).HasMaxLength(10);
@@ -2119,7 +2122,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<NotificationSubscription>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Notifica__3213E83FFB032F8C");
+            entity.HasKey(e => e.id).HasName("PK__Notifica__3213E83FCD390A32");
 
             entity.ToTable("NotificationSubscription", "Scheduler");
 
@@ -2135,7 +2138,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.resourceId }, "I_NotificationSubscription_tenantGuid_resourceId");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Notifica__3E543F9438A1F5F6").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Notifica__3E543F94E228BDA9").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.recipientAddress)
@@ -2155,7 +2158,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<NotificationSubscriptionChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Notifica__3213E83FE8077FA5");
+            entity.HasKey(e => e.id).HasName("PK__Notifica__3213E83FD5668A11");
 
             entity.ToTable("NotificationSubscriptionChangeHistory", "Scheduler");
 
@@ -2178,7 +2181,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<NotificationType>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Notifica__3213E83FE16971C3");
+            entity.HasKey(e => e.id).HasName("PK__Notifica__3213E83FEB58A62D");
 
             entity.ToTable("NotificationType", "Scheduler");
 
@@ -2188,9 +2191,9 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => e.name, "I_NotificationType_name");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Notifica__3E543F94B304A74E").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Notifica__3E543F9484F7F1B0").IsUnique();
 
-            entity.HasIndex(e => e.name, "UQ__Notifica__72E12F1B7EA5297B").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__Notifica__72E12F1B7B3D2113").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.color).HasMaxLength(10);
@@ -2204,7 +2207,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<Office>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Office__3213E83F8C78BFEE");
+            entity.HasKey(e => e.id).HasName("PK__Office__3213E83F2D848657");
 
             entity.ToTable("Office", "Scheduler");
 
@@ -2232,7 +2235,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_Office_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Office__3E543F9425E1D266").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Office__3E543F94E1DA8E1B").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.addressLine1)
@@ -2278,7 +2281,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<OfficeChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__OfficeCh__3213E83FB96267C0");
+            entity.HasKey(e => e.id).HasName("PK__OfficeCh__3213E83FA8D6E36C");
 
             entity.ToTable("OfficeChangeHistory", "Scheduler");
 
@@ -2301,7 +2304,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<OfficeContact>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__OfficeCo__3213E83FA135E0F6");
+            entity.HasKey(e => e.id).HasName("PK__OfficeCo__3213E83F5F3D86D5");
 
             entity.ToTable("OfficeContact", "Scheduler");
 
@@ -2319,7 +2322,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.officeId, e.contactId }, "UC_OfficeContact_tenantGuid_officeId_contactId").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__OfficeCo__3E543F94C28DF124").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__OfficeCo__3E543F941ACAAF51").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.versionNumber).HasDefaultValue(1);
@@ -2339,7 +2342,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<OfficeContactChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__OfficeCo__3213E83F24A99F8A");
+            entity.HasKey(e => e.id).HasName("PK__OfficeCo__3213E83F7179CBD0");
 
             entity.ToTable("OfficeContactChangeHistory", "Scheduler");
 
@@ -2362,7 +2365,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<OfficeType>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__OfficeTy__3213E83FAD1406FB");
+            entity.HasKey(e => e.id).HasName("PK__OfficeTy__3213E83F954E28BB");
 
             entity.ToTable("OfficeType", "Scheduler");
 
@@ -2374,9 +2377,9 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => e.name, "I_OfficeType_name");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__OfficeTy__3E543F9409ECBF1A").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__OfficeTy__3E543F948630C8DC").IsUnique();
 
-            entity.HasIndex(e => e.name, "UQ__OfficeTy__72E12F1B0B483F66").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__OfficeTy__72E12F1B54353D41").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.color).HasMaxLength(10);
@@ -2392,7 +2395,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<PaymentType>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__PaymentT__3213E83F9623C4CB");
+            entity.HasKey(e => e.id).HasName("PK__PaymentT__3213E83FE5A5CAE9");
 
             entity.ToTable("PaymentType", "Scheduler");
 
@@ -2402,9 +2405,9 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => e.name, "I_PaymentType_name");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__PaymentT__3E543F9418217EF4").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__PaymentT__3E543F94E9B02D47").IsUnique();
 
-            entity.HasIndex(e => e.name, "UQ__PaymentT__72E12F1BE5B24706").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__PaymentT__72E12F1B400D0BAE").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.description)
@@ -2417,7 +2420,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<Pledge>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Pledge__3213E83F623DFA33");
+            entity.HasKey(e => e.id).HasName("PK__Pledge__3213E83F455CE27E");
 
             entity.ToTable("Pledge", "Scheduler");
 
@@ -2437,7 +2440,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.recurrenceFrequencyId }, "I_Pledge_tenantGuid_recurrenceFrequencyId");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Pledge__3E543F94D47E77AF").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Pledge__3E543F946A4FC3CE").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.balanceAmount).HasColumnType("money");
@@ -2462,7 +2465,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<PledgeChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__PledgeCh__3213E83F810CF830");
+            entity.HasKey(e => e.id).HasName("PK__PledgeCh__3213E83F148ACC38");
 
             entity.ToTable("PledgeChangeHistory", "Scheduler");
 
@@ -2485,7 +2488,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<Priority>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Priority__3213E83F65271CBF");
+            entity.HasKey(e => e.id).HasName("PK__Priority__3213E83FFC60881F");
 
             entity.ToTable("Priority", "Scheduler");
 
@@ -2501,7 +2504,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_Priority_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Priority__3E543F949CAFDE09").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Priority__3E543F94BC213CD8").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.color).HasMaxLength(10);
@@ -2517,7 +2520,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<Qualification>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Qualific__3213E83F5672ECF6");
+            entity.HasKey(e => e.id).HasName("PK__Qualific__3213E83FA42C4DC2");
 
             entity.ToTable("Qualification", "Scheduler");
 
@@ -2531,7 +2534,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_Qualification_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Qualific__3E543F94D0203FF8").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Qualific__3E543F9425CE91E3").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.color).HasMaxLength(10);
@@ -2545,7 +2548,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<RateSheet>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__RateShee__3213E83FFFCD2F78");
+            entity.HasKey(e => e.id).HasName("PK__RateShee__3213E83F98D11B47");
 
             entity.ToTable("RateSheet", "Scheduler");
 
@@ -2571,7 +2574,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.assignmentRoleId, e.resourceId, e.schedulingTargetId, e.rateTypeId, e.effectiveDate }, "UC_RateSheet_tenantGuid_assignmentRoleId_resourceId_schedulingTargetId_rateTypeId_effectiveDate").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__RateShee__3E543F94C9D4B51E").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__RateShee__3E543F94A9448711").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.billingRate).HasColumnType("money");
@@ -2597,7 +2600,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<RateSheetChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__RateShee__3213E83F5637DDE4");
+            entity.HasKey(e => e.id).HasName("PK__RateShee__3213E83FC6FDA5CB");
 
             entity.ToTable("RateSheetChangeHistory", "Scheduler");
 
@@ -2620,7 +2623,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<RateType>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__RateType__3213E83F07FDA3C1");
+            entity.HasKey(e => e.id).HasName("PK__RateType__3213E83FE40624CC");
 
             entity.ToTable("RateType", "Scheduler");
 
@@ -2634,7 +2637,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_RateType_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__RateType__3E543F947BEACA2B").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__RateType__3E543F947289D791").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.color).HasMaxLength(10);
@@ -2648,7 +2651,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ReceiptType>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__ReceiptT__3213E83FBEA34907");
+            entity.HasKey(e => e.id).HasName("PK__ReceiptT__3213E83F9F1439E5");
 
             entity.ToTable("ReceiptType", "Scheduler");
 
@@ -2658,9 +2661,9 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => e.name, "I_ReceiptType_name");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__ReceiptT__3E543F9490BEDDB9").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__ReceiptT__3E543F94B5A1DA58").IsUnique();
 
-            entity.HasIndex(e => e.name, "UQ__ReceiptT__72E12F1BCD2DBDFF").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__ReceiptT__72E12F1BD5FCB3AB").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.description)
@@ -2673,7 +2676,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<RecurrenceException>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Recurren__3213E83F914D2D10");
+            entity.HasKey(e => e.id).HasName("PK__Recurren__3213E83F38D43BDE");
 
             entity.ToTable("RecurrenceException", "Scheduler");
 
@@ -2687,7 +2690,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.scheduledEventId, e.exceptionDateTime }, "UC_RecurrenceException_tenantGuid_scheduledEventId_exceptionDateTime").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Recurren__3E543F94B1D19594").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Recurren__3E543F94A2830746").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.reason).HasMaxLength(250);
@@ -2700,7 +2703,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<RecurrenceExceptionChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Recurren__3213E83FF03373F1");
+            entity.HasKey(e => e.id).HasName("PK__Recurren__3213E83F455D3292");
 
             entity.ToTable("RecurrenceExceptionChangeHistory", "Scheduler");
 
@@ -2723,7 +2726,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<RecurrenceFrequency>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Recurren__3213E83FC8FC0B38");
+            entity.HasKey(e => e.id).HasName("PK__Recurren__3213E83FFFA5BD35");
 
             entity.ToTable("RecurrenceFrequency", "Scheduler");
 
@@ -2733,9 +2736,9 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => e.name, "I_RecurrenceFrequency_name");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Recurren__3E543F94DA9D0184").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Recurren__3E543F9486F6F470").IsUnique();
 
-            entity.HasIndex(e => e.name, "UQ__Recurren__72E12F1BE73EF136").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__Recurren__72E12F1BFCB5304A").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.description)
@@ -2748,7 +2751,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<RecurrenceRule>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Recurren__3213E83FB43FAF26");
+            entity.HasKey(e => e.id).HasName("PK__Recurren__3213E83FCF9E8156");
 
             entity.ToTable("RecurrenceRule", "Scheduler");
 
@@ -2760,7 +2763,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.recurrenceFrequencyId }, "I_RecurrenceRule_tenantGuid_recurrenceFrequencyId");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Recurren__3E543F9470A389A4").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Recurren__3E543F9404C1D315").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.dayOfWeekMask).HasDefaultValue(0);
@@ -2774,7 +2777,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<RecurrenceRuleChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Recurren__3213E83F50CB9947");
+            entity.HasKey(e => e.id).HasName("PK__Recurren__3213E83F71B0F19D");
 
             entity.ToTable("RecurrenceRuleChangeHistory", "Scheduler");
 
@@ -2797,7 +2800,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<RelationshipType>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Relation__3213E83FB1D5D8D1");
+            entity.HasKey(e => e.id).HasName("PK__Relation__3213E83F611E2482");
 
             entity.ToTable("RelationshipType", "Scheduler");
 
@@ -2809,9 +2812,9 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => e.name, "I_RelationshipType_name");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Relation__3E543F94979A3B2B").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Relation__3E543F9482374F0D").IsUnique();
 
-            entity.HasIndex(e => e.name, "UQ__Relation__72E12F1B2B0468F5").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__Relation__72E12F1B8518BC1A").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.color).HasMaxLength(10);
@@ -2827,7 +2830,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<Resource>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Resource__3213E83F684BC95A");
+            entity.HasKey(e => e.id).HasName("PK__Resource__3213E83FDF42912E");
 
             entity.ToTable("Resource", "Scheduler");
 
@@ -2851,7 +2854,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_Resource_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Resource__3E543F9409768C49").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Resource__3E543F94DBC4D299").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.avatarFileName).HasMaxLength(250);
@@ -2879,7 +2882,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ResourceAvailability>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Resource__3213E83F2D1EADFE");
+            entity.HasKey(e => e.id).HasName("PK__Resource__3213E83F6F7EE8E4");
 
             entity.ToTable("ResourceAvailability", "Scheduler");
 
@@ -2895,7 +2898,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.timeZoneId }, "I_ResourceAvailability_tenantGuid_timeZoneId");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Resource__3E543F948D3BFD57").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Resource__3E543F946B3F0F86").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.reason).HasMaxLength(250);
@@ -2910,7 +2913,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ResourceAvailabilityChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Resource__3213E83FD51377BF");
+            entity.HasKey(e => e.id).HasName("PK__Resource__3213E83F7B3126F1");
 
             entity.ToTable("ResourceAvailabilityChangeHistory", "Scheduler");
 
@@ -2933,7 +2936,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ResourceChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Resource__3213E83F4DC9F989");
+            entity.HasKey(e => e.id).HasName("PK__Resource__3213E83FBED72C62");
 
             entity.ToTable("ResourceChangeHistory", "Scheduler");
 
@@ -2956,7 +2959,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ResourceContact>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Resource__3213E83FEC225614");
+            entity.HasKey(e => e.id).HasName("PK__Resource__3213E83F16004ED7");
 
             entity.ToTable("ResourceContact", "Scheduler");
 
@@ -2974,7 +2977,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.resourceId, e.contactId }, "UC_ResourceContact_tenantGuid_resourceId_contactId").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Resource__3E543F94C1A5B6D3").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Resource__3E543F94876C003F").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.versionNumber).HasDefaultValue(1);
@@ -2994,7 +2997,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ResourceContactChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Resource__3213E83FFEC26578");
+            entity.HasKey(e => e.id).HasName("PK__Resource__3213E83FD44AC097");
 
             entity.ToTable("ResourceContactChangeHistory", "Scheduler");
 
@@ -3017,7 +3020,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ResourceQualification>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Resource__3213E83F125C654B");
+            entity.HasKey(e => e.id).HasName("PK__Resource__3213E83F5D110C0A");
 
             entity.ToTable("ResourceQualification", "Scheduler");
 
@@ -3035,7 +3038,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.resourceId, e.qualificationId }, "UC_ResourceQualification_tenantGuid_resourceId_qualificationId").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Resource__3E543F9423586D7F").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Resource__3E543F941DEF3998").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.issuer).HasMaxLength(250);
@@ -3052,7 +3055,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ResourceQualificationChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Resource__3213E83FBB8DD5B8");
+            entity.HasKey(e => e.id).HasName("PK__Resource__3213E83F8E5632F1");
 
             entity.ToTable("ResourceQualificationChangeHistory", "Scheduler");
 
@@ -3075,7 +3078,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ResourceShift>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Resource__3213E83F7871A1B3");
+            entity.HasKey(e => e.id).HasName("PK__Resource__3213E83FA10673DC");
 
             entity.ToTable("ResourceShift", "Scheduler");
 
@@ -3091,7 +3094,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.resourceId, e.dayOfWeek }, "UC_ResourceShift_tenantGuid_resourceId_dayOfWeek").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Resource__3E543F946EF06378").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Resource__3E543F94D2F963A5").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.dayOfWeek).HasDefaultValue(1);
@@ -3108,7 +3111,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ResourceShiftChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Resource__3213E83F3A3B791B");
+            entity.HasKey(e => e.id).HasName("PK__Resource__3213E83F06CABA08");
 
             entity.ToTable("ResourceShiftChangeHistory", "Scheduler");
 
@@ -3131,7 +3134,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ResourceType>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Resource__3213E83F3DC2F402");
+            entity.HasKey(e => e.id).HasName("PK__Resource__3213E83F723212B2");
 
             entity.ToTable("ResourceType", "Scheduler");
 
@@ -3147,7 +3150,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_ResourceType_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Resource__3E543F949C9F3F3A").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Resource__3E543F94E0067CD9").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.color).HasMaxLength(10);
@@ -3164,7 +3167,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<Salutation>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Salutati__3213E83F7123D475");
+            entity.HasKey(e => e.id).HasName("PK__Salutati__3213E83FE35359F7");
 
             entity.ToTable("Salutation", "Scheduler");
 
@@ -3174,9 +3177,9 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => e.name, "I_Salutation_name");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Salutati__3E543F9457D3641B").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Salutati__3E543F94EF9AA082").IsUnique();
 
-            entity.HasIndex(e => e.name, "UQ__Salutati__72E12F1B75AECA86").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__Salutati__72E12F1B12DEA111").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.description)
@@ -3189,7 +3192,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ScheduledEvent>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Schedule__3213E83F434784D4");
+            entity.HasKey(e => e.id).HasName("PK__Schedule__3213E83F184656F8");
 
             entity.ToTable("ScheduledEvent", "Scheduler");
 
@@ -3235,7 +3238,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_ScheduledEvent_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Schedule__3E543F940E0FC21E").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Schedule__3E543F942FD61579").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.color).HasMaxLength(10);
@@ -3277,7 +3280,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ScheduledEventChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Schedule__3213E83F0E183DF6");
+            entity.HasKey(e => e.id).HasName("PK__Schedule__3213E83F1C632862");
 
             entity.ToTable("ScheduledEventChangeHistory", "Scheduler");
 
@@ -3300,7 +3303,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ScheduledEventDependency>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Schedule__3213E83F38B3CD44");
+            entity.HasKey(e => e.id).HasName("PK__Schedule__3213E83FF1525AE5");
 
             entity.ToTable("ScheduledEventDependency", "Scheduler");
 
@@ -3316,7 +3319,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.predecessorEventId, e.successorEventId }, "UC_ScheduledEventDependency_tenantGuid_predecessorEventId_successorEventId").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Schedule__3E543F947A3E3136").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Schedule__3E543F942209B63D").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.versionNumber).HasDefaultValue(1);
@@ -3336,7 +3339,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ScheduledEventDependencyChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Schedule__3213E83FCA397DC8");
+            entity.HasKey(e => e.id).HasName("PK__Schedule__3213E83FEA3BFC2C");
 
             entity.ToTable("ScheduledEventDependencyChangeHistory", "Scheduler");
 
@@ -3359,7 +3362,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ScheduledEventQualificationRequirement>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Schedule__3213E83F245F83A1");
+            entity.HasKey(e => e.id).HasName("PK__Schedule__3213E83F53CAACE0");
 
             entity.ToTable("ScheduledEventQualificationRequirement", "Scheduler");
 
@@ -3373,7 +3376,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.scheduledEventId }, "I_ScheduledEventQualificationRequirement_tenantGuid_scheduledEventId");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Schedule__3E543F942E04540B").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Schedule__3E543F947945E4D4").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.versionNumber).HasDefaultValue(1);
@@ -3389,7 +3392,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ScheduledEventQualificationRequirementChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Schedule__3213E83FF15A92C0");
+            entity.HasKey(e => e.id).HasName("PK__Schedule__3213E83FB10E1EE2");
 
             entity.ToTable("ScheduledEventQualificationRequirementChangeHistory", "Scheduler");
 
@@ -3413,7 +3416,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ScheduledEventTemplate>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Schedule__3213E83FD66C9EBC");
+            entity.HasKey(e => e.id).HasName("PK__Schedule__3213E83F7E24E985");
 
             entity.ToTable("ScheduledEventTemplate", "Scheduler");
 
@@ -3429,7 +3432,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_ScheduledEventTemplate_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Schedule__3E543F942CD98D18").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Schedule__3E543F94ED1C6341").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.defaultDurationMinutes).HasDefaultValue(60);
@@ -3447,7 +3450,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ScheduledEventTemplateChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Schedule__3213E83F4EB92D6B");
+            entity.HasKey(e => e.id).HasName("PK__Schedule__3213E83F7FFC9FE7");
 
             entity.ToTable("ScheduledEventTemplateChangeHistory", "Scheduler");
 
@@ -3470,7 +3473,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ScheduledEventTemplateCharge>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Schedule__3213E83FB0499231");
+            entity.HasKey(e => e.id).HasName("PK__Schedule__3213E83FB24F3F91");
 
             entity.ToTable("ScheduledEventTemplateCharge", "Scheduler");
 
@@ -3484,7 +3487,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.scheduledEventTemplateId }, "I_ScheduledEventTemplateCharge_tenantGuid_scheduledEventTemplateId");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Schedule__3E543F94555AEB8B").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Schedule__3E543F94F8060C68").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.defaultAmount).HasColumnType("money");
@@ -3502,7 +3505,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ScheduledEventTemplateChargeChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Schedule__3213E83F58FA27AE");
+            entity.HasKey(e => e.id).HasName("PK__Schedule__3213E83F36D71B44");
 
             entity.ToTable("ScheduledEventTemplateChargeChangeHistory", "Scheduler");
 
@@ -3525,7 +3528,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ScheduledEventTemplateQualificationRequirement>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Schedule__3213E83F1EF6803A");
+            entity.HasKey(e => e.id).HasName("PK__Schedule__3213E83F6366D6E6");
 
             entity.ToTable("ScheduledEventTemplateQualificationRequirement", "Scheduler");
 
@@ -3541,7 +3544,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.scheduledEventTemplateId, e.qualificationId }, "UC_ScheduledEventTemplateQualificationRequirement_tenantGuid_scheduledEventTemplateId_qualificationId").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Schedule__3E543F9424F22F7C").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Schedule__3E543F94D55489EA").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.isRequired).HasDefaultValue(true);
@@ -3558,7 +3561,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ScheduledEventTemplateQualificationRequirementChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Schedule__3213E83F0122FD92");
+            entity.HasKey(e => e.id).HasName("PK__Schedule__3213E83F1B18429A");
 
             entity.ToTable("ScheduledEventTemplateQualificationRequirementChangeHistory", "Scheduler");
 
@@ -3582,7 +3585,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<SchedulingTarget>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Scheduli__3213E83F91D2EB5A");
+            entity.HasKey(e => e.id).HasName("PK__Scheduli__3213E83F18406041");
 
             entity.ToTable("SchedulingTarget", "Scheduler");
 
@@ -3604,7 +3607,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_SchedulingTarget_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Scheduli__3E543F9413D35318").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Scheduli__3E543F949B764244").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.avatarFileName).HasMaxLength(250);
@@ -3636,7 +3639,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<SchedulingTargetAddress>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Scheduli__3213E83FA735247E");
+            entity.HasKey(e => e.id).HasName("PK__Scheduli__3213E83FC5EF99F2");
 
             entity.ToTable("SchedulingTargetAddress", "Scheduler");
 
@@ -3656,7 +3659,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.schedulingTargetId, e.addressLine1, e.city, e.postalCode }, "UC_SchedulingTargetAddress_tenantGuid_schedulingTargetId_addressLine1_city_postalCode").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Scheduli__3E543F949F4C346A").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Scheduli__3E543F94576B41ED").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.addressLine1)
@@ -3687,7 +3690,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<SchedulingTargetAddressChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Scheduli__3213E83FC9759E58");
+            entity.HasKey(e => e.id).HasName("PK__Scheduli__3213E83F178E087A");
 
             entity.ToTable("SchedulingTargetAddressChangeHistory", "Scheduler");
 
@@ -3710,7 +3713,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<SchedulingTargetChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Scheduli__3213E83FF4EEC93F");
+            entity.HasKey(e => e.id).HasName("PK__Scheduli__3213E83F2C0B1CB3");
 
             entity.ToTable("SchedulingTargetChangeHistory", "Scheduler");
 
@@ -3733,7 +3736,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<SchedulingTargetContact>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Scheduli__3213E83F83B2C14E");
+            entity.HasKey(e => e.id).HasName("PK__Scheduli__3213E83F7B3CBA68");
 
             entity.ToTable("SchedulingTargetContact", "Scheduler");
 
@@ -3751,7 +3754,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.schedulingTargetId, e.contactId }, "UC_SchedulingTargetContact_tenantGuid_schedulingTargetId_contactId").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Scheduli__3E543F944FE3C0C0").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Scheduli__3E543F948C294CB9").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.versionNumber).HasDefaultValue(1);
@@ -3771,7 +3774,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<SchedulingTargetContactChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Scheduli__3213E83FCB20E659");
+            entity.HasKey(e => e.id).HasName("PK__Scheduli__3213E83FBE10CFE6");
 
             entity.ToTable("SchedulingTargetContactChangeHistory", "Scheduler");
 
@@ -3794,7 +3797,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<SchedulingTargetQualificationRequirement>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Scheduli__3213E83F466DA362");
+            entity.HasKey(e => e.id).HasName("PK__Scheduli__3213E83FDFDA0EB3");
 
             entity.ToTable("SchedulingTargetQualificationRequirement", "Scheduler");
 
@@ -3810,7 +3813,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.schedulingTargetId, e.qualificationId }, "UC_SchedulingTargetQualificationRequirement_tenantGuid_schedulingTargetId_qualificationId").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Scheduli__3E543F943D5D6E8A").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Scheduli__3E543F943F885F78").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.isRequired).HasDefaultValue(true);
@@ -3827,7 +3830,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<SchedulingTargetQualificationRequirementChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Scheduli__3213E83F56D8647C");
+            entity.HasKey(e => e.id).HasName("PK__Scheduli__3213E83FD39CF14C");
 
             entity.ToTable("SchedulingTargetQualificationRequirementChangeHistory", "Scheduler");
 
@@ -3851,7 +3854,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<SchedulingTargetType>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Scheduli__3213E83F441CD495");
+            entity.HasKey(e => e.id).HasName("PK__Scheduli__3213E83FFCCFF533");
 
             entity.ToTable("SchedulingTargetType", "Scheduler");
 
@@ -3867,7 +3870,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_SchedulingTargetType_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Scheduli__3E543F94FA89DAA1").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Scheduli__3E543F9426443BBC").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.color).HasMaxLength(10);
@@ -3883,7 +3886,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ShiftPattern>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__ShiftPat__3213E83F245CFD43");
+            entity.HasKey(e => e.id).HasName("PK__ShiftPat__3213E83F0EB7786D");
 
             entity.ToTable("ShiftPattern", "Scheduler");
 
@@ -3899,7 +3902,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_ShiftPattern_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__ShiftPat__3E543F94CA5035FE").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__ShiftPat__3E543F94825AD16A").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.color).HasMaxLength(10);
@@ -3914,7 +3917,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ShiftPatternChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__ShiftPat__3213E83F82D93A06");
+            entity.HasKey(e => e.id).HasName("PK__ShiftPat__3213E83FFA6B5FED");
 
             entity.ToTable("ShiftPatternChangeHistory", "Scheduler");
 
@@ -3937,7 +3940,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ShiftPatternDay>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__ShiftPat__3213E83FAEF51C56");
+            entity.HasKey(e => e.id).HasName("PK__ShiftPat__3213E83F140CDEB6");
 
             entity.ToTable("ShiftPatternDay", "Scheduler");
 
@@ -3951,7 +3954,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.shiftPatternId, e.dayOfWeek }, "UC_ShiftPatternDay_tenantGuid_shiftPatternId_dayOfWeek").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__ShiftPat__3E543F94E9CE847D").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__ShiftPat__3E543F943C76CFDE").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.dayOfWeek).HasDefaultValue(1);
@@ -3966,7 +3969,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<ShiftPatternDayChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__ShiftPat__3213E83FFAB577F5");
+            entity.HasKey(e => e.id).HasName("PK__ShiftPat__3213E83F985F2B01");
 
             entity.ToTable("ShiftPatternDayChangeHistory", "Scheduler");
 
@@ -3989,7 +3992,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<SoftCredit>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__SoftCred__3213E83FFA943563");
+            entity.HasKey(e => e.id).HasName("PK__SoftCred__3213E83F17FBF01E");
 
             entity.ToTable("SoftCredit", "Scheduler");
 
@@ -4003,7 +4006,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.giftId }, "I_SoftCredit_tenantGuid_giftId");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__SoftCred__3E543F948134FB2B").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__SoftCred__3E543F94A5374A18").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.amount).HasColumnType("money");
@@ -4020,7 +4023,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<SoftCreditChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__SoftCred__3213E83F5A859A7A");
+            entity.HasKey(e => e.id).HasName("PK__SoftCred__3213E83FB02FC4C0");
 
             entity.ToTable("SoftCreditChangeHistory", "Scheduler");
 
@@ -4043,7 +4046,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<StateProvince>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__StatePro__3213E83FCE975008");
+            entity.HasKey(e => e.id).HasName("PK__StatePro__3213E83F7CB9394A");
 
             entity.ToTable("StateProvince", "Scheduler");
 
@@ -4059,7 +4062,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.name, e.countryId }, "UC_StateProvince_name_countryId").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__StatePro__3E543F94C292AB4C").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__StatePro__3E543F94AA1D54C3").IsUnique();
 
             entity.Property(e => e.abbreviation)
                 .IsRequired()
@@ -4079,7 +4082,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<Tag>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Tag__3213E83F68DEBF33");
+            entity.HasKey(e => e.id).HasName("PK__Tag__3213E83FC7A7FAFB");
 
             entity.ToTable("Tag", "Scheduler");
 
@@ -4097,7 +4100,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_Tag_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Tag__3E543F94AA9274D3").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Tag__3E543F946E518B37").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.color).HasMaxLength(10);
@@ -4115,7 +4118,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<TenantProfile>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__TenantPr__3213E83F12B67193");
+            entity.HasKey(e => e.id).HasName("PK__TenantPr__3213E83FB7FFB40F");
 
             entity.ToTable("TenantProfile", "Scheduler");
 
@@ -4131,7 +4134,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_TenantProfile_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__TenantPr__3E543F9433A4895E").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__TenantPr__3E543F943892D76A").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.addressLine1).HasMaxLength(250);
@@ -4161,7 +4164,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<TenantProfileChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__TenantPr__3213E83F080669FB");
+            entity.HasKey(e => e.id).HasName("PK__TenantPr__3213E83FB0998F37");
 
             entity.ToTable("TenantProfileChangeHistory", "Scheduler");
 
@@ -4184,7 +4187,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<TimeZone>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__TimeZone__3213E83F1DB837BA");
+            entity.HasKey(e => e.id).HasName("PK__TimeZone__3213E83FAC59142A");
 
             entity.ToTable("TimeZone", "Scheduler");
 
@@ -4194,9 +4197,9 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => e.name, "I_TimeZone_name");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__TimeZone__3E543F949F3AC234").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__TimeZone__3E543F940E534FE2").IsUnique();
 
-            entity.HasIndex(e => e.name, "UQ__TimeZone__72E12F1B1C4AD5F8").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__TimeZone__72E12F1BFDC9BFC1").IsUnique();
 
             entity.Property(e => e.abbreviation)
                 .IsRequired()
@@ -4219,7 +4222,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<Tribute>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Tribute__3213E83F35F9C8C0");
+            entity.HasKey(e => e.id).HasName("PK__Tribute__3213E83FFE781F7A");
 
             entity.ToTable("Tribute", "Scheduler");
 
@@ -4237,7 +4240,7 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_Tribute_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Tribute__3E543F94B1CEC215").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Tribute__3E543F9427965DD1").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.avatarFileName).HasMaxLength(250);
@@ -4258,7 +4261,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<TributeChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__TributeC__3213E83F84C60091");
+            entity.HasKey(e => e.id).HasName("PK__TributeC__3213E83FE26B81BC");
 
             entity.ToTable("TributeChangeHistory", "Scheduler");
 
@@ -4281,7 +4284,7 @@ public partial class SchedulerContext : DbContext
 
         modelBuilder.Entity<TributeType>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__TributeT__3213E83F27A9087B");
+            entity.HasKey(e => e.id).HasName("PK__TributeT__3213E83F81DC77C9");
 
             entity.ToTable("TributeType", "Scheduler");
 
@@ -4291,9 +4294,9 @@ public partial class SchedulerContext : DbContext
 
             entity.HasIndex(e => e.name, "I_TributeType_name");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__TributeT__3E543F94336C3570").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__TributeT__3E543F94AF3ED819").IsUnique();
 
-            entity.HasIndex(e => e.name, "UQ__TributeT__72E12F1B4CD1EABB").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__TributeT__72E12F1BC7D77A83").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.description)

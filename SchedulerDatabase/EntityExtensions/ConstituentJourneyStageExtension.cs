@@ -290,6 +290,11 @@ namespace Foundation.Scheduler.Database
 			public Decimal? minLifetimeGiving { get; set; }
 			public Decimal? maxLifetimeGiving { get; set; }
 			public Decimal? minSingleGiftAmount { get; set; }
+			[Required]
+			public Boolean isDefault { get; set; }
+			public Decimal? minAnnualGiving { get; set; }
+			public Int32? maxDaysSinceLastGift { get; set; }
+			public Int32? minGiftCount { get; set; }
 			public Int32 versionNumber { get; set; }
 			[Required]
 			public Guid objectGuid { get; set; }
@@ -329,6 +334,10 @@ namespace Foundation.Scheduler.Database
 				minLifetimeGiving = this.minLifetimeGiving,
 				maxLifetimeGiving = this.maxLifetimeGiving,
 				minSingleGiftAmount = this.minSingleGiftAmount,
+				isDefault = this.isDefault,
+				minAnnualGiving = this.minAnnualGiving,
+				maxDaysSinceLastGift = this.maxDaysSinceLastGift,
+				minGiftCount = this.minGiftCount,
 				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -380,6 +389,10 @@ namespace Foundation.Scheduler.Database
 				minLifetimeGiving = this.minLifetimeGiving,
 				maxLifetimeGiving = this.maxLifetimeGiving,
 				minSingleGiftAmount = this.minSingleGiftAmount,
+				isDefault = this.isDefault,
+				minAnnualGiving = this.minAnnualGiving,
+				maxDaysSinceLastGift = this.maxDaysSinceLastGift,
+				minGiftCount = this.minGiftCount,
 				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -432,6 +445,10 @@ namespace Foundation.Scheduler.Database
 				minLifetimeGiving = dto.minLifetimeGiving,
 				maxLifetimeGiving = dto.maxLifetimeGiving,
 				minSingleGiftAmount = dto.minSingleGiftAmount,
+				isDefault = dto.isDefault,
+				minAnnualGiving = dto.minAnnualGiving,
+				maxDaysSinceLastGift = dto.maxDaysSinceLastGift,
+				minGiftCount = dto.minGiftCount,
 				versionNumber = dto.versionNumber,
 				objectGuid = dto.objectGuid,
 				active = dto.active ?? true,
@@ -460,6 +477,10 @@ namespace Foundation.Scheduler.Database
 			this.minLifetimeGiving = dto.minLifetimeGiving;
 			this.maxLifetimeGiving = dto.maxLifetimeGiving;
 			this.minSingleGiftAmount = dto.minSingleGiftAmount;
+			this.isDefault = dto.isDefault;
+			this.minAnnualGiving = dto.minAnnualGiving;
+			this.maxDaysSinceLastGift = dto.maxDaysSinceLastGift;
+			this.minGiftCount = dto.minGiftCount;
 			this.versionNumber = dto.versionNumber;
 			this.objectGuid = dto.objectGuid;
 			if (dto.active.HasValue == true)
@@ -494,6 +515,10 @@ namespace Foundation.Scheduler.Database
 				minLifetimeGiving = this.minLifetimeGiving,
 				maxLifetimeGiving = this.maxLifetimeGiving,
 				minSingleGiftAmount = this.minSingleGiftAmount,
+				isDefault = this.isDefault,
+				minAnnualGiving = this.minAnnualGiving,
+				maxDaysSinceLastGift = this.maxDaysSinceLastGift,
+				minGiftCount = this.minGiftCount,
 				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -559,6 +584,10 @@ namespace Foundation.Scheduler.Database
 				minLifetimeGiving = constituentJourneyStage.minLifetimeGiving,
 				maxLifetimeGiving = constituentJourneyStage.maxLifetimeGiving,
 				minSingleGiftAmount = constituentJourneyStage.minSingleGiftAmount,
+				isDefault = constituentJourneyStage.isDefault,
+				minAnnualGiving = constituentJourneyStage.minAnnualGiving,
+				maxDaysSinceLastGift = constituentJourneyStage.maxDaysSinceLastGift,
+				minGiftCount = constituentJourneyStage.minGiftCount,
 				versionNumber = constituentJourneyStage.versionNumber,
 				objectGuid = constituentJourneyStage.objectGuid,
 				active = constituentJourneyStage.active,
@@ -591,6 +620,10 @@ namespace Foundation.Scheduler.Database
 				minLifetimeGiving = constituentJourneyStage.minLifetimeGiving,
 				maxLifetimeGiving = constituentJourneyStage.maxLifetimeGiving,
 				minSingleGiftAmount = constituentJourneyStage.minSingleGiftAmount,
+				isDefault = constituentJourneyStage.isDefault,
+				minAnnualGiving = constituentJourneyStage.minAnnualGiving,
+				maxDaysSinceLastGift = constituentJourneyStage.maxDaysSinceLastGift,
+				minGiftCount = constituentJourneyStage.minGiftCount,
 				versionNumber = constituentJourneyStage.versionNumber,
 				objectGuid = constituentJourneyStage.objectGuid,
 				active = constituentJourneyStage.active,

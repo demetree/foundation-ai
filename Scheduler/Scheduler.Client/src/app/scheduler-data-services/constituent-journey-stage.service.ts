@@ -38,6 +38,10 @@ export class ConstituentJourneyStageQueryParameters {
     minLifetimeGiving: number | null | undefined = null;
     maxLifetimeGiving: number | null | undefined = null;
     minSingleGiftAmount: number | null | undefined = null;
+    isDefault: boolean | null | undefined = null;
+    minAnnualGiving: number | null | undefined = null;
+    maxDaysSinceLastGift: bigint | number | null | undefined = null;
+    minGiftCount: bigint | number | null | undefined = null;
     versionNumber: bigint | number | null | undefined = null;
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
@@ -62,6 +66,10 @@ export class ConstituentJourneyStageSubmitData {
     minLifetimeGiving: number | null = null;
     maxLifetimeGiving: number | null = null;
     minSingleGiftAmount: number | null = null;
+    isDefault!: boolean;
+    minAnnualGiving: number | null = null;
+    maxDaysSinceLastGift: bigint | number | null = null;
+    minGiftCount: bigint | number | null = null;
     versionNumber!: bigint | number;
     active!: boolean;
     deleted!: boolean;
@@ -120,6 +128,10 @@ export class ConstituentJourneyStageData {
     minLifetimeGiving!: number | null;
     maxLifetimeGiving!: number | null;
     minSingleGiftAmount!: number | null;
+    isDefault!: boolean;
+    minAnnualGiving!: number | null;
+    maxDaysSinceLastGift!: bigint | number;
+    minGiftCount!: bigint | number;
     versionNumber!: bigint | number;
     objectGuid!: string;
     active!: boolean;
@@ -466,6 +478,10 @@ export class ConstituentJourneyStageService extends SecureEndpointBase {
         output.minLifetimeGiving = data.minLifetimeGiving;
         output.maxLifetimeGiving = data.maxLifetimeGiving;
         output.minSingleGiftAmount = data.minSingleGiftAmount;
+        output.isDefault = data.isDefault;
+        output.minAnnualGiving = data.minAnnualGiving;
+        output.maxDaysSinceLastGift = data.maxDaysSinceLastGift;
+        output.minGiftCount = data.minGiftCount;
         output.versionNumber = data.versionNumber;
         output.active = data.active;
         output.deleted = data.deleted;

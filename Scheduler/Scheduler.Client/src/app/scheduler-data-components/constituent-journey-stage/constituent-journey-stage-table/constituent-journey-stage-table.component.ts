@@ -174,6 +174,10 @@ export class ConstituentJourneyStageTableComponent implements OnInit, OnChanges,
     { key: 'minLifetimeGiving', label: 'Min Lifetime Giving', width: undefined },
     { key: 'maxLifetimeGiving', label: 'Max Lifetime Giving', width: undefined },
     { key: 'minSingleGiftAmount', label: 'Min Single Gift Amount', width: undefined },
+    { key: 'isDefault', label: 'Is Default', width: '120px', template: 'boolean' },
+    { key: 'minAnnualGiving', label: 'Min Annual Giving', width: undefined },
+    { key: 'maxDaysSinceLastGift', label: 'Max Days Since Last Gift', width: undefined },
+    { key: 'minGiftCount', label: 'Min Gift Count', width: undefined },
 
     ];
 
@@ -327,6 +331,10 @@ export class ConstituentJourneyStageTableComponent implements OnInit, OnChanges,
                       'minLifetimeGiving',
                       'maxLifetimeGiving',
                       'minSingleGiftAmount',
+                      'isDefault',
+                      'minAnnualGiving',
+                      'maxDaysSinceLastGift',
+                      'minGiftCount',
         ];
 
         result = result.filter((constituentJourneyStage) =>

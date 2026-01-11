@@ -150,6 +150,7 @@ import { CalendarAssignmentsTabComponent } from './components/calendar-custom/ca
 import { ContactCustomListingComponent } from './components/contact-custom/contact-custom-listing/contact-custom-listing.component';
 import { ContactCustomDetailComponent } from './components/contact-custom/contact-custom-detail/contact-custom-detail.component';
 import { ContactCustomAddEditComponent } from './components/contact-custom/contact-custom-add-edit/contact-custom-add-edit.component';
+import { ConstituentJourneyUpdateModalComponent } from './components/contact-custom/constituent-journey-update-modal/constituent-journey-update-modal.component';
 import { ContactCustomTableComponent } from './components/contact-custom/contact-custom-table/contact-custom-table.component';
 import { ContactOverviewTabComponent } from './components/contact-custom/contact-overview-tab/contact-overview-tab.component';
 import { ContactInteractionsTabComponent } from './components/contact-custom/contact-interactions-tab/contact-interactions-tab.component';
@@ -1526,6 +1527,7 @@ import { TributeTypeTableComponent } from './scheduler-data-components/tribute-t
     ConstituentJourneyStageChangeHistoryAddEditComponent,
     ConstituentJourneyStageChangeHistoryDetailComponent,
     ConstituentJourneyStageChangeHistoryTableComponent,
+    ConstituentJourneyUpdateModalComponent,
     ContactListingComponent,
     ContactAddEditComponent,
     ContactDetailComponent,

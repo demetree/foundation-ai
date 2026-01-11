@@ -27,6 +27,14 @@ public partial class ConstituentJourneyStage
 
     public decimal? minSingleGiftAmount { get; set; }
 
+    public bool isDefault { get; set; }
+
+    public decimal? minAnnualGiving { get; set; }
+
+    public int? maxDaysSinceLastGift { get; set; }
+
+    public int? minGiftCount { get; set; }
+
     public int versionNumber { get; set; }
 
     public Guid objectGuid { get; set; }

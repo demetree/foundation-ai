@@ -9,6 +9,10 @@ import { AuthService } from '../../../services/auth.service';
 import { Observable, BehaviorSubject, Subject, takeUntil, finalize, switchMap, forkJoin, shareReplay, map } from 'rxjs';
 import { ContactCustomAddEditComponent } from '../contact-custom-add-edit/contact-custom-add-edit.component';
 import { TagService } from '../../../scheduler-data-services/tag.service';
+import { ConstituentData, ConstituentService } from '../../../scheduler-data-services/constituent.service';
+import { ConstituentJourneyStageService } from '../../../scheduler-data-services/constituent-journey-stage.service';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { ConstituentJourneyUpdateModalComponent } from '../constituent-journey-update-modal/constituent-journey-update-modal.component';
 
 @Component({
   selector: 'app-contact-custom-detail',
@@ -35,6 +39,7 @@ export class ContactCustomDetailComponent implements OnInit {
   public isEditMode = true;   // Defaults to true (edit).  Gets set to false in ngOnInit if route is 'new'
 
   public contactTagsWithIcons$!: Observable<Array<ContactTagData> | null>;
+  public constituent$: Observable<ConstituentData | null> = new BehaviorSubject<ConstituentData | null>(null);
 
   private destroy$ = new Subject<void>();
 
@@ -45,9 +50,10 @@ export class ContactCustomDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private alertService: AlertService,
-    private navigationService: NavigationService) { 
+    private modalService: NgbModal,
+    private navigationService: NavigationService) {
 
-    }
+  }
 
   ngOnInit(): void {
 
@@ -55,7 +61,7 @@ export class ContactCustomDetailComponent implements OnInit {
     this.contactId = this.route.snapshot.paramMap.get('contactId');
 
     if (this.contactId === 'new' ||
-        this.contactId == null) {
+      this.contactId == null) {
       //
       // Add mode
       //
@@ -95,8 +101,8 @@ export class ContactCustomDetailComponent implements OnInit {
     this.destroy$.complete();
   }
 
-  
- public GetQueryParameters(): any {
+
+  public GetQueryParameters(): any {
 
     if (this.contactId != null && this.contactId !== 'new') {
 
@@ -111,15 +117,15 @@ export class ContactCustomDetailComponent implements OnInit {
   }
 
 
-/*
-  * Loads the Contact data for the current contactId.
-  *
-  * Fully respects the ContactService caching strategy and error handling strategy.
-  *
-  * @param forceLoadAndDisplaySuccessAlert
-  *   - true  will bypass cache entirely and show success alert message
-  *   - false/null will use cache if available, no alert message
-  */
+  /*
+    * Loads the Contact data for the current contactId.
+    *
+    * Fully respects the ContactService caching strategy and error handling strategy.
+    *
+    * @param forceLoadAndDisplaySuccessAlert
+    *   - true  will bypass cache entirely and show success alert message
+    *   - false/null will use cache if available, no alert message
+    */
   public loadData(forceLoadAndDisplaySuccessAlert: boolean | null = null): void {
 
     //
@@ -135,8 +141,8 @@ export class ContactCustomDetailComponent implements OnInit {
 
       const userName = this.authService.currentUser?.userName || 'Current user';
       this.alertService.showMessage(`${userName} does not have permission to read Contacts.`,
-                                    'Access Denied',
-                                     MessageSeverity.warn
+        'Access Denied',
+        MessageSeverity.warn
       );
 
       this.isLoadingSubject.next(false);
@@ -160,8 +166,8 @@ export class ContactCustomDetailComponent implements OnInit {
     if (isNaN(contactId) || contactId <= 0) {
 
       this.alertService.showMessage(`Invalid Contact ID: "${this.contactId}"`,
-                                    'Invalid ID',
-                                    MessageSeverity.error
+        'Invalid ID',
+        MessageSeverity.error
       );
 
       this.isLoadingSubject.next(false);
@@ -201,6 +207,28 @@ export class ContactCustomDetailComponent implements OnInit {
 
           // Load and expand tags so header badges show icons/colors
           this.loadAndExpandContactTags();
+
+          // Load Primary Constituent for Donor Journey
+          this.constituent$ = this.contact.Constituents$.pipe(
+            map(list => (list && list.length > 0) ? list[0] : null),
+            switchMap(async constituent => {
+              if (constituent && constituent.constituentJourneyStageId) {
+                // Revive and reload to get full stage details (color, name, icon) if not already loaded
+                if (!constituent.constituentJourneyStage) {
+                  // We can use the service to get the stage if we don't want to reload the whole constituent
+                  // But reloading the constituent is safer to ensure all relations are ok.
+                  // Actually, let's just use the ID to fetch the stage if missing, or reload the constituent.
+                  // Re-loading the constituent with includeRelations=true is best.
+                  const revivified = ConstituentService.Instance.ReviveConstituent(constituent);
+                  await revivified.Reload(true);
+                  return revivified;
+                }
+                return constituent;
+              }
+              return constituent;
+            }),
+            shareReplay(1)
+          );
 
           if (forceLoadAndDisplaySuccessAlert === true) {
             this.alertService.showMessage(
@@ -333,7 +361,7 @@ export class ContactCustomDetailComponent implements OnInit {
 
     this.alertService.showMessage(message, title, severity);
   }
-      
+
 
   public goBack(): void {
     this.navigationService.goBack();
@@ -367,5 +395,20 @@ export class ContactCustomDetailComponent implements OnInit {
 
   public userIsSchedulerContactWriter(): boolean {
     return this.contactService.userIsSchedulerContactWriter();
+  }
+
+  public openJourneyUpdateModal(constituent: ConstituentData): void {
+    const modalRef = this.modalService.open(ConstituentJourneyUpdateModalComponent, { size: 'lg', backdrop: 'static' });
+    modalRef.componentInstance.constituent = constituent;
+
+    modalRef.result.then((updatedConstituent: ConstituentData) => {
+      if (updatedConstituent) {
+        // Reload the contact to refresh the view (and thus the constituent$)
+        this.loadData();
+        // Or force reload constituent$ specifically if we want to be more granular, but loadData works.
+      }
+    }, () => {
+      // Dismissed
+    });
   }
 }

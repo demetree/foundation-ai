@@ -2917,9 +2917,15 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
             constituentJourneyStageTable.AddHTMLColorField("color", true).AddScriptComments("Hex color for UI display");
 
             // Criteria fields for auto-calculation/suggestion
-             constituentJourneyStageTable.AddMoneyField("minLifetimeGiving", true, true).AddScriptComments("Optional criteria: Minimum total giving to qualify for this stage.");
+            constituentJourneyStageTable.AddMoneyField("minLifetimeGiving", true, true).AddScriptComments("Optional criteria: Minimum total giving to qualify for this stage.");
             constituentJourneyStageTable.AddMoneyField("maxLifetimeGiving", true, true).AddScriptComments("Optional criteria: Maximum total giving");
-             constituentJourneyStageTable.AddMoneyField("minSingleGiftAmount", true, true).AddScriptComments("Optional criteria: Min single gift size");
+            constituentJourneyStageTable.AddMoneyField("minSingleGiftAmount", true, true).AddScriptComments("Optional criteria: Min single gift size");
+
+            // Smart Criteria
+            constituentJourneyStageTable.AddBoolField("isDefault", false).AddScriptComments("If true, this is the default stage for new constituents.");
+            constituentJourneyStageTable.AddMoneyField("minAnnualGiving", true, true).AddScriptComments("Optional: Minimum giving in the past 365 days.");
+            constituentJourneyStageTable.AddIntField("maxDaysSinceLastGift", true, 0).AddScriptComments("Optional: Maximum days elapsed since the last gift (recency limit).");
+            constituentJourneyStageTable.AddIntField("minGiftCount", true, 0).AddScriptComments("Optional: Minimum number of gifts required.");
             
             constituentJourneyStageTable.AddVersionControl();
             constituentJourneyStageTable.AddControlFields();

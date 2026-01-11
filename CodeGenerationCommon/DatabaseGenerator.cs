@@ -2266,6 +2266,10 @@ namespace Foundation.CodeGeneration
                     }
                 }
 
+                public Field AddBooleanField(string fieldName, bool nullable = true, bool? defaultValue = null)
+                { 
+                    return AddBoolField(fieldName, nullable, defaultValue);
+                }
 
                 public Field AddBoolField(string fieldName, bool nullable = true, bool? defaultValue = null)
                 {

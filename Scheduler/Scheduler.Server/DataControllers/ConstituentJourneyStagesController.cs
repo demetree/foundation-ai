@@ -73,6 +73,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			decimal? minLifetimeGiving = null,
 			decimal? maxLifetimeGiving = null,
 			decimal? minSingleGiftAmount = null,
+			bool? isDefault = null,
+			decimal? minAnnualGiving = null,
+			int? maxDaysSinceLastGift = null,
+			int? minGiftCount = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -157,6 +161,22 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (minSingleGiftAmount.HasValue == true)
 			{
 				query = query.Where(cjs => cjs.minSingleGiftAmount == minSingleGiftAmount.Value);
+			}
+			if (isDefault.HasValue == true)
+			{
+				query = query.Where(cjs => cjs.isDefault == isDefault.Value);
+			}
+			if (minAnnualGiving.HasValue == true)
+			{
+				query = query.Where(cjs => cjs.minAnnualGiving == minAnnualGiving.Value);
+			}
+			if (maxDaysSinceLastGift.HasValue == true)
+			{
+				query = query.Where(cjs => cjs.maxDaysSinceLastGift == maxDaysSinceLastGift.Value);
+			}
+			if (minGiftCount.HasValue == true)
+			{
+				query = query.Where(cjs => cjs.minGiftCount == minGiftCount.Value);
 			}
 			if (versionNumber.HasValue == true)
 			{
@@ -269,6 +289,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			decimal? minLifetimeGiving = null,
 			decimal? maxLifetimeGiving = null,
 			decimal? minSingleGiftAmount = null,
+			bool? isDefault = null,
+			decimal? minAnnualGiving = null,
+			int? maxDaysSinceLastGift = null,
+			int? minGiftCount = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -333,6 +357,22 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (minSingleGiftAmount.HasValue == true)
 			{
 				query = query.Where(cjs => cjs.minSingleGiftAmount == minSingleGiftAmount.Value);
+			}
+			if (isDefault.HasValue == true)
+			{
+				query = query.Where(cjs => cjs.isDefault == isDefault.Value);
+			}
+			if (minAnnualGiving.HasValue == true)
+			{
+				query = query.Where(cjs => cjs.minAnnualGiving == minAnnualGiving.Value);
+			}
+			if (maxDaysSinceLastGift.HasValue == true)
+			{
+				query = query.Where(cjs => cjs.maxDaysSinceLastGift == maxDaysSinceLastGift.Value);
+			}
+			if (minGiftCount.HasValue == true)
+			{
+				query = query.Where(cjs => cjs.minGiftCount == minGiftCount.Value);
 			}
 			if (versionNumber.HasValue == true)
 			{
@@ -928,6 +968,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    constituentJourneyStage.minLifetimeGiving = oldConstituentJourneyStage.minLifetimeGiving;
 				    constituentJourneyStage.maxLifetimeGiving = oldConstituentJourneyStage.maxLifetimeGiving;
 				    constituentJourneyStage.minSingleGiftAmount = oldConstituentJourneyStage.minSingleGiftAmount;
+				    constituentJourneyStage.isDefault = oldConstituentJourneyStage.isDefault;
+				    constituentJourneyStage.minAnnualGiving = oldConstituentJourneyStage.minAnnualGiving;
+				    constituentJourneyStage.maxDaysSinceLastGift = oldConstituentJourneyStage.maxDaysSinceLastGift;
+				    constituentJourneyStage.minGiftCount = oldConstituentJourneyStage.minGiftCount;
 				    constituentJourneyStage.objectGuid = oldConstituentJourneyStage.objectGuid;
 				    constituentJourneyStage.active = oldConstituentJourneyStage.active;
 				    constituentJourneyStage.deleted = oldConstituentJourneyStage.deleted;
@@ -1102,6 +1146,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			decimal? minLifetimeGiving = null,
 			decimal? maxLifetimeGiving = null,
 			decimal? minSingleGiftAmount = null,
+			bool? isDefault = null,
+			decimal? minAnnualGiving = null,
+			int? maxDaysSinceLastGift = null,
+			int? minGiftCount = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -1183,6 +1231,22 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (minSingleGiftAmount.HasValue == true)
 			{
 				query = query.Where(cjs => cjs.minSingleGiftAmount == minSingleGiftAmount.Value);
+			}
+			if (isDefault.HasValue == true)
+			{
+				query = query.Where(cjs => cjs.isDefault == isDefault.Value);
+			}
+			if (minAnnualGiving.HasValue == true)
+			{
+				query = query.Where(cjs => cjs.minAnnualGiving == minAnnualGiving.Value);
+			}
+			if (maxDaysSinceLastGift.HasValue == true)
+			{
+				query = query.Where(cjs => cjs.maxDaysSinceLastGift == maxDaysSinceLastGift.Value);
+			}
+			if (minGiftCount.HasValue == true)
+			{
+				query = query.Where(cjs => cjs.minGiftCount == minGiftCount.Value);
 			}
 			if (versionNumber.HasValue == true)
 			{
