@@ -80,22 +80,22 @@ export class ConstituentJourneyStageAddEditComponent {
 
 
   public constituentJourneyStageForm: FormGroup = this.fb.group({
-        name: ['', Validators.required],
-        description: [''],
-        sequence: [''],
-        iconId: [null],
-        color: [''],
-        minLifetimeGiving: [''],
-        maxLifetimeGiving: [''],
-        minSingleGiftAmount: [''],
-        isDefault: [false],
-        minAnnualGiving: [''],
-        maxDaysSinceLastGift: [''],
-        minGiftCount: [''],
-        versionNumber: [''],
-        active: [true],
-        deleted: [false],
-      });
+    name: ['', Validators.required],
+    description: [''],
+    sequence: [''],
+    iconId: [null],
+    color: [''],
+    minLifetimeGiving: [''],
+    maxLifetimeGiving: [''],
+    minSingleGiftAmount: [''],
+    isDefault: [false],
+    minAnnualGiving: [''],
+    maxDaysSinceLastGift: [''],
+    minGiftCount: [''],
+    versionNumber: [''],
+    active: [true],
+    deleted: [false],
+  });
 
   private modalRef: NgbModalRef | undefined;
   public isEditMode = false;
@@ -103,6 +103,7 @@ export class ConstituentJourneyStageAddEditComponent {
   public modalIsDisplayed: boolean = false;
 
   public isSaving: boolean = false;
+  public ruleExplanation: string = '';
 
   constituentJourneyStages$ = this.constituentJourneyStageService.GetConstituentJourneyStageList();
   icons$ = this.iconService.GetIconList();
@@ -115,6 +116,42 @@ export class ConstituentJourneyStageAddEditComponent {
     private alertService: AlertService,
     private router: Router,
     private fb: FormBuilder) {
+    this.constituentJourneyStageForm.valueChanges.subscribe(() => {
+      this.updateRuleExplanation();
+    });
+  }
+
+  private updateRuleExplanation() {
+    const val = this.constituentJourneyStageForm.getRawValue();
+    const parts: string[] = [];
+
+    if (val.minAnnualGiving) {
+      parts.push(`gave at least $${val.minAnnualGiving} in the last 365 days`);
+    }
+
+    if (val.maxDaysSinceLastGift) {
+      parts.push(`gave a gift within the last ${val.maxDaysSinceLastGift} days`);
+    }
+
+    if (val.minGiftCount) {
+      parts.push(`have given at least ${val.minGiftCount} total gifts`);
+    }
+
+    if (val.minLifetimeGiving) {
+      parts.push(`have a total lifetime giving of at least $${val.minLifetimeGiving}`);
+    }
+
+    // Note: minSingleGiftAmount is often a specific criteria or part of a calculated metric not directly standard, 
+    // but if it's there, let's include it.
+    if (val.minSingleGiftAmount) {
+      parts.push(`have given at least one gift of $${val.minSingleGiftAmount} or more`);
+    }
+
+    if (parts.length > 0) {
+      this.ruleExplanation = "Donors will enter this stage if they " + parts.join(' AND ') + ".";
+    } else {
+      this.ruleExplanation = "No specific automatic entry rules set.";
+    }
   }
 
   openModal(constituentJourneyStageData?: ConstituentJourneyStageData) {
@@ -186,6 +223,9 @@ export class ConstituentJourneyStageAddEditComponent {
       windowClass: 'custom-modal'
     });
     this.modalIsDisplayed = true;
+
+    // Trigger initial explanation update
+    this.updateRuleExplanation();
   }
 
 
@@ -229,29 +269,29 @@ export class ConstituentJourneyStageAddEditComponent {
     // Build clean submit object from form + fallback to current data if needed
     //
     const constituentJourneyStageSubmitData: ConstituentJourneyStageSubmitData = {
-        id: this.constituentJourneyStageSubmitData?.id || 0,
-        name: formValue.name!.trim(),
-        description: formValue.description?.trim() || null,
-        sequence: formValue.sequence ? Number(formValue.sequence) : null,
-        iconId: formValue.iconId ? Number(formValue.iconId) : null,
-        color: formValue.color?.trim() || null,
-        minLifetimeGiving: formValue.minLifetimeGiving ? Number(formValue.minLifetimeGiving) : null,
-        maxLifetimeGiving: formValue.maxLifetimeGiving ? Number(formValue.maxLifetimeGiving) : null,
-        minSingleGiftAmount: formValue.minSingleGiftAmount ? Number(formValue.minSingleGiftAmount) : null,
-        isDefault: !!formValue.isDefault,
-        minAnnualGiving: formValue.minAnnualGiving ? Number(formValue.minAnnualGiving) : null,
-        maxDaysSinceLastGift: formValue.maxDaysSinceLastGift ? Number(formValue.maxDaysSinceLastGift) : null,
-        minGiftCount: formValue.minGiftCount ? Number(formValue.minGiftCount) : null,
-        versionNumber: this.constituentJourneyStageSubmitData?.versionNumber ?? 0,
-        active: !!formValue.active,
-        deleted: !!formValue.deleted,
-   };
+      id: this.constituentJourneyStageSubmitData?.id || 0,
+      name: formValue.name!.trim(),
+      description: formValue.description?.trim() || null,
+      sequence: formValue.sequence ? Number(formValue.sequence) : null,
+      iconId: formValue.iconId ? Number(formValue.iconId) : null,
+      color: formValue.color?.trim() || null,
+      minLifetimeGiving: formValue.minLifetimeGiving ? Number(formValue.minLifetimeGiving) : null,
+      maxLifetimeGiving: formValue.maxLifetimeGiving ? Number(formValue.maxLifetimeGiving) : null,
+      minSingleGiftAmount: formValue.minSingleGiftAmount ? Number(formValue.minSingleGiftAmount) : null,
+      isDefault: !!formValue.isDefault,
+      minAnnualGiving: formValue.minAnnualGiving ? Number(formValue.minAnnualGiving) : null,
+      maxDaysSinceLastGift: formValue.maxDaysSinceLastGift ? Number(formValue.maxDaysSinceLastGift) : null,
+      minGiftCount: formValue.minGiftCount ? Number(formValue.minGiftCount) : null,
+      versionNumber: this.constituentJourneyStageSubmitData?.versionNumber ?? 0,
+      active: !!formValue.active,
+      deleted: !!formValue.deleted,
+    };
 
-      if (this.isEditMode) {
-        this.updateConstituentJourneyStage(constituentJourneyStageSubmitData);
-      } else {
-        this.addConstituentJourneyStage(constituentJourneyStageSubmitData);
-      }
+    if (this.isEditMode) {
+      this.updateConstituentJourneyStage(constituentJourneyStageSubmitData);
+    } else {
+      this.addConstituentJourneyStage(constituentJourneyStageSubmitData);
+    }
   }
 
   private addConstituentJourneyStage(constituentJourneyStageData: ConstituentJourneyStageSubmitData) {
@@ -277,36 +317,33 @@ export class ConstituentJourneyStageAddEditComponent {
         }
       },
       error: (err) => {
-            let errorMessage: string;
+        let errorMessage: string;
 
-            // Check if err is an Error object (e.g., new Error('message'))
-            if (err instanceof Error) {
-                errorMessage = err.message || 'An unexpected error occurred.';
-            }
-            // Check if err is a ServerError object with status and error properties
-            else if (err.status && err.error)
-            {
-                if (err.status === 403)
-                {
-                    errorMessage = err.error?.message ||
-                                   'You do not have permission to save this Constituent Journey Stage.';
-                }
-                else
-                {
-                    errorMessage = err.error?.message ||
-                                   err.error?.error_description ||
-                                   err.error?.detail ||
-                                   'An error occurred while saving the Constituent Journey Stage.';
-                }
-            }
-            // Fallback for unexpected error formats
-            else {
-                errorMessage = 'An unexpected error occurred.';
-            }
+        // Check if err is an Error object (e.g., new Error('message'))
+        if (err instanceof Error) {
+          errorMessage = err.message || 'An unexpected error occurred.';
+        }
+        // Check if err is a ServerError object with status and error properties
+        else if (err.status && err.error) {
+          if (err.status === 403) {
+            errorMessage = err.error?.message ||
+              'You do not have permission to save this Constituent Journey Stage.';
+          }
+          else {
+            errorMessage = err.error?.message ||
+              err.error?.error_description ||
+              err.error?.detail ||
+              'An error occurred while saving the Constituent Journey Stage.';
+          }
+        }
+        // Fallback for unexpected error formats
+        else {
+          errorMessage = 'An unexpected error occurred.';
+        }
 
-            this.alertService.showMessage('Constituent Journey Stage could not be saved',
-                                          errorMessage,
-                                          MessageSeverity.error);
+        this.alertService.showMessage('Constituent Journey Stage could not be saved',
+          errorMessage,
+          MessageSeverity.error);
       }
     });
   }
@@ -327,36 +364,33 @@ export class ConstituentJourneyStageAddEditComponent {
         this.closeModal();
       },
       error: (err) => {
-            let errorMessage: string;
+        let errorMessage: string;
 
-            // Check if err is an Error object (e.g., new Error('message'))
-            if (err instanceof Error) {
-                errorMessage = err.message || 'An unexpected error occurred.';
-            }
-            // Check if err is a ServerError object with status and error properties
-            else if (err.status && err.error)
-            {
-                if (err.status === 403)
-                {
-                    errorMessage = err.error?.message ||
-                                   'You do not have permission to save this Constituent Journey Stage.';
-                }
-                else
-                {
-                    errorMessage = err.error?.message ||
-                                   err.error?.error_description ||
-                                   err.error?.detail ||
-                                   'An error occurred while saving the Constituent Journey Stage.';
-                }
-            }
-            // Fallback for unexpected error formats
-            else {
-                errorMessage = 'An unexpected error occurred.';
-            }
+        // Check if err is an Error object (e.g., new Error('message'))
+        if (err instanceof Error) {
+          errorMessage = err.message || 'An unexpected error occurred.';
+        }
+        // Check if err is a ServerError object with status and error properties
+        else if (err.status && err.error) {
+          if (err.status === 403) {
+            errorMessage = err.error?.message ||
+              'You do not have permission to save this Constituent Journey Stage.';
+          }
+          else {
+            errorMessage = err.error?.message ||
+              err.error?.error_description ||
+              err.error?.detail ||
+              'An error occurred while saving the Constituent Journey Stage.';
+          }
+        }
+        // Fallback for unexpected error formats
+        else {
+          errorMessage = 'An unexpected error occurred.';
+        }
 
-            this.alertService.showMessage('Constituent Journey Stage could not be saved',
-                                          errorMessage,
-                                          MessageSeverity.error);
+        this.alertService.showMessage('Constituent Journey Stage could not be saved',
+          errorMessage,
+          MessageSeverity.error);
       }
     });
   }
@@ -366,7 +400,7 @@ export class ConstituentJourneyStageAddEditComponent {
   private buildFormValues(constituentJourneyStageData: ConstituentJourneyStageData | null) {
 
     if (constituentJourneyStageData == null) {
-      
+
       //
       // Reset the form group to null state, but don't change the form instance.
       //
@@ -386,15 +420,15 @@ export class ConstituentJourneyStageAddEditComponent {
         versionNumber: '',
         active: true,
         deleted: false,
-   }, { emitEvent: false});
+      }, { emitEvent: false });
 
     }
     else {
 
-        //
-        // Reset the form with properly formatted values that support dates in datetime-local inputs
-        //
-        this.constituentJourneyStageForm.reset({
+      //
+      // Reset the form with properly formatted values that support dates in datetime-local inputs
+      //
+      this.constituentJourneyStageForm.reset({
         name: constituentJourneyStageData.name ?? '',
         description: constituentJourneyStageData.description ?? '',
         sequence: constituentJourneyStageData.sequence?.toString() ?? '',
@@ -410,7 +444,7 @@ export class ConstituentJourneyStageAddEditComponent {
         versionNumber: constituentJourneyStageData.versionNumber?.toString() ?? '',
         active: constituentJourneyStageData.active ?? true,
         deleted: constituentJourneyStageData.deleted ?? false,
-      }, { emitEvent: false});
+      }, { emitEvent: false });
     }
 
     this.constituentJourneyStageForm.markAsPristine();
