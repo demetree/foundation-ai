@@ -45,6 +45,21 @@ All operational tables include multi-tenant support, versioning where appropriat
 
             #region Setup Master Data - Resource Types, Countries, states, time zones etc..
 
+            Database.Table attributeDefinitionTable = database.AddTable("AttributeDefinition");
+            attributeDefinitionTable.comment = "Definitions for custom attributes on various entities (Contact, Constituent, etc.)";
+            attributeDefinitionTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            attributeDefinitionTable.AddIdField();
+            attributeDefinitionTable.AddMultiTenantSupport();
+            attributeDefinitionTable.AddString100Field("entityName").AddScriptComments("The name of the entity this attribute applies to (e.g., 'Contact', 'Constituent')").CreateIndex();
+            attributeDefinitionTable.AddString100Field("key").AddScriptComments("The JSON key for the attribute");
+            attributeDefinitionTable.AddString250Field("label").AddScriptComments("The human-readable label for the attribute");
+            attributeDefinitionTable.AddString50Field("type").AddScriptComments("Data type: Text, Number, Date, Boolean, Select, MultiSelect, etc.");
+            attributeDefinitionTable.AddTextField("options").AddScriptComments("JSON options for Select/MultiSelect types"); // Changed to Max field for flexibility
+            attributeDefinitionTable.AddBoolField("isRequired", false, false);
+            attributeDefinitionTable.AddSequenceField(); // For sort order
+            attributeDefinitionTable.AddControlFields();
+            attributeDefinitionTable.AddUniqueConstraint(new List<string>() { "tenantGuid", "entityName", "key" }, true);
+
             Database.Table iconTable = database.AddTable("Icon");
             iconTable.comment = "List of icons to use on user interfaces.  Not tenant editable.";
             iconTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, FOUNDATION_ADMIN_SECURITY_LEVEL);
@@ -1162,6 +1177,11 @@ All operational tables include multi-tenant support, versioning where appropriat
             contactTable.AddForeignKeyField(contactMethodTable, true);
             contactTable.AddTextField("notes", true);
             contactTable.AddForeignKeyField(timeZoneTable, true).AddScriptComments("The contact's time zone");
+
+            Database.Table.Field contactAttributeField = contactTable.AddTextField("attributes", true).AddScriptComments("to store arbitrary JSON");
+            contactAttributeField.hideOnDefaultLists = true;
+
+
             contactTable.AddForeignKeyField(iconTable, true).AddScriptComments("Icon to use for UI display");
             contactTable.AddHTMLColorField("color", true).AddScriptComments("Hex color for UI display");
             contactTable.AddBinaryDataFields("avatar");            // avatar details
@@ -2937,6 +2957,7 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
                 { "name", "Unqualified" },
                 { "description", "New potential donor." },
                 { "sequence", "1" },
+                { "isDefault", "1" },
                 { "color", "#9E9E9E" },
                 { "objectGuid", "d8663e5e-749c-4638-b69d-21d96078659d" } });
 
@@ -2945,6 +2966,7 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
                 { "name", "Qualified" },
                 { "description", "Donor has been qualified." },
                 { "sequence", "2" },
+                { "isDefault", "0" },
                 { "color", "#2196F3" },
                 { "objectGuid", "ad06353d-2476-4322-836f-5374825968f9" } });
 
@@ -2953,6 +2975,7 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
                 { "name", "Cultivated" },
                 { "description", "Relationship is being built." },
                 { "sequence", "3" },
+                { "isDefault", "0" },
                 { "color", "#4CAF50" },
                 { "objectGuid", "e8b60384-9336-4022-8b4b-970752538965" } });
 
@@ -2961,6 +2984,7 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
                 { "name", "Solicited" },
                 { "description", "Ask has been made." },
                 { "sequence", "4" },
+                { "isDefault", "0" },
                 { "color", "#FF9800" },
                 { "objectGuid", "64319688-fd06-4074-8902-628670bf7471" } });
 
@@ -2969,6 +2993,7 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
                 { "name", "Stewardship" },
                 { "description", "Ongoing maintenance." },
                 { "sequence", "5" },
+                { "isDefault", "0" },
                 { "color", "#9C27B0" },
                 { "objectGuid", "1d971578-8319-482a-9e8c-529141873837" } });
 

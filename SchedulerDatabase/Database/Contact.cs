@@ -43,6 +43,8 @@ public partial class Contact
 
     public int? timeZoneId { get; set; }
 
+    public string attributes { get; set; }
+
     public int? iconId { get; set; }
 
     public string color { get; set; }

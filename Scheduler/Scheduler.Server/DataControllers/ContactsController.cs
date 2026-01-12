@@ -85,6 +85,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			int? contactMethodId = null,
 			string notes = null,
 			int? timeZoneId = null,
+			string attributes = null,
 			int? iconId = null,
 			string color = null,
 			string avatarFileName = null,
@@ -204,6 +205,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(c => c.timeZoneId == timeZoneId.Value);
 			}
+			if (string.IsNullOrEmpty(attributes) == false)
+			{
+				query = query.Where(c => c.attributes == attributes);
+			}
 			if (iconId.HasValue == true)
 			{
 				query = query.Where(c => c.iconId == iconId.Value);
@@ -299,6 +304,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.position.Contains(anyStringContains)
 			       || x.webSite.Contains(anyStringContains)
 			       || x.notes.Contains(anyStringContains)
+			       || x.attributes.Contains(anyStringContains)
 			       || x.color.Contains(anyStringContains)
 			       || x.avatarFileName.Contains(anyStringContains)
 			       || x.avatarMimeType.Contains(anyStringContains)
@@ -395,6 +401,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			int? contactMethodId = null,
 			string notes = null,
 			int? timeZoneId = null,
+			string attributes = null,
 			int? iconId = null,
 			string color = null,
 			string avatarFileName = null,
@@ -494,6 +501,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(c => c.timeZoneId == timeZoneId.Value);
 			}
+			if (attributes != null)
+			{
+				query = query.Where(c => c.attributes == attributes);
+			}
 			if (iconId.HasValue == true)
 			{
 				query = query.Where(c => c.iconId == iconId.Value);
@@ -570,6 +581,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.position.Contains(anyStringContains)
 			       || x.webSite.Contains(anyStringContains)
 			       || x.notes.Contains(anyStringContains)
+			       || x.attributes.Contains(anyStringContains)
 			       || x.color.Contains(anyStringContains)
 			       || x.avatarFileName.Contains(anyStringContains)
 			       || x.avatarMimeType.Contains(anyStringContains)
@@ -1392,6 +1404,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    contact.contactMethodId = oldContact.contactMethodId;
 				    contact.notes = oldContact.notes;
 				    contact.timeZoneId = oldContact.timeZoneId;
+				    contact.attributes = oldContact.attributes;
 				    contact.iconId = oldContact.iconId;
 				    contact.color = oldContact.color;
 				    contact.avatarFileName = oldContact.avatarFileName;
@@ -1607,6 +1620,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			int? contactMethodId = null,
 			string notes = null,
 			int? timeZoneId = null,
+			string attributes = null,
 			int? iconId = null,
 			string color = null,
 			string avatarFileName = null,
@@ -1723,6 +1737,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(c => c.timeZoneId == timeZoneId.Value);
 			}
+			if (string.IsNullOrEmpty(attributes) == false)
+			{
+				query = query.Where(c => c.attributes == attributes);
+			}
 			if (iconId.HasValue == true)
 			{
 				query = query.Where(c => c.iconId == iconId.Value);
@@ -1800,6 +1818,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.position.Contains(anyStringContains)
 			       || x.webSite.Contains(anyStringContains)
 			       || x.notes.Contains(anyStringContains)
+			       || x.attributes.Contains(anyStringContains)
 			       || x.color.Contains(anyStringContains)
 			       || x.avatarFileName.Contains(anyStringContains)
 			       || x.avatarMimeType.Contains(anyStringContains)

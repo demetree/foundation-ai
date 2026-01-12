@@ -55,6 +55,7 @@ interface ContactFormValues {
   contactMethodId: number | bigint | null,       // For FK link number
   notes: string | null,
   timeZoneId: number | bigint | null,       // For FK link number
+  attributes: string | null,
   iconId: number | bigint | null,       // For FK link number
   color: string | null,
   avatarFileName: string | null,
@@ -111,6 +112,7 @@ export class ContactAddEditComponent {
         contactMethodId: [null],
         notes: [''],
         timeZoneId: [null],
+        attributes: [''],
         iconId: [null],
         color: [''],
         avatarFileName: [''],
@@ -280,6 +282,7 @@ export class ContactAddEditComponent {
         contactMethodId: formValue.contactMethodId ? Number(formValue.contactMethodId) : null,
         notes: formValue.notes?.trim() || null,
         timeZoneId: formValue.timeZoneId ? Number(formValue.timeZoneId) : null,
+        attributes: formValue.attributes?.trim() || null,
         iconId: formValue.iconId ? Number(formValue.iconId) : null,
         color: formValue.color?.trim() || null,
         avatarFileName: formValue.avatarFileName?.trim() || null,
@@ -432,6 +435,7 @@ export class ContactAddEditComponent {
         contactMethodId: null,
         notes: '',
         timeZoneId: null,
+        attributes: '',
         iconId: null,
         color: '',
         avatarFileName: '',
@@ -467,6 +471,7 @@ export class ContactAddEditComponent {
         contactMethodId: contactData.contactMethodId,
         notes: contactData.notes ?? '',
         timeZoneId: contactData.timeZoneId,
+        attributes: contactData.attributes ?? '',
         iconId: contactData.iconId,
         color: contactData.color ?? '',
         avatarFileName: contactData.avatarFileName ?? '',

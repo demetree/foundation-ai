@@ -137,6 +137,7 @@ USE `Scheduler`;
 -- DROP TABLE `ResourceType`
 -- DROP TABLE `Salutation`
 -- DROP TABLE `Icon`
+-- DROP TABLE `AttributeDefinition`
 
 /* These disable table index commands are here in a commented state as a convenience for situations where you want to remove the indexes on a table for things like mass data loads, where indexes just slow things down.  The corresponding rebuild index commands are listed after the disable commands */
 -- ALTER INDEX ALL ON `SoftCreditChangeHistory` DISABLE
@@ -266,6 +267,7 @@ USE `Scheduler`;
 -- ALTER INDEX ALL ON `ResourceType` DISABLE
 -- ALTER INDEX ALL ON `Salutation` DISABLE
 -- ALTER INDEX ALL ON `Icon` DISABLE
+-- ALTER INDEX ALL ON `AttributeDefinition` DISABLE
 
 /* These rebuild table index commands are here in a commented state as a convenience for situations where you want to rebuild the indexes on a table after having removed them, or if you want to refresh them. */
 -- ALTER INDEX ALL ON `SoftCreditChangeHistory` REBUILD
@@ -395,6 +397,36 @@ USE `Scheduler`;
 -- ALTER INDEX ALL ON `ResourceType` REBUILD
 -- ALTER INDEX ALL ON `Salutation` REBUILD
 -- ALTER INDEX ALL ON `Icon` REBUILD
+-- ALTER INDEX ALL ON `AttributeDefinition` REBUILD
+
+-- Definitions for custom attributes on various entities (Contact, Constituent, etc.)
+CREATE TABLE `AttributeDefinition`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`entityName` VARCHAR(100) NULL,		-- The name of the entity this attribute applies to (e.g., 'Contact', 'Constituent')
+	`key` VARCHAR(100) NULL,		-- The JSON key for the attribute
+	`label` VARCHAR(250) NULL,		-- The human-readable label for the attribute
+	`type` VARCHAR(50) NULL,		-- Data type: Text, Number, Date, Boolean, Select, MultiSelect, etc.
+	`options` TEXT NULL,		-- JSON options for Select/MultiSelect types
+	`isRequired` BIT NOT NULL DEFAULT 0,
+	`sequence` INT NULL,		-- Sequence to use for sorting.
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	UNIQUE `UC_AttributeDefinition_tenantGuid_entityName_key_Unique`( `tenantGuid`, `entityName`, `key` ) 		-- Uniqueness enforced on the AttributeDefinition table's tenantGuid and entityName and key fields.
+);
+-- Index on the AttributeDefinition table's tenantGuid field.
+CREATE INDEX `I_AttributeDefinition_tenantGuid` ON `AttributeDefinition` (`tenantGuid`);
+
+-- Index on the AttributeDefinition table's tenantGuid,entityName fields.
+CREATE INDEX `I_AttributeDefinition_tenantGuid_entityName` ON `AttributeDefinition` (`tenantGuid`, `entityName`);
+
+-- Index on the AttributeDefinition table's tenantGuid,active fields.
+CREATE INDEX `I_AttributeDefinition_tenantGuid_active` ON `AttributeDefinition` (`tenantGuid`, `active`);
+
+-- Index on the AttributeDefinition table's tenantGuid,deleted fields.
+CREATE INDEX `I_AttributeDefinition_tenantGuid_deleted` ON `AttributeDefinition` (`tenantGuid`, `deleted`);
+
 
 -- List of icons to use on user interfaces.  Not tenant editable.
 CREATE TABLE `Icon`(
@@ -1242,6 +1274,7 @@ CREATE TABLE `Contact`(
 	`contactMethodId` INT NULL,		-- Link to the ContactMethod table.
 	`notes` TEXT NULL,
 	`timeZoneId` INT NULL,		-- The contact's time zone
+	`attributes` TEXT NULL,		-- to store arbitrary JSON
 	`iconId` INT NULL,		-- Icon to use for UI display
 	`color` VARCHAR(10) NULL,		-- Hex color for UI display
 	`avatarFileName` VARCHAR(250) NULL,		-- Part of the binary data field setup
@@ -4645,6 +4678,10 @@ CREATE TABLE `ConstituentJourneyStage`(
 	`minLifetimeGiving` DECIMAL(11,2) NULL,		-- Optional criteria: Minimum total giving to qualify for this stage.
 	`maxLifetimeGiving` DECIMAL(11,2) NULL,		-- Optional criteria: Maximum total giving
 	`minSingleGiftAmount` DECIMAL(11,2) NULL,		-- Optional criteria: Min single gift size
+	`isDefault` BIT NOT NULL,		-- If true, this is the default stage for new constituents.
+	`minAnnualGiving` DECIMAL(11,2) NULL,		-- Optional: Minimum giving in the past 365 days.
+	`maxDaysSinceLastGift` INT NULL DEFAULT 0,		-- Optional: Maximum days elapsed since the last gift (recency limit).
+	`minGiftCount` INT NULL DEFAULT 0,		-- Optional: Minimum number of gifts required.
 	`versionNumber` INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
 	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
 	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
@@ -4667,15 +4704,15 @@ CREATE INDEX `I_ConstituentJourneyStage_tenantGuid_active` ON `ConstituentJourne
 -- Index on the ConstituentJourneyStage table's tenantGuid,deleted fields.
 CREATE INDEX `I_ConstituentJourneyStage_tenantGuid_deleted` ON `ConstituentJourneyStage` (`tenantGuid`, `deleted`);
 
-INSERT INTO `ConstituentJourneyStage` ( `tenantGuid`, `name`, `description`, `sequence`, `color`, `objectGuid` ) VALUES  ( '00000000-0000-0000-0000-000000000000', 'Unqualified', 'New potential donor.', 1, '#9E9E9E', 'd8663e5e-749c-4638-b69d-21d96078659d' );
+INSERT INTO `ConstituentJourneyStage` ( `tenantGuid`, `name`, `description`, `sequence`, `isDefault`, `color`, `objectGuid` ) VALUES  ( '00000000-0000-0000-0000-000000000000', 'Unqualified', 'New potential donor.', 1, 1, '#9E9E9E', 'd8663e5e-749c-4638-b69d-21d96078659d' );
 
-INSERT INTO `ConstituentJourneyStage` ( `tenantGuid`, `name`, `description`, `sequence`, `color`, `objectGuid` ) VALUES  ( '00000000-0000-0000-0000-000000000000', 'Qualified', 'Donor has been qualified.', 2, '#2196F3', 'ad06353d-2476-4322-836f-5374825968f9' );
+INSERT INTO `ConstituentJourneyStage` ( `tenantGuid`, `name`, `description`, `sequence`, `isDefault`, `color`, `objectGuid` ) VALUES  ( '00000000-0000-0000-0000-000000000000', 'Qualified', 'Donor has been qualified.', 2, 0, '#2196F3', 'ad06353d-2476-4322-836f-5374825968f9' );
 
-INSERT INTO `ConstituentJourneyStage` ( `tenantGuid`, `name`, `description`, `sequence`, `color`, `objectGuid` ) VALUES  ( '00000000-0000-0000-0000-000000000000', 'Cultivated', 'Relationship is being built.', 3, '#4CAF50', 'e8b60384-9336-4022-8b4b-970752538965' );
+INSERT INTO `ConstituentJourneyStage` ( `tenantGuid`, `name`, `description`, `sequence`, `isDefault`, `color`, `objectGuid` ) VALUES  ( '00000000-0000-0000-0000-000000000000', 'Cultivated', 'Relationship is being built.', 3, 0, '#4CAF50', 'e8b60384-9336-4022-8b4b-970752538965' );
 
-INSERT INTO `ConstituentJourneyStage` ( `tenantGuid`, `name`, `description`, `sequence`, `color`, `objectGuid` ) VALUES  ( '00000000-0000-0000-0000-000000000000', 'Solicited', 'Ask has been made.', 4, '#FF9800', '64319688-fd06-4074-8902-628670bf7471' );
+INSERT INTO `ConstituentJourneyStage` ( `tenantGuid`, `name`, `description`, `sequence`, `isDefault`, `color`, `objectGuid` ) VALUES  ( '00000000-0000-0000-0000-000000000000', 'Solicited', 'Ask has been made.', 4, 0, '#FF9800', '64319688-fd06-4074-8902-628670bf7471' );
 
-INSERT INTO `ConstituentJourneyStage` ( `tenantGuid`, `name`, `description`, `sequence`, `color`, `objectGuid` ) VALUES  ( '00000000-0000-0000-0000-000000000000', 'Stewardship', 'Ongoing maintenance.', 5, '#9C27B0', '1d971578-8319-482a-9e8c-529141873837' );
+INSERT INTO `ConstituentJourneyStage` ( `tenantGuid`, `name`, `description`, `sequence`, `isDefault`, `color`, `objectGuid` ) VALUES  ( '00000000-0000-0000-0000-000000000000', 'Stewardship', 'Ongoing maintenance.', 5, 0, '#9C27B0', '1d971578-8319-482a-9e8c-529141873837' );
 
 
 -- The change history for records from the ConstituentJourneyStage table.

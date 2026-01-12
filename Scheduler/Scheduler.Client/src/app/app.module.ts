@@ -271,6 +271,7 @@ import { AssignmentRoleService } from './scheduler-data-services/assignment-role
 import { AssignmentRoleQualificationRequirementService } from './scheduler-data-services/assignment-role-qualification-requirement.service';
 import { AssignmentRoleQualificationRequirementChangeHistoryService } from './scheduler-data-services/assignment-role-qualification-requirement-change-history.service';
 import { AssignmentStatusService } from './scheduler-data-services/assignment-status.service';
+import { AttributeDefinitionService } from './scheduler-data-services/attribute-definition.service';
 import { BatchService } from './scheduler-data-services/batch.service';
 import { BatchChangeHistoryService } from './scheduler-data-services/batch-change-history.service';
 import { BatchStatusService } from './scheduler-data-services/batch-status.service';
@@ -613,6 +614,10 @@ import { AssignmentStatusListingComponent } from './scheduler-data-components/as
 import { AssignmentStatusAddEditComponent } from './scheduler-data-components/assignment-status/assignment-status-add-edit/assignment-status-add-edit.component';
 import { AssignmentStatusDetailComponent } from './scheduler-data-components/assignment-status/assignment-status-detail/assignment-status-detail.component';
 import { AssignmentStatusTableComponent } from './scheduler-data-components/assignment-status/assignment-status-table/assignment-status-table.component';
+import { AttributeDefinitionListingComponent } from './scheduler-data-components/attribute-definition/attribute-definition-listing/attribute-definition-listing.component';
+import { AttributeDefinitionAddEditComponent } from './scheduler-data-components/attribute-definition/attribute-definition-add-edit/attribute-definition-add-edit.component';
+import { AttributeDefinitionDetailComponent } from './scheduler-data-components/attribute-definition/attribute-definition-detail/attribute-definition-detail.component';
+import { AttributeDefinitionTableComponent } from './scheduler-data-components/attribute-definition/attribute-definition-table/attribute-definition-table.component';
 import { BatchListingComponent } from './scheduler-data-components/batch/batch-listing/batch-listing.component';
 import { BatchAddEditComponent } from './scheduler-data-components/batch/batch-add-edit/batch-add-edit.component';
 import { BatchDetailComponent } from './scheduler-data-components/batch/batch-detail/batch-detail.component';
@@ -1216,7 +1221,7 @@ import { TributeTypeTableComponent } from './scheduler-data-components/tribute-t
     ClientContactsTabComponent,
     ClientContactCustomAddEditModalComponent,
     ClientTargetsTabComponent,
-
+    
     //
     // Contact customization - Replaced all with new
     //
@@ -1230,7 +1235,8 @@ import { TributeTypeTableComponent } from './scheduler-data-components/tribute-t
     ContactRelationshipsTabComponent,
     ContactFinancialsTabComponent,
     ContactScheduleTabComponent,
-    ClientTargetsTabComponent,
+    ConstituentJourneyUpdateModalComponent,
+    
 
     //
     // Security Data Components - Auto generated
@@ -1447,6 +1453,10 @@ import { TributeTypeTableComponent } from './scheduler-data-components/tribute-t
     AssignmentStatusAddEditComponent,
     AssignmentStatusDetailComponent,
     AssignmentStatusTableComponent,
+    AttributeDefinitionListingComponent,
+    AttributeDefinitionAddEditComponent,
+    AttributeDefinitionDetailComponent,
+    AttributeDefinitionTableComponent,
     BatchListingComponent,
     BatchAddEditComponent,
     BatchDetailComponent,
@@ -1527,7 +1537,6 @@ import { TributeTypeTableComponent } from './scheduler-data-components/tribute-t
     ConstituentJourneyStageChangeHistoryAddEditComponent,
     ConstituentJourneyStageChangeHistoryDetailComponent,
     ConstituentJourneyStageChangeHistoryTableComponent,
-    ConstituentJourneyUpdateModalComponent,
     ContactListingComponent,
     ContactAddEditComponent,
     ContactDetailComponent,
@@ -2073,6 +2082,7 @@ import { TributeTypeTableComponent } from './scheduler-data-components/tribute-t
     AssignmentRoleQualificationRequirementService,
     AssignmentRoleQualificationRequirementChangeHistoryService,
     AssignmentStatusService,
+    AttributeDefinitionService,
     BatchService,
     BatchChangeHistoryService,
     BatchStatusService,

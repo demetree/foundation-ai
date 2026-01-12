@@ -300,6 +300,7 @@ namespace Foundation.Scheduler.Database
 			public Int32? contactMethodId { get; set; }
 			public String notes { get; set; }
 			public Int32? timeZoneId { get; set; }
+			public String attributes { get; set; }
 			public Int32? iconId { get; set; }
 			public String color { get; set; }
 			public String avatarFileName { get; set; }
@@ -358,6 +359,7 @@ namespace Foundation.Scheduler.Database
 				contactMethodId = this.contactMethodId,
 				notes = this.notes,
 				timeZoneId = this.timeZoneId,
+				attributes = this.attributes,
 				iconId = this.iconId,
 				color = this.color,
 				avatarFileName = this.avatarFileName,
@@ -424,6 +426,7 @@ namespace Foundation.Scheduler.Database
 				contactMethodId = this.contactMethodId,
 				notes = this.notes,
 				timeZoneId = this.timeZoneId,
+				attributes = this.attributes,
 				iconId = this.iconId,
 				color = this.color,
 				avatarFileName = this.avatarFileName,
@@ -495,6 +498,7 @@ namespace Foundation.Scheduler.Database
 				contactMethodId = dto.contactMethodId,
 				notes = dto.notes,
 				timeZoneId = dto.timeZoneId,
+				attributes = dto.attributes,
 				iconId = dto.iconId,
 				color = dto.color,
 				avatarFileName = dto.avatarFileName,
@@ -538,6 +542,7 @@ namespace Foundation.Scheduler.Database
 			this.contactMethodId = dto.contactMethodId;
 			this.notes = dto.notes;
 			this.timeZoneId = dto.timeZoneId;
+			this.attributes = dto.attributes;
 			this.iconId = dto.iconId;
 			this.color = dto.color;
 			this.avatarFileName = dto.avatarFileName;
@@ -586,6 +591,7 @@ namespace Foundation.Scheduler.Database
 				contactMethodId = this.contactMethodId,
 				notes = this.notes,
 				timeZoneId = this.timeZoneId,
+				attributes = this.attributes,
 				iconId = this.iconId,
 				color = this.color,
 				avatarFileName = this.avatarFileName,
@@ -665,6 +671,7 @@ namespace Foundation.Scheduler.Database
 				contactMethodId = contact.contactMethodId,
 				notes = contact.notes,
 				timeZoneId = contact.timeZoneId,
+				attributes = contact.attributes,
 				iconId = contact.iconId,
 				color = contact.color,
 				avatarFileName = contact.avatarFileName,
@@ -712,6 +719,7 @@ namespace Foundation.Scheduler.Database
 				contactMethodId = contact.contactMethodId,
 				notes = contact.notes,
 				timeZoneId = contact.timeZoneId,
+				attributes = contact.attributes,
 				iconId = contact.iconId,
 				color = contact.color,
 				avatarFileName = contact.avatarFileName,

@@ -149,6 +149,7 @@ export class ClientContactCustomAddEditModalComponent {
         position: formValue.position?.trim() || null,
         webSite: null,
         externalId: null,
+        attributes: null,
         salutationId: null,
         birthDate: null,
         contactMethodId: null,

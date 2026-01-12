@@ -293,7 +293,8 @@ export class ContactCustomAddEditComponent {
         position: formValue.position?.trim() || null,
         webSite: formValue.webSite?.trim() || null,
         contactMethodId: formValue.contactMethodId ? Number(formValue.contactMethodId) : null,
-        notes: formValue.notes?.trim() || null,
+      notes: formValue.notes?.trim() || null,
+        attributes: null,    // need to fix this.
         timeZoneId: formValue.timeZoneId ? Number(formValue.timeZoneId) : null,
         iconId: formValue.iconId ? Number(formValue.iconId) : null,
         color: formValue.color?.trim() || null,

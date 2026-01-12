@@ -1,8 +1,8 @@
 /*
-   GENERATED FORM FOR THE CONTACT TABLE - DO NOT MODIFY DIRECTLY
+   GENERATED FORM FOR THE ATTRIBUTEDEFINITION TABLE - DO NOT MODIFY DIRECTLY
    =================================================================================
 
-   This is the default form generated from Contact table metadata.
+   This is the default form generated from AttributeDefinition table metadata.
 
    It is useful for low usage worksflows such as basic configuration, but is likely not good enough for primary workflow usage
    because it's form layout and validation is too simple.
@@ -10,7 +10,7 @@
    For building better looking and/or versions with custom logic, create a custom version of this:
 
    1. Copy this component
-   2. Rename to contact-custom (or similar)
+   2. Rename to attribute-definition-custom (or similar)
    3. Modify layout, grouping, field types, add workflow logic
    
    This generated version is kept simple on purpose so it's easy to use as a reference/scaffold.
@@ -18,38 +18,38 @@
 */
 import { Component, OnInit, AfterViewInit, OnChanges, SimpleChanges, Input, Output, EventEmitter, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { ContactService, ContactData, ContactQueryParameters } from '../../../scheduler-data-services/contact.service';
-import { ContactAddEditComponent } from '../contact-add-edit/contact-add-edit.component';
+import { AttributeDefinitionService, AttributeDefinitionData, AttributeDefinitionQueryParameters } from '../../../scheduler-data-services/attribute-definition.service';
+import { AttributeDefinitionAddEditComponent } from '../attribute-definition-add-edit/attribute-definition-add-edit.component';
 import { AuthService } from '../../../services/auth.service';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { ConfirmationService } from '../../../services/confirmation-service';
 import { TableColumn } from '../../../utility/foundation.utility';
 
 @Component({
-  selector: 'app-contact-table',
-  templateUrl: './contact-table.component.html',
-  styleUrls: ['./contact-table.component.scss'],
+  selector: 'app-attribute-definition-table',
+  templateUrl: './attribute-definition-table.component.html',
+  styleUrls: ['./attribute-definition-table.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ContactTableComponent implements OnInit, OnChanges, AfterViewInit {
-  @ViewChild(ContactAddEditComponent) addEditContactComponent!: ContactAddEditComponent;
+export class AttributeDefinitionTableComponent implements OnInit, OnChanges, AfterViewInit {
+  @ViewChild(AttributeDefinitionAddEditComponent) addEditAttributeDefinitionComponent!: AttributeDefinitionAddEditComponent;
 
-  @Input() Contacts: ContactData[] | null = null; // Optional prefiltered data
+  @Input() AttributeDefinitions: AttributeDefinitionData[] | null = null; // Optional prefiltered data
   @Input() isSmallScreen: boolean = false;
   @Input() filterText: string | null = null; // Optional filter text 
-  @Input() queryParams: Partial<ContactQueryParameters> = { } // Optional query parameters
+  @Input() queryParams: Partial<AttributeDefinitionQueryParameters> = { } // Optional query parameters
 
   @Input() disableDefaultEdit: boolean = false;         // Allow parent to disable default edit behavior
   @Input() disableDefaultDelete: boolean = false;       // Allow parent to disable default delete behavior
   @Input() disableDefaultUndelete: boolean = false; // Allow parent to disable default undelete behavior
 
-  @Output() edit = new EventEmitter<ContactData>(); // Emitted for custom edit handling
-  @Output() delete = new EventEmitter<ContactData>(); // Emitted for custom delete handling
-  @Output() undelete = new EventEmitter<ContactData>(); // Emitted for custom undelete handling
+  @Output() edit = new EventEmitter<AttributeDefinitionData>(); // Emitted for custom edit handling
+  @Output() delete = new EventEmitter<AttributeDefinitionData>(); // Emitted for custom delete handling
+  @Output() undelete = new EventEmitter<AttributeDefinitionData>(); // Emitted for custom undelete handling
 
   @Input() columns: TableColumn[] = [];     // Default set built in ngOnInit
 
-  public filteredContacts: ContactData[] | null = null;        // Stores the filtered/sorted data
+  public filteredAttributeDefinitions: AttributeDefinitionData[] | null = null;        // Stores the filtered/sorted data
 
   // Sorting properties
   public sortColumn: string | null = null;
@@ -71,7 +71,7 @@ export class ContactTableComponent implements OnInit, OnChanges, AfterViewInit {
   private errorResetTimeout: any;
 
 
-  constructor(private contactService: ContactService,
+  constructor(private attributeDefinitionService: AttributeDefinitionService,
               private authService: AuthService,
               private alertService: AlertService,
               private confirmationService: ConfirmationService) { }
@@ -83,7 +83,7 @@ export class ContactTableComponent implements OnInit, OnChanges, AfterViewInit {
       this.buildDefaultColumns();
     }
 
-    if (!this.Contacts) {
+    if (!this.AttributeDefinitions) {
 
         this.isManagingData = true; // Component is managing data loading
         this.loadData(); // Load data on initialization
@@ -99,15 +99,15 @@ export class ContactTableComponent implements OnInit, OnChanges, AfterViewInit {
   ngAfterViewInit(): void {
 
     //
-    // Subscribe to the contactChanged observable on the add/edit component so that when a Contact changes we can reload the list, if component is available and not disabled..
+    // Subscribe to the attributeDefinitionChanged observable on the add/edit component so that when a AttributeDefinition changes we can reload the list, if component is available and not disabled..
     //
-    if (this.addEditContactComponent && !this.disableDefaultEdit) {
-        this.addEditContactComponent.contactChanged.subscribe({
-        next: (result: ContactData[] | null) => {
+    if (this.addEditAttributeDefinitionComponent && !this.disableDefaultEdit) {
+        this.addEditAttributeDefinitionComponent.attributeDefinitionChanged.subscribe({
+        next: (result: AttributeDefinitionData[] | null) => {
             this.loadData();
         },
         error: (err: any) => {
-             this.alertService.showMessage("Error during Contact changed notification", JSON.stringify(err), MessageSeverity.error);
+             this.alertService.showMessage("Error during Attribute Definition changed notification", JSON.stringify(err), MessageSeverity.error);
         }
         });
      }
@@ -166,30 +166,13 @@ export class ContactTableComponent implements OnInit, OnChanges, AfterViewInit {
     // Start with the common columns that everyone sees
     //
     const defaultColumns: TableColumn[] = [
-    { key: 'contactType.name', label: 'Contact Type', width: undefined, template: 'link', linkPath: ['/contacttype', 'contactTypeId'] },
-    { key: 'firstName', label: 'First Name', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/contact', 'id']  },
-    { key: 'middleName', label: 'Middle Name', width: undefined },
-    { key: 'lastName', label: 'Last Name', width: undefined },
-    { key: 'salutation.name', label: 'Salutation', width: undefined, template: 'link', linkPath: ['/salutation', 'salutationId'] },
-    { key: 'title', label: 'Title', width: undefined },
-    { key: 'birthDate', label: 'Birth Date', width: undefined, template: 'date' },
-    { key: 'company', label: 'Company', width: undefined },
-    { key: 'email', label: 'Email', width: undefined },
-    { key: 'phone', label: 'Phone', width: undefined },
-    { key: 'mobile', label: 'Mobile', width: undefined },
-    { key: 'position', label: 'Position', width: undefined },
-    { key: 'webSite', label: 'Web Site', width: undefined },
-    { key: 'contactMethod.name', label: 'Contact Method', width: undefined, template: 'link', linkPath: ['/contactmethod', 'contactMethodId'] },
-    { key: 'notes', label: 'Notes', width: undefined },
-    { key: 'timeZone.name', label: 'Time Zone', width: undefined, template: 'link', linkPath: ['/timezone', 'timeZoneId'] },
-    // { key: 'attributes', label: 'Attributes', width: undefined },
-    { key: 'icon.name', label: 'Icon', width: undefined, template: 'link', linkPath: ['/icon', 'iconId'] },
-    { key: 'color', label: 'Color', width: "50px", template: 'color' },
-    // { key: 'avatarFileName', label: 'Avatar File Name', width: undefined },
-    // { key: 'avatarSize', label: 'Avatar Size', width: undefined },
-    // { key: 'avatarData', label: 'Avatar Data', width: undefined },
-    // { key: 'avatarMimeType', label: 'Avatar Mime Type', width: undefined },
-    // { key: 'externalId', label: 'External Id', width: undefined },
+    { key: 'entityName', label: 'Entity Name', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/attributedefinition', 'id']  },
+    { key: 'key', label: 'Key', width: undefined },
+    { key: 'label', label: 'Label', width: undefined },
+    { key: 'type', label: 'Type', width: undefined },
+    { key: 'options', label: 'Options', width: undefined },
+    { key: 'isRequired', label: 'Is Required', width: '120px', template: 'boolean' },
+    { key: 'sequence', label: 'Sequence', width: undefined },
 
     ];
 
@@ -197,17 +180,15 @@ export class ContactTableComponent implements OnInit, OnChanges, AfterViewInit {
     //
     // Note that CSS stylng shows deleted rows with a strike through, and inactive as italicized, both with transparency so they stand out, regardless of if there are active/deleted columns
     //
-    const isWriter = this.contactService.userIsSchedulerContactWriter();
+    const isWriter = this.attributeDefinitionService.userIsSchedulerAttributeDefinitionWriter();
     const isAdmin = this.authService.isSchedulerAdministrator; 
 
     if (isAdmin) {
-     defaultColumns.push({ key: 'versionNumber', label: 'Version Number', width: undefined });
      defaultColumns.push({ key: 'active', label: 'Active', width: '120px', template: 'boolean' });
      defaultColumns.push({ key: 'deleted', label: 'Deleted', width: '120px', template: 'boolean' });
 
     }
     else if (isWriter) {
-     defaultColumns.push({ key: 'versionNumber', label: 'Version Number', width: undefined });
     }
 
     
@@ -235,15 +216,15 @@ export class ContactTableComponent implements OnInit, OnChanges, AfterViewInit {
       return; // Skip if parent is providing data
     }
 
-    if (this.contactService.userIsSchedulerContactReader() == false) {
-      this.alertService.showMessage(this.authService.currentUser?.userName + " does not have the permission to read from Contacts", '', MessageSeverity.info);
+    if (this.attributeDefinitionService.userIsSchedulerAttributeDefinitionReader() == false) {
+      this.alertService.showMessage(this.authService.currentUser?.userName + " does not have the permission to read from Attribute Definitions", '', MessageSeverity.info);
       return;
     }
 
     //
     // Server side filtering using the any string contains parameter
     //
-    const contactQueryParams = {
+    const attributeDefinitionQueryParams = {
         ...this.queryParams,
         anyStringContains: this.filterText || undefined
     };
@@ -251,12 +232,12 @@ export class ContactTableComponent implements OnInit, OnChanges, AfterViewInit {
     //
     // Note that we are not clearing the data service cache here.  Fresh data will be loaded if necessary, or cached data will be returned if no changes to it have been detected.
     //
-    this.contactService.GetContactList(contactQueryParams).subscribe({
-      next: (ContactList) => {
-        if (ContactList) {
-          this.Contacts = ContactList;
+    this.attributeDefinitionService.GetAttributeDefinitionList(attributeDefinitionQueryParams).subscribe({
+      next: (AttributeDefinitionList) => {
+        if (AttributeDefinitionList) {
+          this.AttributeDefinitions = AttributeDefinitionList;
         } else {
-          this.Contacts = [];
+          this.AttributeDefinitions = [];
         }
 
         //
@@ -287,7 +268,7 @@ export class ContactTableComponent implements OnInit, OnChanges, AfterViewInit {
         //
         this.setErrorState();
 
-         this.alertService.showMessage("Error getting Contact data", JSON.stringify(err), MessageSeverity.error);
+         this.alertService.showMessage("Error getting Attribute Definition data", JSON.stringify(err), MessageSeverity.error);
       }
     });
   }
@@ -312,8 +293,8 @@ export class ContactTableComponent implements OnInit, OnChanges, AfterViewInit {
 
    private applyFiltersAndSort(): void {
 
-    if (!this.Contacts) {
-      this.filteredContacts = null;
+    if (!this.AttributeDefinitions) {
+      this.filteredAttributeDefinitions = null;
       return;
     }
 
@@ -325,7 +306,7 @@ export class ContactTableComponent implements OnInit, OnChanges, AfterViewInit {
     };
 
 
-    let result = [...this.Contacts];
+    let result = [...this.AttributeDefinitions];
 
     if (this.filterText) {
 
@@ -335,36 +316,19 @@ export class ContactTableComponent implements OnInit, OnChanges, AfterViewInit {
 
         // Define fields to filter on, including nested properties
         const filterFields = [
-                      'contactType.name',
-                      'firstName',
-                      'middleName',
-                      'lastName',
-                      'salutation.name',
-                      'title',
-                      'birthDate',
-                      'company',
-                      'email',
-                      'phone',
-                      'mobile',
-                      'position',
-                      'webSite',
-                      'contactMethod.name',
-                      'notes',
-                      'timeZone.name',
-                      'attributes',
-                      'icon.name',
-                      'color',
-                      'avatarFileName',
-                      'avatarSize',
-                      'avatarData',
-                      'avatarMimeType',
-                      'externalId',
+                      'entityName',
+                      'key',
+                      'label',
+                      'type',
+                      'options',
+                      'isRequired',
+                      'sequence',
         ];
 
-        result = result.filter((contact) =>
+        result = result.filter((attributeDefinition) =>
 
         filterFields.some((field) => {
-        const value = getNestedValue(contact, field);
+        const value = getNestedValue(attributeDefinition, field);
             return value && value.toString().toLowerCase().includes(searchText);
           })
           );
@@ -389,18 +353,18 @@ export class ContactTableComponent implements OnInit, OnChanges, AfterViewInit {
       });
     }
 
-    this.filteredContacts = result;
+    this.filteredAttributeDefinitions = result;
   }
 
 
-  public handleEdit(contact: ContactData): void {
+  public handleEdit(attributeDefinition: AttributeDefinitionData): void {
     if (this.disableDefaultEdit)
     {
-        this.edit.emit(contact); // Let parent handle edit
+        this.edit.emit(attributeDefinition); // Let parent handle edit
     }
-    else if (this.addEditContactComponent)
+    else if (this.addEditAttributeDefinitionComponent)
     {
-        this.addEditContactComponent.openModal(contact); // Default edit behavior
+        this.addEditAttributeDefinitionComponent.openModal(attributeDefinition); // Default edit behavior
     }
     else
     {
@@ -413,19 +377,19 @@ export class ContactTableComponent implements OnInit, OnChanges, AfterViewInit {
 }
 
 
-  public handleDelete(contact: ContactData): void {
+  public handleDelete(attributeDefinition: AttributeDefinitionData): void {
     if (this.disableDefaultDelete)
     {
-        this.delete.emit(contact); // Let parent handle delete
+        this.delete.emit(attributeDefinition); // Let parent handle delete
     }
     else
     {
         this.confirmationService
-          .confirm('Delete Contact', 'Are you sure you want to delete this Contact?')
+          .confirm('Delete AttributeDefinition', 'Are you sure you want to delete this Attribute Definition?')
           .then((result) => {
               if (result)
               {
-                  this.deleteContact(contact);
+                  this.deleteAttributeDefinition(attributeDefinition);
               }
           })
           .catch(() => { });
@@ -433,32 +397,32 @@ export class ContactTableComponent implements OnInit, OnChanges, AfterViewInit {
   }
 
 
-  private deleteContact(contactData: ContactData): void {
-    this.contactService.DeleteContact(contactData.id).subscribe({
+  private deleteAttributeDefinition(attributeDefinitionData: AttributeDefinitionData): void {
+    this.attributeDefinitionService.DeleteAttributeDefinition(attributeDefinitionData.id).subscribe({
       next: () => {
-       this.contactService.ClearAllCaches();       // Clear the data service cache because we know we have changed the data.
+       this.attributeDefinitionService.ClearAllCaches();       // Clear the data service cache because we know we have changed the data.
         this.loadData(); // Reload the data list after deletion
       },
       error: (err) => {
-         this.alertService.showMessage("Error deleting Contact", JSON.stringify(err), MessageSeverity.error);
+         this.alertService.showMessage("Error deleting Attribute Definition", JSON.stringify(err), MessageSeverity.error);
       }
     });
   }
 
 
-  public handleUndelete(contact: ContactData): void {
+  public handleUndelete(attributeDefinition: AttributeDefinitionData): void {
     if (this.disableDefaultUndelete)
     {
-        this.undelete.emit(contact); // Let parent handle undelete
+        this.undelete.emit(attributeDefinition); // Let parent handle undelete
     }
     else
     {
         this.confirmationService
-          .confirm('Undelete Contact', 'Are you sure you want to undelete this Contact?')
+          .confirm('Undelete AttributeDefinition', 'Are you sure you want to undelete this Attribute Definition?')
           .then((result) => {
               if (result)
               {
-                  this.undeleteContact(contact);
+                  this.undeleteAttributeDefinition(attributeDefinition);
               }
           })
           .catch(() => { });
@@ -466,34 +430,34 @@ export class ContactTableComponent implements OnInit, OnChanges, AfterViewInit {
 }
 
 
-  private undeleteContact(contactData: ContactData): void {
+  private undeleteAttributeDefinition(attributeDefinitionData: AttributeDefinitionData): void {
 
-      var contactToSubmit = this.contactService.ConvertToContactSubmitData(contactData); // Convert Contact data to post object for undeleting
-      contactToSubmit.deleted = false;
+      var attributeDefinitionToSubmit = this.attributeDefinitionService.ConvertToAttributeDefinitionSubmitData(attributeDefinitionData); // Convert AttributeDefinition data to post object for undeleting
+      attributeDefinitionToSubmit.deleted = false;
 
-      this.contactService.PutContact(contactToSubmit.id, contactToSubmit).subscribe({
+      this.attributeDefinitionService.PutAttributeDefinition(attributeDefinitionToSubmit.id, attributeDefinitionToSubmit).subscribe({
       next: () => {
-       this.contactService.ClearAllCaches();       // Clear the data service cache because we know we have changed the data.
+       this.attributeDefinitionService.ClearAllCaches();       // Clear the data service cache because we know we have changed the data.
         this.loadData(); // Reload the data list after un-deletion
       },
       error: (err) => {
-         this.alertService.showMessage("Error undeleting Contact", JSON.stringify(err), MessageSeverity.error);
+         this.alertService.showMessage("Error undeleting Attribute Definition", JSON.stringify(err), MessageSeverity.error);
       }
     });
   }
 
 
-  public getContactId(index: number, contact: any): number {
-    return contact.id;
+  public getAttributeDefinitionId(index: number, attributeDefinition: any): number {
+    return attributeDefinition.id;
   }
 
 
-  public userIsSchedulerContactReader(): boolean {
-    return this.contactService.userIsSchedulerContactReader();
+  public userIsSchedulerAttributeDefinitionReader(): boolean {
+    return this.attributeDefinitionService.userIsSchedulerAttributeDefinitionReader();
   }
 
-  public userIsSchedulerContactWriter(): boolean {
-    return this.contactService.userIsSchedulerContactWriter();
+  public userIsSchedulerAttributeDefinitionWriter(): boolean {
+    return this.attributeDefinitionService.userIsSchedulerAttributeDefinitionWriter();
   }
 
 
@@ -505,7 +469,7 @@ export class ContactTableComponent implements OnInit, OnChanges, AfterViewInit {
   }
 
 
-  // Build routerLink arrays like ['/contact', contactId]
+  // Build routerLink arrays like ['/attributeDefinition', attributeDefinitionId]
   public buildLink(item: any, path: string[]): any[] {
     //
     // Expect a starting item in the path array with a slash to indicate the route.  After that, the other items in path are expected to be properties of the item.  Tyically one, but more are technically supported.

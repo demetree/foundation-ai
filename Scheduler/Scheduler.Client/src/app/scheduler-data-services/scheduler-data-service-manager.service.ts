@@ -15,6 +15,7 @@ import {AssignmentRoleService} from  './assignment-role.service';
 import {AssignmentRoleQualificationRequirementService} from  './assignment-role-qualification-requirement.service';
 import {AssignmentRoleQualificationRequirementChangeHistoryService} from  './assignment-role-qualification-requirement-change-history.service';
 import {AssignmentStatusService} from  './assignment-status.service';
+import {AttributeDefinitionService} from  './attribute-definition.service';
 import {BatchService} from  './batch.service';
 import {BatchChangeHistoryService} from  './batch-change-history.service';
 import {BatchStatusService} from  './batch-status.service';
@@ -149,6 +150,7 @@ export class SchedulerDataServiceManagerService  {
               , public assignmentRoleQualificationRequirementService: AssignmentRoleQualificationRequirementService
               , public assignmentRoleQualificationRequirementChangeHistoryService: AssignmentRoleQualificationRequirementChangeHistoryService
               , public assignmentStatusService: AssignmentStatusService
+              , public attributeDefinitionService: AttributeDefinitionService
               , public batchService: BatchService
               , public batchChangeHistoryService: BatchChangeHistoryService
               , public batchStatusService: BatchStatusService
@@ -281,6 +283,7 @@ export class SchedulerDataServiceManagerService  {
         this.assignmentRoleQualificationRequirementService.ClearAllCaches();
         this.assignmentRoleQualificationRequirementChangeHistoryService.ClearAllCaches();
         this.assignmentStatusService.ClearAllCaches();
+        this.attributeDefinitionService.ClearAllCaches();
         this.batchService.ClearAllCaches();
         this.batchChangeHistoryService.ClearAllCaches();
         this.batchStatusService.ClearAllCaches();

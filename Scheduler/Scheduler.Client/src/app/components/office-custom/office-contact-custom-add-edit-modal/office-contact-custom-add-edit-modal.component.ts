@@ -148,6 +148,7 @@ export class OfficeContactCustomAddEditModalComponent {
         iconId: formValue.iconId ? Number(formValue.iconId) : null,
         position: formValue.position?.trim() || null,
         webSite: null,
+        attributes: null,
         externalId: null,
         salutationId: null,
         birthDate: null,

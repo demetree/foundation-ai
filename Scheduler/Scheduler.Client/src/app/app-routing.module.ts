@@ -187,6 +187,8 @@ import { AssignmentRoleQualificationRequirementChangeHistoryListingComponent } f
 import { AssignmentRoleQualificationRequirementChangeHistoryDetailComponent } from './scheduler-data-components/assignment-role-qualification-requirement-change-history/assignment-role-qualification-requirement-change-history-detail/assignment-role-qualification-requirement-change-history-detail.component';
 import { AssignmentStatusListingComponent } from './scheduler-data-components/assignment-status/assignment-status-listing/assignment-status-listing.component';
 import { AssignmentStatusDetailComponent } from './scheduler-data-components/assignment-status/assignment-status-detail/assignment-status-detail.component';
+import { AttributeDefinitionListingComponent } from './scheduler-data-components/attribute-definition/attribute-definition-listing/attribute-definition-listing.component';
+import { AttributeDefinitionDetailComponent } from './scheduler-data-components/attribute-definition/attribute-definition-detail/attribute-definition-detail.component';
 import { BatchListingComponent } from './scheduler-data-components/batch/batch-listing/batch-listing.component';
 import { BatchDetailComponent } from './scheduler-data-components/batch/batch-detail/batch-detail.component';
 import { BatchChangeHistoryListingComponent } from './scheduler-data-components/batch-change-history/batch-change-history-listing/batch-change-history-listing.component';
@@ -664,6 +666,11 @@ const routes: Routes = [
   { path: 'assignmentstatuses/:assignmentStatusId', component: AssignmentStatusDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Assignment Status' },
   { path: 'assignmentstatus/:assignmentStatusId', component: AssignmentStatusDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Assignment Status' },
   { path: 'assignmentstatus', redirectTo: 'assignmentstatuses' },
+  { path: 'attributedefinitions', component: AttributeDefinitionListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Attribute Definitions' },
+  { path: 'attributedefinitions/new', component: AttributeDefinitionDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Attribute Definition' },
+  { path: 'attributedefinitions/:attributeDefinitionId', component: AttributeDefinitionDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Attribute Definition' },
+  { path: 'attributedefinition/:attributeDefinitionId', component: AttributeDefinitionDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Attribute Definition' },
+  { path: 'attributedefinition', redirectTo: 'attributedefinitions' },
   { path: 'batches', component: BatchListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Batches' },
   { path: 'batches/new', component: BatchDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Batch' },
   { path: 'batches/:batchId', component: BatchDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Batch' },

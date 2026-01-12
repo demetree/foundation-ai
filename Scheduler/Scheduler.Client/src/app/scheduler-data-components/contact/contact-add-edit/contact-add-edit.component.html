@@ -108,6 +108,10 @@
                     <option *ngFor="let timeZone of timeZones$ | async" [ngValue]="timeZone.id">{{timeZone.name}}</option>
                 </select>
             </div>
+            <div class="form-group" *ngIf="!isFieldHidden('attributes')">
+                <label for="Contact-attributes" id="label-Contact-attributes">Attributes</label>
+                <textarea id="Contact-attributes" formControlName="attributes" placeholder="Enter Attributes" class="form-control contact-input" [disabled]="!userIsSchedulerContactWriter()"></textarea>
+            </div>
             <div class="form-group" *ngIf="!isFieldHidden('iconId')">
                 <label for="Contact-iconId" id="label-Contact-iconId">Icon</label>
                 <select id="Contact-iconId" formControlName="iconId" class="form-select contact-select" [disabled]="!userIsSchedulerContactWriter()">

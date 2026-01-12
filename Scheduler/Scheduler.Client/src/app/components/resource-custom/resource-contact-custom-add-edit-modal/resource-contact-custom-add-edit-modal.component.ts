@@ -148,6 +148,7 @@ export class ResourceContactCustomAddEditModalComponent {
         timeZoneId: this.resource.timeZoneId,     // reasonable enough to assume the contact for the resource is in the same time zone as the resource 
         iconId: formValue.iconId ? Number(formValue.iconId) : null,
         position: formValue.position?.trim() || null,
+        attributes: null,
         webSite: null,
         externalId: null,
         contactTypeId: Number(formValue.contactTypeId),

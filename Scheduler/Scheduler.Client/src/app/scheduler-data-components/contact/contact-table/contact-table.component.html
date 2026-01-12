@@ -87,6 +87,10 @@
                 Time  Zone
                 <span *ngIf="sortColumn === 'timeZone.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('attributes')">
+                Attributes
+                <span *ngIf="sortColumn === 'attributes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
             <th class="sortable" scope="col" (click)="sortBy('icon.name')">
                 Icon
                 <span *ngIf="sortColumn === 'icon.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
@@ -213,6 +217,7 @@ End of commented block for alternate definition option -->
             <td class="text-truncate"><a [routerLink]="['/contactmethod', contact.contactMethodId]" class="btn btn-link text-left" ngbTooltip="Open Contact Method details">{{contact.contactMethod?.name}}</a></td>
             <td class="text-truncate">{{contact.notes}}</td>
             <td class="text-truncate"><a [routerLink]="['/timezone', contact.timeZoneId]" class="btn btn-link text-left" ngbTooltip="Open Time Zone details">{{contact.timeZone?.name}}</a></td>
+            <td class="text-truncate">{{contact.attributes}}</td>
             <td class="text-truncate"><a [routerLink]="['/icon', contact.iconId]" class="btn btn-link text-left" ngbTooltip="Open Icon details">{{contact.icon?.name}}</a></td>
             <td class="text-truncate">{{contact.color}}</td>
             <td class="text-truncate">{{contact.avatarFileName}}</td>
@@ -430,6 +435,10 @@ End of commented block for alternate definition option -->
             <p class="contact-info" *ngIf="contact.timeZoneId != null">
               <strong>Time Zone: </strong>
               <a [routerLink]="['/timezone', contact.timeZoneId]" class="text-left p-0 m-0" ngbTooltip="Open Time Zone details">{{contact.timeZone?.name}}</a>
+            </p>
+            <p class="contact-info" *ngIf="contact.attributes != null">
+              <strong>Attributes: </strong>
+              {{contact.attributes}}
             </p>
             <p class="contact-info" *ngIf="contact.iconId != null">
               <strong>Icon: </strong>

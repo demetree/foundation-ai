@@ -149,6 +149,7 @@ CREATE SCHEMA "Scheduler"
 -- DROP TABLE "Scheduler"."ResourceType"
 -- DROP TABLE "Scheduler"."Salutation"
 -- DROP TABLE "Scheduler"."Icon"
+-- DROP TABLE "Scheduler"."AttributeDefinition"
 
 /* These disable table index commands are here in a commented state as a convenience for situations where you want to remove the indexes on a table for things like mass data loads, where indexes just slow things down.  The corresponding rebuild index commands are listed after the disable commands */
 -- ALTER INDEX ALL ON "SoftCreditChangeHistory" DISABLE
@@ -278,6 +279,7 @@ CREATE SCHEMA "Scheduler"
 -- ALTER INDEX ALL ON "ResourceType" DISABLE
 -- ALTER INDEX ALL ON "Salutation" DISABLE
 -- ALTER INDEX ALL ON "Icon" DISABLE
+-- ALTER INDEX ALL ON "AttributeDefinition" DISABLE
 
 /* These rebuild table index commands are here in a commented state as a convenience for situations where you want to rebuild the indexes on a table after having removed them, or if you want to refresh them. */
 -- ALTER INDEX ALL ON "SoftCreditChangeHistory" REBUILD
@@ -407,6 +409,41 @@ CREATE SCHEMA "Scheduler"
 -- ALTER INDEX ALL ON "ResourceType" REBUILD
 -- ALTER INDEX ALL ON "Salutation" REBUILD
 -- ALTER INDEX ALL ON "Icon" REBUILD
+-- ALTER INDEX ALL ON "AttributeDefinition" REBUILD
+
+-- Definitions for custom attributes on various entities (Contact, Constituent, etc.)
+CREATE TABLE "Scheduler"."AttributeDefinition"
+(
+	"id" SERIAL PRIMARY KEY NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	"entityName" VARCHAR(100) NULL,		-- The name of the entity this attribute applies to (e.g., 'Contact', 'Constituent')
+	"key" VARCHAR(100) NULL,		-- The JSON key for the attribute
+	"label" VARCHAR(250) NULL,		-- The human-readable label for the attribute
+	"type" VARCHAR(50) NULL,		-- Data type: Text, Number, Date, Boolean, Select, MultiSelect, etc.
+	"options" TEXT NULL,		-- JSON options for Select/MultiSelect types
+	"isRequired" BOOLEAN NOT NULL DEFAULT false,
+	"sequence" INT NULL,		-- Sequence to use for sorting.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
+	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
+	CONSTRAINT "UC_AttributeDefinition_tenantGuid_entityName_key" UNIQUE ( "tenantGuid", "entityName", "key") 		-- Uniqueness enforced on the AttributeDefinition table's tenantGuid and entityName and key fields.
+);
+-- Index on the AttributeDefinition table's tenantGuid field.
+CREATE INDEX "I_AttributeDefinition_tenantGuid" ON "Scheduler"."AttributeDefinition" ("tenantGuid")
+;
+
+-- Index on the AttributeDefinition table's tenantGuid,entityName fields.
+CREATE INDEX "I_AttributeDefinition_tenantGuid_entityName" ON "Scheduler"."AttributeDefinition" ("tenantGuid", "entityName")
+;
+
+-- Index on the AttributeDefinition table's tenantGuid,active fields.
+CREATE INDEX "I_AttributeDefinition_tenantGuid_active" ON "Scheduler"."AttributeDefinition" ("tenantGuid", "active")
+;
+
+-- Index on the AttributeDefinition table's tenantGuid,deleted fields.
+CREATE INDEX "I_AttributeDefinition_tenantGuid_deleted" ON "Scheduler"."AttributeDefinition" ("tenantGuid", "deleted")
+;
+
 
 -- List of icons to use on user interfaces.  Not tenant editable.
 CREATE TABLE "Scheduler"."Icon"
@@ -1334,6 +1371,7 @@ CREATE TABLE "Scheduler"."Contact"
 	"contactMethodId" INT NULL,		-- Link to the ContactMethod table.
 	"notes" TEXT NULL,
 	"timeZoneId" INT NULL,		-- The contact's time zone
+	"attributes" TEXT NULL,		-- to store arbitrary JSON
 	"iconId" INT NULL,		-- Icon to use for UI display
 	"color" VARCHAR(10) NULL,		-- Hex color for UI display
 	"avatarFileName" VARCHAR(250) NULL,		-- Part of the binary data field setup
@@ -5364,6 +5402,10 @@ CREATE TABLE "Scheduler"."ConstituentJourneyStage"
 	"minLifetimeGiving" DECIMAL(11,2) NULL,		-- Optional criteria: Minimum total giving to qualify for this stage.
 	"maxLifetimeGiving" DECIMAL(11,2) NULL,		-- Optional criteria: Maximum total giving
 	"minSingleGiftAmount" DECIMAL(11,2) NULL,		-- Optional criteria: Min single gift size
+	"isDefault" BOOLEAN NOT NULL,		-- If true, this is the default stage for new constituents.
+	"minAnnualGiving" DECIMAL(11,2) NULL,		-- Optional: Minimum giving in the past 365 days.
+	"maxDaysSinceLastGift" INT NULL DEFAULT 0,		-- Optional: Maximum days elapsed since the last gift (recency limit).
+	"minGiftCount" INT NULL DEFAULT 0,		-- Optional: Minimum number of gifts required.
 	"versionNumber" INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
 	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
 	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
@@ -5391,15 +5433,15 @@ CREATE INDEX "I_ConstituentJourneyStage_tenantGuid_active" ON "Scheduler"."Const
 CREATE INDEX "I_ConstituentJourneyStage_tenantGuid_deleted" ON "Scheduler"."ConstituentJourneyStage" ("tenantGuid", "deleted")
 ;
 
-INSERT INTO "Scheduler"."ConstituentJourneyStage" ( "tenantGuid", "name", "description", "sequence", "color", "objectGuid" ) VALUES  ( '00000000-0000-0000-0000-000000000000', 'Unqualified', 'New potential donor.', 1, '#9E9E9E', 'd8663e5e-749c-4638-b69d-21d96078659d' );
+INSERT INTO "Scheduler"."ConstituentJourneyStage" ( "tenantGuid", "name", "description", "sequence", "isDefault", "color", "objectGuid" ) VALUES  ( '00000000-0000-0000-0000-000000000000', 'Unqualified', 'New potential donor.', 1, true, '#9E9E9E', 'd8663e5e-749c-4638-b69d-21d96078659d' );
 
-INSERT INTO "Scheduler"."ConstituentJourneyStage" ( "tenantGuid", "name", "description", "sequence", "color", "objectGuid" ) VALUES  ( '00000000-0000-0000-0000-000000000000', 'Qualified', 'Donor has been qualified.', 2, '#2196F3', 'ad06353d-2476-4322-836f-5374825968f9' );
+INSERT INTO "Scheduler"."ConstituentJourneyStage" ( "tenantGuid", "name", "description", "sequence", "isDefault", "color", "objectGuid" ) VALUES  ( '00000000-0000-0000-0000-000000000000', 'Qualified', 'Donor has been qualified.', 2, false, '#2196F3', 'ad06353d-2476-4322-836f-5374825968f9' );
 
-INSERT INTO "Scheduler"."ConstituentJourneyStage" ( "tenantGuid", "name", "description", "sequence", "color", "objectGuid" ) VALUES  ( '00000000-0000-0000-0000-000000000000', 'Cultivated', 'Relationship is being built.', 3, '#4CAF50', 'e8b60384-9336-4022-8b4b-970752538965' );
+INSERT INTO "Scheduler"."ConstituentJourneyStage" ( "tenantGuid", "name", "description", "sequence", "isDefault", "color", "objectGuid" ) VALUES  ( '00000000-0000-0000-0000-000000000000', 'Cultivated', 'Relationship is being built.', 3, false, '#4CAF50', 'e8b60384-9336-4022-8b4b-970752538965' );
 
-INSERT INTO "Scheduler"."ConstituentJourneyStage" ( "tenantGuid", "name", "description", "sequence", "color", "objectGuid" ) VALUES  ( '00000000-0000-0000-0000-000000000000', 'Solicited', 'Ask has been made.', 4, '#FF9800', '64319688-fd06-4074-8902-628670bf7471' );
+INSERT INTO "Scheduler"."ConstituentJourneyStage" ( "tenantGuid", "name", "description", "sequence", "isDefault", "color", "objectGuid" ) VALUES  ( '00000000-0000-0000-0000-000000000000', 'Solicited', 'Ask has been made.', 4, false, '#FF9800', '64319688-fd06-4074-8902-628670bf7471' );
 
-INSERT INTO "Scheduler"."ConstituentJourneyStage" ( "tenantGuid", "name", "description", "sequence", "color", "objectGuid" ) VALUES  ( '00000000-0000-0000-0000-000000000000', 'Stewardship', 'Ongoing maintenance.', 5, '#9C27B0', '1d971578-8319-482a-9e8c-529141873837' );
+INSERT INTO "Scheduler"."ConstituentJourneyStage" ( "tenantGuid", "name", "description", "sequence", "isDefault", "color", "objectGuid" ) VALUES  ( '00000000-0000-0000-0000-000000000000', 'Stewardship', 'Ongoing maintenance.', 5, false, '#9C27B0', '1d971578-8319-482a-9e8c-529141873837' );
 
 
 -- The change history for records from the ConstituentJourneyStage table.

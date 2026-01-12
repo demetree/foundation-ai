@@ -40,6 +40,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[Scheduler].[AttributeDefinition]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[Scheduler].[Batch]",
          "ObjectType": 0
       },

@@ -58,6 +58,7 @@ export class ContactQueryParameters {
     contactMethodId: bigint | number | null | undefined = null;
     notes: string | null | undefined = null;
     timeZoneId: bigint | number | null | undefined = null;
+    attributes: string | null | undefined = null;
     iconId: bigint | number | null | undefined = null;
     color: string | null | undefined = null;
     avatarFileName: string | null | undefined = null;
@@ -96,6 +97,7 @@ export class ContactSubmitData {
     contactMethodId: bigint | number | null = null;
     notes: string | null = null;
     timeZoneId: bigint | number | null = null;
+    attributes: string | null = null;
     iconId: bigint | number | null = null;
     color: string | null = null;
     avatarFileName: string | null = null;
@@ -169,6 +171,7 @@ export class ContactData {
     contactMethodId!: bigint | number;
     notes!: string | null;
     timeZoneId!: bigint | number;
+    attributes!: string | null;
     iconId!: bigint | number;
     color!: string | null;
     avatarFileName!: string | null;
@@ -1462,6 +1465,7 @@ export class ContactService extends SecureEndpointBase {
         output.contactMethodId = data.contactMethodId;
         output.notes = data.notes;
         output.timeZoneId = data.timeZoneId;
+        output.attributes = data.attributes;
         output.iconId = data.iconId;
         output.color = data.color;
         output.avatarFileName = data.avatarFileName;
