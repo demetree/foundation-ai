@@ -36,7 +36,7 @@ namespace Foundation.Scheduler.Services
             // Worst case, this causes an extra 0 record read.
             //
             List<Gift> gifts;
-            if (constituent.Gifts != null || constituent.Gifts.Count == 0)
+            if (constituent.Gifts != null && constituent.Gifts.Count > 0)
             {
                 gifts = constituent.Gifts.Where(g => g.active && !g.deleted).ToList();
             }
@@ -58,7 +58,7 @@ namespace Foundation.Scheduler.Services
             DateTime? lastGiftDate = gifts.OrderByDescending(g => g.receivedDate).FirstOrDefault()?.receivedDate;
             int daysSinceLastGift = lastGiftDate.HasValue ? (int)(DateTime.UtcNow - lastGiftDate.Value).TotalDays : int.MaxValue;
 
-            return StageCalcluation(constituent, stages, lifetimeGiving, annualGiving, giftCount, daysSinceLastGift);
+            return StageCalculation(constituent, stages, lifetimeGiving, annualGiving, giftCount, daysSinceLastGift);
         }
 
 
@@ -79,7 +79,7 @@ namespace Foundation.Scheduler.Services
             // Worst case, this causes an extra 0 record read.
             //
             List<Gift> gifts;
-            if (constituent.Gifts != null || constituent.Gifts.Count == 0)
+            if (constituent.Gifts != null && constituent.Gifts.Count > 0)
             {
                 gifts = constituent.Gifts.Where(g => g.active && !g.deleted).ToList();
             }
@@ -100,11 +100,11 @@ namespace Foundation.Scheduler.Services
             DateTime? lastGiftDate = gifts.OrderByDescending(g => g.receivedDate).FirstOrDefault()?.receivedDate;
             int daysSinceLastGift = lastGiftDate.HasValue ? (int)(DateTime.UtcNow - lastGiftDate.Value).TotalDays : int.MaxValue;
 
-            return StageCalcluation(constituent, stages, lifetimeGiving, annualGiving, giftCount, daysSinceLastGift);
+            return StageCalculation(constituent, stages, lifetimeGiving, annualGiving, giftCount, daysSinceLastGift);
         }
 
 
-        private ConstituentJourneyStage StageCalcluation(Constituent constituent, List<ConstituentJourneyStage> stages, decimal lifetimeGiving, decimal annualGiving, int giftCount, int daysSinceLastGift)
+        private ConstituentJourneyStage StageCalculation(Constituent constituent, List<ConstituentJourneyStage> stages, decimal lifetimeGiving, decimal annualGiving, int giftCount, int daysSinceLastGift)
         {
             _logger.LogInformation("Calculating Stage for Constituent {Id}. Metrics: Lifetime={Lifetime}, Annual={Annual}, Count={Count}, DaysSinceLast={Days}",
                             constituent.id, lifetimeGiving, annualGiving, giftCount, daysSinceLastGift);
