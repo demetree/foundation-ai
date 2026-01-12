@@ -284,7 +284,7 @@ namespace Foundation.Scheduler.Database
 				timeStamp = giftChangeHistory.timeStamp,
 				userId = giftChangeHistory.userId,
 				data = giftChangeHistory.data,
-				gift = Gift.CreateMinimalAnonymous(giftChangeHistory.gift),
+				gift = Gift.CreateMinimalAnonymous(giftChangeHistory.gift)
 			 };
 		}
 

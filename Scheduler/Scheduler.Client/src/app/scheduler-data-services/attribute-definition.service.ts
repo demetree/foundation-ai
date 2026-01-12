@@ -16,6 +16,9 @@ import { UtilityService } from '../utility-services/utility.service'
 import { AlertService } from '../services/alert.service';
 import { AuthService } from '../services/auth.service';
 import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
+import { AttributeDefinitionEntityData } from './attribute-definition-entity.service';
+import { AttributeDefinitionTypeData } from './attribute-definition-type.service';
+import { AttributeDefinitionChangeHistoryService, AttributeDefinitionChangeHistoryData } from './attribute-definition-change-history.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -27,13 +30,14 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 // - Dates are typed as strings because the server requires ISO UTC dates.  The Javascript date object does not naturally construct with that input.  The string format used in 'Date' fields is to be ISO 8601, including millisconds.  For example, 2025-12-09T01:09:27.093Z
 //
 export class AttributeDefinitionQueryParameters {
-    entityName: string | null | undefined = null;
+    attributeDefinitionEntityId: bigint | number | null | undefined = null;
     key: string | null | undefined = null;
     label: string | null | undefined = null;
-    type: string | null | undefined = null;
+    attributeDefinitionTypeId: bigint | number | null | undefined = null;
     options: string | null | undefined = null;
     isRequired: boolean | null | undefined = null;
     sequence: bigint | number | null | undefined = null;
+    versionNumber: bigint | number | null | undefined = null;
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
     deleted: boolean | null | undefined = null;
@@ -49,13 +53,14 @@ export class AttributeDefinitionQueryParameters {
 //
 export class AttributeDefinitionSubmitData {
     id!: bigint | number;
-    entityName: string | null = null;
+    attributeDefinitionEntityId: bigint | number | null = null;
     key: string | null = null;
     label: string | null = null;
-    type: string | null = null;
+    attributeDefinitionTypeId: bigint | number | null = null;
     options: string | null = null;
     isRequired!: boolean;
     sequence: bigint | number | null = null;
+    versionNumber!: bigint | number;
     active!: boolean;
     deleted!: boolean;
 }
@@ -105,20 +110,27 @@ export class AttributeDefinitionBasicListData {
 //
 export class AttributeDefinitionData {
     id!: bigint | number;
-    entityName!: string | null;
+    attributeDefinitionEntityId!: bigint | number;
     key!: string | null;
     label!: string | null;
-    type!: string | null;
+    attributeDefinitionTypeId!: bigint | number;
     options!: string | null;
     isRequired!: boolean;
     sequence!: bigint | number;
+    versionNumber!: bigint | number;
     objectGuid!: string;
     active!: boolean;
     deleted!: boolean;
+    attributeDefinitionEntity: AttributeDefinitionEntityData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
+    attributeDefinitionType: AttributeDefinitionTypeData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
 
     //
     // Private lazy-loading caches for related collections
     //
+    private _attributeDefinitionChangeHistories: AttributeDefinitionChangeHistoryData[] | null = null;
+    private _attributeDefinitionChangeHistoriesPromise: Promise<AttributeDefinitionChangeHistoryData[]> | null  = null;
+    private _attributeDefinitionChangeHistoriesSubject = new BehaviorSubject<AttributeDefinitionChangeHistoryData[] | null>(null);
+
 
     //
     // Public observables — use with | async in templates
@@ -126,6 +138,25 @@ export class AttributeDefinitionData {
     //
     // Also includes an observable for each child list to access its row count.
     //
+    public AttributeDefinitionChangeHistories$ = this._attributeDefinitionChangeHistoriesSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._attributeDefinitionChangeHistories === null && this._attributeDefinitionChangeHistoriesPromise === null) {
+            this.loadAttributeDefinitionChangeHistories(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public AttributeDefinitionChangeHistoriesCount$ = AttributeDefinitionService.Instance.GetAttributeDefinitionsRowCount({attributeDefinitionId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
 
   //
   // Full reload — refreshes the entire object and clears all lazy caches 
@@ -164,12 +195,81 @@ export class AttributeDefinitionData {
      //
      // Reset every collection cache and notify subscribers
      //
+     this._attributeDefinitionChangeHistories = null;
+     this._attributeDefinitionChangeHistoriesPromise = null;
+     this._attributeDefinitionChangeHistoriesSubject.next(null);
+
   }
 
     //
     // Promise-based getters below — same lazy-load logic as observables
     // Use these in component code with await or .then()
     //
+    /**
+     *
+     * Gets the AttributeDefinitionChangeHistories for this AttributeDefinition.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.attributeDefinition.AttributeDefinitionChangeHistories.then(attributeDefinitionChangeHistories => { ... })
+     *   or
+     *   await this.attributeDefinition.AttributeDefinitionChangeHistories
+     *
+    */
+    public get AttributeDefinitionChangeHistories(): Promise<AttributeDefinitionChangeHistoryData[]> {
+        if (this._attributeDefinitionChangeHistories !== null) {
+            return Promise.resolve(this._attributeDefinitionChangeHistories);
+        }
+
+        if (this._attributeDefinitionChangeHistoriesPromise !== null) {
+            return this._attributeDefinitionChangeHistoriesPromise;
+        }
+
+        // Start the load
+        this.loadAttributeDefinitionChangeHistories();
+
+        return this._attributeDefinitionChangeHistoriesPromise!;
+    }
+
+
+
+    private loadAttributeDefinitionChangeHistories(): void {
+
+        this._attributeDefinitionChangeHistoriesPromise = lastValueFrom(
+            AttributeDefinitionService.Instance.GetAttributeDefinitionChangeHistoriesForAttributeDefinition(this.id)
+        )
+        .then(attributeDefinitionChangeHistories => {
+            this._attributeDefinitionChangeHistories = attributeDefinitionChangeHistories ?? [];
+            this._attributeDefinitionChangeHistoriesSubject.next(this._attributeDefinitionChangeHistories);
+            return this._attributeDefinitionChangeHistories;
+         })
+        .catch(err => {
+            this._attributeDefinitionChangeHistories = [];
+            this._attributeDefinitionChangeHistoriesSubject.next(this._attributeDefinitionChangeHistories);
+            throw err;
+        })
+        .finally(() => {
+            this._attributeDefinitionChangeHistoriesPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached AttributeDefinitionChangeHistory. Call after mutations to force refresh.
+     */
+    public ClearAttributeDefinitionChangeHistoriesCache(): void {
+        this._attributeDefinitionChangeHistories = null;
+        this._attributeDefinitionChangeHistoriesPromise = null;
+        this._attributeDefinitionChangeHistoriesSubject.next(this._attributeDefinitionChangeHistories);      // Emit to observable
+    }
+
+    public get HasAttributeDefinitionChangeHistories(): Promise<boolean> {
+        return this.AttributeDefinitionChangeHistories.then(attributeDefinitionChangeHistories => attributeDefinitionChangeHistories.length > 0);
+    }
+
+
 
 
     /**
@@ -205,6 +305,7 @@ export class AttributeDefinitionService extends SecureEndpointBase {
         authService: AuthService,
         alertService: AlertService,
         private utilityService: UtilityService,
+        private attributeDefinitionChangeHistoryService: AttributeDefinitionChangeHistoryService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
 
@@ -262,13 +363,14 @@ export class AttributeDefinitionService extends SecureEndpointBase {
         let output = new AttributeDefinitionSubmitData();
 
         output.id = data.id;
-        output.entityName = data.entityName;
+        output.attributeDefinitionEntityId = data.attributeDefinitionEntityId;
         output.key = data.key;
         output.label = data.label;
-        output.type = data.type;
+        output.attributeDefinitionTypeId = data.attributeDefinitionTypeId;
         output.options = data.options;
         output.isRequired = data.isRequired;
         output.sequence = data.sequence;
+        output.versionNumber = data.versionNumber;
         output.active = data.active;
         output.deleted = data.deleted;
 
@@ -496,6 +598,22 @@ export class AttributeDefinitionService extends SecureEndpointBase {
             }));
     }
 
+    public RollbackAttributeDefinition(id: bigint | number, versionNumber: bigint | number) : Observable<AttributeDefinitionData>{
+
+        let queryParams = new HttpParams();
+
+        queryParams = queryParams.append("id", id.toString());
+        queryParams = queryParams.append("versionNumber", versionNumber.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.put<AttributeDefinitionData>(this.baseUrl + 'api/AttributeDefinition/Rollback/' + id.toString(), null, { params: queryParams, headers: authenticationHeaders }).pipe(
+            tap(() => this.ClearAllCaches()),
+            map(raw => this.ReviveAttributeDefinition(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.RollbackAttributeDefinition(id, versionNumber));
+        }));
+    }
 
     private getConfigHash(config: AttributeDefinitionQueryParameters | any): string {
 
@@ -567,6 +685,16 @@ export class AttributeDefinitionService extends SecureEndpointBase {
         return userIsSchedulerAttributeDefinitionWriter;
     }
 
+    public GetAttributeDefinitionChangeHistoriesForAttributeDefinition(attributeDefinitionId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<AttributeDefinitionChangeHistoryData[]> {
+        return this.attributeDefinitionChangeHistoryService.GetAttributeDefinitionChangeHistoryList({
+            attributeDefinitionId: attributeDefinitionId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
  /**
    *
    * Revives a plain object from the server into a full AttributeDefinitionData instance.
@@ -602,6 +730,10 @@ export class AttributeDefinitionService extends SecureEndpointBase {
     // Explicitly initialize all private caches
     // This ensures the getters work correctly on revived objects
     //
+    (revived as any)._attributeDefinitionChangeHistories = null;
+    (revived as any)._attributeDefinitionChangeHistoriesPromise = null;
+    (revived as any)._attributeDefinitionChangeHistoriesSubject = new BehaviorSubject<AttributeDefinitionChangeHistoryData[] | null>(null);
+
 
     //
     // Re-attach ALL public observables with their lazy-load tap() triggers
@@ -614,6 +746,22 @@ export class AttributeDefinitionService extends SecureEndpointBase {
     // 2. But private methods (loadAttributeDefinitionXYZ, etc.) are not accessible via the typed variable
     // 3. This is a controlled revival context — safe and necessary
     //
+    (revived as any).AttributeDefinitionChangeHistories$ = (revived as any)._attributeDefinitionChangeHistoriesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._attributeDefinitionChangeHistories === null && (revived as any)._attributeDefinitionChangeHistoriesPromise === null) {
+                (revived as any).loadAttributeDefinitionChangeHistories();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).AttributeDefinitionChangeHistoriesCount$ = AttributeDefinitionChangeHistoryService.Instance.GetAttributeDefinitionChangeHistoriesRowCount({attributeDefinitionId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
 
     return revived;
   }

@@ -45,20 +45,62 @@ All operational tables include multi-tenant support, versioning where appropriat
 
             #region Setup Master Data - Resource Types, Countries, states, time zones etc..
 
+            //
+            // Attribute Definition Types (Text, Number, Date, etc.)
+            //
+            Database.Table attributeDefinitionTypeTable = database.AddTable("AttributeDefinitionType");
+            attributeDefinitionTypeTable.comment = "Master list of available attribute data types.";
+            attributeDefinitionTypeTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            attributeDefinitionTypeTable.AddIdField();
+            attributeDefinitionTypeTable.AddNameAndDescriptionFields(true, true, false);
+            attributeDefinitionTypeTable.AddSequenceField();
+            attributeDefinitionTypeTable.AddControlFields();
+
+            attributeDefinitionTypeTable.AddData(new Dictionary<string, string> { { "name", "Text" }, { "description", "Single line text" }, { "sequence", "1" }, { "objectGuid", "d1a1b2c3-1111-2222-3333-444455556661" } });
+            attributeDefinitionTypeTable.AddData(new Dictionary<string, string> { { "name", "Number" }, { "description", "Numeric value" }, { "sequence", "2" }, { "objectGuid", "d1a1b2c3-1111-2222-3333-444455556662" } });
+            attributeDefinitionTypeTable.AddData(new Dictionary<string, string> { { "name", "Date" }, { "description", "Date value (no time)" }, { "sequence", "3" }, { "objectGuid", "d1a1b2c3-1111-2222-3333-444455556663" } });
+            attributeDefinitionTypeTable.AddData(new Dictionary<string, string> { { "name", "Boolean" }, { "description", "True/False checkbox" }, { "sequence", "4" }, { "objectGuid", "d1a1b2c3-1111-2222-3333-444455556664" } });
+            attributeDefinitionTypeTable.AddData(new Dictionary<string, string> { { "name", "Select" }, { "description", "Dropdown selection" }, { "sequence", "5" }, { "objectGuid", "d1a1b2c3-1111-2222-3333-444455556665" } });
+            // attributeDefinitionTypeTable.AddData(new Dictionary<string, string> { { "name", "MultiSelect" }, { "description", "Multiple selection" }, { "sequence", "6" }, { "objectGuid", "d1a1b2c3-1111-2222-3333-444455556666" } });
+
+
+            //
+            // Attribute Definition Entities (Contact, Constituent, etc.)
+            //
+            Database.Table attributeDefinitionEntityTable = database.AddTable("AttributeDefinitionEntity");
+            attributeDefinitionEntityTable.comment = "Master list of entities that support custom attributes.";
+            attributeDefinitionEntityTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            attributeDefinitionEntityTable.AddIdField();
+            attributeDefinitionEntityTable.AddNameAndDescriptionFields(true, true, false);
+            attributeDefinitionEntityTable.AddControlFields();
+
+            attributeDefinitionEntityTable.AddData(new Dictionary<string, string> { { "name", "Contact" }, { "description", "Contact Records" }, { "objectGuid", "e2a1b2c3-1111-2222-3333-444455556661" } });
+            attributeDefinitionEntityTable.AddData(new Dictionary<string, string> { { "name", "Constituent" }, { "description", "Constituent Records" }, { "objectGuid", "e2a1b2c3-1111-2222-3333-444455556662" } });
+
+
             Database.Table attributeDefinitionTable = database.AddTable("AttributeDefinition");
             attributeDefinitionTable.comment = "Definitions for custom attributes on various entities (Contact, Constituent, etc.)";
             attributeDefinitionTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
             attributeDefinitionTable.AddIdField();
             attributeDefinitionTable.AddMultiTenantSupport();
-            attributeDefinitionTable.AddString100Field("entityName").AddScriptComments("The name of the entity this attribute applies to (e.g., 'Contact', 'Constituent')").CreateIndex();
+            
+            // Replaced string EntityName with FK
+            attributeDefinitionTable.AddForeignKeyField(attributeDefinitionEntityTable, true).AddScriptComments("The entity this attribute applies to (e.g., Contact)");
+            
             attributeDefinitionTable.AddString100Field("key").AddScriptComments("The JSON key for the attribute");
             attributeDefinitionTable.AddString250Field("label").AddScriptComments("The human-readable label for the attribute");
-            attributeDefinitionTable.AddString50Field("type").AddScriptComments("Data type: Text, Number, Date, Boolean, Select, MultiSelect, etc.");
-            attributeDefinitionTable.AddTextField("options").AddScriptComments("JSON options for Select/MultiSelect types"); // Changed to Max field for flexibility
+
+            // Replaced string Type with FK
+            attributeDefinitionTable.AddForeignKeyField(attributeDefinitionTypeTable, true).AddScriptComments("Data type: Text, Number, Date, etc.");
+
+            attributeDefinitionTable.AddTextField("options").AddScriptComments("JSON options for Select/MultiSelect types"); 
             attributeDefinitionTable.AddBoolField("isRequired", false, false);
             attributeDefinitionTable.AddSequenceField(); // For sort order
+            attributeDefinitionTable.AddVersionControl();
             attributeDefinitionTable.AddControlFields();
-            attributeDefinitionTable.AddUniqueConstraint(new List<string>() { "tenantGuid", "entityName", "key" }, true);
+            
+            // Updated Unique Constraint to use FK IDs
+            attributeDefinitionTable.AddUniqueConstraint(new List<string>() { "tenantGuid", "attributeDefinitionEntityId", "key" }, true);
 
             Database.Table iconTable = database.AddTable("Icon");
             iconTable.comment = "List of icons to use on user interfaces.  Not tenant editable.";

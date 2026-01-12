@@ -24,6 +24,8 @@ import { Subject, finalize } from 'rxjs';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { AttributeDefinitionService, AttributeDefinitionData, AttributeDefinitionSubmitData } from '../../../scheduler-data-services/attribute-definition.service';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
+import { AttributeDefinitionEntityService } from '../../../scheduler-data-services/attribute-definition-entity.service';
+import { AttributeDefinitionTypeService } from '../../../scheduler-data-services/attribute-definition-type.service';
 import { AuthService } from '../../../services/auth.service';
 
 //
@@ -34,13 +36,14 @@ import { AuthService } from '../../../services/auth.service';
 // - Does not include navigation properties or methods from domain models.
 //
 interface AttributeDefinitionFormValues {
-  entityName: string | null,
+  attributeDefinitionEntityId: number | bigint | null,       // For FK link number
   key: string | null,
   label: string | null,
-  type: string | null,
+  attributeDefinitionTypeId: number | bigint | null,       // For FK link number
   options: string | null,
   isRequired: boolean,
   sequence: string | null,     // Stored as string for form input, converted to number on submit.
+  versionNumber: string,     // Stored as string for form input, converted to number on submit.
   active: boolean,
   deleted: boolean,
 };
@@ -73,16 +76,17 @@ export class AttributeDefinitionAddEditComponent {
 
 
   public attributeDefinitionForm: FormGroup = this.fb.group({
-        entityName: [''],
-        key: [''],
-        label: [''],
-        type: [''],
-        options: [''],
-        isRequired: [false],
-        sequence: [''],
-        active: [true],
-        deleted: [false],
-      });
+    attributeDefinitionEntityId: [null],
+    key: [''],
+    label: [''],
+    attributeDefinitionTypeId: [null],
+    options: [''],
+    isRequired: [false],
+    sequence: [''],
+    versionNumber: [''],
+    active: [true],
+    deleted: [false],
+  });
 
   private modalRef: NgbModalRef | undefined;
   public isEditMode = false;
@@ -92,14 +96,21 @@ export class AttributeDefinitionAddEditComponent {
   public isSaving: boolean = false;
 
   attributeDefinitions$ = this.attributeDefinitionService.GetAttributeDefinitionList();
+  attributeDefinitionEntities$ = this.attributeDefinitionEntityService.GetAttributeDefinitionEntityList();
+  attributeDefinitionTypes$ = this.attributeDefinitionTypeService.GetAttributeDefinitionTypeList();
+
+  private types: any[] = [];
 
   constructor(
     private modalService: NgbModal,
     private attributeDefinitionService: AttributeDefinitionService,
+    private attributeDefinitionEntityService: AttributeDefinitionEntityService,
+    private attributeDefinitionTypeService: AttributeDefinitionTypeService,
     private authService: AuthService,
     private alertService: AlertService,
     private router: Router,
     private fb: FormBuilder) {
+    this.attributeDefinitionTypes$.subscribe(types => this.types = types);
   }
 
   openModal(attributeDefinitionData?: AttributeDefinitionData) {
@@ -213,28 +224,40 @@ export class AttributeDefinitionAddEditComponent {
     //
     // Build clean submit object from form + fallback to current data if needed
     //
-    const attributeDefinitionSubmitData: AttributeDefinitionSubmitData = {
-        id: this.attributeDefinitionSubmitData?.id || 0,
-        entityName: formValue.entityName?.trim() || null,
-        key: formValue.key?.trim() || null,
-        label: formValue.label?.trim() || null,
-        type: formValue.type?.trim() || null,
-        options: formValue.options?.trim() || null,
-        isRequired: !!formValue.isRequired,
-        sequence: formValue.sequence ? Number(formValue.sequence) : null,
-        active: !!formValue.active,
-        deleted: !!formValue.deleted,
-   };
+    let optionsValue = formValue.options?.trim() || null;
 
-      if (this.isEditMode) {
-        this.updateAttributeDefinition(attributeDefinitionSubmitData);
-      } else {
-        this.addAttributeDefinition(attributeDefinitionSubmitData);
+    if (formValue.attributeDefinitionTypeId) {
+      const selectedType = this.types.find(t => t.id === Number(formValue.attributeDefinitionTypeId));
+      if (selectedType && selectedType.name === 'Select' && optionsValue) {
+        const parts = optionsValue.split(/[\n,]+/).map((o: string) => o.trim()).filter((o: string) => o.length > 0);
+        optionsValue = JSON.stringify(parts);
       }
+    }
+
+    const attributeDefinitionSubmitData: AttributeDefinitionSubmitData = {
+      id: this.attributeDefinitionSubmitData?.id || 0,
+      attributeDefinitionEntityId: formValue.attributeDefinitionEntityId ? Number(formValue.attributeDefinitionEntityId) : null,
+      key: formValue.key?.trim() || null,
+      label: formValue.label?.trim() || null,
+      attributeDefinitionTypeId: formValue.attributeDefinitionTypeId ? Number(formValue.attributeDefinitionTypeId) : null,
+      options: optionsValue,
+      isRequired: !!formValue.isRequired,
+      sequence: formValue.sequence ? Number(formValue.sequence) : null,
+      versionNumber: this.attributeDefinitionSubmitData?.versionNumber ?? 0,
+      active: !!formValue.active,
+      deleted: !!formValue.deleted,
+    };
+
+    if (this.isEditMode) {
+      this.updateAttributeDefinition(attributeDefinitionSubmitData);
+    } else {
+      this.addAttributeDefinition(attributeDefinitionSubmitData);
+    }
   }
 
   private addAttributeDefinition(attributeDefinitionData: AttributeDefinitionSubmitData) {
     // Assign initial values to non-nullable control fields suitable for adding new data.
+    attributeDefinitionData.versionNumber = 0;
     attributeDefinitionData.active = true;
     attributeDefinitionData.deleted = false;
     this.attributeDefinitionService.PostAttributeDefinition(attributeDefinitionData).pipe(
@@ -255,36 +278,33 @@ export class AttributeDefinitionAddEditComponent {
         }
       },
       error: (err) => {
-            let errorMessage: string;
+        let errorMessage: string;
 
-            // Check if err is an Error object (e.g., new Error('message'))
-            if (err instanceof Error) {
-                errorMessage = err.message || 'An unexpected error occurred.';
-            }
-            // Check if err is a ServerError object with status and error properties
-            else if (err.status && err.error)
-            {
-                if (err.status === 403)
-                {
-                    errorMessage = err.error?.message ||
-                                   'You do not have permission to save this Attribute Definition.';
-                }
-                else
-                {
-                    errorMessage = err.error?.message ||
-                                   err.error?.error_description ||
-                                   err.error?.detail ||
-                                   'An error occurred while saving the Attribute Definition.';
-                }
-            }
-            // Fallback for unexpected error formats
-            else {
-                errorMessage = 'An unexpected error occurred.';
-            }
+        // Check if err is an Error object (e.g., new Error('message'))
+        if (err instanceof Error) {
+          errorMessage = err.message || 'An unexpected error occurred.';
+        }
+        // Check if err is a ServerError object with status and error properties
+        else if (err.status && err.error) {
+          if (err.status === 403) {
+            errorMessage = err.error?.message ||
+              'You do not have permission to save this Attribute Definition.';
+          }
+          else {
+            errorMessage = err.error?.message ||
+              err.error?.error_description ||
+              err.error?.detail ||
+              'An error occurred while saving the Attribute Definition.';
+          }
+        }
+        // Fallback for unexpected error formats
+        else {
+          errorMessage = 'An unexpected error occurred.';
+        }
 
-            this.alertService.showMessage('Attribute Definition could not be saved',
-                                          errorMessage,
-                                          MessageSeverity.error);
+        this.alertService.showMessage('Attribute Definition could not be saved',
+          errorMessage,
+          MessageSeverity.error);
       }
     });
   }
@@ -305,36 +325,33 @@ export class AttributeDefinitionAddEditComponent {
         this.closeModal();
       },
       error: (err) => {
-            let errorMessage: string;
+        let errorMessage: string;
 
-            // Check if err is an Error object (e.g., new Error('message'))
-            if (err instanceof Error) {
-                errorMessage = err.message || 'An unexpected error occurred.';
-            }
-            // Check if err is a ServerError object with status and error properties
-            else if (err.status && err.error)
-            {
-                if (err.status === 403)
-                {
-                    errorMessage = err.error?.message ||
-                                   'You do not have permission to save this Attribute Definition.';
-                }
-                else
-                {
-                    errorMessage = err.error?.message ||
-                                   err.error?.error_description ||
-                                   err.error?.detail ||
-                                   'An error occurred while saving the Attribute Definition.';
-                }
-            }
-            // Fallback for unexpected error formats
-            else {
-                errorMessage = 'An unexpected error occurred.';
-            }
+        // Check if err is an Error object (e.g., new Error('message'))
+        if (err instanceof Error) {
+          errorMessage = err.message || 'An unexpected error occurred.';
+        }
+        // Check if err is a ServerError object with status and error properties
+        else if (err.status && err.error) {
+          if (err.status === 403) {
+            errorMessage = err.error?.message ||
+              'You do not have permission to save this Attribute Definition.';
+          }
+          else {
+            errorMessage = err.error?.message ||
+              err.error?.error_description ||
+              err.error?.detail ||
+              'An error occurred while saving the Attribute Definition.';
+          }
+        }
+        // Fallback for unexpected error formats
+        else {
+          errorMessage = 'An unexpected error occurred.';
+        }
 
-            this.alertService.showMessage('Attribute Definition could not be saved',
-                                          errorMessage,
-                                          MessageSeverity.error);
+        this.alertService.showMessage('Attribute Definition could not be saved',
+          errorMessage,
+          MessageSeverity.error);
       }
     });
   }
@@ -344,39 +361,41 @@ export class AttributeDefinitionAddEditComponent {
   private buildFormValues(attributeDefinitionData: AttributeDefinitionData | null) {
 
     if (attributeDefinitionData == null) {
-      
+
       //
       // Reset the form group to null state, but don't change the form instance.
       //
       this.attributeDefinitionForm.reset({
-        entityName: '',
+        attributeDefinitionEntityId: null,
         key: '',
         label: '',
-        type: '',
+        attributeDefinitionTypeId: null,
         options: '',
         isRequired: false,
         sequence: '',
+        versionNumber: '',
         active: true,
         deleted: false,
-   }, { emitEvent: false});
+      }, { emitEvent: false });
 
     }
     else {
 
-        //
-        // Reset the form with properly formatted values that support dates in datetime-local inputs
-        //
-        this.attributeDefinitionForm.reset({
-        entityName: attributeDefinitionData.entityName ?? '',
+      //
+      // Reset the form with properly formatted values that support dates in datetime-local inputs
+      //
+      this.attributeDefinitionForm.reset({
+        attributeDefinitionEntityId: attributeDefinitionData.attributeDefinitionEntityId,
         key: attributeDefinitionData.key ?? '',
         label: attributeDefinitionData.label ?? '',
-        type: attributeDefinitionData.type ?? '',
+        attributeDefinitionTypeId: attributeDefinitionData.attributeDefinitionTypeId,
         options: attributeDefinitionData.options ?? '',
         isRequired: attributeDefinitionData.isRequired ?? false,
         sequence: attributeDefinitionData.sequence?.toString() ?? '',
+        versionNumber: attributeDefinitionData.versionNumber?.toString() ?? '',
         active: attributeDefinitionData.active ?? true,
         deleted: attributeDefinitionData.deleted ?? false,
-      }, { emitEvent: false});
+      }, { emitEvent: false });
     }
 
     this.attributeDefinitionForm.markAsPristine();

@@ -273,6 +273,9 @@ import { AssignmentRoleQualificationRequirementService } from './scheduler-data-
 import { AssignmentRoleQualificationRequirementChangeHistoryService } from './scheduler-data-services/assignment-role-qualification-requirement-change-history.service';
 import { AssignmentStatusService } from './scheduler-data-services/assignment-status.service';
 import { AttributeDefinitionService } from './scheduler-data-services/attribute-definition.service';
+import { AttributeDefinitionChangeHistoryService } from './scheduler-data-services/attribute-definition-change-history.service';
+import { AttributeDefinitionEntityService } from './scheduler-data-services/attribute-definition-entity.service';
+import { AttributeDefinitionTypeService } from './scheduler-data-services/attribute-definition-type.service';
 import { BatchService } from './scheduler-data-services/batch.service';
 import { BatchChangeHistoryService } from './scheduler-data-services/batch-change-history.service';
 import { BatchStatusService } from './scheduler-data-services/batch-status.service';
@@ -619,6 +622,18 @@ import { AttributeDefinitionListingComponent } from './scheduler-data-components
 import { AttributeDefinitionAddEditComponent } from './scheduler-data-components/attribute-definition/attribute-definition-add-edit/attribute-definition-add-edit.component';
 import { AttributeDefinitionDetailComponent } from './scheduler-data-components/attribute-definition/attribute-definition-detail/attribute-definition-detail.component';
 import { AttributeDefinitionTableComponent } from './scheduler-data-components/attribute-definition/attribute-definition-table/attribute-definition-table.component';
+import { AttributeDefinitionChangeHistoryListingComponent } from './scheduler-data-components/attribute-definition-change-history/attribute-definition-change-history-listing/attribute-definition-change-history-listing.component';
+import { AttributeDefinitionChangeHistoryAddEditComponent } from './scheduler-data-components/attribute-definition-change-history/attribute-definition-change-history-add-edit/attribute-definition-change-history-add-edit.component';
+import { AttributeDefinitionChangeHistoryDetailComponent } from './scheduler-data-components/attribute-definition-change-history/attribute-definition-change-history-detail/attribute-definition-change-history-detail.component';
+import { AttributeDefinitionChangeHistoryTableComponent } from './scheduler-data-components/attribute-definition-change-history/attribute-definition-change-history-table/attribute-definition-change-history-table.component';
+import { AttributeDefinitionEntityListingComponent } from './scheduler-data-components/attribute-definition-entity/attribute-definition-entity-listing/attribute-definition-entity-listing.component';
+import { AttributeDefinitionEntityAddEditComponent } from './scheduler-data-components/attribute-definition-entity/attribute-definition-entity-add-edit/attribute-definition-entity-add-edit.component';
+import { AttributeDefinitionEntityDetailComponent } from './scheduler-data-components/attribute-definition-entity/attribute-definition-entity-detail/attribute-definition-entity-detail.component';
+import { AttributeDefinitionEntityTableComponent } from './scheduler-data-components/attribute-definition-entity/attribute-definition-entity-table/attribute-definition-entity-table.component';
+import { AttributeDefinitionTypeListingComponent } from './scheduler-data-components/attribute-definition-type/attribute-definition-type-listing/attribute-definition-type-listing.component';
+import { AttributeDefinitionTypeAddEditComponent } from './scheduler-data-components/attribute-definition-type/attribute-definition-type-add-edit/attribute-definition-type-add-edit.component';
+import { AttributeDefinitionTypeDetailComponent } from './scheduler-data-components/attribute-definition-type/attribute-definition-type-detail/attribute-definition-type-detail.component';
+import { AttributeDefinitionTypeTableComponent } from './scheduler-data-components/attribute-definition-type/attribute-definition-type-table/attribute-definition-type-table.component';
 import { BatchListingComponent } from './scheduler-data-components/batch/batch-listing/batch-listing.component';
 import { BatchAddEditComponent } from './scheduler-data-components/batch/batch-add-edit/batch-add-edit.component';
 import { BatchDetailComponent } from './scheduler-data-components/batch/batch-detail/batch-detail.component';
@@ -1107,7 +1122,6 @@ import { TributeTypeTableComponent } from './scheduler-data-components/tribute-t
 // End of imports for Scheduler Data Components
 //
 
-
 @NgModule({
   declarations: [
     AppComponent,
@@ -1459,6 +1473,18 @@ import { TributeTypeTableComponent } from './scheduler-data-components/tribute-t
     AttributeDefinitionAddEditComponent,
     AttributeDefinitionDetailComponent,
     AttributeDefinitionTableComponent,
+    AttributeDefinitionChangeHistoryListingComponent,
+    AttributeDefinitionChangeHistoryAddEditComponent,
+    AttributeDefinitionChangeHistoryDetailComponent,
+    AttributeDefinitionChangeHistoryTableComponent,
+    AttributeDefinitionEntityListingComponent,
+    AttributeDefinitionEntityAddEditComponent,
+    AttributeDefinitionEntityDetailComponent,
+    AttributeDefinitionEntityTableComponent,
+    AttributeDefinitionTypeListingComponent,
+    AttributeDefinitionTypeAddEditComponent,
+    AttributeDefinitionTypeDetailComponent,
+    AttributeDefinitionTypeTableComponent,
     BatchListingComponent,
     BatchAddEditComponent,
     BatchDetailComponent,
@@ -2085,6 +2111,9 @@ import { TributeTypeTableComponent } from './scheduler-data-components/tribute-t
     AssignmentRoleQualificationRequirementChangeHistoryService,
     AssignmentStatusService,
     AttributeDefinitionService,
+    AttributeDefinitionChangeHistoryService,
+    AttributeDefinitionEntityService,
+    AttributeDefinitionTypeService,
     BatchService,
     BatchChangeHistoryService,
     BatchStatusService,

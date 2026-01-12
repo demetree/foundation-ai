@@ -17,9 +17,12 @@
                 <div class="col m-2 attribute-definition-details-body">
                     <div *showSpinner="isLoading$ | async">
                         <form [class.hidden]="isLoading$ | async" [formGroup]="attributeDefinitionForm" (ngSubmit)="submitForm()" class="attribute-definition-details-form">
-                            <div class="form-group" *ngIf="!isFieldHidden('entityName')">
-                                <label for="AttributeDefinition-entityName" id="label-AttributeDefinition-entityName">Entity Name</label>
-                                <input type="text" id="AttributeDefinition-entityName" formControlName="entityName" placeholder="Enter Entity Name" class="form-control attribute-definition-input" [disabled]="!userIsSchedulerAttributeDefinitionWriter()" aria-labelledby="label-entityName" />
+                            <div class="form-group" *ngIf="!isFieldHidden('attributeDefinitionEntityId')">
+                                <label for="AttributeDefinition-attributeDefinitionEntityId" id="label-AttributeDefinition-attributeDefinitionEntityId">Attribute Definition Entity</label>
+                                <select id="AttributeDefinition-attributeDefinitionEntityId" formControlName="attributeDefinitionEntityId" class="form-select attribute-definition-select" [disabled]="!userIsSchedulerAttributeDefinitionWriter()">
+                                    <option [ngValue]="null">Select Attribute Definition Entity</option>
+                                    <option *ngFor="let attributeDefinitionEntity of attributeDefinitionEntities$ | async" [ngValue]="attributeDefinitionEntity.id">{{attributeDefinitionEntity.name}}</option>
+                                </select>
                             </div>
                             <div class="form-group" *ngIf="!isFieldHidden('key')">
                                 <label for="AttributeDefinition-key" id="label-AttributeDefinition-key">Key</label>
@@ -29,9 +32,12 @@
                                 <label for="AttributeDefinition-label" id="label-AttributeDefinition-label">Label</label>
                                 <input type="text" id="AttributeDefinition-label" formControlName="label" placeholder="Enter Label" class="form-control attribute-definition-input" [disabled]="!userIsSchedulerAttributeDefinitionWriter()" aria-labelledby="label-label" />
                             </div>
-                            <div class="form-group" *ngIf="!isFieldHidden('type')">
-                                <label for="AttributeDefinition-type" id="label-AttributeDefinition-type">Type</label>
-                                <input type="text" id="AttributeDefinition-type" formControlName="type" placeholder="Enter Type" class="form-control attribute-definition-input" [disabled]="!userIsSchedulerAttributeDefinitionWriter()" aria-labelledby="label-type" />
+                            <div class="form-group" *ngIf="!isFieldHidden('attributeDefinitionTypeId')">
+                                <label for="AttributeDefinition-attributeDefinitionTypeId" id="label-AttributeDefinition-attributeDefinitionTypeId">Attribute Definition Type</label>
+                                <select id="AttributeDefinition-attributeDefinitionTypeId" formControlName="attributeDefinitionTypeId" class="form-select attribute-definition-select" [disabled]="!userIsSchedulerAttributeDefinitionWriter()">
+                                    <option [ngValue]="null">Select Attribute Definition Type</option>
+                                    <option *ngFor="let attributeDefinitionType of attributeDefinitionTypes$ | async" [ngValue]="attributeDefinitionType.id">{{attributeDefinitionType.name}}</option>
+                                </select>
                             </div>
                             <div class="form-group" *ngIf="!isFieldHidden('options')">
                                 <label for="AttributeDefinition-options" id="label-AttributeDefinition-options">Options</label>
@@ -44,6 +50,10 @@
                             <div class="form-group" *ngIf="!isFieldHidden('sequence')">
                                 <label for="AttributeDefinition-sequence" id="label-AttributeDefinition-sequence">Sequence</label>
                                 <input type="number" id="AttributeDefinition-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control attribute-definition-input" [disabled]="!userIsSchedulerAttributeDefinitionWriter()" aria-labelledby="label-sequence" />
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="AttributeDefinition-versionNumber" id="label-AttributeDefinition-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="AttributeDefinition-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control attribute-definition-input" />
                             </div>
                             <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
                                 <input type="checkbox" id="AttributeDefinition-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerAttributeDefinitionWriter()" />
@@ -59,6 +69,33 @@
                             </div>
                         </form>
                     </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerAttributeDefinitionReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 attribute-definition-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="attributeDefinitionChangeHistoryService.userIsSchedulerAttributeDefinitionChangeHistoryReader()">
+                            <button ngbNavLink>Attribute Definition Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (attributeDefinitionData?.AttributeDefinitionChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-attribute-definition-change-history-table [queryParams]="{ attributeDefinitionId: attributeDefinitionData?.id }"></app-attribute-definition-change-history-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-attribute-definition-change-history-add-edit [preSeededData]="{ attributeDefinitionId: attributeDefinitionData?.id }" [hiddenFields]="['attributeDefinitionId']"></app-attribute-definition-change-history-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
                 </div>
             </div>
         </div>

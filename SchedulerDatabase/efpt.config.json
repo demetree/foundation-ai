@@ -44,6 +44,18 @@
          "ObjectType": 0
       },
       {
+         "Name": "[Scheduler].[AttributeDefinitionChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[AttributeDefinitionEntity]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[AttributeDefinitionType]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[Scheduler].[Batch]",
          "ObjectType": 0
       },

@@ -23,9 +23,9 @@
                 </span>
               </th>
 <!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
-            <th class="sortable" scope="col" (click)="sortBy('entityName')">
-                Entity  Name
-                <span *ngIf="sortColumn === 'entityName'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            <th class="sortable" scope="col" (click)="sortBy('attributeDefinitionEntity.name')">
+                Attribute  Definition  Entity
+                <span *ngIf="sortColumn === 'attributeDefinitionEntity.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
             <th class="sortable" scope="col" (click)="sortBy('key')">
                 Key
@@ -35,9 +35,9 @@
                 Label
                 <span *ngIf="sortColumn === 'label'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
-            <th class="sortable" scope="col" (click)="sortBy('type')">
-                Type
-                <span *ngIf="sortColumn === 'type'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            <th class="sortable" scope="col" (click)="sortBy('attributeDefinitionType.name')">
+                Attribute  Definition  Type
+                <span *ngIf="sortColumn === 'attributeDefinitionType.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
             <th class="sortable" scope="col" (click)="sortBy('options')">
                 Options
@@ -133,10 +133,10 @@ End of commented block for alternate definition option -->
                 </ng-container>
               </td>
 <!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
-            <td class="text-truncate"><a [routerLink]="['/attributedefinition', attributeDefinition.id]" class="btn btn-link text-left" ngbTooltip="Open Attribute Definition details">{{attributeDefinition.entityName}}</a></td>
-            <td class="text-truncate">{{attributeDefinition.key}}</td>
+            <td class="text-truncate"><a [routerLink]="['/attributedefinitionentity', attributeDefinition.attributeDefinitionEntityId]" class="btn btn-link text-left" ngbTooltip="Open Attribute Definition Entity details">{{attributeDefinition.attributeDefinitionEntity?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/attributedefinition', attributeDefinition.id]" class="btn btn-link text-left" ngbTooltip="Open Attribute Definition details">{{attributeDefinition.key}}</a></td>
             <td class="text-truncate">{{attributeDefinition.label}}</td>
-            <td class="text-truncate">{{attributeDefinition.type}}</td>
+            <td class="text-truncate"><a [routerLink]="['/attributedefinitiontype', attributeDefinition.attributeDefinitionTypeId]" class="btn btn-link text-left" ngbTooltip="Open Attribute Definition Type details">{{attributeDefinition.attributeDefinitionType?.name}}</a></td>
             <td class="text-truncate">{{attributeDefinition.options}}</td>
             <td class="text-truncate"><boolean-icon [value]="attributeDefinition.isRequired"/></td>
             <td class="text-truncate">{{attributeDefinition.sequence | bigNumberFormat : '1.0-2'}}</td>
@@ -257,6 +257,7 @@ End of commented block for alternate definition option -->
            <div class="card-header d-flex justify-content-between align-items-center">
              <div>
                <strong>{{attributeDefinition.id}}</strong>
+               <small class="text-muted d-block">{{attributeDefinition.attributeDefinitionType?.name}}</small>
              </div>
              <div>
                 <button class="btn btn-sm"
@@ -286,9 +287,9 @@ End of commented block for alternate definition option -->
              </div>
              </div>
              <div class="card-body">
-            <p class="attribute-definition-info" *ngIf="attributeDefinition.entityName != null">
-              <strong>Entity Name: </strong>
-              {{attributeDefinition.entityName}}
+            <p class="attribute-definition-info" *ngIf="attributeDefinition.attributeDefinitionEntityId != null">
+              <strong>Attribute Definition Entity: </strong>
+              <a [routerLink]="['/attributedefinitionentity', attributeDefinition.attributeDefinitionEntityId]" class="text-left p-0 m-0" ngbTooltip="Open Attribute Definition Entity details">{{attributeDefinition.attributeDefinitionEntity?.name}}</a>
             </p>
             <p class="attribute-definition-info" *ngIf="attributeDefinition.key != null">
               <strong>Key: </strong>
@@ -298,9 +299,9 @@ End of commented block for alternate definition option -->
               <strong>Label: </strong>
               {{attributeDefinition.label}}
             </p>
-            <p class="attribute-definition-info" *ngIf="attributeDefinition.type != null">
-              <strong>Type: </strong>
-              {{attributeDefinition.type}}
+            <p class="attribute-definition-info" *ngIf="attributeDefinition.attributeDefinitionTypeId != null">
+              <strong>Attribute Definition Type: </strong>
+              <a [routerLink]="['/attributedefinitiontype', attributeDefinition.attributeDefinitionTypeId]" class="text-left p-0 m-0" ngbTooltip="Open Attribute Definition Type details">{{attributeDefinition.attributeDefinitionType?.name}}</a>
             </p>
             <p class="attribute-definition-info" *ngIf="attributeDefinition.options != null">
               <strong>Options: </strong>

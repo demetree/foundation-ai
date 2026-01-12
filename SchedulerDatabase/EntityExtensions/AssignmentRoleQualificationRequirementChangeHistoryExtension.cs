@@ -284,7 +284,7 @@ namespace Foundation.Scheduler.Database
 				timeStamp = assignmentRoleQualificationRequirementChangeHistory.timeStamp,
 				userId = assignmentRoleQualificationRequirementChangeHistory.userId,
 				data = assignmentRoleQualificationRequirementChangeHistory.data,
-				assignmentRoleQualificationRequirement = AssignmentRoleQualificationRequirement.CreateMinimalAnonymous(assignmentRoleQualificationRequirementChangeHistory.assignmentRoleQualificationRequirement),
+				assignmentRoleQualificationRequirement = AssignmentRoleQualificationRequirement.CreateMinimalAnonymous(assignmentRoleQualificationRequirementChangeHistory.assignmentRoleQualificationRequirement)
 			 };
 		}
 

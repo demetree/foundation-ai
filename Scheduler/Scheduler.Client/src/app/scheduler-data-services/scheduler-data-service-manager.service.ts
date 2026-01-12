@@ -16,6 +16,9 @@ import {AssignmentRoleQualificationRequirementService} from  './assignment-role-
 import {AssignmentRoleQualificationRequirementChangeHistoryService} from  './assignment-role-qualification-requirement-change-history.service';
 import {AssignmentStatusService} from  './assignment-status.service';
 import {AttributeDefinitionService} from  './attribute-definition.service';
+import {AttributeDefinitionChangeHistoryService} from  './attribute-definition-change-history.service';
+import {AttributeDefinitionEntityService} from  './attribute-definition-entity.service';
+import {AttributeDefinitionTypeService} from  './attribute-definition-type.service';
 import {BatchService} from  './batch.service';
 import {BatchChangeHistoryService} from  './batch-change-history.service';
 import {BatchStatusService} from  './batch-status.service';
@@ -151,6 +154,9 @@ export class SchedulerDataServiceManagerService  {
               , public assignmentRoleQualificationRequirementChangeHistoryService: AssignmentRoleQualificationRequirementChangeHistoryService
               , public assignmentStatusService: AssignmentStatusService
               , public attributeDefinitionService: AttributeDefinitionService
+              , public attributeDefinitionChangeHistoryService: AttributeDefinitionChangeHistoryService
+              , public attributeDefinitionEntityService: AttributeDefinitionEntityService
+              , public attributeDefinitionTypeService: AttributeDefinitionTypeService
               , public batchService: BatchService
               , public batchChangeHistoryService: BatchChangeHistoryService
               , public batchStatusService: BatchStatusService
@@ -284,6 +290,9 @@ export class SchedulerDataServiceManagerService  {
         this.assignmentRoleQualificationRequirementChangeHistoryService.ClearAllCaches();
         this.assignmentStatusService.ClearAllCaches();
         this.attributeDefinitionService.ClearAllCaches();
+        this.attributeDefinitionChangeHistoryService.ClearAllCaches();
+        this.attributeDefinitionEntityService.ClearAllCaches();
+        this.attributeDefinitionTypeService.ClearAllCaches();
         this.batchService.ClearAllCaches();
         this.batchChangeHistoryService.ClearAllCaches();
         this.batchStatusService.ClearAllCaches();

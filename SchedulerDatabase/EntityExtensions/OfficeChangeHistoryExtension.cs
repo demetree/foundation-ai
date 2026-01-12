@@ -284,7 +284,7 @@ namespace Foundation.Scheduler.Database
 				timeStamp = officeChangeHistory.timeStamp,
 				userId = officeChangeHistory.userId,
 				data = officeChangeHistory.data,
-				office = Office.CreateMinimalAnonymous(officeChangeHistory.office),
+				office = Office.CreateMinimalAnonymous(officeChangeHistory.office)
 			 };
 		}
 

@@ -284,7 +284,7 @@ namespace Foundation.Scheduler.Database
 				timeStamp = crewMemberChangeHistory.timeStamp,
 				userId = crewMemberChangeHistory.userId,
 				data = crewMemberChangeHistory.data,
-				crewMember = CrewMember.CreateMinimalAnonymous(crewMemberChangeHistory.crewMember),
+				crewMember = CrewMember.CreateMinimalAnonymous(crewMemberChangeHistory.crewMember)
 			 };
 		}
 

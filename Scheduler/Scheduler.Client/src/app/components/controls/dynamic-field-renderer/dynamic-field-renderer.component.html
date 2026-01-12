@@ -9,7 +9,7 @@
                         <span *ngIf="def.isRequired" class="text-danger">*</span>
                     </label>
 
-                    <ng-container [ngSwitch]="def.type">
+                    <ng-container [ngSwitch]="def.attributeDefinitionType?.name">
 
                         <!-- Text -->
                         <input *ngSwitchCase="'Text'" type="text" class="form-control" [id]="'attr-' + def.id"
@@ -39,7 +39,7 @@
                             (ngModelChange)="data[def.key!] = $event; onValueChange()" [required]="def.isRequired">
 
                         <!-- Dropdown -->
-                        <select *ngSwitchCase="'Dropdown'" class="form-control form-select" [id]="'attr-' + def.id"
+                        <select *ngSwitchCase="'Select'" class="form-control form-select" [id]="'attr-' + def.id"
                             [(ngModel)]="data[def.key!]" (ngModelChange)="onValueChange()" [required]="def.isRequired">
                             <option [ngValue]="null">Select {{ def.label }}...</option>
                             <option *ngFor="let opt of getOptions(def)" [value]="opt">{{ opt }}</option>

@@ -1,0 +1,65 @@
+<div class="add-attribute-definition-change-history" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-attribute-definition-change-history me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Attribute Definition Change History" 
+        *ngIf="userIsSchedulerAttributeDefinitionChangeHistoryWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #attributeDefinitionChangeHistoryModal let-modal>
+   <div class="modal-header bg-dark text-light attribute-definition-change-history-modal-header">
+      <h5 class="modal-title mb-0" id="attributeDefinitionChangeHistoryModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Attribute Definition Change History' : 'Add Attribute Definition Change History' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body attribute-definition-change-history-modal-body">
+      <form [formGroup]="attributeDefinitionChangeHistoryForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('attributeDefinitionId')">
+                <label for="AttributeDefinitionChangeHistory-attributeDefinitionId" id="label-AttributeDefinitionChangeHistory-attributeDefinitionId"><span class="text-danger">*</span>Attribute Definition</label>
+                <select id="AttributeDefinitionChangeHistory-attributeDefinitionId" formControlName="attributeDefinitionId" class="form-select attribute-definition-change-history-select" [disabled]="!userIsSchedulerAttributeDefinitionChangeHistoryWriter()">
+                    <option [ngValue]="null">Select Attribute Definition</option>
+                    <option *ngFor="let attributeDefinition of attributeDefinitions$ | async" [ngValue]="attributeDefinition.id">{{attributeDefinition.key}}</option>
+                </select>
+                <div *ngIf="attributeDefinitionChangeHistoryForm.get('attributeDefinitionId')?.invalid && attributeDefinitionChangeHistoryForm.get('attributeDefinitionId')?.touched" class="text-danger">
+                    Attribute Definition is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="AttributeDefinitionChangeHistory-versionNumber" id="label-AttributeDefinitionChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="AttributeDefinitionChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control attribute-definition-change-history-input" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                <label for="AttributeDefinitionChangeHistory-timeStamp" id="label-AttributeDefinitionChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                <input type="datetime-local" id="AttributeDefinitionChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control attribute-definition-change-history-input" [disabled]="!userIsSchedulerAttributeDefinitionChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                <div *ngIf="attributeDefinitionChangeHistoryForm.get('timeStamp')?.invalid && attributeDefinitionChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                    Time Stamp is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                <label for="AttributeDefinitionChangeHistory-userId" id="label-AttributeDefinitionChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                <input type="number" id="AttributeDefinitionChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control attribute-definition-change-history-input" [disabled]="!userIsSchedulerAttributeDefinitionChangeHistoryWriter()" aria-labelledby="label-userId" />
+                <div *ngIf="attributeDefinitionChangeHistoryForm.get('userId')?.invalid && attributeDefinitionChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                    User Id is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                <label for="AttributeDefinitionChangeHistory-data" id="label-AttributeDefinitionChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                <textarea id="AttributeDefinitionChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control attribute-definition-change-history-input" [disabled]="!userIsSchedulerAttributeDefinitionChangeHistoryWriter()"></textarea>
+                <div *ngIf="attributeDefinitionChangeHistoryForm.get('data')?.invalid && attributeDefinitionChangeHistoryForm.get('data')?.touched" class="text-danger">
+                    Data is required
+                </div>
+            </div>
+         <div class="modal-footer attribute-definition-change-history-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Attribute Definition Change History changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !attributeDefinitionChangeHistoryForm.valid || attributeDefinitionChangeHistoryForm.pristine || !userIsSchedulerAttributeDefinitionChangeHistoryWriter()" ngbTooltip="Save the Attribute Definition Change History changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>

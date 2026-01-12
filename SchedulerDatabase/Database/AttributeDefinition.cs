@@ -11,13 +11,13 @@ public partial class AttributeDefinition
 
     public Guid tenantGuid { get; set; }
 
-    public string entityName { get; set; }
+    public int? attributeDefinitionEntityId { get; set; }
 
     public string key { get; set; }
 
     public string label { get; set; }
 
-    public string type { get; set; }
+    public int? attributeDefinitionTypeId { get; set; }
 
     public string options { get; set; }
 
@@ -25,9 +25,17 @@ public partial class AttributeDefinition
 
     public int? sequence { get; set; }
 
+    public int versionNumber { get; set; }
+
     public Guid objectGuid { get; set; }
 
     public bool active { get; set; }
 
     public bool deleted { get; set; }
+
+    public virtual ICollection<AttributeDefinitionChangeHistory> AttributeDefinitionChangeHistories { get; set; } = new List<AttributeDefinitionChangeHistory>();
+
+    public virtual AttributeDefinitionEntity attributeDefinitionEntity { get; set; }
+
+    public virtual AttributeDefinitionType attributeDefinitionType { get; set; }
 }

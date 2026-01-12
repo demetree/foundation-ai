@@ -166,10 +166,10 @@ export class AttributeDefinitionTableComponent implements OnInit, OnChanges, Aft
     // Start with the common columns that everyone sees
     //
     const defaultColumns: TableColumn[] = [
-    { key: 'entityName', label: 'Entity Name', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/attributedefinition', 'id']  },
-    { key: 'key', label: 'Key', width: undefined },
+    { key: 'attributeDefinitionEntity.name', label: 'Attribute Definition Entity', width: undefined, template: 'link', linkPath: ['/attributedefinitionentity', 'attributeDefinitionEntityId'] },
+    { key: 'key', label: 'Key', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/attributedefinition', 'id']  },
     { key: 'label', label: 'Label', width: undefined },
-    { key: 'type', label: 'Type', width: undefined },
+    { key: 'attributeDefinitionType.name', label: 'Attribute Definition Type', width: undefined, template: 'link', linkPath: ['/attributedefinitiontype', 'attributeDefinitionTypeId'] },
     { key: 'options', label: 'Options', width: undefined },
     { key: 'isRequired', label: 'Is Required', width: '120px', template: 'boolean' },
     { key: 'sequence', label: 'Sequence', width: undefined },
@@ -184,11 +184,13 @@ export class AttributeDefinitionTableComponent implements OnInit, OnChanges, Aft
     const isAdmin = this.authService.isSchedulerAdministrator; 
 
     if (isAdmin) {
+     defaultColumns.push({ key: 'versionNumber', label: 'Version Number', width: undefined });
      defaultColumns.push({ key: 'active', label: 'Active', width: '120px', template: 'boolean' });
      defaultColumns.push({ key: 'deleted', label: 'Deleted', width: '120px', template: 'boolean' });
 
     }
     else if (isWriter) {
+     defaultColumns.push({ key: 'versionNumber', label: 'Version Number', width: undefined });
     }
 
     
@@ -316,10 +318,10 @@ export class AttributeDefinitionTableComponent implements OnInit, OnChanges, Aft
 
         // Define fields to filter on, including nested properties
         const filterFields = [
-                      'entityName',
+                      'attributeDefinitionEntity.name',
                       'key',
                       'label',
-                      'type',
+                      'attributeDefinitionType.name',
                       'options',
                       'isRequired',
                       'sequence',

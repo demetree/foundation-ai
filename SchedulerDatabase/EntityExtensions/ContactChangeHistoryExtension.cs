@@ -284,7 +284,7 @@ namespace Foundation.Scheduler.Database
 				timeStamp = contactChangeHistory.timeStamp,
 				userId = contactChangeHistory.userId,
 				data = contactChangeHistory.data,
-				contact = Contact.CreateMinimalAnonymous(contactChangeHistory.contact),
+				contact = Contact.CreateMinimalAnonymous(contactChangeHistory.contact)
 			 };
 		}
 

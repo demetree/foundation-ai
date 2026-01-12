@@ -284,7 +284,7 @@ namespace Foundation.Scheduler.Database
 				timeStamp = schedulingTargetQualificationRequirementChangeHistory.timeStamp,
 				userId = schedulingTargetQualificationRequirementChangeHistory.userId,
 				data = schedulingTargetQualificationRequirementChangeHistory.data,
-				schedulingTargetQualificationRequirement = SchedulingTargetQualificationRequirement.CreateMinimalAnonymous(schedulingTargetQualificationRequirementChangeHistory.schedulingTargetQualificationRequirement),
+				schedulingTargetQualificationRequirement = SchedulingTargetQualificationRequirement.CreateMinimalAnonymous(schedulingTargetQualificationRequirementChangeHistory.schedulingTargetQualificationRequirement)
 			 };
 		}
 

@@ -284,7 +284,7 @@ namespace Foundation.Scheduler.Database
 				timeStamp = campaignChangeHistory.timeStamp,
 				userId = campaignChangeHistory.userId,
 				data = campaignChangeHistory.data,
-				campaign = Campaign.CreateMinimalAnonymous(campaignChangeHistory.campaign),
+				campaign = Campaign.CreateMinimalAnonymous(campaignChangeHistory.campaign)
 			 };
 		}
 

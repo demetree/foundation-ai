@@ -189,6 +189,12 @@ import { AssignmentStatusListingComponent } from './scheduler-data-components/as
 import { AssignmentStatusDetailComponent } from './scheduler-data-components/assignment-status/assignment-status-detail/assignment-status-detail.component';
 import { AttributeDefinitionListingComponent } from './scheduler-data-components/attribute-definition/attribute-definition-listing/attribute-definition-listing.component';
 import { AttributeDefinitionDetailComponent } from './scheduler-data-components/attribute-definition/attribute-definition-detail/attribute-definition-detail.component';
+import { AttributeDefinitionChangeHistoryListingComponent } from './scheduler-data-components/attribute-definition-change-history/attribute-definition-change-history-listing/attribute-definition-change-history-listing.component';
+import { AttributeDefinitionChangeHistoryDetailComponent } from './scheduler-data-components/attribute-definition-change-history/attribute-definition-change-history-detail/attribute-definition-change-history-detail.component';
+import { AttributeDefinitionEntityListingComponent } from './scheduler-data-components/attribute-definition-entity/attribute-definition-entity-listing/attribute-definition-entity-listing.component';
+import { AttributeDefinitionEntityDetailComponent } from './scheduler-data-components/attribute-definition-entity/attribute-definition-entity-detail/attribute-definition-entity-detail.component';
+import { AttributeDefinitionTypeListingComponent } from './scheduler-data-components/attribute-definition-type/attribute-definition-type-listing/attribute-definition-type-listing.component';
+import { AttributeDefinitionTypeDetailComponent } from './scheduler-data-components/attribute-definition-type/attribute-definition-type-detail/attribute-definition-type-detail.component';
 import { BatchListingComponent } from './scheduler-data-components/batch/batch-listing/batch-listing.component';
 import { BatchDetailComponent } from './scheduler-data-components/batch/batch-detail/batch-detail.component';
 import { BatchChangeHistoryListingComponent } from './scheduler-data-components/batch-change-history/batch-change-history-listing/batch-change-history-listing.component';
@@ -671,6 +677,21 @@ const routes: Routes = [
   { path: 'attributedefinitions/:attributeDefinitionId', component: AttributeDefinitionDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Attribute Definition' },
   { path: 'attributedefinition/:attributeDefinitionId', component: AttributeDefinitionDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Attribute Definition' },
   { path: 'attributedefinition', redirectTo: 'attributedefinitions' },
+  { path: 'attributedefinitionchangehistories', component: AttributeDefinitionChangeHistoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Attribute Definition Change Histories' },
+  { path: 'attributedefinitionchangehistories/new', component: AttributeDefinitionChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Attribute Definition Change History' },
+  { path: 'attributedefinitionchangehistories/:attributeDefinitionChangeHistoryId', component: AttributeDefinitionChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Attribute Definition Change History' },
+  { path: 'attributedefinitionchangehistory/:attributeDefinitionChangeHistoryId', component: AttributeDefinitionChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Attribute Definition Change History' },
+  { path: 'attributedefinitionchangehistory', redirectTo: 'attributedefinitionchangehistories' },
+  { path: 'attributedefinitionentities', component: AttributeDefinitionEntityListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Attribute Definition Entities' },
+  { path: 'attributedefinitionentities/new', component: AttributeDefinitionEntityDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Attribute Definition Entity' },
+  { path: 'attributedefinitionentities/:attributeDefinitionEntityId', component: AttributeDefinitionEntityDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Attribute Definition Entity' },
+  { path: 'attributedefinitionentity/:attributeDefinitionEntityId', component: AttributeDefinitionEntityDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Attribute Definition Entity' },
+  { path: 'attributedefinitionentity', redirectTo: 'attributedefinitionentities' },
+  { path: 'attributedefinitiontypes', component: AttributeDefinitionTypeListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Attribute Definition Types' },
+  { path: 'attributedefinitiontypes/new', component: AttributeDefinitionTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Attribute Definition Type' },
+  { path: 'attributedefinitiontypes/:attributeDefinitionTypeId', component: AttributeDefinitionTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Attribute Definition Type' },
+  { path: 'attributedefinitiontype/:attributeDefinitionTypeId', component: AttributeDefinitionTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Attribute Definition Type' },
+  { path: 'attributedefinitiontype', redirectTo: 'attributedefinitiontypes' },
   { path: 'batches', component: BatchListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Batches' },
   { path: 'batches/new', component: BatchDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Batch' },
   { path: 'batches/:batchId', component: BatchDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Batch' },

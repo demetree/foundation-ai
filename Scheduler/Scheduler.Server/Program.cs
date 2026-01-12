@@ -185,6 +185,9 @@ namespace Foundation.Scheduler
                 controllers.Add(typeof(AssignmentRoleQualificationRequirementChangeHistoriesController));
                 controllers.Add(typeof(AssignmentStatusesController));
                 controllers.Add(typeof(AttributeDefinitionsController));
+                controllers.Add(typeof(AttributeDefinitionChangeHistoriesController));
+                controllers.Add(typeof(AttributeDefinitionEntitiesController));
+                controllers.Add(typeof(AttributeDefinitionTypesController));
                 controllers.Add(typeof(BatchesController));
                 controllers.Add(typeof(BatchChangeHistoriesController));
                 controllers.Add(typeof(BatchStatusesController));

@@ -23,6 +23,9 @@ import { NavigationService } from '../../../utility-services/navigation.service'
 import { CanComponentDeactivate } from '../../../guards/unsaved-changes.guard';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { AttributeDefinitionService, AttributeDefinitionData, AttributeDefinitionSubmitData } from '../../../scheduler-data-services/attribute-definition.service';
+import { AttributeDefinitionEntityService } from '../../../scheduler-data-services/attribute-definition-entity.service';
+import { AttributeDefinitionTypeService } from '../../../scheduler-data-services/attribute-definition-type.service';
+import { AttributeDefinitionChangeHistoryService } from '../../../scheduler-data-services/attribute-definition-change-history.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -34,13 +37,14 @@ import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../uti
 // - Does not include navigation properties or methods from domain models.
 //
 interface AttributeDefinitionFormValues {
-  entityName: string | null,
+  attributeDefinitionEntityId: number | bigint | null,       // For FK link number
   key: string | null,
   label: string | null,
-  type: string | null,
+  attributeDefinitionTypeId: number | bigint | null,       // For FK link number
   options: string | null,
   isRequired: boolean,
   sequence: string | null,     // Stored as string for form input, converted to number on submit.
+  versionNumber: string,     // Stored as string for form input, converted to number on submit.
   active: boolean,
   deleted: boolean,
 };
@@ -70,13 +74,14 @@ export class AttributeDefinitionDetailComponent implements OnInit, CanComponentD
 
 
   public attributeDefinitionForm: FormGroup = this.fb.group({
-        entityName: [''],
+        attributeDefinitionEntityId: [null],
         key: [''],
         label: [''],
-        type: [''],
+        attributeDefinitionTypeId: [null],
         options: [''],
         isRequired: [false],
         sequence: [''],
+        versionNumber: [''],
         active: [true],
         deleted: [false],
       });
@@ -93,11 +98,17 @@ export class AttributeDefinitionDetailComponent implements OnInit, CanComponentD
   public isEditMode = true;   // Defaults to true (edit).  Gets set to false in ngOnInit if route is 'new'
 
   attributeDefinitions$ = this.attributeDefinitionService.GetAttributeDefinitionList();
+  public attributeDefinitionEntities$ = this.attributeDefinitionEntityService.GetAttributeDefinitionEntityList();
+  public attributeDefinitionTypes$ = this.attributeDefinitionTypeService.GetAttributeDefinitionTypeList();
+  public attributeDefinitionChangeHistories$ = this.attributeDefinitionChangeHistoryService.GetAttributeDefinitionChangeHistoryList();
 
   private destroy$ = new Subject<void>();
 
   constructor(
     public attributeDefinitionService: AttributeDefinitionService,
+    public attributeDefinitionEntityService: AttributeDefinitionEntityService,
+    public attributeDefinitionTypeService: AttributeDefinitionTypeService,
+    public attributeDefinitionChangeHistoryService: AttributeDefinitionChangeHistoryService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,
@@ -379,13 +390,14 @@ export class AttributeDefinitionDetailComponent implements OnInit, CanComponentD
       // Reset the form group to null state, but don't change the form instance.
       //
       this.attributeDefinitionForm.reset({
-        entityName: '',
+        attributeDefinitionEntityId: null,
         key: '',
         label: '',
-        type: '',
+        attributeDefinitionTypeId: null,
         options: '',
         isRequired: false,
         sequence: '',
+        versionNumber: '',
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -397,13 +409,14 @@ export class AttributeDefinitionDetailComponent implements OnInit, CanComponentD
         // Reset the form with properly formatted values that support dates in datetime-local inputs
         //
         this.attributeDefinitionForm.reset({
-        entityName: attributeDefinitionData.entityName ?? '',
+        attributeDefinitionEntityId: attributeDefinitionData.attributeDefinitionEntityId,
         key: attributeDefinitionData.key ?? '',
         label: attributeDefinitionData.label ?? '',
-        type: attributeDefinitionData.type ?? '',
+        attributeDefinitionTypeId: attributeDefinitionData.attributeDefinitionTypeId,
         options: attributeDefinitionData.options ?? '',
         isRequired: attributeDefinitionData.isRequired ?? false,
         sequence: attributeDefinitionData.sequence?.toString() ?? '',
+        versionNumber: attributeDefinitionData.versionNumber?.toString() ?? '',
         active: attributeDefinitionData.active ?? true,
         deleted: attributeDefinitionData.deleted ?? false,
       }, { emitEvent: false});
@@ -465,13 +478,14 @@ export class AttributeDefinitionDetailComponent implements OnInit, CanComponentD
     //
     const attributeDefinitionSubmitData: AttributeDefinitionSubmitData = {
         id: this.attributeDefinitionData?.id || 0,
-        entityName: formValue.entityName?.trim() || null,
+        attributeDefinitionEntityId: formValue.attributeDefinitionEntityId ? Number(formValue.attributeDefinitionEntityId) : null,
         key: formValue.key?.trim() || null,
         label: formValue.label?.trim() || null,
-        type: formValue.type?.trim() || null,
+        attributeDefinitionTypeId: formValue.attributeDefinitionTypeId ? Number(formValue.attributeDefinitionTypeId) : null,
         options: formValue.options?.trim() || null,
         isRequired: !!formValue.isRequired,
         sequence: formValue.sequence ? Number(formValue.sequence) : null,
+        versionNumber: this.attributeDefinitionData?.versionNumber ?? 0,
         active: !!formValue.active,
         deleted: !!formValue.deleted,
    };

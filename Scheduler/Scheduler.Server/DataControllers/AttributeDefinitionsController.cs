@@ -33,6 +33,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		public const int READ_PERMISSION_LEVEL_REQUIRED = 1;
 		public const int WRITE_PERMISSION_LEVEL_REQUIRED = 50;
 
+		static object attributeDefinitionPutSyncRoot = new object();
+		static object attributeDefinitionDeleteSyncRoot = new object();
+
 		private SchedulerContext _context;
 
 		private ILogger<AttributeDefinitionsController> _logger;
@@ -62,13 +65,14 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/AttributeDefinitions")]
 		public async Task<IActionResult> GetAttributeDefinitions(
-			string entityName = null,
+			int? attributeDefinitionEntityId = null,
 			string key = null,
 			string label = null,
-			string type = null,
+			int? attributeDefinitionTypeId = null,
 			string options = null,
 			bool? isRequired = null,
 			int? sequence = null,
+			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -121,9 +125,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
-			if (string.IsNullOrEmpty(entityName) == false)
+			if (attributeDefinitionEntityId.HasValue == true)
 			{
-				query = query.Where(ad => ad.entityName == entityName);
+				query = query.Where(ad => ad.attributeDefinitionEntityId == attributeDefinitionEntityId.Value);
 			}
 			if (string.IsNullOrEmpty(key) == false)
 			{
@@ -133,9 +137,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(ad => ad.label == label);
 			}
-			if (string.IsNullOrEmpty(type) == false)
+			if (attributeDefinitionTypeId.HasValue == true)
 			{
-				query = query.Where(ad => ad.type == type);
+				query = query.Where(ad => ad.attributeDefinitionTypeId == attributeDefinitionTypeId.Value);
 			}
 			if (string.IsNullOrEmpty(options) == false)
 			{
@@ -148,6 +152,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (sequence.HasValue == true)
 			{
 				query = query.Where(ad => ad.sequence == sequence.Value);
+			}
+			if (versionNumber.HasValue == true)
+			{
+				query = query.Where(ad => ad.versionNumber == versionNumber.Value);
 			}
 			if (objectGuid.HasValue == true)
 			{
@@ -178,7 +186,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				query = query.Where(ad => ad.deleted == false);
 			}
 
-			query = query.OrderBy(ad => ad.sequence).ThenBy(ad => ad.entityName).ThenBy(ad => ad.key).ThenBy(ad => ad.label);
+			query = query.OrderBy(ad => ad.sequence).ThenBy(ad => ad.key).ThenBy(ad => ad.label);
 
 			if (pageNumber.HasValue == true &&
 			    pageSize.HasValue == true)
@@ -188,6 +196,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			
 			if (includeRelations == true)
 			{
+				query = query.Include(x => x.attributeDefinitionEntity);
+				query = query.Include(x => x.attributeDefinitionType);
 				query = query.AsSplitQuery();
 			}
 
@@ -200,11 +210,13 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (!string.IsNullOrEmpty(anyStringContains))
 			{
 			   query = query.Where(x =>
-			       x.entityName.Contains(anyStringContains)
-			       || x.key.Contains(anyStringContains)
+			       x.key.Contains(anyStringContains)
 			       || x.label.Contains(anyStringContains)
-			       || x.type.Contains(anyStringContains)
 			       || x.options.Contains(anyStringContains)
+			       || (includeRelations == true && x.attributeDefinitionEntity.name.Contains(anyStringContains))
+			       || (includeRelations == true && x.attributeDefinitionEntity.description.Contains(anyStringContains))
+			       || (includeRelations == true && x.attributeDefinitionType.name.Contains(anyStringContains))
+			       || (includeRelations == true && x.attributeDefinitionType.description.Contains(anyStringContains))
 			   );
 			}
 
@@ -247,13 +259,14 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/AttributeDefinitions/RowCount")]
 		public async Task<IActionResult> GetRowCount(
-			string entityName = null,
+			int? attributeDefinitionEntityId = null,
 			string key = null,
 			string label = null,
-			string type = null,
+			int? attributeDefinitionTypeId = null,
 			string options = null,
 			bool? isRequired = null,
 			int? sequence = null,
+			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -286,9 +299,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			IQueryable<Database.AttributeDefinition> query = (from ad in _context.AttributeDefinitions select ad);
 			query = query.Where(x => x.tenantGuid == userTenantGuid);
-			if (entityName != null)
+			if (attributeDefinitionEntityId.HasValue == true)
 			{
-				query = query.Where(ad => ad.entityName == entityName);
+				query = query.Where(ad => ad.attributeDefinitionEntityId == attributeDefinitionEntityId.Value);
 			}
 			if (key != null)
 			{
@@ -298,9 +311,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(ad => ad.label == label);
 			}
-			if (type != null)
+			if (attributeDefinitionTypeId.HasValue == true)
 			{
-				query = query.Where(ad => ad.type == type);
+				query = query.Where(ad => ad.attributeDefinitionTypeId == attributeDefinitionTypeId.Value);
 			}
 			if (options != null)
 			{
@@ -313,6 +326,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (sequence.HasValue == true)
 			{
 				query = query.Where(ad => ad.sequence == sequence.Value);
+			}
+			if (versionNumber.HasValue == true)
+			{
+				query = query.Where(ad => ad.versionNumber == versionNumber.Value);
 			}
 			if (objectGuid.HasValue == true)
 			{
@@ -351,11 +368,13 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (!string.IsNullOrEmpty(anyStringContains))
 			{
 			   query = query.Where(x =>
-			       x.entityName.Contains(anyStringContains)
-			       || x.key.Contains(anyStringContains)
+			       x.key.Contains(anyStringContains)
 			       || x.label.Contains(anyStringContains)
-			       || x.type.Contains(anyStringContains)
 			       || x.options.Contains(anyStringContains)
+			       || x.attributeDefinitionEntity.name.Contains(anyStringContains)
+			       || x.attributeDefinitionEntity.description.Contains(anyStringContains)
+			       || x.attributeDefinitionType.name.Contains(anyStringContains)
+			       || x.attributeDefinitionType.description.Contains(anyStringContains)
 			   );
 			}
 
@@ -418,6 +437,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				query = query.Where(x => x.tenantGuid == userTenantGuid);
 				if (includeRelations == true)
 				{
+					query = query.Include(x => x.attributeDefinitionEntity);
+					query = query.Include(x => x.attributeDefinitionType);
 					query = query.AsSplitQuery();
 				}
 
@@ -431,7 +452,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 					await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, userIsAdmin == true ? "Scheduler.AttributeDefinition Entity was read with Admin privilege." : "Scheduler.AttributeDefinition Entity was read.");
 
-					BackgroundJob.Enqueue(() => SecurityLogic.AddToUserMostRecents(securityUser.id, "AttributeDefinition", materialized.id, materialized.entityName));
+					BackgroundJob.Enqueue(() => SecurityLogic.AddToUserMostRecents(securityUser.id, "AttributeDefinition", materialized.id, materialized.key));
 
 
 					// Create a new output object that only includes the relations if necessary, and doesn't include the empty list objects, so that we can reduce the amount of data being transferred.
@@ -561,67 +582,93 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				attributeDefinition.tenantGuid = existing.tenantGuid;
 			}
 
-
-			// Is user who is not an admin trying to delete, or to work on a deleted record, or to delete a record by flipping it's deleted flag to true?
-			if (userIsAdmin == false && (attributeDefinition.deleted == true || existing.deleted == true))
+			lock (attributeDefinitionPutSyncRoot)
 			{
-				// we're not recording state here because it is not being changed.
-				CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, "Attempt to delete a record or work on a deleted Scheduler.AttributeDefinition record.", id.ToString());
-				DestroySessionAndAuthentication();
-				return Forbid();
-			}
+				//
+				// Validate the version number for the attributeDefinition being saved.  Error out if the database version is different than what is being saved.  If they are the same, then increment the version for this save.
+				//
+				if (existing.versionNumber != attributeDefinition.versionNumber)
+				{
+					// Record has changed
+					CreateAuditEvent(AuditEngine.AuditType.Miscellaneous, "AttributeDefinition save attempt was made but save request was with version " + attributeDefinition.versionNumber + " and the current version number is " + existing.versionNumber, false);
+					return Problem("The AttributeDefinition you are trying to update has already changed.  Please try your save again after reloading the AttributeDefinition.");
+				}
+				else
+				{
+					// Same record.  Increase version.
+					attributeDefinition.versionNumber++;
+				}
 
-			if (attributeDefinition.entityName != null && attributeDefinition.entityName.Length > 100)
-			{
-				attributeDefinition.entityName = attributeDefinition.entityName.Substring(0, 100);
-			}
 
-			if (attributeDefinition.key != null && attributeDefinition.key.Length > 100)
-			{
-				attributeDefinition.key = attributeDefinition.key.Substring(0, 100);
-			}
+				// Is user who is not an admin trying to delete, or to work on a deleted record, or to delete a record by flipping it's deleted flag to true?
+				if (userIsAdmin == false && (attributeDefinition.deleted == true || existing.deleted == true))
+				{
+					// we're not recording state here because it is not being changed.
+					CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, "Attempt to delete a record or work on a deleted Scheduler.AttributeDefinition record.", id.ToString());
+					DestroySessionAndAuthentication();
+					return Forbid();
+				}
 
-			if (attributeDefinition.label != null && attributeDefinition.label.Length > 250)
-			{
-				attributeDefinition.label = attributeDefinition.label.Substring(0, 250);
-			}
+				if (attributeDefinition.key != null && attributeDefinition.key.Length > 100)
+				{
+					attributeDefinition.key = attributeDefinition.key.Substring(0, 100);
+				}
 
-			if (attributeDefinition.type != null && attributeDefinition.type.Length > 50)
-			{
-				attributeDefinition.type = attributeDefinition.type.Substring(0, 50);
-			}
+				if (attributeDefinition.label != null && attributeDefinition.label.Length > 250)
+				{
+					attributeDefinition.label = attributeDefinition.label.Substring(0, 250);
+				}
 
-			EntityEntry<Database.AttributeDefinition> attached = _context.Entry(existing);
-			attached.CurrentValues.SetValues(attributeDefinition);
+				try
+				{
+				    EntityEntry<Database.AttributeDefinition> attached = _context.Entry(existing);
+				    attached.CurrentValues.SetValues(attributeDefinition);
 
-			try
-			{
-				await _context.SaveChangesAsync(cancellationToken);
+				    using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+				    {
+				        _context.SaveChanges();
 
-				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity,
-					"Scheduler.AttributeDefinition entity successfully updated.",
-					true,
-					id.ToString(),
-					JsonSerializer.Serialize(Database.AttributeDefinition.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Database.AttributeDefinition.CreateAnonymousWithFirstLevelSubObjects(attributeDefinition)),
-					null);
+				        //
+				        // Now add the change history
+				        //
+				        AttributeDefinitionChangeHistory attributeDefinitionChangeHistory = new AttributeDefinitionChangeHistory();
+				        attributeDefinitionChangeHistory.attributeDefinitionId = attributeDefinition.id;
+				        attributeDefinitionChangeHistory.versionNumber = attributeDefinition.versionNumber;
+				        attributeDefinitionChangeHistory.timeStamp = DateTime.UtcNow;
+				        attributeDefinitionChangeHistory.userId = securityUser.id;
+				        attributeDefinitionChangeHistory.tenantGuid = userTenantGuid;
+				        attributeDefinitionChangeHistory.data = JsonSerializer.Serialize(Database.AttributeDefinition.CreateAnonymousWithFirstLevelSubObjects(attributeDefinition));
+				        _context.AttributeDefinitionChangeHistories.Add(attributeDefinitionChangeHistory);
 
+				        _context.SaveChanges();
+
+				        transaction.Commit();
+				    }
+
+					CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
+						"Scheduler.AttributeDefinition entity successfully updated.",
+						true,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.AttributeDefinition.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.AttributeDefinition.CreateAnonymousWithFirstLevelSubObjects(attributeDefinition)),
+						null);
 
 				return Ok(Database.AttributeDefinition.CreateAnonymous(attributeDefinition));
-			}
-			catch (Exception ex)
-			{
-				CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
-					"Scheduler.AttributeDefinition entity update failed",
-					false,
-					id.ToString(),
-					JsonSerializer.Serialize(Database.AttributeDefinition.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Database.AttributeDefinition.CreateAnonymousWithFirstLevelSubObjects(attributeDefinition)),
-					ex);
+				}
+				catch (Exception ex)
+				{
+					CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
+						"Scheduler.AttributeDefinition entity update failed",
+						false,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.AttributeDefinition.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.AttributeDefinition.CreateAnonymousWithFirstLevelSubObjects(attributeDefinition)),
+						ex);
 
-				return Problem(ex.Message);
-			}
+					return Problem(ex.Message);
+				}
 
+			}
 		}
 
         /// <summary>
@@ -679,11 +726,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				//
 				attributeDefinition.tenantGuid = userTenantGuid;
 
-				if (attributeDefinition.entityName != null && attributeDefinition.entityName.Length > 100)
-				{
-					attributeDefinition.entityName = attributeDefinition.entityName.Substring(0, 100);
-				}
-
 				if (attributeDefinition.key != null && attributeDefinition.key.Length > 100)
 				{
 					attributeDefinition.key = attributeDefinition.key.Substring(0, 100);
@@ -694,37 +736,230 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					attributeDefinition.label = attributeDefinition.label.Substring(0, 250);
 				}
 
-				if (attributeDefinition.type != null && attributeDefinition.type.Length > 50)
-				{
-					attributeDefinition.type = attributeDefinition.type.Substring(0, 50);
-				}
-
 				attributeDefinition.objectGuid = Guid.NewGuid();
+				attributeDefinition.versionNumber = 1;
+
 				_context.AttributeDefinitions.Add(attributeDefinition);
-				await _context.SaveChangesAsync(cancellationToken);
 
-				await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
-					"Scheduler.AttributeDefinition entity successfully created.",
-					true,
-					attributeDefinition.id.ToString(),
-					"",
-					JsonSerializer.Serialize(Database.AttributeDefinition.CreateAnonymousWithFirstLevelSubObjects(attributeDefinition)),
-					null);
+				await using (IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync(cancellationToken))
+				{
+				    await _context.SaveChangesAsync(cancellationToken);
 
+				    //
+				    // Now add the change history
+				    //
+
+				    //
+				    // Detach the attributeDefinition object so that no further changes will be written to the database
+				    //
+				    _context.Entry(attributeDefinition).State = EntityState.Detached;
+
+				    //
+				    // Nullify all object properties before serializing.
+				    //
+					attributeDefinition.AttributeDefinitionChangeHistories = null;
+					attributeDefinition.attributeDefinitionEntity = null;
+					attributeDefinition.attributeDefinitionType = null;
+
+
+				    AttributeDefinitionChangeHistory attributeDefinitionChangeHistory = new AttributeDefinitionChangeHistory();
+				    attributeDefinitionChangeHistory.attributeDefinitionId = attributeDefinition.id;
+				    attributeDefinitionChangeHistory.versionNumber = attributeDefinition.versionNumber;
+				    attributeDefinitionChangeHistory.timeStamp = DateTime.UtcNow;
+				    attributeDefinitionChangeHistory.userId = securityUser.id;
+				    attributeDefinitionChangeHistory.tenantGuid = userTenantGuid;
+				    attributeDefinitionChangeHistory.data = JsonSerializer.Serialize(Database.AttributeDefinition.CreateAnonymousWithFirstLevelSubObjects(attributeDefinition));
+				    _context.AttributeDefinitionChangeHistories.Add(attributeDefinitionChangeHistory);
+				    await _context.SaveChangesAsync(cancellationToken);
+
+				    await transaction.CommitAsync(cancellationToken);
+
+					await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
+						"Scheduler.AttributeDefinition entity successfully created.",
+						true,
+						attributeDefinition. id.ToString(),
+						"",
+						JsonSerializer.Serialize(Database.AttributeDefinition.CreateAnonymousWithFirstLevelSubObjects(attributeDefinition)),
+						null);
+
+
+				}
 			}
 			catch (Exception ex)
 			{
-				await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity, "Scheduler.AttributeDefinition entity creation failed.", false, attributeDefinition.id.ToString(), "", JsonSerializer.Serialize(attributeDefinition), ex);
+				await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity, "Scheduler.AttributeDefinition entity creation failed.", false, attributeDefinition.id.ToString(), "", JsonSerializer.Serialize(Database.AttributeDefinition.CreateAnonymousWithFirstLevelSubObjects(attributeDefinition)), ex);
 
 				return Problem(ex.Message);
 			}
 
 
-			BackgroundJob.Enqueue(() => SecurityLogic.AddToUserMostRecents(securityUser.id, "AttributeDefinition", attributeDefinition.id, attributeDefinition.entityName));
+			BackgroundJob.Enqueue(() => SecurityLogic.AddToUserMostRecents(securityUser.id, "AttributeDefinition", attributeDefinition.id, attributeDefinition.key));
 
 			return CreatedAtRoute("AttributeDefinition", new { id = attributeDefinition.id }, Database.AttributeDefinition.CreateAnonymousWithFirstLevelSubObjects(attributeDefinition));
 		}
 
+
+
+        /// <summary>
+        /// 
+        /// This rolls a AttributeDefinition entity back to the state it was in at a prior version number.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+		[HttpPut]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/AttributeDefinition/Rollback/{id}")]
+		[Route("api/AttributeDefinition/Rollback")]
+		public async Task<IActionResult> RollbackToAttributeDefinitionVersion(int id, int versionNumber, CancellationToken cancellationToken = default)
+		{
+			//
+			// Data rollback is an admin only function, like Deletes.
+			//
+			StartAuditEventClock();
+			
+			if (await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+			
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+			
+
+			
+			IQueryable <Database.AttributeDefinition> query = (from x in _context.AttributeDefinitions
+			        where
+			        (x.id == id)
+			        select x);
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+
+			//
+			// Make sure nobody else is editing this AttributeDefinition concurrently
+			//
+			lock (attributeDefinitionPutSyncRoot)
+			{
+				
+				Database.AttributeDefinition attributeDefinition = query.FirstOrDefault();
+				
+				if (attributeDefinition == null)
+				{
+				    CreateAuditEvent(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for Scheduler.AttributeDefinition rollback", id.ToString(), new Exception("No Scheduler.AttributeDefinition entity could be find with the primary key provided for the rollback operation."));
+				    return NotFound();
+				}
+				
+				//
+				// Make a copy of the AttributeDefinition current state so we can log it.
+				//
+				Database.AttributeDefinition cloneOfExisting = (Database.AttributeDefinition)_context.Entry(attributeDefinition).GetDatabaseValues().ToObject();
+				
+				//
+				// Remove any object fields from the clone object so that it can serialize effectively
+				//
+				cloneOfExisting.AttributeDefinitionChangeHistories = null;
+				cloneOfExisting.attributeDefinitionEntity = null;
+				cloneOfExisting.attributeDefinitionType = null;
+
+				if (versionNumber >= attributeDefinition.versionNumber)
+				{
+				    CreateAuditEvent(AuditEngine.AuditType.UpdateEntity, "Invalid version number provided for Scheduler.AttributeDefinition rollback.  Version number provided is " + versionNumber, id.ToString(), new Exception("Invalid version number provided for Scheduler.AttributeDefinition rollback operation.Version number provided is " + versionNumber));
+				    return NotFound();
+				}
+				
+				AttributeDefinitionChangeHistory attributeDefinitionChangeHistory = (from x in _context.AttributeDefinitionChangeHistories
+				                                               where
+				                                               x.attributeDefinitionId == id &&
+				                                               x.versionNumber == versionNumber &&
+				                                               x.tenantGuid == userTenantGuid
+				                                               select x)
+				                                               .AsNoTracking()
+				                                               .FirstOrDefault();
+
+				if (attributeDefinitionChangeHistory != null)
+				{
+				    Database.AttributeDefinition oldAttributeDefinition = JsonSerializer.Deserialize<Database.AttributeDefinition>(attributeDefinitionChangeHistory.data);
+				
+				    //
+				    // Increase the version number
+				    //
+				    attributeDefinition.versionNumber++;
+				
+				    //
+				    // Put all other fields back the way that they were 
+				    //
+				    attributeDefinition.attributeDefinitionEntityId = oldAttributeDefinition.attributeDefinitionEntityId;
+				    attributeDefinition.key = oldAttributeDefinition.key;
+				    attributeDefinition.label = oldAttributeDefinition.label;
+				    attributeDefinition.attributeDefinitionTypeId = oldAttributeDefinition.attributeDefinitionTypeId;
+				    attributeDefinition.options = oldAttributeDefinition.options;
+				    attributeDefinition.isRequired = oldAttributeDefinition.isRequired;
+				    attributeDefinition.sequence = oldAttributeDefinition.sequence;
+				    attributeDefinition.objectGuid = oldAttributeDefinition.objectGuid;
+				    attributeDefinition.active = oldAttributeDefinition.active;
+				    attributeDefinition.deleted = oldAttributeDefinition.deleted;
+
+				    string serializedAttributeDefinition = JsonSerializer.Serialize(attributeDefinition);
+
+				    using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+				    {
+
+				        _context.SaveChanges();
+
+				        //
+				        // Now add the change history
+				        //
+				        AttributeDefinitionChangeHistory newAttributeDefinitionChangeHistory = new AttributeDefinitionChangeHistory();
+				        newAttributeDefinitionChangeHistory.attributeDefinitionId = attributeDefinition.id;
+				        newAttributeDefinitionChangeHistory.versionNumber = attributeDefinition.versionNumber;
+				        newAttributeDefinitionChangeHistory.timeStamp = DateTime.UtcNow;
+				        newAttributeDefinitionChangeHistory.userId = securityUser.id;
+				        newAttributeDefinitionChangeHistory.tenantGuid = userTenantGuid;
+				        newAttributeDefinitionChangeHistory.data = JsonSerializer.Serialize(Database.AttributeDefinition.CreateAnonymousWithFirstLevelSubObjects(attributeDefinition));
+				        _context.AttributeDefinitionChangeHistories.Add(newAttributeDefinitionChangeHistory);
+
+				        _context.SaveChanges();
+
+				        transaction.Commit();
+				    }
+
+					CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
+						"Scheduler.AttributeDefinition rollback process successfully rolled back to version number " + versionNumber,
+						true,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.AttributeDefinition.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.AttributeDefinition.CreateAnonymousWithFirstLevelSubObjects(attributeDefinition)),
+						null);
+
+
+				    return Ok(Database.AttributeDefinition.CreateAnonymous(attributeDefinition));
+				}
+				else
+				{
+				    CreateAuditEvent(AuditEngine.AuditType.UpdateEntity, "Could not find version number provided for Scheduler.AttributeDefinition rollback.  Version number provided is " + versionNumber, id.ToString(), new Exception("Could not find version number provided for Scheduler.AttributeDefinition rollback.  Version number provided is " + versionNumber));
+
+				    return BadRequest();
+				}
+			}
+		}
 
 
         /// <summary>
@@ -782,33 +1017,52 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			Database.AttributeDefinition cloneOfExisting = (Database.AttributeDefinition)_context.Entry(attributeDefinition).GetDatabaseValues().ToObject();
 
 
-			try
+			lock (attributeDefinitionDeleteSyncRoot)
 			{
-				attributeDefinition.deleted = true;
-				await _context.SaveChangesAsync(cancellationToken);
+			    try
+			    {
+			        attributeDefinition.deleted = true;
+			        attributeDefinition.versionNumber++;
 
-				await CreateAuditEventAsync(AuditEngine.AuditType.DeleteEntity,
-					"Scheduler.AttributeDefinition entity successfully deleted.",
-					true,
-					id.ToString(),
-					JsonSerializer.Serialize(Database.AttributeDefinition.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Database.AttributeDefinition.CreateAnonymousWithFirstLevelSubObjects(attributeDefinition)),
-					null);
+			        _context.SaveChanges();
 
+			        //
+			        // Now add the change history
+			        //
+			        AttributeDefinitionChangeHistory attributeDefinitionChangeHistory = new AttributeDefinitionChangeHistory();
+			        attributeDefinitionChangeHistory.attributeDefinitionId = attributeDefinition.id;
+			        attributeDefinitionChangeHistory.versionNumber = attributeDefinition.versionNumber;
+			        attributeDefinitionChangeHistory.timeStamp = DateTime.UtcNow;
+			        attributeDefinitionChangeHistory.userId = securityUser.id;
+			        attributeDefinitionChangeHistory.tenantGuid = userTenantGuid;
+			        attributeDefinitionChangeHistory.data = JsonSerializer.Serialize(Database.AttributeDefinition.CreateAnonymousWithFirstLevelSubObjects(attributeDefinition));
+			        _context.AttributeDefinitionChangeHistories.Add(attributeDefinitionChangeHistory);
+
+			        _context.SaveChanges();
+
+					CreateAuditEvent(AuditEngine.AuditType.DeleteEntity,
+						"Scheduler.AttributeDefinition entity successfully deleted.",
+						true,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.AttributeDefinition.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.AttributeDefinition.CreateAnonymousWithFirstLevelSubObjects(attributeDefinition)),
+						null);
+
+			    }
+			    catch (Exception ex)
+			    {
+					CreateAuditEvent(AuditEngine.AuditType.DeleteEntity,
+						"Scheduler.AttributeDefinition entity delete failed",
+						false,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.AttributeDefinition.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.AttributeDefinition.CreateAnonymousWithFirstLevelSubObjects(attributeDefinition)),
+						ex);
+
+			        return Problem(ex.Message);
+			    }
+			    return Ok();
 			}
-			catch (Exception ex)
-			{
-				await CreateAuditEventAsync(AuditEngine.AuditType.DeleteEntity,
-					"Scheduler.AttributeDefinition entity delete failed.",
-					false,
-					id.ToString(),
-					JsonSerializer.Serialize(Database.AttributeDefinition.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Database.AttributeDefinition.CreateAnonymousWithFirstLevelSubObjects(attributeDefinition)),
-					ex);
-
-				return Problem(ex.Message);
-			}
-			return Ok();
 		}
 
 
@@ -825,13 +1079,14 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		[HttpGet]
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		public async Task<IActionResult> GetListData(
-			string entityName = null,
+			int? attributeDefinitionEntityId = null,
 			string key = null,
 			string label = null,
-			string type = null,
+			int? attributeDefinitionTypeId = null,
 			string options = null,
 			bool? isRequired = null,
 			int? sequence = null,
+			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -881,9 +1136,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
-			if (string.IsNullOrEmpty(entityName) == false)
+			if (attributeDefinitionEntityId.HasValue == true)
 			{
-				query = query.Where(ad => ad.entityName == entityName);
+				query = query.Where(ad => ad.attributeDefinitionEntityId == attributeDefinitionEntityId.Value);
 			}
 			if (string.IsNullOrEmpty(key) == false)
 			{
@@ -893,9 +1148,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(ad => ad.label == label);
 			}
-			if (string.IsNullOrEmpty(type) == false)
+			if (attributeDefinitionTypeId.HasValue == true)
 			{
-				query = query.Where(ad => ad.type == type);
+				query = query.Where(ad => ad.attributeDefinitionTypeId == attributeDefinitionTypeId.Value);
 			}
 			if (string.IsNullOrEmpty(options) == false)
 			{
@@ -908,6 +1163,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (sequence.HasValue == true)
 			{
 				query = query.Where(ad => ad.sequence == sequence.Value);
+			}
+			if (versionNumber.HasValue == true)
+			{
+				query = query.Where(ad => ad.versionNumber == versionNumber.Value);
 			}
 			if (objectGuid.HasValue == true)
 			{
@@ -947,11 +1206,13 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (!string.IsNullOrEmpty(anyStringContains))
 			{
 			   query = query.Where(x =>
-			       x.entityName.Contains(anyStringContains)
-			       || x.key.Contains(anyStringContains)
+			       x.key.Contains(anyStringContains)
 			       || x.label.Contains(anyStringContains)
-			       || x.type.Contains(anyStringContains)
 			       || x.options.Contains(anyStringContains)
+			       || x.attributeDefinitionEntity.name.Contains(anyStringContains)
+			       || x.attributeDefinitionEntity.description.Contains(anyStringContains)
+			       || x.attributeDefinitionType.name.Contains(anyStringContains)
+			       || x.attributeDefinitionType.description.Contains(anyStringContains)
 			   );
 			}
 
@@ -959,7 +1220,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 
-			query = query.OrderBy(x => x.sequence).ThenBy(x => x.entityName).ThenBy(x => x.key).ThenBy(x => x.label);
+			query = query.OrderBy(x => x.sequence).ThenBy(x => x.key).ThenBy(x => x.label);
 			if (pageNumber.HasValue == true &&
 			    pageSize.HasValue == true)
 			{

@@ -24,7 +24,8 @@ export class DynamicFieldRendererComponent implements OnInit {
             this.definitions$ = this.attributeDefinitionService.GetAttributeDefinitionList({
                 entityName: this.entityName,
                 active: true,
-                deleted: false
+                deleted: false,
+                includeRelations: true
             }).pipe(
                 map(defs => {
                     // Sort by sequence

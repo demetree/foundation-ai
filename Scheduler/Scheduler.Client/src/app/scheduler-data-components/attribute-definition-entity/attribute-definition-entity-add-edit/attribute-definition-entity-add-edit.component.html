@@ -1,0 +1,52 @@
+<div class="add-attribute-definition-entity" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-attribute-definition-entity me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Attribute Definition Entity" 
+        *ngIf="userIsSchedulerAttributeDefinitionEntityWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #attributeDefinitionEntityModal let-modal>
+   <div class="modal-header bg-dark text-light attribute-definition-entity-modal-header">
+      <h5 class="modal-title mb-0" id="attributeDefinitionEntityModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Attribute Definition Entity' : 'Add Attribute Definition Entity' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body attribute-definition-entity-modal-body">
+      <form [formGroup]="attributeDefinitionEntityForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="AttributeDefinitionEntity-name" id="label-AttributeDefinitionEntity-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="AttributeDefinitionEntity-name" formControlName="name" placeholder="Enter Name" class="form-control attribute-definition-entity-input" [disabled]="!userIsSchedulerAttributeDefinitionEntityWriter()" aria-labelledby="label-name" />
+                <div *ngIf="attributeDefinitionEntityForm.get('name')?.invalid && attributeDefinitionEntityForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="AttributeDefinitionEntity-description" id="label-AttributeDefinitionEntity-description"><span class="text-danger">*</span>Description</label>
+                <textarea id="AttributeDefinitionEntity-description" formControlName="description" placeholder="Enter Description" class="form-control attribute-definition-entity-input" [disabled]="!userIsSchedulerAttributeDefinitionEntityWriter()"></textarea>
+                <div *ngIf="attributeDefinitionEntityForm.get('description')?.invalid && attributeDefinitionEntityForm.get('description')?.touched" class="text-danger">
+                    Description is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="AttributeDefinitionEntity-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerAttributeDefinitionEntityWriter()" />
+                <label for="AttributeDefinitionEntity-active" class="form-check-label" id="label-AttributeDefinitionEntity-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="AttributeDefinitionEntity-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerAttributeDefinitionEntityWriter()" />
+                <label for="AttributeDefinitionEntity-deleted" class="form-check-label" id="label-AttributeDefinitionEntity-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer attribute-definition-entity-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Attribute Definition Entity changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !attributeDefinitionEntityForm.valid || attributeDefinitionEntityForm.pristine || !userIsSchedulerAttributeDefinitionEntityWriter()" ngbTooltip="Save the Attribute Definition Entity changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
+</ng-template>
