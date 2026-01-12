@@ -383,7 +383,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                     var constituent = await _context.Constituents.FindAsync(gift.constituentId);
                     if (constituent != null)
                     {
-                        var stage = journeyCalculator.CalculateStage(constituent);
+                        var stage = await journeyCalculator.CalculateStageAsync(constituent);
                         if (stage != null && constituent.constituentJourneyStageId != stage.id)
                         {
                             constituent.constituentJourneyStageId = stage.id;
