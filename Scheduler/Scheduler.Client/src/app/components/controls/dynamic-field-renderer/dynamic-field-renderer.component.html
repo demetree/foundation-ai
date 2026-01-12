@@ -1,0 +1,57 @@
+<div *ngIf="loadedDefinitions.length > 0" class="row">
+    <div class="col-12">
+        <h5 class="mt-3 mb-2 text-muted">Additional Information</h5>
+        <div class="row">
+            <div *ngFor="let def of loadedDefinitions" class="col-md-6 mb-3">
+                <div class="form-group">
+                    <label [attr.for]="'attr-' + def.id" class="form-label">
+                        {{ def.label }}
+                        <span *ngIf="def.isRequired" class="text-danger">*</span>
+                    </label>
+
+                    <ng-container [ngSwitch]="def.type">
+
+                        <!-- Text -->
+                        <input *ngSwitchCase="'Text'" type="text" class="form-control" [id]="'attr-' + def.id"
+                            [(ngModel)]="data[def.key!]" (ngModelChange)="onValueChange()" [required]="def.isRequired">
+
+                        <!-- Long Text / Textarea -->
+                        <textarea *ngSwitchCase="'LongText'" class="form-control" [id]="'attr-' + def.id"
+                            [(ngModel)]="data[def.key!]" (ngModelChange)="onValueChange()" rows="3"
+                            [required]="def.isRequired"></textarea>
+
+                        <!-- Number -->
+                        <input *ngSwitchCase="'Number'" type="number" class="form-control" [id]="'attr-' + def.id"
+                            [(ngModel)]="data[def.key!]" (ngModelChange)="onValueChange()" [required]="def.isRequired">
+
+                        <!-- Boolean / Checkbox -->
+                        <div *ngSwitchCase="'Boolean'" class="form-check mt-2">
+                            <input type="checkbox" class="form-check-input" [id]="'attr-' + def.id"
+                                [(ngModel)]="data[def.key!]" (ngModelChange)="onValueChange()">
+                            <label class="form-check-label" [attr.for]="'attr-' + def.id">
+                                {{ def.label }}
+                            </label>
+                        </div>
+
+                        <!-- Date -->
+                        <input *ngSwitchCase="'Date'" type="date" class="form-control" [id]="'attr-' + def.id"
+                            [ngModel]="data[def.key!] | date:'yyyy-MM-dd'"
+                            (ngModelChange)="data[def.key!] = $event; onValueChange()" [required]="def.isRequired">
+
+                        <!-- Dropdown -->
+                        <select *ngSwitchCase="'Dropdown'" class="form-control form-select" [id]="'attr-' + def.id"
+                            [(ngModel)]="data[def.key!]" (ngModelChange)="onValueChange()" [required]="def.isRequired">
+                            <option [ngValue]="null">Select {{ def.label }}...</option>
+                            <option *ngFor="let opt of getOptions(def)" [value]="opt">{{ opt }}</option>
+                        </select>
+
+                        <!-- Fallback -->
+                        <input *ngSwitchDefault type="text" class="form-control" [id]="'attr-' + def.id"
+                            [(ngModel)]="data[def.key!]" (ngModelChange)="onValueChange()">
+
+                    </ng-container>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

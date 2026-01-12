@@ -46,6 +46,7 @@ import { ContactFullNamePipe } from './pipes/contact-full-name.pipe';
 // Custom controls
 //
 import { BooleanIconComponent } from './components/controls/boolean-icon.component';
+import { DynamicFieldRendererComponent } from './components/controls/dynamic-field-renderer/dynamic-field-renderer.component';
 
 
 //
@@ -1115,6 +1116,7 @@ import { TributeTypeTableComponent } from './scheduler-data-components/tribute-t
     NotFoundComponent,
     SearchBoxComponent,
     BooleanIconComponent,
+    DynamicFieldRendererComponent,
 
     EqualValidator,
     AutofocusDirective,
@@ -1221,7 +1223,7 @@ import { TributeTypeTableComponent } from './scheduler-data-components/tribute-t
     ClientContactsTabComponent,
     ClientContactCustomAddEditModalComponent,
     ClientTargetsTabComponent,
-    
+
     //
     // Contact customization - Replaced all with new
     //
@@ -1236,7 +1238,7 @@ import { TributeTypeTableComponent } from './scheduler-data-components/tribute-t
     ContactFinancialsTabComponent,
     ContactScheduleTabComponent,
     ConstituentJourneyUpdateModalComponent,
-    
+
 
     //
     // Security Data Components - Auto generated

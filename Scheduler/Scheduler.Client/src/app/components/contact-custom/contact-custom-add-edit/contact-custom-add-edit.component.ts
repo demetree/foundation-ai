@@ -39,33 +39,33 @@ export class ContactCustomAddEditComponent {
   public isDragOver = false;
 
   contactForm: FormGroup = this.fb.group({
-        contactTypeId: [null, Validators.required],
-        firstName: ['', Validators.required],
-        middleName: [''],
-        lastName: ['', Validators.required],
-        salutationId: [null],
-        title: [''],
-        birthDate: [''],
-        company: [''],
-        email: [''],
-        phone: [''],
-        mobile: [''],
-        position: [''],
-        webSite: [''],
-        contactMethodId: [null],
-        notes: [''],
-        timeZoneId: [this.currentUserService.defaultTimeZoneId],
-        iconId: [null],
-        color: [''],
-        avatarFileName: [''],
-        avatarSize: [''],
-        avatarData: [''],
-        avatarMimeType: [''],
-        externalId: [''],
-        versionNumber: [''],
-        active: [true],
-        deleted: [false],
-      });
+    contactTypeId: [null, Validators.required],
+    firstName: ['', Validators.required],
+    middleName: [''],
+    lastName: ['', Validators.required],
+    salutationId: [null],
+    title: [''],
+    birthDate: [''],
+    company: [''],
+    email: [''],
+    phone: [''],
+    mobile: [''],
+    position: [''],
+    webSite: [''],
+    contactMethodId: [null],
+    notes: [''],
+    timeZoneId: [this.currentUserService.defaultTimeZoneId],
+    iconId: [null],
+    color: [''],
+    avatarFileName: [''],
+    avatarSize: [''],
+    avatarData: [''],
+    avatarMimeType: [''],
+    externalId: [''],
+    versionNumber: [''],
+    active: [true],
+    deleted: [false],
+  });
 
   private modalRef: NgbModalRef | undefined;
   public isEditMode = false;
@@ -80,6 +80,8 @@ export class ContactCustomAddEditComponent {
   contactMethods$ = this.contactMethodService.GetContactMethodList();
   timeZones$ = this.timeZoneService.GetTimeZoneList();
   icons$ = this.iconService.GetIconList();
+
+  public attributesParsed: any = {};
 
   constructor(
     private modalService: NgbModal,
@@ -124,7 +126,6 @@ export class ContactCustomAddEditComponent {
           MessageSeverity.info
         );
         return;
-
       }
 
       this.isEditMode = false;
@@ -140,6 +141,11 @@ export class ContactCustomAddEditComponent {
       windowClass: 'custom-modal'
     });
     this.modalIsDisplayed = true;
+  }
+
+  onDynamicAttributeChange(data: any) {
+    this.attributesParsed = data;
+    this.contactForm.markAsDirty();
   }
 
 
@@ -278,41 +284,41 @@ export class ContactCustomAddEditComponent {
     // Build clean submit object from form + fallback to current data if needed
     //
     const contactSubmitData: ContactSubmitData = {
-        id: this.contactSubmitData?.id || 0,
-        contactTypeId: Number(formValue.contactTypeId),
-        firstName: formValue.firstName!.trim(),
-        middleName: formValue.middleName?.trim() || null,
-        lastName: formValue.lastName!.trim(),
-        salutationId: formValue.salutationId ? Number(formValue.salutationId) : null,
-        title: formValue.title?.trim() || null,
-        birthDate: formValue.birthDate?.trim() || null,
-        company: formValue.company?.trim() || null,
-        email: formValue.email?.trim() || null,
-        phone: formValue.phone?.trim() || null,
-        mobile: formValue.mobile?.trim() || null,
-        position: formValue.position?.trim() || null,
-        webSite: formValue.webSite?.trim() || null,
-        contactMethodId: formValue.contactMethodId ? Number(formValue.contactMethodId) : null,
+      id: this.contactSubmitData?.id || 0,
+      contactTypeId: Number(formValue.contactTypeId),
+      firstName: formValue.firstName!.trim(),
+      middleName: formValue.middleName?.trim() || null,
+      lastName: formValue.lastName!.trim(),
+      salutationId: formValue.salutationId ? Number(formValue.salutationId) : null,
+      title: formValue.title?.trim() || null,
+      birthDate: formValue.birthDate?.trim() || null,
+      company: formValue.company?.trim() || null,
+      email: formValue.email?.trim() || null,
+      phone: formValue.phone?.trim() || null,
+      mobile: formValue.mobile?.trim() || null,
+      position: formValue.position?.trim() || null,
+      webSite: formValue.webSite?.trim() || null,
+      contactMethodId: formValue.contactMethodId ? Number(formValue.contactMethodId) : null,
       notes: formValue.notes?.trim() || null,
-        attributes: null,    // need to fix this.
-        timeZoneId: formValue.timeZoneId ? Number(formValue.timeZoneId) : null,
-        iconId: formValue.iconId ? Number(formValue.iconId) : null,
-        color: formValue.color?.trim() || null,
-        avatarFileName: formValue.avatarFileName?.trim() || null,
-        avatarSize: formValue.avatarSize ? Number(formValue.avatarSize) : null,
-        avatarData: formValue.avatarData?.trim() || null,
-        avatarMimeType: formValue.avatarMimeType?.trim() || null,
-        externalId: formValue.externalId?.trim() || null,
-        versionNumber: this.contactSubmitData?.versionNumber ?? 0,
-        active: !!formValue.active,
-        deleted: !!formValue.deleted,
-   };
+      attributes: JSON.stringify(this.attributesParsed),
+      timeZoneId: formValue.timeZoneId ? Number(formValue.timeZoneId) : null,
+      iconId: formValue.iconId ? Number(formValue.iconId) : null,
+      color: formValue.color?.trim() || null,
+      avatarFileName: formValue.avatarFileName?.trim() || null,
+      avatarSize: formValue.avatarSize ? Number(formValue.avatarSize) : null,
+      avatarData: formValue.avatarData?.trim() || null,
+      avatarMimeType: formValue.avatarMimeType?.trim() || null,
+      externalId: formValue.externalId?.trim() || null,
+      versionNumber: this.contactSubmitData?.versionNumber ?? 0,
+      active: !!formValue.active,
+      deleted: !!formValue.deleted,
+    };
 
-      if (this.isEditMode) {
-        this.updateContact(contactSubmitData);
-      } else {
-        this.addContact(contactSubmitData);
-      }
+    if (this.isEditMode) {
+      this.updateContact(contactSubmitData);
+    } else {
+      this.addContact(contactSubmitData);
+    }
   }
 
   private addContact(contactData: ContactSubmitData) {
@@ -338,36 +344,33 @@ export class ContactCustomAddEditComponent {
         }
       },
       error: (err) => {
-            let errorMessage: string;
+        let errorMessage: string;
 
-            // Check if err is an Error object (e.g., new Error('message'))
-            if (err instanceof Error) {
-                errorMessage = err.message || 'An unexpected error occurred.';
-            }
-            // Check if err is a ServerError object with status and error properties
-            else if (err.status && err.error)
-            {
-                if (err.status === 403)
-                {
-                    errorMessage = err.error?.message ||
-                                   'You do not have permission to save this Contact.';
-                }
-                else
-                {
-                    errorMessage = err.error?.message ||
-                                   err.error?.error_description ||
-                                   err.error?.detail ||
-                                   'An error occurred while saving the Contact.';
-                }
-            }
-            // Fallback for unexpected error formats
-            else {
-                errorMessage = 'An unexpected error occurred.';
-            }
+        // Check if err is an Error object (e.g., new Error('message'))
+        if (err instanceof Error) {
+          errorMessage = err.message || 'An unexpected error occurred.';
+        }
+        // Check if err is a ServerError object with status and error properties
+        else if (err.status && err.error) {
+          if (err.status === 403) {
+            errorMessage = err.error?.message ||
+              'You do not have permission to save this Contact.';
+          }
+          else {
+            errorMessage = err.error?.message ||
+              err.error?.error_description ||
+              err.error?.detail ||
+              'An error occurred while saving the Contact.';
+          }
+        }
+        // Fallback for unexpected error formats
+        else {
+          errorMessage = 'An unexpected error occurred.';
+        }
 
-            this.alertService.showMessage('Contact could not be saved',
-                                          errorMessage,
-                                          MessageSeverity.error);
+        this.alertService.showMessage('Contact could not be saved',
+          errorMessage,
+          MessageSeverity.error);
       }
     });
   }
@@ -388,36 +391,33 @@ export class ContactCustomAddEditComponent {
         this.closeModal();
       },
       error: (err) => {
-            let errorMessage: string;
+        let errorMessage: string;
 
-            // Check if err is an Error object (e.g., new Error('message'))
-            if (err instanceof Error) {
-                errorMessage = err.message || 'An unexpected error occurred.';
-            }
-            // Check if err is a ServerError object with status and error properties
-            else if (err.status && err.error)
-            {
-                if (err.status === 403)
-                {
-                    errorMessage = err.error?.message ||
-                                   'You do not have permission to save this Contact.';
-                }
-                else
-                {
-                    errorMessage = err.error?.message ||
-                                   err.error?.error_description ||
-                                   err.error?.detail ||
-                                   'An error occurred while saving the Contact.';
-                }
-            }
-            // Fallback for unexpected error formats
-            else {
-                errorMessage = 'An unexpected error occurred.';
-            }
+        // Check if err is an Error object (e.g., new Error('message'))
+        if (err instanceof Error) {
+          errorMessage = err.message || 'An unexpected error occurred.';
+        }
+        // Check if err is a ServerError object with status and error properties
+        else if (err.status && err.error) {
+          if (err.status === 403) {
+            errorMessage = err.error?.message ||
+              'You do not have permission to save this Contact.';
+          }
+          else {
+            errorMessage = err.error?.message ||
+              err.error?.error_description ||
+              err.error?.detail ||
+              'An error occurred while saving the Contact.';
+          }
+        }
+        // Fallback for unexpected error formats
+        else {
+          errorMessage = 'An unexpected error occurred.';
+        }
 
-            this.alertService.showMessage('Contact could not be saved',
-                                          errorMessage,
-                                          MessageSeverity.error);
+        this.alertService.showMessage('Contact could not be saved',
+          errorMessage,
+          MessageSeverity.error);
       }
     });
   }
@@ -427,7 +427,9 @@ export class ContactCustomAddEditComponent {
   private buildFormValues(contactData: ContactData | null) {
 
     if (contactData == null) {
-      
+
+      this.attributesParsed = {};
+
       //
       // Reset the form group to null state, but don't change the form instance.
       //
@@ -458,15 +460,25 @@ export class ContactCustomAddEditComponent {
         versionNumber: '',
         active: true,
         deleted: false,
-   }, { emitEvent: false});
+      }, { emitEvent: false });
 
     }
     else {
 
-        //
-        // Reset the form with properly formatted values that support dates in datetime-local inputs
-        //
-        this.contactForm.reset({
+      try {
+        if (contactData.attributes) {
+          this.attributesParsed = JSON.parse(contactData.attributes);
+        } else {
+          this.attributesParsed = {};
+        }
+      } catch (e) {
+        this.attributesParsed = {};
+      }
+
+      //
+      // Reset the form with properly formatted values that support dates in datetime-local inputs
+      //
+      this.contactForm.reset({
         contactTypeId: contactData.contactTypeId,
         firstName: contactData.firstName ?? '',
         middleName: contactData.middleName ?? '',
@@ -493,7 +505,7 @@ export class ContactCustomAddEditComponent {
         versionNumber: contactData.versionNumber?.toString() ?? '',
         active: contactData.active ?? true,
         deleted: contactData.deleted ?? false,
-      }, { emitEvent: false});
+      }, { emitEvent: false });
     }
 
     this.contactForm.markAsPristine();

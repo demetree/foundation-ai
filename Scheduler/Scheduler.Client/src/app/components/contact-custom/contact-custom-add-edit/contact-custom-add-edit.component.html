@@ -1,10 +1,6 @@
 <div class="add-contact" *ngIf="showAddButton">
-  <button type="button"
-          class="btn btn-sm btn-add-contact me-2"
-          (click)="openModal()"
-          ngbTooltip="Add Contact"
-          *ngIf="userIsSchedulerContactWriter()"
-          placement="top">
+  <button type="button" class="btn btn-sm btn-add-contact me-2" (click)="openModal()" ngbTooltip="Add Contact"
+    *ngIf="userIsSchedulerContactWriter()" placement="top">
     Add
   </button>
 </div>
@@ -14,7 +10,8 @@
   <div class="modal-header bg-dark text-light">
     <h5 class="modal-title mb-0">
       {{ isEditMode ? 'Edit Contact' : 'Add Contact' }}
-      <small class="text-light opacity-75 ms-2" *ngIf="isEditMode" ngbTooltip="{{objectGuid}}">{{contactSubmitData?.firstName}} {{contactSubmitData?.lastName}}</small>
+      <small class="text-light opacity-75 ms-2" *ngIf="isEditMode"
+        ngbTooltip="{{objectGuid}}">{{contactSubmitData?.firstName}} {{contactSubmitData?.lastName}}</small>
     </h5>
     <button type="button" class="btn-close btn-close-white" (click)="closeModal()" aria-label="Close"></button>
   </div>
@@ -27,18 +24,21 @@
         <div class="row g-3">
           <div class="col-md-6">
             <label for="contactTypeId" class="form-label"><span class="text-danger">*</span> Contact Type</label>
-            <select id="contactTypeId" formControlName="contactTypeId" class="form-select" [disabled]="!userIsSchedulerContactWriter()">
+            <select id="contactTypeId" formControlName="contactTypeId" class="form-select"
+              [disabled]="!userIsSchedulerContactWriter()">
               <option [ngValue]="null">Select Contact Type</option>
               <option *ngFor="let ct of contactTypes$ | async" [ngValue]="ct.id">{{ct.name}}</option>
             </select>
-            <div *ngIf="contactForm.get('contactTypeId')?.invalid && contactForm.get('contactTypeId')?.touched" class="text-danger small mt-1">
+            <div *ngIf="contactForm.get('contactTypeId')?.invalid && contactForm.get('contactTypeId')?.touched"
+              class="text-danger small mt-1">
               Contact Type is required
             </div>
           </div>
 
           <div class="col-md-3">
             <label for="salutationId" class="form-label">Salutation</label>
-            <select id="salutationId" formControlName="salutationId" class="form-select" [disabled]="!userIsSchedulerContactWriter()">
+            <select id="salutationId" formControlName="salutationId" class="form-select"
+              [disabled]="!userIsSchedulerContactWriter()">
               <option [ngValue]="null">Select Salutation</option>
               <option *ngFor="let s of salutations$ | async" [ngValue]="s.id">{{s.name || 'None'}}</option>
             </select>
@@ -46,7 +46,8 @@
 
           <div class="col-md-3">
             <label for="timeZoneId" class="form-label" id="label-timeZoneId">Time Zone</label>
-            <select id="timeZoneId" formControlName="timeZoneId" class="form-select" [disabled]="!userIsSchedulerContactWriter()">
+            <select id="timeZoneId" formControlName="timeZoneId" class="form-select"
+              [disabled]="!userIsSchedulerContactWriter()">
               <option [ngValue]="null">Select Time Zone</option>
               <option *ngFor="let timeZone of timeZones$ | async" [ngValue]="timeZone.id">{{timeZone.name}}</option>
             </select>
@@ -55,49 +56,59 @@
 
           <div class="col-md-3">
             <label for="firstName" class="form-label"><span class="text-danger">*</span> First Name</label>
-            <input type="text" id="firstName" formControlName="firstName" class="form-control" [disabled]="!userIsSchedulerContactWriter()" />
-            <div *ngIf="contactForm.get('firstName')?.invalid && contactForm.get('firstName')?.touched" class="text-danger small mt-1">
+            <input type="text" id="firstName" formControlName="firstName" class="form-control"
+              [disabled]="!userIsSchedulerContactWriter()" />
+            <div *ngIf="contactForm.get('firstName')?.invalid && contactForm.get('firstName')?.touched"
+              class="text-danger small mt-1">
               First Name is required
             </div>
           </div>
 
           <div class="col-md-3">
             <label for="middleName" class="form-label">Middle Name</label>
-            <input type="text" id="middleName" formControlName="middleName" class="form-control" [disabled]="!userIsSchedulerContactWriter()" />
+            <input type="text" id="middleName" formControlName="middleName" class="form-control"
+              [disabled]="!userIsSchedulerContactWriter()" />
           </div>
 
           <div class="col-md-3">
             <label for="lastName" class="form-label"><span class="text-danger">*</span> Last Name</label>
-            <input type="text" id="lastName" formControlName="lastName" class="form-control" [disabled]="!userIsSchedulerContactWriter()" />
-            <div *ngIf="contactForm.get('lastName')?.invalid && contactForm.get('lastName')?.touched" class="text-danger small mt-1">
+            <input type="text" id="lastName" formControlName="lastName" class="form-control"
+              [disabled]="!userIsSchedulerContactWriter()" />
+            <div *ngIf="contactForm.get('lastName')?.invalid && contactForm.get('lastName')?.touched"
+              class="text-danger small mt-1">
               Last Name is required
             </div>
           </div>
 
           <div class="col-md-3">
             <label for="birthDate" class="form-label">Birth Date</label>
-            <input type="date" id="birthDate" formControlName="birthDate" class="form-control" [disabled]="!userIsSchedulerContactWriter()" />
+            <input type="date" id="birthDate" formControlName="birthDate" class="form-control"
+              [disabled]="!userIsSchedulerContactWriter()" />
           </div>
 
 
           <div class="col-md-3">
             <label for="company" class="form-label">Company</label>
-            <input type="text" id="company" formControlName="company" class="form-control" [disabled]="!userIsSchedulerContactWriter()" />
+            <input type="text" id="company" formControlName="company" class="form-control"
+              [disabled]="!userIsSchedulerContactWriter()" />
           </div>
 
           <div class="col-md-3">
             <label for="position" class="form-label">Position</label>
-            <input type="text" id="position" formControlName="position" class="form-control" [disabled]="!userIsSchedulerContactWriter()" />
+            <input type="text" id="position" formControlName="position" class="form-control"
+              [disabled]="!userIsSchedulerContactWriter()" />
           </div>
 
           <div class="col-md-3">
             <label for="title" class="form-label">Title</label>
-            <input type="text" id="title" formControlName="title" class="form-control" [disabled]="!userIsSchedulerContactWriter()" />
+            <input type="text" id="title" formControlName="title" class="form-control"
+              [disabled]="!userIsSchedulerContactWriter()" />
           </div>
 
           <div class="col-md-3">
             <label for="webSite" class="form-label">Website</label>
-            <input type="url" id="webSite" formControlName="webSite" class="form-control" [disabled]="!userIsSchedulerContactWriter()" />
+            <input type="url" id="webSite" formControlName="webSite" class="form-control"
+              [disabled]="!userIsSchedulerContactWriter()" />
           </div>
 
         </div>
@@ -111,7 +122,8 @@
 
           <div class="col-md-3">
             <label for="contactMethodId" class="form-label">Preferred Contact Method</label>
-            <select id="contactMethodId" formControlName="contactMethodId" class="form-select" [disabled]="!userIsSchedulerContactWriter()">
+            <select id="contactMethodId" formControlName="contactMethodId" class="form-select"
+              [disabled]="!userIsSchedulerContactWriter()">
               <option [ngValue]="null">Select Method</option>
               <option *ngFor="let cm of contactMethods$ | async" [ngValue]="cm.id">{{cm.name}}</option>
             </select>
@@ -120,26 +132,31 @@
           <div class="col-md-3">
             <label for="email" class="form-label">
               Email
-              <a *ngIf="isEditMode && contactSubmitData?.email" [href]="'mailto:' + contactSubmitData?.email" class="ms-2 text-decoration-none">
+              <a *ngIf="isEditMode && contactSubmitData?.email" [href]="'mailto:' + contactSubmitData?.email"
+                class="ms-2 text-decoration-none">
                 <i class="fa-solid fa-envelope"></i>
               </a>
             </label>
-            <input type="email" id="email" formControlName="email" class="form-control" [disabled]="!userIsSchedulerContactWriter()" />
+            <input type="email" id="email" formControlName="email" class="form-control"
+              [disabled]="!userIsSchedulerContactWriter()" />
           </div>
 
           <div class="col-md-3">
             <label for="mobile" class="form-label">Mobile</label>
-            <input type="text" id="mobile" formControlName="mobile" class="form-control" [disabled]="!userIsSchedulerContactWriter()" />
+            <input type="text" id="mobile" formControlName="mobile" class="form-control"
+              [disabled]="!userIsSchedulerContactWriter()" />
           </div>
 
           <div class="col-md-3">
             <label for="phone" class="form-label">
               Phone
-              <a *ngIf="isEditMode && contactSubmitData?.phone" [href]="'tel:' + contactSubmitData?.phone" class="ms-2 text-decoration-none">
+              <a *ngIf="isEditMode && contactSubmitData?.phone" [href]="'tel:' + contactSubmitData?.phone"
+                class="ms-2 text-decoration-none">
                 <i class="fa-solid fa-phone"></i>
               </a>
             </label>
-            <input type="text" id="phone" formControlName="phone" class="form-control" [disabled]="!userIsSchedulerContactWriter()" />
+            <input type="text" id="phone" formControlName="phone" class="form-control"
+              [disabled]="!userIsSchedulerContactWriter()" />
           </div>
 
         </div>
@@ -149,17 +166,25 @@
       <fieldset class="mb-4">
         <!--<legend class="fs-6 fw-semibold text-primary">Notes</legend>-->
         <label for="notes" class="form-label">Notes</label>
-        <textarea id="notes" formControlName="notes" class="form-control" rows="3" [disabled]="!userIsSchedulerContactWriter()"></textarea>
+        <textarea id="notes" formControlName="notes" class="form-control" rows="3"
+          [disabled]="!userIsSchedulerContactWriter()"></textarea>
       </fieldset>
+
+      <!-- Dynamic Attributes -->
+      <app-dynamic-field-renderer [entityName]="'Contact'" [data]="attributesParsed"
+        (dataChange)="onDynamicAttributeChange($event)">
+      </app-dynamic-field-renderer>
 
       <!-- 4. Appearance (Collapsible) -->
       <div class="border rounded p-3 mb-4 bg-light">
-        <div class="d-flex justify-content-between align-items-center cursor-pointer" (click)="isAvatarPanelOpen = !isAvatarPanelOpen">
+        <div class="d-flex justify-content-between align-items-center cursor-pointer"
+          (click)="isAvatarPanelOpen = !isAvatarPanelOpen">
           <h6 class="mb-0 fw-semibold">
             <i [class]="isAvatarPanelOpen ? 'fa-solid fa-chevron-down' : 'fa-solid fa-chevron-right'" class="me-2"></i>
             Avatar & Appearance
           </h6>
-          <span class="badge bg-primary" *ngIf="currentAvatarUrl || contactForm.get('color')?.value || contactForm.get('iconId')?.value">Configured</span>
+          <span class="badge bg-primary"
+            *ngIf="currentAvatarUrl || contactForm.get('color')?.value || contactForm.get('iconId')?.value">Configured</span>
         </div>
 
         <div [@collapse]="isAvatarPanelOpen">
@@ -167,14 +192,16 @@
             <div class="col-md-6">
               <label for="color" class="form-label">Color</label>
               <div class="d-flex gap-2 align-items-center">
-                <input type="color" id="color" formControlName="color" class="form-control form-control-color" [disabled]="!userIsSchedulerContactWriter()" />
+                <input type="color" id="color" formControlName="color" class="form-control form-control-color"
+                  [disabled]="!userIsSchedulerContactWriter()" />
                 <!--<input type="text" [value]="contactForm.get('color')?.value || '#000000'" readonly class="form-control" style="width: 110px;" />-->
               </div>
             </div>
 
             <div class="col-md-6">
               <label for="iconId" class="form-label">Icon</label>
-              <select id="iconId" formControlName="iconId" class="form-select" [disabled]="!userIsSchedulerContactWriter()">
+              <select id="iconId" formControlName="iconId" class="form-select"
+                [disabled]="!userIsSchedulerContactWriter()">
                 <option [ngValue]="null">Default</option>
                 <option *ngFor="let icon of icons$ | async" [ngValue]="icon.id">{{icon.name}}</option>
               </select>
@@ -183,23 +210,22 @@
             <div class="col-12">
               <label class="form-label fw-semibold">Avatar</label>
               <div class="avatar-upload-container p-4 border rounded bg-white text-center position-relative"
-                   (dragover)="onDragOver($event)"
-                   (dragleave)="onDragLeave($event)"
-                   (drop)="onDrop($event)"
-                   [class.drag-over]="isDragOver">
-                <div class="avatar-preview mx-auto mb-3"
-                     [style.background-image]="'url(' + currentAvatarUrl + ')'"
-                     [style.background-color]="contactForm.get('color')?.value || '#6c757d'"
-                     [ngClass]="{'no-avatar': !currentAvatarUrl}">
+                (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event)"
+                [class.drag-over]="isDragOver">
+                <div class="avatar-preview mx-auto mb-3" [style.background-image]="'url(' + currentAvatarUrl + ')'"
+                  [style.background-color]="contactForm.get('color')?.value || '#6c757d'"
+                  [ngClass]="{'no-avatar': !currentAvatarUrl}">
                   <i class="fa-solid fa-user fa-3x text-white opacity-75" *ngIf="!currentAvatarUrl"></i>
                 </div>
-                <p class="mb-2"><strong>{{ currentAvatarUrl ? contactForm.get('avatarFileName')?.value : 'Drag & drop image here' }}</strong></p>
+                <p class="mb-2"><strong>{{ currentAvatarUrl ? contactForm.get('avatarFileName')?.value : 'Drag & drop
+                    image here' }}</strong></p>
                 <p class="small text-muted mb-3">or</p>
                 <input type="file" #fileInput accept="image/*" (change)="onAvatarSelected($event)" class="d-none" />
                 <button type="button" class="btn btn-outline-primary btn-sm" (click)="fileInput.click()">
                   <i class="fa fa-upload me-1"></i> {{ currentAvatarUrl ? 'Change' : 'Choose File' }}
                 </button>
-                <button type="button" class="btn btn-outline-danger btn-sm ms-2" *ngIf="currentAvatarUrl" (click)="clearAvatar()">
+                <button type="button" class="btn btn-outline-danger btn-sm ms-2" *ngIf="currentAvatarUrl"
+                  (click)="clearAvatar()">
                   <i class="fa fa-trash"></i> Remove
                 </button>
                 <small class="d-block mt-3 text-muted">Square image • Max 2MB</small>
@@ -219,19 +245,23 @@
         <div class="row g-3">
           <div class="col-md-6">
             <label for="externalId" class="form-label">External ID</label>
-            <input type="text" id="externalId" formControlName="externalId" class="form-control" [disabled]="!userIsSchedulerContactWriter()" />
+            <input type="text" id="externalId" formControlName="externalId" class="form-control"
+              [disabled]="!userIsSchedulerContactWriter()" />
           </div>
           <div class="col-md-3">
             <label for="versionNumber" class="form-label">Version</label>
-            <input type="text" id="versionNumber" [value]="contactForm.get('versionNumber')?.value" class="form-control" disabled />
+            <input type="text" id="versionNumber" [value]="contactForm.get('versionNumber')?.value" class="form-control"
+              disabled />
           </div>
           <div class="col-md-3 d-flex align-items-end gap-3">
             <div class="form-check">
-              <input type="checkbox" id="active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerContactWriter()" />
+              <input type="checkbox" id="active" formControlName="active" class="form-check-input"
+                [disabled]="!userIsSchedulerContactWriter()" />
               <label class="form-check-label" for="active">Active</label>
             </div>
             <div class="form-check">
-              <input type="checkbox" id="deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerContactWriter()" />
+              <input type="checkbox" id="deleted" formControlName="deleted" class="form-check-input"
+                [disabled]="!userIsSchedulerContactWriter()" />
               <label class="form-check-label" for="deleted">Deleted</label>
             </div>
           </div>
@@ -241,9 +271,8 @@
       <!-- Footer -->
       <div class="modal-footer justify-content-between">
         <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
-        <button type="submit"
-                class="btn btn-primary"
-                [disabled]="isSaving || !contactForm.valid || contactForm.pristine || !userIsSchedulerContactWriter()">
+        <button type="submit" class="btn btn-primary"
+          [disabled]="isSaving || !contactForm.valid || contactForm.pristine || !userIsSchedulerContactWriter()">
           {{ isSaving ? 'Saving...' : (isEditMode ? 'Save Changes' : 'Create Contact') }}
         </button>
       </div>

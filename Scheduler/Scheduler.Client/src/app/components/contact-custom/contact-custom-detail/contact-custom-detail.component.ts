@@ -93,6 +93,19 @@ export class ContactCustomDetailComponent implements OnInit {
     if (this.isEditMode == false) {
       this.addEditComponent.openModal();      // Open add modal
     }
+
+    //
+    // Subscribe to the observable on the add/edit component so that when there are changes we can reload the list.
+    //
+    this.addEditComponent.contactChanged.subscribe({
+      next: (result: ContactData[] | null) => {
+        this.loadData();
+        
+      },
+      error: (err: any) => {
+        this.alertService.showMessage("Error during Contact changed notification", JSON.stringify(err), MessageSeverity.error);
+      }
+    });
   }
 
 
