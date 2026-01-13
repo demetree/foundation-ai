@@ -11,6 +11,7 @@ using Microsoft.Extensions.Hosting;
 using OpenIddict.Validation.AspNetCore;
 using Quartz;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using static OpenIddict.Abstractions.OpenIddictConstants;
@@ -194,6 +195,7 @@ namespace Foundation
                 o.DefaultChallengeScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
             });
         }
+
 
         public static string GetDataDirectory()
         {
