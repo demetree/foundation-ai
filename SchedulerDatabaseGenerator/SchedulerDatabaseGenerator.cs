@@ -22,7 +22,7 @@ namespace Foundation.Scheduler.Database
     /// - Crew-level scheduling (assign entire crew as a unit)
     /// - Calendar grouping for visibility
     /// 
-    /// The schema is deliberately kept separate from other systems (e.g., Basecamp) to allow
+    /// The schema is deliberately kept separate from other systems to allow
     /// independent evolution and integration via background processes.
     /// </summary>
     public class SchedulerDatabaseGenerator : DatabaseGenerator
@@ -1478,7 +1478,7 @@ All operational tables include multi-tenant support, versioning where appropriat
             officeTable.AddDoubleField("longitude", true, null).AddScriptComments("Optional longitude position");
 
             officeTable.AddTextField("notes", true);
-            Database.Table.Field oeiField = officeTable.AddString100Field("externalId", true).AddScriptComments("Optional reference to an ID in an external system (e.g., Basecamp Project ID)");
+            Database.Table.Field oeiField = officeTable.AddString100Field("externalId", true).AddScriptComments("Optional reference to an ID in an external system ");
             oeiField.readPermissionLevelNeeded = CLIENT_ADMIN_USER_SECURITY_LEVEL;
             oeiField.hideOnDefaultLists = true;
 
@@ -1592,7 +1592,7 @@ All operational tables include multi-tenant support, versioning where appropriat
             clientTable.AddDoubleField("longitude", true, null).AddScriptComments("Optional longitude position");
 
             clientTable.AddTextField("notes", true);
-            Database.Table.Field ceiField = clientTable.AddString100Field("externalId", true).AddScriptComments("Optional reference to an ID in an external system (e.g., Basecamp Project ID)");
+            Database.Table.Field ceiField = clientTable.AddString100Field("externalId", true).AddScriptComments("Optional reference to an ID in an external system");
             ceiField.readPermissionLevelNeeded = CLIENT_ADMIN_USER_SECURITY_LEVEL;
             ceiField.hideOnDefaultLists = true;
 
@@ -1987,7 +1987,7 @@ All operational tables include multi-tenant support, versioning where appropriat
 
 
             schedulingTargetTable.AddTextField("notes", true);
-            Database.Table.Field steiField = schedulingTargetTable.AddString100Field("externalId", true).AddScriptComments("Optional reference to an ID in an external system (e.g., Basecamp Project ID)");
+            Database.Table.Field steiField = schedulingTargetTable.AddString100Field("externalId", true).AddScriptComments("Optional reference to an ID in an external system");
             steiField.readPermissionLevelNeeded = CLIENT_ADMIN_USER_SECURITY_LEVEL;
             steiField.hideOnDefaultLists = true;
 
@@ -2188,7 +2188,7 @@ All operational tables include multi-tenant support, versioning where appropriat
             resourceTable.AddSingleField("targetWeeklyWorkHours", true, null);
             resourceTable.AddTextField("notes", true);
 
-            Database.Table.Field rteiField = resourceTable.AddString100Field("externalId", true).AddScriptComments("Optional reference to an ID in an external system (e.g., Equipment.id from Basecamp)");
+            Database.Table.Field rteiField = resourceTable.AddString100Field("externalId", true).AddScriptComments("Optional reference to an ID in an external system");
             rteiField.readPermissionLevelNeeded = CLIENT_ADMIN_USER_SECURITY_LEVEL;
             rteiField.hideOnDefaultLists = true;
 

@@ -20,7 +20,7 @@ export class SidebarComponent implements OnDestroy, AfterViewInit {
   @ViewChild('customerSupport') customerSupport: any; // optional
 
   public isExpanded = false;
-  public isUserBasecampAdmin = false; // keep if you gate items elsewhere
+  public isUserFoundationAdmin = false; // keep if you gate items elsewhere
   private navSub?: Subscription;
 
 
@@ -42,7 +42,7 @@ export class SidebarComponent implements OnDestroy, AfterViewInit {
         this.close();
       });
 
-    this.isUserBasecampAdmin = this.authService?.isFoundationAdmin ?? false;
+    this.isUserFoundationAdmin = this.authService?.isFoundationAdmin ?? false;
   }
 
   ngAfterViewInit(): void {

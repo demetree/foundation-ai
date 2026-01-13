@@ -499,7 +499,7 @@ namespace Foundation.Server
             Logger logger = new Logger();
 
             //
-            // Set the common logger to the Basecamp Launcher logger
+            // Set the common logger to the Scheduler Launcher logger
             //
             Logger.SetCommonLogger(logger);
 

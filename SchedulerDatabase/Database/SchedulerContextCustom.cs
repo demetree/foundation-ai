@@ -13,7 +13,7 @@ namespace Foundation.Scheduler.Database;
 
 /// <summry>
 /// 
-/// This is an extension class to the Basecamp Context that is separated from the main SchedulerContext.cs so that it won't be clobbered if the EF Core Power tools
+/// This is an extension class to the Scheduler Context that is separated from the main SchedulerContext.cs so that it won't be clobbered if the EF Core Power tools
 /// are used to rebuild the Auditor classes
 /// 
 /// </summary>
