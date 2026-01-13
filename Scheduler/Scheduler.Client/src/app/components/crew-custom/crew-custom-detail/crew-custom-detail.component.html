@@ -7,19 +7,16 @@
 
         <!-- Avatar -->
         <div class="avatar rounded-circle overflow-hidden border shadow clickable"
-             style="width: 120px; height: 120px; background: #f8f9fa;"
-             (click)="openEditModal()">
+          style="width: 120px; height: 120px; background: #f8f9fa;" (click)="openEditModal()">
           <ng-container *ngIf="crew?.avatarData; else defaultAvatar">
             <img [src]="'data:' + (crew?.avatarMimeType || 'image/png') + ';base64,' + (crew?.avatarData || '')"
-                 class="w-100 h-100 object-fit-cover"
-                 alt="{{ crew?.name }} avatar">
+              class="w-100 h-100 object-fit-cover" alt="{{ crew?.name }} avatar">
           </ng-container>
 
           <ng-template #defaultAvatar>
             <div class="w-100 h-100 d-flex align-items-center justify-content-center text-white fw-bold fs-3"
-                 [style.background-color]="crew?.color || '#6c757d'">
-              <i class="fa-2x text-white opacity-75" 
-                 [class]="crew?.icon?.fontAwesomeCode || 'fa-solid fa-users'">
+              [style.background-color]="crew?.color || '#6c757d'">
+              <i class="fa-2x text-white opacity-75" [class]="crew?.icon?.fontAwesomeCode || 'fa-solid fa-users'">
               </i>
             </div>
           </ng-template>
@@ -46,7 +43,8 @@
 
           <div class="text-muted small">
             <div *ngIf="crew?.description"><strong>Description: </strong>{{ crew?.description }}</div>
-            <div *ngIf="officeCount$ != null && ((officeCount$ | async) ?? 0) > 0" class="clickable" (click)="navigateToOffice(crew?.officeId)"><strong>Office:</strong> {{ crew?.office?.name || '—' }}</div>
+            <div *ngIf="officeCount$ != null && ((officeCount$ | async) ?? 0) > 0" class="clickable"
+              (click)="navigateToOffice(crew?.officeId)"><strong>Office:</strong> {{ crew?.office?.name || '—' }}</div>
           </div>
         </div>
 
@@ -59,7 +57,8 @@
             <i class="fa fa-arrow-left me-2"></i> Back
           </button>
 
-          <app-crew-custom-add-edit [navigateToDetailsAfterAdd]="false" (crewChanged)="crewChanged($event)" style="display: none"></app-crew-custom-add-edit>
+          <app-crew-custom-add-edit [navigateToDetailsAfterAdd]="false" (crewChanged)="crewChanged($event)"
+            style="display: none"></app-crew-custom-add-edit>
         </div>
       </div>
     </div>
@@ -77,7 +76,7 @@
     </div>
 
     <!-- Tabs -->
-    <ul ngbNav #nav="ngbNav" class="nav-tabs" [(activeId)]="activeTab">
+    <ul ngbNav #nav="ngbNav" class="nav-tabs" [(activeId)]="activeTab" (navChange)="onTabChange($event)">
 
       <li ngbNavItem="overview">
         <button ngbNavLink>Overview</button>
@@ -106,7 +105,7 @@
         <ng-template ngbNavContent>
           <div *ngIf="crew; else loadingTemplate">
             <app-crew-assignments-tab [crew]="crew"
-                                      (crewAssignmentChanged)="refreshRowCountObservables()"></app-crew-assignments-tab>
+              (crewAssignmentChanged)="refreshRowCountObservables()"></app-crew-assignments-tab>
           </div>
           <ng-template #loadingTemplate>
             <div class="text-center py-5 text-muted">
@@ -129,7 +128,7 @@
         <ng-template ngbNavContent>
           <div *ngIf="crew; else loadingTemplate">
             <app-crew-members-tab [crew]="crew"
-                                  (crewMemberChanged)="refreshRowCountObservables()"></app-crew-members-tab>
+              (crewMemberChanged)="refreshRowCountObservables()"></app-crew-members-tab>
           </div>
           <ng-template #loadingTemplate>
             <div class="text-center py-5 text-muted">

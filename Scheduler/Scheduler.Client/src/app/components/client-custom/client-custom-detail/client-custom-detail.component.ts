@@ -56,7 +56,8 @@ export class ClientCustomDetailComponent implements OnInit {
     private calendarService: CalendarService,
     private eventResourceAssignmentService: EventResourceAssignmentService,
     private rateSheetService: RateSheetService,
-    private scheduledEventService: ScheduledEventService) { 
+    private router: Router,
+    private scheduledEventService: ScheduledEventService) {
 
   }
 
@@ -65,8 +66,15 @@ export class ClientCustomDetailComponent implements OnInit {
     // Get the clientId from the route parameters
     this.clientId = this.route.snapshot.paramMap.get('clientId');
 
+    // Handle tab state from query params
+    this.route.queryParams.subscribe(params => {
+      if (params['tab']) {
+        this.activeTab = params['tab'];
+      }
+    });
+
     if (this.clientId === 'new' ||
-        this.clientId == null) {
+      this.clientId == null) {
       //
       // Add mode
       //
@@ -115,13 +123,24 @@ export class ClientCustomDetailComponent implements OnInit {
   }
 
 
+  public onTabChange(event: any) {
+    this.activeTab = event.nextId;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { tab: this.activeTab },
+      queryParamsHandling: 'merge',
+      replaceUrl: true
+    });
+  }
+
+
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
 
 
- public GetQueryParameters(): any {
+  public GetQueryParameters(): any {
 
     if (this.clientId != null && this.clientId !== 'new') {
 
@@ -136,15 +155,15 @@ export class ClientCustomDetailComponent implements OnInit {
   }
 
 
-/*
-  * Loads the Client data for the current clientId.
-  *
-  * Fully respects the ClientService caching strategy and error handling strategy.
-  *
-  * @param forceLoadAndDisplaySuccessAlert
-  *   - true  will bypass cache entirely and show success alert message
-  *   - false/null will use cache if available, no alert message
-  */
+  /*
+    * Loads the Client data for the current clientId.
+    *
+    * Fully respects the ClientService caching strategy and error handling strategy.
+    *
+    * @param forceLoadAndDisplaySuccessAlert
+    *   - true  will bypass cache entirely and show success alert message
+    *   - false/null will use cache if available, no alert message
+    */
   public loadData(forceLoadAndDisplaySuccessAlert: boolean | null = null): void {
 
     //
@@ -160,8 +179,8 @@ export class ClientCustomDetailComponent implements OnInit {
 
       const userName = this.authService.currentUser?.userName || 'Current user';
       this.alertService.showMessage(`${userName} does not have permission to read Clients.`,
-                                    'Access Denied',
-                                     MessageSeverity.warn
+        'Access Denied',
+        MessageSeverity.warn
       );
 
       this.isLoadingSubject.next(false);
@@ -185,8 +204,8 @@ export class ClientCustomDetailComponent implements OnInit {
     if (isNaN(clientId) || clientId <= 0) {
 
       this.alertService.showMessage(`Invalid Client ID: "${this.clientId}"`,
-                                    'Invalid ID',
-                                    MessageSeverity.error
+        'Invalid ID',
+        MessageSeverity.error
       );
 
       this.isLoadingSubject.next(false);

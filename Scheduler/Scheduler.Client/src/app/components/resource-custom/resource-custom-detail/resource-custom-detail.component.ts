@@ -63,7 +63,7 @@ export class ResourceCustomDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private alertService: AlertService,
-    private navigationService: NavigationService) { 
+    private navigationService: NavigationService) {
 
   }
 
@@ -72,8 +72,15 @@ export class ResourceCustomDetailComponent implements OnInit {
     // Get the resourceId from the route parameters
     this.resourceId = this.route.snapshot.paramMap.get('resourceId');
 
+    // Handle tab state from query params
+    this.route.queryParams.subscribe(params => {
+      if (params['tab']) {
+        this.activeTab = params['tab'];
+      }
+    });
+
     if (this.resourceId === 'new' ||
-        this.resourceId == null) {
+      this.resourceId == null) {
       //
       // Add mode
       //
@@ -84,7 +91,7 @@ export class ResourceCustomDetailComponent implements OnInit {
       this.isLoadingSubject.next(false); // No load needed for add mode
 
       document.title = 'Add New Resource';
-      
+
     } else {
 
       // Edit mode
@@ -124,6 +131,17 @@ export class ResourceCustomDetailComponent implements OnInit {
   }
 
 
+  public onTabChange(event: any) {
+    this.activeTab = event.nextId;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { tab: this.activeTab },
+      queryParamsHandling: 'merge',
+      replaceUrl: true
+    });
+  }
+
+
 
   ngOnDestroy(): void {
     this.destroy$.next();
@@ -131,7 +149,7 @@ export class ResourceCustomDetailComponent implements OnInit {
   }
 
 
- public GetQueryParameters(): any {
+  public GetQueryParameters(): any {
 
     if (this.resourceId != null && this.resourceId !== 'new') {
 
@@ -146,15 +164,15 @@ export class ResourceCustomDetailComponent implements OnInit {
   }
 
 
-/*
-  * Loads the Resource data for the current resourceId.
-  *
-  * Fully respects the ResourceService caching strategy and error handling strategy.
-  *
-  * @param forceLoadAndDisplaySuccessAlert
-  *   - true  will bypass cache entirely and show success alert message
-  *   - false/null will use cache if available, no alert message
-  */
+  /*
+    * Loads the Resource data for the current resourceId.
+    *
+    * Fully respects the ResourceService caching strategy and error handling strategy.
+    *
+    * @param forceLoadAndDisplaySuccessAlert
+    *   - true  will bypass cache entirely and show success alert message
+    *   - false/null will use cache if available, no alert message
+    */
   public loadData(forceLoadAndDisplaySuccessAlert: boolean | null = null): void {
 
     //
@@ -170,8 +188,8 @@ export class ResourceCustomDetailComponent implements OnInit {
 
       const userName = this.authService.currentUser?.userName || 'Current user';
       this.alertService.showMessage(`${userName} does not have permission to read Resources.`,
-                                    'Access Denied',
-                                     MessageSeverity.warn
+        'Access Denied',
+        MessageSeverity.warn
       );
 
       this.error = `${userName} does not have permission to read Resources.`;
@@ -200,8 +218,8 @@ export class ResourceCustomDetailComponent implements OnInit {
     if (isNaN(resourceId) || resourceId <= 0) {
 
       this.alertService.showMessage(`Invalid Resource ID: "${this.resourceId}"`,
-                                    'Invalid ID',
-                                    MessageSeverity.error
+        'Invalid ID',
+        MessageSeverity.error
       );
 
       this.error = `Invalid Resource ID: "${this.resourceId}"`;
@@ -296,7 +314,7 @@ export class ResourceCustomDetailComponent implements OnInit {
     //
     const resourceId = this.resource.id;
 
-      // === COMBINED ASSIGNMENT COUNT ===
+    // === COMBINED ASSIGNMENT COUNT ===
     // We need the sum of:
     // 1. Direct assignments via EventResourceAssignment (most common)
     // 2. Events where this resource is the primary/lead (ScheduledEvent.resourceId)

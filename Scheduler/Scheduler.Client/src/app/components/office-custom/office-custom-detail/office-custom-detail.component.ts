@@ -56,7 +56,8 @@ export class OfficeCustomDetailComponent implements OnInit {
     private calendarService: CalendarService,
     private eventResourceAssignmentService: EventResourceAssignmentService,
     private rateSheetService: RateSheetService,
-    private scheduledEventService: ScheduledEventService) { 
+    private router: Router,
+    private scheduledEventService: ScheduledEventService) {
 
   }
 
@@ -65,8 +66,15 @@ export class OfficeCustomDetailComponent implements OnInit {
     // Get the officeId from the route parameters
     this.officeId = this.route.snapshot.paramMap.get('officeId');
 
+    // Handle tab state from query params
+    this.route.queryParams.subscribe(params => {
+      if (params['tab']) {
+        this.activeTab = params['tab'];
+      }
+    });
+
     if (this.officeId === 'new' ||
-        this.officeId == null) {
+      this.officeId == null) {
       //
       // Add mode
       //
@@ -115,13 +123,24 @@ export class OfficeCustomDetailComponent implements OnInit {
   }
 
 
+  public onTabChange(event: any) {
+    this.activeTab = event.nextId;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { tab: this.activeTab },
+      queryParamsHandling: 'merge',
+      replaceUrl: true
+    });
+  }
+
+
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
 
 
- public GetQueryParameters(): any {
+  public GetQueryParameters(): any {
 
     if (this.officeId != null && this.officeId !== 'new') {
 
@@ -136,15 +155,15 @@ export class OfficeCustomDetailComponent implements OnInit {
   }
 
 
-/*
-  * Loads the Office data for the current officeId.
-  *
-  * Fully respects the OfficeService caching strategy and error handling strategy.
-  *
-  * @param forceLoadAndDisplaySuccessAlert
-  *   - true  will bypass cache entirely and show success alert message
-  *   - false/null will use cache if available, no alert message
-  */
+  /*
+    * Loads the Office data for the current officeId.
+    *
+    * Fully respects the OfficeService caching strategy and error handling strategy.
+    *
+    * @param forceLoadAndDisplaySuccessAlert
+    *   - true  will bypass cache entirely and show success alert message
+    *   - false/null will use cache if available, no alert message
+    */
   public loadData(forceLoadAndDisplaySuccessAlert: boolean | null = null): void {
 
     //
@@ -160,8 +179,8 @@ export class OfficeCustomDetailComponent implements OnInit {
 
       const userName = this.authService.currentUser?.userName || 'Current user';
       this.alertService.showMessage(`${userName} does not have permission to read Offices.`,
-                                    'Access Denied',
-                                     MessageSeverity.warn
+        'Access Denied',
+        MessageSeverity.warn
       );
 
       this.isLoadingSubject.next(false);
@@ -185,8 +204,8 @@ export class OfficeCustomDetailComponent implements OnInit {
     if (isNaN(officeId) || officeId <= 0) {
 
       this.alertService.showMessage(`Invalid Office ID: "${this.officeId}"`,
-                                    'Invalid ID',
-                                    MessageSeverity.error
+        'Invalid ID',
+        MessageSeverity.error
       );
 
       this.isLoadingSubject.next(false);

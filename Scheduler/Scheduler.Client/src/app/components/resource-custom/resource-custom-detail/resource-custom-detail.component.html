@@ -7,17 +7,15 @@
 
         <!-- Avatar -->
         <div class="avatar rounded-circle overflow-hidden border shadow clickable"
-             style="width: 120px; height: 120px; background: #f8f9fa;"
-             (click)="openEditModal()">
+          style="width: 120px; height: 120px; background: #f8f9fa;" (click)="openEditModal()">
           <ng-container *ngIf="resource?.avatarData; else defaultAvatar">
             <img [src]="'data:' + (resource?.avatarMimeType || 'image/png') + ';base64,' + (resource?.avatarData || '')"
-                 class="w-100 h-100 object-fit-cover"
-                 alt="{{ resource?.name }} avatar">
+              class="w-100 h-100 object-fit-cover" alt="{{ resource?.name }} avatar">
           </ng-container>
 
           <ng-template #defaultAvatar>
             <div class="w-100 h-100 d-flex align-items-center justify-content-center text-white fw-bold fs-3"
-                 [style.background-color]="resource?.color || '#6c757d'">
+              [style.background-color]="resource?.color || '#6c757d'">
               {{ resource?.name | slice:0:2 | uppercase }}
             </div>
           </ng-template>
@@ -36,7 +34,8 @@
               {{ resource?.active ? 'Active' : 'Inactive' }}
             </span>
 
-            <span *ngIf="resource?.deleted == true" class="badge " [ngClass]="resource?.deleted ? 'bg-danger' : 'bg-secondary'">
+            <span *ngIf="resource?.deleted == true" class="badge "
+              [ngClass]="resource?.deleted ? 'bg-danger' : 'bg-secondary'">
               {{ resource?.deleted ? 'Deleted' : 'Not Deleted' }}
             </span>
 
@@ -45,7 +44,9 @@
 
           <div class="text-muted small">
             <div *ngIf="resource?.description"><strong>Description: </strong>{{ resource?.description }}</div>
-            <div class="clickable" (click)="navigateToOffice(resource?.officeId)" *ngIf="officeCount$ != null && ((officeCount$ | async) ?? 0) > 0"><strong>Office:</strong> {{ resource?.office?.name || '—' }}</div>
+            <div class="clickable" (click)="navigateToOffice(resource?.officeId)"
+              *ngIf="officeCount$ != null && ((officeCount$ | async) ?? 0) > 0"><strong>Office:</strong> {{
+              resource?.office?.name || '—' }}</div>
             <div><strong>Type:</strong> {{ resource?.resourceType?.name || '—' }}</div>
           </div>
         </div>
@@ -59,7 +60,8 @@
             <i class="fa fa-arrow-left me-2"></i> Back
           </button>
 
-          <app-resource-custom-add-edit [navigateToDetailsAfterAdd]="false" (resourceChanged)="resourceChanged($event)" style="display: none"></app-resource-custom-add-edit>
+          <app-resource-custom-add-edit [navigateToDetailsAfterAdd]="false" (resourceChanged)="resourceChanged($event)"
+            style="display: none"></app-resource-custom-add-edit>
         </div>
       </div>
     </div>
@@ -77,7 +79,7 @@
     </div>
 
     <!-- Tabs -->
-    <ul ngbNav #nav="ngbNav" class="nav-tabs" [(activeId)]="activeTab">
+    <ul ngbNav #nav="ngbNav" class="nav-tabs" [(activeId)]="activeTab" (navChange)="onTabChange($event)">
       <li ngbNavItem="overview">
         <button ngbNavLink>Overview</button>
         <ng-template ngbNavContent>
@@ -105,7 +107,7 @@
         <ng-template ngbNavContent>
           <div *ngIf="resource; else loadingTemplate">
             <app-resource-assignments-tab [resource]="resource"
-                                          (resourceAssignmentChanged)="refreshRowCountObservables()"></app-resource-assignments-tab>
+              (resourceAssignmentChanged)="refreshRowCountObservables()"></app-resource-assignments-tab>
           </div>
           <ng-template #loadingTemplate>
             <div class="text-center py-5 text-muted">
@@ -128,7 +130,7 @@
         <ng-template ngbNavContent>
           <div *ngIf="resource; else loadingTemplate">
             <app-resource-crews-tab [resource]="resource"
-                                    (crewMembersChanged)="refreshRowCountObservables()"></app-resource-crews-tab>
+              (crewMembersChanged)="refreshRowCountObservables()"></app-resource-crews-tab>
           </div>
           <ng-template #loadingTemplate>
             <div class="text-center py-5 text-muted">
@@ -151,7 +153,7 @@
         <ng-template ngbNavContent>
           <div *ngIf="resource; else loadingTemplate">
             <app-resource-availability-tab [resource]="resource"
-                                           (resourceAvailabilityChanged)="refreshRowCountObservables()"></app-resource-availability-tab>
+              (resourceAvailabilityChanged)="refreshRowCountObservables()"></app-resource-availability-tab>
           </div>
           <ng-template #loadingTemplate>
             <div class="text-center py-5 text-muted">
@@ -174,7 +176,7 @@
         <ng-template ngbNavContent>
           <div *ngIf="resource; else loadingTemplate">
             <app-resource-qualifications-tab [resource]="resource"
-                                             (resourceQualificationChanged)="refreshRowCountObservables()"></app-resource-qualifications-tab>
+              (resourceQualificationChanged)="refreshRowCountObservables()"></app-resource-qualifications-tab>
           </div>
           <ng-template #loadingTemplate>
             <div class="text-center py-5 text-muted">
@@ -197,10 +199,8 @@
         </button>
         <ng-template ngbNavContent>
           <div *ngIf="resource; else loadingTemplate">
-            <app-resource-contacts-tab [resource]="resource"
-                                       (resourceContactChanged)="refreshRowCountObservables()"
-                                       (contactChanged)="refreshRowCountObservables()"
-                                       ></app-resource-contacts-tab>
+            <app-resource-contacts-tab [resource]="resource" (resourceContactChanged)="refreshRowCountObservables()"
+              (contactChanged)="refreshRowCountObservables()"></app-resource-contacts-tab>
           </div>
           <ng-template #loadingTemplate>
             <div class="text-center py-5 text-muted">
@@ -224,7 +224,7 @@
         <ng-template ngbNavContent>
           <div *ngIf="resource; else loadingTemplate">
             <app-resource-notifications-tab [resource]="resource"
-                                            (resourceNotificationSubscriptionChanged)="refreshRowCountObservables()" ></app-resource-notifications-tab>
+              (resourceNotificationSubscriptionChanged)="refreshRowCountObservables()"></app-resource-notifications-tab>
           </div>
           <ng-template #loadingTemplate>
             <div class="text-center py-5 text-muted">
@@ -246,7 +246,8 @@
         </button>
         <ng-template ngbNavContent>
           <div *ngIf="resource; else loadingTemplate">
-            <app-resource-rates-tab [resource]="resource" (resourceRateSheetChanged)="refreshRowCountObservables()"></app-resource-rates-tab>
+            <app-resource-rates-tab [resource]="resource"
+              (resourceRateSheetChanged)="refreshRowCountObservables()"></app-resource-rates-tab>
           </div>
           <ng-template #loadingTemplate>
             <div class="text-center py-5 text-muted">

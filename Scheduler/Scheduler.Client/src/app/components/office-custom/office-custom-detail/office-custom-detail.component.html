@@ -7,17 +7,15 @@
 
         <!-- Avatar -->
         <div class="avatar rounded-circle overflow-hidden border shadow clickable"
-             style="width: 120px; height: 120px; background: #f8f9fa;"
-             (click)="openEditModal()">
+          style="width: 120px; height: 120px; background: #f8f9fa;" (click)="openEditModal()">
           <ng-container *ngIf="office?.avatarData; else defaultAvatar">
             <img [src]="'data:' + (office?.avatarMimeType || 'image/png') + ';base64,' + (office?.avatarData || '')"
-                 class="w-100 h-100 object-fit-cover"
-                 alt="{{ office?.name }} avatar">
+              class="w-100 h-100 object-fit-cover" alt="{{ office?.name }} avatar">
           </ng-container>
 
           <ng-template #defaultAvatar>
             <div class="w-100 h-100 d-flex align-items-center justify-content-center text-white fw-bold fs-3"
-                 [style.background-color]="office?.color || '#6c757d'">
+              [style.background-color]="office?.color || '#6c757d'">
               {{ office?.name | slice:0:2 | uppercase }}
             </div>
           </ng-template>
@@ -35,7 +33,8 @@
               {{ office?.active ? 'Active' : 'Inactive' }}
             </span>
 
-            <span *ngIf="office?.deleted == true" class="badge " [ngClass]="office?.deleted ? 'bg-danger' : 'bg-secondary'">
+            <span *ngIf="office?.deleted == true" class="badge "
+              [ngClass]="office?.deleted ? 'bg-danger' : 'bg-secondary'">
               {{ office?.deleted ? 'Deleted' : 'Not Deleted' }}
             </span>
 
@@ -57,7 +56,8 @@
             <i class="fa fa-arrow-left me-2"></i> Back
           </button>
 
-          <app-office-custom-add-edit [navigateToDetailsAfterAdd]="false" (officeChanged)="officeChanged($event)" style="display: none"></app-office-custom-add-edit>
+          <app-office-custom-add-edit [navigateToDetailsAfterAdd]="false" (officeChanged)="officeChanged($event)"
+            style="display: none"></app-office-custom-add-edit>
         </div>
       </div>
     </div>
@@ -75,7 +75,7 @@
     </div>
 
     <!-- Tabs -->
-    <ul ngbNav #nav="ngbNav" class="nav-tabs" [(activeId)]="activeTab">
+    <ul ngbNav #nav="ngbNav" class="nav-tabs" [(activeId)]="activeTab" (navChange)="onTabChange($event)">
       <li ngbNavItem="overview">
         <button ngbNavLink>Overview</button>
         <ng-template ngbNavContent>
@@ -103,7 +103,7 @@
         <ng-template ngbNavContent>
           <div *ngIf="office; else loadingTemplate">
             <app-office-assignments-tab [office]="office"
-                                        (officeAssignmentChanged)="refreshRowCountObservables()"></app-office-assignments-tab>
+              (officeAssignmentChanged)="refreshRowCountObservables()"></app-office-assignments-tab>
           </div>
           <ng-template #loadingTemplate>
             <div class="text-center py-5 text-muted">
@@ -126,7 +126,7 @@
         <ng-template ngbNavContent>
           <div *ngIf="office; else loadingTemplate">
             <app-office-resources-tab [office]="office"
-                                      (resourceChanged)="refreshRowCountObservables()"></app-office-resources-tab>
+              (resourceChanged)="refreshRowCountObservables()"></app-office-resources-tab>
           </div>
           <ng-template #loadingTemplate>
             <div class="text-center py-5 text-muted">
@@ -148,8 +148,7 @@
         </button>
         <ng-template ngbNavContent>
           <div *ngIf="office; else loadingTemplate">
-            <app-office-crews-tab [office]="office"
-                                  (crewChanged)="refreshRowCountObservables()"></app-office-crews-tab>
+            <app-office-crews-tab [office]="office" (crewChanged)="refreshRowCountObservables()"></app-office-crews-tab>
           </div>
           <ng-template #loadingTemplate>
             <div class="text-center py-5 text-muted">
@@ -173,7 +172,7 @@
         <ng-template ngbNavContent>
           <div *ngIf="office; else loadingTemplate">
             <app-office-contacts-tab [office]="office"
-                                     (officeContactChanged)="refreshRowCountObservables()"></app-office-contacts-tab>
+              (officeContactChanged)="refreshRowCountObservables()"></app-office-contacts-tab>
           </div>
           <ng-template #loadingTemplate>
             <div class="text-center py-5 text-muted">
@@ -197,7 +196,7 @@
         <ng-template ngbNavContent>
           <div *ngIf="office; else loadingTemplate">
             <app-office-calendars-tab [office]="office"
-                                      (calendarChanged)="refreshRowCountObservables()"></app-office-calendars-tab>
+              (calendarChanged)="refreshRowCountObservables()"></app-office-calendars-tab>
           </div>
           <ng-template #loadingTemplate>
             <div class="text-center py-5 text-muted">
@@ -220,7 +219,7 @@
         <ng-template ngbNavContent>
           <div *ngIf="office; else loadingTemplate">
             <app-office-rates-tab [office]="office"
-                                  (rateSheetChanged)="refreshRowCountObservables()"></app-office-rates-tab>
+              (rateSheetChanged)="refreshRowCountObservables()"></app-office-rates-tab>
           </div>
           <ng-template #loadingTemplate>
             <div class="text-center py-5 text-muted">

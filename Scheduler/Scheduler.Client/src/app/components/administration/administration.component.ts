@@ -2,7 +2,7 @@
 import { Component, Inject, OnInit, ViewChild } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { ChangeDetectorRef } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { NavigationService } from '../../utility-services/navigation.service';
 import { CanComponentDeactivate } from '../../guards/unsaved-changes.guard';
 import { AlertService, MessageSeverity } from '../../services/alert.service';
@@ -26,7 +26,7 @@ import { AddTenantProfileComponent } from '../add-tenant-profile/add-tenant-prof
 export class AdministrationComponent implements OnInit, CanComponentDeactivate {
 
   @ViewChild('tenantProfileForm') tenantProfileForm!: NgForm;           // Access the form instance
-  @ViewChild(AddTenantProfileComponent) addCompanyProfileComponent!: AddTenantProfileComponent; 
+  @ViewChild(AddTenantProfileComponent) addCompanyProfileComponent!: AddTenantProfileComponent;
 
 
   public tenantProfileId: string | null = null;
@@ -43,6 +43,8 @@ export class AdministrationComponent implements OnInit, CanComponentDeactivate {
 
   public isDownloadingExcel: boolean = false;
 
+  public activeTab = 'profile';
+
   constructor(
     private tenantProfileService: TenantProfileService,
     private tenantHelperService: TenantHelperService,
@@ -52,6 +54,7 @@ export class AdministrationComponent implements OnInit, CanComponentDeactivate {
     private countryService: CountryService,
     private authService: AuthService,
     private route: ActivatedRoute,
+    private router: Router,
     private cdr: ChangeDetectorRef,
     private alertService: AlertService,
     private navigationService: NavigationService) {
@@ -64,12 +67,30 @@ export class AdministrationComponent implements OnInit, CanComponentDeactivate {
 
     // Get the tenantProfileId from the route parameters
     this.tenantProfileId = this.route.snapshot.paramMap.get('tenantProfileId');
+
+    // Handle tab state from query params
+    this.route.queryParams.subscribe(params => {
+      if (params['tab']) {
+        this.activeTab = params['tab'];
+      }
+    });
+
   }
 
   ngAfterViewInit(): void {
 
     // Load the data from the server
     this.LoadData();
+  }
+
+  public onTabChange(event: any) {
+    this.activeTab = event.nextId;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { tab: this.activeTab },
+      queryParamsHandling: 'merge', 
+      replaceUrl: true 
+    });
   }
 
   public onEdit(companyProfile: TenantProfileData): void {
@@ -124,7 +145,7 @@ export class AdministrationComponent implements OnInit, CanComponentDeactivate {
 
           this.cdr.detectChanges();
         }
-        
+
 
         this.isLoadingSubject.next(false); // Hide spinner
       },

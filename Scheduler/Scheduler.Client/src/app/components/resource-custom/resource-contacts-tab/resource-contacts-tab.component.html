@@ -48,7 +48,7 @@
 
           <!-- Contact Avatar -->
           <div class="avatar-preview rounded-circle overflow-hidden flex-shrink-0 me-3 clickable mx-3"
-            (click)="openContactModal(rc.contact)" ngbTooltip="Contact Details"
+            (click)="navigateToContact(rc.contact?.id)" ngbTooltip="Contact Details"
             style="width: 50px; height: 50px; background-size: cover; background-position: center;"
             [style.background-image]="rc.contact?.avatarData ? 'url(data:' + rc.contact?.avatarMimeType + ';base64,' + rc.contact?.avatarData + ')' : null"
             [style.background-color]="rc.contact?.color || '#6c757d'">

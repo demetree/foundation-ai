@@ -7,17 +7,15 @@
 
         <!-- Avatar -->
         <div class="avatar rounded-circle overflow-hidden border shadow clickable"
-             style="width: 120px; height: 120px; background: #f8f9fa;"
-             (click)="openEditModal()">
+          style="width: 120px; height: 120px; background: #f8f9fa;" (click)="openEditModal()">
           <ng-container *ngIf="client?.avatarData; else defaultAvatar">
             <img [src]="'data:' + (client?.avatarMimeType || 'image/png') + ';base64,' + (client?.avatarData || '')"
-                 class="w-100 h-100 object-fit-cover"
-                 alt="{{ client?.name }} avatar">
+              class="w-100 h-100 object-fit-cover" alt="{{ client?.name }} avatar">
           </ng-container>
 
           <ng-template #defaultAvatar>
             <div class="w-100 h-100 d-flex align-items-center justify-content-center text-white fw-bold fs-3"
-                 [style.background-color]="client?.color || '#6c757d'">
+              [style.background-color]="client?.color || '#6c757d'">
               {{ client?.name | slice:0:2 | uppercase }}
             </div>
           </ng-template>
@@ -35,7 +33,8 @@
               {{ client?.active ? 'Active' : 'Inactive' }}
             </span>
 
-            <span *ngIf="client?.deleted == true" class="badge " [ngClass]="client?.deleted ? 'bg-danger' : 'bg-secondary'">
+            <span *ngIf="client?.deleted == true" class="badge "
+              [ngClass]="client?.deleted ? 'bg-danger' : 'bg-secondary'">
               {{ client?.deleted ? 'Deleted' : 'Not Deleted' }}
             </span>
 
@@ -57,7 +56,8 @@
             <i class="fa fa-arrow-left me-2"></i> Back
           </button>
 
-          <app-client-custom-add-edit [navigateToDetailsAfterAdd]="false" (clientChanged)="clientChanged($event)" style="display: none"></app-client-custom-add-edit>
+          <app-client-custom-add-edit [navigateToDetailsAfterAdd]="false" (clientChanged)="clientChanged($event)"
+            style="display: none"></app-client-custom-add-edit>
         </div>
       </div>
     </div>
@@ -75,7 +75,7 @@
     </div>
 
     <!-- Tabs -->
-    <ul ngbNav #nav="ngbNav" class="nav-tabs" [(activeId)]="activeTab">
+    <ul ngbNav #nav="ngbNav" class="nav-tabs" [(activeId)]="activeTab" (navChange)="onTabChange($event)">
       <li ngbNavItem="overview">
         <button ngbNavLink>Overview</button>
         <ng-template ngbNavContent>
@@ -103,7 +103,7 @@
         <ng-template ngbNavContent>
           <div *ngIf="client; else loadingTemplate">
             <app-client-assignments-tab [client]="client"
-                                        (clientAssignmentChanged)="refreshRowCountObservables()"></app-client-assignments-tab>
+              (clientAssignmentChanged)="refreshRowCountObservables()"></app-client-assignments-tab>
           </div>
           <ng-template #loadingTemplate>
             <div class="text-center py-5 text-muted">
@@ -126,7 +126,7 @@
         <ng-template ngbNavContent>
           <div *ngIf="client; else loadingTemplate">
             <app-client-targets-tab [client]="client"
-                                      (resourceChanged)="refreshRowCountObservables()"></app-client-targets-tab>
+              (resourceChanged)="refreshRowCountObservables()"></app-client-targets-tab>
           </div>
           <ng-template #loadingTemplate>
             <div class="text-center py-5 text-muted">
@@ -150,7 +150,7 @@
         <ng-template ngbNavContent>
           <div *ngIf="client; else loadingTemplate">
             <app-client-contacts-tab [client]="client"
-                                     (clientContactChanged)="refreshRowCountObservables()"></app-client-contacts-tab>
+              (clientContactChanged)="refreshRowCountObservables()"></app-client-contacts-tab>
           </div>
           <ng-template #loadingTemplate>
             <div class="text-center py-5 text-muted">

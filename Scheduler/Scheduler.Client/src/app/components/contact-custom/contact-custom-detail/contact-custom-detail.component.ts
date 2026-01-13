@@ -60,6 +60,13 @@ export class ContactCustomDetailComponent implements OnInit {
     // Get the contactId from the route parameters
     this.contactId = this.route.snapshot.paramMap.get('contactId');
 
+    // Handle tab state from query params
+    this.route.queryParams.subscribe(params => {
+      if (params['tab']) {
+        this.activeTab = params['tab'];
+      }
+    });
+
     if (this.contactId === 'new' ||
       this.contactId == null) {
       //
@@ -100,11 +107,22 @@ export class ContactCustomDetailComponent implements OnInit {
     this.addEditComponent.contactChanged.subscribe({
       next: (result: ContactData[] | null) => {
         this.loadData();
-        
+
       },
       error: (err: any) => {
         this.alertService.showMessage("Error during Contact changed notification", JSON.stringify(err), MessageSeverity.error);
       }
+    });
+  }
+
+
+  public onTabChange(event: any) {
+    this.activeTab = event.nextId;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { tab: this.activeTab },
+      queryParamsHandling: 'merge',
+      replaceUrl: true
     });
   }
 

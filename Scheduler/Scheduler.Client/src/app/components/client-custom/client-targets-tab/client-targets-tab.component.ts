@@ -110,7 +110,7 @@ export class ClientTargetsTabComponent implements OnChanges {
     // This routes to the schedulingTarget details page.  This is fine, but the back button doens't bring back the previous tab current.
     //
     if (schedulingTargetId) {
-      this.router.navigate(['/schedulingTarget', schedulingTargetId]);
+      this.router.navigate(['/schedulingtarget', schedulingTargetId]);
     }
   }
 

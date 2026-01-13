@@ -55,17 +55,24 @@ export class CrewCustomDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private alertService: AlertService,
-    private navigationService: NavigationService) { 
+    private navigationService: NavigationService) {
 
-    }
+  }
 
   ngOnInit(): void {
 
     // Get the crewId from the route parameters
     this.crewId = this.route.snapshot.paramMap.get('crewId');
 
+    // Handle tab state from query params
+    this.route.queryParams.subscribe(params => {
+      if (params['tab']) {
+        this.activeTab = params['tab'];
+      }
+    });
+
     if (this.crewId === 'new' ||
-        this.crewId == null) {
+      this.crewId == null) {
       //
       // Add mode
       //
@@ -115,13 +122,24 @@ export class CrewCustomDetailComponent implements OnInit {
   }
 
 
+  public onTabChange(event: any) {
+    this.activeTab = event.nextId;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { tab: this.activeTab },
+      queryParamsHandling: 'merge',
+      replaceUrl: true
+    });
+  }
+
+
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
 
 
- public GetQueryParameters(): any {
+  public GetQueryParameters(): any {
 
     if (this.crewId != null && this.crewId !== 'new') {
 
@@ -136,15 +154,15 @@ export class CrewCustomDetailComponent implements OnInit {
   }
 
 
-/*
-  * Loads the Crew data for the current crewId.
-  *
-  * Fully respects the CrewService caching strategy and error handling strategy.
-  *
-  * @param forceLoadAndDisplaySuccessAlert
-  *   - true  will bypass cache entirely and show success alert message
-  *   - false/null will use cache if available, no alert message
-  */
+  /*
+    * Loads the Crew data for the current crewId.
+    *
+    * Fully respects the CrewService caching strategy and error handling strategy.
+    *
+    * @param forceLoadAndDisplaySuccessAlert
+    *   - true  will bypass cache entirely and show success alert message
+    *   - false/null will use cache if available, no alert message
+    */
   public loadData(forceLoadAndDisplaySuccessAlert: boolean | null = null): void {
 
     //
@@ -160,8 +178,8 @@ export class CrewCustomDetailComponent implements OnInit {
 
       const userName = this.authService.currentUser?.userName || 'Current user';
       this.alertService.showMessage(`${userName} does not have permission to read Crews.`,
-                                    'Access Denied',
-                                     MessageSeverity.warn
+        'Access Denied',
+        MessageSeverity.warn
       );
 
       this.error = `${userName} does not have permission to read Crews.`;
@@ -190,8 +208,8 @@ export class CrewCustomDetailComponent implements OnInit {
     if (isNaN(crewId) || crewId <= 0) {
 
       this.alertService.showMessage(`Invalid Crew ID: "${this.crewId}"`,
-                                    'Invalid ID',
-                                    MessageSeverity.error
+        'Invalid ID',
+        MessageSeverity.error
       );
 
       this.error = `Invalid Crew ID: "${this.crewId}"`;
