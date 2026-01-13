@@ -1,19 +1,61 @@
+// Contact Overview Tab Styles
+// AI-developed: Enhanced styling for the overview tab with Related Entities widget
+
 .preserve-whitespace {
   white-space: pre-wrap;
 }
 
-.contact-overview-tab .card {
-  transition: box-shadow 0.2s;
-}
+.contact-overview-tab {
 
-  .contact-overview-tab .card:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  // Card hover effects
+  .card {
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+
+    &:hover {
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    }
   }
+
+  // Cursor pointer utility
+  .cursor-pointer {
+    cursor: pointer;
+  }
+
+  // Related entities gradient banner hover effects
+  .bg-gradient {
+    .col {
+      transition: transform 0.15s ease, opacity 0.15s ease;
+
+      &:hover {
+        transform: scale(1.05);
+        opacity: 0.9;
+      }
+    }
+  }
+
+  // List group item hover
+  .list-group-item-action {
+    transition: background-color 0.15s ease;
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.03);
+    }
+  }
+
+  // Icon circles
+  .rounded-circle {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
 
 .clickable {
   cursor: pointer;
-}
 
-  .clickable:hover {
+  &:hover {
     text-decoration: underline;
   }
+}

@@ -170,6 +170,7 @@ namespace Foundation.Scheduler
                 // Add the Foundation authorization controller.
                 //
                 controllers.Add(typeof(AuthorizationController));           // Need this to authenticate
+                controllers.Add(typeof(UserSettingsController));            // Foundation security user settings
                 controllers.Add(typeof(ResetPasswordController));
                 controllers.Add(typeof(NewUserController));
                 controllers.Add(typeof(DataController));                    // For Excel export

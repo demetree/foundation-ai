@@ -1,80 +1,384 @@
+//
+// Overview Component - Premium Dashboard Styling
+//
+// Inspired by HubSpot and Monday.com design aesthetics.
+// Features gradient headers, soft shadows, and modern card treatments.
+//
+
+//
+// Color Variables
+//
+$gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+$gradient-success: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+$gradient-warning: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+$gradient-info: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+$gradient-purple: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+
+//
+// Main Container
+//
 .overview-container {
   padding: 24px;
-  max-width: 1400px;
+  max-width: 1600px;
+  margin: 0 auto;
+  background-color: #f8fafc;
+  min-height: calc(100vh - 60px);
+}
+
+
+//
+// Premium Header Card
+//
+.header-card {
+  background: $gradient-primary;
+  border-radius: 16px;
+
+  .card-body {
+    padding: 32px 40px;
+  }
+
+  .avatar-wrapper {
+    flex-shrink: 0;
+  }
+
+  .avatar-initials {
+    font-size: 1.8rem;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.1) 100%);
+  }
+
+  h2 {
+    font-size: 2rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+}
+
+
+//
+// Stats Bar in Header
+//
+.stats-bar {
+  .stat-item {
+    padding: 0 24px;
+    border-left: 1px solid rgba(255, 255, 255, 0.2);
+
+    &:first-child {
+      border-left: none;
+    }
+  }
+
+  .stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+}
+
+
+//
+// Quick Actions in Header
+//
+.quick-actions-header {
+  flex-shrink: 0;
+
+  .btn-light {
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+  }
+}
+
+
+//
+// Dashboard Tabs
+//
+.dashboard-tabs {
+  border-bottom: 2px solid #e5e7eb;
+
+  .nav-link {
+    border: none;
+    border-radius: 12px 12px 0 0;
+    padding: 12px 24px;
+    font-weight: 600;
+    color: #6b7280;
+    background-color: transparent;
+    transition: all 0.2s ease;
+
+    &:hover {
+      color: #374151;
+      background-color: rgba(102, 126, 234, 0.05);
+    }
+
+    &.active {
+      color: #667eea;
+      background-color: white;
+      border: 2px solid #e5e7eb;
+      border-bottom-color: white;
+      margin-bottom: -2px;
+    }
+  }
+}
+
+
+//
+// Tab Content
+//
+.tab-content-inner {
+  padding-top: 8px;
+}
+
+
+//
+// Premium Card Styling
+//
+.premium-card {
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+  }
+
+  .card-header {
+    padding: 16px 20px;
+    font-weight: 600;
+    border-radius: 16px 16px 0 0;
+  }
+
+  .card-body {
+    padding: 20px;
+  }
+}
+
+
+//
+// Gradient Headers for Cards
+//
+.gradient-primary {
+  background: $gradient-primary;
+}
+
+.gradient-success {
+  background: $gradient-success;
+}
+
+.gradient-warning {
+  background: linear-gradient(135deg, #FFC107 0%, #FFCA28 100%);
+}
+
+.gradient-info {
+  background: $gradient-info;
+}
+
+.gradient-purple {
+  background: $gradient-purple;
+}
+
+
+//
+// Stat Circles
+//
+.stat-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin: 0 auto;
 }
 
-// Ensure cards stretch properly on smaller screens
-.card-body {
-  display: flex;
-  flex-direction: column;
+.bg-primary-soft {
+  background-color: rgba(102, 126, 234, 0.1);
 }
 
-// Minor spacing adjustments
-.border-bottom.last\:border-0:last-child {
-  border-bottom: none !important;
+.bg-success-soft {
+  background-color: rgba(16, 185, 129, 0.1);
 }
 
-h1 {
-  margin-bottom: 16px;
+.bg-warning-soft {
+  background-color: rgba(245, 158, 11, 0.1);
 }
 
-.quick-actions {
-  margin-bottom: 32px;
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
+.bg-danger-soft {
+  background-color: rgba(239, 68, 68, 0.1);
 }
 
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 24px;
+.bg-info-soft {
+  background-color: rgba(59, 130, 246, 0.1);
 }
 
-.dashboard-card {
-  height: fit-content;
+
+//
+// List Hover Effect
+//
+.hover-lift {
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: #f9fafb;
+    transform: translateX(4px);
+  }
 }
 
-.empty-state {
-  color: #666;
-  font-style: italic;
-  padding: 16px 0;
-}
 
-.assignment-item,
-.upcoming-item,
-.blackout-item {
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #eee;
-}
-
-  .assignment-item:last-child,
-  .upcoming-item:last-child,
-  .blackout-item:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-    padding-bottom: 0;
+//
+// Day Row in Week Forecast
+//
+.day-row {
+  .day-label {
+    width: 110px;
+    font-size: 0.9rem;
   }
 
-.event-name {
-  font-weight: 500;
-  font-size: 1.1em;
-}
-
-.event-time,
-.event-location {
-  color: #555;
-  font-size: 0.95em;
-}
-
-.assignment-list {
-  margin: 8px 0 0 20px;
-  padding-left: 0;
-  list-style: none;
-}
-
-  .assignment-list li {
-    margin: 4px 0;
+  .progress {
+    background-color: #e5e7eb;
   }
+
+  .progress-bar {
+    transition: width 0.6s ease;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+}
+
+
+//
+// Empty State Cards
+//
+.empty-state-card {
+  color: #9ca3af;
+
+  i {
+    opacity: 0.5;
+  }
+}
+
+
+//
+// Coming Soon Cards
+//
+.coming-soon-card {
+  border-radius: 16px;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+
+  .icon-circle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+
+//
+// Loading Spinner
+//
+.loading-spinner {
+  .spinner-border {
+    animation: spinner-grow 1s ease-in-out infinite;
+  }
+}
+
+
+//
+// Responsive Adjustments
+//
+@media (max-width: 1200px) {
+  .header-card .card-body {
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .stats-bar {
+    width: 100%;
+    justify-content: center;
+    margin-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    padding-top: 16px;
+
+    .stat-item {
+      border-left: none;
+      padding: 0 16px;
+    }
+  }
+
+  .quick-actions-header {
+    width: 100%;
+    text-align: center;
+    margin-top: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .overview-container {
+    padding: 16px;
+  }
+
+  .header-card .card-body {
+    padding: 20px;
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .header-card h2 {
+    font-size: 1.5rem;
+  }
+
+  .stats-bar {
+    flex-wrap: wrap;
+
+    .stat-item {
+      flex: 0 0 50%;
+      padding: 12px;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+    }
+  }
+
+  .stat-circle {
+    width: 60px;
+    height: 60px;
+
+    .display-5 {
+      font-size: 1.75rem;
+    }
+  }
+}
+
+
+//
+// Animation Keyframes
+//
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.premium-card {
+  animation: fadeIn 0.4s ease-out;
+}

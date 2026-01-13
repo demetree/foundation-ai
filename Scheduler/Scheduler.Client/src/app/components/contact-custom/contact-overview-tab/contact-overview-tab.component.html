@@ -1,12 +1,76 @@
 <!-- app-contact-overview-tab.component.html -->
+<!-- Enhanced Overview Tab with Related Entities and Recent Activity widgets -->
+
 <div class="contact-overview-tab">
-  <!-- Quick Summary Row (mirrors header but with more details) -->
+
+  <!-- Related Entities Quick View (Compact Summary) -->
+  <div class="card mb-4 shadow-sm border-0 bg-gradient"
+    style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+    <div class="card-body py-3">
+      <div class="row text-primary">
+        <ng-container *ngIf="entityCounts$ | async as counts; else loadingCounts">
+          <!-- Offices -->
+          <div class="col text-center border-end border-white-50 cursor-pointer"
+            (click)="navigateToTab('relationships')" title="View linked offices">
+            <div class="fs-2 fw-bold mb-0">{{ counts.offices }}</div>
+            <div class="small opacity-75">
+              <i class="fa-solid fa-building me-1"></i>Offices
+            </div>
+          </div>
+          <!-- Clients -->
+          <div class="col text-center border-end border-white-50 cursor-pointer"
+            (click)="navigateToTab('relationships')" title="View linked clients">
+            <div class="fs-2 fw-bold mb-0">{{ counts.clients }}</div>
+            <div class="small opacity-75">
+              <i class="fa-solid fa-briefcase me-1"></i>Clients
+            </div>
+          </div>
+          <!-- Scheduling Targets -->
+          <div class="col text-center border-end border-white-50 cursor-pointer"
+            (click)="navigateToTab('relationships')" title="View linked scheduling targets">
+            <div class="fs-2 fw-bold mb-0">{{ counts.schedulingTargets }}</div>
+            <div class="small opacity-75">
+              <i class="fa-solid fa-bullseye me-1"></i>Targets
+            </div>
+          </div>
+          <!-- Resources -->
+          <div class="col text-center border-end border-white-50 cursor-pointer"
+            (click)="navigateToTab('relationships')" title="View linked resources">
+            <div class="fs-2 fw-bold mb-0">{{ counts.resources }}</div>
+            <div class="small opacity-75">
+              <i class="fa-solid fa-user-tie me-1"></i>Resources
+            </div>
+          </div>
+          <!-- Personal Relationships -->
+          <div class="col text-center cursor-pointer" (click)="navigateToTab('relationships')"
+            title="View personal relationships">
+            <div class="fs-2 fw-bold mb-0">{{ counts.relationships }}</div>
+            <div class="small opacity-75">
+              <i class="fa-solid fa-heart me-1"></i>Relationships
+            </div>
+          </div>
+        </ng-container>
+        <ng-template #loadingCounts>
+          <div class="col text-center">
+            <div class="spinner-border spinner-border-sm text-white" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <div class="small opacity-75 mt-1">Loading connections...</div>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Row -->
   <div class="row g-4 mb-4">
     <!-- Left: Personal & Professional Info -->
     <div class="col-lg-6">
-      <div class="card h-100 shadow-sm">
-        <div class="card-header bg-light">
-          <h6 class="mb-0 fw-semibold">Personal Information</h6>
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-header bg-light border-0">
+          <h6 class="mb-0 fw-semibold">
+            <i class="fa-solid fa-user me-2 text-primary"></i>Personal Information
+          </h6>
         </div>
         <div class="card-body">
           <dl class="row mb-0">
@@ -30,9 +94,11 @@
 
     <!-- Right: Professional Info -->
     <div class="col-lg-6">
-      <div class="card h-100 shadow-sm">
-        <div class="card-header bg-light">
-          <h6 class="mb-0 fw-semibold">Professional Information</h6>
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-header bg-light border-0">
+          <h6 class="mb-0 fw-semibold">
+            <i class="fa-solid fa-briefcase me-2 text-primary"></i>Professional Information
+          </h6>
         </div>
         <div class="card-body">
           <dl class="row mb-0">
@@ -58,80 +124,146 @@
     </div>
   </div>
 
-  <!-- Contact Details Card -->
-  <div class="card mb-4 shadow-sm">
-    <div class="card-header bg-light d-flex justify-content-between align-items-center">
-      <h6 class="mb-0 fw-semibold">Contact Details</h6>
-      <button class="btn btn-sm btn-outline-primary" (click)="openLogInteractionModal()" *ngIf="canLogInteraction()">
-        <i class="fa-solid fa-plus me-1"></i> Log Interaction
-      </button>
-    </div>
-    <div class="card-body">
-      <div class="row g-4">
-        <div class="col-md-6">
-
-          <div class="d-flex align-items-center gap-3 mb-3" *ngIf="contact?.email">
-            <i class="fa-solid fa-envelope text-primary fa-lg"></i>
-            <div>
-              <div class="fw-semibold">Email</div>
-              <a [href]="'mailto:' + contact.email">{{ contact.email }}</a>
-            </div>
-          </div>
-
-          <div class="d-flex align-items-center gap-3 mb-3" *ngIf="contact?.phone">
-            <i class="fa-solid fa-phone text-success fa-lg"></i>
-            <div>
-              <div class="fw-semibold">Phone</div>
-              <a [href]="'tel:' + contact.phone">{{ contact.phone }}</a>
-            </div>
-          </div>
-
-          <div class="d-flex align-items-center gap-3 mb-3" *ngIf="contact?.mobile">
-            <i class="fa-solid fa-mobile-alt text-success fa-lg"></i>
-            <div>
-              <div class="fw-semibold">Mobile</div>
-              <a [href]="'tel:' + contact.mobile">{{ contact.mobile }}</a>
-              <span class="badge bg-success ms-2" *ngIf="contact?.contactMethod?.name?.toLowerCase()?.includes('mobile')">
-                Preferred
-              </span>
-            </div>
-          </div>
-
-          <div class="d-flex align-items-center gap-3" *ngIf="contact?.webSite">
-            <i class="fa-solid fa-globe text-info fa-lg"></i>
-            <div>
-              <div class="fw-semibold">Website</div>
-              <a [href]="getWebSiteAsAddress(contact)" target="_blank">{{ contact.webSite }}</a>
-            </div>
-          </div>
-
-          <div class="d-flex align-items-center gap-3 mb-3" *ngIf="contact?.timeZone">
-            <i class="fa-solid fa-globe text-primary fa-lg"></i>
-            <div>
-              <div class="fw-semibold">Time Zone</div>
-              {{contact.timeZone?.name}}
-            </div>
-          </div>
+  <!-- Recent Activity & Quick Actions Row -->
+  <div class="row g-4 mb-4">
+    <!-- Left: Recent Activity Widget -->
+    <div class="col-lg-6">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-header bg-light border-0 d-flex justify-content-between align-items-center">
+          <h6 class="mb-0 fw-semibold">
+            <i class="fa-solid fa-clock-rotate-left me-2 text-primary"></i>Recent Activity
+          </h6>
+          <button class="btn btn-sm btn-outline-primary" (click)="navigateToTab('interactions')">
+            View All
+          </button>
         </div>
+        <div class="card-body p-0">
+          <ng-container *ngIf="!(isLoadingInteractions$ | async); else loadingInteractions">
+            <ng-container *ngIf="(recentInteractions$ | async) as interactions">
+              <!-- Has Interactions -->
+              <div class="list-group list-group-flush" *ngIf="interactions.length > 0">
+                <div class="list-group-item list-group-item-action d-flex align-items-start gap-3 py-3"
+                  *ngFor="let interaction of interactions" (click)="navigateToTab('interactions')"
+                  style="cursor: pointer;">
+                  <div class="rounded-circle bg-primary bg-opacity-10 p-2 text-primary flex-shrink-0">
+                    <i class="fa-solid {{ getInteractionIcon(interaction) }}"></i>
+                  </div>
+                  <div class="flex-grow-1 overflow-hidden">
+                    <div class="d-flex justify-content-between align-items-start">
+                      <strong class="text-truncate">{{ interaction.interactionType?.name || 'Interaction' }}</strong>
+                      <small class="text-muted flex-shrink-0 ms-2">{{ interaction.startTime | date:'shortDate'
+                        }}</small>
+                    </div>
+                    <p class="mb-0 text-muted small text-truncate" *ngIf="interaction.notes">
+                      {{ interaction.notes }}
+                    </p>
+                    <p class="mb-0 text-muted small fst-italic" *ngIf="!interaction.notes">
+                      No notes recorded
+                    </p>
+                  </div>
+                </div>
+              </div>
 
-        <!-- Quick Actions Column -->
-        <div class="col-md-6">
-          <h6 class="fw-semibold mb-3">Quick Actions</h6>
+              <!-- Empty State -->
+              <div class="text-center py-5" *ngIf="interactions.length === 0">
+                <div class="text-muted mb-3">
+                  <i class="fa-solid fa-comments fa-3x opacity-25"></i>
+                </div>
+                <p class="text-muted mb-3">No interactions logged yet</p>
+                <button class="btn btn-primary btn-sm" (click)="openLogInteractionModal()" *ngIf="canLogInteraction()">
+                  <i class="fa-solid fa-plus me-1"></i>Log First Interaction
+                </button>
+              </div>
+            </ng-container>
+          </ng-container>
+
+          <!-- Loading State -->
+          <ng-template #loadingInteractions>
+            <div class="text-center py-5">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <p class="text-muted mt-2 mb-0">Loading recent activity...</p>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Contact Details & Quick Actions -->
+    <div class="col-lg-6">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-header bg-light border-0">
+          <h6 class="mb-0 fw-semibold">
+            <i class="fa-solid fa-bolt me-2 text-warning"></i>Quick Actions
+          </h6>
+        </div>
+        <div class="card-body">
+          <!-- Contact Methods -->
+          <div class="mb-4">
+            <div class="d-flex align-items-center gap-3 mb-3" *ngIf="contact?.email">
+              <div class="rounded-circle bg-primary bg-opacity-10 p-2 text-primary flex-shrink-0">
+                <i class="fa-solid fa-envelope"></i>
+              </div>
+              <div class="flex-grow-1 overflow-hidden">
+                <div class="small text-muted">Email</div>
+                <a [href]="'mailto:' + contact.email" class="text-truncate d-block">{{ contact.email }}</a>
+              </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-3 mb-3" *ngIf="contact?.phone">
+              <div class="rounded-circle bg-success bg-opacity-10 p-2 text-success flex-shrink-0">
+                <i class="fa-solid fa-phone"></i>
+              </div>
+              <div class="flex-grow-1">
+                <div class="small text-muted">Phone</div>
+                <a [href]="'tel:' + contact.phone">{{ contact.phone }}</a>
+              </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-3 mb-3" *ngIf="contact?.mobile">
+              <div class="rounded-circle bg-success bg-opacity-10 p-2 text-success flex-shrink-0">
+                <i class="fa-solid fa-mobile-alt"></i>
+              </div>
+              <div class="flex-grow-1">
+                <div class="small text-muted">
+                  Mobile
+                  <span class="badge bg-success ms-1"
+                    *ngIf="contact?.contactMethod?.name?.toLowerCase()?.includes('mobile')">
+                    Preferred
+                  </span>
+                </div>
+                <a [href]="'tel:' + contact.mobile">{{ contact.mobile }}</a>
+              </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-3" *ngIf="contact?.webSite">
+              <div class="rounded-circle bg-info bg-opacity-10 p-2 text-info flex-shrink-0">
+                <i class="fa-solid fa-globe"></i>
+              </div>
+              <div class="flex-grow-1 overflow-hidden">
+                <div class="small text-muted">Website</div>
+                <a [href]="getWebSiteAsAddress(contact)" target="_blank" class="text-truncate d-block">{{
+                  contact.webSite }}</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
           <div class="d-grid gap-2">
             <button class="btn btn-outline-primary text-start" (click)="sendEmail()" *ngIf="contact?.email">
-              <i class="fa-solid fa-envelope me-2"></i> Send Email
+              <i class="fa-solid fa-envelope me-2"></i>Send Email
             </button>
-            <button class="btn btn-outline-success text-start" (click)="callPhone()" *ngIf="contact?.phone || contact?.mobile">
-              <i class="fa-solid fa-phone me-2"></i> Call {{ contact.mobile || contact.phone }}
+            <button class="btn btn-outline-success text-start" (click)="callPhone()"
+              *ngIf="contact?.phone || contact?.mobile">
+              <i class="fa-solid fa-phone me-2"></i>Call {{ contact.mobile || contact.phone }}
             </button>
             <button class="btn btn-outline-info text-start" (click)="openLogInteractionModal()">
-              <i class="fa-solid fa-comment-dots me-2"></i> Log Interaction / Note
+              <i class="fa-solid fa-comment-dots me-2"></i>Log Interaction / Note
             </button>
-            <button class="btn btn-outline-secondary text-start" (click)="addRelationship()" *ngIf="userIsSchedulerContactWriter()">
-              <i class="fa-solid fa-user-plus me-2"></i> Add Relationship
-            </button>
-            <button class="btn btn-outline-warning text-start" (click)="manageTags()" *ngIf="userIsSchedulerContactWriter()">
-              <i class="fa-solid fa-tag me-2"></i> Manage Tags
+            <button class="btn btn-outline-secondary text-start" (click)="addRelationship()"
+              *ngIf="userIsSchedulerContactWriter()">
+              <i class="fa-solid fa-user-plus me-2"></i>Add Relationship
             </button>
           </div>
         </div>
@@ -140,16 +272,26 @@
   </div>
 
   <!-- Notes Card -->
-  <div class="card shadow-sm" *ngIf="contact?.notes || userIsSchedulerContactWriter()">
-    <div class="card-header bg-light">
-      <h6 class="mb-0 fw-semibold">Notes</h6>
-    </div>
-    <div class="card-body">
-      <p class="text-muted" *ngIf="!contact?.notes">No notes recorded.</p>
-      <p class="preserve-whitespace" *ngIf="contact?.notes">{{ contact.notes }}</p>
+  <div class="card shadow-sm border-0" *ngIf="contact?.notes || userIsSchedulerContactWriter()">
+    <div class="card-header bg-light border-0 d-flex justify-content-between align-items-center">
+      <h6 class="mb-0 fw-semibold">
+        <i class="fa-solid fa-sticky-note me-2 text-warning"></i>Notes
+      </h6>
       <button class="btn btn-sm btn-outline-primary" (click)="openEditModal()" *ngIf="userIsSchedulerContactWriter()">
-        <i class="fa fa-pen me-1"></i> Edit Notes
+        <i class="fa fa-pen me-1"></i>Edit
       </button>
     </div>
+    <div class="card-body">
+      <!-- Empty State -->
+      <div class="text-center py-4" *ngIf="!contact?.notes">
+        <div class="text-muted mb-2">
+          <i class="fa-solid fa-sticky-note fa-2x opacity-25"></i>
+        </div>
+        <p class="text-muted mb-0">No notes recorded for this contact.</p>
+      </div>
+      <!-- Notes Content -->
+      <p class="preserve-whitespace mb-0" *ngIf="contact?.notes">{{ contact.notes }}</p>
+    </div>
   </div>
+
 </div>

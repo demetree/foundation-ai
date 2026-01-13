@@ -1,186 +1,414 @@
-<div class="container-fluid py-2">
-  <!--<h1 class="mb-4">Scheduler Command Center</h1>-->
+<!-- Overview Component - Premium Dashboard -->
+<div class="overview-container">
 
-  <!-- Quick Create Bar -->
-  <!--<div class="mb-4 card shadow-sm">
-    <div class="card-body d-flex flex-wrap align-items-center gap-3">
-      <div class="me-auto">
-        <h5 class="mb-0">Quick Actions</h5>
-        <small class="text-muted">Start planning in seconds</small>
+  <!-- Premium Header with Gradient -->
+  <div class="header-card card mb-4 shadow-lg border-0">
+    <div class="card-body d-flex align-items-center gap-4">
+
+      <!-- User Avatar -->
+      <div class="avatar-wrapper" *ngIf="currentUserContact$ | async as contact">
+        <div class="avatar rounded-circle overflow-hidden border-0 shadow" style="width: 80px; height: 80px;">
+          <ng-container *ngIf="contact?.avatarData; else defaultAvatar">
+            <img [src]="'data:' + (contact?.avatarMimeType || 'image/png') + ';base64,' + (contact?.avatarData || '')"
+              class="w-100 h-100 object-fit-cover" alt="User avatar">
+          </ng-container>
+          <ng-template #defaultAvatar>
+            <div
+              class="w-100 h-100 d-flex align-items-center justify-content-center text-white fw-bold fs-3 avatar-initials"
+              [style.background-color]="contact?.color || '#667eea'">
+              <span>{{ contact?.firstName | slice:0:1 | uppercase }}{{ contact?.lastName | slice:0:1 | uppercase
+                }}</span>
+            </div>
+          </ng-template>
+        </div>
       </div>
-      <button class="btn btn-primary btn-lg" (click)="createFromTemplate()">
-        <i class="bi bi-lightning-charge me-2"></i> New from Template
-      </button>
-      <button class="btn btn-outline-primary" (click)="createNewEvent()">
-        <i class="bi bi-plus-circle me-2"></i> Blank Event
-      </button>
-      <button class="btn btn-outline-secondary" (click)="navigateToTargets()">
-        Manage Projects / Patients
-      </button>
-    </div>
-  </div>-->
 
-  <!-- Loading -->
-  <div *ngIf="loading" class="text-center">
-    <div class="spinner-border text-primary" role="status" style="width: 4rem; height: 4rem;">
-      <span class="visually-hidden">Loading dashboard...</span>
+      <!-- Greeting & Stats -->
+      <div class="flex-grow-1">
+        <div class="d-flex align-items-center gap-3 mb-1">
+          <h2 class="mb-0 text-white fw-bold">{{ userGreeting }}<span *ngIf="currentUserContact$ | async as contact">,
+              {{ contact?.firstName }}</span>!</h2>
+        </div>
+        <p class="text-white-50 mb-0">
+          <i class="fa-solid fa-calendar-day me-2"></i>
+          {{ today | date:'EEEE, MMMM d, y' }}
+        </p>
+      </div>
+
+      <!-- Quick Stats Bar -->
+      <div class="stats-bar d-flex gap-4" *ngIf="!loading">
+        <div class="stat-item text-center">
+          <div class="stat-value text-white">{{ todaysAssignments.length }}</div>
+          <div class="stat-label text-white-50">Events Today</div>
+        </div>
+        <div class="stat-item text-center">
+          <div class="stat-value text-white">{{ activeResourcesToday }}</div>
+          <div class="stat-label text-white-50">Active Resources</div>
+        </div>
+        <div class="stat-item text-center">
+          <div class="stat-value text-white">{{ currentlyRunning.length }}</div>
+          <div class="stat-label text-white-50">Running Now</div>
+        </div>
+        <div class="stat-item text-center" *ngIf="resourcesOnBlackoutToday.length > 0">
+          <div class="stat-value text-warning">{{ resourcesOnBlackoutToday.length }}</div>
+          <div class="stat-label text-white-50">Unavailable</div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="quick-actions-header">
+        <button class="btn btn-light btn-lg shadow-sm" (click)="createNewEvent()" ngbTooltip="Create new event">
+          <i class="fa-solid fa-plus me-2"></i>New Event
+        </button>
+      </div>
     </div>
   </div>
 
-  <!-- Main Dashboard Grid -->
-  <div class="row g-4" *ngIf="!loading">
-
-    <!-- 1. Today's Critical Summary (Large Card) -->
-    <div class="col-xl-6">
-      <div class="card h-100 shadow-lg">
-        <div class="card-header bg-gradient-primary text-black">
-          <h5 class="mb-0">
-            <i class="bi bi-calendar-check me-2"></i>
-            Today at a Glance – {{ today | date:'EEEE, MMMM d' }}
-          </h5>
-        </div>
-        <div class="card-body">
-          <div class="row text-center mb-4">
-            <div class="col">
-              <div class="display-4 fw-bold text-primary">{{ todaysAssignments.length }}</div>
-              <div class="text-muted">Active Jobs Today</div>
-            </div>
-            <div class="col">
-              <div class="display-4 fw-bold text-success">{{ activeResourcesToday }}</div>
-              <div class="text-muted">Resources Deployed</div>
-            </div>
-            <div class="col">
-              <div class="display-4 fw-bold text-warning">{{ resourcesOnBlackoutToday.length }}</div>
-              <div class="text-muted">On Break / Unavailable</div>
-            </div>
-            <div class="col">
-              <div class="display-4 fw-bold" [class.text-danger]="potentialConflictsToday > 0" [class.text-success]="potentialConflictsToday === 0">
-                {{ potentialConflictsToday }}
-              </div>
-              <div class="text-muted">Potential Conflicts</div>
-            </div>
-          </div>
-
-          <h6>Currently Running</h6>
-          <div class="list-group list-group-flush">
-            <a *ngFor="let item of currentlyRunning" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-              <div>
-                <div class="fw-bold">{{ item.event.name }}</div>
-                <small class="text-muted">{{ item.event.location || 'No location' }}</small>
-              </div>
-              <span class="badge bg-primary rounded-pill">{{ item.assignments.length }} assigned</span>
-            </a>
-            <div *ngIf="currentlyRunning.length === 0" class="text-muted text-center py-3">
-              No events running right now
-            </div>
-          </div>
-        </div>
+  <!-- Loading Spinner -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="loading-spinner">
+      <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+        <span class="visually-hidden">Loading dashboard...</span>
       </div>
     </div>
+    <p class="text-muted mt-3">Loading your dashboard...</p>
+  </div>
 
-    <!-- 2. Upcoming Week Highlights -->
-    <div class="col-xl-6">
-      <div class="card h-100 shadow">
-        <div class="card-header bg-success text-white">
-          <h5 class="mb-0">Upcoming This Week</h5>
-        </div>
-        <div class="card-body">
-          <div *ngFor="let day of next7Days" class="d-flex align-items-center mb-3">
-            <div class="day-label text-muted me-3" style="width: 100px;">
-              {{ day.date | date:'EEE, MMM d' }}
+  <!-- Tabbed Content -->
+  <div *ngIf="!loading">
+    <ul ngbNav #nav="ngbNav" class="nav-tabs dashboard-tabs" [(activeId)]="activeTab" (navChange)="onTabChange($event)">
+
+      <!-- System State Tab -->
+      <li ngbNavItem="system">
+        <button ngbNavLink>
+          <i class="fa-solid fa-gauge-high me-2"></i>System Overview
+        </button>
+        <ng-template ngbNavContent>
+          <div class="tab-content-inner">
+
+            <!-- Row 1: Today + Week -->
+            <div class="row g-4 mb-4">
+
+              <!-- Today at a Glance -->
+              <div class="col-xl-6">
+                <div class="card h-100 shadow-sm border-0 premium-card">
+                  <div class="card-header gradient-primary text-white border-0">
+                    <h5 class="mb-0">
+                      <i class="fa-solid fa-calendar-check me-2"></i>
+                      Today at a Glance
+                    </h5>
+                  </div>
+                  <div class="card-body">
+                    <div class="row text-center mb-4">
+                      <div class="col">
+                        <div class="stat-circle bg-primary-soft">
+                          <span class="display-5 fw-bold text-primary">{{ todaysAssignments.length }}</span>
+                        </div>
+                        <div class="text-muted small mt-2">Active Jobs</div>
+                      </div>
+                      <div class="col">
+                        <div class="stat-circle bg-success-soft">
+                          <span class="display-5 fw-bold text-success">{{ activeResourcesToday }}</span>
+                        </div>
+                        <div class="text-muted small mt-2">Deployed</div>
+                      </div>
+                      <div class="col">
+                        <div class="stat-circle bg-warning-soft">
+                          <span class="display-5 fw-bold text-warning">{{ resourcesOnBlackoutToday.length }}</span>
+                        </div>
+                        <div class="text-muted small mt-2">Unavailable</div>
+                      </div>
+                      <div class="col">
+                        <div class="stat-circle"
+                          [ngClass]="potentialConflictsToday > 0 ? 'bg-danger-soft' : 'bg-success-soft'">
+                          <span class="display-5 fw-bold"
+                            [ngClass]="potentialConflictsToday > 0 ? 'text-danger' : 'text-success'">{{
+                            potentialConflictsToday }}</span>
+                        </div>
+                        <div class="text-muted small mt-2">Conflicts</div>
+                      </div>
+                    </div>
+
+                    <h6 class="fw-semibold mb-3">
+                      <i class="fa-solid fa-play-circle text-success me-2"></i>Currently Running
+                    </h6>
+                    <div class="list-group list-group-flush" *ngIf="currentlyRunning.length > 0">
+                      <a *ngFor="let item of currentlyRunning"
+                        class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3 border-0 hover-lift"
+                        [routerLink]="['/scheduledevents', item.event.id]">
+                        <div>
+                          <div class="fw-semibold">{{ item.event.name }}</div>
+                          <small class="text-muted">{{ item.event.location || 'No location specified' }}</small>
+                        </div>
+                        <span class="badge bg-primary rounded-pill">{{ item.assignments.length }} assigned</span>
+                      </a>
+                    </div>
+                    <div *ngIf="currentlyRunning.length === 0" class="empty-state-card text-center py-4">
+                      <i class="fa-solid fa-coffee fa-2x text-muted mb-2"></i>
+                      <p class="text-muted mb-0">No events running right now</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Week Forecast -->
+              <div class="col-xl-6">
+                <div class="card h-100 shadow-sm border-0 premium-card">
+                  <div class="card-header gradient-success text-white border-0">
+                    <h5 class="mb-0">
+                      <i class="fa-solid fa-calendar-week me-2"></i>
+                      Next 7 Days
+                    </h5>
+                  </div>
+                  <div class="card-body">
+                    <div *ngFor="let day of next7Days" class="day-row d-flex align-items-center mb-3">
+                      <div class="day-label me-3"
+                        [ngClass]="{'fw-bold text-primary': day.date.toDateString() === today.toDateString()}">
+                        {{ day.date | date:'EEE, MMM d' }}
+                      </div>
+                      <div class="flex-grow-1">
+                        <div class="progress" style="height: 24px; border-radius: 12px;">
+                          <div class="progress-bar" [style.width.%]="day.utilization" [ngClass]="{
+                              'bg-danger': day.conflicts > 0,
+                              'bg-warning': day.utilization > 80 && day.conflicts === 0,
+                              'bg-success': day.utilization <= 80 && day.utilization > 40,
+                              'bg-info': day.utilization <= 40
+                            }" style="border-radius: 12px;">
+                            <span class="px-2" *ngIf="day.events > 0">{{ day.events }} event{{ day.events !== 1 ? 's' :
+                              '' }}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="text-center mt-4">
+                      <button class="btn btn-outline-success" (click)="navigateToCalendar()">
+                        <i class="fa-solid fa-calendar me-2"></i>View Full Calendar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="flex-grow-1">
-              <div class="progress" style="height: 24px;">
-                <div class="progress-bar"
-                     [style.width.%]="day.utilization"
-                     [class.bg-danger]="day.conflicts > 0"
-                     [class.bg-warning]="day.utilization > 80 && day.conflicts === 0"
-                     [class.bg-success]="day.utilization <= 80">
-                  {{ day.events }} events • {{ day.conflicts }} conflict{{ day.conflicts !== 1 ? 's' : '' }}
+
+            <!-- Row 2: Targets + Resources + Quick Access -->
+            <div class="row g-4">
+
+              <!-- Active Projects/Targets -->
+              <div class="col-lg-4">
+                <div class="card h-100 shadow-sm border-0 premium-card">
+                  <div
+                    class="card-header gradient-info text-white border-0 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                      <i class="fa-solid fa-bullseye me-2"></i>Active Projects
+                    </h5>
+                    <span class="badge bg-white text-info">{{ activeTargets.length }}</span>
+                  </div>
+                  <div class="card-body p-0">
+                    <div class="list-group list-group-flush" *ngIf="activeTargets.length > 0">
+                      <a *ngFor="let target of activeTargets"
+                        class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3 hover-lift"
+                        [routerLink]="['/schedulingtargets', target.id]">
+                        <div>
+                          <div class="fw-semibold">{{ target.name }}</div>
+                          <small class="text-muted">{{ target.type }}</small>
+                        </div>
+                        <span class="badge bg-info rounded-pill">{{ target.eventCount }} events</span>
+                      </a>
+                    </div>
+                    <div *ngIf="activeTargets.length === 0" class="empty-state-card text-center py-5">
+                      <i class="fa-solid fa-folder-open fa-2x text-muted mb-2"></i>
+                      <p class="text-muted mb-3">No active projects</p>
+                      <button class="btn btn-sm btn-outline-info" (click)="navigateToTargets()">
+                        <i class="fa-solid fa-plus me-1"></i>Add Project
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Resource Status -->
+              <div class="col-lg-4">
+                <div class="card h-100 shadow-sm border-0 premium-card">
+                  <div class="card-header gradient-warning border-0 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 text-dark">
+                      <i class="fa-solid fa-users me-2"></i>Resource Status
+                    </h5>
+                  </div>
+                  <div class="card-body">
+                    <div class="row text-center mb-4">
+                      <div class="col-4">
+                        <div class="fs-2 fw-bold text-success">{{ availableResources }}</div>
+                        <div class="small text-muted">Available</div>
+                      </div>
+                      <div class="col-4">
+                        <div class="fs-2 fw-bold text-primary">{{ bookedResources }}</div>
+                        <div class="small text-muted">Booked</div>
+                      </div>
+                      <div class="col-4">
+                        <div class="fs-2 fw-bold text-danger">{{ resourcesOnBlackoutToday.length }}</div>
+                        <div class="small text-muted">Unavailable</div>
+                      </div>
+                    </div>
+
+                    <h6 class="fw-semibold mb-2">Top Utilization Today</h6>
+                    <ol class="list-group list-group-numbered list-group-flush" *ngIf="topUtilizedResources.length > 0">
+                      <li *ngFor="let res of topUtilizedResources"
+                        class="list-group-item d-flex justify-content-between align-items-center border-0 py-2">
+                        <span>{{ res.name }}</span>
+                        <span class="badge bg-primary rounded-pill">{{ res.hours }} hrs</span>
+                      </li>
+                    </ol>
+                    <div *ngIf="topUtilizedResources.length === 0" class="text-center py-3">
+                      <small class="text-muted">No resources booked today</small>
+                    </div>
+                  </div>
+                  <div class="card-footer bg-transparent border-0 text-center">
+                    <button class="btn btn-outline-warning btn-sm" (click)="navigateToResources()">
+                      <i class="fa-solid fa-arrow-right me-1"></i>Manage Resources
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Favourites & Recent -->
+              <div class="col-lg-4">
+                <div class="card h-100 shadow-sm border-0 premium-card">
+                  <div class="card-header gradient-purple text-white border-0">
+                    <h5 class="mb-0">
+                      <i class="fa-solid fa-star me-2"></i>Quick Access
+                    </h5>
+                  </div>
+                  <div class="card-body">
+                    <!-- Favourites Section -->
+                    <h6 class="fw-semibold mb-2">
+                      <i class="fa-solid fa-heart text-danger me-1"></i>Pinned Items
+                    </h6>
+                    <ng-container *ngIf="favourites$ | async as favourites">
+                      <div class="list-group list-group-flush mb-3" *ngIf="favourites.length > 0">
+                        <a *ngFor="let fav of favourites.slice(0, 5)"
+                          class="list-group-item list-group-item-action py-2 border-0 hover-lift"
+                          (click)="navigateToEntity(fav.entity, fav.id)" style="cursor: pointer;">
+                          <small class="text-muted text-uppercase">{{ fav.entity }}</small>
+                          <div class="fw-medium">{{ fav.description || '#' + fav.id }}</div>
+                        </a>
+                      </div>
+                      <p *ngIf="favourites.length === 0" class="text-muted small mb-3">
+                        <i class="fa-regular fa-star me-1"></i>No pinned items yet
+                      </p>
+                    </ng-container>
+
+                    <!-- Recent Items Section -->
+                    <h6 class="fw-semibold mb-2">
+                      <i class="fa-solid fa-clock-rotate-left text-primary me-1"></i>Recently Viewed
+                    </h6>
+                    <ng-container *ngIf="mostRecents$ | async as recents">
+                      <div class="list-group list-group-flush" *ngIf="recents.length > 0">
+                        <a *ngFor="let recent of recents.slice(0, 5)"
+                          class="list-group-item list-group-item-action py-2 border-0 hover-lift"
+                          (click)="navigateToEntity(recent.entity, recent.id)" style="cursor: pointer;">
+                          <small class="text-muted text-uppercase">{{ recent.entity }}</small>
+                          <div class="fw-medium">{{ recent.description || '#' + recent.id }}</div>
+                        </a>
+                      </div>
+                      <p *ngIf="recents.length === 0" class="text-muted small">
+                        <i class="fa-regular fa-clock me-1"></i>No recent items
+                      </p>
+                    </ng-container>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
+        </ng-template>
+      </li>
 
-    <!-- 3. Active Projects / Patients -->
-    <div class="col-lg-6 col-xl-4">
-      <div class="card h-100 shadow">
-        <div class="card-header bg-info text-white">
-          <h5 class="mb-0">Activity</h5>
-        </div>
-        <div class="card-body">
-          <div class="list-group list-group-flush">
-            <a *ngFor="let target of activeTargets" class="list-group-item list-group-item-action">
-              <div class="d-flex w-100 justify-content-between">
-                <h6 class="mb-1">{{ target.name }}</h6>
-                <small class="text-muted">{{ target.type }}</small>
-              </div>
-              <small class="text-muted">{{ target.addressCount }} location{{ target.addressCount !== 1 ? 's' : '' }} • {{ target.eventCount }} events</small>
-            </a>
-            <div *ngIf="activeTargets.length === 0" class="text-muted text-center py-3">
-              No active targets
-            </div>
-          </div>
-        </div>
-        <div class="card-footer text-center">
-          <button class="btn btn-outline-info btn-sm" (click)="navigateToTargets()">Manage All →</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 4. Resource Health -->
-    <div class="col-lg-6 col-xl-4">
-      <div class="card h-100 shadow">
-        <div class="card-header bg-warning text-dark">
-          <h5 class="mb-0">Resource Status</h5>
-        </div>
-        <div class="card-body">
-          <div class="row text-center mb-3">
-            <div class="col">
-              <div class="fs-3 fw-bold text-success">{{ availableResources }}</div>
-              <div class="small">Available</div>
-            </div>
-            <div class="col">
-              <div class="fs-3 fw-bold text-primary">{{ bookedResources }}</div>
-              <div class="small">Booked Today</div>
-            </div>
-            <div class="col">
-              <div class="fs-3 fw-bold text-danger">{{ resourcesOnBlackoutToday.length }}</div>
-              <div class="small">Unavailable</div>
-            </div>
-          </div>
-          <h6>Top Utilization</h6>
-          <ol class="list-group list-group-numbered">
-            <li *ngFor="let res of topUtilizedResources" class="list-group-item d-flex justify-content-between">
-              <span>{{ res.name }}</span>
-              <span class="badge bg-primary">{{ res.hours }} hrs</span>
-            </li>
-          </ol>
-        </div>
-      </div>
-    </div>
-
-    <!-- 5. Recent Activity -->
-    <div class="col-lg-6 col-xl-4">
-      <div class="card h-100 shadow">
-        <div class="card-header bg-secondary text-white">
-          <h5 class="mb-0">Recent Changes</h5>
-        </div>
-        <div class="card-body small">
-          <div class="timeline">
-            <div *ngFor="let change of recentChanges" class="timeline-item">
-              <div class="timeline-marker"></div>
-              <div class="timeline-content">
-                <p class="fw-bold mb-1">{{ change.action }} {{ change.entity }}</p>
-                <p class="text-muted mb-0">{{ change.by }} • {{ change.when | date:'short' }}</p>
+      <!-- Manager Tab -->
+      <li ngbNavItem="manager" *ngIf="canSeeManagerTab()">
+        <button ngbNavLink>
+          <i class="fa-solid fa-briefcase me-2"></i>Project Manager
+        </button>
+        <ng-template ngbNavContent>
+          <div class="tab-content-inner">
+            <div class="coming-soon-card card shadow-sm border-0">
+              <div class="card-body text-center py-5">
+                <div class="icon-circle bg-info-soft mx-auto mb-4">
+                  <i class="fa-solid fa-briefcase fa-3x text-info"></i>
+                </div>
+                <h4 class="fw-bold mb-3">Project Manager Dashboard</h4>
+                <p class="text-muted mb-4">
+                  This view will provide project managers with:<br>
+                  • Active project status and milestones<br>
+                  • Budget and charge summaries<br>
+                  • Team utilization overview<br>
+                  • Project-specific event calendars
+                </p>
+                <button class="btn btn-info" (click)="navigateToTargets()">
+                  <i class="fa-solid fa-bullseye me-2"></i>View All Projects
+                </button>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
+        </ng-template>
+      </li>
+
+      <!-- Dispatcher Tab -->
+      <li ngbNavItem="dispatcher" *ngIf="canSeeDispatcherTab()">
+        <button ngbNavLink>
+          <i class="fa-solid fa-route me-2"></i>Dispatcher
+        </button>
+        <ng-template ngbNavContent>
+          <div class="tab-content-inner">
+            <div class="coming-soon-card card shadow-sm border-0">
+              <div class="card-body text-center py-5">
+                <div class="icon-circle bg-warning-soft mx-auto mb-4">
+                  <i class="fa-solid fa-route fa-3x text-warning"></i>
+                </div>
+                <h4 class="fw-bold mb-3">Dispatcher Dashboard</h4>
+                <p class="text-muted mb-4">
+                  This view will help dispatchers with:<br>
+                  • Current assignments requiring attention<br>
+                  • Resource availability at a glance<br>
+                  • Unassigned events requiring action<br>
+                  • Quick assignment tools
+                </p>
+                <button class="btn btn-warning" (click)="navigateToEvents()">
+                  <i class="fa-solid fa-calendar me-2"></i>View All Events
+                </button>
+              </div>
+            </div>
+          </div>
+        </ng-template>
+      </li>
+
+      <!-- Scheduler Tab -->
+      <li ngbNavItem="scheduler" *ngIf="canSeeSchedulerTab()">
+        <button ngbNavLink>
+          <i class="fa-solid fa-clock me-2"></i>Scheduler
+        </button>
+        <ng-template ngbNavContent>
+          <div class="tab-content-inner">
+            <div class="coming-soon-card card shadow-sm border-0">
+              <div class="card-body text-center py-5">
+                <div class="icon-circle bg-success-soft mx-auto mb-4">
+                  <i class="fa-solid fa-clock fa-3x text-success"></i>
+                </div>
+                <h4 class="fw-bold mb-3">Scheduler Dashboard</h4>
+                <p class="text-muted mb-4">
+                  This view will assist schedulers with:<br>
+                  • Calendar summary and capacity planning<br>
+                  • Template-based event creation<br>
+                  • Conflict detection and resolution<br>
+                  • Week-at-a-glance view
+                </p>
+                <button class="btn btn-success" (click)="navigateToCalendar()">
+                  <i class="fa-solid fa-calendar me-2"></i>Open Calendar
+                </button>
+              </div>
+            </div>
+          </div>
+        </ng-template>
+      </li>
+    </ul>
+    <div [ngbNavOutlet]="nav" class="mt-4"></div>
   </div>
 </div>
