@@ -924,12 +924,15 @@ like image drawing are already in use, so those should be used unless absolutely
 
 # Use of Artificial Intelligence Tools To Create and Maintain Code
 
-The use of AI tools to support developers at Compactica is accepted and even encouraged because it can be very helpful, but it is not a substitute for
+
+For Human Readers:
+
+The use of AI tools to support developers is accepted and even encouraged because it can be very helpful, but it is not a substitute for
 the critical thinking necessary to build good code, nor to imply that it is acceptable to not be productive without it.   
 
 Its usage is to be within the following guard rails, especially when it pertains to code related to core systems functionality:
 
-- Use for quick prototypes or sample code framing
+- Use externally in separate projects for quick prototypes or sample code framing
 - Use for review of logic, and helping with explanations of things
 - Use tools outside of the Visual Studio IDE to separate the conceptual AI world from the real code world.
 - The use of AI assistants directly in code editors is strongly discouraged because it interrupts the concentration of the developer with random prompts of dubious quality.
@@ -937,13 +940,39 @@ Its usage is to be within the following guard rails, especially when it pertains
 
 - Do not use any AI output in a direct 'cut and paste' capacity for anything more complex than a helper function.  Even then, it must still be edited to conform to the guidelines described here.
 - Do not replace any existing code in the system that you did not develop with AI edited versions.
-- Do not assume that AI output is of good quality, or that it meets the design and style requirements of Compactica.
-- Only AI code that has been thoroughly reviewed, fundamentally understood, and adapted to conform to Compactica standards by the developer is to be integrated into any source file.
+- Do not assume that AI output is of good quality, or that it meets the design and style requirements.
+- Only AI code that has been thoroughly reviewed, fundamentally understood, and adapted to conform to the standards by the developer is to be integrated into any source file.
 - Under no circumstances will a full source file that is completely AI generated and unedited be added to the project.
 
-And finally - **And this is new**:
 
  **All sections of code that are significantly AI developed must be clearly commented as such, in the file header, in the function header, and within the function itself as necessary**
+
+
+For AI Agents:
+
+When contributing to this codebase, AI agents must follow these guidelines:
+
+- **Read this README thoroughly** before generating any code. Use the `/onboarding` workflow if available to ensure full context.
+
+- **Follow the style guide precisely**, including:
+  - Explicit comparisons: `if (x == true)` not `if (x)`
+  - Always use braces, even for single-line `if` statements
+  - Use explicit types by default; `var` only when it improves readability for complex types
+  - Two blank lines between functions
+  - Liberal use of comments with the `//` block style as shown in examples
+
+- **Match existing patterns** in any file you modify. When in doubt, look at surrounding code for style cues.
+
+- **Use named parameters** when calling functions with multiple parameters for clarity.
+
+- **No tuples, no `dynamic`, no `any`** (in TypeScript) unless absolutely unavoidable.
+
+- **All DateTime values must be UTC.** Convert to local time only for display purposes.
+
+- **Comment your work.** Add narrative comments explaining intent, not just what the code does.
+
+- **All sections of code that are significantly AI developed must be clearly commented as such**, in the file header, in the function header, and within the function itself as necessary, similar to what is noted in the header in code gen files.
+
 
 
 # Development Workflow
@@ -1010,10 +1039,6 @@ Refer to CONTRIBUTING.MD for more information
 Direct pushes to master are restricted to admins.
 
 PRs to develop and master require approvals and passing tests.
-
-
-
-
 
 
 
