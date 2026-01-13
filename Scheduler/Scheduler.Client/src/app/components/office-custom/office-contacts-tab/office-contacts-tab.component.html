@@ -1,5 +1,7 @@
-<app-contact-custom-add-edit [showAddButton]="false" (contactChanged)="reloadContact($event)"></app-contact-custom-add-edit>
-<app-office-contact-add-edit [showAddButton]="false" (officeContactChanged)="reloadOfficeContact($event)"></app-office-contact-add-edit>
+<app-contact-custom-add-edit [showAddButton]="false"
+  (contactChanged)="reloadContact($event)"></app-contact-custom-add-edit>
+<app-office-contact-add-edit [showAddButton]="false"
+  (officeContactChanged)="reloadOfficeContact($event)"></app-office-contact-add-edit>
 <div class="card h-100">
   <div class="card-header bg-light d-flex justify-content-between align-items-center">
     <h6 class="mb-0 fw-semibold">
@@ -9,9 +11,7 @@
         {{ contacts.length }}
       </span>-->
     </h6>
-    <button class="btn btn-sm btn-outline-primary"
-            (click)="openAddContactModal()"
-            *ngIf="office">
+    <button class="btn btn-sm btn-outline-primary" (click)="openAddContactModal()" *ngIf="office">
       <i class="fa fa-plus me-1"></i>
       Add Contact
     </button>
@@ -39,62 +39,68 @@
       <div class="small mt-2">Emergency contacts, next-of-kin, or personal contacts can be added here.</div>
     </div>
 
-    <!-- Contacts Table -->
-    <div class="table-responsive" *ngIf="!isLoading && contacts && contacts.length > 0">
-      <table class="table table-hover align-middle">
-        <thead class="table-light">
-          <tr>
-            <th>Name</th>
-            <th>Relationship</th>
-            <th>Phone</th>
-            <th>Email</th>
-            <th>Notes</th>
-            <th>Primary</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let rc of contacts">
-            <td>
-              <a class="text-decoration-none fw-semibold clickable"
-                 (click)="openContactModal(rc.contact)">
+    <!-- Contacts List -->
+    <div class="list-group list-group-flush" *ngIf="!isLoading && contacts && contacts.length > 0">
+      <div class="list-group-item px-0 py-3 border-start border-2" *ngFor="let rc of contacts"
+        [style.border-left-color]="(rc.contact?.color || '#dee2e6') + '80'"
+        [style.border-radius]="'8px'">
+        <div class="d-flex align-items-center">
+
+          <!-- Contact Avatar -->
+          <div class="avatar-preview rounded-circle overflow-hidden flex-shrink-0 me-3 clickable mx-3"
+            (click)="openContactModal(rc.contact)" ngbTooltip="Contact Details" 
+            style="width: 50px; height: 50px; background-size: cover; background-position: center;"
+            [style.background-image]="rc.contact?.avatarData ? 'url(data:' + rc.contact?.avatarMimeType + ';base64,' + rc.contact?.avatarData + ')' : null"
+            [style.background-color]="rc.contact?.color || '#6c757d'">
+            <i [class]="rc.contact?.icon?.fontAwesomeCode || 'fa-solid fa-user'"
+              class="fa-2x text-white d-flex align-items-center justify-content-center w-100 h-100"
+              *ngIf="!rc.contact?.avatarData"></i>
+          </div>
+
+          <!-- Info -->
+          <div class="flex-grow-1">
+            <div class="d-flex align-items-center gap-2">
+              <a class="fw-bold fs-5 text-decoration-none clickable" ngbTooltip="Edit Contact"
+                (click)="openContactModal(rc.contact)" [style.color]="'#000000'">
                 {{ getFullName(rc) }}
-                <i *ngIf="rc.contact?.icon?.fontAwesomeCode"
-                   [class]="rc.contact?.icon?.fontAwesomeCode"
-                   [style.color]="rc.contact?.color || '#6c757d'"
-                   class="fs-7"></i>
               </a>
-              <div class="small text-muted" *ngIf="rc.contact">
-                <div>{{ rc.contact.contactType?.name || '—' }}</div>
-                <div>{{ rc.contact.company}}</div>
+
+              <i *ngIf="rc.isPrimary" class="fa fa-check-circle text-success" title="Primary Contact"></i>
+
+              <span class="badge" [style.background-color]="rc.contact?.color || '#6c757d'"
+                [style.color]="(rc.contact?.color ? (rc.contact?.color | contrastColor) : '#FFFFFF') || 'inherit'">
+                {{ rc.relationshipType?.name || 'No Relationship'}}
+              </span>
+            </div>
+
+            <div class="small text-muted d-flex gap-3 mt-1">
+              <div *ngIf="getPhone(rc)">
+                <i class="fa fa-phone me-1"></i> {{ getPhone(rc) }}
               </div>
-            </td>
-            <td>
-              {{ rc.relationshipType?.name || '—' }}
-            </td>
-            <td>
-              {{ getPhone(rc) }}
-            </td>
-            <td>
-              {{ rc.contact?.email || '—' }}
-            </td>
-            <td>
-              {{ rc.contact?.notes || '—' }}
-            </td>
-            <td class="text-center">
-              <i class="fa fa-check text-success fs-5"
-                 *ngIf="rc.isPrimary"
-                 title="Primary Contact"></i>
-            </td>
-            <td class="text-end">
-              <button class="btn btn-sm btn-outline-secondary clickable"
-                      (click)="openOfficeContactModal(rc)">
-                <i class="fa fa-external-link-alt"></i>
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+              <div *ngIf="rc.contact?.email">
+                <i class="fa fa-envelope me-1"></i> {{ rc.contact?.email }}
+              </div>
+              <div *ngIf="rc.contact?.company">
+                <i class="fa fa-building me-1"></i> {{ rc.contact?.company }}
+              </div>
+            </div>
+
+            <div class="small text-muted mt-1" *ngIf="rc.contact?.notes">
+              <i class="fa fa-sticky-note me-1"></i> {{ rc.contact?.notes }}
+            </div>
+
+          </div>
+
+          <!-- Actions -->
+          <div class="clickable mx-3" ngbTooltip="Edit Link" (click)="openOfficeContactModal(rc)">
+            <div class="btn btn-sm btn-outline-secondary px-3">
+              <i class="fa fa-pen me-1"></i>
+              Edit Link
+            </div>
+          </div>
+
+        </div>
+      </div>
     </div>
   </div>
 </div>

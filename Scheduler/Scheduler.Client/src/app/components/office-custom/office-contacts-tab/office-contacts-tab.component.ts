@@ -1,4 +1,4 @@
-import { Component, Input, Output, OnChanges, SimpleChanges, ViewChild } from '@angular/core';
+import { Component, Input, Output, OnChanges, SimpleChanges, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { Subject } from 'rxjs'
 import { Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -45,7 +45,8 @@ export class OfficeContactsTabComponent implements OnChanges {
   constructor(
     private router: Router,
     private modalService: NgbModal,
-    private contactService: ContactService
+    private contactService: ContactService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   /**
@@ -114,19 +115,12 @@ export class OfficeContactsTabComponent implements OnChanges {
       .then(officeContacts => {
         this.contacts = officeContacts ?? [];
 
-
         //
-        // Revive contacts 
+        // Revive contacts - rehydrate nav properties
         //
         this.contacts.forEach(c => {
-
-          //
-          // Reydrate the contact because this level of nav property isn't fully constructed yet.  We just have a basic data object for nav properties of nav properties.
-          //
-          // We need to convert it to a full data object by reviving it, and then calling reload on it, so we then get it's nav property values like icon and contactType
-          //
           c.contact = ContactService.Instance.ReviveContact(c.contact);
-          c.contact.Reload();
+          c.contact?.Reload().then(() => this.cdr.detectChanges());
         });
 
         this.isLoading = false;

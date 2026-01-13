@@ -462,6 +462,7 @@ export class ContactCustomAddEditComponent {
         deleted: false,
       }, { emitEvent: false });
 
+      this.currentAvatarUrl = null;
     }
     else {
 
@@ -506,6 +507,13 @@ export class ContactCustomAddEditComponent {
         active: contactData.active ?? true,
         deleted: contactData.deleted ?? false,
       }, { emitEvent: false });
+
+      // Set the avatar preview URL from existing data
+      if (contactData.avatarData && contactData.avatarMimeType) {
+        this.currentAvatarUrl = `data:${contactData.avatarMimeType};base64,${contactData.avatarData}`;
+      } else {
+        this.currentAvatarUrl = null;
+      }
     }
 
     this.contactForm.markAsPristine();
