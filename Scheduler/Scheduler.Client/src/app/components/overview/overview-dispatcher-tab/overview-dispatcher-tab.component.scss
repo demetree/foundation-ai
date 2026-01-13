@@ -1,0 +1,57 @@
+$primary: #0d6efd;
+$info: #0dcaf0;
+$success: #198754;
+$warning: #ffc107;
+$danger: #dc3545;
+
+.premium-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+    &:hover {
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08) !important;
+    }
+}
+
+.hover-lift {
+    transition: transform 0.2s ease, background-color 0.2s ease;
+
+    &:hover {
+        transform: translateY(-2px);
+        background-color: #f8f9fa;
+        z-index: 10;
+    }
+}
+
+.hover-scale {
+    transition: transform 0.2s ease;
+
+    &:hover {
+        transform: scale(1.02);
+    }
+}
+
+.dashed-border {
+    border: 2px dashed #dee2e6;
+    background-color: #f8f9fa;
+}
+
+.bg-danger-soft {
+    background-color: rgba($danger, 0.1);
+}
+
+.bg-primary-soft {
+    background-color: rgba($primary, 0.1);
+}
+
+.avatar-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.text-xs {
+    font-size: 0.75rem;
+}

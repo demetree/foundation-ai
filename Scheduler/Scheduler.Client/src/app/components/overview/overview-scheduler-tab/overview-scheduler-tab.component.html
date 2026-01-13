@@ -1,0 +1,128 @@
+<div class="row g-4 mb-4">
+    <!-- KPI Cards -->
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0 h-100 premium-card">
+            <div class="card-body d-flex flex-column justify-content-between">
+                <div>
+                    <div class="text-xs text-uppercase text-muted fw-bold mb-1">Weekly Load</div>
+                    <div class="d-flex align-items-center">
+                        <h2 class="mb-0 fw-bold text-primary">{{ getTotalEvents() }}</h2>
+                        <span class="text-muted small ms-2">events next 7 days</span>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar bg-primary" role="progressbar" [style.width.%]="75"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0 h-100 premium-card">
+            <div class="card-body d-flex flex-column justify-content-between">
+                <div>
+                    <div class="text-xs text-uppercase text-muted fw-bold mb-1">Potential Conflicts</div>
+                    <div class="d-flex align-items-center">
+                        <h2 class="mb-0 fw-bold" [class.text-danger]="potentialConflicts > 0"
+                            [class.text-success]="potentialConflicts === 0">{{ potentialConflicts }}</h2>
+                        <span class="badge bg-danger-soft text-danger ms-2" *ngIf="potentialConflicts > 0">Action
+                            Req</span>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <i class="fa-solid fa-triangle-exclamation text-danger fa-2x opacity-25"
+                        *ngIf="potentialConflicts > 0"></i>
+                    <i class="fa-solid fa-check-circle text-success fa-2x opacity-25"
+                        *ngIf="potentialConflicts === 0"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div
+            class="card shadow-sm border-0 h-100 bg-light d-flex align-items-center justify-content-center dashed-border cursor-pointer hover-scale">
+            <div class="text-center">
+                <i class="fa-solid fa-file-circle-plus text-muted mb-2"></i>
+                <div class="fw-semibold text-muted">New from Template</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Weekly Capacity Heatmap -->
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0 premium-card h-100">
+            <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 fw-bold"><i class="fa-solid fa-calendar-week me-2 text-primary"></i>7-Day Capacity
+                    Forecast</h6>
+                <button class="btn btn-sm btn-outline-primary" (click)="navigateToCalendar()">Full Calendar</button>
+            </div>
+            <div class="card-body">
+                <div class="row g-2">
+                    <div class="col" *ngFor="let day of daySummaries">
+                        <div class="text-center p-3 rounded border" [class.bg-light]="day.utilization < 50"
+                            [class.bg-warning-soft]="day.utilization >= 50 && day.utilization < 80"
+                            [class.bg-danger-soft]="day.utilization >= 80">
+                            <div class="small text-muted mb-1">{{ day.date | date:'EEE' }}</div>
+                            <div class="fw-bold mb-2">{{ day.date | date:'d' }}</div>
+                            <div class="badge rounded-pill" [class.bg-secondary]="day.events === 0"
+                                [class.bg-primary]="day.events > 0">{{ day.events }} events</div>
+                            <div class="mt-2 text-xs text-muted">{{ day.utilization }}% util</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="alert alert-light mt-4 mb-0 border-0 d-flex align-items-center">
+                    <i class="fa-solid fa-circle-info text-info me-3 fa-lg"></i>
+                    <div class="small text-muted">
+                        Friday, Oct 25th is showing high utilization (85%). Consider rescheduling non-critical
+                        maintenance events.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions / Tools -->
+    <div class="col-lg-4">
+        <div class="card shadow-sm border-0 premium-card h-100">
+            <div class="card-header bg-white border-0 py-3">
+                <h6 class="mb-0 fw-bold"><i class="fa-solid fa-toolbox me-2 text-secondary"></i>Planning Tools</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    <button class="list-group-item list-group-item-action border-0 py-3 d-flex align-items-center">
+                        <div class="avatar-circle bg-purple-soft text-purple me-3">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        </div>
+                        <div>
+                            <div class="fw-semibold">Auto-Schedule Drafts</div>
+                            <div class="text-muted small">AI-powered assignment suggestions</div>
+                        </div>
+                    </button>
+                    <button class="list-group-item list-group-item-action border-0 py-3 d-flex align-items-center">
+                        <div class="avatar-circle bg-success-soft text-success me-3">
+                            <i class="fa-solid fa-file-export"></i>
+                        </div>
+                        <div>
+                            <div class="fw-semibold">Export Schedule</div>
+                            <div class="text-muted small">PDF or Excel report</div>
+                        </div>
+                    </button>
+                    <button class="list-group-item list-group-item-action border-0 py-3 d-flex align-items-center">
+                        <div class="avatar-circle bg-warning-soft text-warning me-3">
+                            <i class="fa-solid fa-ban"></i>
+                        </div>
+                        <div>
+                            <div class="fw-semibold">Manage Blackouts</div>
+                            <div class="text-muted small">Resource availability exceptions</div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

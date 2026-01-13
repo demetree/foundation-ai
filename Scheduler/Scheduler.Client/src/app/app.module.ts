@@ -60,6 +60,10 @@ import { NotFoundComponent } from './components/not-found/not-found.component';
 
 import { SearchBoxComponent } from './components/controls/search-box.component';
 import { OverviewComponent } from './components/overview/overview.component';
+import { OverviewManagerTabComponent } from './components/overview/overview-manager-tab/overview-manager-tab.component';
+import { OverviewDispatcherTabComponent } from './components/overview/overview-dispatcher-tab/overview-dispatcher-tab.component';
+import { OverviewSchedulerTabComponent } from './components/overview/overview-scheduler-tab/overview-scheduler-tab.component';
+
 import { ModalComponent } from './components/modal/modal.component';
 import { HeaderComponent } from './components/header/header.component';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
@@ -1979,8 +1983,12 @@ import { TributeTypeTableComponent } from './scheduler-data-components/tribute-t
     //
     // Custom components
     //
+
     ResetPasswordComponent,
     NewUserComponent,
+    OverviewManagerTabComponent,
+    OverviewDispatcherTabComponent,
+    OverviewSchedulerTabComponent,
   ],
   imports: [
     BrowserModule,

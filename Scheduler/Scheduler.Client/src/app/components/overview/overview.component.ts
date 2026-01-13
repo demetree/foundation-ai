@@ -45,7 +45,9 @@ interface ActiveTargetSummary {
   id: number;
   name: string;
   type: string;
+  clientName: string;
   eventCount: number;
+  originalObject?: any;
 }
 
 interface ResourceUtilization {
@@ -103,6 +105,10 @@ export class OverviewComponent implements OnInit, OnDestroy {
   public bookedResources = 0;
   public topUtilizedResources: ResourceUtilization[] = [];
   public totalResources = 0;
+
+  // Properties required for child tabs
+  public events: ScheduledEventData[] = [];
+  public allResources: ResourceData[] = [];
 
   //
   // Favourites and Recent Items
@@ -290,6 +296,9 @@ export class OverviewComponent implements OnInit, OnDestroy {
 
     const { upcomingEvents, allAssignments, resources, blackouts, targets } = data;
 
+    this.events = upcomingEvents;
+    this.allResources = resources;
+
     this.totalResources = resources.length;
 
     //
@@ -371,7 +380,9 @@ export class OverviewComponent implements OnInit, OnDestroy {
         id: t.id,
         name: t.name,
         type: t.schedulingTargetType?.name || 'Unknown',
-        eventCount: upcomingEvents.filter((e: ScheduledEventData) => e.schedulingTargetId === t.id).length
+        clientName: t.client?.name || 'No Client',
+        eventCount: upcomingEvents.filter((e: ScheduledEventData) => e.schedulingTargetId === t.id).length,
+        originalObject: t
       }))
       .sort((a: ActiveTargetSummary, b: ActiveTargetSummary) => b.eventCount - a.eventCount)
       .slice(0, 8);

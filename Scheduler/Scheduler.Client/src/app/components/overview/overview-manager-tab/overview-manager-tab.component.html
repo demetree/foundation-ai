@@ -1,0 +1,119 @@
+<div class="animation-fade-in">
+
+    <!-- KPIs Row -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 h-100 kpi-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="icon-box bg-info-soft text-info me-3">
+                            <i class="fa-solid fa-folder-open"></i>
+                        </div>
+                        <h6 class="text-uppercase text-muted small fw-bold mb-0">Active Projects</h6>
+                    </div>
+                    <h2 class="display-6 fw-bold mb-0">{{ totalProjects }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 h-100 kpi-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="icon-box bg-primary-soft text-primary me-3">
+                            <i class="fa-solid fa-calendar-check"></i>
+                        </div>
+                        <h6 class="text-uppercase text-muted small fw-bold mb-0">Total Events</h6>
+                    </div>
+                    <h2 class="display-6 fw-bold mb-0">{{ totalEvents }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 h-100 kpi-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="icon-box me-3"
+                            [ngClass]="projectsAtRisk > 0 ? 'bg-danger-soft text-danger' : 'bg-success-soft text-success'">
+                            <i class="fa-solid fa-heart-pulse"></i>
+                        </div>
+                        <h6 class="text-uppercase text-muted small fw-bold mb-0">Project Risk</h6>
+                    </div>
+                    <h2 class="display-6 fw-bold mb-0" [ngClass]="projectsAtRisk > 0 ? 'text-danger' : 'text-success'">
+                        {{ projectsAtRisk }} <span class="fs-6 text-muted fw-normal">at risk</span>
+                    </h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 h-100 kpi-card bg-gradient-info text-white">
+                <div class="card-body d-flex flex-column justify-content-center align-items-center text-center">
+                    <button class="btn btn-light text-info fw-bold w-100 shadow-sm" (click)="navigateToProject(0)">
+                        <i class="fa-solid fa-plus me-2"></i>New Project
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Projects Grid -->
+    <h5 class="fw-bold mb-3 text-secondary">
+        <i class="fa-solid fa-list-check me-2"></i>Portfolio Status
+    </h5>
+
+    <div class="row g-4">
+        <div class="col-xl-4 col-md-6" *ngFor="let project of projects">
+            <div class="card shadow-sm border-0 h-100 project-card hover-lift" (click)="navigateToProject(project.id)">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <span class="badge rounded-pill" [ngClass]="getStatusClass(project.status)">
+                            {{ project.status }}
+                        </span>
+                        <div class="dropdown">
+                            <button class="btn btn-link text-muted p-0" (click)="$event.stopPropagation()">
+                                <i class="fa-solid fa-ellipsis-vertical"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <h5 class="fw-bold mb-1 text-truncate" title="{{ project.name }}">{{ project.name }}</h5>
+                    <p class="text-muted small mb-3">{{ project.clientName }} • {{ project.typeName }}</p>
+
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span class="text-muted">Progress</span>
+                            <span class="fw-bold">{{ project.progress }}%</span>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar rounded-pill" role="progressbar" [style.width.%]="project.progress"
+                                [ngClass]="getStatusClass(project.status)"></div>
+                        </div>
+                    </div>
+
+                    <div
+                        class="d-flex align-items-center justify-content-between text-muted small mt-auto pt-3 border-top">
+                        <div title="Active Events">
+                            <i class="fa-regular fa-calendar me-1"></i> {{ project.eventCount }} events
+                        </div>
+                        <div *ngIf="project.nextEventDate">
+                            <i class="fa-regular fa-clock me-1"></i> Next: {{ project.nextEventDate | date:'MMM d' }}
+                        </div>
+                        <div *ngIf="!project.nextEventDate">
+                            <i class="fa-solid fa-minus me-1"></i> No upcoming
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div *ngIf="projects.length === 0" class="text-center py-5">
+        <div class="empty-state-icon mb-3 text-muted opacity-25">
+            <i class="fa-solid fa-clipboard-list fa-4x"></i>
+        </div>
+        <h5 class="text-muted">No active projects found</h5>
+        <p class="text-muted small">Create a new scheduling target to get started.</p>
+    </div>
+</div>

@@ -1,0 +1,92 @@
+//
+// Overview Manager Tab Styling
+//
+
+// Color Variables
+$gradient-info: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+
+.animation-fade-in {
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+//
+// KPI Cards
+//
+.kpi-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08) !important;
+    }
+}
+
+.icon-box {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+}
+
+.bg-primary-soft {
+    background-color: rgba(102, 126, 234, 0.1);
+}
+
+.bg-success-soft {
+    background-color: rgba(16, 185, 129, 0.1);
+}
+
+.bg-info-soft {
+    background-color: rgba(59, 130, 246, 0.1);
+}
+
+.bg-danger-soft {
+    background-color: rgba(239, 68, 68, 0.1);
+}
+
+.bg-warning-soft {
+    background-color: rgba(245, 158, 11, 0.1);
+}
+
+.bg-gradient-info {
+    background: $gradient-info;
+}
+
+//
+// Project Grid Cards
+//
+.project-card {
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border-left: 4px solid transparent;
+
+    &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1) !important;
+        border-left-color: #4facfe; // Hover accent color
+    }
+}
+
+.hover-lift {
+    // Utility class also used in parent, redefined here for component isolation
+    transition: all 0.2s ease;
+}
+
+.empty-state-icon {
+    color: #e2e8f0;
+}

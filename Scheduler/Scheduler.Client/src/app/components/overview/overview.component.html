@@ -329,24 +329,7 @@
         </button>
         <ng-template ngbNavContent>
           <div class="tab-content-inner">
-            <div class="coming-soon-card card shadow-sm border-0">
-              <div class="card-body text-center py-5">
-                <div class="icon-circle bg-info-soft mx-auto mb-4">
-                  <i class="fa-solid fa-briefcase fa-3x text-info"></i>
-                </div>
-                <h4 class="fw-bold mb-3">Project Manager Dashboard</h4>
-                <p class="text-muted mb-4">
-                  This view will provide project managers with:<br>
-                  • Active project status and milestones<br>
-                  • Budget and charge summaries<br>
-                  • Team utilization overview<br>
-                  • Project-specific event calendars
-                </p>
-                <button class="btn btn-info" (click)="navigateToTargets()">
-                  <i class="fa-solid fa-bullseye me-2"></i>View All Projects
-                </button>
-              </div>
-            </div>
+            <app-overview-manager-tab [activeTargets]="activeTargets"></app-overview-manager-tab>
           </div>
         </ng-template>
       </li>
@@ -358,24 +341,7 @@
         </button>
         <ng-template ngbNavContent>
           <div class="tab-content-inner">
-            <div class="coming-soon-card card shadow-sm border-0">
-              <div class="card-body text-center py-5">
-                <div class="icon-circle bg-warning-soft mx-auto mb-4">
-                  <i class="fa-solid fa-route fa-3x text-warning"></i>
-                </div>
-                <h4 class="fw-bold mb-3">Dispatcher Dashboard</h4>
-                <p class="text-muted mb-4">
-                  This view will help dispatchers with:<br>
-                  • Current assignments requiring attention<br>
-                  • Resource availability at a glance<br>
-                  • Unassigned events requiring action<br>
-                  • Quick assignment tools
-                </p>
-                <button class="btn btn-warning" (click)="navigateToEvents()">
-                  <i class="fa-solid fa-calendar me-2"></i>View All Events
-                </button>
-              </div>
-            </div>
+            <app-overview-dispatcher-tab [events]="events" [resources]="allResources"></app-overview-dispatcher-tab>
           </div>
         </ng-template>
       </li>
@@ -387,24 +353,8 @@
         </button>
         <ng-template ngbNavContent>
           <div class="tab-content-inner">
-            <div class="coming-soon-card card shadow-sm border-0">
-              <div class="card-body text-center py-5">
-                <div class="icon-circle bg-success-soft mx-auto mb-4">
-                  <i class="fa-solid fa-clock fa-3x text-success"></i>
-                </div>
-                <h4 class="fw-bold mb-3">Scheduler Dashboard</h4>
-                <p class="text-muted mb-4">
-                  This view will assist schedulers with:<br>
-                  • Calendar summary and capacity planning<br>
-                  • Template-based event creation<br>
-                  • Conflict detection and resolution<br>
-                  • Week-at-a-glance view
-                </p>
-                <button class="btn btn-success" (click)="navigateToCalendar()">
-                  <i class="fa-solid fa-calendar me-2"></i>Open Calendar
-                </button>
-              </div>
-            </div>
+            <app-overview-scheduler-tab [daySummaries]="next7Days"
+              [potentialConflicts]="potentialConflictsToday"></app-overview-scheduler-tab>
           </div>
         </ng-template>
       </li>
