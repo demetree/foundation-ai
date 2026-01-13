@@ -138,18 +138,21 @@ export class FundData {
     private _fundChangeHistoriesPromise: Promise<FundChangeHistoryData[]> | null  = null;
     private _fundChangeHistoriesSubject = new BehaviorSubject<FundChangeHistoryData[] | null>(null);
 
+                
     private _pledges: PledgeData[] | null = null;
     private _pledgesPromise: Promise<PledgeData[]> | null  = null;
     private _pledgesSubject = new BehaviorSubject<PledgeData[] | null>(null);
 
-    private _defaultFunds: BatchData[] | null = null;
-    private _defaultFundsPromise: Promise<BatchData[]> | null  = null;
-    private _defaultFundsSubject = new BehaviorSubject<BatchData[] | null>(null);
-
+                
+    private _batchDefaultFunds: BatchData[] | null = null;
+    private _batchDefaultFundsPromise: Promise<BatchData[]> | null  = null;
+    private _batchDefaultFundsSubject = new BehaviorSubject<BatchData[] | null>(null);
+                    
     private _gifts: GiftData[] | null = null;
     private _giftsPromise: Promise<GiftData[]> | null  = null;
     private _giftsSubject = new BehaviorSubject<GiftData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -169,7 +172,7 @@ export class FundData {
     );
 
   
-    public FundChangeHistoriesCount$ = FundService.Instance.GetFundsRowCount({fundId: this.id,
+    public FundChangeHistoriesCount$ = FundChangeHistoryService.Instance.GetFundChangeHistoriesRowCount({fundId: this.id,
       active: true,
       deleted: false
     });
@@ -188,30 +191,29 @@ export class FundData {
     );
 
   
-    public PledgesCount$ = FundService.Instance.GetFundsRowCount({fundId: this.id,
+    public PledgesCount$ = PledgeService.Instance.GetPledgesRowCount({fundId: this.id,
       active: true,
       deleted: false
     });
 
 
 
-    public DefaultFunds$ = this._defaultFundsSubject.asObservable().pipe(
+    public BatchDefaultFunds$ = this._batchDefaultFundsSubject.asObservable().pipe(
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-          if (this._defaultFunds === null && this._defaultFundsPromise === null) {
-            this.loadDefaultFunds(); // Private method to start fetch
+          if (this._batchDefaultFunds === null && this._batchDefaultFundsPromise === null) {
+            this.loadBatchDefaultFunds(); // Private method to start fetch
           }
         }),
         shareReplay(1) // Cache last emit
     );
 
   
-    public DefaultFundsCount$ = FundService.Instance.GetFundsRowCount({fundId: this.id,
+    public BatchDefaultFundsCount$ = BatchService.Instance.GetBatchesRowCount({defaultFundId: this.id,
       active: true,
       deleted: false
     });
-
 
 
     public Gifts$ = this._giftsSubject.asObservable().pipe(
@@ -226,7 +228,7 @@ export class FundData {
     );
 
   
-    public GiftsCount$ = FundService.Instance.GetFundsRowCount({fundId: this.id,
+    public GiftsCount$ = GiftService.Instance.GetGiftsRowCount({fundId: this.id,
       active: true,
       deleted: false
     });
@@ -279,9 +281,9 @@ export class FundData {
      this._pledgesPromise = null;
      this._pledgesSubject.next(null);
 
-     this._defaultFunds = null;
-     this._defaultFundsPromise = null;
-     this._defaultFundsSubject.next(null);
+     this._batchDefaultFunds = null;
+     this._batchDefaultFundsPromise = null;
+     this._batchDefaultFundsSubject.next(null);
 
      this._gifts = null;
      this._giftsPromise = null;
@@ -302,9 +304,9 @@ export class FundData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.fund.FundChangeHistories.then(fundChangeHistories => { ... })
+     *   this.fund.FundChangeHistories.then(funds => { ... })
      *   or
-     *   await this.fund.FundChangeHistories
+     *   await this.fund.funds
      *
     */
     public get FundChangeHistories(): Promise<FundChangeHistoryData[]> {
@@ -329,8 +331,8 @@ export class FundData {
         this._fundChangeHistoriesPromise = lastValueFrom(
             FundService.Instance.GetFundChangeHistoriesForFund(this.id)
         )
-        .then(fundChangeHistories => {
-            this._fundChangeHistories = fundChangeHistories ?? [];
+        .then(FundChangeHistories => {
+            this._fundChangeHistories = FundChangeHistories ?? [];
             this._fundChangeHistoriesSubject.next(this._fundChangeHistories);
             return this._fundChangeHistories;
          })
@@ -367,9 +369,9 @@ export class FundData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.fund.Pledges.then(pledges => { ... })
+     *   this.fund.Pledges.then(funds => { ... })
      *   or
-     *   await this.fund.Pledges
+     *   await this.fund.funds
      *
     */
     public get Pledges(): Promise<PledgeData[]> {
@@ -394,8 +396,8 @@ export class FundData {
         this._pledgesPromise = lastValueFrom(
             FundService.Instance.GetPledgesForFund(this.id)
         )
-        .then(pledges => {
-            this._pledges = pledges ?? [];
+        .then(Pledges => {
+            this._pledges = Pledges ?? [];
             this._pledgesSubject.next(this._pledges);
             return this._pledges;
          })
@@ -425,66 +427,66 @@ export class FundData {
 
     /**
      *
-     * Gets the defaultFunds for this Fund.
+     * Gets the BatchDefaultFunds for this Fund.
      *
      * If already loaded, returns cached array.
      *
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.fund.defaultFunds.then(defaultFunds => { ... })
+     *   this.fund.BatchDefaultFunds.then(defaultFunds => { ... })
      *   or
      *   await this.fund.defaultFunds
      *
     */
-    public get defaultFunds(): Promise<BatchData[]> {
-        if (this._defaultFunds !== null) {
-            return Promise.resolve(this._defaultFunds);
+    public get BatchDefaultFunds(): Promise<BatchData[]> {
+        if (this._batchDefaultFunds !== null) {
+            return Promise.resolve(this._batchDefaultFunds);
         }
 
-        if (this._defaultFundsPromise !== null) {
-            return this._defaultFundsPromise;
+        if (this._batchDefaultFundsPromise !== null) {
+            return this._batchDefaultFundsPromise;
         }
 
         // Start the load
-        this.loadDefaultFunds();
+        this.loadBatchDefaultFunds();
 
-        return this._defaultFundsPromise!;
+        return this._batchDefaultFundsPromise!;
     }
 
 
 
-    private loadDefaultFunds(): void {
+    private loadBatchDefaultFunds(): void {
 
-        this._defaultFundsPromise = lastValueFrom(
-            FundService.Instance.GetDefaultFundsForFund(this.id)
+        this._batchDefaultFundsPromise = lastValueFrom(
+            FundService.Instance.GetBatchDefaultFundsForFund(this.id)
         )
-        .then(defaultFunds => {
-            this._defaultFunds = defaultFunds ?? [];
-            this._defaultFundsSubject.next(this._defaultFunds);
-            return this._defaultFunds;
+        .then(BatchDefaultFunds => {
+            this._batchDefaultFunds = BatchDefaultFunds ?? [];
+            this._batchDefaultFundsSubject.next(this._batchDefaultFunds);
+            return this._batchDefaultFunds;
          })
         .catch(err => {
-            this._defaultFunds = [];
-            this._defaultFundsSubject.next(this._defaultFunds);
+            this._batchDefaultFunds = [];
+            this._batchDefaultFundsSubject.next(this._batchDefaultFunds);
             throw err;
         })
         .finally(() => {
-            this._defaultFundsPromise = null; // Allow retry if needed
+            this._batchDefaultFundsPromise = null; // Allow retry if needed
         });
     }
 
     /**
-     * Clears the cached defaultFund. Call after mutations to force refresh.
+     * Clears the cached BatchDefaultFund. Call after mutations to force refresh.
      */
-    public ClearDefaultFundsCache(): void {
-        this._defaultFunds = null;
-        this._defaultFundsPromise = null;
-        this._defaultFundsSubject.next(this._defaultFunds);      // Emit to observable
+    public ClearBatchDefaultFundsCache(): void {
+        this._batchDefaultFunds = null;
+        this._batchDefaultFundsPromise = null;
+        this._batchDefaultFundsSubject.next(this._batchDefaultFunds);      // Emit to observable
     }
 
-    public get HasDefaultFunds(): Promise<boolean> {
-        return this.defaultFunds.then(defaultFunds => defaultFunds.length > 0);
+    public get HasBatchDefaultFunds(): Promise<boolean> {
+        return this.BatchDefaultFunds.then(batchDefaultFunds => batchDefaultFunds.length > 0);
     }
 
 
@@ -497,9 +499,9 @@ export class FundData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.fund.Gifts.then(gifts => { ... })
+     *   this.fund.Gifts.then(funds => { ... })
      *   or
-     *   await this.fund.Gifts
+     *   await this.fund.funds
      *
     */
     public get Gifts(): Promise<GiftData[]> {
@@ -524,8 +526,8 @@ export class FundData {
         this._giftsPromise = lastValueFrom(
             FundService.Instance.GetGiftsForFund(this.id)
         )
-        .then(gifts => {
-            this._gifts = gifts ?? [];
+        .then(Gifts => {
+            this._gifts = Gifts ?? [];
             this._giftsSubject.next(this._gifts);
             return this._gifts;
          })
@@ -993,7 +995,7 @@ export class FundService extends SecureEndpointBase {
     }
 
 
-    public GetDefaultFundsForFund(fundId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<BatchData[]> {
+    public GetBatchDefaultFundsForFund(fundId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<BatchData[]> {
         return this.batchService.GetBatchList({
             defaultFundId: fundId,
             active: active,

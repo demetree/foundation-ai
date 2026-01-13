@@ -115,6 +115,7 @@ export class AssignmentStatusData {
     private _eventResourceAssignmentsPromise: Promise<EventResourceAssignmentData[]> | null  = null;
     private _eventResourceAssignmentsSubject = new BehaviorSubject<EventResourceAssignmentData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -134,7 +135,7 @@ export class AssignmentStatusData {
     );
 
   
-    public EventResourceAssignmentsCount$ = AssignmentStatusService.Instance.GetAssignmentStatusesRowCount({assignmentStatusId: this.id,
+    public EventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({assignmentStatusId: this.id,
       active: true,
       deleted: false
     });
@@ -198,9 +199,9 @@ export class AssignmentStatusData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.assignmentStatus.EventResourceAssignments.then(eventResourceAssignments => { ... })
+     *   this.assignmentStatus.EventResourceAssignments.then(assignmentStatuses => { ... })
      *   or
-     *   await this.assignmentStatus.EventResourceAssignments
+     *   await this.assignmentStatus.assignmentStatuses
      *
     */
     public get EventResourceAssignments(): Promise<EventResourceAssignmentData[]> {
@@ -225,8 +226,8 @@ export class AssignmentStatusData {
         this._eventResourceAssignmentsPromise = lastValueFrom(
             AssignmentStatusService.Instance.GetEventResourceAssignmentsForAssignmentStatus(this.id)
         )
-        .then(eventResourceAssignments => {
-            this._eventResourceAssignments = eventResourceAssignments ?? [];
+        .then(EventResourceAssignments => {
+            this._eventResourceAssignments = EventResourceAssignments ?? [];
             this._eventResourceAssignmentsSubject.next(this._eventResourceAssignments);
             return this._eventResourceAssignments;
          })

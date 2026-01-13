@@ -128,7 +128,7 @@ namespace Foundation.CodeGeneration
             sb.AppendLine($"");
 
 
-            
+
             sb.AppendLine($"            <div class=\"header-right\">");
 
             //
@@ -1917,7 +1917,7 @@ td .color-swatch,
                     additionalfieldsForAdmins.Add(fieldConfiguration);
                 }
                 else
-                { 
+                {
                     fieldsForAllusers.Add(fieldConfiguration);
                 }
             }
@@ -2598,7 +2598,7 @@ td .color-swatch,
                     }
                 }
                 else if (fc.field.isBooleanDataType() == true)
-                { 
+                {
                     // Don't draw a label here.  It will be handled inside the boolean input writing
                 }
                 else
@@ -2667,11 +2667,11 @@ td .color-swatch,
                         style=""width: 120px;"">-->
                 </div>");
 
-                // this HEX version of the colour strings adds no value.  Users can use an eye dropper to get the value.  99% of people don't ever care to see this.
-                //<!-- <small class=""form-text text-muted"">
-                //    Select a color. The value will be stored as a hex code (e.g., #0176d3).
-                //</small> -->")
-                
+                    // this HEX version of the colour strings adds no value.  Users can use an eye dropper to get the value.  99% of people don't ever care to see this.
+                    //<!-- <small class=""form-text text-muted"">
+                    //    Select a color. The value will be stored as a hex code (e.g., #0176d3).
+                    //</small> -->")
+
                 }
                 else if (fc.field.isBooleanDataType() == true)
                 {
@@ -2907,7 +2907,7 @@ td .color-swatch,
             }
 
             sb.AppendLine("");
-            
+
             GenerateFormInterface(entityName, suffixableCamelCaseName, fieldsToDisplay, sb, haveActiveField, haveDeletedField);
 
             // Component decorator
@@ -3275,7 +3275,7 @@ td .color-swatch,
                         {
                             sb.AppendLine($"  {fc.camelCaseName}: string,     // Stored as string for form input, converted to number on submit.");
                         }
-                        
+
                     }
                     else if (fc.field.isBooleanDataType() == true)
                     {
@@ -3524,7 +3524,7 @@ td .color-swatch,
                         buttonTitle = pluralRelatedNameTitle + " " + Pluralize(ConvertToHeader(buttonTitle));
                     }
 
-                        
+
 
                     if (addAuthorization == true)
                     {
@@ -3535,46 +3535,40 @@ td .color-swatch,
                         sb.AppendLine($"                      <li ngbNavItem>");
                     }
 
-                    //sb.AppendLine($"                            <button ngbNavLink>{pluralRelatedName}");
                     sb.AppendLine($"                            <button ngbNavLink>{buttonTitle}");
                     sb.AppendLine($"                                <span class=\"badge bg-primary ms-2\">");
 
-                    //sb.AppendLine($"                                    {{{{ ({camelCaseName}Data?.{pluralRelatedName}Count$ | async) ?? '-' }}}}");
 
+                    string sourceFieldNameWithoutId = relatedTableAndFK.fk.field.name;
 
-                    string sourceFieldName = relatedTableAndFK.fk.field.name;
-
-                    if (sourceFieldName.EndsWith("Id") == true)
+                    if (sourceFieldNameWithoutId.EndsWith("Id") == true)
                     {
-                        sourceFieldName = sourceFieldName.Substring(0, sourceFieldName.Length - 2);
+                        sourceFieldNameWithoutId = sourceFieldNameWithoutId.Substring(0, sourceFieldNameWithoutId.Length - 2);
                     }
 
-                    
-                    if (sourceFieldName.Trim().ToUpper() == relatedTableAndFK.fk.targetTable.name.Trim().ToUpper())
+
+                    string primaryNameToUsePascalCase;
+
+
+                    if (sourceFieldNameWithoutId.Trim().ToUpper() == relatedTableAndFK.fk.targetTable.name.Trim().ToUpper())
                     {
-                        sourceFieldName = relatedTableAndFK.fk.sourceTable.name;
+                        primaryNameToUsePascalCase = relatedTableAndFK.fk.sourceTable.name;
+                    }
+                    else
+                    {
+                        //
+                        // Pascal case name of the source table and the source field name is the outcome.
+                        //
+                        primaryNameToUsePascalCase = $"{relatedTableName}{CamelCaseToPascalCase(sourceFieldNameWithoutId)}";
                     }
 
-                    sb.AppendLine($"                                    {{{{ ({camelCaseName}Data?.{Pluralize(CamelCaseToPascalCase(sourceFieldName))}Count$ | async) ?? '-' }}}}");
+
+                    sb.AppendLine($"                                    {{{{ ({camelCaseName}Data?.{Pluralize(CamelCaseToPascalCase(primaryNameToUsePascalCase))}Count$ | async) ?? '-' }}}}");
 
                     sb.AppendLine($"                                </span>");
                     sb.AppendLine($"                            </button>");
                     sb.AppendLine($"                            <ng-template ngbNavContent>");
 
-                    // Old way that only had the table component. 
-                    //sb.AppendLine($"                            <app-{angularNameForRelatedTable}-table [queryParams]=\"GetQueryParameters()\"></app-{angularNameForRelatedTable}-table>");
-
-                    //
-                    // New way with table component and add button with preseeded link data and hidden link field
-                    ////
-                    //sb.AppendLine($@"                            <div class=""d-flex flex-column gap-3 p-0"">
-                    //            <div class=""flex-grow-1"">
-                    //                <app-{angularNameForRelatedTable}-table [queryParams]=""GetQueryParameters()""></app-{angularNameForRelatedTable}-table>
-                    //            </div>
-                    //            <div class=""d-flex justify-content-end"">
-                    //                <app-{angularNameForRelatedTable}-add-edit [preSeededData]=""{{ {camelCaseName}Id: {camelCaseName}Data?.id }}"" [hiddenFields]=""['{camelCaseName}Id']""></app-{angularNameForRelatedTable}-add-edit>
-                    //            </div>
-                    //        </div>");
 
                     //
                     //

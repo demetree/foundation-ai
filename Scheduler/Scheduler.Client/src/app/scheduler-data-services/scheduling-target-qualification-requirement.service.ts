@@ -119,6 +119,7 @@ export class SchedulingTargetQualificationRequirementData {
     private _schedulingTargetQualificationRequirementChangeHistoriesPromise: Promise<SchedulingTargetQualificationRequirementChangeHistoryData[]> | null  = null;
     private _schedulingTargetQualificationRequirementChangeHistoriesSubject = new BehaviorSubject<SchedulingTargetQualificationRequirementChangeHistoryData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -138,7 +139,7 @@ export class SchedulingTargetQualificationRequirementData {
     );
 
   
-    public SchedulingTargetQualificationRequirementChangeHistoriesCount$ = SchedulingTargetQualificationRequirementService.Instance.GetSchedulingTargetQualificationRequirementsRowCount({schedulingTargetQualificationRequirementId: this.id,
+    public SchedulingTargetQualificationRequirementChangeHistoriesCount$ = SchedulingTargetQualificationRequirementChangeHistoryService.Instance.GetSchedulingTargetQualificationRequirementChangeHistoriesRowCount({schedulingTargetQualificationRequirementId: this.id,
       active: true,
       deleted: false
     });
@@ -202,9 +203,9 @@ export class SchedulingTargetQualificationRequirementData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.schedulingTargetQualificationRequirement.SchedulingTargetQualificationRequirementChangeHistories.then(schedulingTargetQualificationRequirementChangeHistories => { ... })
+     *   this.schedulingTargetQualificationRequirement.SchedulingTargetQualificationRequirementChangeHistories.then(schedulingTargetQualificationRequirements => { ... })
      *   or
-     *   await this.schedulingTargetQualificationRequirement.SchedulingTargetQualificationRequirementChangeHistories
+     *   await this.schedulingTargetQualificationRequirement.schedulingTargetQualificationRequirements
      *
     */
     public get SchedulingTargetQualificationRequirementChangeHistories(): Promise<SchedulingTargetQualificationRequirementChangeHistoryData[]> {
@@ -229,8 +230,8 @@ export class SchedulingTargetQualificationRequirementData {
         this._schedulingTargetQualificationRequirementChangeHistoriesPromise = lastValueFrom(
             SchedulingTargetQualificationRequirementService.Instance.GetSchedulingTargetQualificationRequirementChangeHistoriesForSchedulingTargetQualificationRequirement(this.id)
         )
-        .then(schedulingTargetQualificationRequirementChangeHistories => {
-            this._schedulingTargetQualificationRequirementChangeHistories = schedulingTargetQualificationRequirementChangeHistories ?? [];
+        .then(SchedulingTargetQualificationRequirementChangeHistories => {
+            this._schedulingTargetQualificationRequirementChangeHistories = SchedulingTargetQualificationRequirementChangeHistories ?? [];
             this._schedulingTargetQualificationRequirementChangeHistoriesSubject.next(this._schedulingTargetQualificationRequirementChangeHistories);
             return this._schedulingTargetQualificationRequirementChangeHistories;
          })

@@ -125,22 +125,27 @@ export class CurrencyData {
     private _chargeTypesPromise: Promise<ChargeTypeData[]> | null  = null;
     private _chargeTypesSubject = new BehaviorSubject<ChargeTypeData[] | null>(null);
 
+                
     private _offices: OfficeData[] | null = null;
     private _officesPromise: Promise<OfficeData[]> | null  = null;
     private _officesSubject = new BehaviorSubject<OfficeData[] | null>(null);
 
+                
     private _clients: ClientData[] | null = null;
     private _clientsPromise: Promise<ClientData[]> | null  = null;
     private _clientsSubject = new BehaviorSubject<ClientData[] | null>(null);
 
+                
     private _rateSheets: RateSheetData[] | null = null;
     private _rateSheetsPromise: Promise<RateSheetData[]> | null  = null;
     private _rateSheetsSubject = new BehaviorSubject<RateSheetData[] | null>(null);
 
+                
     private _eventCharges: EventChargeData[] | null = null;
     private _eventChargesPromise: Promise<EventChargeData[]> | null  = null;
     private _eventChargesSubject = new BehaviorSubject<EventChargeData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -160,7 +165,7 @@ export class CurrencyData {
     );
 
   
-    public ChargeTypesCount$ = CurrencyService.Instance.GetCurrenciesRowCount({currencyId: this.id,
+    public ChargeTypesCount$ = ChargeTypeService.Instance.GetChargeTypesRowCount({currencyId: this.id,
       active: true,
       deleted: false
     });
@@ -179,7 +184,7 @@ export class CurrencyData {
     );
 
   
-    public OfficesCount$ = CurrencyService.Instance.GetCurrenciesRowCount({currencyId: this.id,
+    public OfficesCount$ = OfficeService.Instance.GetOfficesRowCount({currencyId: this.id,
       active: true,
       deleted: false
     });
@@ -198,7 +203,7 @@ export class CurrencyData {
     );
 
   
-    public ClientsCount$ = CurrencyService.Instance.GetCurrenciesRowCount({currencyId: this.id,
+    public ClientsCount$ = ClientService.Instance.GetClientsRowCount({currencyId: this.id,
       active: true,
       deleted: false
     });
@@ -217,7 +222,7 @@ export class CurrencyData {
     );
 
   
-    public RateSheetsCount$ = CurrencyService.Instance.GetCurrenciesRowCount({currencyId: this.id,
+    public RateSheetsCount$ = RateSheetService.Instance.GetRateSheetsRowCount({currencyId: this.id,
       active: true,
       deleted: false
     });
@@ -236,7 +241,7 @@ export class CurrencyData {
     );
 
   
-    public EventChargesCount$ = CurrencyService.Instance.GetCurrenciesRowCount({currencyId: this.id,
+    public EventChargesCount$ = EventChargeService.Instance.GetEventChargesRowCount({currencyId: this.id,
       active: true,
       deleted: false
     });
@@ -316,9 +321,9 @@ export class CurrencyData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.currency.ChargeTypes.then(chargeTypes => { ... })
+     *   this.currency.ChargeTypes.then(currencies => { ... })
      *   or
-     *   await this.currency.ChargeTypes
+     *   await this.currency.currencies
      *
     */
     public get ChargeTypes(): Promise<ChargeTypeData[]> {
@@ -343,8 +348,8 @@ export class CurrencyData {
         this._chargeTypesPromise = lastValueFrom(
             CurrencyService.Instance.GetChargeTypesForCurrency(this.id)
         )
-        .then(chargeTypes => {
-            this._chargeTypes = chargeTypes ?? [];
+        .then(ChargeTypes => {
+            this._chargeTypes = ChargeTypes ?? [];
             this._chargeTypesSubject.next(this._chargeTypes);
             return this._chargeTypes;
          })
@@ -381,9 +386,9 @@ export class CurrencyData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.currency.Offices.then(offices => { ... })
+     *   this.currency.Offices.then(currencies => { ... })
      *   or
-     *   await this.currency.Offices
+     *   await this.currency.currencies
      *
     */
     public get Offices(): Promise<OfficeData[]> {
@@ -408,8 +413,8 @@ export class CurrencyData {
         this._officesPromise = lastValueFrom(
             CurrencyService.Instance.GetOfficesForCurrency(this.id)
         )
-        .then(offices => {
-            this._offices = offices ?? [];
+        .then(Offices => {
+            this._offices = Offices ?? [];
             this._officesSubject.next(this._offices);
             return this._offices;
          })
@@ -446,9 +451,9 @@ export class CurrencyData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.currency.Clients.then(clients => { ... })
+     *   this.currency.Clients.then(currencies => { ... })
      *   or
-     *   await this.currency.Clients
+     *   await this.currency.currencies
      *
     */
     public get Clients(): Promise<ClientData[]> {
@@ -473,8 +478,8 @@ export class CurrencyData {
         this._clientsPromise = lastValueFrom(
             CurrencyService.Instance.GetClientsForCurrency(this.id)
         )
-        .then(clients => {
-            this._clients = clients ?? [];
+        .then(Clients => {
+            this._clients = Clients ?? [];
             this._clientsSubject.next(this._clients);
             return this._clients;
          })
@@ -511,9 +516,9 @@ export class CurrencyData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.currency.RateSheets.then(rateSheets => { ... })
+     *   this.currency.RateSheets.then(currencies => { ... })
      *   or
-     *   await this.currency.RateSheets
+     *   await this.currency.currencies
      *
     */
     public get RateSheets(): Promise<RateSheetData[]> {
@@ -538,8 +543,8 @@ export class CurrencyData {
         this._rateSheetsPromise = lastValueFrom(
             CurrencyService.Instance.GetRateSheetsForCurrency(this.id)
         )
-        .then(rateSheets => {
-            this._rateSheets = rateSheets ?? [];
+        .then(RateSheets => {
+            this._rateSheets = RateSheets ?? [];
             this._rateSheetsSubject.next(this._rateSheets);
             return this._rateSheets;
          })
@@ -576,9 +581,9 @@ export class CurrencyData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.currency.EventCharges.then(eventCharges => { ... })
+     *   this.currency.EventCharges.then(currencies => { ... })
      *   or
-     *   await this.currency.EventCharges
+     *   await this.currency.currencies
      *
     */
     public get EventCharges(): Promise<EventChargeData[]> {
@@ -603,8 +608,8 @@ export class CurrencyData {
         this._eventChargesPromise = lastValueFrom(
             CurrencyService.Instance.GetEventChargesForCurrency(this.id)
         )
-        .then(eventCharges => {
-            this._eventCharges = eventCharges ?? [];
+        .then(EventCharges => {
+            this._eventCharges = EventCharges ?? [];
             this._eventChargesSubject.next(this._eventCharges);
             return this._eventCharges;
          })

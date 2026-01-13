@@ -112,6 +112,7 @@ export class SalutationData {
     private _contactsPromise: Promise<ContactData[]> | null  = null;
     private _contactsSubject = new BehaviorSubject<ContactData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -131,7 +132,7 @@ export class SalutationData {
     );
 
   
-    public ContactsCount$ = SalutationService.Instance.GetSalutationsRowCount({salutationId: this.id,
+    public ContactsCount$ = ContactService.Instance.GetContactsRowCount({salutationId: this.id,
       active: true,
       deleted: false
     });
@@ -195,9 +196,9 @@ export class SalutationData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.salutation.Contacts.then(contacts => { ... })
+     *   this.salutation.Contacts.then(salutations => { ... })
      *   or
-     *   await this.salutation.Contacts
+     *   await this.salutation.salutations
      *
     */
     public get Contacts(): Promise<ContactData[]> {
@@ -222,8 +223,8 @@ export class SalutationData {
         this._contactsPromise = lastValueFrom(
             SalutationService.Instance.GetContactsForSalutation(this.id)
         )
-        .then(contacts => {
-            this._contacts = contacts ?? [];
+        .then(Contacts => {
+            this._contacts = Contacts ?? [];
             this._contactsSubject.next(this._contacts);
             return this._contacts;
          })

@@ -128,6 +128,7 @@ export class ResourceQualificationData {
     private _resourceQualificationChangeHistoriesPromise: Promise<ResourceQualificationChangeHistoryData[]> | null  = null;
     private _resourceQualificationChangeHistoriesSubject = new BehaviorSubject<ResourceQualificationChangeHistoryData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -147,7 +148,7 @@ export class ResourceQualificationData {
     );
 
   
-    public ResourceQualificationChangeHistoriesCount$ = ResourceQualificationService.Instance.GetResourceQualificationsRowCount({resourceQualificationId: this.id,
+    public ResourceQualificationChangeHistoriesCount$ = ResourceQualificationChangeHistoryService.Instance.GetResourceQualificationChangeHistoriesRowCount({resourceQualificationId: this.id,
       active: true,
       deleted: false
     });
@@ -211,9 +212,9 @@ export class ResourceQualificationData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.resourceQualification.ResourceQualificationChangeHistories.then(resourceQualificationChangeHistories => { ... })
+     *   this.resourceQualification.ResourceQualificationChangeHistories.then(resourceQualifications => { ... })
      *   or
-     *   await this.resourceQualification.ResourceQualificationChangeHistories
+     *   await this.resourceQualification.resourceQualifications
      *
     */
     public get ResourceQualificationChangeHistories(): Promise<ResourceQualificationChangeHistoryData[]> {
@@ -238,8 +239,8 @@ export class ResourceQualificationData {
         this._resourceQualificationChangeHistoriesPromise = lastValueFrom(
             ResourceQualificationService.Instance.GetResourceQualificationChangeHistoriesForResourceQualification(this.id)
         )
-        .then(resourceQualificationChangeHistories => {
-            this._resourceQualificationChangeHistories = resourceQualificationChangeHistories ?? [];
+        .then(ResourceQualificationChangeHistories => {
+            this._resourceQualificationChangeHistories = ResourceQualificationChangeHistories ?? [];
             this._resourceQualificationChangeHistoriesSubject.next(this._resourceQualificationChangeHistories);
             return this._resourceQualificationChangeHistories;
          })

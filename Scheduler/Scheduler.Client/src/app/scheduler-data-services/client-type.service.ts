@@ -120,6 +120,7 @@ export class ClientTypeData {
     private _clientsPromise: Promise<ClientData[]> | null  = null;
     private _clientsSubject = new BehaviorSubject<ClientData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -139,7 +140,7 @@ export class ClientTypeData {
     );
 
   
-    public ClientsCount$ = ClientTypeService.Instance.GetClientTypesRowCount({clientTypeId: this.id,
+    public ClientsCount$ = ClientService.Instance.GetClientsRowCount({clientTypeId: this.id,
       active: true,
       deleted: false
     });
@@ -203,9 +204,9 @@ export class ClientTypeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.clientType.Clients.then(clients => { ... })
+     *   this.clientType.Clients.then(clientTypes => { ... })
      *   or
-     *   await this.clientType.Clients
+     *   await this.clientType.clientTypes
      *
     */
     public get Clients(): Promise<ClientData[]> {
@@ -230,8 +231,8 @@ export class ClientTypeData {
         this._clientsPromise = lastValueFrom(
             ClientTypeService.Instance.GetClientsForClientType(this.id)
         )
-        .then(clients => {
-            this._clients = clients ?? [];
+        .then(Clients => {
+            this._clients = Clients ?? [];
             this._clientsSubject.next(this._clients);
             return this._clients;
          })

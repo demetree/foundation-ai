@@ -180,6 +180,7 @@ export class TenantProfileData {
     private _tenantProfileChangeHistoriesPromise: Promise<TenantProfileChangeHistoryData[]> | null  = null;
     private _tenantProfileChangeHistoriesSubject = new BehaviorSubject<TenantProfileChangeHistoryData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -199,7 +200,7 @@ export class TenantProfileData {
     );
 
   
-    public TenantProfileChangeHistoriesCount$ = TenantProfileService.Instance.GetTenantProfilesRowCount({tenantProfileId: this.id,
+    public TenantProfileChangeHistoriesCount$ = TenantProfileChangeHistoryService.Instance.GetTenantProfileChangeHistoriesRowCount({tenantProfileId: this.id,
       active: true,
       deleted: false
     });
@@ -263,9 +264,9 @@ export class TenantProfileData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.tenantProfile.TenantProfileChangeHistories.then(tenantProfileChangeHistories => { ... })
+     *   this.tenantProfile.TenantProfileChangeHistories.then(tenantProfiles => { ... })
      *   or
-     *   await this.tenantProfile.TenantProfileChangeHistories
+     *   await this.tenantProfile.tenantProfiles
      *
     */
     public get TenantProfileChangeHistories(): Promise<TenantProfileChangeHistoryData[]> {
@@ -290,8 +291,8 @@ export class TenantProfileData {
         this._tenantProfileChangeHistoriesPromise = lastValueFrom(
             TenantProfileService.Instance.GetTenantProfileChangeHistoriesForTenantProfile(this.id)
         )
-        .then(tenantProfileChangeHistories => {
-            this._tenantProfileChangeHistories = tenantProfileChangeHistories ?? [];
+        .then(TenantProfileChangeHistories => {
+            this._tenantProfileChangeHistories = TenantProfileChangeHistories ?? [];
             this._tenantProfileChangeHistoriesSubject.next(this._tenantProfileChangeHistories);
             return this._tenantProfileChangeHistories;
          })

@@ -133,90 +133,112 @@ export class IconData {
     private _resourceTypesPromise: Promise<ResourceTypeData[]> | null  = null;
     private _resourceTypesSubject = new BehaviorSubject<ResourceTypeData[] | null>(null);
 
+                
     private _priorities: PriorityData[] | null = null;
     private _prioritiesPromise: Promise<PriorityData[]> | null  = null;
     private _prioritiesSubject = new BehaviorSubject<PriorityData[] | null>(null);
 
+                
     private _contactMethods: ContactMethodData[] | null = null;
     private _contactMethodsPromise: Promise<ContactMethodData[]> | null  = null;
     private _contactMethodsSubject = new BehaviorSubject<ContactMethodData[] | null>(null);
 
+                
     private _interactionTypes: InteractionTypeData[] | null = null;
     private _interactionTypesPromise: Promise<InteractionTypeData[]> | null  = null;
     private _interactionTypesSubject = new BehaviorSubject<InteractionTypeData[] | null>(null);
 
+                
     private _tags: TagData[] | null = null;
     private _tagsPromise: Promise<TagData[]> | null  = null;
     private _tagsSubject = new BehaviorSubject<TagData[] | null>(null);
 
+                
     private _contactTypes: ContactTypeData[] | null = null;
     private _contactTypesPromise: Promise<ContactTypeData[]> | null  = null;
     private _contactTypesSubject = new BehaviorSubject<ContactTypeData[] | null>(null);
 
+                
     private _contacts: ContactData[] | null = null;
     private _contactsPromise: Promise<ContactData[]> | null  = null;
     private _contactsSubject = new BehaviorSubject<ContactData[] | null>(null);
 
+                
     private _relationshipTypes: RelationshipTypeData[] | null = null;
     private _relationshipTypesPromise: Promise<RelationshipTypeData[]> | null  = null;
     private _relationshipTypesSubject = new BehaviorSubject<RelationshipTypeData[] | null>(null);
 
+                
     private _officeTypes: OfficeTypeData[] | null = null;
     private _officeTypesPromise: Promise<OfficeTypeData[]> | null  = null;
     private _officeTypesSubject = new BehaviorSubject<OfficeTypeData[] | null>(null);
 
+                
     private _calendars: CalendarData[] | null = null;
     private _calendarsPromise: Promise<CalendarData[]> | null  = null;
     private _calendarsSubject = new BehaviorSubject<CalendarData[] | null>(null);
 
+                
     private _clientTypes: ClientTypeData[] | null = null;
     private _clientTypesPromise: Promise<ClientTypeData[]> | null  = null;
     private _clientTypesSubject = new BehaviorSubject<ClientTypeData[] | null>(null);
 
+                
     private _assignmentRoles: AssignmentRoleData[] | null = null;
     private _assignmentRolesPromise: Promise<AssignmentRoleData[]> | null  = null;
     private _assignmentRolesSubject = new BehaviorSubject<AssignmentRoleData[] | null>(null);
 
+                
     private _schedulingTargetTypes: SchedulingTargetTypeData[] | null = null;
     private _schedulingTargetTypesPromise: Promise<SchedulingTargetTypeData[]> | null  = null;
     private _schedulingTargetTypesSubject = new BehaviorSubject<SchedulingTargetTypeData[] | null>(null);
 
+                
     private _crews: CrewData[] | null = null;
     private _crewsPromise: Promise<CrewData[]> | null  = null;
     private _crewsSubject = new BehaviorSubject<CrewData[] | null>(null);
 
+                
     private _crewMembers: CrewMemberData[] | null = null;
     private _crewMembersPromise: Promise<CrewMemberData[]> | null  = null;
     private _crewMembersSubject = new BehaviorSubject<CrewMemberData[] | null>(null);
 
+                
     private _funds: FundData[] | null = null;
     private _fundsPromise: Promise<FundData[]> | null  = null;
     private _fundsSubject = new BehaviorSubject<FundData[] | null>(null);
 
+                
     private _campaigns: CampaignData[] | null = null;
     private _campaignsPromise: Promise<CampaignData[]> | null  = null;
     private _campaignsSubject = new BehaviorSubject<CampaignData[] | null>(null);
 
+                
     private _appeals: AppealData[] | null = null;
     private _appealsPromise: Promise<AppealData[]> | null  = null;
     private _appealsSubject = new BehaviorSubject<AppealData[] | null>(null);
 
+                
     private _households: HouseholdData[] | null = null;
     private _householdsPromise: Promise<HouseholdData[]> | null  = null;
     private _householdsSubject = new BehaviorSubject<HouseholdData[] | null>(null);
 
+                
     private _constituentJourneyStages: ConstituentJourneyStageData[] | null = null;
     private _constituentJourneyStagesPromise: Promise<ConstituentJourneyStageData[]> | null  = null;
     private _constituentJourneyStagesSubject = new BehaviorSubject<ConstituentJourneyStageData[] | null>(null);
 
+                
     private _constituents: ConstituentData[] | null = null;
     private _constituentsPromise: Promise<ConstituentData[]> | null  = null;
     private _constituentsSubject = new BehaviorSubject<ConstituentData[] | null>(null);
 
+                
     private _tributes: TributeData[] | null = null;
     private _tributesPromise: Promise<TributeData[]> | null  = null;
     private _tributesSubject = new BehaviorSubject<TributeData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -236,7 +258,7 @@ export class IconData {
     );
 
   
-    public ResourceTypesCount$ = IconService.Instance.GetIconsRowCount({iconId: this.id,
+    public ResourceTypesCount$ = ResourceTypeService.Instance.GetResourceTypesRowCount({iconId: this.id,
       active: true,
       deleted: false
     });
@@ -255,7 +277,7 @@ export class IconData {
     );
 
   
-    public PrioritiesCount$ = IconService.Instance.GetIconsRowCount({iconId: this.id,
+    public PrioritiesCount$ = PriorityService.Instance.GetPrioritiesRowCount({iconId: this.id,
       active: true,
       deleted: false
     });
@@ -274,7 +296,7 @@ export class IconData {
     );
 
   
-    public ContactMethodsCount$ = IconService.Instance.GetIconsRowCount({iconId: this.id,
+    public ContactMethodsCount$ = ContactMethodService.Instance.GetContactMethodsRowCount({iconId: this.id,
       active: true,
       deleted: false
     });
@@ -293,7 +315,7 @@ export class IconData {
     );
 
   
-    public InteractionTypesCount$ = IconService.Instance.GetIconsRowCount({iconId: this.id,
+    public InteractionTypesCount$ = InteractionTypeService.Instance.GetInteractionTypesRowCount({iconId: this.id,
       active: true,
       deleted: false
     });
@@ -312,7 +334,7 @@ export class IconData {
     );
 
   
-    public TagsCount$ = IconService.Instance.GetIconsRowCount({iconId: this.id,
+    public TagsCount$ = TagService.Instance.GetTagsRowCount({iconId: this.id,
       active: true,
       deleted: false
     });
@@ -331,7 +353,7 @@ export class IconData {
     );
 
   
-    public ContactTypesCount$ = IconService.Instance.GetIconsRowCount({iconId: this.id,
+    public ContactTypesCount$ = ContactTypeService.Instance.GetContactTypesRowCount({iconId: this.id,
       active: true,
       deleted: false
     });
@@ -350,7 +372,7 @@ export class IconData {
     );
 
   
-    public ContactsCount$ = IconService.Instance.GetIconsRowCount({iconId: this.id,
+    public ContactsCount$ = ContactService.Instance.GetContactsRowCount({iconId: this.id,
       active: true,
       deleted: false
     });
@@ -369,7 +391,7 @@ export class IconData {
     );
 
   
-    public RelationshipTypesCount$ = IconService.Instance.GetIconsRowCount({iconId: this.id,
+    public RelationshipTypesCount$ = RelationshipTypeService.Instance.GetRelationshipTypesRowCount({iconId: this.id,
       active: true,
       deleted: false
     });
@@ -388,7 +410,7 @@ export class IconData {
     );
 
   
-    public OfficeTypesCount$ = IconService.Instance.GetIconsRowCount({iconId: this.id,
+    public OfficeTypesCount$ = OfficeTypeService.Instance.GetOfficeTypesRowCount({iconId: this.id,
       active: true,
       deleted: false
     });
@@ -407,7 +429,7 @@ export class IconData {
     );
 
   
-    public CalendarsCount$ = IconService.Instance.GetIconsRowCount({iconId: this.id,
+    public CalendarsCount$ = CalendarService.Instance.GetCalendarsRowCount({iconId: this.id,
       active: true,
       deleted: false
     });
@@ -426,7 +448,7 @@ export class IconData {
     );
 
   
-    public ClientTypesCount$ = IconService.Instance.GetIconsRowCount({iconId: this.id,
+    public ClientTypesCount$ = ClientTypeService.Instance.GetClientTypesRowCount({iconId: this.id,
       active: true,
       deleted: false
     });
@@ -445,7 +467,7 @@ export class IconData {
     );
 
   
-    public AssignmentRolesCount$ = IconService.Instance.GetIconsRowCount({iconId: this.id,
+    public AssignmentRolesCount$ = AssignmentRoleService.Instance.GetAssignmentRolesRowCount({iconId: this.id,
       active: true,
       deleted: false
     });
@@ -464,7 +486,7 @@ export class IconData {
     );
 
   
-    public SchedulingTargetTypesCount$ = IconService.Instance.GetIconsRowCount({iconId: this.id,
+    public SchedulingTargetTypesCount$ = SchedulingTargetTypeService.Instance.GetSchedulingTargetTypesRowCount({iconId: this.id,
       active: true,
       deleted: false
     });
@@ -483,7 +505,7 @@ export class IconData {
     );
 
   
-    public CrewsCount$ = IconService.Instance.GetIconsRowCount({iconId: this.id,
+    public CrewsCount$ = CrewService.Instance.GetCrewsRowCount({iconId: this.id,
       active: true,
       deleted: false
     });
@@ -502,7 +524,7 @@ export class IconData {
     );
 
   
-    public CrewMembersCount$ = IconService.Instance.GetIconsRowCount({iconId: this.id,
+    public CrewMembersCount$ = CrewMemberService.Instance.GetCrewMembersRowCount({iconId: this.id,
       active: true,
       deleted: false
     });
@@ -521,7 +543,7 @@ export class IconData {
     );
 
   
-    public FundsCount$ = IconService.Instance.GetIconsRowCount({iconId: this.id,
+    public FundsCount$ = FundService.Instance.GetFundsRowCount({iconId: this.id,
       active: true,
       deleted: false
     });
@@ -540,7 +562,7 @@ export class IconData {
     );
 
   
-    public CampaignsCount$ = IconService.Instance.GetIconsRowCount({iconId: this.id,
+    public CampaignsCount$ = CampaignService.Instance.GetCampaignsRowCount({iconId: this.id,
       active: true,
       deleted: false
     });
@@ -559,7 +581,7 @@ export class IconData {
     );
 
   
-    public AppealsCount$ = IconService.Instance.GetIconsRowCount({iconId: this.id,
+    public AppealsCount$ = AppealService.Instance.GetAppealsRowCount({iconId: this.id,
       active: true,
       deleted: false
     });
@@ -578,7 +600,7 @@ export class IconData {
     );
 
   
-    public HouseholdsCount$ = IconService.Instance.GetIconsRowCount({iconId: this.id,
+    public HouseholdsCount$ = HouseholdService.Instance.GetHouseholdsRowCount({iconId: this.id,
       active: true,
       deleted: false
     });
@@ -597,7 +619,7 @@ export class IconData {
     );
 
   
-    public ConstituentJourneyStagesCount$ = IconService.Instance.GetIconsRowCount({iconId: this.id,
+    public ConstituentJourneyStagesCount$ = ConstituentJourneyStageService.Instance.GetConstituentJourneyStagesRowCount({iconId: this.id,
       active: true,
       deleted: false
     });
@@ -616,7 +638,7 @@ export class IconData {
     );
 
   
-    public ConstituentsCount$ = IconService.Instance.GetIconsRowCount({iconId: this.id,
+    public ConstituentsCount$ = ConstituentService.Instance.GetConstituentsRowCount({iconId: this.id,
       active: true,
       deleted: false
     });
@@ -635,7 +657,7 @@ export class IconData {
     );
 
   
-    public TributesCount$ = IconService.Instance.GetIconsRowCount({iconId: this.id,
+    public TributesCount$ = TributeService.Instance.GetTributesRowCount({iconId: this.id,
       active: true,
       deleted: false
     });
@@ -783,9 +805,9 @@ export class IconData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.icon.ResourceTypes.then(resourceTypes => { ... })
+     *   this.icon.ResourceTypes.then(icons => { ... })
      *   or
-     *   await this.icon.ResourceTypes
+     *   await this.icon.icons
      *
     */
     public get ResourceTypes(): Promise<ResourceTypeData[]> {
@@ -810,8 +832,8 @@ export class IconData {
         this._resourceTypesPromise = lastValueFrom(
             IconService.Instance.GetResourceTypesForIcon(this.id)
         )
-        .then(resourceTypes => {
-            this._resourceTypes = resourceTypes ?? [];
+        .then(ResourceTypes => {
+            this._resourceTypes = ResourceTypes ?? [];
             this._resourceTypesSubject.next(this._resourceTypes);
             return this._resourceTypes;
          })
@@ -848,9 +870,9 @@ export class IconData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.icon.Priorities.then(priorities => { ... })
+     *   this.icon.Priorities.then(icons => { ... })
      *   or
-     *   await this.icon.Priorities
+     *   await this.icon.icons
      *
     */
     public get Priorities(): Promise<PriorityData[]> {
@@ -875,8 +897,8 @@ export class IconData {
         this._prioritiesPromise = lastValueFrom(
             IconService.Instance.GetPrioritiesForIcon(this.id)
         )
-        .then(priorities => {
-            this._priorities = priorities ?? [];
+        .then(Priorities => {
+            this._priorities = Priorities ?? [];
             this._prioritiesSubject.next(this._priorities);
             return this._priorities;
          })
@@ -913,9 +935,9 @@ export class IconData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.icon.ContactMethods.then(contactMethods => { ... })
+     *   this.icon.ContactMethods.then(icons => { ... })
      *   or
-     *   await this.icon.ContactMethods
+     *   await this.icon.icons
      *
     */
     public get ContactMethods(): Promise<ContactMethodData[]> {
@@ -940,8 +962,8 @@ export class IconData {
         this._contactMethodsPromise = lastValueFrom(
             IconService.Instance.GetContactMethodsForIcon(this.id)
         )
-        .then(contactMethods => {
-            this._contactMethods = contactMethods ?? [];
+        .then(ContactMethods => {
+            this._contactMethods = ContactMethods ?? [];
             this._contactMethodsSubject.next(this._contactMethods);
             return this._contactMethods;
          })
@@ -978,9 +1000,9 @@ export class IconData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.icon.InteractionTypes.then(interactionTypes => { ... })
+     *   this.icon.InteractionTypes.then(icons => { ... })
      *   or
-     *   await this.icon.InteractionTypes
+     *   await this.icon.icons
      *
     */
     public get InteractionTypes(): Promise<InteractionTypeData[]> {
@@ -1005,8 +1027,8 @@ export class IconData {
         this._interactionTypesPromise = lastValueFrom(
             IconService.Instance.GetInteractionTypesForIcon(this.id)
         )
-        .then(interactionTypes => {
-            this._interactionTypes = interactionTypes ?? [];
+        .then(InteractionTypes => {
+            this._interactionTypes = InteractionTypes ?? [];
             this._interactionTypesSubject.next(this._interactionTypes);
             return this._interactionTypes;
          })
@@ -1043,9 +1065,9 @@ export class IconData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.icon.Tags.then(tags => { ... })
+     *   this.icon.Tags.then(icons => { ... })
      *   or
-     *   await this.icon.Tags
+     *   await this.icon.icons
      *
     */
     public get Tags(): Promise<TagData[]> {
@@ -1070,8 +1092,8 @@ export class IconData {
         this._tagsPromise = lastValueFrom(
             IconService.Instance.GetTagsForIcon(this.id)
         )
-        .then(tags => {
-            this._tags = tags ?? [];
+        .then(Tags => {
+            this._tags = Tags ?? [];
             this._tagsSubject.next(this._tags);
             return this._tags;
          })
@@ -1108,9 +1130,9 @@ export class IconData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.icon.ContactTypes.then(contactTypes => { ... })
+     *   this.icon.ContactTypes.then(icons => { ... })
      *   or
-     *   await this.icon.ContactTypes
+     *   await this.icon.icons
      *
     */
     public get ContactTypes(): Promise<ContactTypeData[]> {
@@ -1135,8 +1157,8 @@ export class IconData {
         this._contactTypesPromise = lastValueFrom(
             IconService.Instance.GetContactTypesForIcon(this.id)
         )
-        .then(contactTypes => {
-            this._contactTypes = contactTypes ?? [];
+        .then(ContactTypes => {
+            this._contactTypes = ContactTypes ?? [];
             this._contactTypesSubject.next(this._contactTypes);
             return this._contactTypes;
          })
@@ -1173,9 +1195,9 @@ export class IconData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.icon.Contacts.then(contacts => { ... })
+     *   this.icon.Contacts.then(icons => { ... })
      *   or
-     *   await this.icon.Contacts
+     *   await this.icon.icons
      *
     */
     public get Contacts(): Promise<ContactData[]> {
@@ -1200,8 +1222,8 @@ export class IconData {
         this._contactsPromise = lastValueFrom(
             IconService.Instance.GetContactsForIcon(this.id)
         )
-        .then(contacts => {
-            this._contacts = contacts ?? [];
+        .then(Contacts => {
+            this._contacts = Contacts ?? [];
             this._contactsSubject.next(this._contacts);
             return this._contacts;
          })
@@ -1238,9 +1260,9 @@ export class IconData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.icon.RelationshipTypes.then(relationshipTypes => { ... })
+     *   this.icon.RelationshipTypes.then(icons => { ... })
      *   or
-     *   await this.icon.RelationshipTypes
+     *   await this.icon.icons
      *
     */
     public get RelationshipTypes(): Promise<RelationshipTypeData[]> {
@@ -1265,8 +1287,8 @@ export class IconData {
         this._relationshipTypesPromise = lastValueFrom(
             IconService.Instance.GetRelationshipTypesForIcon(this.id)
         )
-        .then(relationshipTypes => {
-            this._relationshipTypes = relationshipTypes ?? [];
+        .then(RelationshipTypes => {
+            this._relationshipTypes = RelationshipTypes ?? [];
             this._relationshipTypesSubject.next(this._relationshipTypes);
             return this._relationshipTypes;
          })
@@ -1303,9 +1325,9 @@ export class IconData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.icon.OfficeTypes.then(officeTypes => { ... })
+     *   this.icon.OfficeTypes.then(icons => { ... })
      *   or
-     *   await this.icon.OfficeTypes
+     *   await this.icon.icons
      *
     */
     public get OfficeTypes(): Promise<OfficeTypeData[]> {
@@ -1330,8 +1352,8 @@ export class IconData {
         this._officeTypesPromise = lastValueFrom(
             IconService.Instance.GetOfficeTypesForIcon(this.id)
         )
-        .then(officeTypes => {
-            this._officeTypes = officeTypes ?? [];
+        .then(OfficeTypes => {
+            this._officeTypes = OfficeTypes ?? [];
             this._officeTypesSubject.next(this._officeTypes);
             return this._officeTypes;
          })
@@ -1368,9 +1390,9 @@ export class IconData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.icon.Calendars.then(calendars => { ... })
+     *   this.icon.Calendars.then(icons => { ... })
      *   or
-     *   await this.icon.Calendars
+     *   await this.icon.icons
      *
     */
     public get Calendars(): Promise<CalendarData[]> {
@@ -1395,8 +1417,8 @@ export class IconData {
         this._calendarsPromise = lastValueFrom(
             IconService.Instance.GetCalendarsForIcon(this.id)
         )
-        .then(calendars => {
-            this._calendars = calendars ?? [];
+        .then(Calendars => {
+            this._calendars = Calendars ?? [];
             this._calendarsSubject.next(this._calendars);
             return this._calendars;
          })
@@ -1433,9 +1455,9 @@ export class IconData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.icon.ClientTypes.then(clientTypes => { ... })
+     *   this.icon.ClientTypes.then(icons => { ... })
      *   or
-     *   await this.icon.ClientTypes
+     *   await this.icon.icons
      *
     */
     public get ClientTypes(): Promise<ClientTypeData[]> {
@@ -1460,8 +1482,8 @@ export class IconData {
         this._clientTypesPromise = lastValueFrom(
             IconService.Instance.GetClientTypesForIcon(this.id)
         )
-        .then(clientTypes => {
-            this._clientTypes = clientTypes ?? [];
+        .then(ClientTypes => {
+            this._clientTypes = ClientTypes ?? [];
             this._clientTypesSubject.next(this._clientTypes);
             return this._clientTypes;
          })
@@ -1498,9 +1520,9 @@ export class IconData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.icon.AssignmentRoles.then(assignmentRoles => { ... })
+     *   this.icon.AssignmentRoles.then(icons => { ... })
      *   or
-     *   await this.icon.AssignmentRoles
+     *   await this.icon.icons
      *
     */
     public get AssignmentRoles(): Promise<AssignmentRoleData[]> {
@@ -1525,8 +1547,8 @@ export class IconData {
         this._assignmentRolesPromise = lastValueFrom(
             IconService.Instance.GetAssignmentRolesForIcon(this.id)
         )
-        .then(assignmentRoles => {
-            this._assignmentRoles = assignmentRoles ?? [];
+        .then(AssignmentRoles => {
+            this._assignmentRoles = AssignmentRoles ?? [];
             this._assignmentRolesSubject.next(this._assignmentRoles);
             return this._assignmentRoles;
          })
@@ -1563,9 +1585,9 @@ export class IconData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.icon.SchedulingTargetTypes.then(schedulingTargetTypes => { ... })
+     *   this.icon.SchedulingTargetTypes.then(icons => { ... })
      *   or
-     *   await this.icon.SchedulingTargetTypes
+     *   await this.icon.icons
      *
     */
     public get SchedulingTargetTypes(): Promise<SchedulingTargetTypeData[]> {
@@ -1590,8 +1612,8 @@ export class IconData {
         this._schedulingTargetTypesPromise = lastValueFrom(
             IconService.Instance.GetSchedulingTargetTypesForIcon(this.id)
         )
-        .then(schedulingTargetTypes => {
-            this._schedulingTargetTypes = schedulingTargetTypes ?? [];
+        .then(SchedulingTargetTypes => {
+            this._schedulingTargetTypes = SchedulingTargetTypes ?? [];
             this._schedulingTargetTypesSubject.next(this._schedulingTargetTypes);
             return this._schedulingTargetTypes;
          })
@@ -1628,9 +1650,9 @@ export class IconData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.icon.Crews.then(crews => { ... })
+     *   this.icon.Crews.then(icons => { ... })
      *   or
-     *   await this.icon.Crews
+     *   await this.icon.icons
      *
     */
     public get Crews(): Promise<CrewData[]> {
@@ -1655,8 +1677,8 @@ export class IconData {
         this._crewsPromise = lastValueFrom(
             IconService.Instance.GetCrewsForIcon(this.id)
         )
-        .then(crews => {
-            this._crews = crews ?? [];
+        .then(Crews => {
+            this._crews = Crews ?? [];
             this._crewsSubject.next(this._crews);
             return this._crews;
          })
@@ -1693,9 +1715,9 @@ export class IconData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.icon.CrewMembers.then(crewMembers => { ... })
+     *   this.icon.CrewMembers.then(icons => { ... })
      *   or
-     *   await this.icon.CrewMembers
+     *   await this.icon.icons
      *
     */
     public get CrewMembers(): Promise<CrewMemberData[]> {
@@ -1720,8 +1742,8 @@ export class IconData {
         this._crewMembersPromise = lastValueFrom(
             IconService.Instance.GetCrewMembersForIcon(this.id)
         )
-        .then(crewMembers => {
-            this._crewMembers = crewMembers ?? [];
+        .then(CrewMembers => {
+            this._crewMembers = CrewMembers ?? [];
             this._crewMembersSubject.next(this._crewMembers);
             return this._crewMembers;
          })
@@ -1758,9 +1780,9 @@ export class IconData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.icon.Funds.then(funds => { ... })
+     *   this.icon.Funds.then(icons => { ... })
      *   or
-     *   await this.icon.Funds
+     *   await this.icon.icons
      *
     */
     public get Funds(): Promise<FundData[]> {
@@ -1785,8 +1807,8 @@ export class IconData {
         this._fundsPromise = lastValueFrom(
             IconService.Instance.GetFundsForIcon(this.id)
         )
-        .then(funds => {
-            this._funds = funds ?? [];
+        .then(Funds => {
+            this._funds = Funds ?? [];
             this._fundsSubject.next(this._funds);
             return this._funds;
          })
@@ -1823,9 +1845,9 @@ export class IconData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.icon.Campaigns.then(campaigns => { ... })
+     *   this.icon.Campaigns.then(icons => { ... })
      *   or
-     *   await this.icon.Campaigns
+     *   await this.icon.icons
      *
     */
     public get Campaigns(): Promise<CampaignData[]> {
@@ -1850,8 +1872,8 @@ export class IconData {
         this._campaignsPromise = lastValueFrom(
             IconService.Instance.GetCampaignsForIcon(this.id)
         )
-        .then(campaigns => {
-            this._campaigns = campaigns ?? [];
+        .then(Campaigns => {
+            this._campaigns = Campaigns ?? [];
             this._campaignsSubject.next(this._campaigns);
             return this._campaigns;
          })
@@ -1888,9 +1910,9 @@ export class IconData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.icon.Appeals.then(appeals => { ... })
+     *   this.icon.Appeals.then(icons => { ... })
      *   or
-     *   await this.icon.Appeals
+     *   await this.icon.icons
      *
     */
     public get Appeals(): Promise<AppealData[]> {
@@ -1915,8 +1937,8 @@ export class IconData {
         this._appealsPromise = lastValueFrom(
             IconService.Instance.GetAppealsForIcon(this.id)
         )
-        .then(appeals => {
-            this._appeals = appeals ?? [];
+        .then(Appeals => {
+            this._appeals = Appeals ?? [];
             this._appealsSubject.next(this._appeals);
             return this._appeals;
          })
@@ -1953,9 +1975,9 @@ export class IconData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.icon.Households.then(households => { ... })
+     *   this.icon.Households.then(icons => { ... })
      *   or
-     *   await this.icon.Households
+     *   await this.icon.icons
      *
     */
     public get Households(): Promise<HouseholdData[]> {
@@ -1980,8 +2002,8 @@ export class IconData {
         this._householdsPromise = lastValueFrom(
             IconService.Instance.GetHouseholdsForIcon(this.id)
         )
-        .then(households => {
-            this._households = households ?? [];
+        .then(Households => {
+            this._households = Households ?? [];
             this._householdsSubject.next(this._households);
             return this._households;
          })
@@ -2018,9 +2040,9 @@ export class IconData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.icon.ConstituentJourneyStages.then(constituentJourneyStages => { ... })
+     *   this.icon.ConstituentJourneyStages.then(icons => { ... })
      *   or
-     *   await this.icon.ConstituentJourneyStages
+     *   await this.icon.icons
      *
     */
     public get ConstituentJourneyStages(): Promise<ConstituentJourneyStageData[]> {
@@ -2045,8 +2067,8 @@ export class IconData {
         this._constituentJourneyStagesPromise = lastValueFrom(
             IconService.Instance.GetConstituentJourneyStagesForIcon(this.id)
         )
-        .then(constituentJourneyStages => {
-            this._constituentJourneyStages = constituentJourneyStages ?? [];
+        .then(ConstituentJourneyStages => {
+            this._constituentJourneyStages = ConstituentJourneyStages ?? [];
             this._constituentJourneyStagesSubject.next(this._constituentJourneyStages);
             return this._constituentJourneyStages;
          })
@@ -2083,9 +2105,9 @@ export class IconData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.icon.Constituents.then(constituents => { ... })
+     *   this.icon.Constituents.then(icons => { ... })
      *   or
-     *   await this.icon.Constituents
+     *   await this.icon.icons
      *
     */
     public get Constituents(): Promise<ConstituentData[]> {
@@ -2110,8 +2132,8 @@ export class IconData {
         this._constituentsPromise = lastValueFrom(
             IconService.Instance.GetConstituentsForIcon(this.id)
         )
-        .then(constituents => {
-            this._constituents = constituents ?? [];
+        .then(Constituents => {
+            this._constituents = Constituents ?? [];
             this._constituentsSubject.next(this._constituents);
             return this._constituents;
          })
@@ -2148,9 +2170,9 @@ export class IconData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.icon.Tributes.then(tributes => { ... })
+     *   this.icon.Tributes.then(icons => { ... })
      *   or
-     *   await this.icon.Tributes
+     *   await this.icon.icons
      *
     */
     public get Tributes(): Promise<TributeData[]> {
@@ -2175,8 +2197,8 @@ export class IconData {
         this._tributesPromise = lastValueFrom(
             IconService.Instance.GetTributesForIcon(this.id)
         )
-        .then(tributes => {
-            this._tributes = tributes ?? [];
+        .then(Tributes => {
+            this._tributes = Tributes ?? [];
             this._tributesSubject.next(this._tributes);
             return this._tributes;
          })

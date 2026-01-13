@@ -119,6 +119,7 @@ export class ScheduledEventTemplateQualificationRequirementData {
     private _scheduledEventTemplateQualificationRequirementChangeHistoriesPromise: Promise<ScheduledEventTemplateQualificationRequirementChangeHistoryData[]> | null  = null;
     private _scheduledEventTemplateQualificationRequirementChangeHistoriesSubject = new BehaviorSubject<ScheduledEventTemplateQualificationRequirementChangeHistoryData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -138,7 +139,7 @@ export class ScheduledEventTemplateQualificationRequirementData {
     );
 
   
-    public ScheduledEventTemplateQualificationRequirementChangeHistoriesCount$ = ScheduledEventTemplateQualificationRequirementService.Instance.GetScheduledEventTemplateQualificationRequirementsRowCount({scheduledEventTemplateQualificationRequirementId: this.id,
+    public ScheduledEventTemplateQualificationRequirementChangeHistoriesCount$ = ScheduledEventTemplateQualificationRequirementChangeHistoryService.Instance.GetScheduledEventTemplateQualificationRequirementChangeHistoriesRowCount({scheduledEventTemplateQualificationRequirementId: this.id,
       active: true,
       deleted: false
     });
@@ -202,9 +203,9 @@ export class ScheduledEventTemplateQualificationRequirementData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.scheduledEventTemplateQualificationRequirement.ScheduledEventTemplateQualificationRequirementChangeHistories.then(scheduledEventTemplateQualificationRequirementChangeHistories => { ... })
+     *   this.scheduledEventTemplateQualificationRequirement.ScheduledEventTemplateQualificationRequirementChangeHistories.then(scheduledEventTemplateQualificationRequirements => { ... })
      *   or
-     *   await this.scheduledEventTemplateQualificationRequirement.ScheduledEventTemplateQualificationRequirementChangeHistories
+     *   await this.scheduledEventTemplateQualificationRequirement.scheduledEventTemplateQualificationRequirements
      *
     */
     public get ScheduledEventTemplateQualificationRequirementChangeHistories(): Promise<ScheduledEventTemplateQualificationRequirementChangeHistoryData[]> {
@@ -229,8 +230,8 @@ export class ScheduledEventTemplateQualificationRequirementData {
         this._scheduledEventTemplateQualificationRequirementChangeHistoriesPromise = lastValueFrom(
             ScheduledEventTemplateQualificationRequirementService.Instance.GetScheduledEventTemplateQualificationRequirementChangeHistoriesForScheduledEventTemplateQualificationRequirement(this.id)
         )
-        .then(scheduledEventTemplateQualificationRequirementChangeHistories => {
-            this._scheduledEventTemplateQualificationRequirementChangeHistories = scheduledEventTemplateQualificationRequirementChangeHistories ?? [];
+        .then(ScheduledEventTemplateQualificationRequirementChangeHistories => {
+            this._scheduledEventTemplateQualificationRequirementChangeHistories = ScheduledEventTemplateQualificationRequirementChangeHistories ?? [];
             this._scheduledEventTemplateQualificationRequirementChangeHistoriesSubject.next(this._scheduledEventTemplateQualificationRequirementChangeHistories);
             return this._scheduledEventTemplateQualificationRequirementChangeHistories;
          })

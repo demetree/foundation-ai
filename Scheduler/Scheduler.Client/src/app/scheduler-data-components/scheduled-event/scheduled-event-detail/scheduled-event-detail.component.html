@@ -276,7 +276,7 @@
                       <li ngbNavItem *ngIf="scheduledEventDependencyService.userIsSchedulerScheduledEventDependencyReader()">
                             <button ngbNavLink>Scheduled Event Dependencies Predecessor Events
                                 <span class="badge bg-primary ms-2">
-                                    {{ (scheduledEventData?.PredecessorEventsCount$ | async) ?? '-' }}
+                                    {{ (scheduledEventData?.ScheduledEventDependencyPredecessorEventsCount$ | async) ?? '-' }}
                                 </span>
                             </button>
                             <ng-template ngbNavContent>
@@ -293,7 +293,7 @@
                       <li ngbNavItem *ngIf="scheduledEventDependencyService.userIsSchedulerScheduledEventDependencyReader()">
                             <button ngbNavLink>Scheduled Event Dependencies Successor Events
                                 <span class="badge bg-primary ms-2">
-                                    {{ (scheduledEventData?.SuccessorEventsCount$ | async) ?? '-' }}
+                                    {{ (scheduledEventData?.ScheduledEventDependencySuccessorEventsCount$ | async) ?? '-' }}
                                 </span>
                             </button>
                             <ng-template ngbNavContent>

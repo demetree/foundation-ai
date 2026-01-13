@@ -145,6 +145,7 @@ export class ContactInteractionData {
     private _contactInteractionChangeHistoriesPromise: Promise<ContactInteractionChangeHistoryData[]> | null  = null;
     private _contactInteractionChangeHistoriesSubject = new BehaviorSubject<ContactInteractionChangeHistoryData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -164,7 +165,7 @@ export class ContactInteractionData {
     );
 
   
-    public ContactInteractionChangeHistoriesCount$ = ContactInteractionService.Instance.GetContactInteractionsRowCount({contactInteractionId: this.id,
+    public ContactInteractionChangeHistoriesCount$ = ContactInteractionChangeHistoryService.Instance.GetContactInteractionChangeHistoriesRowCount({contactInteractionId: this.id,
       active: true,
       deleted: false
     });
@@ -228,9 +229,9 @@ export class ContactInteractionData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.contactInteraction.ContactInteractionChangeHistories.then(contactInteractionChangeHistories => { ... })
+     *   this.contactInteraction.ContactInteractionChangeHistories.then(contactInteractions => { ... })
      *   or
-     *   await this.contactInteraction.ContactInteractionChangeHistories
+     *   await this.contactInteraction.contactInteractions
      *
     */
     public get ContactInteractionChangeHistories(): Promise<ContactInteractionChangeHistoryData[]> {
@@ -255,8 +256,8 @@ export class ContactInteractionData {
         this._contactInteractionChangeHistoriesPromise = lastValueFrom(
             ContactInteractionService.Instance.GetContactInteractionChangeHistoriesForContactInteraction(this.id)
         )
-        .then(contactInteractionChangeHistories => {
-            this._contactInteractionChangeHistories = contactInteractionChangeHistories ?? [];
+        .then(ContactInteractionChangeHistories => {
+            this._contactInteractionChangeHistories = ContactInteractionChangeHistories ?? [];
             this._contactInteractionChangeHistoriesSubject.next(this._contactInteractionChangeHistories);
             return this._contactInteractionChangeHistories;
          })

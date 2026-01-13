@@ -166,30 +166,37 @@ export class SchedulingTargetData {
     private _schedulingTargetChangeHistoriesPromise: Promise<SchedulingTargetChangeHistoryData[]> | null  = null;
     private _schedulingTargetChangeHistoriesSubject = new BehaviorSubject<SchedulingTargetChangeHistoryData[] | null>(null);
 
+                
     private _schedulingTargetContacts: SchedulingTargetContactData[] | null = null;
     private _schedulingTargetContactsPromise: Promise<SchedulingTargetContactData[]> | null  = null;
     private _schedulingTargetContactsSubject = new BehaviorSubject<SchedulingTargetContactData[] | null>(null);
 
+                
     private _schedulingTargetAddresses: SchedulingTargetAddressData[] | null = null;
     private _schedulingTargetAddressesPromise: Promise<SchedulingTargetAddressData[]> | null  = null;
     private _schedulingTargetAddressesSubject = new BehaviorSubject<SchedulingTargetAddressData[] | null>(null);
 
+                
     private _schedulingTargetQualificationRequirements: SchedulingTargetQualificationRequirementData[] | null = null;
     private _schedulingTargetQualificationRequirementsPromise: Promise<SchedulingTargetQualificationRequirementData[]> | null  = null;
     private _schedulingTargetQualificationRequirementsSubject = new BehaviorSubject<SchedulingTargetQualificationRequirementData[] | null>(null);
 
+                
     private _rateSheets: RateSheetData[] | null = null;
     private _rateSheetsPromise: Promise<RateSheetData[]> | null  = null;
     private _rateSheetsSubject = new BehaviorSubject<RateSheetData[] | null>(null);
 
+                
     private _scheduledEvents: ScheduledEventData[] | null = null;
     private _scheduledEventsPromise: Promise<ScheduledEventData[]> | null  = null;
     private _scheduledEventsSubject = new BehaviorSubject<ScheduledEventData[] | null>(null);
 
+                
     private _households: HouseholdData[] | null = null;
     private _householdsPromise: Promise<HouseholdData[]> | null  = null;
     private _householdsSubject = new BehaviorSubject<HouseholdData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -209,7 +216,7 @@ export class SchedulingTargetData {
     );
 
   
-    public SchedulingTargetChangeHistoriesCount$ = SchedulingTargetService.Instance.GetSchedulingTargetsRowCount({schedulingTargetId: this.id,
+    public SchedulingTargetChangeHistoriesCount$ = SchedulingTargetChangeHistoryService.Instance.GetSchedulingTargetChangeHistoriesRowCount({schedulingTargetId: this.id,
       active: true,
       deleted: false
     });
@@ -228,7 +235,7 @@ export class SchedulingTargetData {
     );
 
   
-    public SchedulingTargetContactsCount$ = SchedulingTargetService.Instance.GetSchedulingTargetsRowCount({schedulingTargetId: this.id,
+    public SchedulingTargetContactsCount$ = SchedulingTargetContactService.Instance.GetSchedulingTargetContactsRowCount({schedulingTargetId: this.id,
       active: true,
       deleted: false
     });
@@ -247,7 +254,7 @@ export class SchedulingTargetData {
     );
 
   
-    public SchedulingTargetAddressesCount$ = SchedulingTargetService.Instance.GetSchedulingTargetsRowCount({schedulingTargetId: this.id,
+    public SchedulingTargetAddressesCount$ = SchedulingTargetAddressService.Instance.GetSchedulingTargetAddressesRowCount({schedulingTargetId: this.id,
       active: true,
       deleted: false
     });
@@ -266,7 +273,7 @@ export class SchedulingTargetData {
     );
 
   
-    public SchedulingTargetQualificationRequirementsCount$ = SchedulingTargetService.Instance.GetSchedulingTargetsRowCount({schedulingTargetId: this.id,
+    public SchedulingTargetQualificationRequirementsCount$ = SchedulingTargetQualificationRequirementService.Instance.GetSchedulingTargetQualificationRequirementsRowCount({schedulingTargetId: this.id,
       active: true,
       deleted: false
     });
@@ -285,7 +292,7 @@ export class SchedulingTargetData {
     );
 
   
-    public RateSheetsCount$ = SchedulingTargetService.Instance.GetSchedulingTargetsRowCount({schedulingTargetId: this.id,
+    public RateSheetsCount$ = RateSheetService.Instance.GetRateSheetsRowCount({schedulingTargetId: this.id,
       active: true,
       deleted: false
     });
@@ -304,7 +311,7 @@ export class SchedulingTargetData {
     );
 
   
-    public ScheduledEventsCount$ = SchedulingTargetService.Instance.GetSchedulingTargetsRowCount({schedulingTargetId: this.id,
+    public ScheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({schedulingTargetId: this.id,
       active: true,
       deleted: false
     });
@@ -323,7 +330,7 @@ export class SchedulingTargetData {
     );
 
   
-    public HouseholdsCount$ = SchedulingTargetService.Instance.GetSchedulingTargetsRowCount({schedulingTargetId: this.id,
+    public HouseholdsCount$ = HouseholdService.Instance.GetHouseholdsRowCount({schedulingTargetId: this.id,
       active: true,
       deleted: false
     });
@@ -411,9 +418,9 @@ export class SchedulingTargetData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.schedulingTarget.SchedulingTargetChangeHistories.then(schedulingTargetChangeHistories => { ... })
+     *   this.schedulingTarget.SchedulingTargetChangeHistories.then(schedulingTargets => { ... })
      *   or
-     *   await this.schedulingTarget.SchedulingTargetChangeHistories
+     *   await this.schedulingTarget.schedulingTargets
      *
     */
     public get SchedulingTargetChangeHistories(): Promise<SchedulingTargetChangeHistoryData[]> {
@@ -438,8 +445,8 @@ export class SchedulingTargetData {
         this._schedulingTargetChangeHistoriesPromise = lastValueFrom(
             SchedulingTargetService.Instance.GetSchedulingTargetChangeHistoriesForSchedulingTarget(this.id)
         )
-        .then(schedulingTargetChangeHistories => {
-            this._schedulingTargetChangeHistories = schedulingTargetChangeHistories ?? [];
+        .then(SchedulingTargetChangeHistories => {
+            this._schedulingTargetChangeHistories = SchedulingTargetChangeHistories ?? [];
             this._schedulingTargetChangeHistoriesSubject.next(this._schedulingTargetChangeHistories);
             return this._schedulingTargetChangeHistories;
          })
@@ -476,9 +483,9 @@ export class SchedulingTargetData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.schedulingTarget.SchedulingTargetContacts.then(schedulingTargetContacts => { ... })
+     *   this.schedulingTarget.SchedulingTargetContacts.then(schedulingTargets => { ... })
      *   or
-     *   await this.schedulingTarget.SchedulingTargetContacts
+     *   await this.schedulingTarget.schedulingTargets
      *
     */
     public get SchedulingTargetContacts(): Promise<SchedulingTargetContactData[]> {
@@ -503,8 +510,8 @@ export class SchedulingTargetData {
         this._schedulingTargetContactsPromise = lastValueFrom(
             SchedulingTargetService.Instance.GetSchedulingTargetContactsForSchedulingTarget(this.id)
         )
-        .then(schedulingTargetContacts => {
-            this._schedulingTargetContacts = schedulingTargetContacts ?? [];
+        .then(SchedulingTargetContacts => {
+            this._schedulingTargetContacts = SchedulingTargetContacts ?? [];
             this._schedulingTargetContactsSubject.next(this._schedulingTargetContacts);
             return this._schedulingTargetContacts;
          })
@@ -541,9 +548,9 @@ export class SchedulingTargetData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.schedulingTarget.SchedulingTargetAddresses.then(schedulingTargetAddresses => { ... })
+     *   this.schedulingTarget.SchedulingTargetAddresses.then(schedulingTargets => { ... })
      *   or
-     *   await this.schedulingTarget.SchedulingTargetAddresses
+     *   await this.schedulingTarget.schedulingTargets
      *
     */
     public get SchedulingTargetAddresses(): Promise<SchedulingTargetAddressData[]> {
@@ -568,8 +575,8 @@ export class SchedulingTargetData {
         this._schedulingTargetAddressesPromise = lastValueFrom(
             SchedulingTargetService.Instance.GetSchedulingTargetAddressesForSchedulingTarget(this.id)
         )
-        .then(schedulingTargetAddresses => {
-            this._schedulingTargetAddresses = schedulingTargetAddresses ?? [];
+        .then(SchedulingTargetAddresses => {
+            this._schedulingTargetAddresses = SchedulingTargetAddresses ?? [];
             this._schedulingTargetAddressesSubject.next(this._schedulingTargetAddresses);
             return this._schedulingTargetAddresses;
          })
@@ -606,9 +613,9 @@ export class SchedulingTargetData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.schedulingTarget.SchedulingTargetQualificationRequirements.then(schedulingTargetQualificationRequirements => { ... })
+     *   this.schedulingTarget.SchedulingTargetQualificationRequirements.then(schedulingTargets => { ... })
      *   or
-     *   await this.schedulingTarget.SchedulingTargetQualificationRequirements
+     *   await this.schedulingTarget.schedulingTargets
      *
     */
     public get SchedulingTargetQualificationRequirements(): Promise<SchedulingTargetQualificationRequirementData[]> {
@@ -633,8 +640,8 @@ export class SchedulingTargetData {
         this._schedulingTargetQualificationRequirementsPromise = lastValueFrom(
             SchedulingTargetService.Instance.GetSchedulingTargetQualificationRequirementsForSchedulingTarget(this.id)
         )
-        .then(schedulingTargetQualificationRequirements => {
-            this._schedulingTargetQualificationRequirements = schedulingTargetQualificationRequirements ?? [];
+        .then(SchedulingTargetQualificationRequirements => {
+            this._schedulingTargetQualificationRequirements = SchedulingTargetQualificationRequirements ?? [];
             this._schedulingTargetQualificationRequirementsSubject.next(this._schedulingTargetQualificationRequirements);
             return this._schedulingTargetQualificationRequirements;
          })
@@ -671,9 +678,9 @@ export class SchedulingTargetData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.schedulingTarget.RateSheets.then(rateSheets => { ... })
+     *   this.schedulingTarget.RateSheets.then(schedulingTargets => { ... })
      *   or
-     *   await this.schedulingTarget.RateSheets
+     *   await this.schedulingTarget.schedulingTargets
      *
     */
     public get RateSheets(): Promise<RateSheetData[]> {
@@ -698,8 +705,8 @@ export class SchedulingTargetData {
         this._rateSheetsPromise = lastValueFrom(
             SchedulingTargetService.Instance.GetRateSheetsForSchedulingTarget(this.id)
         )
-        .then(rateSheets => {
-            this._rateSheets = rateSheets ?? [];
+        .then(RateSheets => {
+            this._rateSheets = RateSheets ?? [];
             this._rateSheetsSubject.next(this._rateSheets);
             return this._rateSheets;
          })
@@ -736,9 +743,9 @@ export class SchedulingTargetData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.schedulingTarget.ScheduledEvents.then(scheduledEvents => { ... })
+     *   this.schedulingTarget.ScheduledEvents.then(schedulingTargets => { ... })
      *   or
-     *   await this.schedulingTarget.ScheduledEvents
+     *   await this.schedulingTarget.schedulingTargets
      *
     */
     public get ScheduledEvents(): Promise<ScheduledEventData[]> {
@@ -763,8 +770,8 @@ export class SchedulingTargetData {
         this._scheduledEventsPromise = lastValueFrom(
             SchedulingTargetService.Instance.GetScheduledEventsForSchedulingTarget(this.id)
         )
-        .then(scheduledEvents => {
-            this._scheduledEvents = scheduledEvents ?? [];
+        .then(ScheduledEvents => {
+            this._scheduledEvents = ScheduledEvents ?? [];
             this._scheduledEventsSubject.next(this._scheduledEvents);
             return this._scheduledEvents;
          })
@@ -801,9 +808,9 @@ export class SchedulingTargetData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.schedulingTarget.Households.then(households => { ... })
+     *   this.schedulingTarget.Households.then(schedulingTargets => { ... })
      *   or
-     *   await this.schedulingTarget.Households
+     *   await this.schedulingTarget.schedulingTargets
      *
     */
     public get Households(): Promise<HouseholdData[]> {
@@ -828,8 +835,8 @@ export class SchedulingTargetData {
         this._householdsPromise = lastValueFrom(
             SchedulingTargetService.Instance.GetHouseholdsForSchedulingTarget(this.id)
         )
-        .then(households => {
-            this._households = households ?? [];
+        .then(Households => {
+            this._households = Households ?? [];
             this._householdsSubject.next(this._households);
             return this._households;
          })

@@ -123,6 +123,7 @@ export class ScheduledEventDependencyData {
     private _scheduledEventDependencyChangeHistoriesPromise: Promise<ScheduledEventDependencyChangeHistoryData[]> | null  = null;
     private _scheduledEventDependencyChangeHistoriesSubject = new BehaviorSubject<ScheduledEventDependencyChangeHistoryData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -142,7 +143,7 @@ export class ScheduledEventDependencyData {
     );
 
   
-    public ScheduledEventDependencyChangeHistoriesCount$ = ScheduledEventDependencyService.Instance.GetScheduledEventDependenciesRowCount({scheduledEventDependencyId: this.id,
+    public ScheduledEventDependencyChangeHistoriesCount$ = ScheduledEventDependencyChangeHistoryService.Instance.GetScheduledEventDependencyChangeHistoriesRowCount({scheduledEventDependencyId: this.id,
       active: true,
       deleted: false
     });
@@ -206,9 +207,9 @@ export class ScheduledEventDependencyData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.scheduledEventDependency.ScheduledEventDependencyChangeHistories.then(scheduledEventDependencyChangeHistories => { ... })
+     *   this.scheduledEventDependency.ScheduledEventDependencyChangeHistories.then(scheduledEventDependencies => { ... })
      *   or
-     *   await this.scheduledEventDependency.ScheduledEventDependencyChangeHistories
+     *   await this.scheduledEventDependency.scheduledEventDependencies
      *
     */
     public get ScheduledEventDependencyChangeHistories(): Promise<ScheduledEventDependencyChangeHistoryData[]> {
@@ -233,8 +234,8 @@ export class ScheduledEventDependencyData {
         this._scheduledEventDependencyChangeHistoriesPromise = lastValueFrom(
             ScheduledEventDependencyService.Instance.GetScheduledEventDependencyChangeHistoriesForScheduledEventDependency(this.id)
         )
-        .then(scheduledEventDependencyChangeHistories => {
-            this._scheduledEventDependencyChangeHistories = scheduledEventDependencyChangeHistories ?? [];
+        .then(ScheduledEventDependencyChangeHistories => {
+            this._scheduledEventDependencyChangeHistories = ScheduledEventDependencyChangeHistories ?? [];
             this._scheduledEventDependencyChangeHistoriesSubject.next(this._scheduledEventDependencyChangeHistories);
             return this._scheduledEventDependencyChangeHistories;
          })

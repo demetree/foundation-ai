@@ -102,7 +102,7 @@ namespace Foundation.CodeGeneration
                         angularDataServiceCode = BuildAngularDataServiceImplementation(moduleName, type, scriptGenTable, addAuthorization);
 
 
-                        string camelCaseName = CamelCase(type.Name);
+                        string camelCaseName = CamelCase(type.Name, false);
 
                         // Fix nonsense with some pluralization
                         if (camelCaseName.EndsWith("Statu") == true || camelCaseName.EndsWith("Campu") == true)
@@ -197,7 +197,7 @@ namespace Foundation.CodeGeneration
                     //
                     if (scriptGenTable != null && scriptGenTable.excludeFromCodeGeneration == false)
                     {
-                        string camelCaseName = CamelCase(type.Name);
+                        string camelCaseName = CamelCase(type.Name, false);
                         if (camelCaseName.EndsWith("Statu") == true || camelCaseName.EndsWith("Campu") == true)
                         {
                             camelCaseName += "s";
@@ -331,7 +331,7 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
                 }
             }
 
-            foreach (string foreignKeyTable in uniqueForeignKeyTables) 
+            foreach (string foreignKeyTable in uniqueForeignKeyTables)
             {
                 sb.AppendLine($"import {{ {foreignKeyTable}Data }} from './{StringUtility.ConvertToAngularComponentName(foreignKeyTable)}.service';");
             }
@@ -354,7 +354,7 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
                 //{
                 //    continue;
                 //}
-                
+
                 //
                 // Check each other targetTable for a link to the table we are processing
                 //
@@ -443,11 +443,11 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
                     continue;
                 }
 
-                sb.AppendLine($"        private {CamelCase(fk.sourceTable.name)}Service: {fk.sourceTable.name}Service,");
+                sb.AppendLine($"        private {CamelCase(fk.sourceTable.name, false)}Service: {fk.sourceTable.name}Service,");
                 serviceImportsAdded.Add(fk.sourceTable.name);
             }
 
-        sb.AppendLine(@"        @Inject('BASE_URL') private baseUrl: string) {");
+            sb.AppendLine(@"        @Inject('BASE_URL') private baseUrl: string) {");
 
             sb.AppendLine("        super(http, alertService, authService);");
             sb.AppendLine();
@@ -540,11 +540,11 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
 
 
                 string sourceTableName = fk.sourceTable.name;
-                string sourceFieldName = fk.field.name;
+                string sourceFieldNameWithoutId = fk.field.name;
 
-                if (sourceFieldName.EndsWith("Id") == true)
+                if (sourceFieldNameWithoutId.EndsWith("Id") == true)
                 {
-                    sourceFieldName = sourceFieldName.Substring(0, sourceFieldName.Length - 2);
+                    sourceFieldNameWithoutId = sourceFieldNameWithoutId.Substring(0, sourceFieldNameWithoutId.Length - 2);
                 }
                 //
                 // Most normal FKs will have a source field name that matches this table.  For those, change 
@@ -553,18 +553,32 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
                 // However, if the FK has a different field name for some non-direct purpose like a parent reference,
                 // then use the name of the field from the FK's source table
                 //
-                if (sourceFieldName.Trim().ToUpper() == fk.targetTable.name.Trim().ToUpper())
+                string primaryNameToUsePascalCase;
+
+                if (sourceFieldNameWithoutId.Trim().ToUpper() == fk.targetTable.name.Trim().ToUpper())
                 {
-                    sourceFieldName = sourceTableName;
+                    // Pascal case name of the table is the outcome.
+                    //
+                    primaryNameToUsePascalCase = sourceTableName;
+                }
+                else
+                {
+                    //
+                    // Pascal case name of the source table and the source field name is the outcome.
+                    //
+                    primaryNameToUsePascalCase = $"{sourceTableName}{CamelCaseToPascalCase(sourceFieldNameWithoutId)}";
                 }
 
+                string pluralCamelCasePrimaryName = Pluralize(CamelCase(primaryNameToUsePascalCase, false));
 
 
-                string camelCaseNameForEntity = CamelCase(entity, true);
-                string camelCaseNameForLinkTable = CamelCase(sourceTableName, true);
+
+
+                string camelCaseNameForEntity = CamelCase(entity, false);
+                string camelCaseNameForLinkTable = CamelCase(sourceTableName, false);
 
                 sb.AppendLine($@"
-    public Get{Pluralize(CamelCaseToPascalCase(sourceFieldName))}For{entity}({camelCaseNameForEntity}Id: number | bigint, active: boolean = true, deleted: boolean = false): Observable<{sourceTableName}Data[]> {{
+    public Get{Pluralize(primaryNameToUsePascalCase)}For{entity}({camelCaseNameForEntity}Id: number | bigint, active: boolean = true, deleted: boolean = false): Observable<{sourceTableName}Data[]> {{
         return this.{camelCaseNameForLinkTable}Service.Get{sourceTableName}List({{
             {fk.field.name}: {camelCaseNameForEntity}Id,
             active: active,
@@ -618,7 +632,7 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
 
             foreach (string tableName in tablesThatLinkHere)
             {
-                string pluralCamelCaseNameForLinkTable = CamelCase(Pluralize(tableName), true);
+                string pluralCamelCaseNameForLinkTable = CamelCase(Pluralize(tableName), false);
 
                 sb.AppendLine($@"    (revived as any)._{pluralCamelCaseNameForLinkTable} = null;");
                 sb.AppendLine($@"    (revived as any)._{pluralCamelCaseNameForLinkTable}Promise = null;");
@@ -639,11 +653,11 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
     // 2. But private methods (load{entity}XYZ, etc.) are not accessible via the typed variable
     // 3. This is a controlled revival context — safe and necessary
     //");
-            
+
             foreach (string tableName in tablesThatLinkHere)
             {
                 string pluralTableName = Pluralize(tableName);
-                string pluralCamelCaseNameForLinkTable = CamelCase(Pluralize(tableName), true);
+                string pluralCamelCaseNameForLinkTable = CamelCase(Pluralize(tableName), false);
 
                 sb.AppendLine($@"    (revived as any).{pluralTableName}$ = (revived as any)._{pluralCamelCaseNameForLinkTable}Subject.asObservable().pipe(
         tap(() => {{
@@ -654,7 +668,7 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
         shareReplay(1)
       );
 
-    (revived as any).{pluralTableName}Count$ = {tableName}Service.Instance.Get{pluralTableName}RowCount({{{CamelCase(entity)}Id: (revived as any).id,
+    (revived as any).{pluralTableName}Count$ = {tableName}Service.Instance.Get{pluralTableName}RowCount({{{CamelCase(entity, false)}Id: (revived as any).id,
       active: true,
       deleted: false
     }});
@@ -820,28 +834,28 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
             {
 
                 sb.AppendLine(@$"
-    public Put{entity}(id: bigint | number, {CamelCase(entity)}: {entity}SubmitData) : Observable<{entity}Data> {{
+    public Put{entity}(id: bigint | number, {CamelCase(entity, false)}: {entity}SubmitData) : Observable<{entity}Data> {{
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.put<{entity}Data>(this.baseUrl + 'api/{entity}/' + id.toString(), {CamelCase(entity)}, {{ headers: authenticationHeaders }} ).pipe(
+        return this.http.put<{entity}Data>(this.baseUrl + 'api/{entity}/' + id.toString(), {CamelCase(entity, false)}, {{ headers: authenticationHeaders }} ).pipe(
             tap(() => this.ClearAllCaches()),
             map(raw => this.Revive{entity}(raw)),
             catchError(error => {{
-                return this.handleError(error, () => this.Put{entity}(id, {CamelCase(entity)}));
+                return this.handleError(error, () => this.Put{entity}(id, {CamelCase(entity, false)}));
             }}));
     }}
 
 
-    public Post{entity}({CamelCase(entity)}: {entity}SubmitData) : Observable<{entity}Data> {{
+    public Post{entity}({CamelCase(entity, false)}: {entity}SubmitData) : Observable<{entity}Data> {{
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.post<{entity}Data>(this.baseUrl + 'api/{entity}', {CamelCase(entity)}, {{ headers: authenticationHeaders }} ).pipe(
+        return this.http.post<{entity}Data>(this.baseUrl + 'api/{entity}', {CamelCase(entity, false)}, {{ headers: authenticationHeaders }} ).pipe(
             tap(() => this.ClearAllCaches()),
             map(raw => this.Revive{entity}(raw)),
             catchError(error => {{
-              return this.handleError(error, () => this.Post{entity}({CamelCase(entity)}));
+              return this.handleError(error, () => this.Post{entity}({CamelCase(entity, false)}));
             }}));
     }}
 
@@ -861,24 +875,24 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
             else
             {
                 sb.AppendLine($@"
-    public Put{entity}(id: bigint | number, {CamelCase(entity)}: {entity}SubmitData) : Observable<{entity}Data> {{
+    public Put{entity}(id: bigint | number, {CamelCase(entity, false)}: {entity}SubmitData) : Observable<{entity}Data> {{
 
-        return this.http.put<{entity}Data>(this.baseUrl + 'api/{entity}/' + id.toString(), {CamelCase(entity)}).pipe(
+        return this.http.put<{entity}Data>(this.baseUrl + 'api/{entity}/' + id.toString(), {CamelCase(entity, false)}).pipe(
             tap(() => this.ClearAllCaches()),
             map(raw => this.Revive{entity}(raw)),
             catchError(error => {{
-                return this.handleError(error, () => this.Put{entity}(id, {CamelCase(entity)}));
+                return this.handleError(error, () => this.Put{entity}(id, {CamelCase(entity, false)}));
             }}));
     }}
 
 
-    public Post{entity}({CamelCase(entity)}: {entity}SubmitData) : Observable<{entity}Data> {{
+    public Post{entity}({CamelCase(entity, false)}: {entity}SubmitData) : Observable<{entity}Data> {{
 
-        return this.http.post<{entity}Data>(this.baseUrl + 'api/{entity}', {CamelCase(entity)}).pipe(
+        return this.http.post<{entity}Data>(this.baseUrl + 'api/{entity}', {CamelCase(entity, false)}).pipe(
             tap(() => this.ClearAllCaches()),
             map(raw => this.Revive{entity}(raw)),
             catchError(error => {{
-                return this.handleError(error, () => this.Post{entity}({CamelCase(entity)}));
+                return this.handleError(error, () => this.Post{entity}({CamelCase(entity, false)}));
             }}));
     }}
   
@@ -982,7 +996,7 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
             sb.AppendLine(@"        const configHash = this.getConfigHash(config);
 
         if (!this.listCache.has(configHash)) {
-            const " + CamelCase(entity) + @"List$ = this.request" + entity + @"List(config).pipe(
+            const " + CamelCase(entity, false) + @"List$ = this.request" + entity + @"List(config).pipe(
                 shareReplay({ bufferSize: SHARE_REPLAY_CACHE_SIZE, refCount: true }),
                 catchError((error) => {
                     this.listCache.delete(configHash);
@@ -993,9 +1007,9 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
                 })
             );
 
-            this.listCache.set(configHash, " + CamelCase(entity) + @"List$);
+            this.listCache.set(configHash, " + CamelCase(entity, false) + @"List$);
 
-            return " + CamelCase(entity) + @"List$;
+            return " + CamelCase(entity, false) + @"List$;
         }
 
         return this.listCache.get(configHash) as Observable<Array<" + entity + @"Data>>;
@@ -1054,7 +1068,7 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
             sb.AppendLine(@"        const configHash = this.getConfigHash(config);
 
         if (!this.rowCountCache.has(configHash)) {
-            const " + CamelCase(plural) + @"RowCount$ = this.request" + plural + @"RowCount(config).pipe(
+            const " + CamelCase(plural, false) + @"RowCount$ = this.request" + plural + @"RowCount(config).pipe(
                 shareReplay({ bufferSize: SHARE_REPLAY_CACHE_SIZE, refCount: true }),
                 catchError((error) => {
                     this.rowCountCache.delete(configHash);
@@ -1065,9 +1079,9 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
                 })
             )
 
-            this.rowCountCache.set(configHash, " + CamelCase(plural) + @"RowCount$);
+            this.rowCountCache.set(configHash, " + CamelCase(plural, false) + @"RowCount$);
 
-            return " + CamelCase(plural) + @"RowCount$;
+            return " + CamelCase(plural, false) + @"RowCount$;
         }
 
         return this.rowCountCache.get(configHash) as Observable<bigint | number>;
@@ -1132,7 +1146,7 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
             sb.AppendLine(@"        const configHash = this.getConfigHash(config);
 
         if (!this.basicListDataCache.has(configHash)) {
-            const " + CamelCase(plural) + @"BasicListData$ = this.request" + plural + @"BasicListData(config).pipe(
+            const " + CamelCase(plural, false) + @"BasicListData$ = this.request" + plural + @"BasicListData(config).pipe(
                 shareReplay({ bufferSize: SHARE_REPLAY_CACHE_SIZE, refCount: true }),
                 catchError((error) => {
                     this.basicListDataCache.delete(configHash);
@@ -1143,9 +1157,9 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
                 })
             );
       
-            this.basicListDataCache.set(configHash, " + CamelCase(plural) + @"BasicListData$);
+            this.basicListDataCache.set(configHash, " + CamelCase(plural, false) + @"BasicListData$);
 
-            return " + CamelCase(plural) + @"BasicListData$;
+            return " + CamelCase(plural, false) + @"BasicListData$;
         }
 
         return this.basicListDataCache.get(configHash) as Observable<Array<" + entity + @"BasicListData>>;
@@ -1205,7 +1219,7 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
 
         if (this.recordCache.has(configHash) == false) {
 
-            const " + CamelCase(entity) + @"$ = this.request" + entity + @"(id, includeRelations).pipe(
+            const " + CamelCase(entity, false) + @"$ = this.request" + entity + @"(id, includeRelations).pipe(
                 shareReplay({ bufferSize: SHARE_REPLAY_CACHE_SIZE, refCount: true }),
                 catchError((error) => {
                     this.recordCache.delete(configHash);
@@ -1216,9 +1230,9 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
                 })
             );
 
-            this.recordCache.set(configHash, " + CamelCase(entity) + @"$);
+            this.recordCache.set(configHash, " + CamelCase(entity, false) + @"$);
 
-            return " + CamelCase(entity) + @"$;
+            return " + CamelCase(entity, false) + @"$;
         }
 
         return this.recordCache.get(configHash) as Observable<" + entity + @"Data>;
@@ -1329,8 +1343,8 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
                 {
                     sb.AppendLine("    " + prop.Name + ": boolean | null | undefined = null;");
                 }
-                else if (propertyType == typeof(DateTime) || 
-                         propertyType == typeof(DateOnly) || 
+                else if (propertyType == typeof(DateTime) ||
+                         propertyType == typeof(DateOnly) ||
                          propertyType == typeof(TimeOnly))  // Might need to break this out more specifically...
                 {
                     //
@@ -1369,7 +1383,7 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
             string entity = table.name;  // string entity = type.Name;
             string plural = Pluralize(entity);
 
-            string camelCaseName = CamelCase(entity);
+            string camelCaseName = CamelCase(entity, false);
 
             StringBuilder sb = new StringBuilder();
 
@@ -1608,7 +1622,7 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
             sb.AppendLine("    //");
             sb.AppendLine("    // Private lazy-loading caches for related collections");
             sb.AppendLine("    //");
-            
+
             foreach (Database.Table.ForeignKey fk in foreignKeysThatLinkHere)
             {
                 //
@@ -1636,13 +1650,24 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
                 if (sourceFieldName.Trim().ToUpper() == fk.targetTable.name.Trim().ToUpper())
                 {
                     sourceFieldName = sourceTableName;
+
+                    sb.AppendLine($@"    private _{Pluralize(CamelCase(sourceFieldName, false))}: {sourceTableName}Data[] | null = null;
+    private _{Pluralize(CamelCase(sourceFieldName, false))}Promise: Promise<{sourceTableName}Data[]> | null  = null;
+    private _{Pluralize(CamelCase(sourceFieldName, false))}Subject = new BehaviorSubject<{sourceTableName}Data[] | null>(null);
+
+                ");
                 }
+                else
+                {
+                    //
+                    // This is a more complex link.  Use the source table name, and it's field as the child variable names
+                    //
+                    sb.AppendLine($@"    private _{CamelCase(sourceTableName, false)}{Pluralize(CamelCaseToPascalCase(sourceFieldName))}: {sourceTableName}Data[] | null = null;
+    private _{CamelCase(sourceTableName, false)}{Pluralize(CamelCaseToPascalCase(sourceFieldName))}Promise: Promise<{sourceTableName}Data[]> | null  = null;
+    private _{CamelCase(sourceTableName, false)}{Pluralize(CamelCaseToPascalCase(sourceFieldName))}Subject = new BehaviorSubject<{sourceTableName}Data[] | null>(null);
+                    ");
 
-
-                sb.AppendLine($@"    private _{Pluralize(CamelCase(sourceFieldName))}: {sourceTableName}Data[] | null = null;
-    private _{Pluralize(CamelCase(sourceFieldName))}Promise: Promise<{sourceTableName}Data[]> | null  = null;
-    private _{Pluralize(CamelCase(sourceFieldName))}Subject = new BehaviorSubject<{sourceTableName}Data[] | null>(null);
-");
+                }
             }
 
             sb.AppendLine();
@@ -1652,7 +1677,7 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
             sb.AppendLine("    //");
             sb.AppendLine("    // Also includes an observable for each child list to access its row count.");
             sb.AppendLine("    //");
-            
+
             foreach (Database.Table.ForeignKey fk in foreignKeysThatLinkHere)
             {
                 //
@@ -1665,11 +1690,11 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
 
 
                 string sourceTableName = fk.sourceTable.name;
-                string sourceFieldName = fk.field.name;
+                string sourceFieldNameWithoutId = fk.field.name;
 
-                if (sourceFieldName.EndsWith("Id") == true)
+                if (sourceFieldNameWithoutId.EndsWith("Id") == true)
                 {
-                    sourceFieldName = sourceFieldName.Substring(0, sourceFieldName.Length - 2);
+                    sourceFieldNameWithoutId = sourceFieldNameWithoutId.Substring(0, sourceFieldNameWithoutId.Length - 2);
                 }
                 //
                 // Most normal FKs will have a source field name that matches this table.  For those, change 
@@ -1678,22 +1703,21 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
                 // However, if the FK has a different field name for some non-direct purpose like a parent reference,
                 // then use the name of the field from the FK's source table
                 //
-                if (sourceFieldName.Trim().ToUpper() == fk.targetTable.name.Trim().ToUpper())
+                if (sourceFieldNameWithoutId.Trim().ToUpper() == fk.targetTable.name.Trim().ToUpper())
                 {
-                    sourceFieldName = sourceTableName;
-                }
+                    sourceFieldNameWithoutId = sourceTableName;
 
-                string targetTableNamePascalCase = CamelCaseToPascalCase(fk.targetTable.name);      // tables names should be already be Pascal case by convention, but just in case
+                    string targetTableNamePascalCase = CamelCaseToPascalCase(fk.targetTable.name);      // tables names should be already be Pascal case by convention, but just in case
 
-                string pluralSourcePascalCase = Pluralize(CamelCaseToPascalCase(sourceFieldName));       // Note the uncamelcasing here 
+                    string pluralSourcePascalCase = Pluralize(CamelCaseToPascalCase(sourceFieldNameWithoutId));       // Note the uncamelcasing here 
 
-                string pluralSourceCamelCase = Pluralize(CamelCase(sourceFieldName));
+                    string pluralSourceCamelCase = Pluralize(CamelCase(sourceFieldNameWithoutId, false));
 
-                sb.AppendLine($@"    public {pluralSourcePascalCase}$ = this._{pluralSourceCamelCase}Subject.asObservable().pipe(
+                    sb.AppendLine($@"    public {pluralSourcePascalCase}$ = this._{pluralSourceCamelCase}Subject.asObservable().pipe(
 
         // Trigger load on first subscription if not already loaded
         tap(() => {{
-          if (this._{pluralSourceCamelCase} === null && this._{pluralSourceCamelCase}Promise === null) {{
+          if (this._{Pluralize(CamelCase(sourceFieldNameWithoutId, false))} === null && this._{Pluralize(CamelCase(sourceFieldNameWithoutId, false))}Promise === null) {{
             this.load{pluralSourcePascalCase}(); // Private method to start fetch
           }}
         }}),
@@ -1701,13 +1725,44 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
     );
 
   
-    public {pluralSourcePascalCase}Count$ = {fk.targetTable.name}Service.Instance.Get{Pluralize(targetTableNamePascalCase)}RowCount({{{camelCaseName}Id: this.id,
+    public {pluralSourcePascalCase}Count$ = {fk.sourceTable.name}Service.Instance.Get{Pluralize(fk.sourceTable.name)}RowCount({{{fk.field.name}: this.id,
       active: true,
       deleted: false
     }});
 
 
 ");
+
+                }
+                else
+                {
+                    //
+                    // More complex than simple table name link.,
+                    //
+                    string targetTableNamePascalCase = CamelCaseToPascalCase(fk.targetTable.name);      // tables names should be already be Pascal case by convention, but just in case
+
+
+                    string nameToUse = $"{CamelCase(sourceTableName, false)}{Pluralize(CamelCaseToPascalCase(sourceFieldNameWithoutId))}";
+
+                    sb.AppendLine($@"    public {CamelCaseToPascalCase(nameToUse)}$ = this._{nameToUse}Subject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {{
+          if (this._{nameToUse} === null && this._{nameToUse}Promise === null) {{
+            this.load{CamelCaseToPascalCase(nameToUse)}(); // Private method to start fetch
+          }}
+        }}),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public {CamelCaseToPascalCase(nameToUse)}Count$ = {fk.sourceTable.name}Service.Instance.Get{Pluralize(fk.sourceTable.name)}RowCount({{{fk.field.name}: this.id,
+      active: true,
+      deleted: false
+    }});
+
+");
+                }
             }
 
 
@@ -1727,12 +1782,12 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
   // Usage examples:;
   //
   //  Async:
-  //   await this.{CamelCase(entity)}.Reload();
+  //   await this.{CamelCase(entity, false)}.Reload();
   //
   //  Non Async:
   //
-  //     {CamelCase(entity)}[0].Reload().then(x => {{
-  //        this.{CamelCase(entity)} = x;
+  //     {CamelCase(entity, false)}[0].Reload().then(x => {{
+  //        this.{CamelCase(entity, false)} = x;
   //    }});
   //
   public async Reload(includeRelations: boolean = true): Promise<this> {{
@@ -1752,7 +1807,7 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
 
 ");
 
-            
+
             sb.AppendLine("  private clearAllLazyCaches(): void {");
             sb.AppendLine("     //");
             sb.AppendLine("     // Reset every collection cache and notify subscribers");
@@ -1768,11 +1823,11 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
                 }
 
                 string sourceTableName = fk.sourceTable.name;
-                string sourceFieldName = fk.field.name;
+                string sourceFieldNameWithoutId = fk.field.name;
 
-                if (sourceFieldName.EndsWith("Id") == true)
+                if (sourceFieldNameWithoutId.EndsWith("Id") == true)
                 {
-                    sourceFieldName = sourceFieldName.Substring(0, sourceFieldName.Length - 2);
+                    sourceFieldNameWithoutId = sourceFieldNameWithoutId.Substring(0, sourceFieldNameWithoutId.Length - 2);
                 }
                 //
                 // Most normal FKs will have a source field name that matches this table.  For those, change 
@@ -1781,17 +1836,31 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
                 // However, if the FK has a different field name for some non-direct purpose like a parent reference,
                 // then use the name of the field from the FK's source table
                 //
-                if (sourceFieldName.Trim().ToUpper() == fk.targetTable.name.Trim().ToUpper())
+                if (sourceFieldNameWithoutId.Trim().ToUpper() == fk.targetTable.name.Trim().ToUpper())
                 {
-                    sourceFieldName = sourceTableName;
+                    string pluralCamelCaseTableName = Pluralize(CamelCase(sourceTableName, false));
+
+                    sb.AppendLine($"     this._{pluralCamelCaseTableName} = null;");
+                    sb.AppendLine($"     this._{pluralCamelCaseTableName}Promise = null;");
+                    sb.AppendLine($"     this._{pluralCamelCaseTableName}Subject.next(null);");
+                }
+                else
+                {
+                    //
+                    // More complex here.  Use source table name and source field name
+                    //
+                    string nameToUse = $"{CamelCase(sourceTableName, false)}{Pluralize(CamelCaseToPascalCase(sourceFieldNameWithoutId))}";
+
+
+
+                    sb.AppendLine($"     this._{nameToUse} = null;");
+                    sb.AppendLine($"     this._{nameToUse}Promise = null;");
+                    sb.AppendLine($"     this._{nameToUse}Subject.next(null);");
+
                 }
 
 
-                string pluralCamelCaseTableName = Pluralize(CamelCase(sourceFieldName));
 
-                sb.AppendLine($"     this._{pluralCamelCaseTableName} = null;");
-                sb.AppendLine($"     this._{pluralCamelCaseTableName}Promise = null;");
-                sb.AppendLine($"     this._{pluralCamelCaseTableName}Subject.next(null);");
                 sb.AppendLine();
             }
             sb.AppendLine("  }");
@@ -1815,11 +1884,11 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
                 }
 
                 string sourceTableName = fk.sourceTable.name;
-                string sourceFieldName = fk.field.name;
+                string sourceFieldNameWithoutId = fk.field.name;
 
-                if (sourceFieldName.EndsWith("Id") == true)
+                if (sourceFieldNameWithoutId.EndsWith("Id") == true)
                 {
-                    sourceFieldName = sourceFieldName.Substring(0, sourceFieldName.Length - 2);
+                    sourceFieldNameWithoutId = sourceFieldNameWithoutId.Substring(0, sourceFieldNameWithoutId.Length - 2);
                 }
                 //
                 // Most normal FKs will have a source field name that matches this table.  For those, change 
@@ -1828,75 +1897,89 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
                 // However, if the FK has a different field name for some non-direct purpose like a parent reference,
                 // then use the name of the field from the FK's source table
                 //
-                if (sourceFieldName.Trim().ToUpper() == fk.targetTable.name.Trim().ToUpper())
+
+                string primaryNameToUsePascalCase;
+
+                if (sourceFieldNameWithoutId.Trim().ToUpper() == fk.targetTable.name.Trim().ToUpper())
                 {
-                    sourceFieldName = sourceTableName;
+                    // Pascal case name of the table is the outcome.
+                    //
+                    primaryNameToUsePascalCase = sourceTableName;
+                }
+                else
+                {
+                    //
+                    // Pascal case name of the table is the outcome.
+                    //
+                    primaryNameToUsePascalCase = $"{sourceTableName}{CamelCaseToPascalCase(sourceFieldNameWithoutId)}";
                 }
 
-                string pluralCamelCaseSourceFieldName = Pluralize(CamelCase(sourceFieldName));
+                string pluralCamelCasePrimaryName = Pluralize(CamelCase(primaryNameToUsePascalCase, false));
+
+
 
                 sb.AppendLine(@$"    /**
      *
-     * Gets the {Pluralize(sourceFieldName)} for this {entity}.
+     * Gets the {Pluralize(primaryNameToUsePascalCase)} for this {entity}.
      *
      * If already loaded, returns cached array.
      *
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.{CamelCase(entity)}.{Pluralize(sourceFieldName)}.then({Pluralize(CamelCase(sourceFieldName))} => {{ ... }})
+     *   this.{CamelCase(entity, false)}.{Pluralize(primaryNameToUsePascalCase)}.then({Pluralize(CamelCase(sourceFieldNameWithoutId, false))} => {{ ... }})
      *   or
-     *   await this.{CamelCase(entity)}.{Pluralize(sourceFieldName)}
+     *   await this.{CamelCase(entity, false)}.{Pluralize(sourceFieldNameWithoutId)}
      *
     */
-    public get {Pluralize(sourceFieldName)}(): Promise<{fk.sourceTable.name}Data[]> {{
-        if (this._{pluralCamelCaseSourceFieldName} !== null) {{
-            return Promise.resolve(this._{pluralCamelCaseSourceFieldName});
+    public get {Pluralize(primaryNameToUsePascalCase)}(): Promise<{fk.sourceTable.name}Data[]> {{
+        if (this._{Pluralize(CamelCase(primaryNameToUsePascalCase, false))} !== null) {{
+            return Promise.resolve(this._{Pluralize(CamelCase(primaryNameToUsePascalCase, false))});
         }}
 
-        if (this._{pluralCamelCaseSourceFieldName}Promise !== null) {{
-            return this._{pluralCamelCaseSourceFieldName}Promise;
+        if (this._{Pluralize(CamelCase(primaryNameToUsePascalCase, false))}Promise !== null) {{
+            return this._{Pluralize(CamelCase(primaryNameToUsePascalCase, false))}Promise;
         }}
 
         // Start the load
-        this.load{Pluralize(CamelCaseToPascalCase(sourceFieldName))}();
+        this.load{Pluralize(primaryNameToUsePascalCase)}();
 
-        return this._{pluralCamelCaseSourceFieldName}Promise!;
+        return this._{Pluralize(CamelCase(primaryNameToUsePascalCase, false))}Promise!;
     }}
 
 
 
-    private load{Pluralize(CamelCaseToPascalCase(sourceFieldName))}(): void {{
+    private load{Pluralize(CamelCaseToPascalCase(primaryNameToUsePascalCase))}(): void {{
 
-        this._{pluralCamelCaseSourceFieldName}Promise = lastValueFrom(
-            {entity}Service.Instance.Get{Pluralize(CamelCaseToPascalCase(sourceFieldName))}For{entity}(this.id)
+        this._{Pluralize(CamelCase(primaryNameToUsePascalCase, false))}Promise = lastValueFrom(
+            {entity}Service.Instance.Get{Pluralize(primaryNameToUsePascalCase)}For{entity}(this.id)
         )
-        .then({pluralCamelCaseSourceFieldName} => {{
-            this._{pluralCamelCaseSourceFieldName} = {pluralCamelCaseSourceFieldName} ?? [];
-            this._{pluralCamelCaseSourceFieldName}Subject.next(this._{pluralCamelCaseSourceFieldName});
-            return this._{pluralCamelCaseSourceFieldName};
+        .then({Pluralize(primaryNameToUsePascalCase)} => {{
+            this._{pluralCamelCasePrimaryName} = {Pluralize(primaryNameToUsePascalCase)} ?? [];
+            this._{pluralCamelCasePrimaryName}Subject.next(this._{pluralCamelCasePrimaryName});
+            return this._{pluralCamelCasePrimaryName};
          }})
         .catch(err => {{
-            this._{pluralCamelCaseSourceFieldName} = [];
-            this._{pluralCamelCaseSourceFieldName}Subject.next(this._{pluralCamelCaseSourceFieldName});
+            this._{pluralCamelCasePrimaryName} = [];
+            this._{pluralCamelCasePrimaryName}Subject.next(this._{pluralCamelCasePrimaryName});
             throw err;
         }})
         .finally(() => {{
-            this._{pluralCamelCaseSourceFieldName}Promise = null; // Allow retry if needed
+            this._{Pluralize(CamelCase(primaryNameToUsePascalCase, false))}Promise = null; // Allow retry if needed
         }});
     }}
 
     /**
-     * Clears the cached {sourceFieldName}. Call after mutations to force refresh.
+     * Clears the cached {primaryNameToUsePascalCase}. Call after mutations to force refresh.
      */
-    public Clear{Pluralize(CamelCaseToPascalCase(sourceFieldName))}Cache(): void {{
-        this._{pluralCamelCaseSourceFieldName} = null;
-        this._{pluralCamelCaseSourceFieldName}Promise = null;
-        this._{pluralCamelCaseSourceFieldName}Subject.next(this._{pluralCamelCaseSourceFieldName});      // Emit to observable
+    public Clear{Pluralize(CamelCaseToPascalCase(primaryNameToUsePascalCase))}Cache(): void {{
+        this._{pluralCamelCasePrimaryName} = null;
+        this._{pluralCamelCasePrimaryName}Promise = null;
+        this._{pluralCamelCasePrimaryName}Subject.next(this._{pluralCamelCasePrimaryName});      // Emit to observable
     }}
 
-    public get Has{Pluralize(CamelCaseToPascalCase(sourceFieldName))}(): Promise<boolean> {{
-        return this.{Pluralize(sourceFieldName)}.then({pluralCamelCaseSourceFieldName} => {pluralCamelCaseSourceFieldName}.length > 0);
+    public get Has{Pluralize(CamelCaseToPascalCase(primaryNameToUsePascalCase))}(): Promise<boolean> {{
+        return this.{Pluralize(primaryNameToUsePascalCase)}.then({pluralCamelCasePrimaryName} => {pluralCamelCasePrimaryName}.length > 0);
     }}
 
 ");
@@ -2034,7 +2117,7 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
 
                     }
                     else if (propertyType == typeof(DateTime) ||        // Might need to break these out more..
-                             propertyType == typeof(DateOnly) || 
+                             propertyType == typeof(DateOnly) ||
                              propertyType == typeof(TimeOnly))
                     {
                         //
@@ -2109,7 +2192,7 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
                 if (propertyType.GenericTypeArguments != null && propertyType.GenericTypeArguments.Length > 0)
                 {
                     string entityName = propertyType.GenericTypeArguments[0].Name;
-                    string camelCaseName = CamelCase(entityName);
+                    string camelCaseName = CamelCase(entityName, false);
                     string pluralName = Pluralize(entityName);
                     string titleName = StringUtility.ConvertToHeader(camelCaseName);
                     string angularName = StringUtility.ConvertToAngularComponentName(entityName);

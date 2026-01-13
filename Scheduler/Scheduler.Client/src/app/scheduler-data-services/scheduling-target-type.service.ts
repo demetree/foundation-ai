@@ -121,10 +121,12 @@ export class SchedulingTargetTypeData {
     private _schedulingTargetsPromise: Promise<SchedulingTargetData[]> | null  = null;
     private _schedulingTargetsSubject = new BehaviorSubject<SchedulingTargetData[] | null>(null);
 
+                
     private _scheduledEventTemplates: ScheduledEventTemplateData[] | null = null;
     private _scheduledEventTemplatesPromise: Promise<ScheduledEventTemplateData[]> | null  = null;
     private _scheduledEventTemplatesSubject = new BehaviorSubject<ScheduledEventTemplateData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -144,7 +146,7 @@ export class SchedulingTargetTypeData {
     );
 
   
-    public SchedulingTargetsCount$ = SchedulingTargetTypeService.Instance.GetSchedulingTargetTypesRowCount({schedulingTargetTypeId: this.id,
+    public SchedulingTargetsCount$ = SchedulingTargetService.Instance.GetSchedulingTargetsRowCount({schedulingTargetTypeId: this.id,
       active: true,
       deleted: false
     });
@@ -163,7 +165,7 @@ export class SchedulingTargetTypeData {
     );
 
   
-    public ScheduledEventTemplatesCount$ = SchedulingTargetTypeService.Instance.GetSchedulingTargetTypesRowCount({schedulingTargetTypeId: this.id,
+    public ScheduledEventTemplatesCount$ = ScheduledEventTemplateService.Instance.GetScheduledEventTemplatesRowCount({schedulingTargetTypeId: this.id,
       active: true,
       deleted: false
     });
@@ -231,9 +233,9 @@ export class SchedulingTargetTypeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.schedulingTargetType.SchedulingTargets.then(schedulingTargets => { ... })
+     *   this.schedulingTargetType.SchedulingTargets.then(schedulingTargetTypes => { ... })
      *   or
-     *   await this.schedulingTargetType.SchedulingTargets
+     *   await this.schedulingTargetType.schedulingTargetTypes
      *
     */
     public get SchedulingTargets(): Promise<SchedulingTargetData[]> {
@@ -258,8 +260,8 @@ export class SchedulingTargetTypeData {
         this._schedulingTargetsPromise = lastValueFrom(
             SchedulingTargetTypeService.Instance.GetSchedulingTargetsForSchedulingTargetType(this.id)
         )
-        .then(schedulingTargets => {
-            this._schedulingTargets = schedulingTargets ?? [];
+        .then(SchedulingTargets => {
+            this._schedulingTargets = SchedulingTargets ?? [];
             this._schedulingTargetsSubject.next(this._schedulingTargets);
             return this._schedulingTargets;
          })
@@ -296,9 +298,9 @@ export class SchedulingTargetTypeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.schedulingTargetType.ScheduledEventTemplates.then(scheduledEventTemplates => { ... })
+     *   this.schedulingTargetType.ScheduledEventTemplates.then(schedulingTargetTypes => { ... })
      *   or
-     *   await this.schedulingTargetType.ScheduledEventTemplates
+     *   await this.schedulingTargetType.schedulingTargetTypes
      *
     */
     public get ScheduledEventTemplates(): Promise<ScheduledEventTemplateData[]> {
@@ -323,8 +325,8 @@ export class SchedulingTargetTypeData {
         this._scheduledEventTemplatesPromise = lastValueFrom(
             SchedulingTargetTypeService.Instance.GetScheduledEventTemplatesForSchedulingTargetType(this.id)
         )
-        .then(scheduledEventTemplates => {
-            this._scheduledEventTemplates = scheduledEventTemplates ?? [];
+        .then(ScheduledEventTemplates => {
+            this._scheduledEventTemplates = ScheduledEventTemplates ?? [];
             this._scheduledEventTemplatesSubject.next(this._scheduledEventTemplates);
             return this._scheduledEventTemplates;
          })

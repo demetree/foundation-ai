@@ -191,22 +191,26 @@ export class ConstituentData {
     private _constituentChangeHistoriesPromise: Promise<ConstituentChangeHistoryData[]> | null  = null;
     private _constituentChangeHistoriesSubject = new BehaviorSubject<ConstituentChangeHistoryData[] | null>(null);
 
+                
     private _pledges: PledgeData[] | null = null;
     private _pledgesPromise: Promise<PledgeData[]> | null  = null;
     private _pledgesSubject = new BehaviorSubject<PledgeData[] | null>(null);
 
-    private _defaultAcknowledgees: TributeData[] | null = null;
-    private _defaultAcknowledgeesPromise: Promise<TributeData[]> | null  = null;
-    private _defaultAcknowledgeesSubject = new BehaviorSubject<TributeData[] | null>(null);
-
+                
+    private _tributeDefaultAcknowledgees: TributeData[] | null = null;
+    private _tributeDefaultAcknowledgeesPromise: Promise<TributeData[]> | null  = null;
+    private _tributeDefaultAcknowledgeesSubject = new BehaviorSubject<TributeData[] | null>(null);
+                    
     private _gifts: GiftData[] | null = null;
     private _giftsPromise: Promise<GiftData[]> | null  = null;
     private _giftsSubject = new BehaviorSubject<GiftData[] | null>(null);
 
+                
     private _softCredits: SoftCreditData[] | null = null;
     private _softCreditsPromise: Promise<SoftCreditData[]> | null  = null;
     private _softCreditsSubject = new BehaviorSubject<SoftCreditData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -226,7 +230,7 @@ export class ConstituentData {
     );
 
   
-    public ConstituentChangeHistoriesCount$ = ConstituentService.Instance.GetConstituentsRowCount({constituentId: this.id,
+    public ConstituentChangeHistoriesCount$ = ConstituentChangeHistoryService.Instance.GetConstituentChangeHistoriesRowCount({constituentId: this.id,
       active: true,
       deleted: false
     });
@@ -245,30 +249,29 @@ export class ConstituentData {
     );
 
   
-    public PledgesCount$ = ConstituentService.Instance.GetConstituentsRowCount({constituentId: this.id,
+    public PledgesCount$ = PledgeService.Instance.GetPledgesRowCount({constituentId: this.id,
       active: true,
       deleted: false
     });
 
 
 
-    public DefaultAcknowledgees$ = this._defaultAcknowledgeesSubject.asObservable().pipe(
+    public TributeDefaultAcknowledgees$ = this._tributeDefaultAcknowledgeesSubject.asObservable().pipe(
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-          if (this._defaultAcknowledgees === null && this._defaultAcknowledgeesPromise === null) {
-            this.loadDefaultAcknowledgees(); // Private method to start fetch
+          if (this._tributeDefaultAcknowledgees === null && this._tributeDefaultAcknowledgeesPromise === null) {
+            this.loadTributeDefaultAcknowledgees(); // Private method to start fetch
           }
         }),
         shareReplay(1) // Cache last emit
     );
 
   
-    public DefaultAcknowledgeesCount$ = ConstituentService.Instance.GetConstituentsRowCount({constituentId: this.id,
+    public TributeDefaultAcknowledgeesCount$ = TributeService.Instance.GetTributesRowCount({defaultAcknowledgeeId: this.id,
       active: true,
       deleted: false
     });
-
 
 
     public Gifts$ = this._giftsSubject.asObservable().pipe(
@@ -283,7 +286,7 @@ export class ConstituentData {
     );
 
   
-    public GiftsCount$ = ConstituentService.Instance.GetConstituentsRowCount({constituentId: this.id,
+    public GiftsCount$ = GiftService.Instance.GetGiftsRowCount({constituentId: this.id,
       active: true,
       deleted: false
     });
@@ -302,7 +305,7 @@ export class ConstituentData {
     );
 
   
-    public SoftCreditsCount$ = ConstituentService.Instance.GetConstituentsRowCount({constituentId: this.id,
+    public SoftCreditsCount$ = SoftCreditService.Instance.GetSoftCreditsRowCount({constituentId: this.id,
       active: true,
       deleted: false
     });
@@ -355,9 +358,9 @@ export class ConstituentData {
      this._pledgesPromise = null;
      this._pledgesSubject.next(null);
 
-     this._defaultAcknowledgees = null;
-     this._defaultAcknowledgeesPromise = null;
-     this._defaultAcknowledgeesSubject.next(null);
+     this._tributeDefaultAcknowledgees = null;
+     this._tributeDefaultAcknowledgeesPromise = null;
+     this._tributeDefaultAcknowledgeesSubject.next(null);
 
      this._gifts = null;
      this._giftsPromise = null;
@@ -382,9 +385,9 @@ export class ConstituentData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.constituent.ConstituentChangeHistories.then(constituentChangeHistories => { ... })
+     *   this.constituent.ConstituentChangeHistories.then(constituents => { ... })
      *   or
-     *   await this.constituent.ConstituentChangeHistories
+     *   await this.constituent.constituents
      *
     */
     public get ConstituentChangeHistories(): Promise<ConstituentChangeHistoryData[]> {
@@ -409,8 +412,8 @@ export class ConstituentData {
         this._constituentChangeHistoriesPromise = lastValueFrom(
             ConstituentService.Instance.GetConstituentChangeHistoriesForConstituent(this.id)
         )
-        .then(constituentChangeHistories => {
-            this._constituentChangeHistories = constituentChangeHistories ?? [];
+        .then(ConstituentChangeHistories => {
+            this._constituentChangeHistories = ConstituentChangeHistories ?? [];
             this._constituentChangeHistoriesSubject.next(this._constituentChangeHistories);
             return this._constituentChangeHistories;
          })
@@ -447,9 +450,9 @@ export class ConstituentData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.constituent.Pledges.then(pledges => { ... })
+     *   this.constituent.Pledges.then(constituents => { ... })
      *   or
-     *   await this.constituent.Pledges
+     *   await this.constituent.constituents
      *
     */
     public get Pledges(): Promise<PledgeData[]> {
@@ -474,8 +477,8 @@ export class ConstituentData {
         this._pledgesPromise = lastValueFrom(
             ConstituentService.Instance.GetPledgesForConstituent(this.id)
         )
-        .then(pledges => {
-            this._pledges = pledges ?? [];
+        .then(Pledges => {
+            this._pledges = Pledges ?? [];
             this._pledgesSubject.next(this._pledges);
             return this._pledges;
          })
@@ -505,66 +508,66 @@ export class ConstituentData {
 
     /**
      *
-     * Gets the defaultAcknowledgees for this Constituent.
+     * Gets the TributeDefaultAcknowledgees for this Constituent.
      *
      * If already loaded, returns cached array.
      *
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.constituent.defaultAcknowledgees.then(defaultAcknowledgees => { ... })
+     *   this.constituent.TributeDefaultAcknowledgees.then(defaultAcknowledgees => { ... })
      *   or
      *   await this.constituent.defaultAcknowledgees
      *
     */
-    public get defaultAcknowledgees(): Promise<TributeData[]> {
-        if (this._defaultAcknowledgees !== null) {
-            return Promise.resolve(this._defaultAcknowledgees);
+    public get TributeDefaultAcknowledgees(): Promise<TributeData[]> {
+        if (this._tributeDefaultAcknowledgees !== null) {
+            return Promise.resolve(this._tributeDefaultAcknowledgees);
         }
 
-        if (this._defaultAcknowledgeesPromise !== null) {
-            return this._defaultAcknowledgeesPromise;
+        if (this._tributeDefaultAcknowledgeesPromise !== null) {
+            return this._tributeDefaultAcknowledgeesPromise;
         }
 
         // Start the load
-        this.loadDefaultAcknowledgees();
+        this.loadTributeDefaultAcknowledgees();
 
-        return this._defaultAcknowledgeesPromise!;
+        return this._tributeDefaultAcknowledgeesPromise!;
     }
 
 
 
-    private loadDefaultAcknowledgees(): void {
+    private loadTributeDefaultAcknowledgees(): void {
 
-        this._defaultAcknowledgeesPromise = lastValueFrom(
-            ConstituentService.Instance.GetDefaultAcknowledgeesForConstituent(this.id)
+        this._tributeDefaultAcknowledgeesPromise = lastValueFrom(
+            ConstituentService.Instance.GetTributeDefaultAcknowledgeesForConstituent(this.id)
         )
-        .then(defaultAcknowledgees => {
-            this._defaultAcknowledgees = defaultAcknowledgees ?? [];
-            this._defaultAcknowledgeesSubject.next(this._defaultAcknowledgees);
-            return this._defaultAcknowledgees;
+        .then(TributeDefaultAcknowledgees => {
+            this._tributeDefaultAcknowledgees = TributeDefaultAcknowledgees ?? [];
+            this._tributeDefaultAcknowledgeesSubject.next(this._tributeDefaultAcknowledgees);
+            return this._tributeDefaultAcknowledgees;
          })
         .catch(err => {
-            this._defaultAcknowledgees = [];
-            this._defaultAcknowledgeesSubject.next(this._defaultAcknowledgees);
+            this._tributeDefaultAcknowledgees = [];
+            this._tributeDefaultAcknowledgeesSubject.next(this._tributeDefaultAcknowledgees);
             throw err;
         })
         .finally(() => {
-            this._defaultAcknowledgeesPromise = null; // Allow retry if needed
+            this._tributeDefaultAcknowledgeesPromise = null; // Allow retry if needed
         });
     }
 
     /**
-     * Clears the cached defaultAcknowledgee. Call after mutations to force refresh.
+     * Clears the cached TributeDefaultAcknowledgee. Call after mutations to force refresh.
      */
-    public ClearDefaultAcknowledgeesCache(): void {
-        this._defaultAcknowledgees = null;
-        this._defaultAcknowledgeesPromise = null;
-        this._defaultAcknowledgeesSubject.next(this._defaultAcknowledgees);      // Emit to observable
+    public ClearTributeDefaultAcknowledgeesCache(): void {
+        this._tributeDefaultAcknowledgees = null;
+        this._tributeDefaultAcknowledgeesPromise = null;
+        this._tributeDefaultAcknowledgeesSubject.next(this._tributeDefaultAcknowledgees);      // Emit to observable
     }
 
-    public get HasDefaultAcknowledgees(): Promise<boolean> {
-        return this.defaultAcknowledgees.then(defaultAcknowledgees => defaultAcknowledgees.length > 0);
+    public get HasTributeDefaultAcknowledgees(): Promise<boolean> {
+        return this.TributeDefaultAcknowledgees.then(tributeDefaultAcknowledgees => tributeDefaultAcknowledgees.length > 0);
     }
 
 
@@ -577,9 +580,9 @@ export class ConstituentData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.constituent.Gifts.then(gifts => { ... })
+     *   this.constituent.Gifts.then(constituents => { ... })
      *   or
-     *   await this.constituent.Gifts
+     *   await this.constituent.constituents
      *
     */
     public get Gifts(): Promise<GiftData[]> {
@@ -604,8 +607,8 @@ export class ConstituentData {
         this._giftsPromise = lastValueFrom(
             ConstituentService.Instance.GetGiftsForConstituent(this.id)
         )
-        .then(gifts => {
-            this._gifts = gifts ?? [];
+        .then(Gifts => {
+            this._gifts = Gifts ?? [];
             this._giftsSubject.next(this._gifts);
             return this._gifts;
          })
@@ -642,9 +645,9 @@ export class ConstituentData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.constituent.SoftCredits.then(softCredits => { ... })
+     *   this.constituent.SoftCredits.then(constituents => { ... })
      *   or
-     *   await this.constituent.SoftCredits
+     *   await this.constituent.constituents
      *
     */
     public get SoftCredits(): Promise<SoftCreditData[]> {
@@ -669,8 +672,8 @@ export class ConstituentData {
         this._softCreditsPromise = lastValueFrom(
             ConstituentService.Instance.GetSoftCreditsForConstituent(this.id)
         )
-        .then(softCredits => {
-            this._softCredits = softCredits ?? [];
+        .then(SoftCredits => {
+            this._softCredits = SoftCredits ?? [];
             this._softCreditsSubject.next(this._softCredits);
             return this._softCredits;
          })
@@ -1154,7 +1157,7 @@ export class ConstituentService extends SecureEndpointBase {
     }
 
 
-    public GetDefaultAcknowledgeesForConstituent(constituentId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<TributeData[]> {
+    public GetTributeDefaultAcknowledgeesForConstituent(constituentId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<TributeData[]> {
         return this.tributeService.GetTributeList({
             defaultAcknowledgeeId: constituentId,
             active: active,

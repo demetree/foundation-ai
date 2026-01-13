@@ -131,6 +131,7 @@ export class AttributeDefinitionData {
     private _attributeDefinitionChangeHistoriesPromise: Promise<AttributeDefinitionChangeHistoryData[]> | null  = null;
     private _attributeDefinitionChangeHistoriesSubject = new BehaviorSubject<AttributeDefinitionChangeHistoryData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -150,7 +151,7 @@ export class AttributeDefinitionData {
     );
 
   
-    public AttributeDefinitionChangeHistoriesCount$ = AttributeDefinitionService.Instance.GetAttributeDefinitionsRowCount({attributeDefinitionId: this.id,
+    public AttributeDefinitionChangeHistoriesCount$ = AttributeDefinitionChangeHistoryService.Instance.GetAttributeDefinitionChangeHistoriesRowCount({attributeDefinitionId: this.id,
       active: true,
       deleted: false
     });
@@ -214,9 +215,9 @@ export class AttributeDefinitionData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.attributeDefinition.AttributeDefinitionChangeHistories.then(attributeDefinitionChangeHistories => { ... })
+     *   this.attributeDefinition.AttributeDefinitionChangeHistories.then(attributeDefinitions => { ... })
      *   or
-     *   await this.attributeDefinition.AttributeDefinitionChangeHistories
+     *   await this.attributeDefinition.attributeDefinitions
      *
     */
     public get AttributeDefinitionChangeHistories(): Promise<AttributeDefinitionChangeHistoryData[]> {
@@ -241,8 +242,8 @@ export class AttributeDefinitionData {
         this._attributeDefinitionChangeHistoriesPromise = lastValueFrom(
             AttributeDefinitionService.Instance.GetAttributeDefinitionChangeHistoriesForAttributeDefinition(this.id)
         )
-        .then(attributeDefinitionChangeHistories => {
-            this._attributeDefinitionChangeHistories = attributeDefinitionChangeHistories ?? [];
+        .then(AttributeDefinitionChangeHistories => {
+            this._attributeDefinitionChangeHistories = AttributeDefinitionChangeHistories ?? [];
             this._attributeDefinitionChangeHistoriesSubject.next(this._attributeDefinitionChangeHistories);
             return this._attributeDefinitionChangeHistories;
          })

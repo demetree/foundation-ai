@@ -132,6 +132,7 @@ export class CrewMemberData {
     private _crewMemberChangeHistoriesPromise: Promise<CrewMemberChangeHistoryData[]> | null  = null;
     private _crewMemberChangeHistoriesSubject = new BehaviorSubject<CrewMemberChangeHistoryData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -151,7 +152,7 @@ export class CrewMemberData {
     );
 
   
-    public CrewMemberChangeHistoriesCount$ = CrewMemberService.Instance.GetCrewMembersRowCount({crewMemberId: this.id,
+    public CrewMemberChangeHistoriesCount$ = CrewMemberChangeHistoryService.Instance.GetCrewMemberChangeHistoriesRowCount({crewMemberId: this.id,
       active: true,
       deleted: false
     });
@@ -215,9 +216,9 @@ export class CrewMemberData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.crewMember.CrewMemberChangeHistories.then(crewMemberChangeHistories => { ... })
+     *   this.crewMember.CrewMemberChangeHistories.then(crewMembers => { ... })
      *   or
-     *   await this.crewMember.CrewMemberChangeHistories
+     *   await this.crewMember.crewMembers
      *
     */
     public get CrewMemberChangeHistories(): Promise<CrewMemberChangeHistoryData[]> {
@@ -242,8 +243,8 @@ export class CrewMemberData {
         this._crewMemberChangeHistoriesPromise = lastValueFrom(
             CrewMemberService.Instance.GetCrewMemberChangeHistoriesForCrewMember(this.id)
         )
-        .then(crewMemberChangeHistories => {
-            this._crewMemberChangeHistories = crewMemberChangeHistories ?? [];
+        .then(CrewMemberChangeHistories => {
+            this._crewMemberChangeHistories = CrewMemberChangeHistories ?? [];
             this._crewMemberChangeHistoriesSubject.next(this._crewMemberChangeHistories);
             return this._crewMemberChangeHistories;
          })

@@ -128,6 +128,7 @@ export class ResourceShiftData {
     private _resourceShiftChangeHistoriesPromise: Promise<ResourceShiftChangeHistoryData[]> | null  = null;
     private _resourceShiftChangeHistoriesSubject = new BehaviorSubject<ResourceShiftChangeHistoryData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -147,7 +148,7 @@ export class ResourceShiftData {
     );
 
   
-    public ResourceShiftChangeHistoriesCount$ = ResourceShiftService.Instance.GetResourceShiftsRowCount({resourceShiftId: this.id,
+    public ResourceShiftChangeHistoriesCount$ = ResourceShiftChangeHistoryService.Instance.GetResourceShiftChangeHistoriesRowCount({resourceShiftId: this.id,
       active: true,
       deleted: false
     });
@@ -211,9 +212,9 @@ export class ResourceShiftData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.resourceShift.ResourceShiftChangeHistories.then(resourceShiftChangeHistories => { ... })
+     *   this.resourceShift.ResourceShiftChangeHistories.then(resourceShifts => { ... })
      *   or
-     *   await this.resourceShift.ResourceShiftChangeHistories
+     *   await this.resourceShift.resourceShifts
      *
     */
     public get ResourceShiftChangeHistories(): Promise<ResourceShiftChangeHistoryData[]> {
@@ -238,8 +239,8 @@ export class ResourceShiftData {
         this._resourceShiftChangeHistoriesPromise = lastValueFrom(
             ResourceShiftService.Instance.GetResourceShiftChangeHistoriesForResourceShift(this.id)
         )
-        .then(resourceShiftChangeHistories => {
-            this._resourceShiftChangeHistories = resourceShiftChangeHistories ?? [];
+        .then(ResourceShiftChangeHistories => {
+            this._resourceShiftChangeHistories = ResourceShiftChangeHistories ?? [];
             this._resourceShiftChangeHistoriesSubject.next(this._resourceShiftChangeHistories);
             return this._resourceShiftChangeHistories;
          })

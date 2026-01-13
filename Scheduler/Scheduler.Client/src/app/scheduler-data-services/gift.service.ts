@@ -175,10 +175,12 @@ export class GiftData {
     private _giftChangeHistoriesPromise: Promise<GiftChangeHistoryData[]> | null  = null;
     private _giftChangeHistoriesSubject = new BehaviorSubject<GiftChangeHistoryData[] | null>(null);
 
+                
     private _softCredits: SoftCreditData[] | null = null;
     private _softCreditsPromise: Promise<SoftCreditData[]> | null  = null;
     private _softCreditsSubject = new BehaviorSubject<SoftCreditData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -198,7 +200,7 @@ export class GiftData {
     );
 
   
-    public GiftChangeHistoriesCount$ = GiftService.Instance.GetGiftsRowCount({giftId: this.id,
+    public GiftChangeHistoriesCount$ = GiftChangeHistoryService.Instance.GetGiftChangeHistoriesRowCount({giftId: this.id,
       active: true,
       deleted: false
     });
@@ -217,7 +219,7 @@ export class GiftData {
     );
 
   
-    public SoftCreditsCount$ = GiftService.Instance.GetGiftsRowCount({giftId: this.id,
+    public SoftCreditsCount$ = SoftCreditService.Instance.GetSoftCreditsRowCount({giftId: this.id,
       active: true,
       deleted: false
     });
@@ -285,9 +287,9 @@ export class GiftData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.gift.GiftChangeHistories.then(giftChangeHistories => { ... })
+     *   this.gift.GiftChangeHistories.then(gifts => { ... })
      *   or
-     *   await this.gift.GiftChangeHistories
+     *   await this.gift.gifts
      *
     */
     public get GiftChangeHistories(): Promise<GiftChangeHistoryData[]> {
@@ -312,8 +314,8 @@ export class GiftData {
         this._giftChangeHistoriesPromise = lastValueFrom(
             GiftService.Instance.GetGiftChangeHistoriesForGift(this.id)
         )
-        .then(giftChangeHistories => {
-            this._giftChangeHistories = giftChangeHistories ?? [];
+        .then(GiftChangeHistories => {
+            this._giftChangeHistories = GiftChangeHistories ?? [];
             this._giftChangeHistoriesSubject.next(this._giftChangeHistories);
             return this._giftChangeHistories;
          })
@@ -350,9 +352,9 @@ export class GiftData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.gift.SoftCredits.then(softCredits => { ... })
+     *   this.gift.SoftCredits.then(gifts => { ... })
      *   or
-     *   await this.gift.SoftCredits
+     *   await this.gift.gifts
      *
     */
     public get SoftCredits(): Promise<SoftCreditData[]> {
@@ -377,8 +379,8 @@ export class GiftData {
         this._softCreditsPromise = lastValueFrom(
             GiftService.Instance.GetSoftCreditsForGift(this.id)
         )
-        .then(softCredits => {
-            this._softCredits = softCredits ?? [];
+        .then(SoftCredits => {
+            this._softCredits = SoftCredits ?? [];
             this._softCreditsSubject.next(this._softCredits);
             return this._softCredits;
          })

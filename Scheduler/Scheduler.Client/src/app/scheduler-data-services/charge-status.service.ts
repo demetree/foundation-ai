@@ -115,6 +115,7 @@ export class ChargeStatusData {
     private _eventChargesPromise: Promise<EventChargeData[]> | null  = null;
     private _eventChargesSubject = new BehaviorSubject<EventChargeData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -134,7 +135,7 @@ export class ChargeStatusData {
     );
 
   
-    public EventChargesCount$ = ChargeStatusService.Instance.GetChargeStatusesRowCount({chargeStatusId: this.id,
+    public EventChargesCount$ = EventChargeService.Instance.GetEventChargesRowCount({chargeStatusId: this.id,
       active: true,
       deleted: false
     });
@@ -198,9 +199,9 @@ export class ChargeStatusData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.chargeStatus.EventCharges.then(eventCharges => { ... })
+     *   this.chargeStatus.EventCharges.then(chargeStatuses => { ... })
      *   or
-     *   await this.chargeStatus.EventCharges
+     *   await this.chargeStatus.chargeStatuses
      *
     */
     public get EventCharges(): Promise<EventChargeData[]> {
@@ -225,8 +226,8 @@ export class ChargeStatusData {
         this._eventChargesPromise = lastValueFrom(
             ChargeStatusService.Instance.GetEventChargesForChargeStatus(this.id)
         )
-        .then(eventCharges => {
-            this._eventCharges = eventCharges ?? [];
+        .then(EventCharges => {
+            this._eventCharges = EventCharges ?? [];
             this._eventChargesSubject.next(this._eventCharges);
             return this._eventCharges;
          })

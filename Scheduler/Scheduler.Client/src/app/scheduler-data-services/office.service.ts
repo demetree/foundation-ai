@@ -193,42 +193,52 @@ export class OfficeData {
     private _officeChangeHistoriesPromise: Promise<OfficeChangeHistoryData[]> | null  = null;
     private _officeChangeHistoriesSubject = new BehaviorSubject<OfficeChangeHistoryData[] | null>(null);
 
+                
     private _officeContacts: OfficeContactData[] | null = null;
     private _officeContactsPromise: Promise<OfficeContactData[]> | null  = null;
     private _officeContactsSubject = new BehaviorSubject<OfficeContactData[] | null>(null);
 
+                
     private _calendars: CalendarData[] | null = null;
     private _calendarsPromise: Promise<CalendarData[]> | null  = null;
     private _calendarsSubject = new BehaviorSubject<CalendarData[] | null>(null);
 
+                
     private _schedulingTargets: SchedulingTargetData[] | null = null;
     private _schedulingTargetsPromise: Promise<SchedulingTargetData[]> | null  = null;
     private _schedulingTargetsSubject = new BehaviorSubject<SchedulingTargetData[] | null>(null);
 
+                
     private _resources: ResourceData[] | null = null;
     private _resourcesPromise: Promise<ResourceData[]> | null  = null;
     private _resourcesSubject = new BehaviorSubject<ResourceData[] | null>(null);
 
+                
     private _rateSheets: RateSheetData[] | null = null;
     private _rateSheetsPromise: Promise<RateSheetData[]> | null  = null;
     private _rateSheetsSubject = new BehaviorSubject<RateSheetData[] | null>(null);
 
+                
     private _crews: CrewData[] | null = null;
     private _crewsPromise: Promise<CrewData[]> | null  = null;
     private _crewsSubject = new BehaviorSubject<CrewData[] | null>(null);
 
+                
     private _scheduledEvents: ScheduledEventData[] | null = null;
     private _scheduledEventsPromise: Promise<ScheduledEventData[]> | null  = null;
     private _scheduledEventsSubject = new BehaviorSubject<ScheduledEventData[] | null>(null);
 
+                
     private _eventResourceAssignments: EventResourceAssignmentData[] | null = null;
     private _eventResourceAssignmentsPromise: Promise<EventResourceAssignmentData[]> | null  = null;
     private _eventResourceAssignmentsSubject = new BehaviorSubject<EventResourceAssignmentData[] | null>(null);
 
+                
     private _gifts: GiftData[] | null = null;
     private _giftsPromise: Promise<GiftData[]> | null  = null;
     private _giftsSubject = new BehaviorSubject<GiftData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -248,7 +258,7 @@ export class OfficeData {
     );
 
   
-    public OfficeChangeHistoriesCount$ = OfficeService.Instance.GetOfficesRowCount({officeId: this.id,
+    public OfficeChangeHistoriesCount$ = OfficeChangeHistoryService.Instance.GetOfficeChangeHistoriesRowCount({officeId: this.id,
       active: true,
       deleted: false
     });
@@ -267,7 +277,7 @@ export class OfficeData {
     );
 
   
-    public OfficeContactsCount$ = OfficeService.Instance.GetOfficesRowCount({officeId: this.id,
+    public OfficeContactsCount$ = OfficeContactService.Instance.GetOfficeContactsRowCount({officeId: this.id,
       active: true,
       deleted: false
     });
@@ -286,7 +296,7 @@ export class OfficeData {
     );
 
   
-    public CalendarsCount$ = OfficeService.Instance.GetOfficesRowCount({officeId: this.id,
+    public CalendarsCount$ = CalendarService.Instance.GetCalendarsRowCount({officeId: this.id,
       active: true,
       deleted: false
     });
@@ -305,7 +315,7 @@ export class OfficeData {
     );
 
   
-    public SchedulingTargetsCount$ = OfficeService.Instance.GetOfficesRowCount({officeId: this.id,
+    public SchedulingTargetsCount$ = SchedulingTargetService.Instance.GetSchedulingTargetsRowCount({officeId: this.id,
       active: true,
       deleted: false
     });
@@ -324,7 +334,7 @@ export class OfficeData {
     );
 
   
-    public ResourcesCount$ = OfficeService.Instance.GetOfficesRowCount({officeId: this.id,
+    public ResourcesCount$ = ResourceService.Instance.GetResourcesRowCount({officeId: this.id,
       active: true,
       deleted: false
     });
@@ -343,7 +353,7 @@ export class OfficeData {
     );
 
   
-    public RateSheetsCount$ = OfficeService.Instance.GetOfficesRowCount({officeId: this.id,
+    public RateSheetsCount$ = RateSheetService.Instance.GetRateSheetsRowCount({officeId: this.id,
       active: true,
       deleted: false
     });
@@ -362,7 +372,7 @@ export class OfficeData {
     );
 
   
-    public CrewsCount$ = OfficeService.Instance.GetOfficesRowCount({officeId: this.id,
+    public CrewsCount$ = CrewService.Instance.GetCrewsRowCount({officeId: this.id,
       active: true,
       deleted: false
     });
@@ -381,7 +391,7 @@ export class OfficeData {
     );
 
   
-    public ScheduledEventsCount$ = OfficeService.Instance.GetOfficesRowCount({officeId: this.id,
+    public ScheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({officeId: this.id,
       active: true,
       deleted: false
     });
@@ -400,7 +410,7 @@ export class OfficeData {
     );
 
   
-    public EventResourceAssignmentsCount$ = OfficeService.Instance.GetOfficesRowCount({officeId: this.id,
+    public EventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({officeId: this.id,
       active: true,
       deleted: false
     });
@@ -419,7 +429,7 @@ export class OfficeData {
     );
 
   
-    public GiftsCount$ = OfficeService.Instance.GetOfficesRowCount({officeId: this.id,
+    public GiftsCount$ = GiftService.Instance.GetGiftsRowCount({officeId: this.id,
       active: true,
       deleted: false
     });
@@ -519,9 +529,9 @@ export class OfficeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.office.OfficeChangeHistories.then(officeChangeHistories => { ... })
+     *   this.office.OfficeChangeHistories.then(offices => { ... })
      *   or
-     *   await this.office.OfficeChangeHistories
+     *   await this.office.offices
      *
     */
     public get OfficeChangeHistories(): Promise<OfficeChangeHistoryData[]> {
@@ -546,8 +556,8 @@ export class OfficeData {
         this._officeChangeHistoriesPromise = lastValueFrom(
             OfficeService.Instance.GetOfficeChangeHistoriesForOffice(this.id)
         )
-        .then(officeChangeHistories => {
-            this._officeChangeHistories = officeChangeHistories ?? [];
+        .then(OfficeChangeHistories => {
+            this._officeChangeHistories = OfficeChangeHistories ?? [];
             this._officeChangeHistoriesSubject.next(this._officeChangeHistories);
             return this._officeChangeHistories;
          })
@@ -584,9 +594,9 @@ export class OfficeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.office.OfficeContacts.then(officeContacts => { ... })
+     *   this.office.OfficeContacts.then(offices => { ... })
      *   or
-     *   await this.office.OfficeContacts
+     *   await this.office.offices
      *
     */
     public get OfficeContacts(): Promise<OfficeContactData[]> {
@@ -611,8 +621,8 @@ export class OfficeData {
         this._officeContactsPromise = lastValueFrom(
             OfficeService.Instance.GetOfficeContactsForOffice(this.id)
         )
-        .then(officeContacts => {
-            this._officeContacts = officeContacts ?? [];
+        .then(OfficeContacts => {
+            this._officeContacts = OfficeContacts ?? [];
             this._officeContactsSubject.next(this._officeContacts);
             return this._officeContacts;
          })
@@ -649,9 +659,9 @@ export class OfficeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.office.Calendars.then(calendars => { ... })
+     *   this.office.Calendars.then(offices => { ... })
      *   or
-     *   await this.office.Calendars
+     *   await this.office.offices
      *
     */
     public get Calendars(): Promise<CalendarData[]> {
@@ -676,8 +686,8 @@ export class OfficeData {
         this._calendarsPromise = lastValueFrom(
             OfficeService.Instance.GetCalendarsForOffice(this.id)
         )
-        .then(calendars => {
-            this._calendars = calendars ?? [];
+        .then(Calendars => {
+            this._calendars = Calendars ?? [];
             this._calendarsSubject.next(this._calendars);
             return this._calendars;
          })
@@ -714,9 +724,9 @@ export class OfficeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.office.SchedulingTargets.then(schedulingTargets => { ... })
+     *   this.office.SchedulingTargets.then(offices => { ... })
      *   or
-     *   await this.office.SchedulingTargets
+     *   await this.office.offices
      *
     */
     public get SchedulingTargets(): Promise<SchedulingTargetData[]> {
@@ -741,8 +751,8 @@ export class OfficeData {
         this._schedulingTargetsPromise = lastValueFrom(
             OfficeService.Instance.GetSchedulingTargetsForOffice(this.id)
         )
-        .then(schedulingTargets => {
-            this._schedulingTargets = schedulingTargets ?? [];
+        .then(SchedulingTargets => {
+            this._schedulingTargets = SchedulingTargets ?? [];
             this._schedulingTargetsSubject.next(this._schedulingTargets);
             return this._schedulingTargets;
          })
@@ -779,9 +789,9 @@ export class OfficeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.office.Resources.then(resources => { ... })
+     *   this.office.Resources.then(offices => { ... })
      *   or
-     *   await this.office.Resources
+     *   await this.office.offices
      *
     */
     public get Resources(): Promise<ResourceData[]> {
@@ -806,8 +816,8 @@ export class OfficeData {
         this._resourcesPromise = lastValueFrom(
             OfficeService.Instance.GetResourcesForOffice(this.id)
         )
-        .then(resources => {
-            this._resources = resources ?? [];
+        .then(Resources => {
+            this._resources = Resources ?? [];
             this._resourcesSubject.next(this._resources);
             return this._resources;
          })
@@ -844,9 +854,9 @@ export class OfficeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.office.RateSheets.then(rateSheets => { ... })
+     *   this.office.RateSheets.then(offices => { ... })
      *   or
-     *   await this.office.RateSheets
+     *   await this.office.offices
      *
     */
     public get RateSheets(): Promise<RateSheetData[]> {
@@ -871,8 +881,8 @@ export class OfficeData {
         this._rateSheetsPromise = lastValueFrom(
             OfficeService.Instance.GetRateSheetsForOffice(this.id)
         )
-        .then(rateSheets => {
-            this._rateSheets = rateSheets ?? [];
+        .then(RateSheets => {
+            this._rateSheets = RateSheets ?? [];
             this._rateSheetsSubject.next(this._rateSheets);
             return this._rateSheets;
          })
@@ -909,9 +919,9 @@ export class OfficeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.office.Crews.then(crews => { ... })
+     *   this.office.Crews.then(offices => { ... })
      *   or
-     *   await this.office.Crews
+     *   await this.office.offices
      *
     */
     public get Crews(): Promise<CrewData[]> {
@@ -936,8 +946,8 @@ export class OfficeData {
         this._crewsPromise = lastValueFrom(
             OfficeService.Instance.GetCrewsForOffice(this.id)
         )
-        .then(crews => {
-            this._crews = crews ?? [];
+        .then(Crews => {
+            this._crews = Crews ?? [];
             this._crewsSubject.next(this._crews);
             return this._crews;
          })
@@ -974,9 +984,9 @@ export class OfficeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.office.ScheduledEvents.then(scheduledEvents => { ... })
+     *   this.office.ScheduledEvents.then(offices => { ... })
      *   or
-     *   await this.office.ScheduledEvents
+     *   await this.office.offices
      *
     */
     public get ScheduledEvents(): Promise<ScheduledEventData[]> {
@@ -1001,8 +1011,8 @@ export class OfficeData {
         this._scheduledEventsPromise = lastValueFrom(
             OfficeService.Instance.GetScheduledEventsForOffice(this.id)
         )
-        .then(scheduledEvents => {
-            this._scheduledEvents = scheduledEvents ?? [];
+        .then(ScheduledEvents => {
+            this._scheduledEvents = ScheduledEvents ?? [];
             this._scheduledEventsSubject.next(this._scheduledEvents);
             return this._scheduledEvents;
          })
@@ -1039,9 +1049,9 @@ export class OfficeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.office.EventResourceAssignments.then(eventResourceAssignments => { ... })
+     *   this.office.EventResourceAssignments.then(offices => { ... })
      *   or
-     *   await this.office.EventResourceAssignments
+     *   await this.office.offices
      *
     */
     public get EventResourceAssignments(): Promise<EventResourceAssignmentData[]> {
@@ -1066,8 +1076,8 @@ export class OfficeData {
         this._eventResourceAssignmentsPromise = lastValueFrom(
             OfficeService.Instance.GetEventResourceAssignmentsForOffice(this.id)
         )
-        .then(eventResourceAssignments => {
-            this._eventResourceAssignments = eventResourceAssignments ?? [];
+        .then(EventResourceAssignments => {
+            this._eventResourceAssignments = EventResourceAssignments ?? [];
             this._eventResourceAssignmentsSubject.next(this._eventResourceAssignments);
             return this._eventResourceAssignments;
          })
@@ -1104,9 +1114,9 @@ export class OfficeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.office.Gifts.then(gifts => { ... })
+     *   this.office.Gifts.then(offices => { ... })
      *   or
-     *   await this.office.Gifts
+     *   await this.office.offices
      *
     */
     public get Gifts(): Promise<GiftData[]> {
@@ -1131,8 +1141,8 @@ export class OfficeData {
         this._giftsPromise = lastValueFrom(
             OfficeService.Instance.GetGiftsForOffice(this.id)
         )
-        .then(gifts => {
-            this._gifts = gifts ?? [];
+        .then(Gifts => {
+            this._gifts = Gifts ?? [];
             this._giftsSubject.next(this._gifts);
             return this._gifts;
          })

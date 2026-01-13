@@ -124,6 +124,7 @@ export class ResourceContactData {
     private _resourceContactChangeHistoriesPromise: Promise<ResourceContactChangeHistoryData[]> | null  = null;
     private _resourceContactChangeHistoriesSubject = new BehaviorSubject<ResourceContactChangeHistoryData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -143,7 +144,7 @@ export class ResourceContactData {
     );
 
   
-    public ResourceContactChangeHistoriesCount$ = ResourceContactService.Instance.GetResourceContactsRowCount({resourceContactId: this.id,
+    public ResourceContactChangeHistoriesCount$ = ResourceContactChangeHistoryService.Instance.GetResourceContactChangeHistoriesRowCount({resourceContactId: this.id,
       active: true,
       deleted: false
     });
@@ -207,9 +208,9 @@ export class ResourceContactData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.resourceContact.ResourceContactChangeHistories.then(resourceContactChangeHistories => { ... })
+     *   this.resourceContact.ResourceContactChangeHistories.then(resourceContacts => { ... })
      *   or
-     *   await this.resourceContact.ResourceContactChangeHistories
+     *   await this.resourceContact.resourceContacts
      *
     */
     public get ResourceContactChangeHistories(): Promise<ResourceContactChangeHistoryData[]> {
@@ -234,8 +235,8 @@ export class ResourceContactData {
         this._resourceContactChangeHistoriesPromise = lastValueFrom(
             ResourceContactService.Instance.GetResourceContactChangeHistoriesForResourceContact(this.id)
         )
-        .then(resourceContactChangeHistories => {
-            this._resourceContactChangeHistories = resourceContactChangeHistories ?? [];
+        .then(ResourceContactChangeHistories => {
+            this._resourceContactChangeHistories = ResourceContactChangeHistories ?? [];
             this._resourceContactChangeHistoriesSubject.next(this._resourceContactChangeHistories);
             return this._resourceContactChangeHistories;
          })

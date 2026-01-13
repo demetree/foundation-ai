@@ -112,6 +112,7 @@ export class AttributeDefinitionTypeData {
     private _attributeDefinitionsPromise: Promise<AttributeDefinitionData[]> | null  = null;
     private _attributeDefinitionsSubject = new BehaviorSubject<AttributeDefinitionData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -131,7 +132,7 @@ export class AttributeDefinitionTypeData {
     );
 
   
-    public AttributeDefinitionsCount$ = AttributeDefinitionTypeService.Instance.GetAttributeDefinitionTypesRowCount({attributeDefinitionTypeId: this.id,
+    public AttributeDefinitionsCount$ = AttributeDefinitionService.Instance.GetAttributeDefinitionsRowCount({attributeDefinitionTypeId: this.id,
       active: true,
       deleted: false
     });
@@ -195,9 +196,9 @@ export class AttributeDefinitionTypeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.attributeDefinitionType.AttributeDefinitions.then(attributeDefinitions => { ... })
+     *   this.attributeDefinitionType.AttributeDefinitions.then(attributeDefinitionTypes => { ... })
      *   or
-     *   await this.attributeDefinitionType.AttributeDefinitions
+     *   await this.attributeDefinitionType.attributeDefinitionTypes
      *
     */
     public get AttributeDefinitions(): Promise<AttributeDefinitionData[]> {
@@ -222,8 +223,8 @@ export class AttributeDefinitionTypeData {
         this._attributeDefinitionsPromise = lastValueFrom(
             AttributeDefinitionTypeService.Instance.GetAttributeDefinitionsForAttributeDefinitionType(this.id)
         )
-        .then(attributeDefinitions => {
-            this._attributeDefinitions = attributeDefinitions ?? [];
+        .then(AttributeDefinitions => {
+            this._attributeDefinitions = AttributeDefinitions ?? [];
             this._attributeDefinitionsSubject.next(this._attributeDefinitions);
             return this._attributeDefinitions;
          })

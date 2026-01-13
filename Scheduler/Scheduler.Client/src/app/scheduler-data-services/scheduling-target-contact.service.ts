@@ -124,6 +124,7 @@ export class SchedulingTargetContactData {
     private _schedulingTargetContactChangeHistoriesPromise: Promise<SchedulingTargetContactChangeHistoryData[]> | null  = null;
     private _schedulingTargetContactChangeHistoriesSubject = new BehaviorSubject<SchedulingTargetContactChangeHistoryData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -143,7 +144,7 @@ export class SchedulingTargetContactData {
     );
 
   
-    public SchedulingTargetContactChangeHistoriesCount$ = SchedulingTargetContactService.Instance.GetSchedulingTargetContactsRowCount({schedulingTargetContactId: this.id,
+    public SchedulingTargetContactChangeHistoriesCount$ = SchedulingTargetContactChangeHistoryService.Instance.GetSchedulingTargetContactChangeHistoriesRowCount({schedulingTargetContactId: this.id,
       active: true,
       deleted: false
     });
@@ -207,9 +208,9 @@ export class SchedulingTargetContactData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.schedulingTargetContact.SchedulingTargetContactChangeHistories.then(schedulingTargetContactChangeHistories => { ... })
+     *   this.schedulingTargetContact.SchedulingTargetContactChangeHistories.then(schedulingTargetContacts => { ... })
      *   or
-     *   await this.schedulingTargetContact.SchedulingTargetContactChangeHistories
+     *   await this.schedulingTargetContact.schedulingTargetContacts
      *
     */
     public get SchedulingTargetContactChangeHistories(): Promise<SchedulingTargetContactChangeHistoryData[]> {
@@ -234,8 +235,8 @@ export class SchedulingTargetContactData {
         this._schedulingTargetContactChangeHistoriesPromise = lastValueFrom(
             SchedulingTargetContactService.Instance.GetSchedulingTargetContactChangeHistoriesForSchedulingTargetContact(this.id)
         )
-        .then(schedulingTargetContactChangeHistories => {
-            this._schedulingTargetContactChangeHistories = schedulingTargetContactChangeHistories ?? [];
+        .then(SchedulingTargetContactChangeHistories => {
+            this._schedulingTargetContactChangeHistories = SchedulingTargetContactChangeHistories ?? [];
             this._schedulingTargetContactChangeHistoriesSubject.next(this._schedulingTargetContactChangeHistories);
             return this._schedulingTargetContactChangeHistories;
          })

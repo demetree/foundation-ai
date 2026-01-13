@@ -116,6 +116,7 @@ export class ScheduledEventQualificationRequirementData {
     private _scheduledEventQualificationRequirementChangeHistoriesPromise: Promise<ScheduledEventQualificationRequirementChangeHistoryData[]> | null  = null;
     private _scheduledEventQualificationRequirementChangeHistoriesSubject = new BehaviorSubject<ScheduledEventQualificationRequirementChangeHistoryData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -135,7 +136,7 @@ export class ScheduledEventQualificationRequirementData {
     );
 
   
-    public ScheduledEventQualificationRequirementChangeHistoriesCount$ = ScheduledEventQualificationRequirementService.Instance.GetScheduledEventQualificationRequirementsRowCount({scheduledEventQualificationRequirementId: this.id,
+    public ScheduledEventQualificationRequirementChangeHistoriesCount$ = ScheduledEventQualificationRequirementChangeHistoryService.Instance.GetScheduledEventQualificationRequirementChangeHistoriesRowCount({scheduledEventQualificationRequirementId: this.id,
       active: true,
       deleted: false
     });
@@ -199,9 +200,9 @@ export class ScheduledEventQualificationRequirementData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.scheduledEventQualificationRequirement.ScheduledEventQualificationRequirementChangeHistories.then(scheduledEventQualificationRequirementChangeHistories => { ... })
+     *   this.scheduledEventQualificationRequirement.ScheduledEventQualificationRequirementChangeHistories.then(scheduledEventQualificationRequirements => { ... })
      *   or
-     *   await this.scheduledEventQualificationRequirement.ScheduledEventQualificationRequirementChangeHistories
+     *   await this.scheduledEventQualificationRequirement.scheduledEventQualificationRequirements
      *
     */
     public get ScheduledEventQualificationRequirementChangeHistories(): Promise<ScheduledEventQualificationRequirementChangeHistoryData[]> {
@@ -226,8 +227,8 @@ export class ScheduledEventQualificationRequirementData {
         this._scheduledEventQualificationRequirementChangeHistoriesPromise = lastValueFrom(
             ScheduledEventQualificationRequirementService.Instance.GetScheduledEventQualificationRequirementChangeHistoriesForScheduledEventQualificationRequirement(this.id)
         )
-        .then(scheduledEventQualificationRequirementChangeHistories => {
-            this._scheduledEventQualificationRequirementChangeHistories = scheduledEventQualificationRequirementChangeHistories ?? [];
+        .then(ScheduledEventQualificationRequirementChangeHistories => {
+            this._scheduledEventQualificationRequirementChangeHistories = ScheduledEventQualificationRequirementChangeHistories ?? [];
             this._scheduledEventQualificationRequirementChangeHistoriesSubject.next(this._scheduledEventQualificationRequirementChangeHistories);
             return this._scheduledEventQualificationRequirementChangeHistories;
          })

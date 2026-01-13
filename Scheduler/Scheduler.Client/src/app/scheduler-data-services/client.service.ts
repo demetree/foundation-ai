@@ -194,26 +194,32 @@ export class ClientData {
     private _clientChangeHistoriesPromise: Promise<ClientChangeHistoryData[]> | null  = null;
     private _clientChangeHistoriesSubject = new BehaviorSubject<ClientChangeHistoryData[] | null>(null);
 
+                
     private _clientContacts: ClientContactData[] | null = null;
     private _clientContactsPromise: Promise<ClientContactData[]> | null  = null;
     private _clientContactsSubject = new BehaviorSubject<ClientContactData[] | null>(null);
 
+                
     private _schedulingTargets: SchedulingTargetData[] | null = null;
     private _schedulingTargetsPromise: Promise<SchedulingTargetData[]> | null  = null;
     private _schedulingTargetsSubject = new BehaviorSubject<SchedulingTargetData[] | null>(null);
 
+                
     private _schedulingTargetAddresses: SchedulingTargetAddressData[] | null = null;
     private _schedulingTargetAddressesPromise: Promise<SchedulingTargetAddressData[]> | null  = null;
     private _schedulingTargetAddressesSubject = new BehaviorSubject<SchedulingTargetAddressData[] | null>(null);
 
+                
     private _scheduledEvents: ScheduledEventData[] | null = null;
     private _scheduledEventsPromise: Promise<ScheduledEventData[]> | null  = null;
     private _scheduledEventsSubject = new BehaviorSubject<ScheduledEventData[] | null>(null);
 
+                
     private _constituents: ConstituentData[] | null = null;
     private _constituentsPromise: Promise<ConstituentData[]> | null  = null;
     private _constituentsSubject = new BehaviorSubject<ConstituentData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -233,7 +239,7 @@ export class ClientData {
     );
 
   
-    public ClientChangeHistoriesCount$ = ClientService.Instance.GetClientsRowCount({clientId: this.id,
+    public ClientChangeHistoriesCount$ = ClientChangeHistoryService.Instance.GetClientChangeHistoriesRowCount({clientId: this.id,
       active: true,
       deleted: false
     });
@@ -252,7 +258,7 @@ export class ClientData {
     );
 
   
-    public ClientContactsCount$ = ClientService.Instance.GetClientsRowCount({clientId: this.id,
+    public ClientContactsCount$ = ClientContactService.Instance.GetClientContactsRowCount({clientId: this.id,
       active: true,
       deleted: false
     });
@@ -271,7 +277,7 @@ export class ClientData {
     );
 
   
-    public SchedulingTargetsCount$ = ClientService.Instance.GetClientsRowCount({clientId: this.id,
+    public SchedulingTargetsCount$ = SchedulingTargetService.Instance.GetSchedulingTargetsRowCount({clientId: this.id,
       active: true,
       deleted: false
     });
@@ -290,7 +296,7 @@ export class ClientData {
     );
 
   
-    public SchedulingTargetAddressesCount$ = ClientService.Instance.GetClientsRowCount({clientId: this.id,
+    public SchedulingTargetAddressesCount$ = SchedulingTargetAddressService.Instance.GetSchedulingTargetAddressesRowCount({clientId: this.id,
       active: true,
       deleted: false
     });
@@ -309,7 +315,7 @@ export class ClientData {
     );
 
   
-    public ScheduledEventsCount$ = ClientService.Instance.GetClientsRowCount({clientId: this.id,
+    public ScheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({clientId: this.id,
       active: true,
       deleted: false
     });
@@ -328,7 +334,7 @@ export class ClientData {
     );
 
   
-    public ConstituentsCount$ = ClientService.Instance.GetClientsRowCount({clientId: this.id,
+    public ConstituentsCount$ = ConstituentService.Instance.GetConstituentsRowCount({clientId: this.id,
       active: true,
       deleted: false
     });
@@ -412,9 +418,9 @@ export class ClientData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.client.ClientChangeHistories.then(clientChangeHistories => { ... })
+     *   this.client.ClientChangeHistories.then(clients => { ... })
      *   or
-     *   await this.client.ClientChangeHistories
+     *   await this.client.clients
      *
     */
     public get ClientChangeHistories(): Promise<ClientChangeHistoryData[]> {
@@ -439,8 +445,8 @@ export class ClientData {
         this._clientChangeHistoriesPromise = lastValueFrom(
             ClientService.Instance.GetClientChangeHistoriesForClient(this.id)
         )
-        .then(clientChangeHistories => {
-            this._clientChangeHistories = clientChangeHistories ?? [];
+        .then(ClientChangeHistories => {
+            this._clientChangeHistories = ClientChangeHistories ?? [];
             this._clientChangeHistoriesSubject.next(this._clientChangeHistories);
             return this._clientChangeHistories;
          })
@@ -477,9 +483,9 @@ export class ClientData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.client.ClientContacts.then(clientContacts => { ... })
+     *   this.client.ClientContacts.then(clients => { ... })
      *   or
-     *   await this.client.ClientContacts
+     *   await this.client.clients
      *
     */
     public get ClientContacts(): Promise<ClientContactData[]> {
@@ -504,8 +510,8 @@ export class ClientData {
         this._clientContactsPromise = lastValueFrom(
             ClientService.Instance.GetClientContactsForClient(this.id)
         )
-        .then(clientContacts => {
-            this._clientContacts = clientContacts ?? [];
+        .then(ClientContacts => {
+            this._clientContacts = ClientContacts ?? [];
             this._clientContactsSubject.next(this._clientContacts);
             return this._clientContacts;
          })
@@ -542,9 +548,9 @@ export class ClientData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.client.SchedulingTargets.then(schedulingTargets => { ... })
+     *   this.client.SchedulingTargets.then(clients => { ... })
      *   or
-     *   await this.client.SchedulingTargets
+     *   await this.client.clients
      *
     */
     public get SchedulingTargets(): Promise<SchedulingTargetData[]> {
@@ -569,8 +575,8 @@ export class ClientData {
         this._schedulingTargetsPromise = lastValueFrom(
             ClientService.Instance.GetSchedulingTargetsForClient(this.id)
         )
-        .then(schedulingTargets => {
-            this._schedulingTargets = schedulingTargets ?? [];
+        .then(SchedulingTargets => {
+            this._schedulingTargets = SchedulingTargets ?? [];
             this._schedulingTargetsSubject.next(this._schedulingTargets);
             return this._schedulingTargets;
          })
@@ -607,9 +613,9 @@ export class ClientData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.client.SchedulingTargetAddresses.then(schedulingTargetAddresses => { ... })
+     *   this.client.SchedulingTargetAddresses.then(clients => { ... })
      *   or
-     *   await this.client.SchedulingTargetAddresses
+     *   await this.client.clients
      *
     */
     public get SchedulingTargetAddresses(): Promise<SchedulingTargetAddressData[]> {
@@ -634,8 +640,8 @@ export class ClientData {
         this._schedulingTargetAddressesPromise = lastValueFrom(
             ClientService.Instance.GetSchedulingTargetAddressesForClient(this.id)
         )
-        .then(schedulingTargetAddresses => {
-            this._schedulingTargetAddresses = schedulingTargetAddresses ?? [];
+        .then(SchedulingTargetAddresses => {
+            this._schedulingTargetAddresses = SchedulingTargetAddresses ?? [];
             this._schedulingTargetAddressesSubject.next(this._schedulingTargetAddresses);
             return this._schedulingTargetAddresses;
          })
@@ -672,9 +678,9 @@ export class ClientData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.client.ScheduledEvents.then(scheduledEvents => { ... })
+     *   this.client.ScheduledEvents.then(clients => { ... })
      *   or
-     *   await this.client.ScheduledEvents
+     *   await this.client.clients
      *
     */
     public get ScheduledEvents(): Promise<ScheduledEventData[]> {
@@ -699,8 +705,8 @@ export class ClientData {
         this._scheduledEventsPromise = lastValueFrom(
             ClientService.Instance.GetScheduledEventsForClient(this.id)
         )
-        .then(scheduledEvents => {
-            this._scheduledEvents = scheduledEvents ?? [];
+        .then(ScheduledEvents => {
+            this._scheduledEvents = ScheduledEvents ?? [];
             this._scheduledEventsSubject.next(this._scheduledEvents);
             return this._scheduledEvents;
          })
@@ -737,9 +743,9 @@ export class ClientData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.client.Constituents.then(constituents => { ... })
+     *   this.client.Constituents.then(clients => { ... })
      *   or
-     *   await this.client.Constituents
+     *   await this.client.clients
      *
     */
     public get Constituents(): Promise<ConstituentData[]> {
@@ -764,8 +770,8 @@ export class ClientData {
         this._constituentsPromise = lastValueFrom(
             ClientService.Instance.GetConstituentsForClient(this.id)
         )
-        .then(constituents => {
-            this._constituents = constituents ?? [];
+        .then(Constituents => {
+            this._constituents = Constituents ?? [];
             this._constituentsSubject.next(this._constituents);
             return this._constituents;
          })

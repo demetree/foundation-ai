@@ -136,22 +136,26 @@ export class CampaignData {
     private _campaignChangeHistoriesPromise: Promise<CampaignChangeHistoryData[]> | null  = null;
     private _campaignChangeHistoriesSubject = new BehaviorSubject<CampaignChangeHistoryData[] | null>(null);
 
+                
     private _appeals: AppealData[] | null = null;
     private _appealsPromise: Promise<AppealData[]> | null  = null;
     private _appealsSubject = new BehaviorSubject<AppealData[] | null>(null);
 
+                
     private _pledges: PledgeData[] | null = null;
     private _pledgesPromise: Promise<PledgeData[]> | null  = null;
     private _pledgesSubject = new BehaviorSubject<PledgeData[] | null>(null);
 
-    private _defaultCampaigns: BatchData[] | null = null;
-    private _defaultCampaignsPromise: Promise<BatchData[]> | null  = null;
-    private _defaultCampaignsSubject = new BehaviorSubject<BatchData[] | null>(null);
-
+                
+    private _batchDefaultCampaigns: BatchData[] | null = null;
+    private _batchDefaultCampaignsPromise: Promise<BatchData[]> | null  = null;
+    private _batchDefaultCampaignsSubject = new BehaviorSubject<BatchData[] | null>(null);
+                    
     private _gifts: GiftData[] | null = null;
     private _giftsPromise: Promise<GiftData[]> | null  = null;
     private _giftsSubject = new BehaviorSubject<GiftData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -171,7 +175,7 @@ export class CampaignData {
     );
 
   
-    public CampaignChangeHistoriesCount$ = CampaignService.Instance.GetCampaignsRowCount({campaignId: this.id,
+    public CampaignChangeHistoriesCount$ = CampaignChangeHistoryService.Instance.GetCampaignChangeHistoriesRowCount({campaignId: this.id,
       active: true,
       deleted: false
     });
@@ -190,7 +194,7 @@ export class CampaignData {
     );
 
   
-    public AppealsCount$ = CampaignService.Instance.GetCampaignsRowCount({campaignId: this.id,
+    public AppealsCount$ = AppealService.Instance.GetAppealsRowCount({campaignId: this.id,
       active: true,
       deleted: false
     });
@@ -209,30 +213,29 @@ export class CampaignData {
     );
 
   
-    public PledgesCount$ = CampaignService.Instance.GetCampaignsRowCount({campaignId: this.id,
+    public PledgesCount$ = PledgeService.Instance.GetPledgesRowCount({campaignId: this.id,
       active: true,
       deleted: false
     });
 
 
 
-    public DefaultCampaigns$ = this._defaultCampaignsSubject.asObservable().pipe(
+    public BatchDefaultCampaigns$ = this._batchDefaultCampaignsSubject.asObservable().pipe(
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-          if (this._defaultCampaigns === null && this._defaultCampaignsPromise === null) {
-            this.loadDefaultCampaigns(); // Private method to start fetch
+          if (this._batchDefaultCampaigns === null && this._batchDefaultCampaignsPromise === null) {
+            this.loadBatchDefaultCampaigns(); // Private method to start fetch
           }
         }),
         shareReplay(1) // Cache last emit
     );
 
   
-    public DefaultCampaignsCount$ = CampaignService.Instance.GetCampaignsRowCount({campaignId: this.id,
+    public BatchDefaultCampaignsCount$ = BatchService.Instance.GetBatchesRowCount({defaultCampaignId: this.id,
       active: true,
       deleted: false
     });
-
 
 
     public Gifts$ = this._giftsSubject.asObservable().pipe(
@@ -247,7 +250,7 @@ export class CampaignData {
     );
 
   
-    public GiftsCount$ = CampaignService.Instance.GetCampaignsRowCount({campaignId: this.id,
+    public GiftsCount$ = GiftService.Instance.GetGiftsRowCount({campaignId: this.id,
       active: true,
       deleted: false
     });
@@ -304,9 +307,9 @@ export class CampaignData {
      this._pledgesPromise = null;
      this._pledgesSubject.next(null);
 
-     this._defaultCampaigns = null;
-     this._defaultCampaignsPromise = null;
-     this._defaultCampaignsSubject.next(null);
+     this._batchDefaultCampaigns = null;
+     this._batchDefaultCampaignsPromise = null;
+     this._batchDefaultCampaignsSubject.next(null);
 
      this._gifts = null;
      this._giftsPromise = null;
@@ -327,9 +330,9 @@ export class CampaignData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.campaign.CampaignChangeHistories.then(campaignChangeHistories => { ... })
+     *   this.campaign.CampaignChangeHistories.then(campaigns => { ... })
      *   or
-     *   await this.campaign.CampaignChangeHistories
+     *   await this.campaign.campaigns
      *
     */
     public get CampaignChangeHistories(): Promise<CampaignChangeHistoryData[]> {
@@ -354,8 +357,8 @@ export class CampaignData {
         this._campaignChangeHistoriesPromise = lastValueFrom(
             CampaignService.Instance.GetCampaignChangeHistoriesForCampaign(this.id)
         )
-        .then(campaignChangeHistories => {
-            this._campaignChangeHistories = campaignChangeHistories ?? [];
+        .then(CampaignChangeHistories => {
+            this._campaignChangeHistories = CampaignChangeHistories ?? [];
             this._campaignChangeHistoriesSubject.next(this._campaignChangeHistories);
             return this._campaignChangeHistories;
          })
@@ -392,9 +395,9 @@ export class CampaignData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.campaign.Appeals.then(appeals => { ... })
+     *   this.campaign.Appeals.then(campaigns => { ... })
      *   or
-     *   await this.campaign.Appeals
+     *   await this.campaign.campaigns
      *
     */
     public get Appeals(): Promise<AppealData[]> {
@@ -419,8 +422,8 @@ export class CampaignData {
         this._appealsPromise = lastValueFrom(
             CampaignService.Instance.GetAppealsForCampaign(this.id)
         )
-        .then(appeals => {
-            this._appeals = appeals ?? [];
+        .then(Appeals => {
+            this._appeals = Appeals ?? [];
             this._appealsSubject.next(this._appeals);
             return this._appeals;
          })
@@ -457,9 +460,9 @@ export class CampaignData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.campaign.Pledges.then(pledges => { ... })
+     *   this.campaign.Pledges.then(campaigns => { ... })
      *   or
-     *   await this.campaign.Pledges
+     *   await this.campaign.campaigns
      *
     */
     public get Pledges(): Promise<PledgeData[]> {
@@ -484,8 +487,8 @@ export class CampaignData {
         this._pledgesPromise = lastValueFrom(
             CampaignService.Instance.GetPledgesForCampaign(this.id)
         )
-        .then(pledges => {
-            this._pledges = pledges ?? [];
+        .then(Pledges => {
+            this._pledges = Pledges ?? [];
             this._pledgesSubject.next(this._pledges);
             return this._pledges;
          })
@@ -515,66 +518,66 @@ export class CampaignData {
 
     /**
      *
-     * Gets the defaultCampaigns for this Campaign.
+     * Gets the BatchDefaultCampaigns for this Campaign.
      *
      * If already loaded, returns cached array.
      *
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.campaign.defaultCampaigns.then(defaultCampaigns => { ... })
+     *   this.campaign.BatchDefaultCampaigns.then(defaultCampaigns => { ... })
      *   or
      *   await this.campaign.defaultCampaigns
      *
     */
-    public get defaultCampaigns(): Promise<BatchData[]> {
-        if (this._defaultCampaigns !== null) {
-            return Promise.resolve(this._defaultCampaigns);
+    public get BatchDefaultCampaigns(): Promise<BatchData[]> {
+        if (this._batchDefaultCampaigns !== null) {
+            return Promise.resolve(this._batchDefaultCampaigns);
         }
 
-        if (this._defaultCampaignsPromise !== null) {
-            return this._defaultCampaignsPromise;
+        if (this._batchDefaultCampaignsPromise !== null) {
+            return this._batchDefaultCampaignsPromise;
         }
 
         // Start the load
-        this.loadDefaultCampaigns();
+        this.loadBatchDefaultCampaigns();
 
-        return this._defaultCampaignsPromise!;
+        return this._batchDefaultCampaignsPromise!;
     }
 
 
 
-    private loadDefaultCampaigns(): void {
+    private loadBatchDefaultCampaigns(): void {
 
-        this._defaultCampaignsPromise = lastValueFrom(
-            CampaignService.Instance.GetDefaultCampaignsForCampaign(this.id)
+        this._batchDefaultCampaignsPromise = lastValueFrom(
+            CampaignService.Instance.GetBatchDefaultCampaignsForCampaign(this.id)
         )
-        .then(defaultCampaigns => {
-            this._defaultCampaigns = defaultCampaigns ?? [];
-            this._defaultCampaignsSubject.next(this._defaultCampaigns);
-            return this._defaultCampaigns;
+        .then(BatchDefaultCampaigns => {
+            this._batchDefaultCampaigns = BatchDefaultCampaigns ?? [];
+            this._batchDefaultCampaignsSubject.next(this._batchDefaultCampaigns);
+            return this._batchDefaultCampaigns;
          })
         .catch(err => {
-            this._defaultCampaigns = [];
-            this._defaultCampaignsSubject.next(this._defaultCampaigns);
+            this._batchDefaultCampaigns = [];
+            this._batchDefaultCampaignsSubject.next(this._batchDefaultCampaigns);
             throw err;
         })
         .finally(() => {
-            this._defaultCampaignsPromise = null; // Allow retry if needed
+            this._batchDefaultCampaignsPromise = null; // Allow retry if needed
         });
     }
 
     /**
-     * Clears the cached defaultCampaign. Call after mutations to force refresh.
+     * Clears the cached BatchDefaultCampaign. Call after mutations to force refresh.
      */
-    public ClearDefaultCampaignsCache(): void {
-        this._defaultCampaigns = null;
-        this._defaultCampaignsPromise = null;
-        this._defaultCampaignsSubject.next(this._defaultCampaigns);      // Emit to observable
+    public ClearBatchDefaultCampaignsCache(): void {
+        this._batchDefaultCampaigns = null;
+        this._batchDefaultCampaignsPromise = null;
+        this._batchDefaultCampaignsSubject.next(this._batchDefaultCampaigns);      // Emit to observable
     }
 
-    public get HasDefaultCampaigns(): Promise<boolean> {
-        return this.defaultCampaigns.then(defaultCampaigns => defaultCampaigns.length > 0);
+    public get HasBatchDefaultCampaigns(): Promise<boolean> {
+        return this.BatchDefaultCampaigns.then(batchDefaultCampaigns => batchDefaultCampaigns.length > 0);
     }
 
 
@@ -587,9 +590,9 @@ export class CampaignData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.campaign.Gifts.then(gifts => { ... })
+     *   this.campaign.Gifts.then(campaigns => { ... })
      *   or
-     *   await this.campaign.Gifts
+     *   await this.campaign.campaigns
      *
     */
     public get Gifts(): Promise<GiftData[]> {
@@ -614,8 +617,8 @@ export class CampaignData {
         this._giftsPromise = lastValueFrom(
             CampaignService.Instance.GetGiftsForCampaign(this.id)
         )
-        .then(gifts => {
-            this._gifts = gifts ?? [];
+        .then(Gifts => {
+            this._gifts = Gifts ?? [];
             this._giftsSubject.next(this._gifts);
             return this._gifts;
          })
@@ -1093,7 +1096,7 @@ export class CampaignService extends SecureEndpointBase {
     }
 
 
-    public GetDefaultCampaignsForCampaign(campaignId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<BatchData[]> {
+    public GetBatchDefaultCampaignsForCampaign(campaignId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<BatchData[]> {
         return this.batchService.GetBatchList({
             defaultCampaignId: campaignId,
             active: active,

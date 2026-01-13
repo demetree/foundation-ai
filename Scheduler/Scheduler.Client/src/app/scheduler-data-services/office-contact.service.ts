@@ -124,6 +124,7 @@ export class OfficeContactData {
     private _officeContactChangeHistoriesPromise: Promise<OfficeContactChangeHistoryData[]> | null  = null;
     private _officeContactChangeHistoriesSubject = new BehaviorSubject<OfficeContactChangeHistoryData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -143,7 +144,7 @@ export class OfficeContactData {
     );
 
   
-    public OfficeContactChangeHistoriesCount$ = OfficeContactService.Instance.GetOfficeContactsRowCount({officeContactId: this.id,
+    public OfficeContactChangeHistoriesCount$ = OfficeContactChangeHistoryService.Instance.GetOfficeContactChangeHistoriesRowCount({officeContactId: this.id,
       active: true,
       deleted: false
     });
@@ -207,9 +208,9 @@ export class OfficeContactData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.officeContact.OfficeContactChangeHistories.then(officeContactChangeHistories => { ... })
+     *   this.officeContact.OfficeContactChangeHistories.then(officeContacts => { ... })
      *   or
-     *   await this.officeContact.OfficeContactChangeHistories
+     *   await this.officeContact.officeContacts
      *
     */
     public get OfficeContactChangeHistories(): Promise<OfficeContactChangeHistoryData[]> {
@@ -234,8 +235,8 @@ export class OfficeContactData {
         this._officeContactChangeHistoriesPromise = lastValueFrom(
             OfficeContactService.Instance.GetOfficeContactChangeHistoriesForOfficeContact(this.id)
         )
-        .then(officeContactChangeHistories => {
-            this._officeContactChangeHistories = officeContactChangeHistories ?? [];
+        .then(OfficeContactChangeHistories => {
+            this._officeContactChangeHistories = OfficeContactChangeHistories ?? [];
             this._officeContactChangeHistoriesSubject.next(this._officeContactChangeHistories);
             return this._officeContactChangeHistories;
          })

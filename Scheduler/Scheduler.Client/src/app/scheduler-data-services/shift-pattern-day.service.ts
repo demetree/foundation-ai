@@ -123,6 +123,7 @@ export class ShiftPatternDayData {
     private _shiftPatternDayChangeHistoriesPromise: Promise<ShiftPatternDayChangeHistoryData[]> | null  = null;
     private _shiftPatternDayChangeHistoriesSubject = new BehaviorSubject<ShiftPatternDayChangeHistoryData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -142,7 +143,7 @@ export class ShiftPatternDayData {
     );
 
   
-    public ShiftPatternDayChangeHistoriesCount$ = ShiftPatternDayService.Instance.GetShiftPatternDaysRowCount({shiftPatternDayId: this.id,
+    public ShiftPatternDayChangeHistoriesCount$ = ShiftPatternDayChangeHistoryService.Instance.GetShiftPatternDayChangeHistoriesRowCount({shiftPatternDayId: this.id,
       active: true,
       deleted: false
     });
@@ -206,9 +207,9 @@ export class ShiftPatternDayData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.shiftPatternDay.ShiftPatternDayChangeHistories.then(shiftPatternDayChangeHistories => { ... })
+     *   this.shiftPatternDay.ShiftPatternDayChangeHistories.then(shiftPatternDays => { ... })
      *   or
-     *   await this.shiftPatternDay.ShiftPatternDayChangeHistories
+     *   await this.shiftPatternDay.shiftPatternDays
      *
     */
     public get ShiftPatternDayChangeHistories(): Promise<ShiftPatternDayChangeHistoryData[]> {
@@ -233,8 +234,8 @@ export class ShiftPatternDayData {
         this._shiftPatternDayChangeHistoriesPromise = lastValueFrom(
             ShiftPatternDayService.Instance.GetShiftPatternDayChangeHistoriesForShiftPatternDay(this.id)
         )
-        .then(shiftPatternDayChangeHistories => {
-            this._shiftPatternDayChangeHistories = shiftPatternDayChangeHistories ?? [];
+        .then(ShiftPatternDayChangeHistories => {
+            this._shiftPatternDayChangeHistories = ShiftPatternDayChangeHistories ?? [];
             this._shiftPatternDayChangeHistoriesSubject.next(this._shiftPatternDayChangeHistories);
             return this._shiftPatternDayChangeHistories;
          })

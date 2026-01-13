@@ -120,6 +120,7 @@ export class InteractionTypeData {
     private _contactInteractionsPromise: Promise<ContactInteractionData[]> | null  = null;
     private _contactInteractionsSubject = new BehaviorSubject<ContactInteractionData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -139,7 +140,7 @@ export class InteractionTypeData {
     );
 
   
-    public ContactInteractionsCount$ = InteractionTypeService.Instance.GetInteractionTypesRowCount({interactionTypeId: this.id,
+    public ContactInteractionsCount$ = ContactInteractionService.Instance.GetContactInteractionsRowCount({interactionTypeId: this.id,
       active: true,
       deleted: false
     });
@@ -203,9 +204,9 @@ export class InteractionTypeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.interactionType.ContactInteractions.then(contactInteractions => { ... })
+     *   this.interactionType.ContactInteractions.then(interactionTypes => { ... })
      *   or
-     *   await this.interactionType.ContactInteractions
+     *   await this.interactionType.interactionTypes
      *
     */
     public get ContactInteractions(): Promise<ContactInteractionData[]> {
@@ -230,8 +231,8 @@ export class InteractionTypeData {
         this._contactInteractionsPromise = lastValueFrom(
             InteractionTypeService.Instance.GetContactInteractionsForInteractionType(this.id)
         )
-        .then(contactInteractions => {
-            this._contactInteractions = contactInteractions ?? [];
+        .then(ContactInteractions => {
+            this._contactInteractions = ContactInteractions ?? [];
             this._contactInteractionsSubject.next(this._contactInteractions);
             return this._contactInteractions;
          })

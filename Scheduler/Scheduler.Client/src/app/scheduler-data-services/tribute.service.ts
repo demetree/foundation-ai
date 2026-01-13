@@ -148,10 +148,12 @@ export class TributeData {
     private _tributeChangeHistoriesPromise: Promise<TributeChangeHistoryData[]> | null  = null;
     private _tributeChangeHistoriesSubject = new BehaviorSubject<TributeChangeHistoryData[] | null>(null);
 
+                
     private _gifts: GiftData[] | null = null;
     private _giftsPromise: Promise<GiftData[]> | null  = null;
     private _giftsSubject = new BehaviorSubject<GiftData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -171,7 +173,7 @@ export class TributeData {
     );
 
   
-    public TributeChangeHistoriesCount$ = TributeService.Instance.GetTributesRowCount({tributeId: this.id,
+    public TributeChangeHistoriesCount$ = TributeChangeHistoryService.Instance.GetTributeChangeHistoriesRowCount({tributeId: this.id,
       active: true,
       deleted: false
     });
@@ -190,7 +192,7 @@ export class TributeData {
     );
 
   
-    public GiftsCount$ = TributeService.Instance.GetTributesRowCount({tributeId: this.id,
+    public GiftsCount$ = GiftService.Instance.GetGiftsRowCount({tributeId: this.id,
       active: true,
       deleted: false
     });
@@ -258,9 +260,9 @@ export class TributeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.tribute.TributeChangeHistories.then(tributeChangeHistories => { ... })
+     *   this.tribute.TributeChangeHistories.then(tributes => { ... })
      *   or
-     *   await this.tribute.TributeChangeHistories
+     *   await this.tribute.tributes
      *
     */
     public get TributeChangeHistories(): Promise<TributeChangeHistoryData[]> {
@@ -285,8 +287,8 @@ export class TributeData {
         this._tributeChangeHistoriesPromise = lastValueFrom(
             TributeService.Instance.GetTributeChangeHistoriesForTribute(this.id)
         )
-        .then(tributeChangeHistories => {
-            this._tributeChangeHistories = tributeChangeHistories ?? [];
+        .then(TributeChangeHistories => {
+            this._tributeChangeHistories = TributeChangeHistories ?? [];
             this._tributeChangeHistoriesSubject.next(this._tributeChangeHistories);
             return this._tributeChangeHistories;
          })
@@ -323,9 +325,9 @@ export class TributeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.tribute.Gifts.then(gifts => { ... })
+     *   this.tribute.Gifts.then(tributes => { ... })
      *   or
-     *   await this.tribute.Gifts
+     *   await this.tribute.tributes
      *
     */
     public get Gifts(): Promise<GiftData[]> {
@@ -350,8 +352,8 @@ export class TributeData {
         this._giftsPromise = lastValueFrom(
             TributeService.Instance.GetGiftsForTribute(this.id)
         )
-        .then(gifts => {
-            this._gifts = gifts ?? [];
+        .then(Gifts => {
+            this._gifts = Gifts ?? [];
             this._giftsSubject.next(this._gifts);
             return this._gifts;
          })

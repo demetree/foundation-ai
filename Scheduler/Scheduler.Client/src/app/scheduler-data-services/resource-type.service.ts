@@ -123,6 +123,7 @@ export class ResourceTypeData {
     private _resourcesPromise: Promise<ResourceData[]> | null  = null;
     private _resourcesSubject = new BehaviorSubject<ResourceData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -142,7 +143,7 @@ export class ResourceTypeData {
     );
 
   
-    public ResourcesCount$ = ResourceTypeService.Instance.GetResourceTypesRowCount({resourceTypeId: this.id,
+    public ResourcesCount$ = ResourceService.Instance.GetResourcesRowCount({resourceTypeId: this.id,
       active: true,
       deleted: false
     });
@@ -206,9 +207,9 @@ export class ResourceTypeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.resourceType.Resources.then(resources => { ... })
+     *   this.resourceType.Resources.then(resourceTypes => { ... })
      *   or
-     *   await this.resourceType.Resources
+     *   await this.resourceType.resourceTypes
      *
     */
     public get Resources(): Promise<ResourceData[]> {
@@ -233,8 +234,8 @@ export class ResourceTypeData {
         this._resourcesPromise = lastValueFrom(
             ResourceTypeService.Instance.GetResourcesForResourceType(this.id)
         )
-        .then(resources => {
-            this._resources = resources ?? [];
+        .then(Resources => {
+            this._resources = Resources ?? [];
             this._resourcesSubject.next(this._resources);
             return this._resources;
          })

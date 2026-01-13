@@ -112,6 +112,7 @@ export class BatchStatusData {
     private _batchesPromise: Promise<BatchData[]> | null  = null;
     private _batchesSubject = new BehaviorSubject<BatchData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -131,7 +132,7 @@ export class BatchStatusData {
     );
 
   
-    public BatchesCount$ = BatchStatusService.Instance.GetBatchStatusesRowCount({batchStatusId: this.id,
+    public BatchesCount$ = BatchService.Instance.GetBatchesRowCount({batchStatusId: this.id,
       active: true,
       deleted: false
     });
@@ -195,9 +196,9 @@ export class BatchStatusData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.batchStatus.Batches.then(batches => { ... })
+     *   this.batchStatus.Batches.then(batchStatuses => { ... })
      *   or
-     *   await this.batchStatus.Batches
+     *   await this.batchStatus.batchStatuses
      *
     */
     public get Batches(): Promise<BatchData[]> {
@@ -222,8 +223,8 @@ export class BatchStatusData {
         this._batchesPromise = lastValueFrom(
             BatchStatusService.Instance.GetBatchesForBatchStatus(this.id)
         )
-        .then(batches => {
-            this._batches = batches ?? [];
+        .then(Batches => {
+            this._batches = Batches ?? [];
             this._batchesSubject.next(this._batches);
             return this._batches;
          })

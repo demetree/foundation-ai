@@ -123,18 +123,22 @@ export class AssignmentRoleData {
     private _assignmentRoleQualificationRequirementsPromise: Promise<AssignmentRoleQualificationRequirementData[]> | null  = null;
     private _assignmentRoleQualificationRequirementsSubject = new BehaviorSubject<AssignmentRoleQualificationRequirementData[] | null>(null);
 
+                
     private _rateSheets: RateSheetData[] | null = null;
     private _rateSheetsPromise: Promise<RateSheetData[]> | null  = null;
     private _rateSheetsSubject = new BehaviorSubject<RateSheetData[] | null>(null);
 
+                
     private _crewMembers: CrewMemberData[] | null = null;
     private _crewMembersPromise: Promise<CrewMemberData[]> | null  = null;
     private _crewMembersSubject = new BehaviorSubject<CrewMemberData[] | null>(null);
 
+                
     private _eventResourceAssignments: EventResourceAssignmentData[] | null = null;
     private _eventResourceAssignmentsPromise: Promise<EventResourceAssignmentData[]> | null  = null;
     private _eventResourceAssignmentsSubject = new BehaviorSubject<EventResourceAssignmentData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -154,7 +158,7 @@ export class AssignmentRoleData {
     );
 
   
-    public AssignmentRoleQualificationRequirementsCount$ = AssignmentRoleService.Instance.GetAssignmentRolesRowCount({assignmentRoleId: this.id,
+    public AssignmentRoleQualificationRequirementsCount$ = AssignmentRoleQualificationRequirementService.Instance.GetAssignmentRoleQualificationRequirementsRowCount({assignmentRoleId: this.id,
       active: true,
       deleted: false
     });
@@ -173,7 +177,7 @@ export class AssignmentRoleData {
     );
 
   
-    public RateSheetsCount$ = AssignmentRoleService.Instance.GetAssignmentRolesRowCount({assignmentRoleId: this.id,
+    public RateSheetsCount$ = RateSheetService.Instance.GetRateSheetsRowCount({assignmentRoleId: this.id,
       active: true,
       deleted: false
     });
@@ -192,7 +196,7 @@ export class AssignmentRoleData {
     );
 
   
-    public CrewMembersCount$ = AssignmentRoleService.Instance.GetAssignmentRolesRowCount({assignmentRoleId: this.id,
+    public CrewMembersCount$ = CrewMemberService.Instance.GetCrewMembersRowCount({assignmentRoleId: this.id,
       active: true,
       deleted: false
     });
@@ -211,7 +215,7 @@ export class AssignmentRoleData {
     );
 
   
-    public EventResourceAssignmentsCount$ = AssignmentRoleService.Instance.GetAssignmentRolesRowCount({assignmentRoleId: this.id,
+    public EventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({assignmentRoleId: this.id,
       active: true,
       deleted: false
     });
@@ -287,9 +291,9 @@ export class AssignmentRoleData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.assignmentRole.AssignmentRoleQualificationRequirements.then(assignmentRoleQualificationRequirements => { ... })
+     *   this.assignmentRole.AssignmentRoleQualificationRequirements.then(assignmentRoles => { ... })
      *   or
-     *   await this.assignmentRole.AssignmentRoleQualificationRequirements
+     *   await this.assignmentRole.assignmentRoles
      *
     */
     public get AssignmentRoleQualificationRequirements(): Promise<AssignmentRoleQualificationRequirementData[]> {
@@ -314,8 +318,8 @@ export class AssignmentRoleData {
         this._assignmentRoleQualificationRequirementsPromise = lastValueFrom(
             AssignmentRoleService.Instance.GetAssignmentRoleQualificationRequirementsForAssignmentRole(this.id)
         )
-        .then(assignmentRoleQualificationRequirements => {
-            this._assignmentRoleQualificationRequirements = assignmentRoleQualificationRequirements ?? [];
+        .then(AssignmentRoleQualificationRequirements => {
+            this._assignmentRoleQualificationRequirements = AssignmentRoleQualificationRequirements ?? [];
             this._assignmentRoleQualificationRequirementsSubject.next(this._assignmentRoleQualificationRequirements);
             return this._assignmentRoleQualificationRequirements;
          })
@@ -352,9 +356,9 @@ export class AssignmentRoleData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.assignmentRole.RateSheets.then(rateSheets => { ... })
+     *   this.assignmentRole.RateSheets.then(assignmentRoles => { ... })
      *   or
-     *   await this.assignmentRole.RateSheets
+     *   await this.assignmentRole.assignmentRoles
      *
     */
     public get RateSheets(): Promise<RateSheetData[]> {
@@ -379,8 +383,8 @@ export class AssignmentRoleData {
         this._rateSheetsPromise = lastValueFrom(
             AssignmentRoleService.Instance.GetRateSheetsForAssignmentRole(this.id)
         )
-        .then(rateSheets => {
-            this._rateSheets = rateSheets ?? [];
+        .then(RateSheets => {
+            this._rateSheets = RateSheets ?? [];
             this._rateSheetsSubject.next(this._rateSheets);
             return this._rateSheets;
          })
@@ -417,9 +421,9 @@ export class AssignmentRoleData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.assignmentRole.CrewMembers.then(crewMembers => { ... })
+     *   this.assignmentRole.CrewMembers.then(assignmentRoles => { ... })
      *   or
-     *   await this.assignmentRole.CrewMembers
+     *   await this.assignmentRole.assignmentRoles
      *
     */
     public get CrewMembers(): Promise<CrewMemberData[]> {
@@ -444,8 +448,8 @@ export class AssignmentRoleData {
         this._crewMembersPromise = lastValueFrom(
             AssignmentRoleService.Instance.GetCrewMembersForAssignmentRole(this.id)
         )
-        .then(crewMembers => {
-            this._crewMembers = crewMembers ?? [];
+        .then(CrewMembers => {
+            this._crewMembers = CrewMembers ?? [];
             this._crewMembersSubject.next(this._crewMembers);
             return this._crewMembers;
          })
@@ -482,9 +486,9 @@ export class AssignmentRoleData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.assignmentRole.EventResourceAssignments.then(eventResourceAssignments => { ... })
+     *   this.assignmentRole.EventResourceAssignments.then(assignmentRoles => { ... })
      *   or
-     *   await this.assignmentRole.EventResourceAssignments
+     *   await this.assignmentRole.assignmentRoles
      *
     */
     public get EventResourceAssignments(): Promise<EventResourceAssignmentData[]> {
@@ -509,8 +513,8 @@ export class AssignmentRoleData {
         this._eventResourceAssignmentsPromise = lastValueFrom(
             AssignmentRoleService.Instance.GetEventResourceAssignmentsForAssignmentRole(this.id)
         )
-        .then(eventResourceAssignments => {
-            this._eventResourceAssignments = eventResourceAssignments ?? [];
+        .then(EventResourceAssignments => {
+            this._eventResourceAssignments = EventResourceAssignments ?? [];
             this._eventResourceAssignmentsSubject.next(this._eventResourceAssignments);
             return this._eventResourceAssignments;
          })

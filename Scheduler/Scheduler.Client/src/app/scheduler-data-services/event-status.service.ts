@@ -115,6 +115,7 @@ export class EventStatusData {
     private _scheduledEventsPromise: Promise<ScheduledEventData[]> | null  = null;
     private _scheduledEventsSubject = new BehaviorSubject<ScheduledEventData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -134,7 +135,7 @@ export class EventStatusData {
     );
 
   
-    public ScheduledEventsCount$ = EventStatusService.Instance.GetEventStatusesRowCount({eventStatusId: this.id,
+    public ScheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({eventStatusId: this.id,
       active: true,
       deleted: false
     });
@@ -198,9 +199,9 @@ export class EventStatusData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.eventStatus.ScheduledEvents.then(scheduledEvents => { ... })
+     *   this.eventStatus.ScheduledEvents.then(eventStatuses => { ... })
      *   or
-     *   await this.eventStatus.ScheduledEvents
+     *   await this.eventStatus.eventStatuses
      *
     */
     public get ScheduledEvents(): Promise<ScheduledEventData[]> {
@@ -225,8 +226,8 @@ export class EventStatusData {
         this._scheduledEventsPromise = lastValueFrom(
             EventStatusService.Instance.GetScheduledEventsForEventStatus(this.id)
         )
-        .then(scheduledEvents => {
-            this._scheduledEvents = scheduledEvents ?? [];
+        .then(ScheduledEvents => {
+            this._scheduledEvents = ScheduledEvents ?? [];
             this._scheduledEventsSubject.next(this._scheduledEvents);
             return this._scheduledEvents;
          })

@@ -116,6 +116,7 @@ export class ContactTagData {
     private _contactTagChangeHistoriesPromise: Promise<ContactTagChangeHistoryData[]> | null  = null;
     private _contactTagChangeHistoriesSubject = new BehaviorSubject<ContactTagChangeHistoryData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -135,7 +136,7 @@ export class ContactTagData {
     );
 
   
-    public ContactTagChangeHistoriesCount$ = ContactTagService.Instance.GetContactTagsRowCount({contactTagId: this.id,
+    public ContactTagChangeHistoriesCount$ = ContactTagChangeHistoryService.Instance.GetContactTagChangeHistoriesRowCount({contactTagId: this.id,
       active: true,
       deleted: false
     });
@@ -199,9 +200,9 @@ export class ContactTagData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.contactTag.ContactTagChangeHistories.then(contactTagChangeHistories => { ... })
+     *   this.contactTag.ContactTagChangeHistories.then(contactTags => { ... })
      *   or
-     *   await this.contactTag.ContactTagChangeHistories
+     *   await this.contactTag.contactTags
      *
     */
     public get ContactTagChangeHistories(): Promise<ContactTagChangeHistoryData[]> {
@@ -226,8 +227,8 @@ export class ContactTagData {
         this._contactTagChangeHistoriesPromise = lastValueFrom(
             ContactTagService.Instance.GetContactTagChangeHistoriesForContactTag(this.id)
         )
-        .then(contactTagChangeHistories => {
-            this._contactTagChangeHistories = contactTagChangeHistories ?? [];
+        .then(ContactTagChangeHistories => {
+            this._contactTagChangeHistories = ContactTagChangeHistories ?? [];
             this._contactTagChangeHistoriesSubject.next(this._contactTagChangeHistories);
             return this._contactTagChangeHistories;
          })

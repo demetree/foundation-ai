@@ -166,6 +166,7 @@ export class EventResourceAssignmentData {
     private _eventResourceAssignmentChangeHistoriesPromise: Promise<EventResourceAssignmentChangeHistoryData[]> | null  = null;
     private _eventResourceAssignmentChangeHistoriesSubject = new BehaviorSubject<EventResourceAssignmentChangeHistoryData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -185,7 +186,7 @@ export class EventResourceAssignmentData {
     );
 
   
-    public EventResourceAssignmentChangeHistoriesCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({eventResourceAssignmentId: this.id,
+    public EventResourceAssignmentChangeHistoriesCount$ = EventResourceAssignmentChangeHistoryService.Instance.GetEventResourceAssignmentChangeHistoriesRowCount({eventResourceAssignmentId: this.id,
       active: true,
       deleted: false
     });
@@ -249,9 +250,9 @@ export class EventResourceAssignmentData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.eventResourceAssignment.EventResourceAssignmentChangeHistories.then(eventResourceAssignmentChangeHistories => { ... })
+     *   this.eventResourceAssignment.EventResourceAssignmentChangeHistories.then(eventResourceAssignments => { ... })
      *   or
-     *   await this.eventResourceAssignment.EventResourceAssignmentChangeHistories
+     *   await this.eventResourceAssignment.eventResourceAssignments
      *
     */
     public get EventResourceAssignmentChangeHistories(): Promise<EventResourceAssignmentChangeHistoryData[]> {
@@ -276,8 +277,8 @@ export class EventResourceAssignmentData {
         this._eventResourceAssignmentChangeHistoriesPromise = lastValueFrom(
             EventResourceAssignmentService.Instance.GetEventResourceAssignmentChangeHistoriesForEventResourceAssignment(this.id)
         )
-        .then(eventResourceAssignmentChangeHistories => {
-            this._eventResourceAssignmentChangeHistories = eventResourceAssignmentChangeHistories ?? [];
+        .then(EventResourceAssignmentChangeHistories => {
+            this._eventResourceAssignmentChangeHistories = EventResourceAssignmentChangeHistories ?? [];
             this._eventResourceAssignmentChangeHistoriesSubject.next(this._eventResourceAssignmentChangeHistories);
             return this._eventResourceAssignmentChangeHistories;
          })

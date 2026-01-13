@@ -139,42 +139,52 @@ export class TimeZoneData {
     private _contactsPromise: Promise<ContactData[]> | null  = null;
     private _contactsSubject = new BehaviorSubject<ContactData[] | null>(null);
 
+                
     private _offices: OfficeData[] | null = null;
     private _officesPromise: Promise<OfficeData[]> | null  = null;
     private _officesSubject = new BehaviorSubject<OfficeData[] | null>(null);
 
+                
     private _clients: ClientData[] | null = null;
     private _clientsPromise: Promise<ClientData[]> | null  = null;
     private _clientsSubject = new BehaviorSubject<ClientData[] | null>(null);
 
+                
     private _tenantProfiles: TenantProfileData[] | null = null;
     private _tenantProfilesPromise: Promise<TenantProfileData[]> | null  = null;
     private _tenantProfilesSubject = new BehaviorSubject<TenantProfileData[] | null>(null);
 
+                
     private _schedulingTargets: SchedulingTargetData[] | null = null;
     private _schedulingTargetsPromise: Promise<SchedulingTargetData[]> | null  = null;
     private _schedulingTargetsSubject = new BehaviorSubject<SchedulingTargetData[] | null>(null);
 
+                
     private _shiftPatterns: ShiftPatternData[] | null = null;
     private _shiftPatternsPromise: Promise<ShiftPatternData[]> | null  = null;
     private _shiftPatternsSubject = new BehaviorSubject<ShiftPatternData[] | null>(null);
 
+                
     private _resources: ResourceData[] | null = null;
     private _resourcesPromise: Promise<ResourceData[]> | null  = null;
     private _resourcesSubject = new BehaviorSubject<ResourceData[] | null>(null);
 
+                
     private _resourceAvailabilities: ResourceAvailabilityData[] | null = null;
     private _resourceAvailabilitiesPromise: Promise<ResourceAvailabilityData[]> | null  = null;
     private _resourceAvailabilitiesSubject = new BehaviorSubject<ResourceAvailabilityData[] | null>(null);
 
+                
     private _resourceShifts: ResourceShiftData[] | null = null;
     private _resourceShiftsPromise: Promise<ResourceShiftData[]> | null  = null;
     private _resourceShiftsSubject = new BehaviorSubject<ResourceShiftData[] | null>(null);
 
+                
     private _scheduledEvents: ScheduledEventData[] | null = null;
     private _scheduledEventsPromise: Promise<ScheduledEventData[]> | null  = null;
     private _scheduledEventsSubject = new BehaviorSubject<ScheduledEventData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -194,7 +204,7 @@ export class TimeZoneData {
     );
 
   
-    public ContactsCount$ = TimeZoneService.Instance.GetTimeZonesRowCount({timeZoneId: this.id,
+    public ContactsCount$ = ContactService.Instance.GetContactsRowCount({timeZoneId: this.id,
       active: true,
       deleted: false
     });
@@ -213,7 +223,7 @@ export class TimeZoneData {
     );
 
   
-    public OfficesCount$ = TimeZoneService.Instance.GetTimeZonesRowCount({timeZoneId: this.id,
+    public OfficesCount$ = OfficeService.Instance.GetOfficesRowCount({timeZoneId: this.id,
       active: true,
       deleted: false
     });
@@ -232,7 +242,7 @@ export class TimeZoneData {
     );
 
   
-    public ClientsCount$ = TimeZoneService.Instance.GetTimeZonesRowCount({timeZoneId: this.id,
+    public ClientsCount$ = ClientService.Instance.GetClientsRowCount({timeZoneId: this.id,
       active: true,
       deleted: false
     });
@@ -251,7 +261,7 @@ export class TimeZoneData {
     );
 
   
-    public TenantProfilesCount$ = TimeZoneService.Instance.GetTimeZonesRowCount({timeZoneId: this.id,
+    public TenantProfilesCount$ = TenantProfileService.Instance.GetTenantProfilesRowCount({timeZoneId: this.id,
       active: true,
       deleted: false
     });
@@ -270,7 +280,7 @@ export class TimeZoneData {
     );
 
   
-    public SchedulingTargetsCount$ = TimeZoneService.Instance.GetTimeZonesRowCount({timeZoneId: this.id,
+    public SchedulingTargetsCount$ = SchedulingTargetService.Instance.GetSchedulingTargetsRowCount({timeZoneId: this.id,
       active: true,
       deleted: false
     });
@@ -289,7 +299,7 @@ export class TimeZoneData {
     );
 
   
-    public ShiftPatternsCount$ = TimeZoneService.Instance.GetTimeZonesRowCount({timeZoneId: this.id,
+    public ShiftPatternsCount$ = ShiftPatternService.Instance.GetShiftPatternsRowCount({timeZoneId: this.id,
       active: true,
       deleted: false
     });
@@ -308,7 +318,7 @@ export class TimeZoneData {
     );
 
   
-    public ResourcesCount$ = TimeZoneService.Instance.GetTimeZonesRowCount({timeZoneId: this.id,
+    public ResourcesCount$ = ResourceService.Instance.GetResourcesRowCount({timeZoneId: this.id,
       active: true,
       deleted: false
     });
@@ -327,7 +337,7 @@ export class TimeZoneData {
     );
 
   
-    public ResourceAvailabilitiesCount$ = TimeZoneService.Instance.GetTimeZonesRowCount({timeZoneId: this.id,
+    public ResourceAvailabilitiesCount$ = ResourceAvailabilityService.Instance.GetResourceAvailabilitiesRowCount({timeZoneId: this.id,
       active: true,
       deleted: false
     });
@@ -346,7 +356,7 @@ export class TimeZoneData {
     );
 
   
-    public ResourceShiftsCount$ = TimeZoneService.Instance.GetTimeZonesRowCount({timeZoneId: this.id,
+    public ResourceShiftsCount$ = ResourceShiftService.Instance.GetResourceShiftsRowCount({timeZoneId: this.id,
       active: true,
       deleted: false
     });
@@ -365,7 +375,7 @@ export class TimeZoneData {
     );
 
   
-    public ScheduledEventsCount$ = TimeZoneService.Instance.GetTimeZonesRowCount({timeZoneId: this.id,
+    public ScheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({timeZoneId: this.id,
       active: true,
       deleted: false
     });
@@ -465,9 +475,9 @@ export class TimeZoneData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.timeZone.Contacts.then(contacts => { ... })
+     *   this.timeZone.Contacts.then(timeZones => { ... })
      *   or
-     *   await this.timeZone.Contacts
+     *   await this.timeZone.timeZones
      *
     */
     public get Contacts(): Promise<ContactData[]> {
@@ -492,8 +502,8 @@ export class TimeZoneData {
         this._contactsPromise = lastValueFrom(
             TimeZoneService.Instance.GetContactsForTimeZone(this.id)
         )
-        .then(contacts => {
-            this._contacts = contacts ?? [];
+        .then(Contacts => {
+            this._contacts = Contacts ?? [];
             this._contactsSubject.next(this._contacts);
             return this._contacts;
          })
@@ -530,9 +540,9 @@ export class TimeZoneData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.timeZone.Offices.then(offices => { ... })
+     *   this.timeZone.Offices.then(timeZones => { ... })
      *   or
-     *   await this.timeZone.Offices
+     *   await this.timeZone.timeZones
      *
     */
     public get Offices(): Promise<OfficeData[]> {
@@ -557,8 +567,8 @@ export class TimeZoneData {
         this._officesPromise = lastValueFrom(
             TimeZoneService.Instance.GetOfficesForTimeZone(this.id)
         )
-        .then(offices => {
-            this._offices = offices ?? [];
+        .then(Offices => {
+            this._offices = Offices ?? [];
             this._officesSubject.next(this._offices);
             return this._offices;
          })
@@ -595,9 +605,9 @@ export class TimeZoneData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.timeZone.Clients.then(clients => { ... })
+     *   this.timeZone.Clients.then(timeZones => { ... })
      *   or
-     *   await this.timeZone.Clients
+     *   await this.timeZone.timeZones
      *
     */
     public get Clients(): Promise<ClientData[]> {
@@ -622,8 +632,8 @@ export class TimeZoneData {
         this._clientsPromise = lastValueFrom(
             TimeZoneService.Instance.GetClientsForTimeZone(this.id)
         )
-        .then(clients => {
-            this._clients = clients ?? [];
+        .then(Clients => {
+            this._clients = Clients ?? [];
             this._clientsSubject.next(this._clients);
             return this._clients;
          })
@@ -660,9 +670,9 @@ export class TimeZoneData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.timeZone.TenantProfiles.then(tenantProfiles => { ... })
+     *   this.timeZone.TenantProfiles.then(timeZones => { ... })
      *   or
-     *   await this.timeZone.TenantProfiles
+     *   await this.timeZone.timeZones
      *
     */
     public get TenantProfiles(): Promise<TenantProfileData[]> {
@@ -687,8 +697,8 @@ export class TimeZoneData {
         this._tenantProfilesPromise = lastValueFrom(
             TimeZoneService.Instance.GetTenantProfilesForTimeZone(this.id)
         )
-        .then(tenantProfiles => {
-            this._tenantProfiles = tenantProfiles ?? [];
+        .then(TenantProfiles => {
+            this._tenantProfiles = TenantProfiles ?? [];
             this._tenantProfilesSubject.next(this._tenantProfiles);
             return this._tenantProfiles;
          })
@@ -725,9 +735,9 @@ export class TimeZoneData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.timeZone.SchedulingTargets.then(schedulingTargets => { ... })
+     *   this.timeZone.SchedulingTargets.then(timeZones => { ... })
      *   or
-     *   await this.timeZone.SchedulingTargets
+     *   await this.timeZone.timeZones
      *
     */
     public get SchedulingTargets(): Promise<SchedulingTargetData[]> {
@@ -752,8 +762,8 @@ export class TimeZoneData {
         this._schedulingTargetsPromise = lastValueFrom(
             TimeZoneService.Instance.GetSchedulingTargetsForTimeZone(this.id)
         )
-        .then(schedulingTargets => {
-            this._schedulingTargets = schedulingTargets ?? [];
+        .then(SchedulingTargets => {
+            this._schedulingTargets = SchedulingTargets ?? [];
             this._schedulingTargetsSubject.next(this._schedulingTargets);
             return this._schedulingTargets;
          })
@@ -790,9 +800,9 @@ export class TimeZoneData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.timeZone.ShiftPatterns.then(shiftPatterns => { ... })
+     *   this.timeZone.ShiftPatterns.then(timeZones => { ... })
      *   or
-     *   await this.timeZone.ShiftPatterns
+     *   await this.timeZone.timeZones
      *
     */
     public get ShiftPatterns(): Promise<ShiftPatternData[]> {
@@ -817,8 +827,8 @@ export class TimeZoneData {
         this._shiftPatternsPromise = lastValueFrom(
             TimeZoneService.Instance.GetShiftPatternsForTimeZone(this.id)
         )
-        .then(shiftPatterns => {
-            this._shiftPatterns = shiftPatterns ?? [];
+        .then(ShiftPatterns => {
+            this._shiftPatterns = ShiftPatterns ?? [];
             this._shiftPatternsSubject.next(this._shiftPatterns);
             return this._shiftPatterns;
          })
@@ -855,9 +865,9 @@ export class TimeZoneData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.timeZone.Resources.then(resources => { ... })
+     *   this.timeZone.Resources.then(timeZones => { ... })
      *   or
-     *   await this.timeZone.Resources
+     *   await this.timeZone.timeZones
      *
     */
     public get Resources(): Promise<ResourceData[]> {
@@ -882,8 +892,8 @@ export class TimeZoneData {
         this._resourcesPromise = lastValueFrom(
             TimeZoneService.Instance.GetResourcesForTimeZone(this.id)
         )
-        .then(resources => {
-            this._resources = resources ?? [];
+        .then(Resources => {
+            this._resources = Resources ?? [];
             this._resourcesSubject.next(this._resources);
             return this._resources;
          })
@@ -920,9 +930,9 @@ export class TimeZoneData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.timeZone.ResourceAvailabilities.then(resourceAvailabilities => { ... })
+     *   this.timeZone.ResourceAvailabilities.then(timeZones => { ... })
      *   or
-     *   await this.timeZone.ResourceAvailabilities
+     *   await this.timeZone.timeZones
      *
     */
     public get ResourceAvailabilities(): Promise<ResourceAvailabilityData[]> {
@@ -947,8 +957,8 @@ export class TimeZoneData {
         this._resourceAvailabilitiesPromise = lastValueFrom(
             TimeZoneService.Instance.GetResourceAvailabilitiesForTimeZone(this.id)
         )
-        .then(resourceAvailabilities => {
-            this._resourceAvailabilities = resourceAvailabilities ?? [];
+        .then(ResourceAvailabilities => {
+            this._resourceAvailabilities = ResourceAvailabilities ?? [];
             this._resourceAvailabilitiesSubject.next(this._resourceAvailabilities);
             return this._resourceAvailabilities;
          })
@@ -985,9 +995,9 @@ export class TimeZoneData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.timeZone.ResourceShifts.then(resourceShifts => { ... })
+     *   this.timeZone.ResourceShifts.then(timeZones => { ... })
      *   or
-     *   await this.timeZone.ResourceShifts
+     *   await this.timeZone.timeZones
      *
     */
     public get ResourceShifts(): Promise<ResourceShiftData[]> {
@@ -1012,8 +1022,8 @@ export class TimeZoneData {
         this._resourceShiftsPromise = lastValueFrom(
             TimeZoneService.Instance.GetResourceShiftsForTimeZone(this.id)
         )
-        .then(resourceShifts => {
-            this._resourceShifts = resourceShifts ?? [];
+        .then(ResourceShifts => {
+            this._resourceShifts = ResourceShifts ?? [];
             this._resourceShiftsSubject.next(this._resourceShifts);
             return this._resourceShifts;
          })
@@ -1050,9 +1060,9 @@ export class TimeZoneData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.timeZone.ScheduledEvents.then(scheduledEvents => { ... })
+     *   this.timeZone.ScheduledEvents.then(timeZones => { ... })
      *   or
-     *   await this.timeZone.ScheduledEvents
+     *   await this.timeZone.timeZones
      *
     */
     public get ScheduledEvents(): Promise<ScheduledEventData[]> {
@@ -1077,8 +1087,8 @@ export class TimeZoneData {
         this._scheduledEventsPromise = lastValueFrom(
             TimeZoneService.Instance.GetScheduledEventsForTimeZone(this.id)
         )
-        .then(scheduledEvents => {
-            this._scheduledEvents = scheduledEvents ?? [];
+        .then(ScheduledEvents => {
+            this._scheduledEvents = ScheduledEvents ?? [];
             this._scheduledEventsSubject.next(this._scheduledEvents);
             return this._scheduledEvents;
          })

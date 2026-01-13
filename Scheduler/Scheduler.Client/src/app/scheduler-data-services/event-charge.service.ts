@@ -160,6 +160,7 @@ export class EventChargeData {
     private _eventChargeChangeHistoriesPromise: Promise<EventChargeChangeHistoryData[]> | null  = null;
     private _eventChargeChangeHistoriesSubject = new BehaviorSubject<EventChargeChangeHistoryData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -179,7 +180,7 @@ export class EventChargeData {
     );
 
   
-    public EventChargeChangeHistoriesCount$ = EventChargeService.Instance.GetEventChargesRowCount({eventChargeId: this.id,
+    public EventChargeChangeHistoriesCount$ = EventChargeChangeHistoryService.Instance.GetEventChargeChangeHistoriesRowCount({eventChargeId: this.id,
       active: true,
       deleted: false
     });
@@ -243,9 +244,9 @@ export class EventChargeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.eventCharge.EventChargeChangeHistories.then(eventChargeChangeHistories => { ... })
+     *   this.eventCharge.EventChargeChangeHistories.then(eventCharges => { ... })
      *   or
-     *   await this.eventCharge.EventChargeChangeHistories
+     *   await this.eventCharge.eventCharges
      *
     */
     public get EventChargeChangeHistories(): Promise<EventChargeChangeHistoryData[]> {
@@ -270,8 +271,8 @@ export class EventChargeData {
         this._eventChargeChangeHistoriesPromise = lastValueFrom(
             EventChargeService.Instance.GetEventChargeChangeHistoriesForEventCharge(this.id)
         )
-        .then(eventChargeChangeHistories => {
-            this._eventChargeChangeHistories = eventChargeChangeHistories ?? [];
+        .then(EventChargeChangeHistories => {
+            this._eventChargeChangeHistories = EventChargeChangeHistories ?? [];
             this._eventChargeChangeHistoriesSubject.next(this._eventChargeChangeHistories);
             return this._eventChargeChangeHistories;
          })

@@ -1,101 +1,76 @@
 <div class="add-attribute-definition" *ngIf="showAddButton == true">
-    <button type="button" class="btn btn-sm btn-add-attribute-definition me-2" (click)="openModal()"
-        ngbTooltip="Add Attribute Definition" *ngIf="userIsSchedulerAttributeDefinitionWriter() == true" placement="top"
+    <button type="button"
+        class="btn btn-sm btn-add-attribute-definition me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Attribute Definition" 
+        *ngIf="userIsSchedulerAttributeDefinitionWriter() == true"
+        placement="top"
         style="min-width: 75px;">Add</button>
 </div>
 
 <!-- ng-bootstrap modal -->
 <ng-template #attributeDefinitionModal let-modal>
-    <div class="modal-header bg-dark text-light attribute-definition-modal-header">
-        <h5 class="modal-title mb-0" id="attributeDefinitionModalLabel" ngbTooltip="{{objectGuid}}">
-            {{ isEditMode ? 'Edit Attribute Definition' : 'Add Attribute Definition' }}
-        </h5>
-        <button type="button" class="btn btn-sm btn-close btn-close-white" (click)="closeModal()">
-        </button>
-    </div>
-    <div class="modal-body attribute-definition-modal-body">
-        <form [formGroup]="attributeDefinitionForm" (ngSubmit)="submitForm()">
+   <div class="modal-header bg-dark text-light attribute-definition-modal-header">
+      <h5 class="modal-title mb-0" id="attributeDefinitionModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Attribute Definition' : 'Add Attribute Definition' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body attribute-definition-modal-body">
+      <form [formGroup]="attributeDefinitionForm" (ngSubmit)="submitForm()">
             <div class="form-group" *ngIf="!isFieldHidden('attributeDefinitionEntityId')">
-                <label for="AttributeDefinition-attributeDefinitionEntityId"
-                    id="label-AttributeDefinition-attributeDefinitionEntityId">Attribute Definition Entity</label>
-                <select id="AttributeDefinition-attributeDefinitionEntityId"
-                    formControlName="attributeDefinitionEntityId" class="form-select attribute-definition-select"
-                    [disabled]="!userIsSchedulerAttributeDefinitionWriter()">
+                <label for="AttributeDefinition-attributeDefinitionEntityId" id="label-AttributeDefinition-attributeDefinitionEntityId">Attribute Definition Entity</label>
+                <select id="AttributeDefinition-attributeDefinitionEntityId" formControlName="attributeDefinitionEntityId" class="form-select attribute-definition-select" [disabled]="!userIsSchedulerAttributeDefinitionWriter()">
                     <option [ngValue]="null">Select Attribute Definition Entity</option>
-                    <option *ngFor="let attributeDefinitionEntity of attributeDefinitionEntities$ | async"
-                        [ngValue]="attributeDefinitionEntity.id">{{attributeDefinitionEntity.name}}</option>
+                    <option *ngFor="let attributeDefinitionEntity of attributeDefinitionEntities$ | async" [ngValue]="attributeDefinitionEntity.id">{{attributeDefinitionEntity.name}}</option>
                 </select>
             </div>
             <div class="form-group" *ngIf="!isFieldHidden('key')">
                 <label for="AttributeDefinition-key" id="label-AttributeDefinition-key">Key</label>
-                <input type="text" id="AttributeDefinition-key" formControlName="key" placeholder="Enter Key"
-                    class="form-control attribute-definition-input"
-                    [disabled]="!userIsSchedulerAttributeDefinitionWriter()" aria-labelledby="label-key" />
+                <input type="text" id="AttributeDefinition-key" formControlName="key" placeholder="Enter Key" class="form-control attribute-definition-input" [disabled]="!userIsSchedulerAttributeDefinitionWriter()" aria-labelledby="label-key" />
             </div>
             <div class="form-group" *ngIf="!isFieldHidden('label')">
                 <label for="AttributeDefinition-label" id="label-AttributeDefinition-label">Label</label>
-                <input type="text" id="AttributeDefinition-label" formControlName="label" placeholder="Enter Label"
-                    class="form-control attribute-definition-input"
-                    [disabled]="!userIsSchedulerAttributeDefinitionWriter()" aria-labelledby="label-label" />
+                <input type="text" id="AttributeDefinition-label" formControlName="label" placeholder="Enter Label" class="form-control attribute-definition-input" [disabled]="!userIsSchedulerAttributeDefinitionWriter()" aria-labelledby="label-label" />
             </div>
             <div class="form-group" *ngIf="!isFieldHidden('attributeDefinitionTypeId')">
-                <label for="AttributeDefinition-attributeDefinitionTypeId"
-                    id="label-AttributeDefinition-attributeDefinitionTypeId">Attribute Definition Type</label>
-                <select id="AttributeDefinition-attributeDefinitionTypeId" formControlName="attributeDefinitionTypeId"
-                    class="form-select attribute-definition-select"
-                    [disabled]="!userIsSchedulerAttributeDefinitionWriter()">
+                <label for="AttributeDefinition-attributeDefinitionTypeId" id="label-AttributeDefinition-attributeDefinitionTypeId">Attribute Definition Type</label>
+                <select id="AttributeDefinition-attributeDefinitionTypeId" formControlName="attributeDefinitionTypeId" class="form-select attribute-definition-select" [disabled]="!userIsSchedulerAttributeDefinitionWriter()">
                     <option [ngValue]="null">Select Attribute Definition Type</option>
-                    <option *ngFor="let attributeDefinitionType of attributeDefinitionTypes$ | async"
-                        [ngValue]="attributeDefinitionType.id">{{attributeDefinitionType.name}}</option>
+                    <option *ngFor="let attributeDefinitionType of attributeDefinitionTypes$ | async" [ngValue]="attributeDefinitionType.id">{{attributeDefinitionType.name}}</option>
                 </select>
             </div>
             <div class="form-group" *ngIf="!isFieldHidden('options')">
-                <label for="AttributeDefinition-options" id="label-AttributeDefinition-options">Options (CSV or Newline
-                    separated)</label>
-                <textarea id="AttributeDefinition-options" formControlName="options"
-                    placeholder="Enter Options (e.g. Option 1, Option 2)"
-                    class="form-control attribute-definition-input"
-                    [disabled]="!userIsSchedulerAttributeDefinitionWriter()"></textarea>
+                <label for="AttributeDefinition-options" id="label-AttributeDefinition-options">Options</label>
+                <textarea id="AttributeDefinition-options" formControlName="options" placeholder="Enter Options" class="form-control attribute-definition-input" [disabled]="!userIsSchedulerAttributeDefinitionWriter()"></textarea>
             </div>
             <div class="form-check my-2" *ngIf="!isFieldHidden('isRequired')">
-                <input type="checkbox" id="AttributeDefinition-isRequired" formControlName="isRequired"
-                    class="form-check-input" [disabled]="!userIsSchedulerAttributeDefinitionWriter()" />
-                <label for="AttributeDefinition-isRequired" class="form-check-label"
-                    id="label-AttributeDefinition-isRequired"><span class="text-danger">*</span>Is Required</label>
+                <input type="checkbox" id="AttributeDefinition-isRequired" formControlName="isRequired" class="form-check-input" [disabled]="!userIsSchedulerAttributeDefinitionWriter()" />
+                <label for="AttributeDefinition-isRequired" class="form-check-label" id="label-AttributeDefinition-isRequired"><span class="text-danger">*</span>Is Required</label>
             </div>
             <div class="form-group" *ngIf="!isFieldHidden('sequence')">
                 <label for="AttributeDefinition-sequence" id="label-AttributeDefinition-sequence">Sequence</label>
-                <input type="number" id="AttributeDefinition-sequence" formControlName="sequence"
-                    placeholder="Enter Sequence" class="form-control attribute-definition-input"
-                    [disabled]="!userIsSchedulerAttributeDefinitionWriter()" aria-labelledby="label-sequence" />
+                <input type="number" id="AttributeDefinition-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control attribute-definition-input" [disabled]="!userIsSchedulerAttributeDefinitionWriter()" aria-labelledby="label-sequence" />
             </div>
             <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
-                <label for="AttributeDefinition-versionNumber" id="label-AttributeDefinition-versionNumber"><span
-                        class="text-danger">*</span>Version Number</label>
-                <input type="number" id="AttributeDefinition-versionNumber" formControlName="versionNumber"
-                    [disabled]="true" placeholder="Enter Version Number"
-                    class="form-control attribute-definition-input" />
+                <label for="AttributeDefinition-versionNumber" id="label-AttributeDefinition-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="AttributeDefinition-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control attribute-definition-input" />
             </div>
             <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
-                <input type="checkbox" id="AttributeDefinition-active" formControlName="active" class="form-check-input"
-                    [disabled]="!userIsSchedulerAttributeDefinitionWriter()" />
-                <label for="AttributeDefinition-active" class="form-check-label"
-                    id="label-AttributeDefinition-active"><span class="text-danger">*</span>Active</label>
+                <input type="checkbox" id="AttributeDefinition-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerAttributeDefinitionWriter()" />
+                <label for="AttributeDefinition-active" class="form-check-label" id="label-AttributeDefinition-active"><span class="text-danger">*</span>Active</label>
             </div>
             <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
-                <input type="checkbox" id="AttributeDefinition-deleted" formControlName="deleted"
-                    class="form-check-input" [disabled]="!userIsSchedulerAttributeDefinitionWriter()" />
-                <label for="AttributeDefinition-deleted" class="form-check-label"
-                    id="label-AttributeDefinition-deleted"><span class="text-danger">*</span>Deleted</label>
+                <input type="checkbox" id="AttributeDefinition-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerAttributeDefinitionWriter()" />
+                <label for="AttributeDefinition-deleted" class="form-check-label" id="label-AttributeDefinition-deleted"><span class="text-danger">*</span>Deleted</label>
             </div>
-            <div class="modal-footer attribute-definition-modal-footer">
-                <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()"
-                    ngbTooltip="Cancel the Attribute Definition changes and Close">Cancel</button>
-                <button type="submit" class="btn btn-sm btn-primary"
-                    [disabled]="isSaving || !attributeDefinitionForm.valid || attributeDefinitionForm.pristine || !userIsSchedulerAttributeDefinitionWriter()"
-                    ngbTooltip="Save the Attribute Definition changes and Close">{{ isEditMode ? 'Save' : 'Create'
-                    }}</button>
-            </div>
-        </form>
-    </div>
+         <div class="modal-footer attribute-definition-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Attribute Definition changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !attributeDefinitionForm.valid || attributeDefinitionForm.pristine || !userIsSchedulerAttributeDefinitionWriter()" ngbTooltip="Save the Attribute Definition changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+         </div>
+      </form>
+   </div>
 </ng-template>

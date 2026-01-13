@@ -120,6 +120,7 @@ export class OfficeTypeData {
     private _officesPromise: Promise<OfficeData[]> | null  = null;
     private _officesSubject = new BehaviorSubject<OfficeData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -139,7 +140,7 @@ export class OfficeTypeData {
     );
 
   
-    public OfficesCount$ = OfficeTypeService.Instance.GetOfficeTypesRowCount({officeTypeId: this.id,
+    public OfficesCount$ = OfficeService.Instance.GetOfficesRowCount({officeTypeId: this.id,
       active: true,
       deleted: false
     });
@@ -203,9 +204,9 @@ export class OfficeTypeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.officeType.Offices.then(offices => { ... })
+     *   this.officeType.Offices.then(officeTypes => { ... })
      *   or
-     *   await this.officeType.Offices
+     *   await this.officeType.officeTypes
      *
     */
     public get Offices(): Promise<OfficeData[]> {
@@ -230,8 +231,8 @@ export class OfficeTypeData {
         this._officesPromise = lastValueFrom(
             OfficeTypeService.Instance.GetOfficesForOfficeType(this.id)
         )
-        .then(offices => {
-            this._offices = offices ?? [];
+        .then(Offices => {
+            this._offices = Offices ?? [];
             this._officesSubject.next(this._offices);
             return this._offices;
          })

@@ -218,7 +218,7 @@
                       <li ngbNavItem *ngIf="tributeService.userIsSchedulerTributeReader()">
                             <button ngbNavLink>Tributes Default Acknowledgees
                                 <span class="badge bg-primary ms-2">
-                                    {{ (constituentData?.DefaultAcknowledgeesCount$ | async) ?? '-' }}
+                                    {{ (constituentData?.TributeDefaultAcknowledgeesCount$ | async) ?? '-' }}
                                 </span>
                             </button>
                             <ng-template ngbNavContent>

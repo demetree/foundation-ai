@@ -130,10 +130,12 @@ export class RecurrenceRuleData {
     private _recurrenceRuleChangeHistoriesPromise: Promise<RecurrenceRuleChangeHistoryData[]> | null  = null;
     private _recurrenceRuleChangeHistoriesSubject = new BehaviorSubject<RecurrenceRuleChangeHistoryData[] | null>(null);
 
+                
     private _scheduledEvents: ScheduledEventData[] | null = null;
     private _scheduledEventsPromise: Promise<ScheduledEventData[]> | null  = null;
     private _scheduledEventsSubject = new BehaviorSubject<ScheduledEventData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -153,7 +155,7 @@ export class RecurrenceRuleData {
     );
 
   
-    public RecurrenceRuleChangeHistoriesCount$ = RecurrenceRuleService.Instance.GetRecurrenceRulesRowCount({recurrenceRuleId: this.id,
+    public RecurrenceRuleChangeHistoriesCount$ = RecurrenceRuleChangeHistoryService.Instance.GetRecurrenceRuleChangeHistoriesRowCount({recurrenceRuleId: this.id,
       active: true,
       deleted: false
     });
@@ -172,7 +174,7 @@ export class RecurrenceRuleData {
     );
 
   
-    public ScheduledEventsCount$ = RecurrenceRuleService.Instance.GetRecurrenceRulesRowCount({recurrenceRuleId: this.id,
+    public ScheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({recurrenceRuleId: this.id,
       active: true,
       deleted: false
     });
@@ -240,9 +242,9 @@ export class RecurrenceRuleData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.recurrenceRule.RecurrenceRuleChangeHistories.then(recurrenceRuleChangeHistories => { ... })
+     *   this.recurrenceRule.RecurrenceRuleChangeHistories.then(recurrenceRules => { ... })
      *   or
-     *   await this.recurrenceRule.RecurrenceRuleChangeHistories
+     *   await this.recurrenceRule.recurrenceRules
      *
     */
     public get RecurrenceRuleChangeHistories(): Promise<RecurrenceRuleChangeHistoryData[]> {
@@ -267,8 +269,8 @@ export class RecurrenceRuleData {
         this._recurrenceRuleChangeHistoriesPromise = lastValueFrom(
             RecurrenceRuleService.Instance.GetRecurrenceRuleChangeHistoriesForRecurrenceRule(this.id)
         )
-        .then(recurrenceRuleChangeHistories => {
-            this._recurrenceRuleChangeHistories = recurrenceRuleChangeHistories ?? [];
+        .then(RecurrenceRuleChangeHistories => {
+            this._recurrenceRuleChangeHistories = RecurrenceRuleChangeHistories ?? [];
             this._recurrenceRuleChangeHistoriesSubject.next(this._recurrenceRuleChangeHistories);
             return this._recurrenceRuleChangeHistories;
          })
@@ -305,9 +307,9 @@ export class RecurrenceRuleData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.recurrenceRule.ScheduledEvents.then(scheduledEvents => { ... })
+     *   this.recurrenceRule.ScheduledEvents.then(recurrenceRules => { ... })
      *   or
-     *   await this.recurrenceRule.ScheduledEvents
+     *   await this.recurrenceRule.recurrenceRules
      *
     */
     public get ScheduledEvents(): Promise<ScheduledEventData[]> {
@@ -332,8 +334,8 @@ export class RecurrenceRuleData {
         this._scheduledEventsPromise = lastValueFrom(
             RecurrenceRuleService.Instance.GetScheduledEventsForRecurrenceRule(this.id)
         )
-        .then(scheduledEvents => {
-            this._scheduledEvents = scheduledEvents ?? [];
+        .then(ScheduledEvents => {
+            this._scheduledEvents = ScheduledEvents ?? [];
             this._scheduledEventsSubject.next(this._scheduledEvents);
             return this._scheduledEvents;
          })

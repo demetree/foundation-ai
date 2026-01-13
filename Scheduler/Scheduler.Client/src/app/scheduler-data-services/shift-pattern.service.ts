@@ -122,14 +122,17 @@ export class ShiftPatternData {
     private _shiftPatternChangeHistoriesPromise: Promise<ShiftPatternChangeHistoryData[]> | null  = null;
     private _shiftPatternChangeHistoriesSubject = new BehaviorSubject<ShiftPatternChangeHistoryData[] | null>(null);
 
+                
     private _shiftPatternDays: ShiftPatternDayData[] | null = null;
     private _shiftPatternDaysPromise: Promise<ShiftPatternDayData[]> | null  = null;
     private _shiftPatternDaysSubject = new BehaviorSubject<ShiftPatternDayData[] | null>(null);
 
+                
     private _resources: ResourceData[] | null = null;
     private _resourcesPromise: Promise<ResourceData[]> | null  = null;
     private _resourcesSubject = new BehaviorSubject<ResourceData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -149,7 +152,7 @@ export class ShiftPatternData {
     );
 
   
-    public ShiftPatternChangeHistoriesCount$ = ShiftPatternService.Instance.GetShiftPatternsRowCount({shiftPatternId: this.id,
+    public ShiftPatternChangeHistoriesCount$ = ShiftPatternChangeHistoryService.Instance.GetShiftPatternChangeHistoriesRowCount({shiftPatternId: this.id,
       active: true,
       deleted: false
     });
@@ -168,7 +171,7 @@ export class ShiftPatternData {
     );
 
   
-    public ShiftPatternDaysCount$ = ShiftPatternService.Instance.GetShiftPatternsRowCount({shiftPatternId: this.id,
+    public ShiftPatternDaysCount$ = ShiftPatternDayService.Instance.GetShiftPatternDaysRowCount({shiftPatternId: this.id,
       active: true,
       deleted: false
     });
@@ -187,7 +190,7 @@ export class ShiftPatternData {
     );
 
   
-    public ResourcesCount$ = ShiftPatternService.Instance.GetShiftPatternsRowCount({shiftPatternId: this.id,
+    public ResourcesCount$ = ResourceService.Instance.GetResourcesRowCount({shiftPatternId: this.id,
       active: true,
       deleted: false
     });
@@ -259,9 +262,9 @@ export class ShiftPatternData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.shiftPattern.ShiftPatternChangeHistories.then(shiftPatternChangeHistories => { ... })
+     *   this.shiftPattern.ShiftPatternChangeHistories.then(shiftPatterns => { ... })
      *   or
-     *   await this.shiftPattern.ShiftPatternChangeHistories
+     *   await this.shiftPattern.shiftPatterns
      *
     */
     public get ShiftPatternChangeHistories(): Promise<ShiftPatternChangeHistoryData[]> {
@@ -286,8 +289,8 @@ export class ShiftPatternData {
         this._shiftPatternChangeHistoriesPromise = lastValueFrom(
             ShiftPatternService.Instance.GetShiftPatternChangeHistoriesForShiftPattern(this.id)
         )
-        .then(shiftPatternChangeHistories => {
-            this._shiftPatternChangeHistories = shiftPatternChangeHistories ?? [];
+        .then(ShiftPatternChangeHistories => {
+            this._shiftPatternChangeHistories = ShiftPatternChangeHistories ?? [];
             this._shiftPatternChangeHistoriesSubject.next(this._shiftPatternChangeHistories);
             return this._shiftPatternChangeHistories;
          })
@@ -324,9 +327,9 @@ export class ShiftPatternData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.shiftPattern.ShiftPatternDays.then(shiftPatternDays => { ... })
+     *   this.shiftPattern.ShiftPatternDays.then(shiftPatterns => { ... })
      *   or
-     *   await this.shiftPattern.ShiftPatternDays
+     *   await this.shiftPattern.shiftPatterns
      *
     */
     public get ShiftPatternDays(): Promise<ShiftPatternDayData[]> {
@@ -351,8 +354,8 @@ export class ShiftPatternData {
         this._shiftPatternDaysPromise = lastValueFrom(
             ShiftPatternService.Instance.GetShiftPatternDaysForShiftPattern(this.id)
         )
-        .then(shiftPatternDays => {
-            this._shiftPatternDays = shiftPatternDays ?? [];
+        .then(ShiftPatternDays => {
+            this._shiftPatternDays = ShiftPatternDays ?? [];
             this._shiftPatternDaysSubject.next(this._shiftPatternDays);
             return this._shiftPatternDays;
          })
@@ -389,9 +392,9 @@ export class ShiftPatternData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.shiftPattern.Resources.then(resources => { ... })
+     *   this.shiftPattern.Resources.then(shiftPatterns => { ... })
      *   or
-     *   await this.shiftPattern.Resources
+     *   await this.shiftPattern.shiftPatterns
      *
     */
     public get Resources(): Promise<ResourceData[]> {
@@ -416,8 +419,8 @@ export class ShiftPatternData {
         this._resourcesPromise = lastValueFrom(
             ShiftPatternService.Instance.GetResourcesForShiftPattern(this.id)
         )
-        .then(resources => {
-            this._resources = resources ?? [];
+        .then(Resources => {
+            this._resources = Resources ?? [];
             this._resourcesSubject.next(this._resources);
             return this._resources;
          })

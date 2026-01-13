@@ -120,6 +120,7 @@ export class RecurrenceExceptionData {
     private _recurrenceExceptionChangeHistoriesPromise: Promise<RecurrenceExceptionChangeHistoryData[]> | null  = null;
     private _recurrenceExceptionChangeHistoriesSubject = new BehaviorSubject<RecurrenceExceptionChangeHistoryData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -139,7 +140,7 @@ export class RecurrenceExceptionData {
     );
 
   
-    public RecurrenceExceptionChangeHistoriesCount$ = RecurrenceExceptionService.Instance.GetRecurrenceExceptionsRowCount({recurrenceExceptionId: this.id,
+    public RecurrenceExceptionChangeHistoriesCount$ = RecurrenceExceptionChangeHistoryService.Instance.GetRecurrenceExceptionChangeHistoriesRowCount({recurrenceExceptionId: this.id,
       active: true,
       deleted: false
     });
@@ -203,9 +204,9 @@ export class RecurrenceExceptionData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.recurrenceException.RecurrenceExceptionChangeHistories.then(recurrenceExceptionChangeHistories => { ... })
+     *   this.recurrenceException.RecurrenceExceptionChangeHistories.then(recurrenceExceptions => { ... })
      *   or
-     *   await this.recurrenceException.RecurrenceExceptionChangeHistories
+     *   await this.recurrenceException.recurrenceExceptions
      *
     */
     public get RecurrenceExceptionChangeHistories(): Promise<RecurrenceExceptionChangeHistoryData[]> {
@@ -230,8 +231,8 @@ export class RecurrenceExceptionData {
         this._recurrenceExceptionChangeHistoriesPromise = lastValueFrom(
             RecurrenceExceptionService.Instance.GetRecurrenceExceptionChangeHistoriesForRecurrenceException(this.id)
         )
-        .then(recurrenceExceptionChangeHistories => {
-            this._recurrenceExceptionChangeHistories = recurrenceExceptionChangeHistories ?? [];
+        .then(RecurrenceExceptionChangeHistories => {
+            this._recurrenceExceptionChangeHistories = RecurrenceExceptionChangeHistories ?? [];
             this._recurrenceExceptionChangeHistoriesSubject.next(this._recurrenceExceptionChangeHistories);
             return this._recurrenceExceptionChangeHistories;
          })

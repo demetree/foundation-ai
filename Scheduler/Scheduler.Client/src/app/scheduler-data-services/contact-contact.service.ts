@@ -123,6 +123,7 @@ export class ContactContactData {
     private _contactContactChangeHistoriesPromise: Promise<ContactContactChangeHistoryData[]> | null  = null;
     private _contactContactChangeHistoriesSubject = new BehaviorSubject<ContactContactChangeHistoryData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -142,7 +143,7 @@ export class ContactContactData {
     );
 
   
-    public ContactContactChangeHistoriesCount$ = ContactContactService.Instance.GetContactContactsRowCount({contactContactId: this.id,
+    public ContactContactChangeHistoriesCount$ = ContactContactChangeHistoryService.Instance.GetContactContactChangeHistoriesRowCount({contactContactId: this.id,
       active: true,
       deleted: false
     });
@@ -206,9 +207,9 @@ export class ContactContactData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.contactContact.ContactContactChangeHistories.then(contactContactChangeHistories => { ... })
+     *   this.contactContact.ContactContactChangeHistories.then(contactContacts => { ... })
      *   or
-     *   await this.contactContact.ContactContactChangeHistories
+     *   await this.contactContact.contactContacts
      *
     */
     public get ContactContactChangeHistories(): Promise<ContactContactChangeHistoryData[]> {
@@ -233,8 +234,8 @@ export class ContactContactData {
         this._contactContactChangeHistoriesPromise = lastValueFrom(
             ContactContactService.Instance.GetContactContactChangeHistoriesForContactContact(this.id)
         )
-        .then(contactContactChangeHistories => {
-            this._contactContactChangeHistories = contactContactChangeHistories ?? [];
+        .then(ContactContactChangeHistories => {
+            this._contactContactChangeHistories = ContactContactChangeHistories ?? [];
             this._contactContactChangeHistoriesSubject.next(this._contactContactChangeHistories);
             return this._contactContactChangeHistories;
          })

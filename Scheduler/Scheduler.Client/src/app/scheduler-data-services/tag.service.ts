@@ -128,6 +128,7 @@ export class TagData {
     private _contactTagsPromise: Promise<ContactTagData[]> | null  = null;
     private _contactTagsSubject = new BehaviorSubject<ContactTagData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -147,7 +148,7 @@ export class TagData {
     );
 
   
-    public ContactTagsCount$ = TagService.Instance.GetTagsRowCount({tagId: this.id,
+    public ContactTagsCount$ = ContactTagService.Instance.GetContactTagsRowCount({tagId: this.id,
       active: true,
       deleted: false
     });
@@ -211,9 +212,9 @@ export class TagData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.tag.ContactTags.then(contactTags => { ... })
+     *   this.tag.ContactTags.then(tags => { ... })
      *   or
-     *   await this.tag.ContactTags
+     *   await this.tag.tags
      *
     */
     public get ContactTags(): Promise<ContactTagData[]> {
@@ -238,8 +239,8 @@ export class TagData {
         this._contactTagsPromise = lastValueFrom(
             TagService.Instance.GetContactTagsForTag(this.id)
         )
-        .then(contactTags => {
-            this._contactTags = contactTags ?? [];
+        .then(ContactTags => {
+            this._contactTags = ContactTags ?? [];
             this._contactTagsSubject.next(this._contactTags);
             return this._contactTags;
          })

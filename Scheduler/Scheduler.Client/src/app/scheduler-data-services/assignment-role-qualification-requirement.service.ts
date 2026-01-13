@@ -119,6 +119,7 @@ export class AssignmentRoleQualificationRequirementData {
     private _assignmentRoleQualificationRequirementChangeHistoriesPromise: Promise<AssignmentRoleQualificationRequirementChangeHistoryData[]> | null  = null;
     private _assignmentRoleQualificationRequirementChangeHistoriesSubject = new BehaviorSubject<AssignmentRoleQualificationRequirementChangeHistoryData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -138,7 +139,7 @@ export class AssignmentRoleQualificationRequirementData {
     );
 
   
-    public AssignmentRoleQualificationRequirementChangeHistoriesCount$ = AssignmentRoleQualificationRequirementService.Instance.GetAssignmentRoleQualificationRequirementsRowCount({assignmentRoleQualificationRequirementId: this.id,
+    public AssignmentRoleQualificationRequirementChangeHistoriesCount$ = AssignmentRoleQualificationRequirementChangeHistoryService.Instance.GetAssignmentRoleQualificationRequirementChangeHistoriesRowCount({assignmentRoleQualificationRequirementId: this.id,
       active: true,
       deleted: false
     });
@@ -202,9 +203,9 @@ export class AssignmentRoleQualificationRequirementData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.assignmentRoleQualificationRequirement.AssignmentRoleQualificationRequirementChangeHistories.then(assignmentRoleQualificationRequirementChangeHistories => { ... })
+     *   this.assignmentRoleQualificationRequirement.AssignmentRoleQualificationRequirementChangeHistories.then(assignmentRoleQualificationRequirements => { ... })
      *   or
-     *   await this.assignmentRoleQualificationRequirement.AssignmentRoleQualificationRequirementChangeHistories
+     *   await this.assignmentRoleQualificationRequirement.assignmentRoleQualificationRequirements
      *
     */
     public get AssignmentRoleQualificationRequirementChangeHistories(): Promise<AssignmentRoleQualificationRequirementChangeHistoryData[]> {
@@ -229,8 +230,8 @@ export class AssignmentRoleQualificationRequirementData {
         this._assignmentRoleQualificationRequirementChangeHistoriesPromise = lastValueFrom(
             AssignmentRoleQualificationRequirementService.Instance.GetAssignmentRoleQualificationRequirementChangeHistoriesForAssignmentRoleQualificationRequirement(this.id)
         )
-        .then(assignmentRoleQualificationRequirementChangeHistories => {
-            this._assignmentRoleQualificationRequirementChangeHistories = assignmentRoleQualificationRequirementChangeHistories ?? [];
+        .then(AssignmentRoleQualificationRequirementChangeHistories => {
+            this._assignmentRoleQualificationRequirementChangeHistories = AssignmentRoleQualificationRequirementChangeHistories ?? [];
             this._assignmentRoleQualificationRequirementChangeHistoriesSubject.next(this._assignmentRoleQualificationRequirementChangeHistories);
             return this._assignmentRoleQualificationRequirementChangeHistories;
          })

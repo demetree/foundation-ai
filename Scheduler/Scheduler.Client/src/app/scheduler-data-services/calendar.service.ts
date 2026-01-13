@@ -131,18 +131,22 @@ export class CalendarData {
     private _calendarChangeHistoriesPromise: Promise<CalendarChangeHistoryData[]> | null  = null;
     private _calendarChangeHistoriesSubject = new BehaviorSubject<CalendarChangeHistoryData[] | null>(null);
 
+                
     private _clients: ClientData[] | null = null;
     private _clientsPromise: Promise<ClientData[]> | null  = null;
     private _clientsSubject = new BehaviorSubject<ClientData[] | null>(null);
 
+                
     private _schedulingTargets: SchedulingTargetData[] | null = null;
     private _schedulingTargetsPromise: Promise<SchedulingTargetData[]> | null  = null;
     private _schedulingTargetsSubject = new BehaviorSubject<SchedulingTargetData[] | null>(null);
 
+                
     private _eventCalendars: EventCalendarData[] | null = null;
     private _eventCalendarsPromise: Promise<EventCalendarData[]> | null  = null;
     private _eventCalendarsSubject = new BehaviorSubject<EventCalendarData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -162,7 +166,7 @@ export class CalendarData {
     );
 
   
-    public CalendarChangeHistoriesCount$ = CalendarService.Instance.GetCalendarsRowCount({calendarId: this.id,
+    public CalendarChangeHistoriesCount$ = CalendarChangeHistoryService.Instance.GetCalendarChangeHistoriesRowCount({calendarId: this.id,
       active: true,
       deleted: false
     });
@@ -181,7 +185,7 @@ export class CalendarData {
     );
 
   
-    public ClientsCount$ = CalendarService.Instance.GetCalendarsRowCount({calendarId: this.id,
+    public ClientsCount$ = ClientService.Instance.GetClientsRowCount({calendarId: this.id,
       active: true,
       deleted: false
     });
@@ -200,7 +204,7 @@ export class CalendarData {
     );
 
   
-    public SchedulingTargetsCount$ = CalendarService.Instance.GetCalendarsRowCount({calendarId: this.id,
+    public SchedulingTargetsCount$ = SchedulingTargetService.Instance.GetSchedulingTargetsRowCount({calendarId: this.id,
       active: true,
       deleted: false
     });
@@ -219,7 +223,7 @@ export class CalendarData {
     );
 
   
-    public EventCalendarsCount$ = CalendarService.Instance.GetCalendarsRowCount({calendarId: this.id,
+    public EventCalendarsCount$ = EventCalendarService.Instance.GetEventCalendarsRowCount({calendarId: this.id,
       active: true,
       deleted: false
     });
@@ -295,9 +299,9 @@ export class CalendarData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.calendar.CalendarChangeHistories.then(calendarChangeHistories => { ... })
+     *   this.calendar.CalendarChangeHistories.then(calendars => { ... })
      *   or
-     *   await this.calendar.CalendarChangeHistories
+     *   await this.calendar.calendars
      *
     */
     public get CalendarChangeHistories(): Promise<CalendarChangeHistoryData[]> {
@@ -322,8 +326,8 @@ export class CalendarData {
         this._calendarChangeHistoriesPromise = lastValueFrom(
             CalendarService.Instance.GetCalendarChangeHistoriesForCalendar(this.id)
         )
-        .then(calendarChangeHistories => {
-            this._calendarChangeHistories = calendarChangeHistories ?? [];
+        .then(CalendarChangeHistories => {
+            this._calendarChangeHistories = CalendarChangeHistories ?? [];
             this._calendarChangeHistoriesSubject.next(this._calendarChangeHistories);
             return this._calendarChangeHistories;
          })
@@ -360,9 +364,9 @@ export class CalendarData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.calendar.Clients.then(clients => { ... })
+     *   this.calendar.Clients.then(calendars => { ... })
      *   or
-     *   await this.calendar.Clients
+     *   await this.calendar.calendars
      *
     */
     public get Clients(): Promise<ClientData[]> {
@@ -387,8 +391,8 @@ export class CalendarData {
         this._clientsPromise = lastValueFrom(
             CalendarService.Instance.GetClientsForCalendar(this.id)
         )
-        .then(clients => {
-            this._clients = clients ?? [];
+        .then(Clients => {
+            this._clients = Clients ?? [];
             this._clientsSubject.next(this._clients);
             return this._clients;
          })
@@ -425,9 +429,9 @@ export class CalendarData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.calendar.SchedulingTargets.then(schedulingTargets => { ... })
+     *   this.calendar.SchedulingTargets.then(calendars => { ... })
      *   or
-     *   await this.calendar.SchedulingTargets
+     *   await this.calendar.calendars
      *
     */
     public get SchedulingTargets(): Promise<SchedulingTargetData[]> {
@@ -452,8 +456,8 @@ export class CalendarData {
         this._schedulingTargetsPromise = lastValueFrom(
             CalendarService.Instance.GetSchedulingTargetsForCalendar(this.id)
         )
-        .then(schedulingTargets => {
-            this._schedulingTargets = schedulingTargets ?? [];
+        .then(SchedulingTargets => {
+            this._schedulingTargets = SchedulingTargets ?? [];
             this._schedulingTargetsSubject.next(this._schedulingTargets);
             return this._schedulingTargets;
          })
@@ -490,9 +494,9 @@ export class CalendarData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.calendar.EventCalendars.then(eventCalendars => { ... })
+     *   this.calendar.EventCalendars.then(calendars => { ... })
      *   or
-     *   await this.calendar.EventCalendars
+     *   await this.calendar.calendars
      *
     */
     public get EventCalendars(): Promise<EventCalendarData[]> {
@@ -517,8 +521,8 @@ export class CalendarData {
         this._eventCalendarsPromise = lastValueFrom(
             CalendarService.Instance.GetEventCalendarsForCalendar(this.id)
         )
-        .then(eventCalendars => {
-            this._eventCalendars = eventCalendars ?? [];
+        .then(EventCalendars => {
+            this._eventCalendars = EventCalendars ?? [];
             this._eventCalendarsSubject.next(this._eventCalendars);
             return this._eventCalendars;
          })

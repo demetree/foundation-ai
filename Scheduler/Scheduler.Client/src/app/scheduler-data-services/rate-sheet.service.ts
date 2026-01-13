@@ -148,6 +148,7 @@ export class RateSheetData {
     private _rateSheetChangeHistoriesPromise: Promise<RateSheetChangeHistoryData[]> | null  = null;
     private _rateSheetChangeHistoriesSubject = new BehaviorSubject<RateSheetChangeHistoryData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -167,7 +168,7 @@ export class RateSheetData {
     );
 
   
-    public RateSheetChangeHistoriesCount$ = RateSheetService.Instance.GetRateSheetsRowCount({rateSheetId: this.id,
+    public RateSheetChangeHistoriesCount$ = RateSheetChangeHistoryService.Instance.GetRateSheetChangeHistoriesRowCount({rateSheetId: this.id,
       active: true,
       deleted: false
     });
@@ -231,9 +232,9 @@ export class RateSheetData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.rateSheet.RateSheetChangeHistories.then(rateSheetChangeHistories => { ... })
+     *   this.rateSheet.RateSheetChangeHistories.then(rateSheets => { ... })
      *   or
-     *   await this.rateSheet.RateSheetChangeHistories
+     *   await this.rateSheet.rateSheets
      *
     */
     public get RateSheetChangeHistories(): Promise<RateSheetChangeHistoryData[]> {
@@ -258,8 +259,8 @@ export class RateSheetData {
         this._rateSheetChangeHistoriesPromise = lastValueFrom(
             RateSheetService.Instance.GetRateSheetChangeHistoriesForRateSheet(this.id)
         )
-        .then(rateSheetChangeHistories => {
-            this._rateSheetChangeHistories = rateSheetChangeHistories ?? [];
+        .then(RateSheetChangeHistories => {
+            this._rateSheetChangeHistories = RateSheetChangeHistories ?? [];
             this._rateSheetChangeHistoriesSubject.next(this._rateSheetChangeHistories);
             return this._rateSheetChangeHistories;
          })

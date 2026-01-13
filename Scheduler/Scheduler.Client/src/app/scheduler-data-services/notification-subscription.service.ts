@@ -127,6 +127,7 @@ export class NotificationSubscriptionData {
     private _notificationSubscriptionChangeHistoriesPromise: Promise<NotificationSubscriptionChangeHistoryData[]> | null  = null;
     private _notificationSubscriptionChangeHistoriesSubject = new BehaviorSubject<NotificationSubscriptionChangeHistoryData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -146,7 +147,7 @@ export class NotificationSubscriptionData {
     );
 
   
-    public NotificationSubscriptionChangeHistoriesCount$ = NotificationSubscriptionService.Instance.GetNotificationSubscriptionsRowCount({notificationSubscriptionId: this.id,
+    public NotificationSubscriptionChangeHistoriesCount$ = NotificationSubscriptionChangeHistoryService.Instance.GetNotificationSubscriptionChangeHistoriesRowCount({notificationSubscriptionId: this.id,
       active: true,
       deleted: false
     });
@@ -210,9 +211,9 @@ export class NotificationSubscriptionData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.notificationSubscription.NotificationSubscriptionChangeHistories.then(notificationSubscriptionChangeHistories => { ... })
+     *   this.notificationSubscription.NotificationSubscriptionChangeHistories.then(notificationSubscriptions => { ... })
      *   or
-     *   await this.notificationSubscription.NotificationSubscriptionChangeHistories
+     *   await this.notificationSubscription.notificationSubscriptions
      *
     */
     public get NotificationSubscriptionChangeHistories(): Promise<NotificationSubscriptionChangeHistoryData[]> {
@@ -237,8 +238,8 @@ export class NotificationSubscriptionData {
         this._notificationSubscriptionChangeHistoriesPromise = lastValueFrom(
             NotificationSubscriptionService.Instance.GetNotificationSubscriptionChangeHistoriesForNotificationSubscription(this.id)
         )
-        .then(notificationSubscriptionChangeHistories => {
-            this._notificationSubscriptionChangeHistories = notificationSubscriptionChangeHistories ?? [];
+        .then(NotificationSubscriptionChangeHistories => {
+            this._notificationSubscriptionChangeHistories = NotificationSubscriptionChangeHistories ?? [];
             this._notificationSubscriptionChangeHistoriesSubject.next(this._notificationSubscriptionChangeHistories);
             return this._notificationSubscriptionChangeHistories;
          })

@@ -120,6 +120,7 @@ export class ContactTypeData {
     private _contactsPromise: Promise<ContactData[]> | null  = null;
     private _contactsSubject = new BehaviorSubject<ContactData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -139,7 +140,7 @@ export class ContactTypeData {
     );
 
   
-    public ContactsCount$ = ContactTypeService.Instance.GetContactTypesRowCount({contactTypeId: this.id,
+    public ContactsCount$ = ContactService.Instance.GetContactsRowCount({contactTypeId: this.id,
       active: true,
       deleted: false
     });
@@ -203,9 +204,9 @@ export class ContactTypeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.contactType.Contacts.then(contacts => { ... })
+     *   this.contactType.Contacts.then(contactTypes => { ... })
      *   or
-     *   await this.contactType.Contacts
+     *   await this.contactType.contactTypes
      *
     */
     public get Contacts(): Promise<ContactData[]> {
@@ -230,8 +231,8 @@ export class ContactTypeData {
         this._contactsPromise = lastValueFrom(
             ContactTypeService.Instance.GetContactsForContactType(this.id)
         )
-        .then(contacts => {
-            this._contacts = contacts ?? [];
+        .then(Contacts => {
+            this._contacts = Contacts ?? [];
             this._contactsSubject.next(this._contacts);
             return this._contacts;
          })

@@ -123,18 +123,22 @@ export class StateProvinceData {
     private _officesPromise: Promise<OfficeData[]> | null  = null;
     private _officesSubject = new BehaviorSubject<OfficeData[] | null>(null);
 
+                
     private _clients: ClientData[] | null = null;
     private _clientsPromise: Promise<ClientData[]> | null  = null;
     private _clientsSubject = new BehaviorSubject<ClientData[] | null>(null);
 
+                
     private _tenantProfiles: TenantProfileData[] | null = null;
     private _tenantProfilesPromise: Promise<TenantProfileData[]> | null  = null;
     private _tenantProfilesSubject = new BehaviorSubject<TenantProfileData[] | null>(null);
 
+                
     private _schedulingTargetAddresses: SchedulingTargetAddressData[] | null = null;
     private _schedulingTargetAddressesPromise: Promise<SchedulingTargetAddressData[]> | null  = null;
     private _schedulingTargetAddressesSubject = new BehaviorSubject<SchedulingTargetAddressData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -154,7 +158,7 @@ export class StateProvinceData {
     );
 
   
-    public OfficesCount$ = StateProvinceService.Instance.GetStateProvincesRowCount({stateProvinceId: this.id,
+    public OfficesCount$ = OfficeService.Instance.GetOfficesRowCount({stateProvinceId: this.id,
       active: true,
       deleted: false
     });
@@ -173,7 +177,7 @@ export class StateProvinceData {
     );
 
   
-    public ClientsCount$ = StateProvinceService.Instance.GetStateProvincesRowCount({stateProvinceId: this.id,
+    public ClientsCount$ = ClientService.Instance.GetClientsRowCount({stateProvinceId: this.id,
       active: true,
       deleted: false
     });
@@ -192,7 +196,7 @@ export class StateProvinceData {
     );
 
   
-    public TenantProfilesCount$ = StateProvinceService.Instance.GetStateProvincesRowCount({stateProvinceId: this.id,
+    public TenantProfilesCount$ = TenantProfileService.Instance.GetTenantProfilesRowCount({stateProvinceId: this.id,
       active: true,
       deleted: false
     });
@@ -211,7 +215,7 @@ export class StateProvinceData {
     );
 
   
-    public SchedulingTargetAddressesCount$ = StateProvinceService.Instance.GetStateProvincesRowCount({stateProvinceId: this.id,
+    public SchedulingTargetAddressesCount$ = SchedulingTargetAddressService.Instance.GetSchedulingTargetAddressesRowCount({stateProvinceId: this.id,
       active: true,
       deleted: false
     });
@@ -287,9 +291,9 @@ export class StateProvinceData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.stateProvince.Offices.then(offices => { ... })
+     *   this.stateProvince.Offices.then(stateProvinces => { ... })
      *   or
-     *   await this.stateProvince.Offices
+     *   await this.stateProvince.stateProvinces
      *
     */
     public get Offices(): Promise<OfficeData[]> {
@@ -314,8 +318,8 @@ export class StateProvinceData {
         this._officesPromise = lastValueFrom(
             StateProvinceService.Instance.GetOfficesForStateProvince(this.id)
         )
-        .then(offices => {
-            this._offices = offices ?? [];
+        .then(Offices => {
+            this._offices = Offices ?? [];
             this._officesSubject.next(this._offices);
             return this._offices;
          })
@@ -352,9 +356,9 @@ export class StateProvinceData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.stateProvince.Clients.then(clients => { ... })
+     *   this.stateProvince.Clients.then(stateProvinces => { ... })
      *   or
-     *   await this.stateProvince.Clients
+     *   await this.stateProvince.stateProvinces
      *
     */
     public get Clients(): Promise<ClientData[]> {
@@ -379,8 +383,8 @@ export class StateProvinceData {
         this._clientsPromise = lastValueFrom(
             StateProvinceService.Instance.GetClientsForStateProvince(this.id)
         )
-        .then(clients => {
-            this._clients = clients ?? [];
+        .then(Clients => {
+            this._clients = Clients ?? [];
             this._clientsSubject.next(this._clients);
             return this._clients;
          })
@@ -417,9 +421,9 @@ export class StateProvinceData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.stateProvince.TenantProfiles.then(tenantProfiles => { ... })
+     *   this.stateProvince.TenantProfiles.then(stateProvinces => { ... })
      *   or
-     *   await this.stateProvince.TenantProfiles
+     *   await this.stateProvince.stateProvinces
      *
     */
     public get TenantProfiles(): Promise<TenantProfileData[]> {
@@ -444,8 +448,8 @@ export class StateProvinceData {
         this._tenantProfilesPromise = lastValueFrom(
             StateProvinceService.Instance.GetTenantProfilesForStateProvince(this.id)
         )
-        .then(tenantProfiles => {
-            this._tenantProfiles = tenantProfiles ?? [];
+        .then(TenantProfiles => {
+            this._tenantProfiles = TenantProfiles ?? [];
             this._tenantProfilesSubject.next(this._tenantProfiles);
             return this._tenantProfiles;
          })
@@ -482,9 +486,9 @@ export class StateProvinceData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.stateProvince.SchedulingTargetAddresses.then(schedulingTargetAddresses => { ... })
+     *   this.stateProvince.SchedulingTargetAddresses.then(stateProvinces => { ... })
      *   or
-     *   await this.stateProvince.SchedulingTargetAddresses
+     *   await this.stateProvince.stateProvinces
      *
     */
     public get SchedulingTargetAddresses(): Promise<SchedulingTargetAddressData[]> {
@@ -509,8 +513,8 @@ export class StateProvinceData {
         this._schedulingTargetAddressesPromise = lastValueFrom(
             StateProvinceService.Instance.GetSchedulingTargetAddressesForStateProvince(this.id)
         )
-        .then(schedulingTargetAddresses => {
-            this._schedulingTargetAddresses = schedulingTargetAddresses ?? [];
+        .then(SchedulingTargetAddresses => {
+            this._schedulingTargetAddresses = SchedulingTargetAddresses ?? [];
             this._schedulingTargetAddressesSubject.next(this._schedulingTargetAddresses);
             return this._schedulingTargetAddresses;
          })

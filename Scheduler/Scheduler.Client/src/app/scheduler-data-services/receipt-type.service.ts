@@ -112,6 +112,7 @@ export class ReceiptTypeData {
     private _giftsPromise: Promise<GiftData[]> | null  = null;
     private _giftsSubject = new BehaviorSubject<GiftData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -131,7 +132,7 @@ export class ReceiptTypeData {
     );
 
   
-    public GiftsCount$ = ReceiptTypeService.Instance.GetReceiptTypesRowCount({receiptTypeId: this.id,
+    public GiftsCount$ = GiftService.Instance.GetGiftsRowCount({receiptTypeId: this.id,
       active: true,
       deleted: false
     });
@@ -195,9 +196,9 @@ export class ReceiptTypeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.receiptType.Gifts.then(gifts => { ... })
+     *   this.receiptType.Gifts.then(receiptTypes => { ... })
      *   or
-     *   await this.receiptType.Gifts
+     *   await this.receiptType.receiptTypes
      *
     */
     public get Gifts(): Promise<GiftData[]> {
@@ -222,8 +223,8 @@ export class ReceiptTypeData {
         this._giftsPromise = lastValueFrom(
             ReceiptTypeService.Instance.GetGiftsForReceiptType(this.id)
         )
-        .then(gifts => {
-            this._gifts = gifts ?? [];
+        .then(Gifts => {
+            this._gifts = Gifts ?? [];
             this._giftsSubject.next(this._gifts);
             return this._gifts;
          })

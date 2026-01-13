@@ -115,6 +115,7 @@ export class NotificationTypeData {
     private _notificationSubscriptionsPromise: Promise<NotificationSubscriptionData[]> | null  = null;
     private _notificationSubscriptionsSubject = new BehaviorSubject<NotificationSubscriptionData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -134,7 +135,7 @@ export class NotificationTypeData {
     );
 
   
-    public NotificationSubscriptionsCount$ = NotificationTypeService.Instance.GetNotificationTypesRowCount({notificationTypeId: this.id,
+    public NotificationSubscriptionsCount$ = NotificationSubscriptionService.Instance.GetNotificationSubscriptionsRowCount({notificationTypeId: this.id,
       active: true,
       deleted: false
     });
@@ -198,9 +199,9 @@ export class NotificationTypeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.notificationType.NotificationSubscriptions.then(notificationSubscriptions => { ... })
+     *   this.notificationType.NotificationSubscriptions.then(notificationTypes => { ... })
      *   or
-     *   await this.notificationType.NotificationSubscriptions
+     *   await this.notificationType.notificationTypes
      *
     */
     public get NotificationSubscriptions(): Promise<NotificationSubscriptionData[]> {
@@ -225,8 +226,8 @@ export class NotificationTypeData {
         this._notificationSubscriptionsPromise = lastValueFrom(
             NotificationTypeService.Instance.GetNotificationSubscriptionsForNotificationType(this.id)
         )
-        .then(notificationSubscriptions => {
-            this._notificationSubscriptions = notificationSubscriptions ?? [];
+        .then(NotificationSubscriptions => {
+            this._notificationSubscriptions = NotificationSubscriptions ?? [];
             this._notificationSubscriptionsSubject.next(this._notificationSubscriptions);
             return this._notificationSubscriptions;
          })

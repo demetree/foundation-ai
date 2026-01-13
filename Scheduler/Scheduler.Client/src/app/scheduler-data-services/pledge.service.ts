@@ -156,10 +156,12 @@ export class PledgeData {
     private _pledgeChangeHistoriesPromise: Promise<PledgeChangeHistoryData[]> | null  = null;
     private _pledgeChangeHistoriesSubject = new BehaviorSubject<PledgeChangeHistoryData[] | null>(null);
 
+                
     private _gifts: GiftData[] | null = null;
     private _giftsPromise: Promise<GiftData[]> | null  = null;
     private _giftsSubject = new BehaviorSubject<GiftData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -179,7 +181,7 @@ export class PledgeData {
     );
 
   
-    public PledgeChangeHistoriesCount$ = PledgeService.Instance.GetPledgesRowCount({pledgeId: this.id,
+    public PledgeChangeHistoriesCount$ = PledgeChangeHistoryService.Instance.GetPledgeChangeHistoriesRowCount({pledgeId: this.id,
       active: true,
       deleted: false
     });
@@ -198,7 +200,7 @@ export class PledgeData {
     );
 
   
-    public GiftsCount$ = PledgeService.Instance.GetPledgesRowCount({pledgeId: this.id,
+    public GiftsCount$ = GiftService.Instance.GetGiftsRowCount({pledgeId: this.id,
       active: true,
       deleted: false
     });
@@ -266,9 +268,9 @@ export class PledgeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.pledge.PledgeChangeHistories.then(pledgeChangeHistories => { ... })
+     *   this.pledge.PledgeChangeHistories.then(pledges => { ... })
      *   or
-     *   await this.pledge.PledgeChangeHistories
+     *   await this.pledge.pledges
      *
     */
     public get PledgeChangeHistories(): Promise<PledgeChangeHistoryData[]> {
@@ -293,8 +295,8 @@ export class PledgeData {
         this._pledgeChangeHistoriesPromise = lastValueFrom(
             PledgeService.Instance.GetPledgeChangeHistoriesForPledge(this.id)
         )
-        .then(pledgeChangeHistories => {
-            this._pledgeChangeHistories = pledgeChangeHistories ?? [];
+        .then(PledgeChangeHistories => {
+            this._pledgeChangeHistories = PledgeChangeHistories ?? [];
             this._pledgeChangeHistoriesSubject.next(this._pledgeChangeHistories);
             return this._pledgeChangeHistories;
          })
@@ -331,9 +333,9 @@ export class PledgeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.pledge.Gifts.then(gifts => { ... })
+     *   this.pledge.Gifts.then(pledges => { ... })
      *   or
-     *   await this.pledge.Gifts
+     *   await this.pledge.pledges
      *
     */
     public get Gifts(): Promise<GiftData[]> {
@@ -358,8 +360,8 @@ export class PledgeData {
         this._giftsPromise = lastValueFrom(
             PledgeService.Instance.GetGiftsForPledge(this.id)
         )
-        .then(gifts => {
-            this._gifts = gifts ?? [];
+        .then(Gifts => {
+            this._gifts = Gifts ?? [];
             this._giftsSubject.next(this._gifts);
             return this._gifts;
          })

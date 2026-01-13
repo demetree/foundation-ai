@@ -135,7 +135,7 @@
                       <li ngbNavItem *ngIf="batchService.userIsSchedulerBatchReader()">
                             <button ngbNavLink>Batches Default Appeals
                                 <span class="badge bg-primary ms-2">
-                                    {{ (appealData?.DefaultAppealsCount$ | async) ?? '-' }}
+                                    {{ (appealData?.BatchDefaultAppealsCount$ | async) ?? '-' }}
                                 </span>
                             </button>
                             <ng-template ngbNavContent>

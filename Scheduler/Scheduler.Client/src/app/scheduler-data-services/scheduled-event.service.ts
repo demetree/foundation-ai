@@ -208,38 +208,45 @@ export class ScheduledEventData {
     private _scheduledEventChangeHistoriesPromise: Promise<ScheduledEventChangeHistoryData[]> | null  = null;
     private _scheduledEventChangeHistoriesSubject = new BehaviorSubject<ScheduledEventChangeHistoryData[] | null>(null);
 
+                
     private _eventCharges: EventChargeData[] | null = null;
     private _eventChargesPromise: Promise<EventChargeData[]> | null  = null;
     private _eventChargesSubject = new BehaviorSubject<EventChargeData[] | null>(null);
 
+                
     private _contactInteractions: ContactInteractionData[] | null = null;
     private _contactInteractionsPromise: Promise<ContactInteractionData[]> | null  = null;
     private _contactInteractionsSubject = new BehaviorSubject<ContactInteractionData[] | null>(null);
 
+                
     private _eventCalendars: EventCalendarData[] | null = null;
     private _eventCalendarsPromise: Promise<EventCalendarData[]> | null  = null;
     private _eventCalendarsSubject = new BehaviorSubject<EventCalendarData[] | null>(null);
 
-    private _predecessorEvents: ScheduledEventDependencyData[] | null = null;
-    private _predecessorEventsPromise: Promise<ScheduledEventDependencyData[]> | null  = null;
-    private _predecessorEventsSubject = new BehaviorSubject<ScheduledEventDependencyData[] | null>(null);
-
-    private _successorEvents: ScheduledEventDependencyData[] | null = null;
-    private _successorEventsPromise: Promise<ScheduledEventDependencyData[]> | null  = null;
-    private _successorEventsSubject = new BehaviorSubject<ScheduledEventDependencyData[] | null>(null);
-
+                
+    private _scheduledEventDependencyPredecessorEvents: ScheduledEventDependencyData[] | null = null;
+    private _scheduledEventDependencyPredecessorEventsPromise: Promise<ScheduledEventDependencyData[]> | null  = null;
+    private _scheduledEventDependencyPredecessorEventsSubject = new BehaviorSubject<ScheduledEventDependencyData[] | null>(null);
+                    
+    private _scheduledEventDependencySuccessorEvents: ScheduledEventDependencyData[] | null = null;
+    private _scheduledEventDependencySuccessorEventsPromise: Promise<ScheduledEventDependencyData[]> | null  = null;
+    private _scheduledEventDependencySuccessorEventsSubject = new BehaviorSubject<ScheduledEventDependencyData[] | null>(null);
+                    
     private _scheduledEventQualificationRequirements: ScheduledEventQualificationRequirementData[] | null = null;
     private _scheduledEventQualificationRequirementsPromise: Promise<ScheduledEventQualificationRequirementData[]> | null  = null;
     private _scheduledEventQualificationRequirementsSubject = new BehaviorSubject<ScheduledEventQualificationRequirementData[] | null>(null);
 
+                
     private _recurrenceExceptions: RecurrenceExceptionData[] | null = null;
     private _recurrenceExceptionsPromise: Promise<RecurrenceExceptionData[]> | null  = null;
     private _recurrenceExceptionsSubject = new BehaviorSubject<RecurrenceExceptionData[] | null>(null);
 
+                
     private _eventResourceAssignments: EventResourceAssignmentData[] | null = null;
     private _eventResourceAssignmentsPromise: Promise<EventResourceAssignmentData[]> | null  = null;
     private _eventResourceAssignmentsSubject = new BehaviorSubject<EventResourceAssignmentData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -259,7 +266,7 @@ export class ScheduledEventData {
     );
 
   
-    public ScheduledEventChangeHistoriesCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({scheduledEventId: this.id,
+    public ScheduledEventChangeHistoriesCount$ = ScheduledEventChangeHistoryService.Instance.GetScheduledEventChangeHistoriesRowCount({scheduledEventId: this.id,
       active: true,
       deleted: false
     });
@@ -278,7 +285,7 @@ export class ScheduledEventData {
     );
 
   
-    public EventChargesCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({scheduledEventId: this.id,
+    public EventChargesCount$ = EventChargeService.Instance.GetEventChargesRowCount({scheduledEventId: this.id,
       active: true,
       deleted: false
     });
@@ -297,7 +304,7 @@ export class ScheduledEventData {
     );
 
   
-    public ContactInteractionsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({scheduledEventId: this.id,
+    public ContactInteractionsCount$ = ContactInteractionService.Instance.GetContactInteractionsRowCount({scheduledEventId: this.id,
       active: true,
       deleted: false
     });
@@ -316,49 +323,47 @@ export class ScheduledEventData {
     );
 
   
-    public EventCalendarsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({scheduledEventId: this.id,
+    public EventCalendarsCount$ = EventCalendarService.Instance.GetEventCalendarsRowCount({scheduledEventId: this.id,
       active: true,
       deleted: false
     });
 
 
 
-    public PredecessorEvents$ = this._predecessorEventsSubject.asObservable().pipe(
+    public ScheduledEventDependencyPredecessorEvents$ = this._scheduledEventDependencyPredecessorEventsSubject.asObservable().pipe(
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-          if (this._predecessorEvents === null && this._predecessorEventsPromise === null) {
-            this.loadPredecessorEvents(); // Private method to start fetch
+          if (this._scheduledEventDependencyPredecessorEvents === null && this._scheduledEventDependencyPredecessorEventsPromise === null) {
+            this.loadScheduledEventDependencyPredecessorEvents(); // Private method to start fetch
           }
         }),
         shareReplay(1) // Cache last emit
     );
 
   
-    public PredecessorEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({scheduledEventId: this.id,
+    public ScheduledEventDependencyPredecessorEventsCount$ = ScheduledEventDependencyService.Instance.GetScheduledEventDependenciesRowCount({predecessorEventId: this.id,
       active: true,
       deleted: false
     });
 
 
-
-    public SuccessorEvents$ = this._successorEventsSubject.asObservable().pipe(
+    public ScheduledEventDependencySuccessorEvents$ = this._scheduledEventDependencySuccessorEventsSubject.asObservable().pipe(
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-          if (this._successorEvents === null && this._successorEventsPromise === null) {
-            this.loadSuccessorEvents(); // Private method to start fetch
+          if (this._scheduledEventDependencySuccessorEvents === null && this._scheduledEventDependencySuccessorEventsPromise === null) {
+            this.loadScheduledEventDependencySuccessorEvents(); // Private method to start fetch
           }
         }),
         shareReplay(1) // Cache last emit
     );
 
   
-    public SuccessorEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({scheduledEventId: this.id,
+    public ScheduledEventDependencySuccessorEventsCount$ = ScheduledEventDependencyService.Instance.GetScheduledEventDependenciesRowCount({successorEventId: this.id,
       active: true,
       deleted: false
     });
-
 
 
     public ScheduledEventQualificationRequirements$ = this._scheduledEventQualificationRequirementsSubject.asObservable().pipe(
@@ -373,7 +378,7 @@ export class ScheduledEventData {
     );
 
   
-    public ScheduledEventQualificationRequirementsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({scheduledEventId: this.id,
+    public ScheduledEventQualificationRequirementsCount$ = ScheduledEventQualificationRequirementService.Instance.GetScheduledEventQualificationRequirementsRowCount({scheduledEventId: this.id,
       active: true,
       deleted: false
     });
@@ -392,7 +397,7 @@ export class ScheduledEventData {
     );
 
   
-    public RecurrenceExceptionsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({scheduledEventId: this.id,
+    public RecurrenceExceptionsCount$ = RecurrenceExceptionService.Instance.GetRecurrenceExceptionsRowCount({scheduledEventId: this.id,
       active: true,
       deleted: false
     });
@@ -411,7 +416,7 @@ export class ScheduledEventData {
     );
 
   
-    public EventResourceAssignmentsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({scheduledEventId: this.id,
+    public EventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({scheduledEventId: this.id,
       active: true,
       deleted: false
     });
@@ -472,13 +477,13 @@ export class ScheduledEventData {
      this._eventCalendarsPromise = null;
      this._eventCalendarsSubject.next(null);
 
-     this._predecessorEvents = null;
-     this._predecessorEventsPromise = null;
-     this._predecessorEventsSubject.next(null);
+     this._scheduledEventDependencyPredecessorEvents = null;
+     this._scheduledEventDependencyPredecessorEventsPromise = null;
+     this._scheduledEventDependencyPredecessorEventsSubject.next(null);
 
-     this._successorEvents = null;
-     this._successorEventsPromise = null;
-     this._successorEventsSubject.next(null);
+     this._scheduledEventDependencySuccessorEvents = null;
+     this._scheduledEventDependencySuccessorEventsPromise = null;
+     this._scheduledEventDependencySuccessorEventsSubject.next(null);
 
      this._scheduledEventQualificationRequirements = null;
      this._scheduledEventQualificationRequirementsPromise = null;
@@ -507,9 +512,9 @@ export class ScheduledEventData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.scheduledEvent.ScheduledEventChangeHistories.then(scheduledEventChangeHistories => { ... })
+     *   this.scheduledEvent.ScheduledEventChangeHistories.then(scheduledEvents => { ... })
      *   or
-     *   await this.scheduledEvent.ScheduledEventChangeHistories
+     *   await this.scheduledEvent.scheduledEvents
      *
     */
     public get ScheduledEventChangeHistories(): Promise<ScheduledEventChangeHistoryData[]> {
@@ -534,8 +539,8 @@ export class ScheduledEventData {
         this._scheduledEventChangeHistoriesPromise = lastValueFrom(
             ScheduledEventService.Instance.GetScheduledEventChangeHistoriesForScheduledEvent(this.id)
         )
-        .then(scheduledEventChangeHistories => {
-            this._scheduledEventChangeHistories = scheduledEventChangeHistories ?? [];
+        .then(ScheduledEventChangeHistories => {
+            this._scheduledEventChangeHistories = ScheduledEventChangeHistories ?? [];
             this._scheduledEventChangeHistoriesSubject.next(this._scheduledEventChangeHistories);
             return this._scheduledEventChangeHistories;
          })
@@ -572,9 +577,9 @@ export class ScheduledEventData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.scheduledEvent.EventCharges.then(eventCharges => { ... })
+     *   this.scheduledEvent.EventCharges.then(scheduledEvents => { ... })
      *   or
-     *   await this.scheduledEvent.EventCharges
+     *   await this.scheduledEvent.scheduledEvents
      *
     */
     public get EventCharges(): Promise<EventChargeData[]> {
@@ -599,8 +604,8 @@ export class ScheduledEventData {
         this._eventChargesPromise = lastValueFrom(
             ScheduledEventService.Instance.GetEventChargesForScheduledEvent(this.id)
         )
-        .then(eventCharges => {
-            this._eventCharges = eventCharges ?? [];
+        .then(EventCharges => {
+            this._eventCharges = EventCharges ?? [];
             this._eventChargesSubject.next(this._eventCharges);
             return this._eventCharges;
          })
@@ -637,9 +642,9 @@ export class ScheduledEventData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.scheduledEvent.ContactInteractions.then(contactInteractions => { ... })
+     *   this.scheduledEvent.ContactInteractions.then(scheduledEvents => { ... })
      *   or
-     *   await this.scheduledEvent.ContactInteractions
+     *   await this.scheduledEvent.scheduledEvents
      *
     */
     public get ContactInteractions(): Promise<ContactInteractionData[]> {
@@ -664,8 +669,8 @@ export class ScheduledEventData {
         this._contactInteractionsPromise = lastValueFrom(
             ScheduledEventService.Instance.GetContactInteractionsForScheduledEvent(this.id)
         )
-        .then(contactInteractions => {
-            this._contactInteractions = contactInteractions ?? [];
+        .then(ContactInteractions => {
+            this._contactInteractions = ContactInteractions ?? [];
             this._contactInteractionsSubject.next(this._contactInteractions);
             return this._contactInteractions;
          })
@@ -702,9 +707,9 @@ export class ScheduledEventData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.scheduledEvent.EventCalendars.then(eventCalendars => { ... })
+     *   this.scheduledEvent.EventCalendars.then(scheduledEvents => { ... })
      *   or
-     *   await this.scheduledEvent.EventCalendars
+     *   await this.scheduledEvent.scheduledEvents
      *
     */
     public get EventCalendars(): Promise<EventCalendarData[]> {
@@ -729,8 +734,8 @@ export class ScheduledEventData {
         this._eventCalendarsPromise = lastValueFrom(
             ScheduledEventService.Instance.GetEventCalendarsForScheduledEvent(this.id)
         )
-        .then(eventCalendars => {
-            this._eventCalendars = eventCalendars ?? [];
+        .then(EventCalendars => {
+            this._eventCalendars = EventCalendars ?? [];
             this._eventCalendarsSubject.next(this._eventCalendars);
             return this._eventCalendars;
          })
@@ -760,131 +765,131 @@ export class ScheduledEventData {
 
     /**
      *
-     * Gets the predecessorEvents for this ScheduledEvent.
+     * Gets the ScheduledEventDependencyPredecessorEvents for this ScheduledEvent.
      *
      * If already loaded, returns cached array.
      *
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.scheduledEvent.predecessorEvents.then(predecessorEvents => { ... })
+     *   this.scheduledEvent.ScheduledEventDependencyPredecessorEvents.then(predecessorEvents => { ... })
      *   or
      *   await this.scheduledEvent.predecessorEvents
      *
     */
-    public get predecessorEvents(): Promise<ScheduledEventDependencyData[]> {
-        if (this._predecessorEvents !== null) {
-            return Promise.resolve(this._predecessorEvents);
+    public get ScheduledEventDependencyPredecessorEvents(): Promise<ScheduledEventDependencyData[]> {
+        if (this._scheduledEventDependencyPredecessorEvents !== null) {
+            return Promise.resolve(this._scheduledEventDependencyPredecessorEvents);
         }
 
-        if (this._predecessorEventsPromise !== null) {
-            return this._predecessorEventsPromise;
+        if (this._scheduledEventDependencyPredecessorEventsPromise !== null) {
+            return this._scheduledEventDependencyPredecessorEventsPromise;
         }
 
         // Start the load
-        this.loadPredecessorEvents();
+        this.loadScheduledEventDependencyPredecessorEvents();
 
-        return this._predecessorEventsPromise!;
+        return this._scheduledEventDependencyPredecessorEventsPromise!;
     }
 
 
 
-    private loadPredecessorEvents(): void {
+    private loadScheduledEventDependencyPredecessorEvents(): void {
 
-        this._predecessorEventsPromise = lastValueFrom(
-            ScheduledEventService.Instance.GetPredecessorEventsForScheduledEvent(this.id)
+        this._scheduledEventDependencyPredecessorEventsPromise = lastValueFrom(
+            ScheduledEventService.Instance.GetScheduledEventDependencyPredecessorEventsForScheduledEvent(this.id)
         )
-        .then(predecessorEvents => {
-            this._predecessorEvents = predecessorEvents ?? [];
-            this._predecessorEventsSubject.next(this._predecessorEvents);
-            return this._predecessorEvents;
+        .then(ScheduledEventDependencyPredecessorEvents => {
+            this._scheduledEventDependencyPredecessorEvents = ScheduledEventDependencyPredecessorEvents ?? [];
+            this._scheduledEventDependencyPredecessorEventsSubject.next(this._scheduledEventDependencyPredecessorEvents);
+            return this._scheduledEventDependencyPredecessorEvents;
          })
         .catch(err => {
-            this._predecessorEvents = [];
-            this._predecessorEventsSubject.next(this._predecessorEvents);
+            this._scheduledEventDependencyPredecessorEvents = [];
+            this._scheduledEventDependencyPredecessorEventsSubject.next(this._scheduledEventDependencyPredecessorEvents);
             throw err;
         })
         .finally(() => {
-            this._predecessorEventsPromise = null; // Allow retry if needed
+            this._scheduledEventDependencyPredecessorEventsPromise = null; // Allow retry if needed
         });
     }
 
     /**
-     * Clears the cached predecessorEvent. Call after mutations to force refresh.
+     * Clears the cached ScheduledEventDependencyPredecessorEvent. Call after mutations to force refresh.
      */
-    public ClearPredecessorEventsCache(): void {
-        this._predecessorEvents = null;
-        this._predecessorEventsPromise = null;
-        this._predecessorEventsSubject.next(this._predecessorEvents);      // Emit to observable
+    public ClearScheduledEventDependencyPredecessorEventsCache(): void {
+        this._scheduledEventDependencyPredecessorEvents = null;
+        this._scheduledEventDependencyPredecessorEventsPromise = null;
+        this._scheduledEventDependencyPredecessorEventsSubject.next(this._scheduledEventDependencyPredecessorEvents);      // Emit to observable
     }
 
-    public get HasPredecessorEvents(): Promise<boolean> {
-        return this.predecessorEvents.then(predecessorEvents => predecessorEvents.length > 0);
+    public get HasScheduledEventDependencyPredecessorEvents(): Promise<boolean> {
+        return this.ScheduledEventDependencyPredecessorEvents.then(scheduledEventDependencyPredecessorEvents => scheduledEventDependencyPredecessorEvents.length > 0);
     }
 
 
     /**
      *
-     * Gets the successorEvents for this ScheduledEvent.
+     * Gets the ScheduledEventDependencySuccessorEvents for this ScheduledEvent.
      *
      * If already loaded, returns cached array.
      *
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.scheduledEvent.successorEvents.then(successorEvents => { ... })
+     *   this.scheduledEvent.ScheduledEventDependencySuccessorEvents.then(successorEvents => { ... })
      *   or
      *   await this.scheduledEvent.successorEvents
      *
     */
-    public get successorEvents(): Promise<ScheduledEventDependencyData[]> {
-        if (this._successorEvents !== null) {
-            return Promise.resolve(this._successorEvents);
+    public get ScheduledEventDependencySuccessorEvents(): Promise<ScheduledEventDependencyData[]> {
+        if (this._scheduledEventDependencySuccessorEvents !== null) {
+            return Promise.resolve(this._scheduledEventDependencySuccessorEvents);
         }
 
-        if (this._successorEventsPromise !== null) {
-            return this._successorEventsPromise;
+        if (this._scheduledEventDependencySuccessorEventsPromise !== null) {
+            return this._scheduledEventDependencySuccessorEventsPromise;
         }
 
         // Start the load
-        this.loadSuccessorEvents();
+        this.loadScheduledEventDependencySuccessorEvents();
 
-        return this._successorEventsPromise!;
+        return this._scheduledEventDependencySuccessorEventsPromise!;
     }
 
 
 
-    private loadSuccessorEvents(): void {
+    private loadScheduledEventDependencySuccessorEvents(): void {
 
-        this._successorEventsPromise = lastValueFrom(
-            ScheduledEventService.Instance.GetSuccessorEventsForScheduledEvent(this.id)
+        this._scheduledEventDependencySuccessorEventsPromise = lastValueFrom(
+            ScheduledEventService.Instance.GetScheduledEventDependencySuccessorEventsForScheduledEvent(this.id)
         )
-        .then(successorEvents => {
-            this._successorEvents = successorEvents ?? [];
-            this._successorEventsSubject.next(this._successorEvents);
-            return this._successorEvents;
+        .then(ScheduledEventDependencySuccessorEvents => {
+            this._scheduledEventDependencySuccessorEvents = ScheduledEventDependencySuccessorEvents ?? [];
+            this._scheduledEventDependencySuccessorEventsSubject.next(this._scheduledEventDependencySuccessorEvents);
+            return this._scheduledEventDependencySuccessorEvents;
          })
         .catch(err => {
-            this._successorEvents = [];
-            this._successorEventsSubject.next(this._successorEvents);
+            this._scheduledEventDependencySuccessorEvents = [];
+            this._scheduledEventDependencySuccessorEventsSubject.next(this._scheduledEventDependencySuccessorEvents);
             throw err;
         })
         .finally(() => {
-            this._successorEventsPromise = null; // Allow retry if needed
+            this._scheduledEventDependencySuccessorEventsPromise = null; // Allow retry if needed
         });
     }
 
     /**
-     * Clears the cached successorEvent. Call after mutations to force refresh.
+     * Clears the cached ScheduledEventDependencySuccessorEvent. Call after mutations to force refresh.
      */
-    public ClearSuccessorEventsCache(): void {
-        this._successorEvents = null;
-        this._successorEventsPromise = null;
-        this._successorEventsSubject.next(this._successorEvents);      // Emit to observable
+    public ClearScheduledEventDependencySuccessorEventsCache(): void {
+        this._scheduledEventDependencySuccessorEvents = null;
+        this._scheduledEventDependencySuccessorEventsPromise = null;
+        this._scheduledEventDependencySuccessorEventsSubject.next(this._scheduledEventDependencySuccessorEvents);      // Emit to observable
     }
 
-    public get HasSuccessorEvents(): Promise<boolean> {
-        return this.successorEvents.then(successorEvents => successorEvents.length > 0);
+    public get HasScheduledEventDependencySuccessorEvents(): Promise<boolean> {
+        return this.ScheduledEventDependencySuccessorEvents.then(scheduledEventDependencySuccessorEvents => scheduledEventDependencySuccessorEvents.length > 0);
     }
 
 
@@ -897,9 +902,9 @@ export class ScheduledEventData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.scheduledEvent.ScheduledEventQualificationRequirements.then(scheduledEventQualificationRequirements => { ... })
+     *   this.scheduledEvent.ScheduledEventQualificationRequirements.then(scheduledEvents => { ... })
      *   or
-     *   await this.scheduledEvent.ScheduledEventQualificationRequirements
+     *   await this.scheduledEvent.scheduledEvents
      *
     */
     public get ScheduledEventQualificationRequirements(): Promise<ScheduledEventQualificationRequirementData[]> {
@@ -924,8 +929,8 @@ export class ScheduledEventData {
         this._scheduledEventQualificationRequirementsPromise = lastValueFrom(
             ScheduledEventService.Instance.GetScheduledEventQualificationRequirementsForScheduledEvent(this.id)
         )
-        .then(scheduledEventQualificationRequirements => {
-            this._scheduledEventQualificationRequirements = scheduledEventQualificationRequirements ?? [];
+        .then(ScheduledEventQualificationRequirements => {
+            this._scheduledEventQualificationRequirements = ScheduledEventQualificationRequirements ?? [];
             this._scheduledEventQualificationRequirementsSubject.next(this._scheduledEventQualificationRequirements);
             return this._scheduledEventQualificationRequirements;
          })
@@ -962,9 +967,9 @@ export class ScheduledEventData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.scheduledEvent.RecurrenceExceptions.then(recurrenceExceptions => { ... })
+     *   this.scheduledEvent.RecurrenceExceptions.then(scheduledEvents => { ... })
      *   or
-     *   await this.scheduledEvent.RecurrenceExceptions
+     *   await this.scheduledEvent.scheduledEvents
      *
     */
     public get RecurrenceExceptions(): Promise<RecurrenceExceptionData[]> {
@@ -989,8 +994,8 @@ export class ScheduledEventData {
         this._recurrenceExceptionsPromise = lastValueFrom(
             ScheduledEventService.Instance.GetRecurrenceExceptionsForScheduledEvent(this.id)
         )
-        .then(recurrenceExceptions => {
-            this._recurrenceExceptions = recurrenceExceptions ?? [];
+        .then(RecurrenceExceptions => {
+            this._recurrenceExceptions = RecurrenceExceptions ?? [];
             this._recurrenceExceptionsSubject.next(this._recurrenceExceptions);
             return this._recurrenceExceptions;
          })
@@ -1027,9 +1032,9 @@ export class ScheduledEventData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.scheduledEvent.EventResourceAssignments.then(eventResourceAssignments => { ... })
+     *   this.scheduledEvent.EventResourceAssignments.then(scheduledEvents => { ... })
      *   or
-     *   await this.scheduledEvent.EventResourceAssignments
+     *   await this.scheduledEvent.scheduledEvents
      *
     */
     public get EventResourceAssignments(): Promise<EventResourceAssignmentData[]> {
@@ -1054,8 +1059,8 @@ export class ScheduledEventData {
         this._eventResourceAssignmentsPromise = lastValueFrom(
             ScheduledEventService.Instance.GetEventResourceAssignmentsForScheduledEvent(this.id)
         )
-        .then(eventResourceAssignments => {
-            this._eventResourceAssignments = eventResourceAssignments ?? [];
+        .then(EventResourceAssignments => {
+            this._eventResourceAssignments = EventResourceAssignments ?? [];
             this._eventResourceAssignmentsSubject.next(this._eventResourceAssignments);
             return this._eventResourceAssignments;
          })
@@ -1562,7 +1567,7 @@ export class ScheduledEventService extends SecureEndpointBase {
     }
 
 
-    public GetPredecessorEventsForScheduledEvent(scheduledEventId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<ScheduledEventDependencyData[]> {
+    public GetScheduledEventDependencyPredecessorEventsForScheduledEvent(scheduledEventId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<ScheduledEventDependencyData[]> {
         return this.scheduledEventDependencyService.GetScheduledEventDependencyList({
             predecessorEventId: scheduledEventId,
             active: active,
@@ -1572,7 +1577,7 @@ export class ScheduledEventService extends SecureEndpointBase {
     }
 
 
-    public GetSuccessorEventsForScheduledEvent(scheduledEventId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<ScheduledEventDependencyData[]> {
+    public GetScheduledEventDependencySuccessorEventsForScheduledEvent(scheduledEventId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<ScheduledEventDependencyData[]> {
         return this.scheduledEventDependencyService.GetScheduledEventDependencyList({
             successorEventId: scheduledEventId,
             active: active,

@@ -122,22 +122,27 @@ export class QualificationData {
     private _assignmentRoleQualificationRequirementsPromise: Promise<AssignmentRoleQualificationRequirementData[]> | null  = null;
     private _assignmentRoleQualificationRequirementsSubject = new BehaviorSubject<AssignmentRoleQualificationRequirementData[] | null>(null);
 
+                
     private _schedulingTargetQualificationRequirements: SchedulingTargetQualificationRequirementData[] | null = null;
     private _schedulingTargetQualificationRequirementsPromise: Promise<SchedulingTargetQualificationRequirementData[]> | null  = null;
     private _schedulingTargetQualificationRequirementsSubject = new BehaviorSubject<SchedulingTargetQualificationRequirementData[] | null>(null);
 
+                
     private _resourceQualifications: ResourceQualificationData[] | null = null;
     private _resourceQualificationsPromise: Promise<ResourceQualificationData[]> | null  = null;
     private _resourceQualificationsSubject = new BehaviorSubject<ResourceQualificationData[] | null>(null);
 
+                
     private _scheduledEventTemplateQualificationRequirements: ScheduledEventTemplateQualificationRequirementData[] | null = null;
     private _scheduledEventTemplateQualificationRequirementsPromise: Promise<ScheduledEventTemplateQualificationRequirementData[]> | null  = null;
     private _scheduledEventTemplateQualificationRequirementsSubject = new BehaviorSubject<ScheduledEventTemplateQualificationRequirementData[] | null>(null);
 
+                
     private _scheduledEventQualificationRequirements: ScheduledEventQualificationRequirementData[] | null = null;
     private _scheduledEventQualificationRequirementsPromise: Promise<ScheduledEventQualificationRequirementData[]> | null  = null;
     private _scheduledEventQualificationRequirementsSubject = new BehaviorSubject<ScheduledEventQualificationRequirementData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -157,7 +162,7 @@ export class QualificationData {
     );
 
   
-    public AssignmentRoleQualificationRequirementsCount$ = QualificationService.Instance.GetQualificationsRowCount({qualificationId: this.id,
+    public AssignmentRoleQualificationRequirementsCount$ = AssignmentRoleQualificationRequirementService.Instance.GetAssignmentRoleQualificationRequirementsRowCount({qualificationId: this.id,
       active: true,
       deleted: false
     });
@@ -176,7 +181,7 @@ export class QualificationData {
     );
 
   
-    public SchedulingTargetQualificationRequirementsCount$ = QualificationService.Instance.GetQualificationsRowCount({qualificationId: this.id,
+    public SchedulingTargetQualificationRequirementsCount$ = SchedulingTargetQualificationRequirementService.Instance.GetSchedulingTargetQualificationRequirementsRowCount({qualificationId: this.id,
       active: true,
       deleted: false
     });
@@ -195,7 +200,7 @@ export class QualificationData {
     );
 
   
-    public ResourceQualificationsCount$ = QualificationService.Instance.GetQualificationsRowCount({qualificationId: this.id,
+    public ResourceQualificationsCount$ = ResourceQualificationService.Instance.GetResourceQualificationsRowCount({qualificationId: this.id,
       active: true,
       deleted: false
     });
@@ -214,7 +219,7 @@ export class QualificationData {
     );
 
   
-    public ScheduledEventTemplateQualificationRequirementsCount$ = QualificationService.Instance.GetQualificationsRowCount({qualificationId: this.id,
+    public ScheduledEventTemplateQualificationRequirementsCount$ = ScheduledEventTemplateQualificationRequirementService.Instance.GetScheduledEventTemplateQualificationRequirementsRowCount({qualificationId: this.id,
       active: true,
       deleted: false
     });
@@ -233,7 +238,7 @@ export class QualificationData {
     );
 
   
-    public ScheduledEventQualificationRequirementsCount$ = QualificationService.Instance.GetQualificationsRowCount({qualificationId: this.id,
+    public ScheduledEventQualificationRequirementsCount$ = ScheduledEventQualificationRequirementService.Instance.GetScheduledEventQualificationRequirementsRowCount({qualificationId: this.id,
       active: true,
       deleted: false
     });
@@ -313,9 +318,9 @@ export class QualificationData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.qualification.AssignmentRoleQualificationRequirements.then(assignmentRoleQualificationRequirements => { ... })
+     *   this.qualification.AssignmentRoleQualificationRequirements.then(qualifications => { ... })
      *   or
-     *   await this.qualification.AssignmentRoleQualificationRequirements
+     *   await this.qualification.qualifications
      *
     */
     public get AssignmentRoleQualificationRequirements(): Promise<AssignmentRoleQualificationRequirementData[]> {
@@ -340,8 +345,8 @@ export class QualificationData {
         this._assignmentRoleQualificationRequirementsPromise = lastValueFrom(
             QualificationService.Instance.GetAssignmentRoleQualificationRequirementsForQualification(this.id)
         )
-        .then(assignmentRoleQualificationRequirements => {
-            this._assignmentRoleQualificationRequirements = assignmentRoleQualificationRequirements ?? [];
+        .then(AssignmentRoleQualificationRequirements => {
+            this._assignmentRoleQualificationRequirements = AssignmentRoleQualificationRequirements ?? [];
             this._assignmentRoleQualificationRequirementsSubject.next(this._assignmentRoleQualificationRequirements);
             return this._assignmentRoleQualificationRequirements;
          })
@@ -378,9 +383,9 @@ export class QualificationData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.qualification.SchedulingTargetQualificationRequirements.then(schedulingTargetQualificationRequirements => { ... })
+     *   this.qualification.SchedulingTargetQualificationRequirements.then(qualifications => { ... })
      *   or
-     *   await this.qualification.SchedulingTargetQualificationRequirements
+     *   await this.qualification.qualifications
      *
     */
     public get SchedulingTargetQualificationRequirements(): Promise<SchedulingTargetQualificationRequirementData[]> {
@@ -405,8 +410,8 @@ export class QualificationData {
         this._schedulingTargetQualificationRequirementsPromise = lastValueFrom(
             QualificationService.Instance.GetSchedulingTargetQualificationRequirementsForQualification(this.id)
         )
-        .then(schedulingTargetQualificationRequirements => {
-            this._schedulingTargetQualificationRequirements = schedulingTargetQualificationRequirements ?? [];
+        .then(SchedulingTargetQualificationRequirements => {
+            this._schedulingTargetQualificationRequirements = SchedulingTargetQualificationRequirements ?? [];
             this._schedulingTargetQualificationRequirementsSubject.next(this._schedulingTargetQualificationRequirements);
             return this._schedulingTargetQualificationRequirements;
          })
@@ -443,9 +448,9 @@ export class QualificationData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.qualification.ResourceQualifications.then(resourceQualifications => { ... })
+     *   this.qualification.ResourceQualifications.then(qualifications => { ... })
      *   or
-     *   await this.qualification.ResourceQualifications
+     *   await this.qualification.qualifications
      *
     */
     public get ResourceQualifications(): Promise<ResourceQualificationData[]> {
@@ -470,8 +475,8 @@ export class QualificationData {
         this._resourceQualificationsPromise = lastValueFrom(
             QualificationService.Instance.GetResourceQualificationsForQualification(this.id)
         )
-        .then(resourceQualifications => {
-            this._resourceQualifications = resourceQualifications ?? [];
+        .then(ResourceQualifications => {
+            this._resourceQualifications = ResourceQualifications ?? [];
             this._resourceQualificationsSubject.next(this._resourceQualifications);
             return this._resourceQualifications;
          })
@@ -508,9 +513,9 @@ export class QualificationData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.qualification.ScheduledEventTemplateQualificationRequirements.then(scheduledEventTemplateQualificationRequirements => { ... })
+     *   this.qualification.ScheduledEventTemplateQualificationRequirements.then(qualifications => { ... })
      *   or
-     *   await this.qualification.ScheduledEventTemplateQualificationRequirements
+     *   await this.qualification.qualifications
      *
     */
     public get ScheduledEventTemplateQualificationRequirements(): Promise<ScheduledEventTemplateQualificationRequirementData[]> {
@@ -535,8 +540,8 @@ export class QualificationData {
         this._scheduledEventTemplateQualificationRequirementsPromise = lastValueFrom(
             QualificationService.Instance.GetScheduledEventTemplateQualificationRequirementsForQualification(this.id)
         )
-        .then(scheduledEventTemplateQualificationRequirements => {
-            this._scheduledEventTemplateQualificationRequirements = scheduledEventTemplateQualificationRequirements ?? [];
+        .then(ScheduledEventTemplateQualificationRequirements => {
+            this._scheduledEventTemplateQualificationRequirements = ScheduledEventTemplateQualificationRequirements ?? [];
             this._scheduledEventTemplateQualificationRequirementsSubject.next(this._scheduledEventTemplateQualificationRequirements);
             return this._scheduledEventTemplateQualificationRequirements;
          })
@@ -573,9 +578,9 @@ export class QualificationData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.qualification.ScheduledEventQualificationRequirements.then(scheduledEventQualificationRequirements => { ... })
+     *   this.qualification.ScheduledEventQualificationRequirements.then(qualifications => { ... })
      *   or
-     *   await this.qualification.ScheduledEventQualificationRequirements
+     *   await this.qualification.qualifications
      *
     */
     public get ScheduledEventQualificationRequirements(): Promise<ScheduledEventQualificationRequirementData[]> {
@@ -600,8 +605,8 @@ export class QualificationData {
         this._scheduledEventQualificationRequirementsPromise = lastValueFrom(
             QualificationService.Instance.GetScheduledEventQualificationRequirementsForQualification(this.id)
         )
-        .then(scheduledEventQualificationRequirements => {
-            this._scheduledEventQualificationRequirements = scheduledEventQualificationRequirements ?? [];
+        .then(ScheduledEventQualificationRequirements => {
+            this._scheduledEventQualificationRequirements = ScheduledEventQualificationRequirements ?? [];
             this._scheduledEventQualificationRequirementsSubject.next(this._scheduledEventQualificationRequirements);
             return this._scheduledEventQualificationRequirements;
          })

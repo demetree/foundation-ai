@@ -155,10 +155,12 @@ export class HouseholdData {
     private _householdChangeHistoriesPromise: Promise<HouseholdChangeHistoryData[]> | null  = null;
     private _householdChangeHistoriesSubject = new BehaviorSubject<HouseholdChangeHistoryData[] | null>(null);
 
+                
     private _constituents: ConstituentData[] | null = null;
     private _constituentsPromise: Promise<ConstituentData[]> | null  = null;
     private _constituentsSubject = new BehaviorSubject<ConstituentData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -178,7 +180,7 @@ export class HouseholdData {
     );
 
   
-    public HouseholdChangeHistoriesCount$ = HouseholdService.Instance.GetHouseholdsRowCount({householdId: this.id,
+    public HouseholdChangeHistoriesCount$ = HouseholdChangeHistoryService.Instance.GetHouseholdChangeHistoriesRowCount({householdId: this.id,
       active: true,
       deleted: false
     });
@@ -197,7 +199,7 @@ export class HouseholdData {
     );
 
   
-    public ConstituentsCount$ = HouseholdService.Instance.GetHouseholdsRowCount({householdId: this.id,
+    public ConstituentsCount$ = ConstituentService.Instance.GetConstituentsRowCount({householdId: this.id,
       active: true,
       deleted: false
     });
@@ -265,9 +267,9 @@ export class HouseholdData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.household.HouseholdChangeHistories.then(householdChangeHistories => { ... })
+     *   this.household.HouseholdChangeHistories.then(households => { ... })
      *   or
-     *   await this.household.HouseholdChangeHistories
+     *   await this.household.households
      *
     */
     public get HouseholdChangeHistories(): Promise<HouseholdChangeHistoryData[]> {
@@ -292,8 +294,8 @@ export class HouseholdData {
         this._householdChangeHistoriesPromise = lastValueFrom(
             HouseholdService.Instance.GetHouseholdChangeHistoriesForHousehold(this.id)
         )
-        .then(householdChangeHistories => {
-            this._householdChangeHistories = householdChangeHistories ?? [];
+        .then(HouseholdChangeHistories => {
+            this._householdChangeHistories = HouseholdChangeHistories ?? [];
             this._householdChangeHistoriesSubject.next(this._householdChangeHistories);
             return this._householdChangeHistories;
          })
@@ -330,9 +332,9 @@ export class HouseholdData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.household.Constituents.then(constituents => { ... })
+     *   this.household.Constituents.then(households => { ... })
      *   or
-     *   await this.household.Constituents
+     *   await this.household.households
      *
     */
     public get Constituents(): Promise<ConstituentData[]> {
@@ -357,8 +359,8 @@ export class HouseholdData {
         this._constituentsPromise = lastValueFrom(
             HouseholdService.Instance.GetConstituentsForHousehold(this.id)
         )
-        .then(constituents => {
-            this._constituents = constituents ?? [];
+        .then(Constituents => {
+            this._constituents = Constituents ?? [];
             this._constituentsSubject.next(this._constituents);
             return this._constituents;
          })

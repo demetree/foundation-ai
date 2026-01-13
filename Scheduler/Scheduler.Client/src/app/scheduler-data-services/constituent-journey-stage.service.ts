@@ -145,10 +145,12 @@ export class ConstituentJourneyStageData {
     private _constituentJourneyStageChangeHistoriesPromise: Promise<ConstituentJourneyStageChangeHistoryData[]> | null  = null;
     private _constituentJourneyStageChangeHistoriesSubject = new BehaviorSubject<ConstituentJourneyStageChangeHistoryData[] | null>(null);
 
+                
     private _constituents: ConstituentData[] | null = null;
     private _constituentsPromise: Promise<ConstituentData[]> | null  = null;
     private _constituentsSubject = new BehaviorSubject<ConstituentData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -168,7 +170,7 @@ export class ConstituentJourneyStageData {
     );
 
   
-    public ConstituentJourneyStageChangeHistoriesCount$ = ConstituentJourneyStageService.Instance.GetConstituentJourneyStagesRowCount({constituentJourneyStageId: this.id,
+    public ConstituentJourneyStageChangeHistoriesCount$ = ConstituentJourneyStageChangeHistoryService.Instance.GetConstituentJourneyStageChangeHistoriesRowCount({constituentJourneyStageId: this.id,
       active: true,
       deleted: false
     });
@@ -187,7 +189,7 @@ export class ConstituentJourneyStageData {
     );
 
   
-    public ConstituentsCount$ = ConstituentJourneyStageService.Instance.GetConstituentJourneyStagesRowCount({constituentJourneyStageId: this.id,
+    public ConstituentsCount$ = ConstituentService.Instance.GetConstituentsRowCount({constituentJourneyStageId: this.id,
       active: true,
       deleted: false
     });
@@ -255,9 +257,9 @@ export class ConstituentJourneyStageData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.constituentJourneyStage.ConstituentJourneyStageChangeHistories.then(constituentJourneyStageChangeHistories => { ... })
+     *   this.constituentJourneyStage.ConstituentJourneyStageChangeHistories.then(constituentJourneyStages => { ... })
      *   or
-     *   await this.constituentJourneyStage.ConstituentJourneyStageChangeHistories
+     *   await this.constituentJourneyStage.constituentJourneyStages
      *
     */
     public get ConstituentJourneyStageChangeHistories(): Promise<ConstituentJourneyStageChangeHistoryData[]> {
@@ -282,8 +284,8 @@ export class ConstituentJourneyStageData {
         this._constituentJourneyStageChangeHistoriesPromise = lastValueFrom(
             ConstituentJourneyStageService.Instance.GetConstituentJourneyStageChangeHistoriesForConstituentJourneyStage(this.id)
         )
-        .then(constituentJourneyStageChangeHistories => {
-            this._constituentJourneyStageChangeHistories = constituentJourneyStageChangeHistories ?? [];
+        .then(ConstituentJourneyStageChangeHistories => {
+            this._constituentJourneyStageChangeHistories = ConstituentJourneyStageChangeHistories ?? [];
             this._constituentJourneyStageChangeHistoriesSubject.next(this._constituentJourneyStageChangeHistories);
             return this._constituentJourneyStageChangeHistories;
          })
@@ -320,9 +322,9 @@ export class ConstituentJourneyStageData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.constituentJourneyStage.Constituents.then(constituents => { ... })
+     *   this.constituentJourneyStage.Constituents.then(constituentJourneyStages => { ... })
      *   or
-     *   await this.constituentJourneyStage.Constituents
+     *   await this.constituentJourneyStage.constituentJourneyStages
      *
     */
     public get Constituents(): Promise<ConstituentData[]> {
@@ -347,8 +349,8 @@ export class ConstituentJourneyStageData {
         this._constituentsPromise = lastValueFrom(
             ConstituentJourneyStageService.Instance.GetConstituentsForConstituentJourneyStage(this.id)
         )
-        .then(constituents => {
-            this._constituents = constituents ?? [];
+        .then(Constituents => {
+            this._constituents = Constituents ?? [];
             this._constituentsSubject.next(this._constituents);
             return this._constituents;
          })

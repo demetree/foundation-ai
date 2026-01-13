@@ -134,18 +134,22 @@ export class ScheduledEventTemplateData {
     private _scheduledEventTemplateChangeHistoriesPromise: Promise<ScheduledEventTemplateChangeHistoryData[]> | null  = null;
     private _scheduledEventTemplateChangeHistoriesSubject = new BehaviorSubject<ScheduledEventTemplateChangeHistoryData[] | null>(null);
 
+                
     private _scheduledEventTemplateCharges: ScheduledEventTemplateChargeData[] | null = null;
     private _scheduledEventTemplateChargesPromise: Promise<ScheduledEventTemplateChargeData[]> | null  = null;
     private _scheduledEventTemplateChargesSubject = new BehaviorSubject<ScheduledEventTemplateChargeData[] | null>(null);
 
+                
     private _scheduledEventTemplateQualificationRequirements: ScheduledEventTemplateQualificationRequirementData[] | null = null;
     private _scheduledEventTemplateQualificationRequirementsPromise: Promise<ScheduledEventTemplateQualificationRequirementData[]> | null  = null;
     private _scheduledEventTemplateQualificationRequirementsSubject = new BehaviorSubject<ScheduledEventTemplateQualificationRequirementData[] | null>(null);
 
+                
     private _scheduledEvents: ScheduledEventData[] | null = null;
     private _scheduledEventsPromise: Promise<ScheduledEventData[]> | null  = null;
     private _scheduledEventsSubject = new BehaviorSubject<ScheduledEventData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -165,7 +169,7 @@ export class ScheduledEventTemplateData {
     );
 
   
-    public ScheduledEventTemplateChangeHistoriesCount$ = ScheduledEventTemplateService.Instance.GetScheduledEventTemplatesRowCount({scheduledEventTemplateId: this.id,
+    public ScheduledEventTemplateChangeHistoriesCount$ = ScheduledEventTemplateChangeHistoryService.Instance.GetScheduledEventTemplateChangeHistoriesRowCount({scheduledEventTemplateId: this.id,
       active: true,
       deleted: false
     });
@@ -184,7 +188,7 @@ export class ScheduledEventTemplateData {
     );
 
   
-    public ScheduledEventTemplateChargesCount$ = ScheduledEventTemplateService.Instance.GetScheduledEventTemplatesRowCount({scheduledEventTemplateId: this.id,
+    public ScheduledEventTemplateChargesCount$ = ScheduledEventTemplateChargeService.Instance.GetScheduledEventTemplateChargesRowCount({scheduledEventTemplateId: this.id,
       active: true,
       deleted: false
     });
@@ -203,7 +207,7 @@ export class ScheduledEventTemplateData {
     );
 
   
-    public ScheduledEventTemplateQualificationRequirementsCount$ = ScheduledEventTemplateService.Instance.GetScheduledEventTemplatesRowCount({scheduledEventTemplateId: this.id,
+    public ScheduledEventTemplateQualificationRequirementsCount$ = ScheduledEventTemplateQualificationRequirementService.Instance.GetScheduledEventTemplateQualificationRequirementsRowCount({scheduledEventTemplateId: this.id,
       active: true,
       deleted: false
     });
@@ -222,7 +226,7 @@ export class ScheduledEventTemplateData {
     );
 
   
-    public ScheduledEventsCount$ = ScheduledEventTemplateService.Instance.GetScheduledEventTemplatesRowCount({scheduledEventTemplateId: this.id,
+    public ScheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({scheduledEventTemplateId: this.id,
       active: true,
       deleted: false
     });
@@ -298,9 +302,9 @@ export class ScheduledEventTemplateData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.scheduledEventTemplate.ScheduledEventTemplateChangeHistories.then(scheduledEventTemplateChangeHistories => { ... })
+     *   this.scheduledEventTemplate.ScheduledEventTemplateChangeHistories.then(scheduledEventTemplates => { ... })
      *   or
-     *   await this.scheduledEventTemplate.ScheduledEventTemplateChangeHistories
+     *   await this.scheduledEventTemplate.scheduledEventTemplates
      *
     */
     public get ScheduledEventTemplateChangeHistories(): Promise<ScheduledEventTemplateChangeHistoryData[]> {
@@ -325,8 +329,8 @@ export class ScheduledEventTemplateData {
         this._scheduledEventTemplateChangeHistoriesPromise = lastValueFrom(
             ScheduledEventTemplateService.Instance.GetScheduledEventTemplateChangeHistoriesForScheduledEventTemplate(this.id)
         )
-        .then(scheduledEventTemplateChangeHistories => {
-            this._scheduledEventTemplateChangeHistories = scheduledEventTemplateChangeHistories ?? [];
+        .then(ScheduledEventTemplateChangeHistories => {
+            this._scheduledEventTemplateChangeHistories = ScheduledEventTemplateChangeHistories ?? [];
             this._scheduledEventTemplateChangeHistoriesSubject.next(this._scheduledEventTemplateChangeHistories);
             return this._scheduledEventTemplateChangeHistories;
          })
@@ -363,9 +367,9 @@ export class ScheduledEventTemplateData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.scheduledEventTemplate.ScheduledEventTemplateCharges.then(scheduledEventTemplateCharges => { ... })
+     *   this.scheduledEventTemplate.ScheduledEventTemplateCharges.then(scheduledEventTemplates => { ... })
      *   or
-     *   await this.scheduledEventTemplate.ScheduledEventTemplateCharges
+     *   await this.scheduledEventTemplate.scheduledEventTemplates
      *
     */
     public get ScheduledEventTemplateCharges(): Promise<ScheduledEventTemplateChargeData[]> {
@@ -390,8 +394,8 @@ export class ScheduledEventTemplateData {
         this._scheduledEventTemplateChargesPromise = lastValueFrom(
             ScheduledEventTemplateService.Instance.GetScheduledEventTemplateChargesForScheduledEventTemplate(this.id)
         )
-        .then(scheduledEventTemplateCharges => {
-            this._scheduledEventTemplateCharges = scheduledEventTemplateCharges ?? [];
+        .then(ScheduledEventTemplateCharges => {
+            this._scheduledEventTemplateCharges = ScheduledEventTemplateCharges ?? [];
             this._scheduledEventTemplateChargesSubject.next(this._scheduledEventTemplateCharges);
             return this._scheduledEventTemplateCharges;
          })
@@ -428,9 +432,9 @@ export class ScheduledEventTemplateData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.scheduledEventTemplate.ScheduledEventTemplateQualificationRequirements.then(scheduledEventTemplateQualificationRequirements => { ... })
+     *   this.scheduledEventTemplate.ScheduledEventTemplateQualificationRequirements.then(scheduledEventTemplates => { ... })
      *   or
-     *   await this.scheduledEventTemplate.ScheduledEventTemplateQualificationRequirements
+     *   await this.scheduledEventTemplate.scheduledEventTemplates
      *
     */
     public get ScheduledEventTemplateQualificationRequirements(): Promise<ScheduledEventTemplateQualificationRequirementData[]> {
@@ -455,8 +459,8 @@ export class ScheduledEventTemplateData {
         this._scheduledEventTemplateQualificationRequirementsPromise = lastValueFrom(
             ScheduledEventTemplateService.Instance.GetScheduledEventTemplateQualificationRequirementsForScheduledEventTemplate(this.id)
         )
-        .then(scheduledEventTemplateQualificationRequirements => {
-            this._scheduledEventTemplateQualificationRequirements = scheduledEventTemplateQualificationRequirements ?? [];
+        .then(ScheduledEventTemplateQualificationRequirements => {
+            this._scheduledEventTemplateQualificationRequirements = ScheduledEventTemplateQualificationRequirements ?? [];
             this._scheduledEventTemplateQualificationRequirementsSubject.next(this._scheduledEventTemplateQualificationRequirements);
             return this._scheduledEventTemplateQualificationRequirements;
          })
@@ -493,9 +497,9 @@ export class ScheduledEventTemplateData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.scheduledEventTemplate.ScheduledEvents.then(scheduledEvents => { ... })
+     *   this.scheduledEventTemplate.ScheduledEvents.then(scheduledEventTemplates => { ... })
      *   or
-     *   await this.scheduledEventTemplate.ScheduledEvents
+     *   await this.scheduledEventTemplate.scheduledEventTemplates
      *
     */
     public get ScheduledEvents(): Promise<ScheduledEventData[]> {
@@ -520,8 +524,8 @@ export class ScheduledEventTemplateData {
         this._scheduledEventsPromise = lastValueFrom(
             ScheduledEventTemplateService.Instance.GetScheduledEventsForScheduledEventTemplate(this.id)
         )
-        .then(scheduledEvents => {
-            this._scheduledEvents = scheduledEvents ?? [];
+        .then(ScheduledEvents => {
+            this._scheduledEvents = ScheduledEvents ?? [];
             this._scheduledEventsSubject.next(this._scheduledEvents);
             return this._scheduledEvents;
          })

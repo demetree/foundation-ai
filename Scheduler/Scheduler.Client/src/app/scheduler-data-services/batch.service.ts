@@ -148,10 +148,12 @@ export class BatchData {
     private _batchChangeHistoriesPromise: Promise<BatchChangeHistoryData[]> | null  = null;
     private _batchChangeHistoriesSubject = new BehaviorSubject<BatchChangeHistoryData[] | null>(null);
 
+                
     private _gifts: GiftData[] | null = null;
     private _giftsPromise: Promise<GiftData[]> | null  = null;
     private _giftsSubject = new BehaviorSubject<GiftData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -171,7 +173,7 @@ export class BatchData {
     );
 
   
-    public BatchChangeHistoriesCount$ = BatchService.Instance.GetBatchesRowCount({batchId: this.id,
+    public BatchChangeHistoriesCount$ = BatchChangeHistoryService.Instance.GetBatchChangeHistoriesRowCount({batchId: this.id,
       active: true,
       deleted: false
     });
@@ -190,7 +192,7 @@ export class BatchData {
     );
 
   
-    public GiftsCount$ = BatchService.Instance.GetBatchesRowCount({batchId: this.id,
+    public GiftsCount$ = GiftService.Instance.GetGiftsRowCount({batchId: this.id,
       active: true,
       deleted: false
     });
@@ -258,9 +260,9 @@ export class BatchData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.batch.BatchChangeHistories.then(batchChangeHistories => { ... })
+     *   this.batch.BatchChangeHistories.then(batches => { ... })
      *   or
-     *   await this.batch.BatchChangeHistories
+     *   await this.batch.batches
      *
     */
     public get BatchChangeHistories(): Promise<BatchChangeHistoryData[]> {
@@ -285,8 +287,8 @@ export class BatchData {
         this._batchChangeHistoriesPromise = lastValueFrom(
             BatchService.Instance.GetBatchChangeHistoriesForBatch(this.id)
         )
-        .then(batchChangeHistories => {
-            this._batchChangeHistories = batchChangeHistories ?? [];
+        .then(BatchChangeHistories => {
+            this._batchChangeHistories = BatchChangeHistories ?? [];
             this._batchChangeHistoriesSubject.next(this._batchChangeHistories);
             return this._batchChangeHistories;
          })
@@ -323,9 +325,9 @@ export class BatchData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.batch.Gifts.then(gifts => { ... })
+     *   this.batch.Gifts.then(batches => { ... })
      *   or
-     *   await this.batch.Gifts
+     *   await this.batch.batches
      *
     */
     public get Gifts(): Promise<GiftData[]> {
@@ -350,8 +352,8 @@ export class BatchData {
         this._giftsPromise = lastValueFrom(
             BatchService.Instance.GetGiftsForBatch(this.id)
         )
-        .then(gifts => {
-            this._gifts = gifts ?? [];
+        .then(Gifts => {
+            this._gifts = Gifts ?? [];
             this._giftsSubject.next(this._gifts);
             return this._gifts;
          })

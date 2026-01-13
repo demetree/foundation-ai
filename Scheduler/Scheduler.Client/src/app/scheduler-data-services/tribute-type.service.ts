@@ -112,6 +112,7 @@ export class TributeTypeData {
     private _tributesPromise: Promise<TributeData[]> | null  = null;
     private _tributesSubject = new BehaviorSubject<TributeData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -131,7 +132,7 @@ export class TributeTypeData {
     );
 
   
-    public TributesCount$ = TributeTypeService.Instance.GetTributeTypesRowCount({tributeTypeId: this.id,
+    public TributesCount$ = TributeService.Instance.GetTributesRowCount({tributeTypeId: this.id,
       active: true,
       deleted: false
     });
@@ -195,9 +196,9 @@ export class TributeTypeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.tributeType.Tributes.then(tributes => { ... })
+     *   this.tributeType.Tributes.then(tributeTypes => { ... })
      *   or
-     *   await this.tributeType.Tributes
+     *   await this.tributeType.tributeTypes
      *
     */
     public get Tributes(): Promise<TributeData[]> {
@@ -222,8 +223,8 @@ export class TributeTypeData {
         this._tributesPromise = lastValueFrom(
             TributeTypeService.Instance.GetTributesForTributeType(this.id)
         )
-        .then(tributes => {
-            this._tributes = tributes ?? [];
+        .then(Tributes => {
+            this._tributes = Tributes ?? [];
             this._tributesSubject.next(this._tributes);
             return this._tributes;
          })

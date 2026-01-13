@@ -134,18 +134,21 @@ export class AppealData {
     private _appealChangeHistoriesPromise: Promise<AppealChangeHistoryData[]> | null  = null;
     private _appealChangeHistoriesSubject = new BehaviorSubject<AppealChangeHistoryData[] | null>(null);
 
+                
     private _pledges: PledgeData[] | null = null;
     private _pledgesPromise: Promise<PledgeData[]> | null  = null;
     private _pledgesSubject = new BehaviorSubject<PledgeData[] | null>(null);
 
-    private _defaultAppeals: BatchData[] | null = null;
-    private _defaultAppealsPromise: Promise<BatchData[]> | null  = null;
-    private _defaultAppealsSubject = new BehaviorSubject<BatchData[] | null>(null);
-
+                
+    private _batchDefaultAppeals: BatchData[] | null = null;
+    private _batchDefaultAppealsPromise: Promise<BatchData[]> | null  = null;
+    private _batchDefaultAppealsSubject = new BehaviorSubject<BatchData[] | null>(null);
+                    
     private _gifts: GiftData[] | null = null;
     private _giftsPromise: Promise<GiftData[]> | null  = null;
     private _giftsSubject = new BehaviorSubject<GiftData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -165,7 +168,7 @@ export class AppealData {
     );
 
   
-    public AppealChangeHistoriesCount$ = AppealService.Instance.GetAppealsRowCount({appealId: this.id,
+    public AppealChangeHistoriesCount$ = AppealChangeHistoryService.Instance.GetAppealChangeHistoriesRowCount({appealId: this.id,
       active: true,
       deleted: false
     });
@@ -184,30 +187,29 @@ export class AppealData {
     );
 
   
-    public PledgesCount$ = AppealService.Instance.GetAppealsRowCount({appealId: this.id,
+    public PledgesCount$ = PledgeService.Instance.GetPledgesRowCount({appealId: this.id,
       active: true,
       deleted: false
     });
 
 
 
-    public DefaultAppeals$ = this._defaultAppealsSubject.asObservable().pipe(
+    public BatchDefaultAppeals$ = this._batchDefaultAppealsSubject.asObservable().pipe(
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-          if (this._defaultAppeals === null && this._defaultAppealsPromise === null) {
-            this.loadDefaultAppeals(); // Private method to start fetch
+          if (this._batchDefaultAppeals === null && this._batchDefaultAppealsPromise === null) {
+            this.loadBatchDefaultAppeals(); // Private method to start fetch
           }
         }),
         shareReplay(1) // Cache last emit
     );
 
   
-    public DefaultAppealsCount$ = AppealService.Instance.GetAppealsRowCount({appealId: this.id,
+    public BatchDefaultAppealsCount$ = BatchService.Instance.GetBatchesRowCount({defaultAppealId: this.id,
       active: true,
       deleted: false
     });
-
 
 
     public Gifts$ = this._giftsSubject.asObservable().pipe(
@@ -222,7 +224,7 @@ export class AppealData {
     );
 
   
-    public GiftsCount$ = AppealService.Instance.GetAppealsRowCount({appealId: this.id,
+    public GiftsCount$ = GiftService.Instance.GetGiftsRowCount({appealId: this.id,
       active: true,
       deleted: false
     });
@@ -275,9 +277,9 @@ export class AppealData {
      this._pledgesPromise = null;
      this._pledgesSubject.next(null);
 
-     this._defaultAppeals = null;
-     this._defaultAppealsPromise = null;
-     this._defaultAppealsSubject.next(null);
+     this._batchDefaultAppeals = null;
+     this._batchDefaultAppealsPromise = null;
+     this._batchDefaultAppealsSubject.next(null);
 
      this._gifts = null;
      this._giftsPromise = null;
@@ -298,9 +300,9 @@ export class AppealData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.appeal.AppealChangeHistories.then(appealChangeHistories => { ... })
+     *   this.appeal.AppealChangeHistories.then(appeals => { ... })
      *   or
-     *   await this.appeal.AppealChangeHistories
+     *   await this.appeal.appeals
      *
     */
     public get AppealChangeHistories(): Promise<AppealChangeHistoryData[]> {
@@ -325,8 +327,8 @@ export class AppealData {
         this._appealChangeHistoriesPromise = lastValueFrom(
             AppealService.Instance.GetAppealChangeHistoriesForAppeal(this.id)
         )
-        .then(appealChangeHistories => {
-            this._appealChangeHistories = appealChangeHistories ?? [];
+        .then(AppealChangeHistories => {
+            this._appealChangeHistories = AppealChangeHistories ?? [];
             this._appealChangeHistoriesSubject.next(this._appealChangeHistories);
             return this._appealChangeHistories;
          })
@@ -363,9 +365,9 @@ export class AppealData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.appeal.Pledges.then(pledges => { ... })
+     *   this.appeal.Pledges.then(appeals => { ... })
      *   or
-     *   await this.appeal.Pledges
+     *   await this.appeal.appeals
      *
     */
     public get Pledges(): Promise<PledgeData[]> {
@@ -390,8 +392,8 @@ export class AppealData {
         this._pledgesPromise = lastValueFrom(
             AppealService.Instance.GetPledgesForAppeal(this.id)
         )
-        .then(pledges => {
-            this._pledges = pledges ?? [];
+        .then(Pledges => {
+            this._pledges = Pledges ?? [];
             this._pledgesSubject.next(this._pledges);
             return this._pledges;
          })
@@ -421,66 +423,66 @@ export class AppealData {
 
     /**
      *
-     * Gets the defaultAppeals for this Appeal.
+     * Gets the BatchDefaultAppeals for this Appeal.
      *
      * If already loaded, returns cached array.
      *
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.appeal.defaultAppeals.then(defaultAppeals => { ... })
+     *   this.appeal.BatchDefaultAppeals.then(defaultAppeals => { ... })
      *   or
      *   await this.appeal.defaultAppeals
      *
     */
-    public get defaultAppeals(): Promise<BatchData[]> {
-        if (this._defaultAppeals !== null) {
-            return Promise.resolve(this._defaultAppeals);
+    public get BatchDefaultAppeals(): Promise<BatchData[]> {
+        if (this._batchDefaultAppeals !== null) {
+            return Promise.resolve(this._batchDefaultAppeals);
         }
 
-        if (this._defaultAppealsPromise !== null) {
-            return this._defaultAppealsPromise;
+        if (this._batchDefaultAppealsPromise !== null) {
+            return this._batchDefaultAppealsPromise;
         }
 
         // Start the load
-        this.loadDefaultAppeals();
+        this.loadBatchDefaultAppeals();
 
-        return this._defaultAppealsPromise!;
+        return this._batchDefaultAppealsPromise!;
     }
 
 
 
-    private loadDefaultAppeals(): void {
+    private loadBatchDefaultAppeals(): void {
 
-        this._defaultAppealsPromise = lastValueFrom(
-            AppealService.Instance.GetDefaultAppealsForAppeal(this.id)
+        this._batchDefaultAppealsPromise = lastValueFrom(
+            AppealService.Instance.GetBatchDefaultAppealsForAppeal(this.id)
         )
-        .then(defaultAppeals => {
-            this._defaultAppeals = defaultAppeals ?? [];
-            this._defaultAppealsSubject.next(this._defaultAppeals);
-            return this._defaultAppeals;
+        .then(BatchDefaultAppeals => {
+            this._batchDefaultAppeals = BatchDefaultAppeals ?? [];
+            this._batchDefaultAppealsSubject.next(this._batchDefaultAppeals);
+            return this._batchDefaultAppeals;
          })
         .catch(err => {
-            this._defaultAppeals = [];
-            this._defaultAppealsSubject.next(this._defaultAppeals);
+            this._batchDefaultAppeals = [];
+            this._batchDefaultAppealsSubject.next(this._batchDefaultAppeals);
             throw err;
         })
         .finally(() => {
-            this._defaultAppealsPromise = null; // Allow retry if needed
+            this._batchDefaultAppealsPromise = null; // Allow retry if needed
         });
     }
 
     /**
-     * Clears the cached defaultAppeal. Call after mutations to force refresh.
+     * Clears the cached BatchDefaultAppeal. Call after mutations to force refresh.
      */
-    public ClearDefaultAppealsCache(): void {
-        this._defaultAppeals = null;
-        this._defaultAppealsPromise = null;
-        this._defaultAppealsSubject.next(this._defaultAppeals);      // Emit to observable
+    public ClearBatchDefaultAppealsCache(): void {
+        this._batchDefaultAppeals = null;
+        this._batchDefaultAppealsPromise = null;
+        this._batchDefaultAppealsSubject.next(this._batchDefaultAppeals);      // Emit to observable
     }
 
-    public get HasDefaultAppeals(): Promise<boolean> {
-        return this.defaultAppeals.then(defaultAppeals => defaultAppeals.length > 0);
+    public get HasBatchDefaultAppeals(): Promise<boolean> {
+        return this.BatchDefaultAppeals.then(batchDefaultAppeals => batchDefaultAppeals.length > 0);
     }
 
 
@@ -493,9 +495,9 @@ export class AppealData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.appeal.Gifts.then(gifts => { ... })
+     *   this.appeal.Gifts.then(appeals => { ... })
      *   or
-     *   await this.appeal.Gifts
+     *   await this.appeal.appeals
      *
     */
     public get Gifts(): Promise<GiftData[]> {
@@ -520,8 +522,8 @@ export class AppealData {
         this._giftsPromise = lastValueFrom(
             AppealService.Instance.GetGiftsForAppeal(this.id)
         )
-        .then(gifts => {
-            this._gifts = gifts ?? [];
+        .then(Gifts => {
+            this._gifts = Gifts ?? [];
             this._giftsSubject.next(this._gifts);
             return this._gifts;
          })
@@ -987,7 +989,7 @@ export class AppealService extends SecureEndpointBase {
     }
 
 
-    public GetDefaultAppealsForAppeal(appealId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<BatchData[]> {
+    public GetBatchDefaultAppealsForAppeal(appealId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<BatchData[]> {
         return this.batchService.GetBatchList({
             defaultAppealId: appealId,
             active: active,

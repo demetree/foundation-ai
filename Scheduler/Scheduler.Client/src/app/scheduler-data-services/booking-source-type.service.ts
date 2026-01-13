@@ -115,6 +115,7 @@ export class BookingSourceTypeData {
     private _scheduledEventsPromise: Promise<ScheduledEventData[]> | null  = null;
     private _scheduledEventsSubject = new BehaviorSubject<ScheduledEventData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -134,7 +135,7 @@ export class BookingSourceTypeData {
     );
 
   
-    public ScheduledEventsCount$ = BookingSourceTypeService.Instance.GetBookingSourceTypesRowCount({bookingSourceTypeId: this.id,
+    public ScheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({bookingSourceTypeId: this.id,
       active: true,
       deleted: false
     });
@@ -198,9 +199,9 @@ export class BookingSourceTypeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.bookingSourceType.ScheduledEvents.then(scheduledEvents => { ... })
+     *   this.bookingSourceType.ScheduledEvents.then(bookingSourceTypes => { ... })
      *   or
-     *   await this.bookingSourceType.ScheduledEvents
+     *   await this.bookingSourceType.bookingSourceTypes
      *
     */
     public get ScheduledEvents(): Promise<ScheduledEventData[]> {
@@ -225,8 +226,8 @@ export class BookingSourceTypeData {
         this._scheduledEventsPromise = lastValueFrom(
             BookingSourceTypeService.Instance.GetScheduledEventsForBookingSourceType(this.id)
         )
-        .then(scheduledEvents => {
-            this._scheduledEvents = scheduledEvents ?? [];
+        .then(ScheduledEvents => {
+            this._scheduledEvents = ScheduledEvents ?? [];
             this._scheduledEventsSubject.next(this._scheduledEvents);
             return this._scheduledEvents;
          })

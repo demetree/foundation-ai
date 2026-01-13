@@ -124,6 +124,7 @@ export class ClientContactData {
     private _clientContactChangeHistoriesPromise: Promise<ClientContactChangeHistoryData[]> | null  = null;
     private _clientContactChangeHistoriesSubject = new BehaviorSubject<ClientContactChangeHistoryData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -143,7 +144,7 @@ export class ClientContactData {
     );
 
   
-    public ClientContactChangeHistoriesCount$ = ClientContactService.Instance.GetClientContactsRowCount({clientContactId: this.id,
+    public ClientContactChangeHistoriesCount$ = ClientContactChangeHistoryService.Instance.GetClientContactChangeHistoriesRowCount({clientContactId: this.id,
       active: true,
       deleted: false
     });
@@ -207,9 +208,9 @@ export class ClientContactData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.clientContact.ClientContactChangeHistories.then(clientContactChangeHistories => { ... })
+     *   this.clientContact.ClientContactChangeHistories.then(clientContacts => { ... })
      *   or
-     *   await this.clientContact.ClientContactChangeHistories
+     *   await this.clientContact.clientContacts
      *
     */
     public get ClientContactChangeHistories(): Promise<ClientContactChangeHistoryData[]> {
@@ -234,8 +235,8 @@ export class ClientContactData {
         this._clientContactChangeHistoriesPromise = lastValueFrom(
             ClientContactService.Instance.GetClientContactChangeHistoriesForClientContact(this.id)
         )
-        .then(clientContactChangeHistories => {
-            this._clientContactChangeHistories = clientContactChangeHistories ?? [];
+        .then(ClientContactChangeHistories => {
+            this._clientContactChangeHistories = ClientContactChangeHistories ?? [];
             this._clientContactChangeHistoriesSubject.next(this._clientContactChangeHistories);
             return this._clientContactChangeHistories;
          })

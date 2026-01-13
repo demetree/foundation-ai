@@ -196,50 +196,60 @@ export class ContactData {
     private _contactChangeHistoriesPromise: Promise<ContactChangeHistoryData[]> | null  = null;
     private _contactChangeHistoriesSubject = new BehaviorSubject<ContactChangeHistoryData[] | null>(null);
 
+                
     private _contactTags: ContactTagData[] | null = null;
     private _contactTagsPromise: Promise<ContactTagData[]> | null  = null;
     private _contactTagsSubject = new BehaviorSubject<ContactTagData[] | null>(null);
 
+                
     private _contactContacts: ContactContactData[] | null = null;
     private _contactContactsPromise: Promise<ContactContactData[]> | null  = null;
     private _contactContactsSubject = new BehaviorSubject<ContactContactData[] | null>(null);
 
-    private _relatedContacts: ContactContactData[] | null = null;
-    private _relatedContactsPromise: Promise<ContactContactData[]> | null  = null;
-    private _relatedContactsSubject = new BehaviorSubject<ContactContactData[] | null>(null);
-
+                
+    private _contactContactRelatedContacts: ContactContactData[] | null = null;
+    private _contactContactRelatedContactsPromise: Promise<ContactContactData[]> | null  = null;
+    private _contactContactRelatedContactsSubject = new BehaviorSubject<ContactContactData[] | null>(null);
+                    
     private _officeContacts: OfficeContactData[] | null = null;
     private _officeContactsPromise: Promise<OfficeContactData[]> | null  = null;
     private _officeContactsSubject = new BehaviorSubject<OfficeContactData[] | null>(null);
 
+                
     private _clientContacts: ClientContactData[] | null = null;
     private _clientContactsPromise: Promise<ClientContactData[]> | null  = null;
     private _clientContactsSubject = new BehaviorSubject<ClientContactData[] | null>(null);
 
+                
     private _schedulingTargetContacts: SchedulingTargetContactData[] | null = null;
     private _schedulingTargetContactsPromise: Promise<SchedulingTargetContactData[]> | null  = null;
     private _schedulingTargetContactsSubject = new BehaviorSubject<SchedulingTargetContactData[] | null>(null);
 
+                
     private _resourceContacts: ResourceContactData[] | null = null;
     private _resourceContactsPromise: Promise<ResourceContactData[]> | null  = null;
     private _resourceContactsSubject = new BehaviorSubject<ResourceContactData[] | null>(null);
 
+                
     private _contactInteractions: ContactInteractionData[] | null = null;
     private _contactInteractionsPromise: Promise<ContactInteractionData[]> | null  = null;
     private _contactInteractionsSubject = new BehaviorSubject<ContactInteractionData[] | null>(null);
 
-    private _initiatingContacts: ContactInteractionData[] | null = null;
-    private _initiatingContactsPromise: Promise<ContactInteractionData[]> | null  = null;
-    private _initiatingContactsSubject = new BehaviorSubject<ContactInteractionData[] | null>(null);
-
+                
+    private _contactInteractionInitiatingContacts: ContactInteractionData[] | null = null;
+    private _contactInteractionInitiatingContactsPromise: Promise<ContactInteractionData[]> | null  = null;
+    private _contactInteractionInitiatingContactsSubject = new BehaviorSubject<ContactInteractionData[] | null>(null);
+                    
     private _notificationSubscriptions: NotificationSubscriptionData[] | null = null;
     private _notificationSubscriptionsPromise: Promise<NotificationSubscriptionData[]> | null  = null;
     private _notificationSubscriptionsSubject = new BehaviorSubject<NotificationSubscriptionData[] | null>(null);
 
+                
     private _constituents: ConstituentData[] | null = null;
     private _constituentsPromise: Promise<ConstituentData[]> | null  = null;
     private _constituentsSubject = new BehaviorSubject<ConstituentData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -259,7 +269,7 @@ export class ContactData {
     );
 
   
-    public ContactChangeHistoriesCount$ = ContactService.Instance.GetContactsRowCount({contactId: this.id,
+    public ContactChangeHistoriesCount$ = ContactChangeHistoryService.Instance.GetContactChangeHistoriesRowCount({contactId: this.id,
       active: true,
       deleted: false
     });
@@ -278,7 +288,7 @@ export class ContactData {
     );
 
   
-    public ContactTagsCount$ = ContactService.Instance.GetContactsRowCount({contactId: this.id,
+    public ContactTagsCount$ = ContactTagService.Instance.GetContactTagsRowCount({contactId: this.id,
       active: true,
       deleted: false
     });
@@ -297,30 +307,29 @@ export class ContactData {
     );
 
   
-    public ContactContactsCount$ = ContactService.Instance.GetContactsRowCount({contactId: this.id,
+    public ContactContactsCount$ = ContactContactService.Instance.GetContactContactsRowCount({contactId: this.id,
       active: true,
       deleted: false
     });
 
 
 
-    public RelatedContacts$ = this._relatedContactsSubject.asObservable().pipe(
+    public ContactContactRelatedContacts$ = this._contactContactRelatedContactsSubject.asObservable().pipe(
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-          if (this._relatedContacts === null && this._relatedContactsPromise === null) {
-            this.loadRelatedContacts(); // Private method to start fetch
+          if (this._contactContactRelatedContacts === null && this._contactContactRelatedContactsPromise === null) {
+            this.loadContactContactRelatedContacts(); // Private method to start fetch
           }
         }),
         shareReplay(1) // Cache last emit
     );
 
   
-    public RelatedContactsCount$ = ContactService.Instance.GetContactsRowCount({contactId: this.id,
+    public ContactContactRelatedContactsCount$ = ContactContactService.Instance.GetContactContactsRowCount({relatedContactId: this.id,
       active: true,
       deleted: false
     });
-
 
 
     public OfficeContacts$ = this._officeContactsSubject.asObservable().pipe(
@@ -335,7 +344,7 @@ export class ContactData {
     );
 
   
-    public OfficeContactsCount$ = ContactService.Instance.GetContactsRowCount({contactId: this.id,
+    public OfficeContactsCount$ = OfficeContactService.Instance.GetOfficeContactsRowCount({contactId: this.id,
       active: true,
       deleted: false
     });
@@ -354,7 +363,7 @@ export class ContactData {
     );
 
   
-    public ClientContactsCount$ = ContactService.Instance.GetContactsRowCount({contactId: this.id,
+    public ClientContactsCount$ = ClientContactService.Instance.GetClientContactsRowCount({contactId: this.id,
       active: true,
       deleted: false
     });
@@ -373,7 +382,7 @@ export class ContactData {
     );
 
   
-    public SchedulingTargetContactsCount$ = ContactService.Instance.GetContactsRowCount({contactId: this.id,
+    public SchedulingTargetContactsCount$ = SchedulingTargetContactService.Instance.GetSchedulingTargetContactsRowCount({contactId: this.id,
       active: true,
       deleted: false
     });
@@ -392,7 +401,7 @@ export class ContactData {
     );
 
   
-    public ResourceContactsCount$ = ContactService.Instance.GetContactsRowCount({contactId: this.id,
+    public ResourceContactsCount$ = ResourceContactService.Instance.GetResourceContactsRowCount({contactId: this.id,
       active: true,
       deleted: false
     });
@@ -411,30 +420,29 @@ export class ContactData {
     );
 
   
-    public ContactInteractionsCount$ = ContactService.Instance.GetContactsRowCount({contactId: this.id,
+    public ContactInteractionsCount$ = ContactInteractionService.Instance.GetContactInteractionsRowCount({contactId: this.id,
       active: true,
       deleted: false
     });
 
 
 
-    public InitiatingContacts$ = this._initiatingContactsSubject.asObservable().pipe(
+    public ContactInteractionInitiatingContacts$ = this._contactInteractionInitiatingContactsSubject.asObservable().pipe(
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-          if (this._initiatingContacts === null && this._initiatingContactsPromise === null) {
-            this.loadInitiatingContacts(); // Private method to start fetch
+          if (this._contactInteractionInitiatingContacts === null && this._contactInteractionInitiatingContactsPromise === null) {
+            this.loadContactInteractionInitiatingContacts(); // Private method to start fetch
           }
         }),
         shareReplay(1) // Cache last emit
     );
 
   
-    public InitiatingContactsCount$ = ContactService.Instance.GetContactsRowCount({contactId: this.id,
+    public ContactInteractionInitiatingContactsCount$ = ContactInteractionService.Instance.GetContactInteractionsRowCount({initiatingContactId: this.id,
       active: true,
       deleted: false
     });
-
 
 
     public NotificationSubscriptions$ = this._notificationSubscriptionsSubject.asObservable().pipe(
@@ -449,7 +457,7 @@ export class ContactData {
     );
 
   
-    public NotificationSubscriptionsCount$ = ContactService.Instance.GetContactsRowCount({contactId: this.id,
+    public NotificationSubscriptionsCount$ = NotificationSubscriptionService.Instance.GetNotificationSubscriptionsRowCount({contactId: this.id,
       active: true,
       deleted: false
     });
@@ -468,7 +476,7 @@ export class ContactData {
     );
 
   
-    public ConstituentsCount$ = ContactService.Instance.GetContactsRowCount({contactId: this.id,
+    public ConstituentsCount$ = ConstituentService.Instance.GetConstituentsRowCount({contactId: this.id,
       active: true,
       deleted: false
     });
@@ -525,9 +533,9 @@ export class ContactData {
      this._contactContactsPromise = null;
      this._contactContactsSubject.next(null);
 
-     this._relatedContacts = null;
-     this._relatedContactsPromise = null;
-     this._relatedContactsSubject.next(null);
+     this._contactContactRelatedContacts = null;
+     this._contactContactRelatedContactsPromise = null;
+     this._contactContactRelatedContactsSubject.next(null);
 
      this._officeContacts = null;
      this._officeContactsPromise = null;
@@ -549,9 +557,9 @@ export class ContactData {
      this._contactInteractionsPromise = null;
      this._contactInteractionsSubject.next(null);
 
-     this._initiatingContacts = null;
-     this._initiatingContactsPromise = null;
-     this._initiatingContactsSubject.next(null);
+     this._contactInteractionInitiatingContacts = null;
+     this._contactInteractionInitiatingContactsPromise = null;
+     this._contactInteractionInitiatingContactsSubject.next(null);
 
      this._notificationSubscriptions = null;
      this._notificationSubscriptionsPromise = null;
@@ -576,9 +584,9 @@ export class ContactData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.contact.ContactChangeHistories.then(contactChangeHistories => { ... })
+     *   this.contact.ContactChangeHistories.then(contacts => { ... })
      *   or
-     *   await this.contact.ContactChangeHistories
+     *   await this.contact.contacts
      *
     */
     public get ContactChangeHistories(): Promise<ContactChangeHistoryData[]> {
@@ -603,8 +611,8 @@ export class ContactData {
         this._contactChangeHistoriesPromise = lastValueFrom(
             ContactService.Instance.GetContactChangeHistoriesForContact(this.id)
         )
-        .then(contactChangeHistories => {
-            this._contactChangeHistories = contactChangeHistories ?? [];
+        .then(ContactChangeHistories => {
+            this._contactChangeHistories = ContactChangeHistories ?? [];
             this._contactChangeHistoriesSubject.next(this._contactChangeHistories);
             return this._contactChangeHistories;
          })
@@ -641,9 +649,9 @@ export class ContactData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.contact.ContactTags.then(contactTags => { ... })
+     *   this.contact.ContactTags.then(contacts => { ... })
      *   or
-     *   await this.contact.ContactTags
+     *   await this.contact.contacts
      *
     */
     public get ContactTags(): Promise<ContactTagData[]> {
@@ -668,8 +676,8 @@ export class ContactData {
         this._contactTagsPromise = lastValueFrom(
             ContactService.Instance.GetContactTagsForContact(this.id)
         )
-        .then(contactTags => {
-            this._contactTags = contactTags ?? [];
+        .then(ContactTags => {
+            this._contactTags = ContactTags ?? [];
             this._contactTagsSubject.next(this._contactTags);
             return this._contactTags;
          })
@@ -706,9 +714,9 @@ export class ContactData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.contact.ContactContacts.then(contactContacts => { ... })
+     *   this.contact.ContactContacts.then(contacts => { ... })
      *   or
-     *   await this.contact.ContactContacts
+     *   await this.contact.contacts
      *
     */
     public get ContactContacts(): Promise<ContactContactData[]> {
@@ -733,8 +741,8 @@ export class ContactData {
         this._contactContactsPromise = lastValueFrom(
             ContactService.Instance.GetContactContactsForContact(this.id)
         )
-        .then(contactContacts => {
-            this._contactContacts = contactContacts ?? [];
+        .then(ContactContacts => {
+            this._contactContacts = ContactContacts ?? [];
             this._contactContactsSubject.next(this._contactContacts);
             return this._contactContacts;
          })
@@ -764,66 +772,66 @@ export class ContactData {
 
     /**
      *
-     * Gets the relatedContacts for this Contact.
+     * Gets the ContactContactRelatedContacts for this Contact.
      *
      * If already loaded, returns cached array.
      *
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.contact.relatedContacts.then(relatedContacts => { ... })
+     *   this.contact.ContactContactRelatedContacts.then(relatedContacts => { ... })
      *   or
      *   await this.contact.relatedContacts
      *
     */
-    public get relatedContacts(): Promise<ContactContactData[]> {
-        if (this._relatedContacts !== null) {
-            return Promise.resolve(this._relatedContacts);
+    public get ContactContactRelatedContacts(): Promise<ContactContactData[]> {
+        if (this._contactContactRelatedContacts !== null) {
+            return Promise.resolve(this._contactContactRelatedContacts);
         }
 
-        if (this._relatedContactsPromise !== null) {
-            return this._relatedContactsPromise;
+        if (this._contactContactRelatedContactsPromise !== null) {
+            return this._contactContactRelatedContactsPromise;
         }
 
         // Start the load
-        this.loadRelatedContacts();
+        this.loadContactContactRelatedContacts();
 
-        return this._relatedContactsPromise!;
+        return this._contactContactRelatedContactsPromise!;
     }
 
 
 
-    private loadRelatedContacts(): void {
+    private loadContactContactRelatedContacts(): void {
 
-        this._relatedContactsPromise = lastValueFrom(
-            ContactService.Instance.GetRelatedContactsForContact(this.id)
+        this._contactContactRelatedContactsPromise = lastValueFrom(
+            ContactService.Instance.GetContactContactRelatedContactsForContact(this.id)
         )
-        .then(relatedContacts => {
-            this._relatedContacts = relatedContacts ?? [];
-            this._relatedContactsSubject.next(this._relatedContacts);
-            return this._relatedContacts;
+        .then(ContactContactRelatedContacts => {
+            this._contactContactRelatedContacts = ContactContactRelatedContacts ?? [];
+            this._contactContactRelatedContactsSubject.next(this._contactContactRelatedContacts);
+            return this._contactContactRelatedContacts;
          })
         .catch(err => {
-            this._relatedContacts = [];
-            this._relatedContactsSubject.next(this._relatedContacts);
+            this._contactContactRelatedContacts = [];
+            this._contactContactRelatedContactsSubject.next(this._contactContactRelatedContacts);
             throw err;
         })
         .finally(() => {
-            this._relatedContactsPromise = null; // Allow retry if needed
+            this._contactContactRelatedContactsPromise = null; // Allow retry if needed
         });
     }
 
     /**
-     * Clears the cached relatedContact. Call after mutations to force refresh.
+     * Clears the cached ContactContactRelatedContact. Call after mutations to force refresh.
      */
-    public ClearRelatedContactsCache(): void {
-        this._relatedContacts = null;
-        this._relatedContactsPromise = null;
-        this._relatedContactsSubject.next(this._relatedContacts);      // Emit to observable
+    public ClearContactContactRelatedContactsCache(): void {
+        this._contactContactRelatedContacts = null;
+        this._contactContactRelatedContactsPromise = null;
+        this._contactContactRelatedContactsSubject.next(this._contactContactRelatedContacts);      // Emit to observable
     }
 
-    public get HasRelatedContacts(): Promise<boolean> {
-        return this.relatedContacts.then(relatedContacts => relatedContacts.length > 0);
+    public get HasContactContactRelatedContacts(): Promise<boolean> {
+        return this.ContactContactRelatedContacts.then(contactContactRelatedContacts => contactContactRelatedContacts.length > 0);
     }
 
 
@@ -836,9 +844,9 @@ export class ContactData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.contact.OfficeContacts.then(officeContacts => { ... })
+     *   this.contact.OfficeContacts.then(contacts => { ... })
      *   or
-     *   await this.contact.OfficeContacts
+     *   await this.contact.contacts
      *
     */
     public get OfficeContacts(): Promise<OfficeContactData[]> {
@@ -863,8 +871,8 @@ export class ContactData {
         this._officeContactsPromise = lastValueFrom(
             ContactService.Instance.GetOfficeContactsForContact(this.id)
         )
-        .then(officeContacts => {
-            this._officeContacts = officeContacts ?? [];
+        .then(OfficeContacts => {
+            this._officeContacts = OfficeContacts ?? [];
             this._officeContactsSubject.next(this._officeContacts);
             return this._officeContacts;
          })
@@ -901,9 +909,9 @@ export class ContactData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.contact.ClientContacts.then(clientContacts => { ... })
+     *   this.contact.ClientContacts.then(contacts => { ... })
      *   or
-     *   await this.contact.ClientContacts
+     *   await this.contact.contacts
      *
     */
     public get ClientContacts(): Promise<ClientContactData[]> {
@@ -928,8 +936,8 @@ export class ContactData {
         this._clientContactsPromise = lastValueFrom(
             ContactService.Instance.GetClientContactsForContact(this.id)
         )
-        .then(clientContacts => {
-            this._clientContacts = clientContacts ?? [];
+        .then(ClientContacts => {
+            this._clientContacts = ClientContacts ?? [];
             this._clientContactsSubject.next(this._clientContacts);
             return this._clientContacts;
          })
@@ -966,9 +974,9 @@ export class ContactData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.contact.SchedulingTargetContacts.then(schedulingTargetContacts => { ... })
+     *   this.contact.SchedulingTargetContacts.then(contacts => { ... })
      *   or
-     *   await this.contact.SchedulingTargetContacts
+     *   await this.contact.contacts
      *
     */
     public get SchedulingTargetContacts(): Promise<SchedulingTargetContactData[]> {
@@ -993,8 +1001,8 @@ export class ContactData {
         this._schedulingTargetContactsPromise = lastValueFrom(
             ContactService.Instance.GetSchedulingTargetContactsForContact(this.id)
         )
-        .then(schedulingTargetContacts => {
-            this._schedulingTargetContacts = schedulingTargetContacts ?? [];
+        .then(SchedulingTargetContacts => {
+            this._schedulingTargetContacts = SchedulingTargetContacts ?? [];
             this._schedulingTargetContactsSubject.next(this._schedulingTargetContacts);
             return this._schedulingTargetContacts;
          })
@@ -1031,9 +1039,9 @@ export class ContactData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.contact.ResourceContacts.then(resourceContacts => { ... })
+     *   this.contact.ResourceContacts.then(contacts => { ... })
      *   or
-     *   await this.contact.ResourceContacts
+     *   await this.contact.contacts
      *
     */
     public get ResourceContacts(): Promise<ResourceContactData[]> {
@@ -1058,8 +1066,8 @@ export class ContactData {
         this._resourceContactsPromise = lastValueFrom(
             ContactService.Instance.GetResourceContactsForContact(this.id)
         )
-        .then(resourceContacts => {
-            this._resourceContacts = resourceContacts ?? [];
+        .then(ResourceContacts => {
+            this._resourceContacts = ResourceContacts ?? [];
             this._resourceContactsSubject.next(this._resourceContacts);
             return this._resourceContacts;
          })
@@ -1096,9 +1104,9 @@ export class ContactData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.contact.ContactInteractions.then(contactInteractions => { ... })
+     *   this.contact.ContactInteractions.then(contacts => { ... })
      *   or
-     *   await this.contact.ContactInteractions
+     *   await this.contact.contacts
      *
     */
     public get ContactInteractions(): Promise<ContactInteractionData[]> {
@@ -1123,8 +1131,8 @@ export class ContactData {
         this._contactInteractionsPromise = lastValueFrom(
             ContactService.Instance.GetContactInteractionsForContact(this.id)
         )
-        .then(contactInteractions => {
-            this._contactInteractions = contactInteractions ?? [];
+        .then(ContactInteractions => {
+            this._contactInteractions = ContactInteractions ?? [];
             this._contactInteractionsSubject.next(this._contactInteractions);
             return this._contactInteractions;
          })
@@ -1154,66 +1162,66 @@ export class ContactData {
 
     /**
      *
-     * Gets the initiatingContacts for this Contact.
+     * Gets the ContactInteractionInitiatingContacts for this Contact.
      *
      * If already loaded, returns cached array.
      *
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.contact.initiatingContacts.then(initiatingContacts => { ... })
+     *   this.contact.ContactInteractionInitiatingContacts.then(initiatingContacts => { ... })
      *   or
      *   await this.contact.initiatingContacts
      *
     */
-    public get initiatingContacts(): Promise<ContactInteractionData[]> {
-        if (this._initiatingContacts !== null) {
-            return Promise.resolve(this._initiatingContacts);
+    public get ContactInteractionInitiatingContacts(): Promise<ContactInteractionData[]> {
+        if (this._contactInteractionInitiatingContacts !== null) {
+            return Promise.resolve(this._contactInteractionInitiatingContacts);
         }
 
-        if (this._initiatingContactsPromise !== null) {
-            return this._initiatingContactsPromise;
+        if (this._contactInteractionInitiatingContactsPromise !== null) {
+            return this._contactInteractionInitiatingContactsPromise;
         }
 
         // Start the load
-        this.loadInitiatingContacts();
+        this.loadContactInteractionInitiatingContacts();
 
-        return this._initiatingContactsPromise!;
+        return this._contactInteractionInitiatingContactsPromise!;
     }
 
 
 
-    private loadInitiatingContacts(): void {
+    private loadContactInteractionInitiatingContacts(): void {
 
-        this._initiatingContactsPromise = lastValueFrom(
-            ContactService.Instance.GetInitiatingContactsForContact(this.id)
+        this._contactInteractionInitiatingContactsPromise = lastValueFrom(
+            ContactService.Instance.GetContactInteractionInitiatingContactsForContact(this.id)
         )
-        .then(initiatingContacts => {
-            this._initiatingContacts = initiatingContacts ?? [];
-            this._initiatingContactsSubject.next(this._initiatingContacts);
-            return this._initiatingContacts;
+        .then(ContactInteractionInitiatingContacts => {
+            this._contactInteractionInitiatingContacts = ContactInteractionInitiatingContacts ?? [];
+            this._contactInteractionInitiatingContactsSubject.next(this._contactInteractionInitiatingContacts);
+            return this._contactInteractionInitiatingContacts;
          })
         .catch(err => {
-            this._initiatingContacts = [];
-            this._initiatingContactsSubject.next(this._initiatingContacts);
+            this._contactInteractionInitiatingContacts = [];
+            this._contactInteractionInitiatingContactsSubject.next(this._contactInteractionInitiatingContacts);
             throw err;
         })
         .finally(() => {
-            this._initiatingContactsPromise = null; // Allow retry if needed
+            this._contactInteractionInitiatingContactsPromise = null; // Allow retry if needed
         });
     }
 
     /**
-     * Clears the cached initiatingContact. Call after mutations to force refresh.
+     * Clears the cached ContactInteractionInitiatingContact. Call after mutations to force refresh.
      */
-    public ClearInitiatingContactsCache(): void {
-        this._initiatingContacts = null;
-        this._initiatingContactsPromise = null;
-        this._initiatingContactsSubject.next(this._initiatingContacts);      // Emit to observable
+    public ClearContactInteractionInitiatingContactsCache(): void {
+        this._contactInteractionInitiatingContacts = null;
+        this._contactInteractionInitiatingContactsPromise = null;
+        this._contactInteractionInitiatingContactsSubject.next(this._contactInteractionInitiatingContacts);      // Emit to observable
     }
 
-    public get HasInitiatingContacts(): Promise<boolean> {
-        return this.initiatingContacts.then(initiatingContacts => initiatingContacts.length > 0);
+    public get HasContactInteractionInitiatingContacts(): Promise<boolean> {
+        return this.ContactInteractionInitiatingContacts.then(contactInteractionInitiatingContacts => contactInteractionInitiatingContacts.length > 0);
     }
 
 
@@ -1226,9 +1234,9 @@ export class ContactData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.contact.NotificationSubscriptions.then(notificationSubscriptions => { ... })
+     *   this.contact.NotificationSubscriptions.then(contacts => { ... })
      *   or
-     *   await this.contact.NotificationSubscriptions
+     *   await this.contact.contacts
      *
     */
     public get NotificationSubscriptions(): Promise<NotificationSubscriptionData[]> {
@@ -1253,8 +1261,8 @@ export class ContactData {
         this._notificationSubscriptionsPromise = lastValueFrom(
             ContactService.Instance.GetNotificationSubscriptionsForContact(this.id)
         )
-        .then(notificationSubscriptions => {
-            this._notificationSubscriptions = notificationSubscriptions ?? [];
+        .then(NotificationSubscriptions => {
+            this._notificationSubscriptions = NotificationSubscriptions ?? [];
             this._notificationSubscriptionsSubject.next(this._notificationSubscriptions);
             return this._notificationSubscriptions;
          })
@@ -1291,9 +1299,9 @@ export class ContactData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.contact.Constituents.then(constituents => { ... })
+     *   this.contact.Constituents.then(contacts => { ... })
      *   or
-     *   await this.contact.Constituents
+     *   await this.contact.contacts
      *
     */
     public get Constituents(): Promise<ConstituentData[]> {
@@ -1318,8 +1326,8 @@ export class ContactData {
         this._constituentsPromise = lastValueFrom(
             ContactService.Instance.GetConstituentsForContact(this.id)
         )
-        .then(constituents => {
-            this._constituents = constituents ?? [];
+        .then(Constituents => {
+            this._constituents = Constituents ?? [];
             this._constituentsSubject.next(this._constituents);
             return this._constituents;
          })
@@ -1818,7 +1826,7 @@ export class ContactService extends SecureEndpointBase {
     }
 
 
-    public GetRelatedContactsForContact(contactId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<ContactContactData[]> {
+    public GetContactContactRelatedContactsForContact(contactId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<ContactContactData[]> {
         return this.contactContactService.GetContactContactList({
             relatedContactId: contactId,
             active: active,
@@ -1878,7 +1886,7 @@ export class ContactService extends SecureEndpointBase {
     }
 
 
-    public GetInitiatingContactsForContact(contactId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<ContactInteractionData[]> {
+    public GetContactInteractionInitiatingContactsForContact(contactId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<ContactInteractionData[]> {
         return this.contactInteractionService.GetContactInteractionList({
             initiatingContactId: contactId,
             active: active,

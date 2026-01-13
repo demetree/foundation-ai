@@ -145,14 +145,17 @@ export class ChargeTypeData {
     private _chargeTypeChangeHistoriesPromise: Promise<ChargeTypeChangeHistoryData[]> | null  = null;
     private _chargeTypeChangeHistoriesSubject = new BehaviorSubject<ChargeTypeChangeHistoryData[] | null>(null);
 
+                
     private _scheduledEventTemplateCharges: ScheduledEventTemplateChargeData[] | null = null;
     private _scheduledEventTemplateChargesPromise: Promise<ScheduledEventTemplateChargeData[]> | null  = null;
     private _scheduledEventTemplateChargesSubject = new BehaviorSubject<ScheduledEventTemplateChargeData[] | null>(null);
 
+                
     private _eventCharges: EventChargeData[] | null = null;
     private _eventChargesPromise: Promise<EventChargeData[]> | null  = null;
     private _eventChargesSubject = new BehaviorSubject<EventChargeData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -172,7 +175,7 @@ export class ChargeTypeData {
     );
 
   
-    public ChargeTypeChangeHistoriesCount$ = ChargeTypeService.Instance.GetChargeTypesRowCount({chargeTypeId: this.id,
+    public ChargeTypeChangeHistoriesCount$ = ChargeTypeChangeHistoryService.Instance.GetChargeTypeChangeHistoriesRowCount({chargeTypeId: this.id,
       active: true,
       deleted: false
     });
@@ -191,7 +194,7 @@ export class ChargeTypeData {
     );
 
   
-    public ScheduledEventTemplateChargesCount$ = ChargeTypeService.Instance.GetChargeTypesRowCount({chargeTypeId: this.id,
+    public ScheduledEventTemplateChargesCount$ = ScheduledEventTemplateChargeService.Instance.GetScheduledEventTemplateChargesRowCount({chargeTypeId: this.id,
       active: true,
       deleted: false
     });
@@ -210,7 +213,7 @@ export class ChargeTypeData {
     );
 
   
-    public EventChargesCount$ = ChargeTypeService.Instance.GetChargeTypesRowCount({chargeTypeId: this.id,
+    public EventChargesCount$ = EventChargeService.Instance.GetEventChargesRowCount({chargeTypeId: this.id,
       active: true,
       deleted: false
     });
@@ -282,9 +285,9 @@ export class ChargeTypeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.chargeType.ChargeTypeChangeHistories.then(chargeTypeChangeHistories => { ... })
+     *   this.chargeType.ChargeTypeChangeHistories.then(chargeTypes => { ... })
      *   or
-     *   await this.chargeType.ChargeTypeChangeHistories
+     *   await this.chargeType.chargeTypes
      *
     */
     public get ChargeTypeChangeHistories(): Promise<ChargeTypeChangeHistoryData[]> {
@@ -309,8 +312,8 @@ export class ChargeTypeData {
         this._chargeTypeChangeHistoriesPromise = lastValueFrom(
             ChargeTypeService.Instance.GetChargeTypeChangeHistoriesForChargeType(this.id)
         )
-        .then(chargeTypeChangeHistories => {
-            this._chargeTypeChangeHistories = chargeTypeChangeHistories ?? [];
+        .then(ChargeTypeChangeHistories => {
+            this._chargeTypeChangeHistories = ChargeTypeChangeHistories ?? [];
             this._chargeTypeChangeHistoriesSubject.next(this._chargeTypeChangeHistories);
             return this._chargeTypeChangeHistories;
          })
@@ -347,9 +350,9 @@ export class ChargeTypeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.chargeType.ScheduledEventTemplateCharges.then(scheduledEventTemplateCharges => { ... })
+     *   this.chargeType.ScheduledEventTemplateCharges.then(chargeTypes => { ... })
      *   or
-     *   await this.chargeType.ScheduledEventTemplateCharges
+     *   await this.chargeType.chargeTypes
      *
     */
     public get ScheduledEventTemplateCharges(): Promise<ScheduledEventTemplateChargeData[]> {
@@ -374,8 +377,8 @@ export class ChargeTypeData {
         this._scheduledEventTemplateChargesPromise = lastValueFrom(
             ChargeTypeService.Instance.GetScheduledEventTemplateChargesForChargeType(this.id)
         )
-        .then(scheduledEventTemplateCharges => {
-            this._scheduledEventTemplateCharges = scheduledEventTemplateCharges ?? [];
+        .then(ScheduledEventTemplateCharges => {
+            this._scheduledEventTemplateCharges = ScheduledEventTemplateCharges ?? [];
             this._scheduledEventTemplateChargesSubject.next(this._scheduledEventTemplateCharges);
             return this._scheduledEventTemplateCharges;
          })
@@ -412,9 +415,9 @@ export class ChargeTypeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.chargeType.EventCharges.then(eventCharges => { ... })
+     *   this.chargeType.EventCharges.then(chargeTypes => { ... })
      *   or
-     *   await this.chargeType.EventCharges
+     *   await this.chargeType.chargeTypes
      *
     */
     public get EventCharges(): Promise<EventChargeData[]> {
@@ -439,8 +442,8 @@ export class ChargeTypeData {
         this._eventChargesPromise = lastValueFrom(
             ChargeTypeService.Instance.GetEventChargesForChargeType(this.id)
         )
-        .then(eventCharges => {
-            this._eventCharges = eventCharges ?? [];
+        .then(EventCharges => {
+            this._eventCharges = EventCharges ?? [];
             this._eventChargesSubject.next(this._eventCharges);
             return this._eventCharges;
          })

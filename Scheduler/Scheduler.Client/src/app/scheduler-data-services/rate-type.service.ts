@@ -117,14 +117,17 @@ export class RateTypeData {
     private _chargeTypesPromise: Promise<ChargeTypeData[]> | null  = null;
     private _chargeTypesSubject = new BehaviorSubject<ChargeTypeData[] | null>(null);
 
+                
     private _rateSheets: RateSheetData[] | null = null;
     private _rateSheetsPromise: Promise<RateSheetData[]> | null  = null;
     private _rateSheetsSubject = new BehaviorSubject<RateSheetData[] | null>(null);
 
+                
     private _eventCharges: EventChargeData[] | null = null;
     private _eventChargesPromise: Promise<EventChargeData[]> | null  = null;
     private _eventChargesSubject = new BehaviorSubject<EventChargeData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -144,7 +147,7 @@ export class RateTypeData {
     );
 
   
-    public ChargeTypesCount$ = RateTypeService.Instance.GetRateTypesRowCount({rateTypeId: this.id,
+    public ChargeTypesCount$ = ChargeTypeService.Instance.GetChargeTypesRowCount({rateTypeId: this.id,
       active: true,
       deleted: false
     });
@@ -163,7 +166,7 @@ export class RateTypeData {
     );
 
   
-    public RateSheetsCount$ = RateTypeService.Instance.GetRateTypesRowCount({rateTypeId: this.id,
+    public RateSheetsCount$ = RateSheetService.Instance.GetRateSheetsRowCount({rateTypeId: this.id,
       active: true,
       deleted: false
     });
@@ -182,7 +185,7 @@ export class RateTypeData {
     );
 
   
-    public EventChargesCount$ = RateTypeService.Instance.GetRateTypesRowCount({rateTypeId: this.id,
+    public EventChargesCount$ = EventChargeService.Instance.GetEventChargesRowCount({rateTypeId: this.id,
       active: true,
       deleted: false
     });
@@ -254,9 +257,9 @@ export class RateTypeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.rateType.ChargeTypes.then(chargeTypes => { ... })
+     *   this.rateType.ChargeTypes.then(rateTypes => { ... })
      *   or
-     *   await this.rateType.ChargeTypes
+     *   await this.rateType.rateTypes
      *
     */
     public get ChargeTypes(): Promise<ChargeTypeData[]> {
@@ -281,8 +284,8 @@ export class RateTypeData {
         this._chargeTypesPromise = lastValueFrom(
             RateTypeService.Instance.GetChargeTypesForRateType(this.id)
         )
-        .then(chargeTypes => {
-            this._chargeTypes = chargeTypes ?? [];
+        .then(ChargeTypes => {
+            this._chargeTypes = ChargeTypes ?? [];
             this._chargeTypesSubject.next(this._chargeTypes);
             return this._chargeTypes;
          })
@@ -319,9 +322,9 @@ export class RateTypeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.rateType.RateSheets.then(rateSheets => { ... })
+     *   this.rateType.RateSheets.then(rateTypes => { ... })
      *   or
-     *   await this.rateType.RateSheets
+     *   await this.rateType.rateTypes
      *
     */
     public get RateSheets(): Promise<RateSheetData[]> {
@@ -346,8 +349,8 @@ export class RateTypeData {
         this._rateSheetsPromise = lastValueFrom(
             RateTypeService.Instance.GetRateSheetsForRateType(this.id)
         )
-        .then(rateSheets => {
-            this._rateSheets = rateSheets ?? [];
+        .then(RateSheets => {
+            this._rateSheets = RateSheets ?? [];
             this._rateSheetsSubject.next(this._rateSheets);
             return this._rateSheets;
          })
@@ -384,9 +387,9 @@ export class RateTypeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.rateType.EventCharges.then(eventCharges => { ... })
+     *   this.rateType.EventCharges.then(rateTypes => { ... })
      *   or
-     *   await this.rateType.EventCharges
+     *   await this.rateType.rateTypes
      *
     */
     public get EventCharges(): Promise<EventChargeData[]> {
@@ -411,8 +414,8 @@ export class RateTypeData {
         this._eventChargesPromise = lastValueFrom(
             RateTypeService.Instance.GetEventChargesForRateType(this.id)
         )
-        .then(eventCharges => {
-            this._eventCharges = eventCharges ?? [];
+        .then(EventCharges => {
+            this._eventCharges = EventCharges ?? [];
             this._eventChargesSubject.next(this._eventCharges);
             return this._eventCharges;
          })

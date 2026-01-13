@@ -142,18 +142,22 @@ export class CrewData {
     private _crewChangeHistoriesPromise: Promise<CrewChangeHistoryData[]> | null  = null;
     private _crewChangeHistoriesSubject = new BehaviorSubject<CrewChangeHistoryData[] | null>(null);
 
+                
     private _crewMembers: CrewMemberData[] | null = null;
     private _crewMembersPromise: Promise<CrewMemberData[]> | null  = null;
     private _crewMembersSubject = new BehaviorSubject<CrewMemberData[] | null>(null);
 
+                
     private _scheduledEvents: ScheduledEventData[] | null = null;
     private _scheduledEventsPromise: Promise<ScheduledEventData[]> | null  = null;
     private _scheduledEventsSubject = new BehaviorSubject<ScheduledEventData[] | null>(null);
 
+                
     private _eventResourceAssignments: EventResourceAssignmentData[] | null = null;
     private _eventResourceAssignmentsPromise: Promise<EventResourceAssignmentData[]> | null  = null;
     private _eventResourceAssignmentsSubject = new BehaviorSubject<EventResourceAssignmentData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -173,7 +177,7 @@ export class CrewData {
     );
 
   
-    public CrewChangeHistoriesCount$ = CrewService.Instance.GetCrewsRowCount({crewId: this.id,
+    public CrewChangeHistoriesCount$ = CrewChangeHistoryService.Instance.GetCrewChangeHistoriesRowCount({crewId: this.id,
       active: true,
       deleted: false
     });
@@ -192,7 +196,7 @@ export class CrewData {
     );
 
   
-    public CrewMembersCount$ = CrewService.Instance.GetCrewsRowCount({crewId: this.id,
+    public CrewMembersCount$ = CrewMemberService.Instance.GetCrewMembersRowCount({crewId: this.id,
       active: true,
       deleted: false
     });
@@ -211,7 +215,7 @@ export class CrewData {
     );
 
   
-    public ScheduledEventsCount$ = CrewService.Instance.GetCrewsRowCount({crewId: this.id,
+    public ScheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({crewId: this.id,
       active: true,
       deleted: false
     });
@@ -230,7 +234,7 @@ export class CrewData {
     );
 
   
-    public EventResourceAssignmentsCount$ = CrewService.Instance.GetCrewsRowCount({crewId: this.id,
+    public EventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({crewId: this.id,
       active: true,
       deleted: false
     });
@@ -306,9 +310,9 @@ export class CrewData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.crew.CrewChangeHistories.then(crewChangeHistories => { ... })
+     *   this.crew.CrewChangeHistories.then(crews => { ... })
      *   or
-     *   await this.crew.CrewChangeHistories
+     *   await this.crew.crews
      *
     */
     public get CrewChangeHistories(): Promise<CrewChangeHistoryData[]> {
@@ -333,8 +337,8 @@ export class CrewData {
         this._crewChangeHistoriesPromise = lastValueFrom(
             CrewService.Instance.GetCrewChangeHistoriesForCrew(this.id)
         )
-        .then(crewChangeHistories => {
-            this._crewChangeHistories = crewChangeHistories ?? [];
+        .then(CrewChangeHistories => {
+            this._crewChangeHistories = CrewChangeHistories ?? [];
             this._crewChangeHistoriesSubject.next(this._crewChangeHistories);
             return this._crewChangeHistories;
          })
@@ -371,9 +375,9 @@ export class CrewData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.crew.CrewMembers.then(crewMembers => { ... })
+     *   this.crew.CrewMembers.then(crews => { ... })
      *   or
-     *   await this.crew.CrewMembers
+     *   await this.crew.crews
      *
     */
     public get CrewMembers(): Promise<CrewMemberData[]> {
@@ -398,8 +402,8 @@ export class CrewData {
         this._crewMembersPromise = lastValueFrom(
             CrewService.Instance.GetCrewMembersForCrew(this.id)
         )
-        .then(crewMembers => {
-            this._crewMembers = crewMembers ?? [];
+        .then(CrewMembers => {
+            this._crewMembers = CrewMembers ?? [];
             this._crewMembersSubject.next(this._crewMembers);
             return this._crewMembers;
          })
@@ -436,9 +440,9 @@ export class CrewData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.crew.ScheduledEvents.then(scheduledEvents => { ... })
+     *   this.crew.ScheduledEvents.then(crews => { ... })
      *   or
-     *   await this.crew.ScheduledEvents
+     *   await this.crew.crews
      *
     */
     public get ScheduledEvents(): Promise<ScheduledEventData[]> {
@@ -463,8 +467,8 @@ export class CrewData {
         this._scheduledEventsPromise = lastValueFrom(
             CrewService.Instance.GetScheduledEventsForCrew(this.id)
         )
-        .then(scheduledEvents => {
-            this._scheduledEvents = scheduledEvents ?? [];
+        .then(ScheduledEvents => {
+            this._scheduledEvents = ScheduledEvents ?? [];
             this._scheduledEventsSubject.next(this._scheduledEvents);
             return this._scheduledEvents;
          })
@@ -501,9 +505,9 @@ export class CrewData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.crew.EventResourceAssignments.then(eventResourceAssignments => { ... })
+     *   this.crew.EventResourceAssignments.then(crews => { ... })
      *   or
-     *   await this.crew.EventResourceAssignments
+     *   await this.crew.crews
      *
     */
     public get EventResourceAssignments(): Promise<EventResourceAssignmentData[]> {
@@ -528,8 +532,8 @@ export class CrewData {
         this._eventResourceAssignmentsPromise = lastValueFrom(
             CrewService.Instance.GetEventResourceAssignmentsForCrew(this.id)
         )
-        .then(eventResourceAssignments => {
-            this._eventResourceAssignments = eventResourceAssignments ?? [];
+        .then(EventResourceAssignments => {
+            this._eventResourceAssignments = EventResourceAssignments ?? [];
             this._eventResourceAssignmentsSubject.next(this._eventResourceAssignments);
             return this._eventResourceAssignments;
          })

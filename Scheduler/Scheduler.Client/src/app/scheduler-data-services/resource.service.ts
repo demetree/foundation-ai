@@ -168,46 +168,57 @@ export class ResourceData {
     private _resourceChangeHistoriesPromise: Promise<ResourceChangeHistoryData[]> | null  = null;
     private _resourceChangeHistoriesSubject = new BehaviorSubject<ResourceChangeHistoryData[] | null>(null);
 
+                
     private _resourceContacts: ResourceContactData[] | null = null;
     private _resourceContactsPromise: Promise<ResourceContactData[]> | null  = null;
     private _resourceContactsSubject = new BehaviorSubject<ResourceContactData[] | null>(null);
 
+                
     private _rateSheets: RateSheetData[] | null = null;
     private _rateSheetsPromise: Promise<RateSheetData[]> | null  = null;
     private _rateSheetsSubject = new BehaviorSubject<RateSheetData[] | null>(null);
 
+                
     private _resourceQualifications: ResourceQualificationData[] | null = null;
     private _resourceQualificationsPromise: Promise<ResourceQualificationData[]> | null  = null;
     private _resourceQualificationsSubject = new BehaviorSubject<ResourceQualificationData[] | null>(null);
 
+                
     private _resourceAvailabilities: ResourceAvailabilityData[] | null = null;
     private _resourceAvailabilitiesPromise: Promise<ResourceAvailabilityData[]> | null  = null;
     private _resourceAvailabilitiesSubject = new BehaviorSubject<ResourceAvailabilityData[] | null>(null);
 
+                
     private _resourceShifts: ResourceShiftData[] | null = null;
     private _resourceShiftsPromise: Promise<ResourceShiftData[]> | null  = null;
     private _resourceShiftsSubject = new BehaviorSubject<ResourceShiftData[] | null>(null);
 
+                
     private _crewMembers: CrewMemberData[] | null = null;
     private _crewMembersPromise: Promise<CrewMemberData[]> | null  = null;
     private _crewMembersSubject = new BehaviorSubject<CrewMemberData[] | null>(null);
 
+                
     private _scheduledEvents: ScheduledEventData[] | null = null;
     private _scheduledEventsPromise: Promise<ScheduledEventData[]> | null  = null;
     private _scheduledEventsSubject = new BehaviorSubject<ScheduledEventData[] | null>(null);
 
+                
     private _eventCharges: EventChargeData[] | null = null;
     private _eventChargesPromise: Promise<EventChargeData[]> | null  = null;
     private _eventChargesSubject = new BehaviorSubject<EventChargeData[] | null>(null);
 
+                
     private _eventResourceAssignments: EventResourceAssignmentData[] | null = null;
     private _eventResourceAssignmentsPromise: Promise<EventResourceAssignmentData[]> | null  = null;
     private _eventResourceAssignmentsSubject = new BehaviorSubject<EventResourceAssignmentData[] | null>(null);
 
+                
     private _notificationSubscriptions: NotificationSubscriptionData[] | null = null;
     private _notificationSubscriptionsPromise: Promise<NotificationSubscriptionData[]> | null  = null;
     private _notificationSubscriptionsSubject = new BehaviorSubject<NotificationSubscriptionData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -227,7 +238,7 @@ export class ResourceData {
     );
 
   
-    public ResourceChangeHistoriesCount$ = ResourceService.Instance.GetResourcesRowCount({resourceId: this.id,
+    public ResourceChangeHistoriesCount$ = ResourceChangeHistoryService.Instance.GetResourceChangeHistoriesRowCount({resourceId: this.id,
       active: true,
       deleted: false
     });
@@ -246,7 +257,7 @@ export class ResourceData {
     );
 
   
-    public ResourceContactsCount$ = ResourceService.Instance.GetResourcesRowCount({resourceId: this.id,
+    public ResourceContactsCount$ = ResourceContactService.Instance.GetResourceContactsRowCount({resourceId: this.id,
       active: true,
       deleted: false
     });
@@ -265,7 +276,7 @@ export class ResourceData {
     );
 
   
-    public RateSheetsCount$ = ResourceService.Instance.GetResourcesRowCount({resourceId: this.id,
+    public RateSheetsCount$ = RateSheetService.Instance.GetRateSheetsRowCount({resourceId: this.id,
       active: true,
       deleted: false
     });
@@ -284,7 +295,7 @@ export class ResourceData {
     );
 
   
-    public ResourceQualificationsCount$ = ResourceService.Instance.GetResourcesRowCount({resourceId: this.id,
+    public ResourceQualificationsCount$ = ResourceQualificationService.Instance.GetResourceQualificationsRowCount({resourceId: this.id,
       active: true,
       deleted: false
     });
@@ -303,7 +314,7 @@ export class ResourceData {
     );
 
   
-    public ResourceAvailabilitiesCount$ = ResourceService.Instance.GetResourcesRowCount({resourceId: this.id,
+    public ResourceAvailabilitiesCount$ = ResourceAvailabilityService.Instance.GetResourceAvailabilitiesRowCount({resourceId: this.id,
       active: true,
       deleted: false
     });
@@ -322,7 +333,7 @@ export class ResourceData {
     );
 
   
-    public ResourceShiftsCount$ = ResourceService.Instance.GetResourcesRowCount({resourceId: this.id,
+    public ResourceShiftsCount$ = ResourceShiftService.Instance.GetResourceShiftsRowCount({resourceId: this.id,
       active: true,
       deleted: false
     });
@@ -341,7 +352,7 @@ export class ResourceData {
     );
 
   
-    public CrewMembersCount$ = ResourceService.Instance.GetResourcesRowCount({resourceId: this.id,
+    public CrewMembersCount$ = CrewMemberService.Instance.GetCrewMembersRowCount({resourceId: this.id,
       active: true,
       deleted: false
     });
@@ -360,7 +371,7 @@ export class ResourceData {
     );
 
   
-    public ScheduledEventsCount$ = ResourceService.Instance.GetResourcesRowCount({resourceId: this.id,
+    public ScheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({resourceId: this.id,
       active: true,
       deleted: false
     });
@@ -379,7 +390,7 @@ export class ResourceData {
     );
 
   
-    public EventChargesCount$ = ResourceService.Instance.GetResourcesRowCount({resourceId: this.id,
+    public EventChargesCount$ = EventChargeService.Instance.GetEventChargesRowCount({resourceId: this.id,
       active: true,
       deleted: false
     });
@@ -398,7 +409,7 @@ export class ResourceData {
     );
 
   
-    public EventResourceAssignmentsCount$ = ResourceService.Instance.GetResourcesRowCount({resourceId: this.id,
+    public EventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({resourceId: this.id,
       active: true,
       deleted: false
     });
@@ -417,7 +428,7 @@ export class ResourceData {
     );
 
   
-    public NotificationSubscriptionsCount$ = ResourceService.Instance.GetResourcesRowCount({resourceId: this.id,
+    public NotificationSubscriptionsCount$ = NotificationSubscriptionService.Instance.GetNotificationSubscriptionsRowCount({resourceId: this.id,
       active: true,
       deleted: false
     });
@@ -521,9 +532,9 @@ export class ResourceData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.resource.ResourceChangeHistories.then(resourceChangeHistories => { ... })
+     *   this.resource.ResourceChangeHistories.then(resources => { ... })
      *   or
-     *   await this.resource.ResourceChangeHistories
+     *   await this.resource.resources
      *
     */
     public get ResourceChangeHistories(): Promise<ResourceChangeHistoryData[]> {
@@ -548,8 +559,8 @@ export class ResourceData {
         this._resourceChangeHistoriesPromise = lastValueFrom(
             ResourceService.Instance.GetResourceChangeHistoriesForResource(this.id)
         )
-        .then(resourceChangeHistories => {
-            this._resourceChangeHistories = resourceChangeHistories ?? [];
+        .then(ResourceChangeHistories => {
+            this._resourceChangeHistories = ResourceChangeHistories ?? [];
             this._resourceChangeHistoriesSubject.next(this._resourceChangeHistories);
             return this._resourceChangeHistories;
          })
@@ -586,9 +597,9 @@ export class ResourceData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.resource.ResourceContacts.then(resourceContacts => { ... })
+     *   this.resource.ResourceContacts.then(resources => { ... })
      *   or
-     *   await this.resource.ResourceContacts
+     *   await this.resource.resources
      *
     */
     public get ResourceContacts(): Promise<ResourceContactData[]> {
@@ -613,8 +624,8 @@ export class ResourceData {
         this._resourceContactsPromise = lastValueFrom(
             ResourceService.Instance.GetResourceContactsForResource(this.id)
         )
-        .then(resourceContacts => {
-            this._resourceContacts = resourceContacts ?? [];
+        .then(ResourceContacts => {
+            this._resourceContacts = ResourceContacts ?? [];
             this._resourceContactsSubject.next(this._resourceContacts);
             return this._resourceContacts;
          })
@@ -651,9 +662,9 @@ export class ResourceData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.resource.RateSheets.then(rateSheets => { ... })
+     *   this.resource.RateSheets.then(resources => { ... })
      *   or
-     *   await this.resource.RateSheets
+     *   await this.resource.resources
      *
     */
     public get RateSheets(): Promise<RateSheetData[]> {
@@ -678,8 +689,8 @@ export class ResourceData {
         this._rateSheetsPromise = lastValueFrom(
             ResourceService.Instance.GetRateSheetsForResource(this.id)
         )
-        .then(rateSheets => {
-            this._rateSheets = rateSheets ?? [];
+        .then(RateSheets => {
+            this._rateSheets = RateSheets ?? [];
             this._rateSheetsSubject.next(this._rateSheets);
             return this._rateSheets;
          })
@@ -716,9 +727,9 @@ export class ResourceData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.resource.ResourceQualifications.then(resourceQualifications => { ... })
+     *   this.resource.ResourceQualifications.then(resources => { ... })
      *   or
-     *   await this.resource.ResourceQualifications
+     *   await this.resource.resources
      *
     */
     public get ResourceQualifications(): Promise<ResourceQualificationData[]> {
@@ -743,8 +754,8 @@ export class ResourceData {
         this._resourceQualificationsPromise = lastValueFrom(
             ResourceService.Instance.GetResourceQualificationsForResource(this.id)
         )
-        .then(resourceQualifications => {
-            this._resourceQualifications = resourceQualifications ?? [];
+        .then(ResourceQualifications => {
+            this._resourceQualifications = ResourceQualifications ?? [];
             this._resourceQualificationsSubject.next(this._resourceQualifications);
             return this._resourceQualifications;
          })
@@ -781,9 +792,9 @@ export class ResourceData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.resource.ResourceAvailabilities.then(resourceAvailabilities => { ... })
+     *   this.resource.ResourceAvailabilities.then(resources => { ... })
      *   or
-     *   await this.resource.ResourceAvailabilities
+     *   await this.resource.resources
      *
     */
     public get ResourceAvailabilities(): Promise<ResourceAvailabilityData[]> {
@@ -808,8 +819,8 @@ export class ResourceData {
         this._resourceAvailabilitiesPromise = lastValueFrom(
             ResourceService.Instance.GetResourceAvailabilitiesForResource(this.id)
         )
-        .then(resourceAvailabilities => {
-            this._resourceAvailabilities = resourceAvailabilities ?? [];
+        .then(ResourceAvailabilities => {
+            this._resourceAvailabilities = ResourceAvailabilities ?? [];
             this._resourceAvailabilitiesSubject.next(this._resourceAvailabilities);
             return this._resourceAvailabilities;
          })
@@ -846,9 +857,9 @@ export class ResourceData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.resource.ResourceShifts.then(resourceShifts => { ... })
+     *   this.resource.ResourceShifts.then(resources => { ... })
      *   or
-     *   await this.resource.ResourceShifts
+     *   await this.resource.resources
      *
     */
     public get ResourceShifts(): Promise<ResourceShiftData[]> {
@@ -873,8 +884,8 @@ export class ResourceData {
         this._resourceShiftsPromise = lastValueFrom(
             ResourceService.Instance.GetResourceShiftsForResource(this.id)
         )
-        .then(resourceShifts => {
-            this._resourceShifts = resourceShifts ?? [];
+        .then(ResourceShifts => {
+            this._resourceShifts = ResourceShifts ?? [];
             this._resourceShiftsSubject.next(this._resourceShifts);
             return this._resourceShifts;
          })
@@ -911,9 +922,9 @@ export class ResourceData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.resource.CrewMembers.then(crewMembers => { ... })
+     *   this.resource.CrewMembers.then(resources => { ... })
      *   or
-     *   await this.resource.CrewMembers
+     *   await this.resource.resources
      *
     */
     public get CrewMembers(): Promise<CrewMemberData[]> {
@@ -938,8 +949,8 @@ export class ResourceData {
         this._crewMembersPromise = lastValueFrom(
             ResourceService.Instance.GetCrewMembersForResource(this.id)
         )
-        .then(crewMembers => {
-            this._crewMembers = crewMembers ?? [];
+        .then(CrewMembers => {
+            this._crewMembers = CrewMembers ?? [];
             this._crewMembersSubject.next(this._crewMembers);
             return this._crewMembers;
          })
@@ -976,9 +987,9 @@ export class ResourceData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.resource.ScheduledEvents.then(scheduledEvents => { ... })
+     *   this.resource.ScheduledEvents.then(resources => { ... })
      *   or
-     *   await this.resource.ScheduledEvents
+     *   await this.resource.resources
      *
     */
     public get ScheduledEvents(): Promise<ScheduledEventData[]> {
@@ -1003,8 +1014,8 @@ export class ResourceData {
         this._scheduledEventsPromise = lastValueFrom(
             ResourceService.Instance.GetScheduledEventsForResource(this.id)
         )
-        .then(scheduledEvents => {
-            this._scheduledEvents = scheduledEvents ?? [];
+        .then(ScheduledEvents => {
+            this._scheduledEvents = ScheduledEvents ?? [];
             this._scheduledEventsSubject.next(this._scheduledEvents);
             return this._scheduledEvents;
          })
@@ -1041,9 +1052,9 @@ export class ResourceData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.resource.EventCharges.then(eventCharges => { ... })
+     *   this.resource.EventCharges.then(resources => { ... })
      *   or
-     *   await this.resource.EventCharges
+     *   await this.resource.resources
      *
     */
     public get EventCharges(): Promise<EventChargeData[]> {
@@ -1068,8 +1079,8 @@ export class ResourceData {
         this._eventChargesPromise = lastValueFrom(
             ResourceService.Instance.GetEventChargesForResource(this.id)
         )
-        .then(eventCharges => {
-            this._eventCharges = eventCharges ?? [];
+        .then(EventCharges => {
+            this._eventCharges = EventCharges ?? [];
             this._eventChargesSubject.next(this._eventCharges);
             return this._eventCharges;
          })
@@ -1106,9 +1117,9 @@ export class ResourceData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.resource.EventResourceAssignments.then(eventResourceAssignments => { ... })
+     *   this.resource.EventResourceAssignments.then(resources => { ... })
      *   or
-     *   await this.resource.EventResourceAssignments
+     *   await this.resource.resources
      *
     */
     public get EventResourceAssignments(): Promise<EventResourceAssignmentData[]> {
@@ -1133,8 +1144,8 @@ export class ResourceData {
         this._eventResourceAssignmentsPromise = lastValueFrom(
             ResourceService.Instance.GetEventResourceAssignmentsForResource(this.id)
         )
-        .then(eventResourceAssignments => {
-            this._eventResourceAssignments = eventResourceAssignments ?? [];
+        .then(EventResourceAssignments => {
+            this._eventResourceAssignments = EventResourceAssignments ?? [];
             this._eventResourceAssignmentsSubject.next(this._eventResourceAssignments);
             return this._eventResourceAssignments;
          })
@@ -1171,9 +1182,9 @@ export class ResourceData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.resource.NotificationSubscriptions.then(notificationSubscriptions => { ... })
+     *   this.resource.NotificationSubscriptions.then(resources => { ... })
      *   or
-     *   await this.resource.NotificationSubscriptions
+     *   await this.resource.resources
      *
     */
     public get NotificationSubscriptions(): Promise<NotificationSubscriptionData[]> {
@@ -1198,8 +1209,8 @@ export class ResourceData {
         this._notificationSubscriptionsPromise = lastValueFrom(
             ResourceService.Instance.GetNotificationSubscriptionsForResource(this.id)
         )
-        .then(notificationSubscriptions => {
-            this._notificationSubscriptions = notificationSubscriptions ?? [];
+        .then(NotificationSubscriptions => {
+            this._notificationSubscriptions = NotificationSubscriptions ?? [];
             this._notificationSubscriptionsSubject.next(this._notificationSubscriptions);
             return this._notificationSubscriptions;
          })

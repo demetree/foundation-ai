@@ -115,6 +115,7 @@ export class DependencyTypeData {
     private _scheduledEventDependenciesPromise: Promise<ScheduledEventDependencyData[]> | null  = null;
     private _scheduledEventDependenciesSubject = new BehaviorSubject<ScheduledEventDependencyData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -134,7 +135,7 @@ export class DependencyTypeData {
     );
 
   
-    public ScheduledEventDependenciesCount$ = DependencyTypeService.Instance.GetDependencyTypesRowCount({dependencyTypeId: this.id,
+    public ScheduledEventDependenciesCount$ = ScheduledEventDependencyService.Instance.GetScheduledEventDependenciesRowCount({dependencyTypeId: this.id,
       active: true,
       deleted: false
     });
@@ -198,9 +199,9 @@ export class DependencyTypeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.dependencyType.ScheduledEventDependencies.then(scheduledEventDependencies => { ... })
+     *   this.dependencyType.ScheduledEventDependencies.then(dependencyTypes => { ... })
      *   or
-     *   await this.dependencyType.ScheduledEventDependencies
+     *   await this.dependencyType.dependencyTypes
      *
     */
     public get ScheduledEventDependencies(): Promise<ScheduledEventDependencyData[]> {
@@ -225,8 +226,8 @@ export class DependencyTypeData {
         this._scheduledEventDependenciesPromise = lastValueFrom(
             DependencyTypeService.Instance.GetScheduledEventDependenciesForDependencyType(this.id)
         )
-        .then(scheduledEventDependencies => {
-            this._scheduledEventDependencies = scheduledEventDependencies ?? [];
+        .then(ScheduledEventDependencies => {
+            this._scheduledEventDependencies = ScheduledEventDependencies ?? [];
             this._scheduledEventDependenciesSubject.next(this._scheduledEventDependencies);
             return this._scheduledEventDependencies;
          })

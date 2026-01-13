@@ -123,18 +123,22 @@ export class PriorityData {
     private _tagsPromise: Promise<TagData[]> | null  = null;
     private _tagsSubject = new BehaviorSubject<TagData[] | null>(null);
 
+                
     private _scheduledEventTemplates: ScheduledEventTemplateData[] | null = null;
     private _scheduledEventTemplatesPromise: Promise<ScheduledEventTemplateData[]> | null  = null;
     private _scheduledEventTemplatesSubject = new BehaviorSubject<ScheduledEventTemplateData[] | null>(null);
 
+                
     private _scheduledEvents: ScheduledEventData[] | null = null;
     private _scheduledEventsPromise: Promise<ScheduledEventData[]> | null  = null;
     private _scheduledEventsSubject = new BehaviorSubject<ScheduledEventData[] | null>(null);
 
+                
     private _contactInteractions: ContactInteractionData[] | null = null;
     private _contactInteractionsPromise: Promise<ContactInteractionData[]> | null  = null;
     private _contactInteractionsSubject = new BehaviorSubject<ContactInteractionData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -154,7 +158,7 @@ export class PriorityData {
     );
 
   
-    public TagsCount$ = PriorityService.Instance.GetPrioritiesRowCount({priorityId: this.id,
+    public TagsCount$ = TagService.Instance.GetTagsRowCount({priorityId: this.id,
       active: true,
       deleted: false
     });
@@ -173,7 +177,7 @@ export class PriorityData {
     );
 
   
-    public ScheduledEventTemplatesCount$ = PriorityService.Instance.GetPrioritiesRowCount({priorityId: this.id,
+    public ScheduledEventTemplatesCount$ = ScheduledEventTemplateService.Instance.GetScheduledEventTemplatesRowCount({priorityId: this.id,
       active: true,
       deleted: false
     });
@@ -192,7 +196,7 @@ export class PriorityData {
     );
 
   
-    public ScheduledEventsCount$ = PriorityService.Instance.GetPrioritiesRowCount({priorityId: this.id,
+    public ScheduledEventsCount$ = ScheduledEventService.Instance.GetScheduledEventsRowCount({priorityId: this.id,
       active: true,
       deleted: false
     });
@@ -211,7 +215,7 @@ export class PriorityData {
     );
 
   
-    public ContactInteractionsCount$ = PriorityService.Instance.GetPrioritiesRowCount({priorityId: this.id,
+    public ContactInteractionsCount$ = ContactInteractionService.Instance.GetContactInteractionsRowCount({priorityId: this.id,
       active: true,
       deleted: false
     });
@@ -287,9 +291,9 @@ export class PriorityData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.priority.Tags.then(tags => { ... })
+     *   this.priority.Tags.then(priorities => { ... })
      *   or
-     *   await this.priority.Tags
+     *   await this.priority.priorities
      *
     */
     public get Tags(): Promise<TagData[]> {
@@ -314,8 +318,8 @@ export class PriorityData {
         this._tagsPromise = lastValueFrom(
             PriorityService.Instance.GetTagsForPriority(this.id)
         )
-        .then(tags => {
-            this._tags = tags ?? [];
+        .then(Tags => {
+            this._tags = Tags ?? [];
             this._tagsSubject.next(this._tags);
             return this._tags;
          })
@@ -352,9 +356,9 @@ export class PriorityData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.priority.ScheduledEventTemplates.then(scheduledEventTemplates => { ... })
+     *   this.priority.ScheduledEventTemplates.then(priorities => { ... })
      *   or
-     *   await this.priority.ScheduledEventTemplates
+     *   await this.priority.priorities
      *
     */
     public get ScheduledEventTemplates(): Promise<ScheduledEventTemplateData[]> {
@@ -379,8 +383,8 @@ export class PriorityData {
         this._scheduledEventTemplatesPromise = lastValueFrom(
             PriorityService.Instance.GetScheduledEventTemplatesForPriority(this.id)
         )
-        .then(scheduledEventTemplates => {
-            this._scheduledEventTemplates = scheduledEventTemplates ?? [];
+        .then(ScheduledEventTemplates => {
+            this._scheduledEventTemplates = ScheduledEventTemplates ?? [];
             this._scheduledEventTemplatesSubject.next(this._scheduledEventTemplates);
             return this._scheduledEventTemplates;
          })
@@ -417,9 +421,9 @@ export class PriorityData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.priority.ScheduledEvents.then(scheduledEvents => { ... })
+     *   this.priority.ScheduledEvents.then(priorities => { ... })
      *   or
-     *   await this.priority.ScheduledEvents
+     *   await this.priority.priorities
      *
     */
     public get ScheduledEvents(): Promise<ScheduledEventData[]> {
@@ -444,8 +448,8 @@ export class PriorityData {
         this._scheduledEventsPromise = lastValueFrom(
             PriorityService.Instance.GetScheduledEventsForPriority(this.id)
         )
-        .then(scheduledEvents => {
-            this._scheduledEvents = scheduledEvents ?? [];
+        .then(ScheduledEvents => {
+            this._scheduledEvents = ScheduledEvents ?? [];
             this._scheduledEventsSubject.next(this._scheduledEvents);
             return this._scheduledEvents;
          })
@@ -482,9 +486,9 @@ export class PriorityData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.priority.ContactInteractions.then(contactInteractions => { ... })
+     *   this.priority.ContactInteractions.then(priorities => { ... })
      *   or
-     *   await this.priority.ContactInteractions
+     *   await this.priority.priorities
      *
     */
     public get ContactInteractions(): Promise<ContactInteractionData[]> {
@@ -509,8 +513,8 @@ export class PriorityData {
         this._contactInteractionsPromise = lastValueFrom(
             PriorityService.Instance.GetContactInteractionsForPriority(this.id)
         )
-        .then(contactInteractions => {
-            this._contactInteractions = contactInteractions ?? [];
+        .then(ContactInteractions => {
+            this._contactInteractions = ContactInteractions ?? [];
             this._contactInteractionsSubject.next(this._contactInteractions);
             return this._contactInteractions;
          })

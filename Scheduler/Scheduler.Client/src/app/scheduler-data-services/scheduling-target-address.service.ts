@@ -150,6 +150,7 @@ export class SchedulingTargetAddressData {
     private _schedulingTargetAddressChangeHistoriesPromise: Promise<SchedulingTargetAddressChangeHistoryData[]> | null  = null;
     private _schedulingTargetAddressChangeHistoriesSubject = new BehaviorSubject<SchedulingTargetAddressChangeHistoryData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -169,7 +170,7 @@ export class SchedulingTargetAddressData {
     );
 
   
-    public SchedulingTargetAddressChangeHistoriesCount$ = SchedulingTargetAddressService.Instance.GetSchedulingTargetAddressesRowCount({schedulingTargetAddressId: this.id,
+    public SchedulingTargetAddressChangeHistoriesCount$ = SchedulingTargetAddressChangeHistoryService.Instance.GetSchedulingTargetAddressChangeHistoriesRowCount({schedulingTargetAddressId: this.id,
       active: true,
       deleted: false
     });
@@ -233,9 +234,9 @@ export class SchedulingTargetAddressData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.schedulingTargetAddress.SchedulingTargetAddressChangeHistories.then(schedulingTargetAddressChangeHistories => { ... })
+     *   this.schedulingTargetAddress.SchedulingTargetAddressChangeHistories.then(schedulingTargetAddresses => { ... })
      *   or
-     *   await this.schedulingTargetAddress.SchedulingTargetAddressChangeHistories
+     *   await this.schedulingTargetAddress.schedulingTargetAddresses
      *
     */
     public get SchedulingTargetAddressChangeHistories(): Promise<SchedulingTargetAddressChangeHistoryData[]> {
@@ -260,8 +261,8 @@ export class SchedulingTargetAddressData {
         this._schedulingTargetAddressChangeHistoriesPromise = lastValueFrom(
             SchedulingTargetAddressService.Instance.GetSchedulingTargetAddressChangeHistoriesForSchedulingTargetAddress(this.id)
         )
-        .then(schedulingTargetAddressChangeHistories => {
-            this._schedulingTargetAddressChangeHistories = schedulingTargetAddressChangeHistories ?? [];
+        .then(SchedulingTargetAddressChangeHistories => {
+            this._schedulingTargetAddressChangeHistories = SchedulingTargetAddressChangeHistories ?? [];
             this._schedulingTargetAddressChangeHistoriesSubject.next(this._schedulingTargetAddressChangeHistories);
             return this._schedulingTargetAddressChangeHistories;
          })

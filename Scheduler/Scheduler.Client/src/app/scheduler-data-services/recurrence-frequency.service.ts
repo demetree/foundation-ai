@@ -113,10 +113,12 @@ export class RecurrenceFrequencyData {
     private _recurrenceRulesPromise: Promise<RecurrenceRuleData[]> | null  = null;
     private _recurrenceRulesSubject = new BehaviorSubject<RecurrenceRuleData[] | null>(null);
 
+                
     private _pledges: PledgeData[] | null = null;
     private _pledgesPromise: Promise<PledgeData[]> | null  = null;
     private _pledgesSubject = new BehaviorSubject<PledgeData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -136,7 +138,7 @@ export class RecurrenceFrequencyData {
     );
 
   
-    public RecurrenceRulesCount$ = RecurrenceFrequencyService.Instance.GetRecurrenceFrequenciesRowCount({recurrenceFrequencyId: this.id,
+    public RecurrenceRulesCount$ = RecurrenceRuleService.Instance.GetRecurrenceRulesRowCount({recurrenceFrequencyId: this.id,
       active: true,
       deleted: false
     });
@@ -155,7 +157,7 @@ export class RecurrenceFrequencyData {
     );
 
   
-    public PledgesCount$ = RecurrenceFrequencyService.Instance.GetRecurrenceFrequenciesRowCount({recurrenceFrequencyId: this.id,
+    public PledgesCount$ = PledgeService.Instance.GetPledgesRowCount({recurrenceFrequencyId: this.id,
       active: true,
       deleted: false
     });
@@ -223,9 +225,9 @@ export class RecurrenceFrequencyData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.recurrenceFrequency.RecurrenceRules.then(recurrenceRules => { ... })
+     *   this.recurrenceFrequency.RecurrenceRules.then(recurrenceFrequencies => { ... })
      *   or
-     *   await this.recurrenceFrequency.RecurrenceRules
+     *   await this.recurrenceFrequency.recurrenceFrequencies
      *
     */
     public get RecurrenceRules(): Promise<RecurrenceRuleData[]> {
@@ -250,8 +252,8 @@ export class RecurrenceFrequencyData {
         this._recurrenceRulesPromise = lastValueFrom(
             RecurrenceFrequencyService.Instance.GetRecurrenceRulesForRecurrenceFrequency(this.id)
         )
-        .then(recurrenceRules => {
-            this._recurrenceRules = recurrenceRules ?? [];
+        .then(RecurrenceRules => {
+            this._recurrenceRules = RecurrenceRules ?? [];
             this._recurrenceRulesSubject.next(this._recurrenceRules);
             return this._recurrenceRules;
          })
@@ -288,9 +290,9 @@ export class RecurrenceFrequencyData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.recurrenceFrequency.Pledges.then(pledges => { ... })
+     *   this.recurrenceFrequency.Pledges.then(recurrenceFrequencies => { ... })
      *   or
-     *   await this.recurrenceFrequency.Pledges
+     *   await this.recurrenceFrequency.recurrenceFrequencies
      *
     */
     public get Pledges(): Promise<PledgeData[]> {
@@ -315,8 +317,8 @@ export class RecurrenceFrequencyData {
         this._pledgesPromise = lastValueFrom(
             RecurrenceFrequencyService.Instance.GetPledgesForRecurrenceFrequency(this.id)
         )
-        .then(pledges => {
-            this._pledges = pledges ?? [];
+        .then(Pledges => {
+            this._pledges = Pledges ?? [];
             this._pledgesSubject.next(this._pledges);
             return this._pledges;
          })

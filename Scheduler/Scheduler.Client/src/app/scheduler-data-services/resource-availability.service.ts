@@ -128,6 +128,7 @@ export class ResourceAvailabilityData {
     private _resourceAvailabilityChangeHistoriesPromise: Promise<ResourceAvailabilityChangeHistoryData[]> | null  = null;
     private _resourceAvailabilityChangeHistoriesSubject = new BehaviorSubject<ResourceAvailabilityChangeHistoryData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -147,7 +148,7 @@ export class ResourceAvailabilityData {
     );
 
   
-    public ResourceAvailabilityChangeHistoriesCount$ = ResourceAvailabilityService.Instance.GetResourceAvailabilitiesRowCount({resourceAvailabilityId: this.id,
+    public ResourceAvailabilityChangeHistoriesCount$ = ResourceAvailabilityChangeHistoryService.Instance.GetResourceAvailabilityChangeHistoriesRowCount({resourceAvailabilityId: this.id,
       active: true,
       deleted: false
     });
@@ -211,9 +212,9 @@ export class ResourceAvailabilityData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.resourceAvailability.ResourceAvailabilityChangeHistories.then(resourceAvailabilityChangeHistories => { ... })
+     *   this.resourceAvailability.ResourceAvailabilityChangeHistories.then(resourceAvailabilities => { ... })
      *   or
-     *   await this.resourceAvailability.ResourceAvailabilityChangeHistories
+     *   await this.resourceAvailability.resourceAvailabilities
      *
     */
     public get ResourceAvailabilityChangeHistories(): Promise<ResourceAvailabilityChangeHistoryData[]> {
@@ -238,8 +239,8 @@ export class ResourceAvailabilityData {
         this._resourceAvailabilityChangeHistoriesPromise = lastValueFrom(
             ResourceAvailabilityService.Instance.GetResourceAvailabilityChangeHistoriesForResourceAvailability(this.id)
         )
-        .then(resourceAvailabilityChangeHistories => {
-            this._resourceAvailabilityChangeHistories = resourceAvailabilityChangeHistories ?? [];
+        .then(ResourceAvailabilityChangeHistories => {
+            this._resourceAvailabilityChangeHistories = ResourceAvailabilityChangeHistories ?? [];
             this._resourceAvailabilityChangeHistoriesSubject.next(this._resourceAvailabilityChangeHistories);
             return this._resourceAvailabilityChangeHistories;
          })

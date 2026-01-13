@@ -127,22 +127,27 @@ export class RelationshipTypeData {
     private _contactContactsPromise: Promise<ContactContactData[]> | null  = null;
     private _contactContactsSubject = new BehaviorSubject<ContactContactData[] | null>(null);
 
+                
     private _officeContacts: OfficeContactData[] | null = null;
     private _officeContactsPromise: Promise<OfficeContactData[]> | null  = null;
     private _officeContactsSubject = new BehaviorSubject<OfficeContactData[] | null>(null);
 
+                
     private _clientContacts: ClientContactData[] | null = null;
     private _clientContactsPromise: Promise<ClientContactData[]> | null  = null;
     private _clientContactsSubject = new BehaviorSubject<ClientContactData[] | null>(null);
 
+                
     private _schedulingTargetContacts: SchedulingTargetContactData[] | null = null;
     private _schedulingTargetContactsPromise: Promise<SchedulingTargetContactData[]> | null  = null;
     private _schedulingTargetContactsSubject = new BehaviorSubject<SchedulingTargetContactData[] | null>(null);
 
+                
     private _resourceContacts: ResourceContactData[] | null = null;
     private _resourceContactsPromise: Promise<ResourceContactData[]> | null  = null;
     private _resourceContactsSubject = new BehaviorSubject<ResourceContactData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -162,7 +167,7 @@ export class RelationshipTypeData {
     );
 
   
-    public ContactContactsCount$ = RelationshipTypeService.Instance.GetRelationshipTypesRowCount({relationshipTypeId: this.id,
+    public ContactContactsCount$ = ContactContactService.Instance.GetContactContactsRowCount({relationshipTypeId: this.id,
       active: true,
       deleted: false
     });
@@ -181,7 +186,7 @@ export class RelationshipTypeData {
     );
 
   
-    public OfficeContactsCount$ = RelationshipTypeService.Instance.GetRelationshipTypesRowCount({relationshipTypeId: this.id,
+    public OfficeContactsCount$ = OfficeContactService.Instance.GetOfficeContactsRowCount({relationshipTypeId: this.id,
       active: true,
       deleted: false
     });
@@ -200,7 +205,7 @@ export class RelationshipTypeData {
     );
 
   
-    public ClientContactsCount$ = RelationshipTypeService.Instance.GetRelationshipTypesRowCount({relationshipTypeId: this.id,
+    public ClientContactsCount$ = ClientContactService.Instance.GetClientContactsRowCount({relationshipTypeId: this.id,
       active: true,
       deleted: false
     });
@@ -219,7 +224,7 @@ export class RelationshipTypeData {
     );
 
   
-    public SchedulingTargetContactsCount$ = RelationshipTypeService.Instance.GetRelationshipTypesRowCount({relationshipTypeId: this.id,
+    public SchedulingTargetContactsCount$ = SchedulingTargetContactService.Instance.GetSchedulingTargetContactsRowCount({relationshipTypeId: this.id,
       active: true,
       deleted: false
     });
@@ -238,7 +243,7 @@ export class RelationshipTypeData {
     );
 
   
-    public ResourceContactsCount$ = RelationshipTypeService.Instance.GetRelationshipTypesRowCount({relationshipTypeId: this.id,
+    public ResourceContactsCount$ = ResourceContactService.Instance.GetResourceContactsRowCount({relationshipTypeId: this.id,
       active: true,
       deleted: false
     });
@@ -318,9 +323,9 @@ export class RelationshipTypeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.relationshipType.ContactContacts.then(contactContacts => { ... })
+     *   this.relationshipType.ContactContacts.then(relationshipTypes => { ... })
      *   or
-     *   await this.relationshipType.ContactContacts
+     *   await this.relationshipType.relationshipTypes
      *
     */
     public get ContactContacts(): Promise<ContactContactData[]> {
@@ -345,8 +350,8 @@ export class RelationshipTypeData {
         this._contactContactsPromise = lastValueFrom(
             RelationshipTypeService.Instance.GetContactContactsForRelationshipType(this.id)
         )
-        .then(contactContacts => {
-            this._contactContacts = contactContacts ?? [];
+        .then(ContactContacts => {
+            this._contactContacts = ContactContacts ?? [];
             this._contactContactsSubject.next(this._contactContacts);
             return this._contactContacts;
          })
@@ -383,9 +388,9 @@ export class RelationshipTypeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.relationshipType.OfficeContacts.then(officeContacts => { ... })
+     *   this.relationshipType.OfficeContacts.then(relationshipTypes => { ... })
      *   or
-     *   await this.relationshipType.OfficeContacts
+     *   await this.relationshipType.relationshipTypes
      *
     */
     public get OfficeContacts(): Promise<OfficeContactData[]> {
@@ -410,8 +415,8 @@ export class RelationshipTypeData {
         this._officeContactsPromise = lastValueFrom(
             RelationshipTypeService.Instance.GetOfficeContactsForRelationshipType(this.id)
         )
-        .then(officeContacts => {
-            this._officeContacts = officeContacts ?? [];
+        .then(OfficeContacts => {
+            this._officeContacts = OfficeContacts ?? [];
             this._officeContactsSubject.next(this._officeContacts);
             return this._officeContacts;
          })
@@ -448,9 +453,9 @@ export class RelationshipTypeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.relationshipType.ClientContacts.then(clientContacts => { ... })
+     *   this.relationshipType.ClientContacts.then(relationshipTypes => { ... })
      *   or
-     *   await this.relationshipType.ClientContacts
+     *   await this.relationshipType.relationshipTypes
      *
     */
     public get ClientContacts(): Promise<ClientContactData[]> {
@@ -475,8 +480,8 @@ export class RelationshipTypeData {
         this._clientContactsPromise = lastValueFrom(
             RelationshipTypeService.Instance.GetClientContactsForRelationshipType(this.id)
         )
-        .then(clientContacts => {
-            this._clientContacts = clientContacts ?? [];
+        .then(ClientContacts => {
+            this._clientContacts = ClientContacts ?? [];
             this._clientContactsSubject.next(this._clientContacts);
             return this._clientContacts;
          })
@@ -513,9 +518,9 @@ export class RelationshipTypeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.relationshipType.SchedulingTargetContacts.then(schedulingTargetContacts => { ... })
+     *   this.relationshipType.SchedulingTargetContacts.then(relationshipTypes => { ... })
      *   or
-     *   await this.relationshipType.SchedulingTargetContacts
+     *   await this.relationshipType.relationshipTypes
      *
     */
     public get SchedulingTargetContacts(): Promise<SchedulingTargetContactData[]> {
@@ -540,8 +545,8 @@ export class RelationshipTypeData {
         this._schedulingTargetContactsPromise = lastValueFrom(
             RelationshipTypeService.Instance.GetSchedulingTargetContactsForRelationshipType(this.id)
         )
-        .then(schedulingTargetContacts => {
-            this._schedulingTargetContacts = schedulingTargetContacts ?? [];
+        .then(SchedulingTargetContacts => {
+            this._schedulingTargetContacts = SchedulingTargetContacts ?? [];
             this._schedulingTargetContactsSubject.next(this._schedulingTargetContacts);
             return this._schedulingTargetContacts;
          })
@@ -578,9 +583,9 @@ export class RelationshipTypeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.relationshipType.ResourceContacts.then(resourceContacts => { ... })
+     *   this.relationshipType.ResourceContacts.then(relationshipTypes => { ... })
      *   or
-     *   await this.relationshipType.ResourceContacts
+     *   await this.relationshipType.relationshipTypes
      *
     */
     public get ResourceContacts(): Promise<ResourceContactData[]> {
@@ -605,8 +610,8 @@ export class RelationshipTypeData {
         this._resourceContactsPromise = lastValueFrom(
             RelationshipTypeService.Instance.GetResourceContactsForRelationshipType(this.id)
         )
-        .then(resourceContacts => {
-            this._resourceContacts = resourceContacts ?? [];
+        .then(ResourceContacts => {
+            this._resourceContacts = ResourceContacts ?? [];
             this._resourceContactsSubject.next(this._resourceContacts);
             return this._resourceContacts;
          })

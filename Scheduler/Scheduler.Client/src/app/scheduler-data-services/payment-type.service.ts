@@ -112,6 +112,7 @@ export class PaymentTypeData {
     private _giftsPromise: Promise<GiftData[]> | null  = null;
     private _giftsSubject = new BehaviorSubject<GiftData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -131,7 +132,7 @@ export class PaymentTypeData {
     );
 
   
-    public GiftsCount$ = PaymentTypeService.Instance.GetPaymentTypesRowCount({paymentTypeId: this.id,
+    public GiftsCount$ = GiftService.Instance.GetGiftsRowCount({paymentTypeId: this.id,
       active: true,
       deleted: false
     });
@@ -195,9 +196,9 @@ export class PaymentTypeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.paymentType.Gifts.then(gifts => { ... })
+     *   this.paymentType.Gifts.then(paymentTypes => { ... })
      *   or
-     *   await this.paymentType.Gifts
+     *   await this.paymentType.paymentTypes
      *
     */
     public get Gifts(): Promise<GiftData[]> {
@@ -222,8 +223,8 @@ export class PaymentTypeData {
         this._giftsPromise = lastValueFrom(
             PaymentTypeService.Instance.GetGiftsForPaymentType(this.id)
         )
-        .then(gifts => {
-            this._gifts = gifts ?? [];
+        .then(Gifts => {
+            this._gifts = Gifts ?? [];
             this._giftsSubject.next(this._gifts);
             return this._gifts;
          })

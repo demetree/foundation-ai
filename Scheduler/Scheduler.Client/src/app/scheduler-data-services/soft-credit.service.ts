@@ -122,6 +122,7 @@ export class SoftCreditData {
     private _softCreditChangeHistoriesPromise: Promise<SoftCreditChangeHistoryData[]> | null  = null;
     private _softCreditChangeHistoriesSubject = new BehaviorSubject<SoftCreditChangeHistoryData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -141,7 +142,7 @@ export class SoftCreditData {
     );
 
   
-    public SoftCreditChangeHistoriesCount$ = SoftCreditService.Instance.GetSoftCreditsRowCount({softCreditId: this.id,
+    public SoftCreditChangeHistoriesCount$ = SoftCreditChangeHistoryService.Instance.GetSoftCreditChangeHistoriesRowCount({softCreditId: this.id,
       active: true,
       deleted: false
     });
@@ -205,9 +206,9 @@ export class SoftCreditData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.softCredit.SoftCreditChangeHistories.then(softCreditChangeHistories => { ... })
+     *   this.softCredit.SoftCreditChangeHistories.then(softCredits => { ... })
      *   or
-     *   await this.softCredit.SoftCreditChangeHistories
+     *   await this.softCredit.softCredits
      *
     */
     public get SoftCreditChangeHistories(): Promise<SoftCreditChangeHistoryData[]> {
@@ -232,8 +233,8 @@ export class SoftCreditData {
         this._softCreditChangeHistoriesPromise = lastValueFrom(
             SoftCreditService.Instance.GetSoftCreditChangeHistoriesForSoftCredit(this.id)
         )
-        .then(softCreditChangeHistories => {
-            this._softCreditChangeHistories = softCreditChangeHistories ?? [];
+        .then(SoftCreditChangeHistories => {
+            this._softCreditChangeHistories = SoftCreditChangeHistories ?? [];
             this._softCreditChangeHistoriesSubject.next(this._softCreditChangeHistories);
             return this._softCreditChangeHistories;
          })

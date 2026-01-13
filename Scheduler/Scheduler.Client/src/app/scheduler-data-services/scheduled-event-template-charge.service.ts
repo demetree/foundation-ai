@@ -122,6 +122,7 @@ export class ScheduledEventTemplateChargeData {
     private _scheduledEventTemplateChargeChangeHistoriesPromise: Promise<ScheduledEventTemplateChargeChangeHistoryData[]> | null  = null;
     private _scheduledEventTemplateChargeChangeHistoriesSubject = new BehaviorSubject<ScheduledEventTemplateChargeChangeHistoryData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -141,7 +142,7 @@ export class ScheduledEventTemplateChargeData {
     );
 
   
-    public ScheduledEventTemplateChargeChangeHistoriesCount$ = ScheduledEventTemplateChargeService.Instance.GetScheduledEventTemplateChargesRowCount({scheduledEventTemplateChargeId: this.id,
+    public ScheduledEventTemplateChargeChangeHistoriesCount$ = ScheduledEventTemplateChargeChangeHistoryService.Instance.GetScheduledEventTemplateChargeChangeHistoriesRowCount({scheduledEventTemplateChargeId: this.id,
       active: true,
       deleted: false
     });
@@ -205,9 +206,9 @@ export class ScheduledEventTemplateChargeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.scheduledEventTemplateCharge.ScheduledEventTemplateChargeChangeHistories.then(scheduledEventTemplateChargeChangeHistories => { ... })
+     *   this.scheduledEventTemplateCharge.ScheduledEventTemplateChargeChangeHistories.then(scheduledEventTemplateCharges => { ... })
      *   or
-     *   await this.scheduledEventTemplateCharge.ScheduledEventTemplateChargeChangeHistories
+     *   await this.scheduledEventTemplateCharge.scheduledEventTemplateCharges
      *
     */
     public get ScheduledEventTemplateChargeChangeHistories(): Promise<ScheduledEventTemplateChargeChangeHistoryData[]> {
@@ -232,8 +233,8 @@ export class ScheduledEventTemplateChargeData {
         this._scheduledEventTemplateChargeChangeHistoriesPromise = lastValueFrom(
             ScheduledEventTemplateChargeService.Instance.GetScheduledEventTemplateChargeChangeHistoriesForScheduledEventTemplateCharge(this.id)
         )
-        .then(scheduledEventTemplateChargeChangeHistories => {
-            this._scheduledEventTemplateChargeChangeHistories = scheduledEventTemplateChargeChangeHistories ?? [];
+        .then(ScheduledEventTemplateChargeChangeHistories => {
+            this._scheduledEventTemplateChargeChangeHistories = ScheduledEventTemplateChargeChangeHistories ?? [];
             this._scheduledEventTemplateChargeChangeHistoriesSubject.next(this._scheduledEventTemplateChargeChangeHistories);
             return this._scheduledEventTemplateChargeChangeHistories;
          })
