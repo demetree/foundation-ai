@@ -1,36 +1,53 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Foundation.Security.Authorization
 {
-    // Swagger IOperationFilter implementation that will decide which api action needs authorization
+    /// <summary>
+    /// Swagger IOperationFilter that adds 401 response + security requirement 
+    /// for endpoints (or controllers) decorated with [Authorize]
+    /// </summary>
     public class SwaggerAuthorizeOperationFilter : IOperationFilter
     {
         public void Apply(OpenApiOperation operation, OperationFilterContext context)
         {
-            // Check for authorize attribute
+            // Check for AuthorizeAttribute on controller OR action
             var hasAuthorize = context.MethodInfo.DeclaringType?.GetCustomAttributes(true)
                 .Union(context.MethodInfo.GetCustomAttributes(true))
                 .OfType<AuthorizeAttribute>()
-                .Any();
+                .Any() ?? false;
 
-            if (hasAuthorize == true)
+            if (!hasAuthorize)
             {
-                operation.Responses.Add("401", new OpenApiResponse { Description = "Unauthorized" });
-
-                var oAuthScheme = new OpenApiSecurityScheme
-                {
-                    Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "oauth2" }
-                };
-
-                operation.Security = new List<OpenApiSecurityRequirement>
-                {
-                    new() { [oAuthScheme] = [] }
-                };
+                return;
             }
+
+            // Add common unauthorized response
+            operation.Responses.TryAdd("401", new OpenApiResponse
+            {
+                Description = "Unauthorized"
+            });
+
+            // ───────────────────────────────────────────────────────────────
+            // IMPORTANT: New pattern for .NET 10 / Swashbuckle v10 / Microsoft.OpenApi 2.x
+            // We no longer set .Reference directly on the scheme
+            // ───────────────────────────────────────────────────────────────
+
+            var securitySchemeRef = new OpenApiSecuritySchemeReference("oauth2");
+
+            var requirement = new OpenApiSecurityRequirement
+            {
+                [securitySchemeRef] = new List<string>() // ← empty list = no scopes (common for JWT/Bearer)
+            };
+
+            // Assign the requirement(s) – usually just one in most projects
+            operation.Security = new List<OpenApiSecurityRequirement>
+            {
+                requirement
+            };
         }
     }
 }
