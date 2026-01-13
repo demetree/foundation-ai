@@ -1,0 +1,23 @@
+/*
+ * Contact Relationship Edit Modal Styles
+ * 
+ * AI-developed: Styles for the relationship add/edit modal.
+ */
+
+/* 
+ * Make search result items appear clickable
+ */
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.hover-bg-light:hover {
+    background-color: #f8f9fa !important;
+}
+
+/* 
+ * Ensure dropdown appears above other content
+ */
+.z-3 {
+    z-index: 1050;
+}

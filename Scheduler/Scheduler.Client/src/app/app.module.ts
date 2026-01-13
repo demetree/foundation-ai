@@ -156,6 +156,7 @@ import { ContactCustomTableComponent } from './components/contact-custom/contact
 import { ContactOverviewTabComponent } from './components/contact-custom/contact-overview-tab/contact-overview-tab.component';
 import { ContactInteractionsTabComponent } from './components/contact-custom/contact-interactions-tab/contact-interactions-tab.component';
 import { ContactInteractionEditModalComponent } from './components/contact-custom/contact-interaction-edit-modal/contact-interaction-edit-modal.component';
+import { ContactRelationshipEditModalComponent } from './components/contact-custom/contact-relationship-edit-modal/contact-relationship-edit-modal.component';
 import { ContactRelationshipsTabComponent } from './components/contact-custom/contact-relationships-tab/contact-relationships-tab.component';
 import { ContactFinancialsTabComponent } from './components/contact-custom/contact-financials-tab/contact-financials-tab.component';
 import { ContactScheduleTabComponent } from './components/contact-custom/contact-schedule-tab/contact-schedule-tab.component';
@@ -1248,6 +1249,7 @@ import { TributeTypeTableComponent } from './scheduler-data-components/tribute-t
     ContactOverviewTabComponent,
     ContactInteractionsTabComponent,
     ContactInteractionEditModalComponent,
+    ContactRelationshipEditModalComponent,
     ContactRelationshipsTabComponent,
     ContactFinancialsTabComponent,
     ContactScheduleTabComponent,

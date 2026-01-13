@@ -119,7 +119,9 @@
         <button ngbNavLink>Overview</button>
         <ng-template ngbNavContent>
           <div *ngIf="contact; else loadingTemplate">
-            <app-contact-overview-tab [contact]="contact"></app-contact-overview-tab>
+            <app-contact-overview-tab [contact]="contact" (editContactRequested)="openEditModal()"
+              (manageTagsRequested)="openEditModal()">
+            </app-contact-overview-tab>
           </div>
           <ng-template #loadingTemplate>
             <div class="text-center py-5 text-muted">

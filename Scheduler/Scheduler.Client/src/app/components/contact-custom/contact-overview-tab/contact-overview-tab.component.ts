@@ -1,4 +1,5 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
 import { ContactService, ContactData } from '../../../scheduler-data-services/contact.service';
 import { ContactInteractionService, ContactInteractionData } from '../../../scheduler-data-services/contact-interaction.service';
 import { AuthService } from '../../../services/auth.service';
@@ -11,30 +12,98 @@ import { AuthService } from '../../../services/auth.service';
 export class ContactOverviewTabComponent {
   @Input() contact!: ContactData;
 
-  constructor(private authService: AuthService,
+  //
+  // Output events to communicate actions to parent component
+  //
+  @Output() editContactRequested = new EventEmitter<void>();
+  @Output() addRelationshipRequested = new EventEmitter<void>();
+  @Output() manageTagsRequested = new EventEmitter<void>();
+
+  constructor(
+    private authService: AuthService,
     private contactService: ContactService,
-    private contactInteractionService: ContactInteractionService) { }
+    private contactInteractionService: ContactInteractionService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) { }
 
-  // Reuse permission checks from parent or service
+
+  //
+  // Permission checks
+  //
   userIsSchedulerContactWriter(): boolean {
-
     return this.contactService.userIsSchedulerContactWriter();
   }
+
 
   canLogInteraction(): boolean {
     return this.contactInteractionService.userIsSchedulerContactInteractionWriter();
   }
 
-  // Placeholder action methods
-  openEditModal(): void { /* Emit or open modal */ }
-  openLogInteractionModal(): void { /* Open interaction modal */ }
-  sendEmail(): void { window.location.href = 'mailto:' + this.contact.email; }
-  callPhone(): void {
-    const phone = this.contact.mobile || this.contact.phone;
-    if (phone) window.location.href = 'tel:' + phone;
+
+  //
+  // Quick action methods
+  //
+
+  /**
+   * Opens edit modal by emitting event to parent
+   */
+  openEditModal(): void {
+    this.editContactRequested.emit();
   }
-  addRelationship(): void { /* Open relationship modal */ }
-  manageTags(): void { /* Open tag management */ }
+
+
+  /**
+   * Navigates to Interactions tab and triggers modal auto-open via query param
+   */
+  openLogInteractionModal(): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { tab: 'interactions', openModal: 'add' },
+      queryParamsHandling: 'merge'
+    });
+  }
+
+
+  /**
+   * Opens mailto link for sending email
+   */
+  sendEmail(): void {
+    if (this.contact?.email) {
+      window.location.href = 'mailto:' + this.contact.email;
+    }
+  }
+
+
+  /**
+   * Opens tel link for calling phone
+   */
+  callPhone(): void {
+    const phone = this.contact?.mobile || this.contact?.phone;
+    if (phone) {
+      window.location.href = 'tel:' + phone;
+    }
+  }
+
+
+  /**
+   * Navigates to Relationships tab to add a relationship
+   */
+  addRelationship(): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { tab: 'relationships', action: 'add' },
+      queryParamsHandling: 'merge'
+    });
+  }
+
+
+  /**
+   * Emits event to parent to manage tags
+   */
+  manageTags(): void {
+    this.manageTagsRequested.emit();
+  }
 
 
   /**

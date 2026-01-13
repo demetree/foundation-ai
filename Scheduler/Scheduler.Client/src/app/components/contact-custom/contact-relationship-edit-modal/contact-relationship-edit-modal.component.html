@@ -1,0 +1,141 @@
+<!-- Contact Relationship Edit Modal Template -->
+<!-- AI-developed: Modal for adding/editing personal relationships between contacts -->
+
+<div class="modal-header">
+    <h4 class="modal-title">
+        <i class="fa-solid fa-user-group me-2"></i>
+        {{ isAddMode ? 'Add Relationship' : 'Edit Relationship' }}
+    </h4>
+    <button type="button" class="btn-close" (click)="cancel()" aria-label="Close"></button>
+</div>
+
+<div class="modal-body">
+    <form [formGroup]="relationshipForm" (ngSubmit)="submit()">
+        <div class="row g-3">
+
+            <!-- Related Contact Selector -->
+            <div class="col-12">
+                <label for="relatedContact" class="form-label">
+                    <span class="text-danger">*</span> Related Contact
+                </label>
+
+                <!-- Selected Contact Display -->
+                <div class="d-flex align-items-center gap-2 p-3 bg-light rounded border mb-2"
+                    *ngIf="selectedRelatedContact">
+                    <div class="avatar rounded-circle overflow-hidden border" style="width: 40px; height: 40px;"
+                        [style.background-color]="selectedRelatedContact.color || '#6c757d'">
+                        <ng-container *ngIf="selectedRelatedContact.avatarData; else defaultAvatar">
+                            <img [src]="'data:' + (selectedRelatedContact.avatarMimeType || 'image/png') + ';base64,' + selectedRelatedContact.avatarData"
+                                alt="Contact avatar" class="w-100 h-100 object-fit-cover">
+                        </ng-container>
+                        <ng-template #defaultAvatar>
+                            <div class="w-100 h-100 d-flex align-items-center justify-content-center text-white">
+                                <i class="fa-solid fa-user"></i>
+                            </div>
+                        </ng-template>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="fw-semibold">{{ getContactDisplayName(selectedRelatedContact) }}</div>
+                        <small class="text-muted" *ngIf="selectedRelatedContact.email">{{ selectedRelatedContact.email
+                            }}</small>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" (click)="clearSelectedContact()"
+                        [disabled]="isSaving || !isAddMode">
+                        <i class="fa-solid fa-times"></i>
+                    </button>
+                </div>
+
+                <!-- Contact Search Input (only in add mode or when no contact selected) -->
+                <div class="position-relative" *ngIf="!selectedRelatedContact || isAddMode">
+                    <input type="text" id="relatedContact" class="form-control"
+                        placeholder="Search for a contact by name..." (input)="onSearchInput($event)"
+                        [disabled]="isSaving || !!selectedRelatedContact" autocomplete="off">
+
+                    <!-- Search Results Dropdown -->
+                    <div class="position-absolute w-100 bg-white border rounded shadow-sm mt-1 z-3"
+                        *ngIf="showDropdown && (contactSearchResults$ | async) as results"
+                        style="max-height: 250px; overflow-y: auto;">
+                        <div *ngFor="let result of results"
+                            class="d-flex align-items-center gap-2 p-2 border-bottom cursor-pointer hover-bg-light"
+                            (click)="selectContact(result)" [class.d-none]="result.id === contact.id">
+                            <div class="avatar rounded-circle overflow-hidden border" style="width: 32px; height: 32px;"
+                                [style.background-color]="result.color || '#6c757d'">
+                                <ng-container *ngIf="result.avatarData; else resultDefaultAvatar">
+                                    <img [src]="'data:' + (result.avatarMimeType || 'image/png') + ';base64,' + result.avatarData"
+                                        alt="" class="w-100 h-100 object-fit-cover">
+                                </ng-container>
+                                <ng-template #resultDefaultAvatar>
+                                    <div
+                                        class="w-100 h-100 d-flex align-items-center justify-content-center text-white">
+                                        <i class="fa-solid fa-user fa-sm"></i>
+                                    </div>
+                                </ng-template>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="fw-medium">{{ getContactDisplayName(result) }}</div>
+                                <small class="text-muted" *ngIf="result.email">{{ result.email }}</small>
+                            </div>
+                        </div>
+                        <div *ngIf="results.length === 0" class="p-3 text-center text-muted">
+                            <i class="fa-solid fa-search me-1"></i> No contacts found
+                        </div>
+                    </div>
+                </div>
+
+                <div *ngIf="relationshipForm.get('relatedContactId')?.invalid && relationshipForm.get('relatedContactId')?.touched"
+                    class="text-danger small mt-1">
+                    Please select a related contact.
+                </div>
+            </div>
+
+            <!-- Relationship Type -->
+            <div class="col-12">
+                <label for="relationshipTypeId" class="form-label">
+                    <span class="text-danger">*</span> Relationship Type
+                </label>
+                <select id="relationshipTypeId" formControlName="relationshipTypeId" class="form-select"
+                    [disabled]="isSaving">
+                    <option [ngValue]="null">Select relationship type...</option>
+                    <option *ngFor="let type of relationshipTypes$ | async" [ngValue]="type.id">
+                        <span *ngIf="type.isEmergencyEligible">🏥 </span>{{ type.name }}
+                    </option>
+                </select>
+                <div *ngIf="relationshipForm.get('relationshipTypeId')?.invalid && relationshipForm.get('relationshipTypeId')?.touched"
+                    class="text-danger small mt-1">
+                    Relationship type is required.
+                </div>
+            </div>
+
+            <!-- Is Primary Toggle -->
+            <div class="col-12">
+                <div class="form-check form-switch">
+                    <input type="checkbox" class="form-check-input" id="isPrimary" formControlName="isPrimary"
+                        [disabled]="isSaving">
+                    <label class="form-check-label" for="isPrimary">
+                        <strong>Primary Relationship</strong>
+                    </label>
+                </div>
+                <small class="text-muted">
+                    Mark this as the primary relationship of this type for the contact.
+                </small>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="cancel()" [disabled]="isSaving">
+        Cancel
+    </button>
+    <button type="button" class="btn btn-primary" (click)="submit()" [disabled]="isSaving || !relationshipForm.valid">
+        <span *ngIf="isSaving">
+            <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+            Saving...
+        </span>
+        <span *ngIf="!isSaving">
+            <i class="fa-solid fa-check me-1"></i>
+            {{ isAddMode ? 'Add Relationship' : 'Save Changes' }}
+        </span>
+    </button>
+</div>

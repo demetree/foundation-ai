@@ -1,4 +1,5 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, Observable, of } from 'rxjs';
 import { map, takeUntil } from 'rxjs/operators';
 
@@ -13,7 +14,7 @@ import { ContactInteractionEditModalComponent } from '../contact-interaction-edi
   templateUrl: './contact-interactions-tab.component.html',
   styleUrls: ['./contact-interactions-tab.component.scss']
 })
-export class ContactInteractionsTabComponent implements OnInit, OnDestroy {
+export class ContactInteractionsTabComponent implements OnInit, OnDestroy, AfterViewInit {
   /**
    * The parent contact whose interactions we are displaying.
    * This is passed down from the contact detail page.
@@ -41,11 +42,17 @@ export class ContactInteractionsTabComponent implements OnInit, OnDestroy {
    */
   private destroy$ = new Subject<void>();
 
+  /**
+   * Flag to track if we should auto-open modal after view initialization
+   */
+  private shouldAutoOpenModal = false;
+
   constructor(
     private authService: AuthService,
     private contactInteractionServic: ContactInteractionService,
-    private modalService: NgbModal
-    // If you have a dedicated modal, inject any required services here
+    private modalService: NgbModal,
+    private route: ActivatedRoute,
+    private router: Router
   ) {
     // Default initialization — will be overridden in ngOnInit
     this.interactions$ = of(null);
@@ -63,6 +70,15 @@ export class ContactInteractionsTabComponent implements OnInit, OnDestroy {
       this.isLoading$ = of(false);
       return;
     }
+
+    //
+    // Check if we should auto-open the add interaction modal (navigated from Overview tab)
+    //
+    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
+      if (params['openModal'] === 'add' && params['tab'] === 'interactions') {
+        this.shouldAutoOpenModal = true;
+      }
+    });
 
     //
     // Subscribe to the lazy-loaded observable from ContactData
@@ -87,6 +103,36 @@ export class ContactInteractionsTabComponent implements OnInit, OnDestroy {
     );
 
   }
+
+
+  /**
+   * Angular lifecycle hook — called after view initialization.
+   * Used to auto-open modal if navigated from Overview tab with openModal param.
+   */
+  ngAfterViewInit(): void {
+
+    //
+    // Use setTimeout to avoid ExpressionChangedAfterItHasBeenChecked error
+    //
+    if (this.shouldAutoOpenModal && this.contact) {
+      setTimeout(() => {
+        this.openLogInteractionModal();
+
+        //
+        // Clear the query param so modal doesn't reopen on tab switch
+        //
+        this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: { openModal: null },
+          queryParamsHandling: 'merge',
+          replaceUrl: true
+        });
+
+        this.shouldAutoOpenModal = false;
+      }, 0);
+    }
+  }
+
 
   /**
    * Angular lifecycle hook — cleanup to prevent memory leaks.
