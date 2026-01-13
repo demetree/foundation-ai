@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Inject, Injectable, OnDestroy } from '@angular/core';
-import { Observable, Subject, takeUntil, tap } from 'rxjs';
+import { Observable, Subject, takeUntil, tap, throwError } from 'rxjs';
 import { catchError, shareReplay } from 'rxjs/operators'
 import { UtilityService } from '../utility-services/utility.service';
 import { AlertService } from './alert.service';
@@ -11,6 +11,7 @@ import { CurrencyService, CurrencyData } from '../scheduler-data-services/curren
 import { CountryService, CountryData } from '../scheduler-data-services/country.service'
 import { StateProvinceService, StateProvinceData } from '../scheduler-data-services/state-province.service'
 import { OfficeService, OfficeData } from '../scheduler-data-services/office.service'
+import { ContactData } from '../scheduler-data-services/contact.service';
 
 
 @Injectable({
@@ -26,6 +27,9 @@ export class CurrentUserService extends SecureEndpointBase implements OnDestroy 
   public defaultCountryId: number | null = null;
   public defaultStateProvinceId: number | null = null;
   public defaultOfficeId: number | null = null;
+
+
+  public contact$: Observable<ContactData> | null = null;
 
 
   /**
@@ -46,16 +50,48 @@ export class CurrentUserService extends SecureEndpointBase implements OnDestroy 
   {
     super(http, alertService, authService);
 
-    this.loadDefaultTimeZone();
-    this.loadDefaultCurrency();
-    this.loadDefaultCountry();    // this calls get default state province 
-    this.loadDefaultOffice();
+
+    this.loadAllUserData();
+
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
+
+  public loadAllUserData() {
+
+    this.contact$ = this.getCurrentUserContact();
+
+    this.loadDefaultTimeZone();
+    this.loadDefaultCurrency();
+    this.loadDefaultCountry();    // this calls get default state province 
+    this.loadDefaultOffice();
+  }
+
+
+  ///
+  /// The purpose of this method is to return the contact for the current user.
+  ///
+  private getCurrentUserContact(): Observable<ContactData> {
+
+    const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+
+    return this.http.get<ContactData>(this.baseUrl + 'api/Contacts/GetCurrentUserContact', { headers: authenticationHeaders }).pipe(
+        catchError(error => {
+          return this.handleError(error, () => this.getCurrentUserContact());
+        }))
+        .pipe(
+          shareReplay({ bufferSize: 1, refCount: true }),
+          catchError((error) => {
+            this.alertService.showHttpErrorMessage("Unable to get contact for current users", error);
+            return throwError(() => error);
+          })
+        );
+  }
+
 
 
   /**
@@ -184,9 +220,12 @@ export class CurrentUserService extends SecureEndpointBase implements OnDestroy 
 
   public ClearAllCaches() {
 
-    this.loadDefaultTimeZone();
-    this.loadDefaultCurrency();
-    this.loadDefaultCountry();    // this calls get default state province 
-    this.loadDefaultOffice();
+    this.contact$ = null;
+
+    this.defaultCountryId = null;
+    this.defaultCurrencyId = null;
+    this.defaultOfficeId = null;
+    this.defaultStateProvinceId = null;
+    this.defaultTimeZoneId = null;
   }
 }

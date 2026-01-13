@@ -13,6 +13,7 @@ import { ConstituentData, ConstituentService } from '../../../scheduler-data-ser
 import { ConstituentJourneyStageService } from '../../../scheduler-data-services/constituent-journey-stage.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ConstituentJourneyUpdateModalComponent } from '../constituent-journey-update-modal/constituent-journey-update-modal.component';
+import { CurrentUserService } from '../../../services/current-user.service';
 
 @Component({
   selector: 'app-contact-custom-detail',
@@ -50,6 +51,7 @@ export class ContactCustomDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private alertService: AlertService,
+    private currentUserService: CurrentUserService,
     private modalService: NgbModal,
     private navigationService: NavigationService) {
 
@@ -89,6 +91,11 @@ export class ContactCustomDetailComponent implements OnInit {
       // Load the data from the server
       this.loadData(false);
     }
+
+    if (this.currentUserService.contact$) {
+      this.currentUserService.contact$.subscribe();
+    }
+
   }
 
 

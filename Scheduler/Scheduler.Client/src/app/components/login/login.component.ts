@@ -3,6 +3,7 @@ import { Subscription } from 'rxjs';
 import { AlertService, MessageSeverity } from '../../services/alert.service';
 import { AppTranslationService } from '../../services/app-translation.service';
 import { AuthService } from '../../services/auth.service';
+import { CurrentUserService } from '../../services/current-user.service';
 import { CacheManagerService } from '../../services/cache-manager.service';
 import { ConfigurationService } from '../../services/configuration.service';
 import { Utilities } from '../../services/utilities';
@@ -40,6 +41,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private cacheManagerService: CacheManagerService,
     private configurations: ConfigurationService,
+    private currentUserService: CurrentUserService,
     private http: HttpClient) {
 
   }
@@ -128,7 +130,7 @@ export class LoginComponent implements OnInit, OnDestroy {
                 // Display can't read alert
                 //
                 this.alertService.resetStickyMessage();
-                this.alertService.showMessage(this.gT('app.alerts.Login'), "Your account does not have the privilege to read from Basecamp", MessageSeverity.error);
+                this.alertService.showMessage(this.gT('app.alerts.Login'), "Your account does not have the privilege to read from the Scheduler.", MessageSeverity.error);
 
               } else {
                 //
@@ -138,11 +140,14 @@ export class LoginComponent implements OnInit, OnDestroy {
 
                 this.alertService.showMessage(this.gT('login.alerts.Login'), welcomeMessage, MessageSeverity.success);
 
+                this.currentUserService.loadAllUserData();
+
                 // Begin polling for setup data changes
                 //this.cacheManagerService.startPolling();
               }
             } else {
               this.alertService.showMessage(this.gT('login.alerts.Login'), this.gT('login.alerts.UserSessionRestored', { username: user.userName }), MessageSeverity.success);
+
               //setTimeout(() => {
               //  this.alertService.showStickyMessage(this.gT('login.alerts.SessionRestored'), this.gT('login.alerts.RetryLastOperation'), MessageSeverity.default);
               //}, 500);
@@ -150,6 +155,8 @@ export class LoginComponent implements OnInit, OnDestroy {
 
               // Begin polling for setup data changes
               //this.cacheManagerService.startPolling();
+
+              this.currentUserService.loadAllUserData();
 
               this.closeModal();
             }

@@ -45,8 +45,10 @@ export class CacheManagerService extends SecureEndpointBase {
   /// Clear all service caches in the application
   /// </summary>
   public ClearAllCaches() {
-    this.auditorDataServiceManagerService.ClearAllCaches();
+
     this.currentUserService.ClearAllCaches();
+
+    this.auditorDataServiceManagerService.ClearAllCaches();
     this.securityDataServiceManagerService.ClearAllCaches();
     this.schedulerDataServiceManagerService.ClearAllCaches();
   }

@@ -297,6 +297,7 @@ export class AuthService {
     const isLoggedIn = user != null;
 
     if (this.previousIsLoggedInCheck !== isLoggedIn) {
+
       setTimeout(() => {
         this.loginStatus.next(isLoggedIn);
       });
