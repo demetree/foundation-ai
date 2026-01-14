@@ -1,39 +1,28 @@
 <div class="page-container">
-  <div class="card mb-3 header-card shadow-sm">
-    <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+  <div class="card mb-3 header-card premium-header shadow-lg border-0">
+    <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3 border-0 bg-transparent">
       <div class="header-left">
         <!-- Back Button -->
-        <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back" *ngIf="canGoBack()">
+        <button class="btn btn-sm btn-glass back-button me-2" (click)="goBack()" ngbTooltip="Go Back"
+          *ngIf="canGoBack()">
           <i class="fa-solid fa-arrow-left"></i>
         </button>
 
         <!-- Title -->
-
-        <div>
-          <h3 class="page-title mb-0 d-flex align-items-center gap-2">
-            Crews
-          </h3>
-
-          <small class="text-muted">
-            Manage Crews
-          </small>
-
-          <span class="badge bg-secondary mx-2" *ngIf="loadingTotalCount || loadingFilteredCount">
-            Loading...
-          </span>
-
+        <div class="text-white">
+          <h3 class="page-title mb-0 fw-bold text-shadow">Crews</h3>
+          <small class="text-white-50">Manage Crews</small>
         </div>
       </div>
 
       <div class="header-right">
-
-        <span class="badge bg-secondary mx-2" *ngIf="loadingTotalCount || loadingFilteredCount">
+        <span class="badge badge-glass mx-2" *ngIf="loadingTotalCount || loadingFilteredCount">
           <i class="fa fa-spinner fa-spin me-1"></i> Loading...
         </span>
 
         <span *ngIf="!(loadingTotalCount || loadingFilteredCount)">
           <ng-container *ngIf="totalCrewCount$ | async as total; else loading">
-            <span class="badge bg-secondary mx-2">
+            <span class="badge badge-glass mx-2">
 
               <!-- Filtered: some results -->
               <ng-container *ngIf="filteredCrewCount$ | async as filteredCount">
@@ -59,40 +48,37 @@
 
           <!-- when observable is falsy, then decide whether to show a spinner or a loading spinner.. -->
           <ng-template #loading>
-            <span class="badge bg-secondary mx-2" *ngIf="(loadingTotalCount || loadingFilteredCount)">
+            <span class="badge badge-glass mx-2" *ngIf="(loadingTotalCount || loadingFilteredCount)">
               <i class="fa fa-spinner fa-spin me-1"></i> Loading...
             </span>
-            <span class="badge bg-secondary mx-2" *ngIf="!(loadingTotalCount || loadingFilteredCount)">
+            <span class="badge badge-glass mx-2" *ngIf="!(loadingTotalCount || loadingFilteredCount)">
               No Crews
             </span>
           </ng-template>
 
         </span>
 
+
         <!-- Quick Search Input -->
         <div class="search-bar me-2 position-relative">
-          <i class="fa fa-search search-icon"></i>
-          <input type="text"
-                 class="form-control search-input"
-                 placeholder="Search Crews..."
-                 [(ngModel)]="filterText"
-                 (ngModelChange)="onFilterChange()">
-          <button *ngIf="filterText"
-                  class="clear-search btn"
-                  (click)="filterText=''; onFilterChange()"
-                  title="Clear Search">
+          <i class="fa fa-search search-icon text-white-50"></i>
+          <input type="text" class="form-control search-input glass-input" placeholder="Search Crews..."
+            [(ngModel)]="filterText" (ngModelChange)="onFilterChange()">
+          <button *ngIf="filterText" class="clear-search btn text-white" (click)="filterText=''; onFilterChange()"
+            title="Clear Search">
             <i class="fa fa-times"></i>
           </button>
         </div>
 
         <!-- Add/Edit Button -->
-        <app-crew-custom-add-edit [navigateToDetailsAfterAdd]="false"></app-crew-custom-add-edit>
+        <div class="add-button-wrapper">
+          <app-crew-custom-add-edit [navigateToDetailsAfterAdd]="false"></app-crew-custom-add-edit>
+        </div>
       </div>
     </div>
   </div>
 
-  <app-crew-custom-table *ngIf="userIsSchedulerCrewReader() == true"
-                         [filterText]="filterText"
-                         [isSmallScreen]="isSmallScreen">
+  <app-crew-custom-table *ngIf="userIsSchedulerCrewReader() == true" [filterText]="filterText"
+    [isSmallScreen]="isSmallScreen">
   </app-crew-custom-table>
 </div>

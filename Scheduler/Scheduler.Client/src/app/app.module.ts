@@ -180,6 +180,13 @@ import { ClientContactCustomAddEditModalComponent } from './components/client-cu
 import { ClientTargetsTabComponent } from './components/client-custom/client-targets-tab/client-targets-tab.component';
 
 //
+// Scheduling Target custom optimizations
+//
+import { SchedulingTargetCustomListingComponent } from './components/scheduling-target-custom/scheduling-target-custom-listing/scheduling-target-custom-listing.component';
+import { SchedulingTargetCustomTableComponent } from './components/scheduling-target-custom/scheduling-target-custom-table/scheduling-target-custom-table.component';
+
+
+//
 // Custom services
 //
 import { CrewWithMembersService } from './services/crew-with-members.service';
@@ -1242,6 +1249,13 @@ import { TributeTypeTableComponent } from './scheduler-data-components/tribute-t
     ClientContactsTabComponent,
     ClientContactCustomAddEditModalComponent,
     ClientTargetsTabComponent,
+
+    //
+    // Scheduling Target customization
+    //
+    SchedulingTargetCustomListingComponent,
+    SchedulingTargetCustomTableComponent,
+
 
     //
     // Contact customization - Replaced all with new

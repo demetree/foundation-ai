@@ -4,82 +4,119 @@
   padding: 1rem;
 }
 
+//
+// Premium Header Styling
+//
+$gradient-deep-purple: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
 
-/* Header Card */
-.header-card {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+.premium-header {
+  background: $gradient-deep-purple;
+  border-radius: 16px;
+  overflow: hidden;
 
   .card-header {
-    background-color: transparent;
-    border: none;
-    padding: 1rem 1.5rem;
-  }
-
-  .header-left {
+    padding: 1.5rem 2rem;
     display: flex;
+    justify-content: space-between;
     align-items: center;
-
-    .page-title {
-      font-size: 1.5rem;
-      font-weight: 600;
-      margin: 0;
-    }
-
-    .text-muted {
-      font-size: 0.875rem;
-    }
+    flex-wrap: wrap;
+    gap: 1rem;
   }
 
+  .header-left,
   .header-right {
     display: flex;
     align-items: center;
+    gap: 0.5rem;
   }
 
-  .back-button {
-    padding: 0.25rem 0.5rem;
+  .page-title {
+    color: white;
+    font-size: 1.75rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
-
-  .search-bar {
-    position: relative;
-    min-width: 0;     // To help fix overflow
-    flex: 1 1 250px;  // Allows shrinking but prefers 250px+
-    max-width: 400px;
-
-    .search-icon {
-      position: absolute;
-      top: 50%;
-      left: 15px;
-      transform: translateY(-50%);
-      color: #6c757d;
-    }
-
-
-    .search-input {
-      border: 1px solid #ced4da;
-      border-radius: 4px;
-      padding-left: 40px;
-      width: 100%;
-      height: 38px;
-
-      &:focus {
-        border-color: #0176d3;
-        box-shadow: 0 0 0 0.2rem rgba(1, 118, 211, 0.25);
-      }
-    }
-
-    .clear-search {
-      position: absolute;
-      top: 50%;
-      right: 15px;
-      transform: translateY(-50%);
-      background: none;
-      border: none;
-      color: #6c757d;
-      padding: 0;
-    }
+  .text-white-50 {
+    color: rgba(255, 255, 255, 0.8) !important;
   }
 }
 
+//
+// Glassmorphism Utilities (scoped to header)
+//
+.btn-glass {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  backdrop-filter: blur(5px);
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+    color: white;
+  }
+}
+
+.badge-glass {
+  background: rgba(255, 255, 255, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  font-weight: 500;
+  padding: 0.5em 1em;
+  backdrop-filter: blur(5px);
+}
+
+.search-bar {
+  position: relative;
+  min-width: 0;
+  flex: 1 1 250px;
+  max-width: 400px;
+
+  .search-icon {
+    position: absolute;
+    top: 50%;
+    left: 15px;
+    transform: translateY(-50%);
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  .glass-input {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding-left: 40px;
+    color: white;
+    height: 42px;
+    backdrop-filter: blur(5px);
+    transition: all 0.2s ease;
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    &:focus {
+      background: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.5);
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+  }
+
+  .clear-search {
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    padding: 0;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}

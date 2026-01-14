@@ -68,6 +68,12 @@ import { CalendarCustomDetailComponent } from './components/calendar-custom/cale
 import { ClientCustomDetailComponent } from './components/client-custom/client-custom-detail/client-custom-detail.component';
 import { ClientCustomListingComponent } from './components/client-custom/client-custom-listing/client-custom-listing.component';
 
+//
+// Scheduling Target custom optimizations
+//
+import { SchedulingTargetCustomListingComponent } from './components/scheduling-target-custom/scheduling-target-custom-listing/scheduling-target-custom-listing.component';
+
+
 
 //
 // Security Data Component Imports - Auto Generated
@@ -1182,7 +1188,8 @@ const routes: Routes = [
   { path: 'scheduledeventtemplatequalificationrequirementchangehistories/:scheduledEventTemplateQualificationRequirementChangeHistoryId', component: ScheduledEventTemplateQualificationRequirementChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Scheduled Event Template Qualification Requirement Change History' },
   { path: 'scheduledeventtemplatequalificationrequirementchangehistory/:scheduledEventTemplateQualificationRequirementChangeHistoryId', component: ScheduledEventTemplateQualificationRequirementChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Scheduled Event Template Qualification Requirement Change History' },
   { path: 'scheduledeventtemplatequalificationrequirementchangehistory', redirectTo: 'scheduledeventtemplatequalificationrequirementchangehistories' },
-  { path: 'schedulingtargets', component: SchedulingTargetListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Scheduling Targets' },
+  { path: 'schedulingtargets', component: SchedulingTargetCustomListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Scheduling Targets' },
+
   { path: 'schedulingtargets/new', component: SchedulingTargetDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Scheduling Target' },
   { path: 'schedulingtargets/:schedulingTargetId', component: SchedulingTargetDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Scheduling Target' },
   { path: 'schedulingtarget/:schedulingTargetId', component: SchedulingTargetDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Scheduling Target' },

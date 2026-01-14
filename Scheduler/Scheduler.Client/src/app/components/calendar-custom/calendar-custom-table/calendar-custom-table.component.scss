@@ -1,39 +1,39 @@
 .virtual-table-container {
   height: calc(100vh - 220px);
-  border-radius: 8px;
+  border-radius: 12px; // More rounded
   overflow: hidden;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); // More subtle shadow
   background: white;
   display: flex;
   flex-direction: column;
+  border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 /* Fixed header (outside viewport) */
 .table-header-fixed {
-  background: white;
+  background: #f8fafc; // Light gray header
   z-index: 30;
-  border-bottom: 2px solid #dee2e6;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  border-bottom: 1px solid #e2e8f0; // Subtle border
 }
 
 /* Viewport — the only thing that scrolls */
 .viewport {
   flex: 1;
   overflow-y: auto;
-  overflow-x: auto;         /* to allow scrolling if the content exceeds width.  Note headers won't move with content, but will accept that compromise for not making data unreachable. */
-  scrollbar-gutter: stable; /* eliminates scrollbar jump */
+  overflow-x: auto;
+  scrollbar-gutter: stable;
 
-  /* Hack for consistnent column sizing between header and body tables*/
-  padding-right: 17px;
-  margin-right: -17px;
+  /* Hack for consistent column sizing */
+  padding-right: 14px; // Adjusted for thinner scrollbar
+  margin-right: -14px;
 }
 
 .mobile-viewport {
-  height: calc(100vh - 180px); /* or whatever fits your layout */
+  height: calc(100vh - 180px);
   display: block;
 }
 
-/* Base table — shared by header and body */
+/* Base table */
 .custom-table {
   table-layout: fixed;
   width: 100%;
@@ -42,67 +42,53 @@
   margin: 0;
 }
 
-/* Header table keeps Bootstrap look */
 .table-header-fixed .custom-table {
   border-collapse: collapse;
 }
 
-/* Inactive (deactivated) rows */
+/* Inactive/Deleted styling */
 tr.row-inactive,
-.card.row-inactive {
-  font-style: italic;
-  opacity: 0.75; // Slightly faded for extra clarity
-}
-
-/* Deleted rows */
-tr.row-deleted,
-.card.row-deleted {
-  text-decoration: line-through;
-  opacity: 0.6;
-  color: #999; // Muted color
-}
-
-/* Combine both if deleted takes precedence */
-tr.row-deleted.row-inactive,
-.card.row-deleted.row-inactive {
-  font-style: normal; // Strikethrough wins over italic
-}
-
 .card.row-inactive {
   font-style: italic;
   opacity: 0.75;
 }
 
+tr.row-deleted,
 .card.row-deleted {
   text-decoration: line-through;
   opacity: 0.6;
-  background-color: #f8f9fa; // Light gray background
+  color: #94a3b8;
+}
+
+tr.row-deleted.row-inactive {
+  font-style: normal;
 }
 
 
-
-/* Body table — completely clean (no Bootstrap magic) */
+/* Body table */
 .viewport .custom-table {
   background: transparent;
 }
 
-  /* Manual striping & hover (exactly what Bootstrap does) */
-  .viewport .custom-table tbody tr {
-    background-color: white;
-  }
+.viewport .custom-table tbody tr {
+  background-color: white;
+  transition: background-color 0.15s ease;
+  border-bottom: 1px solid #f1f5f9; // Very subtle separator
+}
 
-    .viewport .custom-table tbody tr:nth-child(odd) {
-      background-color: #f8f9fa;
-    }
+// Remove odd striping for a cleaner look, or make it very subtle
+.viewport .custom-table tbody tr:nth-child(odd) {
+  background-color: #ffffff;
+}
 
-    .viewport .custom-table tbody tr:hover {
-      background-color: #e9ecef !important;
-    }
+.viewport .custom-table tbody tr:hover {
+  background-color: #f1f5f9 !important; // Soft blue-grey hover
+}
 
-/* Perfect alignment — header and body use IDENTICAL rules */
+/* Identical alignment */
 .custom-table th,
 .custom-table td {
-  padding: 0.75rem !important;
+  padding: 1rem 1rem !important; // More breathing room
   border: none !important;
   box-sizing: border-box;
   white-space: nowrap;
@@ -110,59 +96,72 @@ tr.row-deleted.row-inactive,
   vertical-align: middle;
 }
 
-/* Action button columns — identical in header and body */
+/* Header Styling - Premium */
+.custom-table th {
+  font-weight: 600;
+  color: #475569;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  padding-top: 1.25rem !important;
+  padding-bottom: 1.25rem !important;
+}
+
+.custom-table td {
+  color: #334155;
+  font-size: 0.9rem;
+  border-bottom: 1px solid #f1f5f9 !important;
+}
+
+
 .header-action-button {
-  width: 45px !important;
-  min-width: 45px !important;
-  max-width: 45px !important;
-  padding: 0.5rem 0.25rem !important;
+  width: 48px !important; // Slightly wider
+  min-width: 48px !important;
+  max-width: 48px !important;
   text-align: center;
 }
 
-/* Sortable header styling */
+/* Sortable header */
 .sortable {
   cursor: pointer;
   position: relative;
   padding-right: 1.5rem;
-  white-space: nowrap;
 }
 
-  .sortable:hover {
-    background-color: #f8f9fa;
-  }
+.sortable:hover {
+  background-color: #e2e8f0; // Slightly darker hover for headers
+  color: #1e293b;
+}
 
 /* Sort arrows */
 .arrow-up::after,
 .arrow-down::after {
   content: '';
   display: inline-block;
-  margin-left: 5px;
+  margin-left: 6px;
   width: 0;
   height: 0;
-  vertical-align: middle;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
 }
 
 .arrow-up::after {
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  border-bottom: 5px solid #000;
+  border-bottom: 4px solid #64748b;
 }
 
 .arrow-down::after {
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  border-top: 5px solid #000;
+  border-top: 4px solid #64748b;
 }
 
-/* CDK wrapper — never adds unwanted padding */
 .cdk-virtual-scroll-content-wrapper {
   width: 100% !important;
 }
 
 
-/* Nicer custom scrollbar */
+/* Premium Thinner Scrollbar */
 .viewport::-webkit-scrollbar {
-  width: 10px;
+  width: 8px;
+  height: 8px;
 }
 
 .viewport::-webkit-scrollbar-track {
@@ -170,36 +169,35 @@ tr.row-deleted.row-inactive,
 }
 
 .viewport::-webkit-scrollbar-thumb {
-  background: rgba(0,0,0,0.2);
-  border-radius: 5px;
+  background: rgba(148, 163, 184, 0.5);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: content-box;
 }
 
 .viewport::-webkit-scrollbar-thumb:hover {
-  background: rgba(0,0,0,0.4);
+  background: rgba(100, 116, 139, 0.8);
+  background-clip: content-box;
 }
 
 .color-swatch {
   display: inline-block;
-  width: 20px;
-  height: 20px;
-  border: 1px solid #ced4da;        /* Matches form-control border for consistency */
-  border-radius: 4px;               /* Slight rounding for modern look */
-  flex-shrink: 0;                   /* Prevents shrinking in flex layouts */
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1); /* Subtle depth */
+  width: 22px;
+  height: 22px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px; // Softer rounding
+  flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-/* Slightly larger swatch on desktop for better visibility */
 @media (min-width: 768px) {
   .color-swatch {
-    width: 24px;
-    height: 24px;
+    width: 26px;
+    height: 26px;
   }
 }
 
-/* Ensure the text doesn't get truncated awkwardly when next to the swatch */
 td .color-swatch,
 .col-7 .color-swatch {
   vertical-align: middle;
 }
-
-

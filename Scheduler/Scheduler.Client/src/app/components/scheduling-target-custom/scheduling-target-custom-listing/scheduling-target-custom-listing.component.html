@@ -1,0 +1,74 @@
+<div class="page-container">
+    <div class="card mb-3 premium-header shadow-lg border-0 bg-transparent">
+        <div class="card-header">
+            <div class="header-left">
+                <!-- Back Button -->
+                <button class="btn btn-glass btn-sm me-3" (click)="goBack()" ngbTooltip="Go Back" *ngIf="canGoBack()">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+
+                <!-- Title -->
+                <div>
+                    <h3 class="page-title mb-0 text-white fw-bold text-shadow">Scheduling Targets</h3>
+                    <small class="text-white-50">View Scheduling Targets</small>
+                </div>
+            </div>
+
+            <div class="header-right">
+                <!-- Counts Badges -->
+                <span class="badge badge-glass me-2" *ngIf="loadingTotalCount || loadingFilteredCount">
+                    <i class="fa fa-spinner fa-spin me-1"></i> Loading...
+                </span>
+
+                <span *ngIf="!(loadingTotalCount || loadingFilteredCount)" class="d-flex align-items-center">
+                    <ng-container *ngIf="totalSchedulingTargetCount$ | async as total; else falsyObservable">
+
+                        <!-- Filtered: some results -->
+                        <ng-container *ngIf="filteredSchedulingTargetCount$ | async as filteredCount">
+                            <span class="badge badge-glass me-2" *ngIf="filterText && (filteredCount ?? 0) > 0">
+                                {{ filteredCount }} of {{ total }}
+                            </span>
+                        </ng-container>
+
+                        <!-- Filtered: 0 results -->
+                        <span class="badge badge-glass me-2"
+                            *ngIf="total > 0 && filterText && (filteredSchedulingTargetCount$ | async) === 0">
+                            No Matches
+                        </span>
+
+                        <!-- No filter: normal count -->
+                        <span class="badge badge-glass me-2" *ngIf="!filterText">
+                            {{ total }} Record{{ total !== 1 ? 's' : '' }}
+                        </span>
+
+                    </ng-container>
+
+                    <!-- when observable is falsy -->
+                    <ng-template #falsyObservable>
+                        <span class="badge badge-glass me-2" *ngIf="!(loadingTotalCount || loadingFilteredCount)">
+                            No Data
+                        </span>
+                    </ng-template>
+                </span>
+
+                <!-- Quick Search Input -->
+                <div class="search-bar me-3">
+                    <i class="fa fa-search search-icon text-white-50"></i>
+                    <input type="text" class="form-control glass-input" placeholder="Search..." [(ngModel)]="filterText"
+                        (ngModelChange)="onFilterChange()">
+                    <button *ngIf="filterText" class="clear-search btn text-white"
+                        (click)="filterText=''; onFilterChange()" title="Clear Search">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </div>
+
+                <!-- Add/Edit Button -->
+                <app-scheduling-target-add-edit [navigateToDetailsAfterAdd]="false"></app-scheduling-target-add-edit>
+            </div>
+        </div>
+    </div>
+
+    <app-scheduling-target-custom-table *ngIf="userIsSchedulerSchedulingTargetReader() == true"
+        [filterText]="filterText" [isSmallScreen]="isSmallScreen">
+    </app-scheduling-target-custom-table>
+</div>
