@@ -1,185 +1,106 @@
-.modal-body h5 {
-  font-weight: 600;
-  margin-top: 1rem;
-}
+// Variables
+$gradient-dark: linear-gradient(135deg, #343a40 0%, #505c6c 100%); // Professional Slate/Graphite
 
-.form-control,
-.form-select {
-  border-radius: 6px;
-  font-size: 0.95rem;
-}
-
-
-/* Page Container */
-.page-container {
-  background-color: #f4f6f9;
-  min-height: 100%;
-  padding: 1rem;
-}
-
-.header-card {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+/* Premium Header Styling */
+.premium-header {
+  background: $gradient-dark;
+  border-radius: 16px;
+  overflow: hidden;
 
   .card-header {
-    background-color: transparent;
+    background: transparent;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1.5rem;
+  }
+
+  .d-flex {
+    // Flexbox fix for header content alignment
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+
+    &.justify-content-between {
+      justify-content: space-between;
+    }
+  }
+
+  h3 {
+    color: white;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    letter-spacing: -0.5px;
+  }
+
+  .text-white-50 {
+    color: rgba(255, 255, 255, 0.7) !important;
+  }
+
+  /* Glassmorphic Buttons */
+  .btn-glass {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+    backdrop-filter: blur(10px);
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.25);
+      border-color: rgba(255, 255, 255, 0.4);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+    }
+  }
+
+  /* Back Button specific override */
+  .btn-light {
+    background: rgba(255, 255, 255, 0.2);
     border: none;
+    color: white;
+    border-radius: 8px;
+    /* Softer square */
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.35);
+    }
+  }
+}
+
+/* Page Container padding */
+.container-fluid {
+  padding-top: 1.5rem !important;
+}
+
+/* Nav Tabs Customization */
+.nav-tabs {
+  border-bottom: 2px solid #e9ecef;
+
+  .nav-link {
+    color: #495057;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
     padding: 1rem 1.5rem;
-  }
+    transition: all 0.2s;
 
-  .header-left {
-    display: flex;
-    align-items: center;
-
-    .page-title {
-      font-size: 1.5rem;
-      font-weight: 600;
-      margin: 0;
+    &:hover {
+      border-color: transparent;
+      color: #343a40;
+      background: rgba(0, 0, 0, 0.02);
     }
 
-    .text-muted {
-      font-size: 0.875rem;
+    &.active {
+      color: #343a40; // Dark text for active
+      background: transparent;
+      border-bottom: 2px solid #343a40; // Dark underline
+      font-weight: 700 !important;
     }
   }
-
-  .header-right {
-    display: flex;
-    align-items: center;
-  }
 }
 
-.back-button {
-  padding: 0.25rem 0.5rem;
-}
-
-
-/* Scrollable Table */
-.scrollable-table {
-  background-color: #fff;
-  border-radius: 8px;
-  max-height: calc(100vh - 180px);
-  overflow-y: auto;
-  overflow-x: hidden;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
-}
-
-/* Table Styles */
-.custom-table {
-  margin-bottom: 0;
-
-  .sticky-header {
-    position: sticky;
-    top: 0;
-    background-color: #fff;
-    z-index: 10;
-    border-bottom: 2px solid #dee2e6;
-  }
-
-  td, th {
-    vertical-align: middle;
-  }
-
-  .text-truncate {
-    max-width: 0;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
-
-  .row-inactive {
-    background-color: #f8f9fa;
-    opacity: 0.7;
-  }
-
-  .row-deleted {
-    background-color: #f8d7da;
-    opacity: 0.7;
-  }
-}
-
-/* Mobile Card Styles */
-.entity-card {
-  border: none;
-  border-radius: 6px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
-  background-color: #fff;
-
-  .card-header {
-    background-color: #fff;
-    padding: 0.75rem 1rem;
-  }
-
-  .card-body {
-    padding: 1rem;
-    font-size: 0.9rem;
-
-    p {
-      margin-bottom: 0.5rem;
-
-      strong {
-        margin-right: 0.5rem;
-      }
-    }
-  }
-
-  &.row-inactive {
-    background-color: #f8f9fa;
-    opacity: 0.7;
-  }
-
-  &.row-deleted {
-    background-color: #f8d7da;
-    opacity: 0.7;
-  }
-}
-
-/* Button Styles */
-.back-button {
-  padding: 0.25rem 0.5rem;
-}
-
-/* Responsive Adjustments */
-@media (max-width: 768px) {
-  .page-container {
-    padding: 0.5rem;
-  }
-
-  .header-card {
-    .card-header {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-
-    .header-left {
-      margin-bottom: 0.5rem;
-    }
-
-    .header-right {
-      width: 100%;
-      flex-direction: column;
-
-      .search-bar {
-        width: 100%;
-        margin-bottom: 0.5rem;
-      }
-    }
-  }
-
-  .scrollable-table {
-    max-height: calc(100vh - 300px);
-  }
-}
-
-.btn-add-company {
-  background-color: #0176d3;
-  border-color: #0176d3;
-  height: 37px;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 12px;
-  width: 80px;
-  font-size: 0.875rem;
+/* Inner Cards (Tab Content) */
+.card.shadow-sm {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
 }

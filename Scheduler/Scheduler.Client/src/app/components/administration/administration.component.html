@@ -1,29 +1,37 @@
 <!-- Page Container -->
 <div class="container-fluid p-3">
 
-  <!-- Header Card -->
-  <div class="card mb-4 shadow-sm border-0">
-    <div class="card-header bg-white d-flex justify-content-between align-items-center">
-      <!-- Left: Back + Title -->
-      <div class="d-flex align-items-center">
-        <button class="btn btn-sm btn-light me-3" (click)="goBack()" ngbTooltip="Go Back">
-          <i class="fa-solid fa-arrow-left"></i>
-        </button>
-        <div>
-          <h3 class="mb-0">Administration</h3>
-          <small class="text-muted">Company profile & system configuration</small>
-        </div>
-      </div>
+  <!-- Premium Header Card -->
+  <div class="card mb-4 shadow-lg border-0 premium-header">
+    <div class="card-header border-0 bg-transparent py-4">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
 
-      <!-- Right: Action Buttons -->
-      <div class="d-flex align-items-center">
-        <app-add-tenant-profile (tenantProfileChanged)="LoadData()"></app-add-tenant-profile>
-        <button class="btn btn-primary ms-2" (click)="onEdit(tenantProfileData)" ngbTooltip="Edit Profile">
-          <i class="fa fa-pen me-1"></i> Edit Profile
-        </button>
+        <!-- Left: Back + Title -->
+        <div class="d-flex align-items-center header-left">
+          <button class="btn btn-sm btn-light me-3 p-2" (click)="goBack()" ngbTooltip="Go Back"
+            style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+            <i class="fa-solid fa-arrow-left"></i>
+          </button>
+          <div>
+            <h3 class="mb-0 text-white fw-bold text-shadow">Administration</h3>
+            <small class="text-white-50">Company profile & system configuration</small>
+          </div>
+        </div>
+
+        <!-- Right: Action Buttons -->
+        <div class="d-flex align-items-center header-right">
+          <app-add-tenant-profile (tenantProfileChanged)="LoadData()"></app-add-tenant-profile>
+
+          <!-- Note: Assuming app-add-tenant-profile button is styled internally, 
+               but we wrap extending buttons in btn-glass -->
+          <button class="btn btn-glass ms-2 px-3 py-2" (click)="onEdit(tenantProfileData)" ngbTooltip="Edit Profile">
+            <i class="fa fa-pen me-2"></i> Edit Profile
+          </button>
+        </div>
       </div>
     </div>
   </div>
+
 
   <!-- Navigation Tabs -->
   <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" (navChange)="onTabChange($event)"

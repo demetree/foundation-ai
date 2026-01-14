@@ -1,19 +1,20 @@
 .virtual-table-container {
-  height: calc(100vh - 220px);
-  border-radius: 8px;
+  height: calc(100vh - 240px); // Adjusted for improved header height
+  border-radius: 12px; // Softer corners
   overflow: hidden;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); // Soft shadow
   background: white;
   display: flex;
   flex-direction: column;
+  border: 1px solid #f1f5f9; // Subtle border
 }
 
 /* Fixed header (outside viewport) */
 .table-header-fixed {
-  background: white;
+  background: #f8fafc; // Light background for header
   z-index: 30;
-  border-bottom: 2px solid #dee2e6;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  border-bottom: 2px solid #e2e8f0; // Softer border
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); // Tiny shadow
 }
 
 /* Inactive (deactivated) rows */
@@ -31,11 +32,11 @@ tr.row-deleted,
   color: #999; // Muted color
 }
 
-  /* Combine both if deleted takes precedence */
-  tr.row-deleted.row-inactive,
-  .card.row-deleted.row-inactive {
-    font-style: normal; // Strikethrough wins over italic
-  }
+/* Combine both if deleted takes precedence */
+tr.row-deleted.row-inactive,
+.card.row-deleted.row-inactive {
+  font-style: normal; // Strikethrough wins over italic
+}
 
 .card.row-inactive {
   font-style: italic;
@@ -53,8 +54,10 @@ tr.row-deleted,
 .viewport {
   flex: 1;
   overflow-y: auto;
-  overflow-x: auto;         /* to allow scrolling if the content exceeds width.  Note headers won't move with content, but will accept that compromise for not making data unreachable. */
-  scrollbar-gutter: stable; /* eliminates scrollbar jump */
+  overflow-x: auto;
+  /* to allow scrolling if the content exceeds width.  Note headers won't move with content, but will accept that compromise for not making data unreachable. */
+  scrollbar-gutter: stable;
+  /* eliminates scrollbar jump */
 
   /* Hack for consistnent column sizing between header and body tables*/
   padding-right: 17px;
@@ -62,7 +65,8 @@ tr.row-deleted,
 }
 
 .mobile-viewport {
-  height: calc(100vh - 180px); /* or whatever fits your layout */
+  height: calc(100vh - 180px);
+  /* or whatever fits your layout */
   display: block;
 }
 
@@ -76,38 +80,47 @@ tr.row-deleted,
 }
 
 
-/* Header table keeps Bootstrap look */
+/* Header table */
 .table-header-fixed .custom-table {
   border-collapse: collapse;
 }
 
-/* Body table — completely clean (no Bootstrap magic) */
-.viewport .custom-table {
-  background: transparent;
-}
-
-  /* Manual striping & hover (exactly what Bootstrap does) */
-  .viewport .custom-table tbody tr {
-    background-color: white;
-  }
-
-    .viewport .custom-table tbody tr:nth-child(odd) {
-      background-color: #f8f9fa;
-    }
-
-    .viewport .custom-table tbody tr:hover {
-      background-color: #e9ecef !important;
-    }
-
-/* Perfect alignment — header and body use IDENTICAL rules */
+/* Base Header and Body Styles for Consistency */
 .custom-table th,
 .custom-table td {
-  padding: 0.75rem !important;
+  padding: 1.25rem 0.75rem !important; // Increased vertical padding
   border: none !important;
   box-sizing: border-box;
   white-space: nowrap;
   overflow: hidden;
   vertical-align: middle;
+}
+
+/* Header Specifics */
+.custom-table th {
+  font-weight: 600;
+  color: #64748b; // Muted slate text
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  border: none !important;
+}
+
+/* Body Specifics */
+.custom-table td {
+  color: #334155; // Darker slate for readability
+  font-size: 0.875rem;
+  border-bottom: 1px solid #f1f5f9 !important; // Very subtle separator
+}
+
+/* Row Hover & Striping replacement */
+.viewport .custom-table tbody tr {
+  background-color: white;
+  transition: background-color 0.15s ease;
+}
+
+.viewport .custom-table tbody tr:hover {
+  background-color: #f8fafc !important; // Soft hover
 }
 
 /* Action button columns — identical in header and body */
@@ -127,9 +140,10 @@ tr.row-deleted,
   white-space: nowrap;
 }
 
-  .sortable:hover {
-    background-color: #f8f9fa;
-  }
+.sortable:hover {
+  background-color: #f1f5f9; // Match header bg hover
+  color: #334155;
+}
 
 /* Sort arrows */
 .arrow-up::after,
@@ -145,13 +159,13 @@ tr.row-deleted,
 .arrow-up::after {
   border-left: 5px solid transparent;
   border-right: 5px solid transparent;
-  border-bottom: 5px solid #000;
+  border-bottom: 5px solid #64748b;
 }
 
 .arrow-down::after {
   border-left: 5px solid transparent;
   border-right: 5px solid transparent;
-  border-top: 5px solid #000;
+  border-top: 5px solid #64748b;
 }
 
 /* CDK wrapper — never adds unwanted padding */
@@ -162,7 +176,9 @@ tr.row-deleted,
 
 /* Nicer custom scrollbar */
 .viewport::-webkit-scrollbar {
-  width: 10px;
+  width: 8px;
+  /* Thinner */
+  height: 8px;
 }
 
 .viewport::-webkit-scrollbar-track {
@@ -170,22 +186,28 @@ tr.row-deleted,
 }
 
 .viewport::-webkit-scrollbar-thumb {
-  background: rgba(0,0,0,0.2);
-  border-radius: 5px;
+  background: #cbd5e1;
+  /* Lighter grey */
+  border-radius: 4px;
 }
 
 .viewport::-webkit-scrollbar-thumb:hover {
-  background: rgba(0,0,0,0.4);
+  background: #94a3b8;
+  /* Darker on hover */
 }
 
 .color-swatch {
   display: inline-block;
   width: 20px;
   height: 20px;
-  border: 1px solid #ced4da;        /* Matches form-control border for consistency */
-  border-radius: 4px;               /* Slight rounding for modern look */
-  flex-shrink: 0;                   /* Prevents shrinking in flex layouts */
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1); /* Subtle depth */
+  border: 1px solid #cbd5e1;
+  /* Soft border */
+  border-radius: 6px;
+  /* Soft rounding */
+  flex-shrink: 0;
+  /* Prevents shrinking in flex layouts */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  /* Subtle shadow */
 }
 
 /* Slightly larger swatch on desktop for better visibility */
@@ -220,6 +242,7 @@ td .color-swatch,
   left: 0;
   background: inherit; // Match row background
   z-index: 2; // Above content cells
+  border-bottom: 1px solid #f1f5f9 !important; // Maintain border on sticky cell
 }
 
 // Content cells — where we apply dynamic indentation
@@ -231,25 +254,25 @@ td .color-swatch,
   // border-left: 1px solid #e9ecef;
 }
 
-  // Visual connector (tree line) before indented content
-  .content-cell::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 50%;
-    width: 12px;
-    height: 1px;
-    background: #dee2e6;
-    transform: translateY(-50%);
-  }
+// Visual connector (tree line) before indented content
+.content-cell::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 12px;
+  height: 1px;
+  background: #e2e8f0; // Softer line
+  transform: translateY(-50%);
+}
 
-  // Vertical line for deeper nesting (optional polish)
-  .content-cell.indent-level-1::before,
-  .content-cell.indent-level-2::before {
-    // Add vertical connector if desired
-  }
+// Vertical line for deeper nesting (optional polish)
+.content-cell.indent-level-1::before,
+.content-cell.indent-level-2::before {
+  // Add vertical connector if desired
+}
 
 // Highlight row on hover (but keep action buttons sticky)
 tr:hover .action-cell {
-  background: #f8f9fa !important;
+  background: #f8fafc !important; // Match hover color
 }
