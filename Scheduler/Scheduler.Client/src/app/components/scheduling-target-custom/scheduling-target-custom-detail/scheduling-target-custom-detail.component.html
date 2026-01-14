@@ -1,0 +1,308 @@
+<div class="container-fluid p-1 m-0 scheduling-target-details-container">
+    <div class="p-2 detail-background">
+
+        <!-- Premium Header -->
+        <div class="card mb-4 premium-header shadow-lg border-0">
+            <div class="card-body d-flex flex-wrap align-items-center gap-4">
+
+                <!-- Avatar -->
+                <div class="avatar rounded-circle overflow-hidden shadow clickable flex-shrink-0"
+                    style="width: 120px; height: 120px;">
+                    <ng-container *ngIf="schedulingTargetData?.avatarData; else defaultAvatar">
+                        <img [src]="'data:' + (schedulingTargetData?.avatarMimeType || 'image/png') + ';base64,' + (schedulingTargetData?.avatarData || '')"
+                            class="w-100 h-100 object-fit-cover" alt="{{ schedulingTargetData?.name }} avatar">
+                    </ng-container>
+
+                    <ng-template #defaultAvatar>
+                        <div class="w-100 h-100 d-flex align-items-center justify-content-center text-white fw-bold fs-3"
+                            [style.background-color]="schedulingTargetData?.color || 'rgba(255,255,255,0.2)'">
+                            {{ schedulingTargetData?.name | slice:0:2 | uppercase }}
+                        </div>
+                    </ng-template>
+                </div>
+
+                <!-- Details -->
+                <div class="flex-grow-1">
+                    <div class="d-flex align-items-center flex-wrap gap-2 mb-2">
+                        <span class="text-uppercase text-white-50 small fw-semibold">Scheduling Target</span>
+                        <h3 class="mb-0 text-white me-3 ms-2">{{ schedulingTargetData?.name || (isEditMode ?
+                            'Loading...' : 'New Target') }}</h3>
+
+                        <span class="badge" [ngClass]="schedulingTargetData?.active ? 'bg-success' : 'bg-secondary'">
+                            {{ schedulingTargetData?.active ? 'Active' : 'Inactive' }}
+                        </span>
+                        <span *ngIf="schedulingTargetData?.deleted" class="badge bg-danger">Deleted</span>
+                        <span class="badge bg-secondary">Version: {{ schedulingTargetData?.versionNumber }}</span>
+                    </div>
+
+                    <div class="text-white-50 small">
+                        <div *ngIf="schedulingTargetData?.description" class="mb-1"><strong>Description: </strong>{{
+                            schedulingTargetData?.description }}</div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="text-end align-self-start align-self-md-center">
+                    <button class="btn btn-glass me-2" (click)="submitForm()"
+                        [disabled]="!schedulingTargetForm.dirty || isSaving"
+                        *ngIf="userIsSchedulerSchedulingTargetWriter()">
+                        <i class="fa fa-save me-2"></i> Save
+                    </button>
+                    <button class="btn btn-outline-light-custom" (click)="goBack()" *ngIf="canGoBack()">
+                        <i class="fa fa-arrow-left me-2"></i> Back
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div class="text-center py-5" *ngIf="isLoading$ | async">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div *ngIf="(isLoading$ | async) === false">
+
+            <ul ngbNav #nav="ngbNav" class="nav-tabs" [(activeId)]="activeTab">
+                <!-- Overview (Edit Form) -->
+                <li ngbNavItem="overview">
+                    <button ngbNavLink>Overview</button>
+                    <ng-template ngbNavContent>
+                        <div class="card shadow-sm border-0">
+                            <div class="card-body">
+                                <form [formGroup]="schedulingTargetForm">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group mb-3" *ngIf="!isFieldHidden('name')">
+                                                <label class="form-label fw-bold small text-muted">Name <span
+                                                        class="text-danger">*</span></label>
+                                                <input type="text" formControlName="name"
+                                                    class="form-control scheduling-target-input"
+                                                    placeholder="Enter Name">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group mb-3" *ngIf="!isFieldHidden('clientId')">
+                                                <label class="form-label fw-bold small text-muted">Client <span
+                                                        class="text-danger">*</span></label>
+                                                <select formControlName="clientId"
+                                                    class="form-select scheduling-target-select">
+                                                    <option [ngValue]="null">Select Client</option>
+                                                    <option *ngFor="let client of clients$ | async"
+                                                        [ngValue]="client.id">{{client.name}}</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group mb-3" *ngIf="!isFieldHidden('officeId')">
+                                                <label class="form-label fw-bold small text-muted">Office</label>
+                                                <select formControlName="officeId"
+                                                    class="form-select scheduling-target-select">
+                                                    <option [ngValue]="null">Select Office</option>
+                                                    <option *ngFor="let office of offices$ | async"
+                                                        [ngValue]="office.id">{{office.name}}</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group mb-3"
+                                                *ngIf="!isFieldHidden('schedulingTargetTypeId')">
+                                                <label class="form-label fw-bold small text-muted">Type <span
+                                                        class="text-danger">*</span></label>
+                                                <select formControlName="schedulingTargetTypeId"
+                                                    class="form-select scheduling-target-select">
+                                                    <option [ngValue]="null">Select Type</option>
+                                                    <option *ngFor="let type of schedulingTargetTypes$ | async"
+                                                        [ngValue]="type.id">{{type.name}}</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group mb-3" *ngIf="!isFieldHidden('timeZoneId')">
+                                                <label class="form-label fw-bold small text-muted">Time Zone <span
+                                                        class="text-danger">*</span></label>
+                                                <select formControlName="timeZoneId"
+                                                    class="form-select scheduling-target-select">
+                                                    <option [ngValue]="null">Select Time Zone</option>
+                                                    <option *ngFor="let tz of timeZones$ | async" [ngValue]="tz.id">
+                                                        {{tz.name}}</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group mb-3" *ngIf="!isFieldHidden('calendarId')">
+                                                <label class="form-label fw-bold small text-muted">Calendar</label>
+                                                <select formControlName="calendarId"
+                                                    class="form-select scheduling-target-select">
+                                                    <option [ngValue]="null">Select Calendar</option>
+                                                    <option *ngFor="let cal of calendars$ | async" [ngValue]="cal.id">
+                                                        {{cal.name}}</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12">
+                                            <div class="form-group mb-3" *ngIf="!isFieldHidden('description')">
+                                                <label class="form-label fw-bold small text-muted">Description</label>
+                                                <textarea formControlName="description"
+                                                    class="form-control scheduling-target-input" rows="3"></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="form-group mb-3" *ngIf="!isFieldHidden('notes')">
+                                                <label class="form-label fw-bold small text-muted">Notes</label>
+                                                <textarea formControlName="notes"
+                                                    class="form-control scheduling-target-input" rows="2"></textarea>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <div class="form-group mb-3" *ngIf="!isFieldHidden('externalId')">
+                                                <label class="form-label fw-bold small text-muted">External ID</label>
+                                                <input type="text" formControlName="externalId"
+                                                    class="form-control scheduling-target-input">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group mb-3" *ngIf="!isFieldHidden('color')">
+                                                <label class="form-label fw-bold small text-muted">Color</label>
+                                                <input type="color" formControlName="color"
+                                                    class="form-control form-control-color w-100"
+                                                    title="Choose your color">
+
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <div class="form-check form-switch mt-3">
+                                                <input class="form-check-input" type="checkbox" id="activeCheck"
+                                                    formControlName="active">
+                                                <label class="form-check-label" for="activeCheck">Active</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </ng-template>
+                </li>
+
+                <!-- Related Tabs (Only in Edit Mode) -->
+                <li ngbNavItem="contacts" *ngIf="isEditMode">
+                    <button ngbNavLink>Contacts <span class="badge bg-secondary ms-2">{{
+                            (schedulingTargetData?.SchedulingTargetContactsCount$ | async) ?? 0 }}</span></button>
+                    <ng-template ngbNavContent>
+                        <div class="mt-3">
+                            <app-scheduling-target-contact-table
+                                [queryParams]="{ schedulingTargetId: schedulingTargetData?.id }"></app-scheduling-target-contact-table>
+                            <div class="d-flex justify-content-end mt-2">
+                                <app-scheduling-target-contact-add-edit
+                                    [preSeededData]="{ schedulingTargetId: schedulingTargetData?.id }"
+                                    [hiddenFields]="['schedulingTargetId']"></app-scheduling-target-contact-add-edit>
+                            </div>
+                        </div>
+                    </ng-template>
+                </li>
+
+                <li ngbNavItem="addresses" *ngIf="isEditMode">
+                    <button ngbNavLink>Addresses <span class="badge bg-secondary ms-2">{{
+                            (schedulingTargetData?.SchedulingTargetAddressesCount$ | async) ?? 0 }}</span></button>
+                    <ng-template ngbNavContent>
+                        <div class="mt-3">
+                            <app-scheduling-target-address-table
+                                [queryParams]="{ schedulingTargetId: schedulingTargetData?.id }"></app-scheduling-target-address-table>
+                            <div class="d-flex justify-content-end mt-2">
+                                <app-scheduling-target-address-add-edit
+                                    [preSeededData]="{ schedulingTargetId: schedulingTargetData?.id }"
+                                    [hiddenFields]="['schedulingTargetId']"></app-scheduling-target-address-add-edit>
+                            </div>
+                        </div>
+                    </ng-template>
+                </li>
+
+                <li ngbNavItem="qualifications" *ngIf="isEditMode">
+                    <button ngbNavLink>Qualifications <span class="badge bg-secondary ms-2">{{
+                            (schedulingTargetData?.SchedulingTargetQualificationRequirementsCount$ | async) ?? 0
+                            }}</span></button>
+                    <ng-template ngbNavContent>
+                        <div class="mt-3">
+                            <app-scheduling-target-qualification-requirement-table
+                                [queryParams]="{ schedulingTargetId: schedulingTargetData?.id }"></app-scheduling-target-qualification-requirement-table>
+                            <div class="d-flex justify-content-end mt-2">
+                                <app-scheduling-target-qualification-requirement-add-edit
+                                    [preSeededData]="{ schedulingTargetId: schedulingTargetData?.id }"
+                                    [hiddenFields]="['schedulingTargetId']"></app-scheduling-target-qualification-requirement-add-edit>
+                            </div>
+                        </div>
+                    </ng-template>
+                </li>
+
+                <li ngbNavItem="rates" *ngIf="isEditMode">
+                    <button ngbNavLink>Rates <span class="badge bg-secondary ms-2">{{
+                            (schedulingTargetData?.RateSheetsCount$ | async) ?? 0 }}</span></button>
+                    <ng-template ngbNavContent>
+                        <div class="mt-3">
+                            <app-rate-sheet-table
+                                [queryParams]="{ schedulingTargetId: schedulingTargetData?.id }"></app-rate-sheet-table>
+                            <div class="d-flex justify-content-end mt-2">
+                                <app-rate-sheet-add-edit
+                                    [preSeededData]="{ schedulingTargetId: schedulingTargetData?.id }"
+                                    [hiddenFields]="['schedulingTargetId']"></app-rate-sheet-add-edit>
+                            </div>
+                        </div>
+                    </ng-template>
+                </li>
+
+                <li ngbNavItem="events" *ngIf="isEditMode">
+                    <button ngbNavLink>Events <span class="badge bg-secondary ms-2">{{
+                            (schedulingTargetData?.ScheduledEventsCount$ | async) ?? 0 }}</span></button>
+                    <ng-template ngbNavContent>
+                        <div class="mt-3">
+                            <app-scheduled-event-table
+                                [queryParams]="{ schedulingTargetId: schedulingTargetData?.id }"></app-scheduled-event-table>
+                            <div class="d-flex justify-content-end mt-2">
+                                <app-scheduled-event-add-edit
+                                    [preSeededData]="{ schedulingTargetId: schedulingTargetData?.id }"
+                                    [hiddenFields]="['schedulingTargetId']"></app-scheduled-event-add-edit>
+                            </div>
+                        </div>
+                    </ng-template>
+                </li>
+
+                <li ngbNavItem="households" *ngIf="isEditMode">
+                    <button ngbNavLink>Households <span class="badge bg-secondary ms-2">{{
+                            (schedulingTargetData?.HouseholdsCount$ | async) ?? 0 }}</span></button>
+                    <ng-template ngbNavContent>
+                        <div class="mt-3">
+                            <app-household-table
+                                [queryParams]="{ schedulingTargetId: schedulingTargetData?.id }"></app-household-table>
+                            <div class="d-flex justify-content-end mt-2">
+                                <app-household-add-edit
+                                    [preSeededData]="{ schedulingTargetId: schedulingTargetData?.id }"
+                                    [hiddenFields]="['schedulingTargetId']"></app-household-add-edit>
+                            </div>
+                        </div>
+                    </ng-template>
+                </li>
+
+                <li ngbNavItem="history" *ngIf="isEditMode">
+                    <button ngbNavLink>History <span class="badge bg-secondary ms-2">{{
+                            (schedulingTargetData?.SchedulingTargetChangeHistoriesCount$ | async) ?? 0
+                            }}</span></button>
+                    <ng-template ngbNavContent>
+                        <div class="mt-3">
+                            <app-scheduling-target-change-history-table
+                                [queryParams]="{ schedulingTargetId: schedulingTargetData?.id }"></app-scheduling-target-change-history-table>
+                        </div>
+                    </ng-template>
+                </li>
+
+            </ul>
+            <div [ngbNavOutlet]="nav" class="mt-4"></div>
+
+        </div>
+    </div>
+</div>

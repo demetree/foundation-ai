@@ -72,6 +72,7 @@ import { ClientCustomListingComponent } from './components/client-custom/client-
 // Scheduling Target custom optimizations
 //
 import { SchedulingTargetCustomListingComponent } from './components/scheduling-target-custom/scheduling-target-custom-listing/scheduling-target-custom-listing.component';
+import { SchedulingTargetCustomDetailComponent } from './components/scheduling-target-custom/scheduling-target-custom-detail/scheduling-target-custom-detail.component';
 
 
 
@@ -1190,9 +1191,9 @@ const routes: Routes = [
   { path: 'scheduledeventtemplatequalificationrequirementchangehistory', redirectTo: 'scheduledeventtemplatequalificationrequirementchangehistories' },
   { path: 'schedulingtargets', component: SchedulingTargetCustomListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Scheduling Targets' },
 
-  { path: 'schedulingtargets/new', component: SchedulingTargetDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Scheduling Target' },
-  { path: 'schedulingtargets/:schedulingTargetId', component: SchedulingTargetDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Scheduling Target' },
-  { path: 'schedulingtarget/:schedulingTargetId', component: SchedulingTargetDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Scheduling Target' },
+  { path: 'schedulingtargets/new', component: SchedulingTargetCustomDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Scheduling Target' },
+  { path: 'schedulingtargets/:schedulingTargetId', component: SchedulingTargetCustomDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Scheduling Target' },
+  { path: 'schedulingtarget/:schedulingTargetId', component: SchedulingTargetCustomDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Scheduling Target' },
   { path: 'schedulingtarget', redirectTo: 'schedulingtargets' },
   { path: 'schedulingtargetaddresses', component: SchedulingTargetAddressListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Scheduling Target Addresses' },
   { path: 'schedulingtargetaddresses/new', component: SchedulingTargetAddressDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Scheduling Target Address' },

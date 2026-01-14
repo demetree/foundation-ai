@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Foundation.Controllers;
+using System.Threading;
 
 namespace Foundation.Scheduler.Controllers.WebAPI
 {

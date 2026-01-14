@@ -1,13 +1,13 @@
 <div class="container-fluid p-1 m-0 client-details-container">
   <div class="p-2 detail-background">
 
-    <!-- Header with Avatar and Key Info -->
-    <div class="card mb-4 header-card shadow-sm">
-      <div class="card-body d-flex align-items-center gap-4">
+    <!-- Premium Header with Avatar and Key Info -->
+    <div class="card mb-4 premium-header shadow-lg border-0">
+      <div class="card-body d-flex flex-wrap align-items-center gap-4">
 
         <!-- Avatar -->
-        <div class="avatar rounded-circle overflow-hidden border shadow clickable"
-          style="width: 120px; height: 120px; background: #f8f9fa;" (click)="openEditModal()">
+        <div class="avatar rounded-circle overflow-hidden shadow clickable flex-shrink-0"
+          style="width: 120px; height: 120px;" (click)="openEditModal()">
           <ng-container *ngIf="client?.avatarData; else defaultAvatar">
             <img [src]="'data:' + (client?.avatarMimeType || 'image/png') + ';base64,' + (client?.avatarData || '')"
               class="w-100 h-100 object-fit-cover" alt="{{ client?.name }} avatar">
@@ -15,7 +15,7 @@
 
           <ng-template #defaultAvatar>
             <div class="w-100 h-100 d-flex align-items-center justify-content-center text-white fw-bold fs-3"
-              [style.background-color]="client?.color || '#6c757d'">
+              [style.background-color]="client?.color || 'rgba(255,255,255,0.2)'">
               {{ client?.name | slice:0:2 | uppercase }}
             </div>
           </ng-template>
@@ -23,10 +23,9 @@
 
         <!-- Details -->
         <div class="flex-grow-1">
-          <div class="d-flex align-items-center gap-3 mb-2">
-            <span class="text-uppercase text-muted small fw-semibold">Client</span>
-            <span class="text-muted small">•</span>
-            <h3 class="mb-0">{{ client?.name || 'Loading...' }}</h3>
+          <div class="d-flex align-items-center flex-wrap gap-2 mb-2">
+            <span class="text-uppercase text-white-50 small fw-semibold">Client</span>
+            <h3 class="mb-0 text-white me-3 ms-2">{{ client?.name || 'Loading...' }}</h3>
 
             <!-- Active / Deleted Status -->
             <span class="badge" [ngClass]="client?.active ? 'bg-success' : 'bg-secondary'">
@@ -41,18 +40,22 @@
             <span class="badge bg-secondary">Version: {{ client?.versionNumber }}</span>
           </div>
 
-          <div class="text-muted small">
-            <div *ngIf="client?.description"><strong>Description: </strong>{{ client?.description }}</div>
-            <div><strong>Type:</strong> {{ client?.clientType?.name || '—' }}</div>
+          <div class="text-white-50 small">
+            <div *ngIf="client?.description" class="mb-1"><strong>Description: </strong>{{ client?.description }}</div>
+            <div *ngIf="client?.clientType?.name" class="mt-1">
+              <i class="fa-solid fa-layer-group me-2"></i>
+              <strong>Type:</strong> {{ client?.clientType?.name || '—' }}
+            </div>
           </div>
         </div>
 
         <!-- Actions -->
-        <div class="text-end">
-          <button class="btn btn-primary" (click)="openEditModal()" *ngIf="userIsSchedulerClientWriter()">
+        <div class="text-end align-self-start align-self-md-center">
+          <button class="btn btn-glass" (click)="openEditModal()" *ngIf="userIsSchedulerClientWriter()">
             <i class="fa fa-pen me-2"></i> Edit
           </button>
-          <button class="btn btn-outline-secondary ms-2" (click)="goBack()" ngbTooltip="Go Back" *ngIf="canGoBack()">
+
+          <button class="btn btn-outline-light-custom ms-2" (click)="goBack()" ngbTooltip="Go Back" *ngIf="canGoBack()">
             <i class="fa fa-arrow-left me-2"></i> Back
           </button>
 
@@ -61,6 +64,7 @@
         </div>
       </div>
     </div>
+
 
     <!-- Loading / Error -->
     <div class="text-center py-5" *ngIf="isLoading$ | async">

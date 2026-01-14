@@ -1,13 +1,13 @@
 <div class="container-fluid p-1 m-0 crew-details-container">
   <div class="p-2 detail-background">
 
-    <!-- Header with Avatar and Key Info -->
-    <div class="card mb-4 header-card shadow-sm">
-      <div class="card-body d-flex align-items-center gap-4">
+    <!-- Premium Header with Avatar and Key Info -->
+    <div class="card mb-4 premium-header shadow-lg border-0">
+      <div class="card-body d-flex flex-wrap align-items-center gap-4">
 
         <!-- Avatar -->
-        <div class="avatar rounded-circle overflow-hidden border shadow clickable"
-          style="width: 120px; height: 120px; background: #f8f9fa;" (click)="openEditModal()">
+        <div class="avatar rounded-circle overflow-hidden shadow clickable flex-shrink-0"
+          style="width: 120px; height: 120px;" (click)="openEditModal()">
           <ng-container *ngIf="crew?.avatarData; else defaultAvatar">
             <img [src]="'data:' + (crew?.avatarMimeType || 'image/png') + ';base64,' + (crew?.avatarData || '')"
               class="w-100 h-100 object-fit-cover" alt="{{ crew?.name }} avatar">
@@ -15,7 +15,7 @@
 
           <ng-template #defaultAvatar>
             <div class="w-100 h-100 d-flex align-items-center justify-content-center text-white fw-bold fs-3"
-              [style.background-color]="crew?.color || '#6c757d'">
+              [style.background-color]="crew?.color || 'rgba(255,255,255,0.2)'">
               <i class="fa-2x text-white opacity-75" [class]="crew?.icon?.fontAwesomeCode || 'fa-solid fa-users'">
               </i>
             </div>
@@ -24,10 +24,9 @@
 
         <!-- Details -->
         <div class="flex-grow-1">
-          <div class="d-flex align-items-center gap-3 mb-2">
-            <span class="text-uppercase text-muted small fw-semibold">Crew</span>
-            <span class="text-muted small">•</span>
-            <h3 class="mb-0">{{ crew?.name || 'Loading...' }}</h3>
+          <div class="d-flex align-items-center flex-wrap gap-2 mb-2">
+            <span class="text-uppercase text-white-50 small fw-semibold">Crew</span>
+            <h3 class="mb-0 text-white me-3 ms-2">{{ crew?.name || 'Loading...' }}</h3>
 
             <!-- Active / Deleted Status -->
             <span class="badge" [ngClass]="crew?.active ? 'bg-success' : 'bg-secondary'">
@@ -41,19 +40,23 @@
             <span class="badge bg-secondary">Version: {{ crew?.versionNumber }}</span>
           </div>
 
-          <div class="text-muted small">
-            <div *ngIf="crew?.description"><strong>Description: </strong>{{ crew?.description }}</div>
+          <div class="text-white-50 small">
+            <div *ngIf="crew?.description" class="mb-1"><strong>Description: </strong>{{ crew?.description }}</div>
             <div *ngIf="officeCount$ != null && ((officeCount$ | async) ?? 0) > 0" class="clickable"
-              (click)="navigateToOffice(crew?.officeId)"><strong>Office:</strong> {{ crew?.office?.name || '—' }}</div>
+              (click)="navigateToOffice(crew?.officeId)">
+              <i class="fa-solid fa-building me-2"></i>
+              <strong>Office:</strong> {{ crew?.office?.name || '—' }}
+            </div>
           </div>
         </div>
 
         <!-- Actions -->
-        <div class="text-end">
-          <button class="btn btn-primary" (click)="openEditModal()" *ngIf="userIsSchedulerCrewWriter()">
+        <div class="text-end align-self-start align-self-md-center">
+          <button class="btn btn-glass" (click)="openEditModal()" *ngIf="userIsSchedulerCrewWriter()">
             <i class="fa fa-pen me-2"></i> Edit
           </button>
-          <button class="btn btn-outline-secondary ms-2" (click)="goBack()" ngbTooltip="Go Back" *ngIf="canGoBack()">
+
+          <button class="btn btn-outline-light-custom ms-2" (click)="goBack()" ngbTooltip="Go Back" *ngIf="canGoBack()">
             <i class="fa fa-arrow-left me-2"></i> Back
           </button>
 
@@ -62,6 +65,7 @@
         </div>
       </div>
     </div>
+
 
     <!-- Loading / Error -->
     <div class="text-center py-5" *ngIf="isLoading$ | async">

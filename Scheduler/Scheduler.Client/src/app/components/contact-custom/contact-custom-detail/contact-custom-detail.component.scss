@@ -1,3 +1,142 @@
+// Variables
+$gradient-info: linear-gradient(135deg, #17ead9 0%, #6078ea 100%); // Cyan/Blue
+$glass-bg: rgba(255, 255, 255, 0.15);
+$glass-border: rgba(255, 255, 255, 0.2);
+$glass-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+/* Page Container */
+.contact-details-container {
+  background-color: #f4f6f9;
+  min-height: 100%;
+  padding-top: 1.5rem !important;
+
+  .detail-background {
+    background: transparent;
+  }
+}
+
+/* Premium Header styling */
+.premium-header {
+  background: $gradient-info;
+  border-radius: 16px;
+  overflow: hidden;
+  color: white;
+
+  .card-body {
+    padding: 2rem;
+  }
+
+  /* Avatar styling in header */
+  .avatar {
+    border: 3px solid rgba(255, 255, 255, 0.5) !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+    transition: transform 0.2s ease;
+    background-color: rgba(255, 255, 255, 0.1) !important;
+
+    &:hover {
+      transform: scale(1.02);
+    }
+  }
+
+  /* Typography overrides for header */
+  h3 {
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .text-muted {
+    color: rgba(255, 255, 255, 0.8) !important;
+  }
+
+  a {
+    color: white;
+    text-decoration: underline;
+
+    &:hover {
+      color: rgba(255, 255, 255, 0.9);
+    }
+  }
+
+  /* Badge overrides for header */
+  .badge {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+    &.bg-secondary {
+      background-color: rgba(255, 255, 255, 0.2) !important;
+      color: white !important;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    &.bg-success {
+      background-color: #2ecc71 !important; // keep consistent success color
+    }
+
+    &.bg-danger {
+      background-color: #e74c3c !important;
+    }
+
+  }
+
+
+  /* Glassmorphic Buttons */
+  .btn-glass {
+    background: $glass-bg;
+    border: 1px solid $glass-border;
+    color: white;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    box-shadow: $glass-shadow;
+    backdrop-filter: blur(10px);
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.25);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+    }
+  }
+
+  /* Back Button override */
+  .btn-outline-light-custom {
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    color: white;
+    border-radius: 8px;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+  }
+
+}
+
+/* Nav Tabs Customization */
+.nav-tabs {
+  border-bottom: 2px solid #e9ecef;
+  margin-bottom: 1.5rem;
+
+  .nav-link {
+    color: #495057;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 1rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.2s;
+
+    &:hover {
+      border-color: transparent;
+      color: #343a40;
+      background: rgba(0, 0, 0, 0.02);
+    }
+
+    &.active {
+      color: #343a40;
+      background: transparent;
+      border-bottom: 3px solid #17ead9; // Match gradient primary color
+      font-weight: 700;
+    }
+  }
+}
+
 .clickable {
   cursor: pointer;
   transition: opacity 0.2s;

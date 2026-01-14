@@ -1,138 +1,144 @@
-.avatar-container {
-  flex-shrink: 0;
+// Variables
+$gradient-red: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%); // Pink/Rose
+$glass-bg: rgba(255, 255, 255, 0.15);
+$glass-border: rgba(255, 255, 255, 0.2);
+$glass-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+/* Page Container */
+.crew-details-container {
+  background-color: #f4f6f9;
+  min-height: 100%;
+  padding-top: 1.5rem !important;
+
+  .detail-background {
+    background: transparent;
+  }
+}
+
+/* Premium Header styling */
+.premium-header {
+  background: $gradient-red;
+  border-radius: 16px;
+  overflow: hidden;
+  color: white;
+
+  .card-body {
+    padding: 2rem;
+  }
+
+  /* Avatar styling in header */
+  .avatar {
+    border: 3px solid rgba(255, 255, 255, 0.5) !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+    transition: transform 0.2s ease;
+    background-color: rgba(255, 255, 255, 0.1) !important;
+
+    &:hover {
+      transform: scale(1.02);
+    }
+  }
+
+  /* Typography overrides for header */
+  h3 {
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .text-white-50 {
+    color: rgba(255, 255, 255, 0.7) !important;
+  }
+
+  a {
+    color: white;
+    text-decoration: underline;
+
+    &:hover {
+      color: rgba(255, 255, 255, 0.9);
+    }
+  }
+
+  /* Badge overrides for header - glass effect base */
+  .badge {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+    &.bg-secondary {
+      background-color: rgba(255, 255, 255, 0.2) !important; // Glassy dark
+      color: white !important;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    &.bg-success {
+      background-color: #2ecc71 !important; // Pure success
+    }
+
+    &.bg-danger {
+      background-color: #e74c3c !important; // Pure danger
+    }
+  }
+
+  /* Glassmorphic Buttons */
+  .btn-glass {
+    background: $glass-bg;
+    border: 1px solid $glass-border;
+    color: white;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    box-shadow: $glass-shadow;
+    backdrop-filter: blur(10px);
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.25);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+    }
+  }
+
+  /* Back Button override */
+  .btn-outline-light-custom {
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    color: white;
+    border-radius: 8px;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+  }
+}
+
+/* Nav Tabs Customization */
+.nav-tabs {
+  border-bottom: 2px solid #e9ecef;
+  margin-bottom: 1.5rem;
+
+  .nav-link {
+    color: #495057;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 1rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.2s;
+
+    &:hover {
+      border-color: transparent;
+      color: #343a40;
+      background: rgba(0, 0, 0, 0.02);
+    }
+
+    &.active {
+      color: #343a40;
+      background: transparent;
+      border-bottom: 3px solid #ff9a9e; // Match gradient pink
+      font-weight: 700;
+    }
+  }
 }
 
 .clickable {
   cursor: pointer;
+  transition: opacity 0.2s;
 }
 
-.nav-tabs-custom {
-  border-bottom: 2px solid #dee2e6;
-
-  .nav-link {
-    border: none;
-    border-bottom: 3px solid transparent;
-    border-radius: 0;
-    padding: 0.75rem 1rem;
-    font-weight: 500;
-
-    &.active {
-      border-bottom-color: #0176d3;
-      color: #0176d3;
-    }
-  }
-}
-
-.header-card {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
-
-  .card-header {
-    background-color: transparent;
-    border: none;
-    padding: 1rem 1.5rem;
-  }
-
-  .header-left {
-    display: flex;
-    align-items: center;
-
-    .page-title {
-      font-size: 1.5rem;
-      font-weight: 600;
-      margin: 0;
-    }
-
-    .text-muted {
-      font-size: 0.875rem;
-    }
-  }
-}
-
-// Styles for the color picker
-.color-picker {
-  // Native color inputs are usually square and small; make it a reasonable size
-  width: 60px;
-  height: 42px;
-  padding: 4px;
-  cursor: pointer;
-}
-
-// Style for the read-only hex display next to the picker
-.input-color-display {
-  margin-bottom: 0; // Align properly with the picker
-}
-
-
-
-.crew-details-header {
-    background-color: transparent;
-    border: none;
-    padding: 1rem 1.5rem;
-}
-
-/* Full height for container with navbar and footer */
-.crew-details-container {
-  display: flex;
-  flex-direction: column;
-  height: 100%; /* Full height relative to viewport */
-  overflow: hidden; /* Prevent internal scrolling and make outer container scrollable */
-  padding-top: 3px;
-  padding-left: 10px;
-  padding-right: 10px;
-  padding-bottom: 3px;
-  background-color: #f4f6f9;
-}
-
-/* Body section that allows for scrolling */
-.crew-details-body {
-  flex-grow: 1; /* Takes up remaining space in the viewport */
-  overflow-y: auto; /* Enables vertical scrolling if needed */
-  box-sizing: border-box; /* Ensure padding doesn't cause overflow */
-  overflow-x: hidden;   /* hide any potential x overflow.  There should be none, but we want to make sure x scrollbars don't appear*/
-  padding: 1rem 1.5rem;
-}
-
-/* Form styling */
-.crew-details-form {
-  width: 100%; /* Ensure the form doesn't exceed the container width */
-  max-width: 100%; /* Prevent unintended overflow */
-  box-sizing: border-box; /* Ensure consistent sizing with padding and borders */
-  padding: 5px;
-  font-size: 1rem;
-}
-
-/* Footer stays at the bottom of the form but will only be visible when the page is scrolled */
-.crew-details-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 5px;
-  border: none;
-}
-
-.crew-input, .crew-select {
-  margin-bottom: 10px;
-  border-radius: 5px;
-}
-
-.crew-input::placeholder, .crew-select::placeholder {
-  color: #6c757d;
-}
-
-.text-danger {
-  color: #dc3545 !important;
-}
-
-.detail-background {
-  border-radius: 5px;
-  padding: 1rem;
-}
-
-.back-button {
-  margin-right: 3px;
-}
-
-.hidden {
-  display: none;
+.clickable:hover {
+  opacity: 0.8;
 }
