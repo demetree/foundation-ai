@@ -1,5 +1,5 @@
-// Variables
-$gradient-deep-purple: linear-gradient(135deg, #5f2c82 0%, #49a09d 100%); // Deep Purple/Cyan
+// Standardized Deep Purple Theme (Matches Listing)
+$gradient-deep-purple: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
 $glass-bg: rgba(255, 255, 255, 0.15);
 $glass-border: rgba(255, 255, 255, 0.2);
 $glass-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -128,7 +128,7 @@ $glass-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     &.active {
       color: #343a40;
       background: transparent;
-      border-bottom: 3px solid #5f2c82; // Match gradient distinctive color
+      border-bottom: 3px solid #6a11cb; // Match gradient distinctive color
       font-weight: 700;
     }
   }

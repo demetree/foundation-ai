@@ -15,6 +15,12 @@ $glass-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   }
 }
 
+//
+// Premium Header Styling
+//
+// Success Green Theme (Matches Listing)
+$gradient-success: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+
 /* Premium Header styling */
 .premium-header {
   background: $gradient-success;

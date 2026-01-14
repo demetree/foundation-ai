@@ -1,5 +1,6 @@
 // Variables
-$gradient-info: linear-gradient(135deg, #17ead9 0%, #6078ea 100%); // Cyan/Blue
+// Standardized Cyan/Blue Theme (Matches Listing)
+$gradient-info: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
 $glass-bg: rgba(255, 255, 255, 0.15);
 $glass-border: rgba(255, 255, 255, 0.2);
 $glass-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -131,7 +132,7 @@ $glass-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     &.active {
       color: #343a40;
       background: transparent;
-      border-bottom: 3px solid #17ead9; // Match gradient primary color
+      border-bottom: 3px solid #4facfe; // Match gradient primary color
       font-weight: 700;
     }
   }

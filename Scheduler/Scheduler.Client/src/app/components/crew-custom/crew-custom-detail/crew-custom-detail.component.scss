@@ -15,9 +15,15 @@ $glass-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   }
 }
 
+//
+// Premium Header Styling
+//
+// Rose/Pink Theme (Matches Listing)
+$gradient-rose: linear-gradient(135deg, #f857a6 0%, #ff5858 100%);
+
 /* Premium Header styling */
 .premium-header {
-  background: $gradient-red;
+  background: $gradient-rose;
   border-radius: 16px;
   overflow: hidden;
   color: white;

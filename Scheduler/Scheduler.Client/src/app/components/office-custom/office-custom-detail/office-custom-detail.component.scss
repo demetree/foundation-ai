@@ -1,5 +1,6 @@
 // Variables
-$gradient-warning: linear-gradient(135deg, #fce38a 0%, #f38181 100%); // Orange/Gold
+// Standardized Warning/Orange Theme (Matches Listing)
+$gradient-warning: linear-gradient(135deg, #f7971e 0%, #ffd200 100%);
 $glass-bg: rgba(255, 255, 255, 0.15);
 $glass-border: rgba(255, 255, 255, 0.2);
 $glass-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -128,7 +129,7 @@ $glass-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     &.active {
       color: #343a40;
       background: transparent;
-      border-bottom: 3px solid #f38181; // Match gradient distinct color
+      border-bottom: 3px solid #f7971e; // Match gradient distinct color
       font-weight: 700;
     }
   }
