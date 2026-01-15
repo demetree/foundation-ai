@@ -15,6 +15,8 @@ namespace Foundation.Security.OIDC
     {
         public const string SCHEDULER_SERVER_NAME = "Scheduler API";
         public const string SCHEDULER_CLIENT_ID = "scheduler_spa";
+
+        public const string SWAGGER_SERVER_NAME = "Swagger SPA";
         public const string SWAGGER_CLIENT_ID = "swagger_ui";
 
         public static async Task RegisterClientApplicationsAsync(IServiceProvider provider)
@@ -22,7 +24,7 @@ namespace Foundation.Security.OIDC
             var manager = provider.GetRequiredService<IOpenIddictApplicationManager>();
 
             //
-            // Create the Foundation Angular SPA Client in OpenID
+            // Create the Scheduler Angular SPA Client in OpenID
             //
             if (await manager.FindByClientIdAsync(SCHEDULER_CLIENT_ID) is null)
             {
@@ -30,7 +32,7 @@ namespace Foundation.Security.OIDC
                 {
                     ClientId = SCHEDULER_CLIENT_ID,
                     ClientType = ClientTypes.Public,
-                    DisplayName = "Scheduler SPA",
+                    DisplayName = SCHEDULER_SERVER_NAME,
                     Permissions =
                     {
                         Permissions.Endpoints.Token,
@@ -55,7 +57,7 @@ namespace Foundation.Security.OIDC
                 {
                     ClientId = SWAGGER_CLIENT_ID,
                     ClientType = ClientTypes.Public,
-                    DisplayName = "Swagger UI",
+                    DisplayName = SWAGGER_SERVER_NAME,
                     Permissions =
                     {
                         Permissions.Endpoints.Token,

@@ -834,7 +834,7 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
             {
 
                 sb.AppendLine(@$"
-    public Put{entity}(id: bigint | number, {CamelCase(entity, false)}: {entity}SubmitData) : Observable<{entity}Data> {{
+    public Put{entity}(id: bigint | number, {CamelCase(entity, false)}: {entity}SubmitData): Observable<{entity}Data> {{
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
@@ -847,7 +847,7 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
     }}
 
 
-    public Post{entity}({CamelCase(entity, false)}: {entity}SubmitData) : Observable<{entity}Data> {{
+    public Post{entity}({CamelCase(entity, false)}: {entity}SubmitData): Observable<{entity}Data> {{
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
@@ -860,7 +860,7 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
     }}
 
   
-    public Delete{entity}(id: bigint | number) : Observable<any> {{
+    public Delete{entity}(id: bigint | number): Observable<any> {{
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
@@ -875,7 +875,7 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
             else
             {
                 sb.AppendLine($@"
-    public Put{entity}(id: bigint | number, {CamelCase(entity, false)}: {entity}SubmitData) : Observable<{entity}Data> {{
+    public Put{entity}(id: bigint | number, {CamelCase(entity, false)}: {entity}SubmitData): Observable<{entity}Data> {{
 
         return this.http.put<{entity}Data>(this.baseUrl + 'api/{entity}/' + id.toString(), {CamelCase(entity, false)}).pipe(
             tap(() => this.ClearAllCaches()),
@@ -886,7 +886,7 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
     }}
 
 
-    public Post{entity}({CamelCase(entity, false)}: {entity}SubmitData) : Observable<{entity}Data> {{
+    public Post{entity}({CamelCase(entity, false)}: {entity}SubmitData): Observable<{entity}Data> {{
 
         return this.http.post<{entity}Data>(this.baseUrl + 'api/{entity}', {CamelCase(entity, false)}).pipe(
             tap(() => this.ClearAllCaches()),
@@ -897,7 +897,7 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
     }}
   
 
-    public Delete{entity}(id: bigint | number) : Observable<any>{{
+    public Delete{entity}(id: bigint | number): Observable<any>{{
 
         return this.http.delete<void>(this.baseUrl + 'api/{entity}/' + id.toString()).pipe(
             tap(() => this.ClearAllCaches()),
@@ -913,7 +913,7 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
             {
                 if (addAuthorization == true)
                 {
-                    sb.AppendLine($@"    public Rollback{entity}(id: bigint | number, versionNumber: bigint | number) : Observable<{entity}Data>{{
+                    sb.AppendLine($@"    public Rollback{entity}(id: bigint | number, versionNumber: bigint | number): Observable<{entity}Data>{{
 
         let queryParams = new HttpParams();
 
@@ -933,7 +933,7 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
                 else
                 {
                     sb.AppendLine($@"
-    public Rollback{entity}(id: bigint | number, versionNumber: bigint | number) : Observable<{entity}Data>{{
+    public Rollback{entity}(id: bigint | number, versionNumber: bigint | number): Observable<{entity}Data>{{
 
         let queryParams = new HttpParams();
 
@@ -991,7 +991,7 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
             //
             // Note we are using the entity name with a 'List' suffix instead of the plural version because some words, like 'Equipment' are both singular and plural and that breaks the generation by duplicating method names.
             //
-            sb.AppendLine("    public Get" + entity + "List(config: " + entity + @"QueryParameters | any = null) : Observable<Array<" + entity + "Data>> {");
+            sb.AppendLine("    public Get" + entity + "List(config: " + entity + @"QueryParameters | any = null): Observable<Array<" + entity + "Data>> {");
             sb.AppendLine();
             sb.AppendLine(@"        const configHash = this.getConfigHash(config);
 
@@ -1017,7 +1017,7 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
 
 ");
 
-            sb.AppendLine("    private request" + entity + "List(config: " + entity + "QueryParameters | any) : Observable <Array<" + entity + @"Data>> {");
+            sb.AppendLine("    private request" + entity + "List(config: " + entity + "QueryParameters | any): Observable <Array<" + entity + @"Data>> {");
             sb.AppendLine(@"
         let queryParams = new HttpParams();
 
@@ -1063,7 +1063,7 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine("    public Get" + plural + "RowCount(config: " + entity + @"QueryParameters | any = null) : Observable<bigint | number> {");
+            sb.AppendLine("    public Get" + plural + "RowCount(config: " + entity + @"QueryParameters | any = null): Observable<bigint | number> {");
             sb.AppendLine();
             sb.AppendLine(@"        const configHash = this.getConfigHash(config);
 
@@ -1090,7 +1090,7 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
 
             if (addAuthentication == true)
             {
-                sb.AppendLine("    private request" + plural + "RowCount(config: " + entity + "QueryParameters | any) : Observable<bigint | number> {");
+                sb.AppendLine("    private request" + plural + "RowCount(config: " + entity + "QueryParameters | any): Observable<bigint | number> {");
                 sb.AppendLine(@"
         let queryParams = new HttpParams();
 
@@ -1114,7 +1114,7 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
             else
             {
 
-                sb.AppendLine("    private request" + plural + "RowCount(config: " + entity + "QueryParameters | any) : Observable<bigint | number> {");
+                sb.AppendLine("    private request" + plural + "RowCount(config: " + entity + "QueryParameters | any): Observable<bigint | number> {");
                 sb.AppendLine(@"
         let queryParams = new HttpParams();
 
@@ -1141,7 +1141,7 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine("    public Get" + plural + "BasicListData(config: " + entity + @"QueryParameters | any = null) : Observable<Array<" + entity + "BasicListData>> {");
+            sb.AppendLine("    public Get" + plural + "BasicListData(config: " + entity + @"QueryParameters | any = null): Observable<Array<" + entity + "BasicListData>> {");
             sb.AppendLine();
             sb.AppendLine(@"        const configHash = this.getConfigHash(config);
 
@@ -1167,7 +1167,7 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
 
 ");
 
-            sb.AppendLine("    private request" + plural + "BasicListData(config: " + entity + "QueryParameters | any) : Observable<Array<" + entity + "BasicListData>> {");
+            sb.AppendLine("    private request" + plural + "BasicListData(config: " + entity + "QueryParameters | any): Observable<Array<" + entity + "BasicListData>> {");
             sb.AppendLine(@"
         let queryParams = new HttpParams();
 
@@ -1212,7 +1212,7 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine("    public Get" + entity + "(id: bigint | number, includeRelations: boolean = true) : Observable<" + entity + "Data> {");
+            sb.AppendLine("    public Get" + entity + "(id: bigint | number, includeRelations: boolean = true): Observable<" + entity + "Data> {");
 
             sb.AppendLine(@"
         const configHash = this.utilityService.hashCode(""_"" + id.toString() + ""_"" + includeRelations.toString());
@@ -1242,7 +1242,7 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
 
             if (addAuthentication == true)
             {
-                sb.AppendLine("    private request" + entity + "(id: bigint | number, includeRelations: boolean = true) : Observable<" + entity + @"Data> {");
+                sb.AppendLine("    private request" + entity + "(id: bigint | number, includeRelations: boolean = true): Observable<" + entity + @"Data> {");
                 sb.AppendLine($@"
         let queryParams = new HttpParams();
 
@@ -1261,7 +1261,7 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
             }
             else
             {
-                sb.AppendLine("    private request" + entity + "(id: bigint | number, includeRelations: boolean = true) : Observable<" + entity + @"Data> {");
+                sb.AppendLine("    private request" + entity + "(id: bigint | number, includeRelations: boolean = true): Observable<" + entity + @"Data> {");
                 sb.AppendLine($@"
         let queryParams = new HttpParams();
 
@@ -1652,7 +1652,7 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
                     sourceFieldName = sourceTableName;
 
                     sb.AppendLine($@"    private _{Pluralize(CamelCase(sourceFieldName, false))}: {sourceTableName}Data[] | null = null;
-    private _{Pluralize(CamelCase(sourceFieldName, false))}Promise: Promise<{sourceTableName}Data[]> | null  = null;
+    private _{Pluralize(CamelCase(sourceFieldName, false))}Promise: Promise<{sourceTableName}Data[]> | null = null;
     private _{Pluralize(CamelCase(sourceFieldName, false))}Subject = new BehaviorSubject<{sourceTableName}Data[] | null>(null);
 
                 ");
@@ -1663,7 +1663,7 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
                     // This is a more complex link.  Use the source table name, and it's field as the child variable names
                     //
                     sb.AppendLine($@"    private _{CamelCase(sourceTableName, false)}{Pluralize(CamelCaseToPascalCase(sourceFieldName))}: {sourceTableName}Data[] | null = null;
-    private _{CamelCase(sourceTableName, false)}{Pluralize(CamelCaseToPascalCase(sourceFieldName))}Promise: Promise<{sourceTableName}Data[]> | null  = null;
+    private _{CamelCase(sourceTableName, false)}{Pluralize(CamelCaseToPascalCase(sourceFieldName))}Promise: Promise<{sourceTableName}Data[]> | null = null;
     private _{CamelCase(sourceTableName, false)}{Pluralize(CamelCaseToPascalCase(sourceFieldName))}Subject = new BehaviorSubject<{sourceTableName}Data[] | null>(null);
                     ");
 

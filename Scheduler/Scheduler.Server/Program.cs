@@ -3,7 +3,6 @@ using Foundation.Auditor.Database;
 using Foundation.Extensions;
 using Foundation.Scheduler.Controllers.WebAPI;
 using Foundation.Scheduler.Database;
-using Foundation.Security.Authorization;
 using Foundation.Security.Configuration;
 using Foundation.Security.Controllers.WebAPI;
 using Foundation.Security.Database;
@@ -355,7 +354,7 @@ namespace Foundation.Scheduler
                 builder.Services.AddSwaggerGen(c =>
                 {
                     c.SwaggerDoc("v1", new OpenApiInfo { Title = OidcApplicationManager.SCHEDULER_SERVER_NAME, Version = "v1" });
-                    c.OperationFilter<SwaggerAuthorizeOperationFilter>();
+               
                     c.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
                     {
                         Type = SecuritySchemeType.OAuth2,
@@ -365,6 +364,15 @@ namespace Foundation.Scheduler
                             {
                                 TokenUrl = new Uri("/connect/token", UriKind.Relative)
                             }
+                        }
+                    });
+
+                    // Add Global Security Requirement
+                    c.AddSecurityRequirement(doc => new OpenApiSecurityRequirement
+                    {
+                        [new OpenApiSecuritySchemeReference("oauth2", doc)] = new List<string> 
+                        { 
+                            "openid", "profile", "email", "roles", "phone", "address" 
                         }
                     });
                 });
@@ -405,6 +413,11 @@ namespace Foundation.Scheduler
                         c.DocumentTitle = "Swagger UI - Scheduler";
                         c.SwaggerEndpoint("/swagger/v1/swagger.json", $"{OidcApplicationManager.SCHEDULER_SERVER_NAME} V1");
                         c.OAuthClientId(OidcApplicationManager.SWAGGER_CLIENT_ID);
+
+                        //
+                        // .NET 10 / Swashbuckle 10.x requires these settings for OAuth2 password flow
+                        //
+                        c.EnablePersistAuthorization();           // Persist the token across requests
                     });
 
                     IdentityModelEventSource.ShowPII = true;
