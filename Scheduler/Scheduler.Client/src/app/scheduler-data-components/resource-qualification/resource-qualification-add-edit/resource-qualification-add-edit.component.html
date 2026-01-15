@@ -71,7 +71,16 @@
             </div>
          <div class="modal-footer resource-qualification-modal-footer">
             <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Resource Qualification changes and Close">Cancel</button>
-            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !resourceQualificationForm.valid || resourceQualificationForm.pristine || !userIsSchedulerResourceQualificationWriter()" ngbTooltip="Save the Resource Qualification changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !resourceQualificationForm.valid || resourceQualificationForm.pristine  || userIsSchedulerResourceQualificationWriter() == false " ngbTooltip="Save the Resource Qualification changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Resource Qualification' }}
+                </span>
+            </button>
          </div>
       </form>
    </div>

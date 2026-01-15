@@ -54,7 +54,16 @@
                             </div>
                             <div class="recurrence-rule-change-history-details-footer">
                                 <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="recurrenceRuleChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Recurrence Rule Change History">Reset</button>
-                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !recurrenceRuleChangeHistoryForm.valid || !recurrenceRuleChangeHistoryForm.dirty || recurrenceRuleChangeHistoryForm.pristine || userIsSchedulerRecurrenceRuleChangeHistoryWriter() == false " ngbTooltip="Save Recurrence Rule Change History">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !recurrenceRuleChangeHistoryForm.valid || !recurrenceRuleChangeHistoryForm.dirty || recurrenceRuleChangeHistoryForm.pristine  || userIsSchedulerRecurrenceRuleChangeHistoryWriter() == false " ngbTooltip="Save the Recurrence Rule Change History changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Recurrence Rule Change History' }}
+                                    </span>
+                                </button>
                             </div>
                         </form>
                     </div>

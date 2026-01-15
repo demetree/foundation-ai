@@ -55,7 +55,16 @@
                             </div>
                             <div class="assignment-role-qualification-requirement-details-footer">
                                 <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="assignmentRoleQualificationRequirementForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Assignment Role Qualification Requirement">Reset</button>
-                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !assignmentRoleQualificationRequirementForm.valid || !assignmentRoleQualificationRequirementForm.dirty || assignmentRoleQualificationRequirementForm.pristine || userIsSchedulerAssignmentRoleQualificationRequirementWriter() == false " ngbTooltip="Save Assignment Role Qualification Requirement">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !assignmentRoleQualificationRequirementForm.valid || !assignmentRoleQualificationRequirementForm.dirty || assignmentRoleQualificationRequirementForm.pristine  || userIsSchedulerAssignmentRoleQualificationRequirementWriter() == false " ngbTooltip="Save the Assignment Role Qualification Requirement changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Assignment Role Qualification Requirement' }}
+                                    </span>
+                                </button>
                             </div>
                         </form>
                     </div>

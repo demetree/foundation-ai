@@ -67,7 +67,16 @@
                             </div>
                             <div class="booking-source-type-details-footer">
                                 <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="bookingSourceTypeForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Booking Source Type">Reset</button>
-                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !bookingSourceTypeForm.valid || !bookingSourceTypeForm.dirty || bookingSourceTypeForm.pristine || userIsSchedulerBookingSourceTypeWriter() == false " ngbTooltip="Save Booking Source Type">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !bookingSourceTypeForm.valid || !bookingSourceTypeForm.dirty || bookingSourceTypeForm.pristine  || userIsSchedulerBookingSourceTypeWriter() == false " ngbTooltip="Save the Booking Source Type changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Booking Source Type' }}
+                                    </span>
+                                </button>
                             </div>
                         </form>
                     </div>

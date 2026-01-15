@@ -78,7 +78,16 @@
                             </div>
                             <div class="currency-details-footer">
                                 <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="currencyForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Currency">Reset</button>
-                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !currencyForm.valid || !currencyForm.dirty || currencyForm.pristine || userIsSchedulerCurrencyWriter() == false " ngbTooltip="Save Currency">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !currencyForm.valid || !currencyForm.dirty || currencyForm.pristine  || userIsSchedulerCurrencyWriter() == false " ngbTooltip="Save the Currency changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Currency' }}
+                                    </span>
+                                </button>
                             </div>
                         </form>
                     </div>

@@ -108,7 +108,16 @@
                             </div>
                             <div class="charge-type-details-footer">
                                 <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="chargeTypeForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Charge Type">Reset</button>
-                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !chargeTypeForm.valid || !chargeTypeForm.dirty || chargeTypeForm.pristine || userIsSchedulerChargeTypeWriter() == false " ngbTooltip="Save Charge Type">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !chargeTypeForm.valid || !chargeTypeForm.dirty || chargeTypeForm.pristine  || userIsSchedulerChargeTypeWriter() == false " ngbTooltip="Save the Charge Type changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Charge Type' }}
+                                    </span>
+                                </button>
                             </div>
                         </form>
                     </div>

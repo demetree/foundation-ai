@@ -62,7 +62,16 @@
                             </div>
                             <div class="soft-credit-details-footer">
                                 <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="softCreditForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Soft Credit">Reset</button>
-                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !softCreditForm.valid || !softCreditForm.dirty || softCreditForm.pristine || userIsSchedulerSoftCreditWriter() == false " ngbTooltip="Save Soft Credit">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !softCreditForm.valid || !softCreditForm.dirty || softCreditForm.pristine  || userIsSchedulerSoftCreditWriter() == false " ngbTooltip="Save the Soft Credit changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Soft Credit' }}
+                                    </span>
+                                </button>
                             </div>
                         </form>
                     </div>

@@ -54,7 +54,16 @@
                             </div>
                             <div class="soft-credit-change-history-details-footer">
                                 <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="softCreditChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Soft Credit Change History">Reset</button>
-                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !softCreditChangeHistoryForm.valid || !softCreditChangeHistoryForm.dirty || softCreditChangeHistoryForm.pristine || userIsSchedulerSoftCreditChangeHistoryWriter() == false " ngbTooltip="Save Soft Credit Change History">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !softCreditChangeHistoryForm.valid || !softCreditChangeHistoryForm.dirty || softCreditChangeHistoryForm.pristine  || userIsSchedulerSoftCreditChangeHistoryWriter() == false " ngbTooltip="Save the Soft Credit Change History changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Soft Credit Change History' }}
+                                    </span>
+                                </button>
                             </div>
                         </form>
                     </div>

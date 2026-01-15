@@ -88,7 +88,16 @@
             </div>
          <div class="modal-footer time-zone-modal-footer">
             <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Time Zone changes and Close">Cancel</button>
-            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !timeZoneForm.valid || timeZoneForm.pristine || !userIsSchedulerTimeZoneWriter()" ngbTooltip="Save the Time Zone changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !timeZoneForm.valid || timeZoneForm.pristine  || userIsSchedulerTimeZoneWriter() == false " ngbTooltip="Save the Time Zone changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Time Zone' }}
+                </span>
+            </button>
          </div>
       </form>
    </div>

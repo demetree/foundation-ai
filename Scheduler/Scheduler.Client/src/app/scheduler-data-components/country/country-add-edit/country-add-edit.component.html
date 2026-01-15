@@ -64,7 +64,16 @@
             </div>
          <div class="modal-footer country-modal-footer">
             <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Country changes and Close">Cancel</button>
-            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !countryForm.valid || countryForm.pristine || !userIsSchedulerCountryWriter()" ngbTooltip="Save the Country changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !countryForm.valid || countryForm.pristine  || userIsSchedulerCountryWriter() == false " ngbTooltip="Save the Country changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Country' }}
+                </span>
+            </button>
          </div>
       </form>
    </div>

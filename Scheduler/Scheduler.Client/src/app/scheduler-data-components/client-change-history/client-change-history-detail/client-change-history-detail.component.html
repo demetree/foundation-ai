@@ -54,7 +54,16 @@
                             </div>
                             <div class="client-change-history-details-footer">
                                 <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="clientChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Client Change History">Reset</button>
-                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !clientChangeHistoryForm.valid || !clientChangeHistoryForm.dirty || clientChangeHistoryForm.pristine || userIsSchedulerClientChangeHistoryWriter() == false " ngbTooltip="Save Client Change History">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !clientChangeHistoryForm.valid || !clientChangeHistoryForm.dirty || clientChangeHistoryForm.pristine  || userIsSchedulerClientChangeHistoryWriter() == false " ngbTooltip="Save the Client Change History changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Client Change History' }}
+                                    </span>
+                                </button>
                             </div>
                         </form>
                     </div>

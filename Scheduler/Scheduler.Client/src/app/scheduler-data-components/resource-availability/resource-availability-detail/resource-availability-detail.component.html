@@ -67,7 +67,16 @@
                             </div>
                             <div class="resource-availability-details-footer">
                                 <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="resourceAvailabilityForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Resource Availability">Reset</button>
-                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !resourceAvailabilityForm.valid || !resourceAvailabilityForm.dirty || resourceAvailabilityForm.pristine || userIsSchedulerResourceAvailabilityWriter() == false " ngbTooltip="Save Resource Availability">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !resourceAvailabilityForm.valid || !resourceAvailabilityForm.dirty || resourceAvailabilityForm.pristine  || userIsSchedulerResourceAvailabilityWriter() == false " ngbTooltip="Save the Resource Availability changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Resource Availability' }}
+                                    </span>
+                                </button>
                             </div>
                         </form>
                     </div>

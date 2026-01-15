@@ -73,7 +73,16 @@
                             </div>
                             <div class="resource-shift-details-footer">
                                 <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="resourceShiftForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Resource Shift">Reset</button>
-                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !resourceShiftForm.valid || !resourceShiftForm.dirty || resourceShiftForm.pristine || userIsSchedulerResourceShiftWriter() == false " ngbTooltip="Save Resource Shift">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !resourceShiftForm.valid || !resourceShiftForm.dirty || resourceShiftForm.pristine  || userIsSchedulerResourceShiftWriter() == false " ngbTooltip="Save the Resource Shift changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Resource Shift' }}
+                                    </span>
+                                </button>
                             </div>
                         </form>
                     </div>

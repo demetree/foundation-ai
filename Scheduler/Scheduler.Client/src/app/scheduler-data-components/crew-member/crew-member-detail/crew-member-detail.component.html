@@ -94,7 +94,16 @@
                             </div>
                             <div class="crew-member-details-footer">
                                 <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="crewMemberForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Crew Member">Reset</button>
-                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !crewMemberForm.valid || !crewMemberForm.dirty || crewMemberForm.pristine || userIsSchedulerCrewMemberWriter() == false " ngbTooltip="Save Crew Member">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !crewMemberForm.valid || !crewMemberForm.dirty || crewMemberForm.pristine  || userIsSchedulerCrewMemberWriter() == false " ngbTooltip="Save the Crew Member changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Crew Member' }}
+                                    </span>
+                                </button>
                             </div>
                         </form>
                     </div>

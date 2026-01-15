@@ -45,7 +45,16 @@
             </div>
          <div class="modal-footer attribute-definition-entity-modal-footer">
             <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Attribute Definition Entity changes and Close">Cancel</button>
-            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !attributeDefinitionEntityForm.valid || attributeDefinitionEntityForm.pristine || !userIsSchedulerAttributeDefinitionEntityWriter()" ngbTooltip="Save the Attribute Definition Entity changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !attributeDefinitionEntityForm.valid || attributeDefinitionEntityForm.pristine  || userIsSchedulerAttributeDefinitionEntityWriter() == false " ngbTooltip="Save the Attribute Definition Entity changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Attribute Definition Entity' }}
+                </span>
+            </button>
          </div>
       </form>
    </div>

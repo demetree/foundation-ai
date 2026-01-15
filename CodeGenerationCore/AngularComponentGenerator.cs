@@ -2502,7 +2502,23 @@ td .color-swatch,
             sb.AppendLine($"            <button type=\"button\" class=\"btn btn-sm btn-secondary\" (click)=\"closeModal()\" ngbTooltip=\"Cancel the {titleName} changes and Close\">Cancel</button>");
 
             // Update disabled logic for reactive forms
-            sb.AppendLine($"            <button type=\"submit\" class=\"btn btn-sm btn-primary\" [disabled]=\"isSaving || !{suffixableCamelCaseName}Form.valid || {suffixableCamelCaseName}Form.pristine{(addAuthorization ? $" || !userIs{module}{entityName}Writer()" : "")}\" ngbTooltip=\"Save the {titleName} changes and Close\">{{{{ isEditMode ? 'Save' : 'Create' }}}}</button>");
+
+            // Old way with no spinner animation
+            //sb.AppendLine($"            <button type=\"submit\" class=\"btn btn-sm btn-primary\" [disabled]=\"isSaving || !{suffixableCamelCaseName}Form.valid || {suffixableCamelCaseName}Form.pristine{(addAuthorization ? $" || !userIs{module}{entityName}Writer()" : "")}\" ngbTooltip=\"Save the {titleName} changes and Close\">{{{{ isEditMode ? 'Save' : 'Create' }}}}</button>");
+
+            sb.AppendLine(@$"            <button type=""submit"" class=""btn btn-sm btn-primary"" [disabled]=""isSaving || !{suffixableCamelCaseName}Form.valid || {suffixableCamelCaseName}Form.pristine {(addAuthorization == true ? $" || userIs{module}{entityName}Writer() == false " : "")}"" ngbTooltip=""Save the {titleName} changes and Close"">
+                <span *ngIf=""isSaving"">
+                    <span class=""spinner-border spinner-border-sm me-1"" role=""status"" aria-hidden=""true""></span>
+                    Saving...
+                </span>
+                <span *ngIf=""!isSaving"">
+                    <i class=""fa-solid fa-check me-1""></i>
+                    {{{{ isEditMode ? 'Save Changes' : 'Add {titleName}' }}}}
+                </span>
+            </button>");
+
+
+
             sb.AppendLine($"         </div>");
             sb.AppendLine($"      </form>");
             sb.AppendLine($"   </div>");
@@ -3432,7 +3448,23 @@ td .color-swatch,
 
             sb.AppendLine($"                            <div class=\"{angularName}-details-footer\">");
             sb.AppendLine($"                                <button *ngIf=\"isEditMode\" type=\"button\" class=\"btn btm-sm btn-secondary\" [disabled]=\"{suffixableCamelCaseName}Form.pristine\" (click)=\"loadData(true)\" ngbTooltip=\"Reload {titleName}\">Reset</button>");
-            sb.AppendLine($"                                <button type=\"submit\" class=\"btn btm-sm btn-primary\" [disabled]=\"isSaving || !{suffixableCamelCaseName}Form.valid || !{suffixableCamelCaseName}Form.dirty || {suffixableCamelCaseName}Form.pristine" + (addAuthorization == true ? $" || userIs{module}{entityName}Writer() == false " : "") + $"\" ngbTooltip=\"Save {titleName}\">{{{{ isEditMode ? 'Save' : 'Create' }}}}</button>");
+
+            //
+            // Old way with no spinner animatino
+            //
+            //sb.AppendLine($"                                <button type=\"submit\" class=\"btn btm-sm btn-primary\" [disabled]=\"isSaving || !{suffixableCamelCaseName}Form.valid || !{suffixableCamelCaseName}Form.dirty || {suffixableCamelCaseName}Form.pristine" + (addAuthorization == true ? $" || userIs{module}{entityName}Writer() == false " : "") + $"\" ngbTooltip=\"Save {titleName}\">{{{{ isEditMode ? 'Save' : 'Create' }}}}</button>");
+
+            sb.AppendLine(@$"                                <button type=""submit"" class=""btn btn-sm btn-primary"" [disabled]=""isSaving || !{suffixableCamelCaseName}Form.valid || !{suffixableCamelCaseName}Form.dirty || {suffixableCamelCaseName}Form.pristine {(addAuthorization == true ? $" || userIs{module}{entityName}Writer() == false " : "")}"" ngbTooltip=""Save the {titleName} changes"">
+                                    <span *ngIf=""isSaving"">
+                                        <span class=""spinner-border spinner-border-sm me-1"" role=""status"" aria-hidden=""true""></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf=""!isSaving"">
+                                        <i class=""fa-solid fa-check me-1""></i>
+                                        {{{{ isEditMode ? 'Save Changes' : 'Add {titleName}' }}}}
+                                    </span>
+                                </button>");
+
             sb.AppendLine($"                            </div>");
             sb.AppendLine($"                        </form>");
             sb.AppendLine($"                    </div>");

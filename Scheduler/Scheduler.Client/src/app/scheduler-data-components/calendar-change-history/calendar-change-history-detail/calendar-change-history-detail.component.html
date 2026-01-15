@@ -54,7 +54,16 @@
                             </div>
                             <div class="calendar-change-history-details-footer">
                                 <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="calendarChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Calendar Change History">Reset</button>
-                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !calendarChangeHistoryForm.valid || !calendarChangeHistoryForm.dirty || calendarChangeHistoryForm.pristine || userIsSchedulerCalendarChangeHistoryWriter() == false " ngbTooltip="Save Calendar Change History">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !calendarChangeHistoryForm.valid || !calendarChangeHistoryForm.dirty || calendarChangeHistoryForm.pristine  || userIsSchedulerCalendarChangeHistoryWriter() == false " ngbTooltip="Save the Calendar Change History changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Calendar Change History' }}
+                                    </span>
+                                </button>
                             </div>
                         </form>
                     </div>

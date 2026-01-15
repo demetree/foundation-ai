@@ -58,7 +58,16 @@
             </div>
          <div class="modal-footer tenant-profile-change-history-modal-footer">
             <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Tenant Profile Change History changes and Close">Cancel</button>
-            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !tenantProfileChangeHistoryForm.valid || tenantProfileChangeHistoryForm.pristine || !userIsSchedulerTenantProfileChangeHistoryWriter()" ngbTooltip="Save the Tenant Profile Change History changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !tenantProfileChangeHistoryForm.valid || tenantProfileChangeHistoryForm.pristine  || userIsSchedulerTenantProfileChangeHistoryWriter() == false " ngbTooltip="Save the Tenant Profile Change History changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Tenant Profile Change History' }}
+                </span>
+            </button>
          </div>
       </form>
    </div>

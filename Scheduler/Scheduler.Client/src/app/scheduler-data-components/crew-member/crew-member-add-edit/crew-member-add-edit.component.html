@@ -98,7 +98,16 @@
             </div>
          <div class="modal-footer crew-member-modal-footer">
             <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Crew Member changes and Close">Cancel</button>
-            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !crewMemberForm.valid || crewMemberForm.pristine || !userIsSchedulerCrewMemberWriter()" ngbTooltip="Save the Crew Member changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !crewMemberForm.valid || crewMemberForm.pristine  || userIsSchedulerCrewMemberWriter() == false " ngbTooltip="Save the Crew Member changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Crew Member' }}
+                </span>
+            </button>
          </div>
       </form>
    </div>

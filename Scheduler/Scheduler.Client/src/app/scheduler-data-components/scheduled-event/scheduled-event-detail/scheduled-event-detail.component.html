@@ -193,7 +193,16 @@
                             </div>
                             <div class="scheduled-event-details-footer">
                                 <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="scheduledEventForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Scheduled Event">Reset</button>
-                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !scheduledEventForm.valid || !scheduledEventForm.dirty || scheduledEventForm.pristine || userIsSchedulerScheduledEventWriter() == false " ngbTooltip="Save Scheduled Event">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !scheduledEventForm.valid || !scheduledEventForm.dirty || scheduledEventForm.pristine  || userIsSchedulerScheduledEventWriter() == false " ngbTooltip="Save the Scheduled Event changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Scheduled Event' }}
+                                    </span>
+                                </button>
                             </div>
                         </form>
                     </div>

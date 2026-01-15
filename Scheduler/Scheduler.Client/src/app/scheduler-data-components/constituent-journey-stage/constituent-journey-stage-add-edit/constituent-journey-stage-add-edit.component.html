@@ -107,7 +107,16 @@
             </div>
          <div class="modal-footer constituent-journey-stage-modal-footer">
             <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Constituent Journey Stage changes and Close">Cancel</button>
-            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !constituentJourneyStageForm.valid || constituentJourneyStageForm.pristine || !userIsSchedulerConstituentJourneyStageWriter()" ngbTooltip="Save the Constituent Journey Stage changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !constituentJourneyStageForm.valid || constituentJourneyStageForm.pristine  || userIsSchedulerConstituentJourneyStageWriter() == false " ngbTooltip="Save the Constituent Journey Stage changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Constituent Journey Stage' }}
+                </span>
+            </button>
          </div>
       </form>
    </div>

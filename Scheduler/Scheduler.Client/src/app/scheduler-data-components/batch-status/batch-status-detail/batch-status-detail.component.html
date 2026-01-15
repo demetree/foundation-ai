@@ -45,7 +45,16 @@
                             </div>
                             <div class="batch-status-details-footer">
                                 <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="batchStatusForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Batch Status">Reset</button>
-                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !batchStatusForm.valid || !batchStatusForm.dirty || batchStatusForm.pristine || userIsSchedulerBatchStatusWriter() == false " ngbTooltip="Save Batch Status">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !batchStatusForm.valid || !batchStatusForm.dirty || batchStatusForm.pristine  || userIsSchedulerBatchStatusWriter() == false " ngbTooltip="Save the Batch Status changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Batch Status' }}
+                                    </span>
+                                </button>
                             </div>
                         </form>
                     </div>

@@ -67,7 +67,16 @@
                             </div>
                             <div class="charge-status-details-footer">
                                 <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="chargeStatusForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Charge Status">Reset</button>
-                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !chargeStatusForm.valid || !chargeStatusForm.dirty || chargeStatusForm.pristine || userIsSchedulerChargeStatusWriter() == false " ngbTooltip="Save Charge Status">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !chargeStatusForm.valid || !chargeStatusForm.dirty || chargeStatusForm.pristine  || userIsSchedulerChargeStatusWriter() == false " ngbTooltip="Save the Charge Status changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Charge Status' }}
+                                    </span>
+                                </button>
                             </div>
                         </form>
                     </div>

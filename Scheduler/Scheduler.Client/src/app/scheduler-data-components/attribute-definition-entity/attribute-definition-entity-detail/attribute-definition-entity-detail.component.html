@@ -41,7 +41,16 @@
                             </div>
                             <div class="attribute-definition-entity-details-footer">
                                 <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="attributeDefinitionEntityForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Attribute Definition Entity">Reset</button>
-                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !attributeDefinitionEntityForm.valid || !attributeDefinitionEntityForm.dirty || attributeDefinitionEntityForm.pristine || userIsSchedulerAttributeDefinitionEntityWriter() == false " ngbTooltip="Save Attribute Definition Entity">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !attributeDefinitionEntityForm.valid || !attributeDefinitionEntityForm.dirty || attributeDefinitionEntityForm.pristine  || userIsSchedulerAttributeDefinitionEntityWriter() == false " ngbTooltip="Save the Attribute Definition Entity changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Attribute Definition Entity' }}
+                                    </span>
+                                </button>
                             </div>
                         </form>
                     </div>

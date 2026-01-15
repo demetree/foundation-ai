@@ -171,22 +171,19 @@
                 <input type="checkbox" id="Constituent-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerConstituentWriter()" />
                 <label for="Constituent-deleted" class="form-check-label" id="label-Constituent-deleted"><span class="text-danger">*</span>Deleted</label>
             </div>
-            <div class="modal-footer constituent-modal-footer">
-              <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Constituent changes and Close">Cancel</button>
-              <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !constituentForm.valid || constituentForm.pristine || !userIsSchedulerConstituentWriter()" ngbTooltip="Save the Constituent changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
-
-              <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !constituentForm.valid || constituentForm.pristine || !userIsSchedulerConstituentWriter()">
+         <div class="modal-footer constituent-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Constituent changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !constituentForm.valid || constituentForm.pristine  || userIsSchedulerConstituentWriter() == false " ngbTooltip="Save the Constituent changes and Close">
                 <span *ngIf="isSaving">
-                  <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-                  Saving...
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
                 </span>
                 <span *ngIf="!isSaving">
-                  <i class="fa-solid fa-check me-1"></i>
-                  {{ isEditMode ? 'Save Changes' : 'Add Constituent' }}
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Constituent' }}
                 </span>
-              </button>
-
-            </div>
+            </button>
+         </div>
       </form>
    </div>
 </ng-template>

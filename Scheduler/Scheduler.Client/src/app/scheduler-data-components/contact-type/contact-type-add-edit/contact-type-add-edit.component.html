@@ -78,7 +78,16 @@
             </div>
          <div class="modal-footer contact-type-modal-footer">
             <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Contact Type changes and Close">Cancel</button>
-            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !contactTypeForm.valid || contactTypeForm.pristine || !userIsSchedulerContactTypeWriter()" ngbTooltip="Save the Contact Type changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !contactTypeForm.valid || contactTypeForm.pristine  || userIsSchedulerContactTypeWriter() == false " ngbTooltip="Save the Contact Type changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Contact Type' }}
+                </span>
+            </button>
          </div>
       </form>
    </div>

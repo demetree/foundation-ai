@@ -67,7 +67,16 @@
                             </div>
                             <div class="assignment-status-details-footer">
                                 <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="assignmentStatusForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Assignment Status">Reset</button>
-                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !assignmentStatusForm.valid || !assignmentStatusForm.dirty || assignmentStatusForm.pristine || userIsSchedulerAssignmentStatusWriter() == false " ngbTooltip="Save Assignment Status">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !assignmentStatusForm.valid || !assignmentStatusForm.dirty || assignmentStatusForm.pristine  || userIsSchedulerAssignmentStatusWriter() == false " ngbTooltip="Save the Assignment Status changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Assignment Status' }}
+                                    </span>
+                                </button>
                             </div>
                         </form>
                     </div>
