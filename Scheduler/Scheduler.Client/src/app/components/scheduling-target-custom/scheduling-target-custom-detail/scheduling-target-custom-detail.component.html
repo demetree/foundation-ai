@@ -46,7 +46,13 @@
                     <button class="btn btn-glass me-2" (click)="submitForm()"
                         [disabled]="!schedulingTargetForm.dirty || isSaving"
                         *ngIf="userIsSchedulerSchedulingTargetWriter()">
-                        <i class="fa fa-save me-2"></i> Save
+                        <span *ngIf="isSaving">
+                            <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                            Saving...
+                        </span>
+                        <span *ngIf="!isSaving">
+                            <i class="fa fa-save me-2"></i> Save
+                        </span>
                     </button>
                     <button class="btn btn-outline-light-custom" (click)="goBack()" *ngIf="canGoBack()">
                         <i class="fa fa-arrow-left me-2"></i> Back

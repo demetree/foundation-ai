@@ -227,7 +227,7 @@
                     <i class="fa fa-upload me-1"></i> {{ currentAvatarUrl ? 'Change' : 'Choose File' }}
                   </button>
                   <button type="button" class="btn btn-outline-danger btn-sm ms-2" *ngIf="currentAvatarUrl"
-                          (click)="clearAvatar()">
+                    (click)="clearAvatar()">
                     <i class="fa fa-trash"></i> Remove
                   </button>
                 </div>
@@ -276,7 +276,14 @@
         <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
         <button type="submit" class="btn btn-primary"
           [disabled]="isSaving || !contactForm.valid || contactForm.pristine || !userIsSchedulerContactWriter()">
-          {{ isSaving ? 'Saving...' : (isEditMode ? 'Save Changes' : 'Create Contact') }}
+          <span *ngIf="isSaving">
+            <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+            Saving...
+          </span>
+          <span *ngIf="!isSaving">
+            <i class="fa-solid fa-check me-1"></i>
+            {{ isEditMode ? 'Save Changes' : 'Create Contact' }}
+          </span>
         </button>
       </div>
     </form>

@@ -21,7 +21,13 @@
 <div class="modal-footer">
     <button type="button" class="btn btn-secondary" (click)="dismiss()" [disabled]="isSaving">Cancel</button>
     <button type="button" class="btn btn-primary" (click)="save()" [disabled]="!selectedStageId || isSaving">
-        <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-        Save Changes
+        <span *ngIf="isSaving">
+            <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+            Saving...
+        </span>
+        <span *ngIf="!isSaving">
+            <i class="fa-solid fa-check me-1"></i>
+            Save Changes
+        </span>
     </button>
 </div>

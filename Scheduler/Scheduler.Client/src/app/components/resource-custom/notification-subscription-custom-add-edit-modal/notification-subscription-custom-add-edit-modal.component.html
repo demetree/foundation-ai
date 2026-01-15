@@ -25,10 +25,8 @@
       <label class="form-label fw-semibold">
         <span class="text-danger">*</span> Recipient
       </label>
-      <input type="text"
-             class="form-control"
-             formControlName="recipientAddress"
-             placeholder="email@domain.com or +1-555-123-4567">
+      <input type="text" class="form-control" formControlName="recipientAddress"
+        placeholder="email@domain.com or +1-555-123-4567">
       <small class="text-muted">
         Email address or phone number (for SMS)
       </small>
@@ -38,10 +36,8 @@
     <div class="mb-4">
       <label class="form-label fw-semibold">Trigger Events</label>
       <div class="form-check" *ngFor="let trigger of ['Assigned', 'Canceled', 'Modified', 'Reminder']">
-        <input class="form-check-input"
-               type="checkbox"
-               [id]="'trigger' + trigger"
-               [formControlName]="'trigger' + trigger">
+        <input class="form-check-input" type="checkbox" [id]="'trigger' + trigger"
+          [formControlName]="'trigger' + trigger">
         <label class="form-check-label" [for]="'trigger' + trigger">
           Notify when event is {{ trigger.toLowerCase() }}
         </label>
@@ -52,16 +48,18 @@
     </div>
 
     <div class="modal-footer border-top-0">
-      <button type="button"
-              class="btn btn-secondary"
-              (click)="closeModal()"
-              [disabled]="isSaving">
+      <button type="button" class="btn btn-secondary" (click)="closeModal()" [disabled]="isSaving">
         Cancel
       </button>
-      <button type="submit"
-              class="btn btn-primary"
-              [disabled]="isSaving || subscriptionForm.invalid">
-        {{ isEditMode ? 'Save Changes' : 'Add Subscription' }}
+      <button type="submit" class="btn btn-primary" [disabled]="isSaving || subscriptionForm.invalid">
+        <span *ngIf="isSaving">
+          <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+          Saving...
+        </span>
+        <span *ngIf="!isSaving">
+          <i class="fa-solid fa-check me-1"></i>
+          {{ isEditMode ? 'Save Changes' : 'Add Subscription' }}
+        </span>
       </button>
     </div>
   </form>

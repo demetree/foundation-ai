@@ -1,11 +1,6 @@
 <div class="add-rate-sheet" *ngIf="showAddButton == true">
-  <button type="button"
-          class="btn btn-sm btn-add-rate-sheet me-2"
-          (click)="openModal()"
-          ngbTooltip="Add Rate Sheet"
-          *ngIf="userIsSchedulerRateSheetWriter() == true"
-          placement="top"
-          style="min-width: 75px;">
+  <button type="button" class="btn btn-sm btn-add-rate-sheet me-2" (click)="openModal()" ngbTooltip="Add Rate Sheet"
+    *ngIf="userIsSchedulerRateSheetWriter() == true" placement="top" style="min-width: 75px;">
     Add
   </button>
 </div>
@@ -50,7 +45,8 @@
           <option value="targetRole">Target + Role — Applies to this Role on this Target</option>
           <option value="targetResource">Target + Resource — Highest priority override</option>
         </select>
-        <div *ngIf="rateSheetForm.get('scopeMode')?.invalid && rateSheetForm.get('scopeMode')?.touched" class="text-danger small mt-1">
+        <div *ngIf="rateSheetForm.get('scopeMode')?.invalid && rateSheetForm.get('scopeMode')?.touched"
+          class="text-danger small mt-1">
           Please select a rate scope
         </div>
         <div class="alert alert-info small py-2 px-3 mt-3" role="alert">
@@ -113,7 +109,8 @@
             <option [ngValue]="null">Select Rate Type</option>
             <option *ngFor="let type of rateTypes$ | async" [ngValue]="type.id">{{ type.name }}</option>
           </select>
-          <div *ngIf="rateSheetForm.get('rateTypeId')?.invalid && rateSheetForm.get('rateTypeId')?.touched" class="text-danger small mt-1">
+          <div *ngIf="rateSheetForm.get('rateTypeId')?.invalid && rateSheetForm.get('rateTypeId')?.touched"
+            class="text-danger small mt-1">
             Rate Type is required
           </div>
         </div>
@@ -121,7 +118,8 @@
         <div class="form-group">
           <label class="form-label fw-semibold"><span class="text-danger">*</span> Effective Date</label>
           <input type="datetime-local" class="form-control rate-sheet-input" formControlName="effectiveDate" />
-          <div *ngIf="rateSheetForm.get('effectiveDate')?.invalid && rateSheetForm.get('effectiveDate')?.touched" class="text-danger small mt-1">
+          <div *ngIf="rateSheetForm.get('effectiveDate')?.invalid && rateSheetForm.get('effectiveDate')?.touched"
+            class="text-danger small mt-1">
             Effective Date is required
           </div>
         </div>
@@ -132,7 +130,8 @@
             <option [ngValue]="null">Select Currency</option>
             <option *ngFor="let currency of currencies$ | async" [ngValue]="currency.id">{{ currency.name }}</option>
           </select>
-          <div *ngIf="rateSheetForm.get('currencyId')?.invalid && rateSheetForm.get('currencyId')?.touched" class="text-danger small mt-1">
+          <div *ngIf="rateSheetForm.get('currencyId')?.invalid && rateSheetForm.get('currencyId')?.touched"
+            class="text-danger small mt-1">
             Currency is required
           </div>
         </div>
@@ -141,13 +140,15 @@
           <div class="col-md-6">
             <div class="form-group">
               <label class="form-label fw-semibold">Cost Rate</label>
-              <input type="number" step="0.01" class="form-control  rate-sheet-input" formControlName="costRate" placeholder="0.00" />
+              <input type="number" step="0.01" class="form-control  rate-sheet-input" formControlName="costRate"
+                placeholder="0.00" />
             </div>
           </div>
           <div class="col-md-6">
             <div class="form-group">
               <label class="form-label fw-semibold">Billing Rate</label>
-              <input type="number" step="0.01" class="form-control  rate-sheet-input" formControlName="billingRate" placeholder="0.00" />
+              <input type="number" step="0.01" class="form-control  rate-sheet-input" formControlName="billingRate"
+                placeholder="0.00" />
             </div>
           </div>
         </div>
@@ -156,11 +157,8 @@
           <div class="col-md-12">
             <div class="form-group">
               <label for="notes" class="form-label fw-semibold">Notes (optional)</label>
-              <textarea id="notes"
-                        formControlName="notes"
-                        class="form-control"
-                        rows="3"
-                        placeholder="e.g., Certified premium, Night shift differential"></textarea>
+              <textarea id="notes" formControlName="notes" class="form-control" rows="3"
+                placeholder="e.g., Certified premium, Night shift differential"></textarea>
             </div>
           </div>
         </div>
@@ -185,10 +183,16 @@
 
       <div class="modal-footer rate-sheet-modal-footer border-top-0">
         <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
-        <button type="submit"
-                class="btn btn-primary"
-                [disabled]="isSaving || !rateSheetForm.valid || rateSheetForm.pristine">
-          {{ isEditMode ? 'Save Changes' : 'Create Rate Sheet' }}
+        <button type="submit" class="btn btn-primary"
+          [disabled]="isSaving || !rateSheetForm.valid || rateSheetForm.pristine">
+          <span *ngIf="isSaving">
+            <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+            Saving...
+          </span>
+          <span *ngIf="!isSaving">
+            <i class="fa-solid fa-check me-1"></i>
+            {{ isEditMode ? 'Save Changes' : 'Create Rate Sheet' }}
+          </span>
         </button>
       </div>
     </form>

@@ -4,13 +4,16 @@
     <i class="bi bi-calendar-event me-2"></i>
     {{ isEditMode ? 'Edit' : 'Create' }} Scheduled Event
   </h5>
-  <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="activeModal.dismiss('cancel')"></button>
+  <button type="button" class="btn-close btn-close-white" aria-label="Close"
+    (click)="activeModal.dismiss('cancel')"></button>
 </div>
 
 <div class="modal-body">
   <!-- Template Quick Picker -->
   <div class="card mb-4" *ngIf="!isEditMode">
-    <div class="card-header"><h6>Start from Template (Optional)</h6></div>
+    <div class="card-header">
+      <h6>Start from Template (Optional)</h6>
+    </div>
     <div class="card-body">
       <div class="row g-3">
         <div class="col-md-8">
@@ -30,9 +33,12 @@
 
   <!-- Tabs -->
   <ul class="nav nav-tabs mb-4" role="tablist">
-    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#basic">Basic Info</button></li>
-    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#assignments">Assignments</button></li>
-    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#recurrence">Recurrence</button></li>
+    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#basic">Basic
+        Info</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab"
+        data-bs-target="#assignments">Assignments</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#recurrence">Recurrence</button>
+    </li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#advanced">Advanced</button></li>
   </ul>
 
@@ -127,7 +133,13 @@
 <div class="modal-footer">
   <button type="button" class="btn btn-secondary" (click)="activeModal.dismiss('cancel')">Cancel</button>
   <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving || eventForm.invalid">
-    <span *ngIf="saving" class="spinner-border spinner-border-sm me-2"></span>
-    {{ isEditMode ? 'Update' : 'Create' }}
+    <span *ngIf="saving">
+      <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+      Saving...
+    </span>
+    <span *ngIf="!saving">
+      <i class="fa-solid fa-check me-1"></i>
+      {{ isEditMode ? 'Update' : 'Create' }}
+    </span>
   </button>
 </div>

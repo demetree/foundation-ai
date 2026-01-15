@@ -1,115 +1,126 @@
 <div class="add-calendar" *ngIf="showAddButton == true">
-    <button type="button"
-        class="btn btn-sm btn-add-calendar me-2"
-        (click)="openModal()"
-        ngbTooltip="Add Calendar" 
-        *ngIf="userIsSchedulerCalendarWriter() == true"
-        placement="top"
-        style="min-width: 75px;">Add</button>
+  <button type="button" class="btn btn-sm btn-add-calendar me-2" (click)="openModal()" ngbTooltip="Add Calendar"
+    *ngIf="userIsSchedulerCalendarWriter() == true" placement="top" style="min-width: 75px;">Add</button>
 </div>
 
 <!-- ng-bootstrap modal -->
 <ng-template #calendarModal let-modal>
-   <div class="modal-header bg-dark text-light calendar-modal-header">
-      <h5 class="modal-title mb-0" id="calendarModalLabel" ngbTooltip="{{objectGuid}}">
+  <div class="modal-header bg-dark text-light calendar-modal-header">
+    <h5 class="modal-title mb-0" id="calendarModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit Calendar' : 'Add Calendar' }}
-      </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
-   </div>
-   <div class="modal-body calendar-modal-body">
-     <form [formGroup]="calendarForm" (ngSubmit)="submitForm()">
-       <div class="form-group">
-         <label for="name" id="label-name"><span class="text-danger">*</span>Name</label>
-         <input type="text" id="name" formControlName="name" placeholder="Enter Name" class="form-control calendar-input" [disabled]="!userIsSchedulerCalendarWriter()" aria-labelledby="label-name" />
-         <div *ngIf="calendarForm.get('name')?.invalid && calendarForm.get('name')?.touched" class="text-danger">
-           Name is required
-         </div>
-       </div>
-       <div class="form-group">
-         <label for="description" id="label-description">Description</label>
-         <textarea id="description" formControlName="description" placeholder="Enter Description" class="form-control calendar-input" [disabled]="!userIsSchedulerCalendarWriter()"></textarea>
-       </div>
-       <div class="form-group" *ngIf="this.officeId == null">
-         <label for="officeId" id="label-officeId">Office</label>
-         <select id="officeId" formControlName="officeId" class="form-select calendar-select" [disabled]="!userIsSchedulerCalendarWriter()">
-           <option [ngValue]="null">Select Office</option>
-           <option *ngFor="let office of offices$ | async" [ngValue]="office.id">{{office.name}}</option>
-         </select>
-       </div>
-       <div class="form-check">
-         <input type="checkbox" id="isDefault" formControlName="isDefault" class="form-check-input" [disabled]="!userIsSchedulerCalendarWriter()" />
-         <label for="isDefault" class="form-check-label" id="label-isDefault">Is Default</label>
-       </div>
+    </h5>
+    <button type="button" class="btn btn-sm btn-close btn-close-white" (click)="closeModal()">
+    </button>
+  </div>
+  <div class="modal-body calendar-modal-body">
+    <form [formGroup]="calendarForm" (ngSubmit)="submitForm()">
+      <div class="form-group">
+        <label for="name" id="label-name"><span class="text-danger">*</span>Name</label>
+        <input type="text" id="name" formControlName="name" placeholder="Enter Name" class="form-control calendar-input"
+          [disabled]="!userIsSchedulerCalendarWriter()" aria-labelledby="label-name" />
+        <div *ngIf="calendarForm.get('name')?.invalid && calendarForm.get('name')?.touched" class="text-danger">
+          Name is required
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="description" id="label-description">Description</label>
+        <textarea id="description" formControlName="description" placeholder="Enter Description"
+          class="form-control calendar-input" [disabled]="!userIsSchedulerCalendarWriter()"></textarea>
+      </div>
+      <div class="form-group" *ngIf="this.officeId == null">
+        <label for="officeId" id="label-officeId">Office</label>
+        <select id="officeId" formControlName="officeId" class="form-select calendar-select"
+          [disabled]="!userIsSchedulerCalendarWriter()">
+          <option [ngValue]="null">Select Office</option>
+          <option *ngFor="let office of offices$ | async" [ngValue]="office.id">{{office.name}}</option>
+        </select>
+      </div>
+      <div class="form-check">
+        <input type="checkbox" id="isDefault" formControlName="isDefault" class="form-check-input"
+          [disabled]="!userIsSchedulerCalendarWriter()" />
+        <label for="isDefault" class="form-check-label" id="label-isDefault">Is Default</label>
+      </div>
 
-       <!-- Collapsible icon & Color Panel -->
-       <div class="mt-4">
-         <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3 cursor-pointer"
-              (click)="isAppearancePanelOpen = !isAppearancePanelOpen">
-           <h6 class="mb-0 fw-semibold">
-             <i [class]="isAppearancePanelOpen ? 'fa-solid fa-chevron-down' : 'fa-solid fa-chevron-right'"
-                class="me-2"></i>
-             Icon and Color
-           </h6>
-           <span class="badge bg-light text-dark" *ngIf="calendarForm.get('iconId')?.value || calendarForm.get('color')?.value">
-             Configured
-           </span>
-         </div>
+      <!-- Collapsible icon & Color Panel -->
+      <div class="mt-4">
+        <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3 cursor-pointer"
+          (click)="isAppearancePanelOpen = !isAppearancePanelOpen">
+          <h6 class="mb-0 fw-semibold">
+            <i [class]="isAppearancePanelOpen ? 'fa-solid fa-chevron-down' : 'fa-solid fa-chevron-right'"
+              class="me-2"></i>
+            Icon and Color
+          </h6>
+          <span class="badge bg-light text-dark"
+            *ngIf="calendarForm.get('iconId')?.value || calendarForm.get('color')?.value">
+            Configured
+          </span>
+        </div>
 
-         <div [@collapse]="isAppearancePanelOpen ? 'true' : 'false'" class="mt-3">
-           <!-- Color Picker -->
-           <div class="form-group mb-4">
-             <label for="color" id="label-color">Color</label>
-             <div class="d-flex align-items-center gap-3">
-               <input type="color"
-                      id="color"
-                      formControlName="color"
-                      class="form-control form-control-color color-picker"
-                      [disabled]="!userIsSchedulerCalendarWriter()"
-                      title="Choose Color">
-             </div>
-           </div>
+        <div [@collapse]="isAppearancePanelOpen ? 'true' : 'false'" class="mt-3">
+          <!-- Color Picker -->
+          <div class="form-group mb-4">
+            <label for="color" id="label-color">Color</label>
+            <div class="d-flex align-items-center gap-3">
+              <input type="color" id="color" formControlName="color"
+                class="form-control form-control-color color-picker" [disabled]="!userIsSchedulerCalendarWriter()"
+                title="Choose Color">
+            </div>
+          </div>
 
-           <div class="form-group">
-             <label for="iconId" id="label-iconId">Icon</label>
-             <select id="iconId" formControlName="iconId" class="form-select calendar-select" [disabled]="!userIsSchedulerCalendarWriter()">
-               <option [ngValue]="null">Select Icon</option>
-               <option *ngFor="let icon of icons$ | async" [ngValue]="icon.id">{{icon.name}}</option>
-             </select>
-           </div>
+          <div class="form-group">
+            <label for="iconId" id="label-iconId">Icon</label>
+            <select id="iconId" formControlName="iconId" class="form-select calendar-select"
+              [disabled]="!userIsSchedulerCalendarWriter()">
+              <option [ngValue]="null">Select Icon</option>
+              <option *ngFor="let icon of icons$ | async" [ngValue]="icon.id">{{icon.name}}</option>
+            </select>
+          </div>
 
-         </div>
-       </div>
-
-
-       <!-- Advanced (Edit Only) -->
-       <fieldset class="mb-4" *ngIf="isEditMode">
-         <!--<legend class="fs-6 fw-semibold text-primary">Advanced</legend>-->
-         <div class="row g-3">
-           <div class="col-md-3">
-             <label for="versionNumber" class="form-label">Version</label>
-             <input type="text" id="versionNumber" [value]="calendarForm.get('versionNumber')?.value" class="form-control" disabled />
-           </div>
-           <div class="col-md-3 d-flex align-items-end gap-3">
-             <div class="form-check">
-               <input type="checkbox" id="active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerCalendarWriter()" />
-               <label class="form-check-label" for="active">Active</label>
-             </div>
-             <div class="form-check">
-               <input type="checkbox" id="deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerCalendarWriter()" />
-               <label class="form-check-label" for="deleted">Deleted</label>
-             </div>
-           </div>
-         </div>
-       </fieldset>
+        </div>
+      </div>
 
 
-       <div class="modal-footer calendar-modal-footer">
-         <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Calendar changes and Close">Cancel</button>
-         <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !calendarForm.valid || calendarForm.pristine || !userIsSchedulerCalendarWriter()" ngbTooltip="Save the Calendar changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
-       </div>
-     </form>
-   </div>
+      <!-- Advanced (Edit Only) -->
+      <fieldset class="mb-4" *ngIf="isEditMode">
+        <!--<legend class="fs-6 fw-semibold text-primary">Advanced</legend>-->
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label for="versionNumber" class="form-label">Version</label>
+            <input type="text" id="versionNumber" [value]="calendarForm.get('versionNumber')?.value"
+              class="form-control" disabled />
+          </div>
+          <div class="col-md-3 d-flex align-items-end gap-3">
+            <div class="form-check">
+              <input type="checkbox" id="active" formControlName="active" class="form-check-input"
+                [disabled]="!userIsSchedulerCalendarWriter()" />
+              <label class="form-check-label" for="active">Active</label>
+            </div>
+            <div class="form-check">
+              <input type="checkbox" id="deleted" formControlName="deleted" class="form-check-input"
+                [disabled]="!userIsSchedulerCalendarWriter()" />
+              <label class="form-check-label" for="deleted">Deleted</label>
+            </div>
+          </div>
+        </div>
+      </fieldset>
+
+
+      <div class="modal-footer calendar-modal-footer">
+        <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()"
+          ngbTooltip="Cancel the Calendar changes and Close">Cancel</button>
+        <button type="submit" class="btn btn-sm btn-primary"
+          [disabled]="isSaving || !calendarForm.valid || calendarForm.pristine || !userIsSchedulerCalendarWriter()"
+          ngbTooltip="Save the Calendar changes and Close">
+          <span *ngIf="isSaving">
+            <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+            Saving...
+          </span>
+          <span *ngIf="!isSaving">
+            <i class="fa-solid fa-check me-1"></i>
+            {{ isEditMode ? 'Save' : 'Create' }}
+          </span>
+        </button>
+      </div>
+    </form>
+  </div>
 </ng-template>

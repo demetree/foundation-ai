@@ -1,11 +1,6 @@
 <div class="add-crew" *ngIf="showAddButton == true">
-  <button type="button"
-          class="btn btn-sm btn-add-crew me-2"
-          (click)="openModal()"
-          ngbTooltip="Add Crew"
-          *ngIf="userIsSchedulerCrewWriter() == true"
-          placement="top"
-          style="min-width: 75px;">
+  <button type="button" class="btn btn-sm btn-add-crew me-2" (click)="openModal()" ngbTooltip="Add Crew"
+    *ngIf="userIsSchedulerCrewWriter() == true" placement="top" style="min-width: 75px;">
     Add
   </button>
 </div>
@@ -16,35 +11,37 @@
     <h5 class="modal-title mb-0" id="crewModalLabel" ngbTooltip="{{objectGuid}}">
       {{ isEditMode ? 'Edit Crew' : 'Add Crew' }}
     </h5>
-    <button type="button"
-            class="btn btn-sm btn-close btn-close-white"
-            (click)="closeModal()">
+    <button type="button" class="btn btn-sm btn-close btn-close-white" (click)="closeModal()">
     </button>
   </div>
   <div class="modal-body crew-modal-body">
     <form [formGroup]="crewForm" (ngSubmit)="submitForm()">
       <div class="form-group">
         <label for="name" id="label-name"><span class="text-danger">*</span>Name</label>
-        <input type="text" id="name" formControlName="name" placeholder="Enter Name" class="form-control crew-input" [disabled]="!userIsSchedulerCrewWriter()" aria-labelledby="label-name" />
+        <input type="text" id="name" formControlName="name" placeholder="Enter Name" class="form-control crew-input"
+          [disabled]="!userIsSchedulerCrewWriter()" aria-labelledby="label-name" />
         <div *ngIf="crewForm.get('name')?.invalid && crewForm.get('name')?.touched" class="text-danger">
           Name is required
         </div>
       </div>
       <div class="form-group">
         <label for="description" id="label-description">Description</label>
-        <textarea id="description" formControlName="description" placeholder="Enter Description" class="form-control crew-input" [disabled]="!userIsSchedulerCrewWriter()"></textarea>
+        <textarea id="description" formControlName="description" placeholder="Enter Description"
+          class="form-control crew-input" [disabled]="!userIsSchedulerCrewWriter()"></textarea>
       </div>
 
       <fieldset class="mb-4">
         <!--<legend class="fs-6 fw-semibold text-primary">Notes</legend>-->
         <label for="notes" class="form-label">Notes</label>
-        <textarea id="notes" formControlName="notes" class="form-control" rows="3" [disabled]="!userIsSchedulerCrewWriter()"></textarea>
+        <textarea id="notes" formControlName="notes" class="form-control" rows="3"
+          [disabled]="!userIsSchedulerCrewWriter()"></textarea>
       </fieldset>
 
       <div class="form-group" *ngIf="officeId == null && officeCount$ != null && ((officeCount$ | async) ?? 0) > 0">
         <!-- hide this when an office ID has been provided -->
         <label for="officeId" id="label-officeId">Office</label>
-        <select id="officeId" formControlName="officeId" class="form-select crew-select" [disabled]="!userIsSchedulerCrewWriter()">
+        <select id="officeId" formControlName="officeId" class="form-select crew-select"
+          [disabled]="!userIsSchedulerCrewWriter()">
           <option [ngValue]="null">Select Office</option>
           <option *ngFor="let office of offices$ | async" [ngValue]="office.id">{{office.name}}</option>
         </select>
@@ -53,10 +50,9 @@
       <!-- Collapsible Avatar & Color Panel -->
       <div class="mt-4">
         <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3 cursor-pointer"
-             (click)="isAvatarPanelOpen = !isAvatarPanelOpen">
+          (click)="isAvatarPanelOpen = !isAvatarPanelOpen">
           <h6 class="mb-0 fw-semibold">
-            <i [class]="isAvatarPanelOpen ? 'fa-solid fa-chevron-down' : 'fa-solid fa-chevron-right'"
-               class="me-2"></i>
+            <i [class]="isAvatarPanelOpen ? 'fa-solid fa-chevron-down' : 'fa-solid fa-chevron-right'" class="me-2"></i>
             Avatar & Appearance
           </h6>
           <span class="badge bg-light text-dark" *ngIf="currentAvatarUrl || crewForm.get('color')?.value">
@@ -69,12 +65,9 @@
           <div class="form-group mb-4">
             <label for="color" id="label-color">Color</label>
             <div class="d-flex align-items-center gap-3">
-              <input type="color"
-                     id="color"
-                     formControlName="color"
-                     class="form-control form-control-color color-picker"
-                     [disabled]="!userIsSchedulerCrewWriter()"
-                     title="Choose Color">
+              <input type="color" id="color" formControlName="color"
+                class="form-control form-control-color color-picker" [disabled]="!userIsSchedulerCrewWriter()"
+                title="Choose Color">
               <!--<input type="text"
           [value]="crewForm.get('color')?.value || '#000000'"
           readonly
@@ -85,7 +78,8 @@
 
           <div class="form-group">
             <label for="iconId" id="label-iconId">Icon</label>
-            <select id="iconId" formControlName="iconId" class="form-select crew-select" [disabled]="!userIsSchedulerCrewWriter()">
+            <select id="iconId" formControlName="iconId" class="form-select crew-select"
+              [disabled]="!userIsSchedulerCrewWriter()">
               <option [ngValue]="null">Select Icon</option>
               <option *ngFor="let icon of icons$ | async" [ngValue]="icon.id">{{icon.name}}</option>
             </select>
@@ -96,17 +90,14 @@
           <div class="form-group">
             <label class="form-label fw-semibold">Avatar</label>
             <div class="avatar-upload-container p-4 border rounded bg-light text-center position-relative"
-                 (dragover)="onDragOver($event)"
-                 (dragleave)="onDragLeave($event)"
-                 (drop)="onDrop($event)"
-                 [class.drag-over]="isDragOver">
+              (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event)"
+              [class.drag-over]="isDragOver">
               <!-- Preview -->
-              <div class="avatar-preview mx-auto mb-3"
-                   [style.background-image]="'url(' + currentAvatarUrl + ')'"
-                   [style.background-color]="crewForm.get('color')?.value || '#6c757d'"
-                   [ngClass]="{'no-avatar': !currentAvatarUrl}">
+              <div class="avatar-preview mx-auto mb-3" [style.background-image]="'url(' + currentAvatarUrl + ')'"
+                [style.background-color]="crewForm.get('color')?.value || '#6c757d'"
+                [ngClass]="{'no-avatar': !currentAvatarUrl}">
                 <i class="fa-3x text-white opacity-75" *ngIf="!currentAvatarUrl"
-                   [class]="crewData?.icon?.fontAwesomeCode || 'fa-solid fa-users'">
+                  [class]="crewData?.icon?.fontAwesomeCode || 'fa-solid fa-users'">
                 </i>
               </div>
 
@@ -122,8 +113,8 @@
                   <i class="fa fa-upload me-1"></i>
                   {{ currentAvatarUrl ? 'Change Image' : 'Choose File' }}
                 </button>
-                <button type="button" class="btn btn-outline-danger btn-sm ms-2"
-                        (click)="clearAvatar()" *ngIf="currentAvatarUrl">
+                <button type="button" class="btn btn-outline-danger btn-sm ms-2" (click)="clearAvatar()"
+                  *ngIf="currentAvatarUrl">
                   <i class="fa fa-trash"></i> Remove
                 </button>
               </div>
@@ -148,19 +139,23 @@
         <div class="row g-3">
           <div class="col-md-6">
             <label for="externalId" class="form-label">External ID</label>
-            <input type="text" id="externalId" formControlName="externalId" class="form-control" [disabled]="!userIsSchedulerCrewWriter()" />
+            <input type="text" id="externalId" formControlName="externalId" class="form-control"
+              [disabled]="!userIsSchedulerCrewWriter()" />
           </div>
           <div class="col-md-3">
             <label for="versionNumber" class="form-label">Version</label>
-            <input type="text" id="versionNumber" [value]="crewForm.get('versionNumber')?.value" class="form-control" disabled />
+            <input type="text" id="versionNumber" [value]="crewForm.get('versionNumber')?.value" class="form-control"
+              disabled />
           </div>
           <div class="col-md-3 d-flex align-items-end gap-3">
             <div class="form-check">
-              <input type="checkbox" id="active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerCrewWriter()" />
+              <input type="checkbox" id="active" formControlName="active" class="form-check-input"
+                [disabled]="!userIsSchedulerCrewWriter()" />
               <label class="form-check-label" for="active">Active</label>
             </div>
             <div class="form-check">
-              <input type="checkbox" id="deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerCrewWriter()" />
+              <input type="checkbox" id="deleted" formControlName="deleted" class="form-check-input"
+                [disabled]="!userIsSchedulerCrewWriter()" />
               <label class="form-check-label" for="deleted">Deleted</label>
             </div>
           </div>
@@ -168,8 +163,20 @@
       </fieldset>
 
       <div class="modal-footer crew-modal-footer">
-        <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Crew changes and Close">Cancel</button>
-        <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !crewForm.valid || crewForm.pristine || !userIsSchedulerCrewWriter()" ngbTooltip="Save the Crew changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+        <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()"
+          ngbTooltip="Cancel the Crew changes and Close">Cancel</button>
+        <button type="submit" class="btn btn-sm btn-primary"
+          [disabled]="isSaving || !crewForm.valid || crewForm.pristine || !userIsSchedulerCrewWriter()"
+          ngbTooltip="Save the Crew changes and Close">
+          <span *ngIf="isSaving">
+            <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+            Saving...
+          </span>
+          <span *ngIf="!isSaving">
+            <i class="fa-solid fa-check me-1"></i>
+            {{ isEditMode ? 'Save' : 'Create' }}
+          </span>
+        </button>
       </div>
     </form>
   </div>

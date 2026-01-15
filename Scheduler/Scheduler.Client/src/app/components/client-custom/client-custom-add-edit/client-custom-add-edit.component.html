@@ -1,155 +1,185 @@
 <div class="add-client" *ngIf="showAddButton == true">
-    <button type="button"
-        class="btn btn-sm btn-add-client me-2"
-        (click)="openModal()"
-        ngbTooltip="Add Client" 
-        *ngIf="userIsSchedulerClientWriter() == true"
-        placement="top"
-        style="min-width: 75px;">Add</button>
+    <button type="button" class="btn btn-sm btn-add-client me-2" (click)="openModal()" ngbTooltip="Add Client"
+        *ngIf="userIsSchedulerClientWriter() == true" placement="top" style="min-width: 75px;">Add</button>
 </div>
 
 <!-- ng-bootstrap modal -->
 <ng-template #clientModal let-modal>
-   <div class="modal-header bg-dark text-light client-modal-header">
-      <h5 class="modal-title mb-0" id="clientModalLabel" ngbTooltip="{{objectGuid}}">
-      {{ isEditMode ? 'Edit Client' : 'Add Client' }}
-      </h5>
-      <button type="button"
-              class="btn btn-sm btn-close btn-close-white"
-              (click)="closeModal()">
-       </button>
-   </div>
-   <div class="modal-body client-modal-body">
-      <form [formGroup]="clientForm" (ngSubmit)="submitForm()">
+    <div class="modal-header bg-dark text-light client-modal-header">
+        <h5 class="modal-title mb-0" id="clientModalLabel" ngbTooltip="{{objectGuid}}">
+            {{ isEditMode ? 'Edit Client' : 'Add Client' }}
+        </h5>
+        <button type="button" class="btn btn-sm btn-close btn-close-white" (click)="closeModal()">
+        </button>
+    </div>
+    <div class="modal-body client-modal-body">
+        <form [formGroup]="clientForm" (ngSubmit)="submitForm()">
             <div class="form-group">
                 <label for="name" id="label-name"><span class="text-danger">*</span>Name</label>
-                <input type="text" id="name" formControlName="name" placeholder="Enter Name" class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()" aria-labelledby="label-name" />
+                <input type="text" id="name" formControlName="name" placeholder="Enter Name"
+                    class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()"
+                    aria-labelledby="label-name" />
                 <div *ngIf="clientForm.get('name')?.invalid && clientForm.get('name')?.touched" class="text-danger">
                     Name is required
                 </div>
             </div>
             <div class="form-group">
                 <label for="description" id="label-description">Description</label>
-                <textarea id="description" formControlName="description" placeholder="Enter Description" class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()"></textarea>
+                <textarea id="description" formControlName="description" placeholder="Enter Description"
+                    class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()"></textarea>
             </div>
             <div class="form-group">
                 <label for="clientTypeId" id="label-clientTypeId"><span class="text-danger">*</span>Client Type</label>
-                <select id="clientTypeId" formControlName="clientTypeId" class="form-select client-select" [disabled]="!userIsSchedulerClientWriter()">
+                <select id="clientTypeId" formControlName="clientTypeId" class="form-select client-select"
+                    [disabled]="!userIsSchedulerClientWriter()">
                     <option [ngValue]="null">Select Client Type</option>
-                    <option *ngFor="let clientType of clientTypes$ | async" [ngValue]="clientType.id">{{clientType.name}}</option>
+                    <option *ngFor="let clientType of clientTypes$ | async" [ngValue]="clientType.id">
+                        {{clientType.name}}</option>
                 </select>
-                <div *ngIf="clientForm.get('clientTypeId')?.invalid && clientForm.get('clientTypeId')?.touched" class="text-danger">
+                <div *ngIf="clientForm.get('clientTypeId')?.invalid && clientForm.get('clientTypeId')?.touched"
+                    class="text-danger">
                     Client Type is required
                 </div>
             </div>
             <div class="form-group">
                 <label for="currencyId" id="label-currencyId"><span class="text-danger">*</span>Currency</label>
-                <select id="currencyId" formControlName="currencyId" class="form-select client-select" [disabled]="!userIsSchedulerClientWriter()">
+                <select id="currencyId" formControlName="currencyId" class="form-select client-select"
+                    [disabled]="!userIsSchedulerClientWriter()">
                     <option [ngValue]="null">Select Currency</option>
-                    <option *ngFor="let currency of currencies$ | async" [ngValue]="currency.id">{{currency.name}}</option>
+                    <option *ngFor="let currency of currencies$ | async" [ngValue]="currency.id">{{currency.name}}
+                    </option>
                 </select>
-                <div *ngIf="clientForm.get('currencyId')?.invalid && clientForm.get('currencyId')?.touched" class="text-danger">
+                <div *ngIf="clientForm.get('currencyId')?.invalid && clientForm.get('currencyId')?.touched"
+                    class="text-danger">
                     Currency is required
                 </div>
             </div>
             <div class="form-group">
                 <label for="timeZoneId" id="label-timeZoneId"><span class="text-danger">*</span>Time Zone</label>
-                <select id="timeZoneId" formControlName="timeZoneId" class="form-select client-select" [disabled]="!userIsSchedulerClientWriter()">
+                <select id="timeZoneId" formControlName="timeZoneId" class="form-select client-select"
+                    [disabled]="!userIsSchedulerClientWriter()">
                     <option [ngValue]="null">Select Time Zone</option>
-                    <option *ngFor="let timeZone of timeZones$ | async" [ngValue]="timeZone.id">{{timeZone.name}}</option>
+                    <option *ngFor="let timeZone of timeZones$ | async" [ngValue]="timeZone.id">{{timeZone.name}}
+                    </option>
                 </select>
-                <div *ngIf="clientForm.get('timeZoneId')?.invalid && clientForm.get('timeZoneId')?.touched" class="text-danger">
+                <div *ngIf="clientForm.get('timeZoneId')?.invalid && clientForm.get('timeZoneId')?.touched"
+                    class="text-danger">
                     Time Zone is required
                 </div>
             </div>
             <div class="form-group">
                 <label for="calendarId" id="label-calendarId">Calendar</label>
-                <select id="calendarId" formControlName="calendarId" class="form-select client-select" [disabled]="!userIsSchedulerClientWriter()">
+                <select id="calendarId" formControlName="calendarId" class="form-select client-select"
+                    [disabled]="!userIsSchedulerClientWriter()">
                     <option [ngValue]="null">Select Calendar</option>
-                    <option *ngFor="let calendar of calendars$ | async" [ngValue]="calendar.id">{{calendar.name}}</option>
+                    <option *ngFor="let calendar of calendars$ | async" [ngValue]="calendar.id">{{calendar.name}}
+                    </option>
                 </select>
             </div>
             <div class="form-group">
                 <label for="addressLine1" id="label-addressLine1"><span class="text-danger">*</span>Address Line 1</label>
-                <input type="text" id="addressLine1" formControlName="addressLine1" placeholder="Enter Address Line 1" class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()" aria-labelledby="label-addressLine1" />
-                <div *ngIf="clientForm.get('addressLine1')?.invalid && clientForm.get('addressLine1')?.touched" class="text-danger">
+                <input type="text" id="addressLine1" formControlName="addressLine1" placeholder="Enter Address Line 1"
+                    class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()"
+                    aria-labelledby="label-addressLine1" />
+                <div *ngIf="clientForm.get('addressLine1')?.invalid && clientForm.get('addressLine1')?.touched"
+                    class="text-danger">
                     Address Line 1 is required
                 </div>
             </div>
             <div class="form-group">
                 <label for="addressLine2" id="label-addressLine2">Address Line 2</label>
-                <input type="text" id="addressLine2" formControlName="addressLine2" placeholder="Enter Address Line 2" class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()" aria-labelledby="label-addressLine2" />
+                <input type="text" id="addressLine2" formControlName="addressLine2" placeholder="Enter Address Line 2"
+                    class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()"
+                    aria-labelledby="label-addressLine2" />
             </div>
             <div class="form-group">
                 <label for="city" id="label-city"><span class="text-danger">*</span>City</label>
-                <input type="text" id="city" formControlName="city" placeholder="Enter City" class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()" aria-labelledby="label-city" />
+                <input type="text" id="city" formControlName="city" placeholder="Enter City"
+                    class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()"
+                    aria-labelledby="label-city" />
                 <div *ngIf="clientForm.get('city')?.invalid && clientForm.get('city')?.touched" class="text-danger">
                     City is required
                 </div>
             </div>
             <div class="form-group">
                 <label for="postalCode" id="label-postalCode">Postal Code</label>
-                <input type="text" id="postalCode" formControlName="postalCode" placeholder="Enter Postal Code" class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()" aria-labelledby="label-postalCode" />
+                <input type="text" id="postalCode" formControlName="postalCode" placeholder="Enter Postal Code"
+                    class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()"
+                    aria-labelledby="label-postalCode" />
             </div>
             <div class="form-group">
-                <label for="stateProvinceId" id="label-stateProvinceId"><span class="text-danger">*</span>State Province</label>
-                <select id="stateProvinceId" formControlName="stateProvinceId" class="form-select client-select" [disabled]="!userIsSchedulerClientWriter()">
+                <label for="stateProvinceId" id="label-stateProvinceId"><span class="text-danger">*</span>State
+                    Province</label>
+                <select id="stateProvinceId" formControlName="stateProvinceId" class="form-select client-select"
+                    [disabled]="!userIsSchedulerClientWriter()">
                     <option [ngValue]="null">Select State Province</option>
-                    <option *ngFor="let stateProvince of stateProvinces$ | async" [ngValue]="stateProvince.id">{{stateProvince.name}}</option>
+                    <option *ngFor="let stateProvince of stateProvinces$ | async" [ngValue]="stateProvince.id">
+                        {{stateProvince.name}}</option>
                 </select>
-                <div *ngIf="clientForm.get('stateProvinceId')?.invalid && clientForm.get('stateProvinceId')?.touched" class="text-danger">
+                <div *ngIf="clientForm.get('stateProvinceId')?.invalid && clientForm.get('stateProvinceId')?.touched"
+                    class="text-danger">
                     State Province is required
                 </div>
             </div>
             <div class="form-group">
                 <label for="countryId" id="label-countryId"><span class="text-danger">*</span>Country</label>
-                <select id="countryId" formControlName="countryId" class="form-select client-select" [disabled]="!userIsSchedulerClientWriter()">
+                <select id="countryId" formControlName="countryId" class="form-select client-select"
+                    [disabled]="!userIsSchedulerClientWriter()">
                     <option [ngValue]="null">Select Country</option>
                     <option *ngFor="let country of countries$ | async" [ngValue]="country.id">{{country.name}}</option>
                 </select>
-                <div *ngIf="clientForm.get('countryId')?.invalid && clientForm.get('countryId')?.touched" class="text-danger">
+                <div *ngIf="clientForm.get('countryId')?.invalid && clientForm.get('countryId')?.touched"
+                    class="text-danger">
                     Country is required
                 </div>
             </div>
             <div class="form-group">
-                <label for="phone" id="label-phone" *ngIf="isEditMode"><a href="tel:{{clientSubmitData?.phone}}" ngbTooltip="Phone {{clientSubmitData?.phone}}">Phone</a></label>
+                <label for="phone" id="label-phone" *ngIf="isEditMode"><a href="tel:{{clientSubmitData?.phone}}"
+                        ngbTooltip="Phone {{clientSubmitData?.phone}}">Phone</a></label>
                 <label for="phone" id="label-phone" *ngIf="!isEditMode">Phone</label>
-                <input type="text" id="phone" formControlName="phone" placeholder="Enter Phone" class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()" aria-labelledby="label-phone" />
+                <input type="text" id="phone" formControlName="phone" placeholder="Enter Phone"
+                    class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()"
+                    aria-labelledby="label-phone" />
             </div>
             <div class="form-group">
-                <label for="email" id="label-email" *ngIf="isEditMode"><a href="mailto:{{clientSubmitData?.email}}" ngbTooltip="Send Email to {{clientSubmitData?.email}}">Email</a></label>
+                <label for="email" id="label-email" *ngIf="isEditMode"><a href="mailto:{{clientSubmitData?.email}}"
+                        ngbTooltip="Send Email to {{clientSubmitData?.email}}">Email</a></label>
                 <label for="email" id="label-email" *ngIf="!isEditMode">Email</label>
-                <input type="text" id="email" formControlName="email" placeholder="Enter Email" class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()" aria-labelledby="label-email" />
+                <input type="text" id="email" formControlName="email" placeholder="Enter Email"
+                    class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()"
+                    aria-labelledby="label-email" />
             </div>
             <div class="form-group">
                 <label for="latitude" id="label-latitude">Latitude</label>
-                <input type="number" id="latitude" formControlName="latitude" placeholder="Enter Latitude" class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()" aria-labelledby="label-latitude" />
+                <input type="number" id="latitude" formControlName="latitude" placeholder="Enter Latitude"
+                    class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()"
+                    aria-labelledby="label-latitude" />
             </div>
             <div class="form-group">
                 <label for="longitude" id="label-longitude">Longitude</label>
-                <input type="number" id="longitude" formControlName="longitude" placeholder="Enter Longitude" class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()" aria-labelledby="label-longitude" />
+                <input type="number" id="longitude" formControlName="longitude" placeholder="Enter Longitude"
+                    class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()"
+                    aria-labelledby="label-longitude" />
             </div>
             <div class="form-group">
                 <label for="notes" id="label-notes">Notes</label>
-                <textarea id="notes" formControlName="notes" placeholder="Enter Notes" class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()"></textarea>
+                <textarea id="notes" formControlName="notes" placeholder="Enter Notes" class="form-control client-input"
+                    [disabled]="!userIsSchedulerClientWriter()"></textarea>
             </div>
             <div class="form-group">
                 <label for="externalId" id="label-externalId">External Id</label>
-                <input type="text" id="externalId" formControlName="externalId" placeholder="Enter External Id" class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()" aria-labelledby="label-externalId" />
+                <input type="text" id="externalId" formControlName="externalId" placeholder="Enter External Id"
+                    class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()"
+                    aria-labelledby="label-externalId" />
             </div>
             <div class="form-group">
                 <label for="color" id="label-color">Color</label>
                 <div class="d-flex align-items-center gap-3">
                     <!-- Native color picker input (type="color") -->
-                    <input 
-                        type="color" 
-                        id="color" 
-                        formControlName="color" 
-                        class="form-control form-control-color color-picker" 
-                        [disabled]="!userIsSchedulerClientWriter()"
-                        aria-labelledby="label-color"
-                        title="Choose Color">
-                    
+                    <input type="color" id="color" formControlName="color"
+                        class="form-control form-control-color color-picker" [disabled]="!userIsSchedulerClientWriter()"
+                        aria-labelledby="label-color" title="Choose Color">
+
                     <!-- Usually this isn't needed
                     <input 
                         type="text" 
@@ -161,40 +191,67 @@
             </div>
             <div class="form-group">
                 <label for="attributes" id="label-attributes">Attributes</label>
-                <textarea id="attributes" formControlName="attributes" placeholder="Enter Attributes" class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()"></textarea>
+                <textarea id="attributes" formControlName="attributes" placeholder="Enter Attributes"
+                    class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()"></textarea>
             </div>
             <div class="form-group">
                 <label for="avatarFileName" id="label-avatarFileName">Avatar File Name</label>
-                <input type="text" id="avatarFileName" formControlName="avatarFileName" placeholder="Enter Avatar File Name" class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()" aria-labelledby="label-avatarFileName" />
+                <input type="text" id="avatarFileName" formControlName="avatarFileName"
+                    placeholder="Enter Avatar File Name" class="form-control client-input"
+                    [disabled]="!userIsSchedulerClientWriter()" aria-labelledby="label-avatarFileName" />
             </div>
             <div class="form-group">
                 <label for="avatarSize" id="label-avatarSize">Avatar Size</label>
-                <input type="number" id="avatarSize" formControlName="avatarSize" placeholder="Enter Avatar Size" class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()" aria-labelledby="label-avatarSize" />
+                <input type="number" id="avatarSize" formControlName="avatarSize" placeholder="Enter Avatar Size"
+                    class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()"
+                    aria-labelledby="label-avatarSize" />
             </div>
             <div class="form-group">
                 <label for="avatarData" id="label-avatarData">Avatar Data</label>
-                <input type="text" id="avatarData" formControlName="avatarData" placeholder="Enter Avatar Data" class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()" aria-labelledby="label-avatarData" />
+                <input type="text" id="avatarData" formControlName="avatarData" placeholder="Enter Avatar Data"
+                    class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()"
+                    aria-labelledby="label-avatarData" />
             </div>
             <div class="form-group">
                 <label for="avatarMimeType" id="label-avatarMimeType">Avatar Mime Type</label>
-                <input type="text" id="avatarMimeType" formControlName="avatarMimeType" placeholder="Enter Avatar Mime Type" class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()" aria-labelledby="label-avatarMimeType" />
+                <input type="text" id="avatarMimeType" formControlName="avatarMimeType"
+                    placeholder="Enter Avatar Mime Type" class="form-control client-input"
+                    [disabled]="!userIsSchedulerClientWriter()" aria-labelledby="label-avatarMimeType" />
             </div>
             <div class="form-group" *ngIf="isEditMode">
-                <label for="versionNumber" id="label-versionNumber"><span class="text-danger">*</span>Version Number</label>
-                <input type="number" id="versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control client-input" />
+                <label for="versionNumber" id="label-versionNumber"><span class="text-danger">*</span>Version
+                    Number</label>
+                <input type="number" id="versionNumber" formControlName="versionNumber" [disabled]="true"
+                    placeholder="Enter Version Number" class="form-control client-input" />
             </div>
             <div class="form-check my-2" *ngIf="isEditMode">
-                <input type="checkbox" id="active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerClientWriter()" />
-                <label for="active" class="form-check-label" id="label-active"><span class="text-danger">*</span>Active</label>
+                <input type="checkbox" id="active" formControlName="active" class="form-check-input"
+                    [disabled]="!userIsSchedulerClientWriter()" />
+                <label for="active" class="form-check-label" id="label-active"><span
+                        class="text-danger">*</span>Active</label>
             </div>
             <div class="form-check my-2" *ngIf="isEditMode">
-                <input type="checkbox" id="deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerClientWriter()" />
-                <label for="deleted" class="form-check-label" id="label-deleted"><span class="text-danger">*</span>Deleted</label>
+                <input type="checkbox" id="deleted" formControlName="deleted" class="form-check-input"
+                    [disabled]="!userIsSchedulerClientWriter()" />
+                <label for="deleted" class="form-check-label" id="label-deleted"><span
+                        class="text-danger">*</span>Deleted</label>
             </div>
-         <div class="modal-footer client-modal-footer">
-            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Client changes and Close">Cancel</button>
-            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !clientForm.valid || clientForm.pristine || !userIsSchedulerClientWriter()" ngbTooltip="Save the Client changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
-         </div>
-      </form>
-   </div>
+            <div class="modal-footer client-modal-footer">
+                <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()"
+                    ngbTooltip="Cancel the Client changes and Close">Cancel</button>
+                <button type="submit" class="btn btn-sm btn-primary"
+                    [disabled]="isSaving || !clientForm.valid || clientForm.pristine || !userIsSchedulerClientWriter()"
+                    ngbTooltip="Save the Client changes and Close">
+                    <span *ngIf="isSaving">
+                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                        Saving...
+                    </span>
+                    <span *ngIf="!isSaving">
+                        <i class="fa-solid fa-check me-1"></i>
+                        {{ isEditMode ? 'Save' : 'Create' }}
+                    </span>
+                </button>
+            </div>
+        </form>
+    </div>
 </ng-template>
