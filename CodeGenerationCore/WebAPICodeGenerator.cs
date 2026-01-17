@@ -44,7 +44,7 @@ namespace Foundation.CodeGeneration
             bool adminAccessNeededToWrite = false;
 
 
-            
+
 
             string displayNameFieldSerializationCode = camelCaseName + ".id.ToString()";          // Default to this because every entity will have it.
 
@@ -1935,7 +1935,7 @@ namespace Foundation.CodeGeneration
 
                 if (scriptGenTable.maxPostBytes != null && scriptGenTable.maxPostBytes > 0)
                 {
-                    sb.AppendLine($"\t\t[RequestSizeLimit({scriptGenTable.maxPostBytes })]");
+                    sb.AppendLine($"\t\t[RequestSizeLimit({scriptGenTable.maxPostBytes})]");
                 }
 
                 sb.AppendLine("\t\tpublic async Task<IActionResult> Put" + pluralizeEntityForRouteForSomeTypeNames(entityName) + "(int id, [FromBody]" + qualifiedEntity + "." + entityName + "DTO " + camelCaseName + "DTO, CancellationToken cancellationToken = default)");
@@ -2064,9 +2064,12 @@ namespace Foundation.CodeGeneration
                 {camelCaseName}DTO.objectGuid = existing.objectGuid;
             }}
             else if ({camelCaseName}DTO.objectGuid != existing.objectGuid)
-            {{
-                await CreateAuditEventAsync(AuditEngine.AuditType.Error, $""Attempt was made to change object guid on a {entityName} record.  This is not allowed.  The User is "" + securityUser.accountName, existing.id.ToString());
-                return Problem(""Invalid Operation."");
+            {{");
+                    if (ignoreFoundationServices == false)
+                    {
+                        sb.AppendLine(@$"                await CreateAuditEventAsync(AuditEngine.AuditType.Error, $""Attempt was made to change object guid on a {entityName} record.  This is not allowed.  The User is "" + securityUser.accountName, existing.id.ToString());");
+                    }
+                    sb.AppendLine(@$"                return Problem(""Invalid Operation."");
             }}
 
 ");

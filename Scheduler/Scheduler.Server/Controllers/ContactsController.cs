@@ -230,6 +230,55 @@ namespace Foundation.Scheduler.Controllers.WebAPI
             }
         }
 
+
+        [HttpGet]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/Contact/{id}/ChangeMetadataBetter")]
+        public async Task<IActionResult> GetContactChangeMetadataBetter(int id, int versionNumber, CancellationToken cancellationToken = default)
+        {
+            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            // Load the contact to verify access and get tenant/context
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+            Guid userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+
+            Database.Contact contact = await _context.Contacts.Where(c => c.id == id && c.tenantGuid == userTenantGuid).FirstOrDefaultAsync(cancellationToken);
+            if (contact == null)
+            {
+                return NotFound();
+            }
+
+            try
+            {
+                contact.SetupVersionInquiry(_context, userTenantGuid);
+                ChangeHistoryToolset<Database.Contact, ContactChangeHistory> toolset = Database.Contact.GetChangeHistoryToolsetForReading(_context, cancellationToken);
+
+
+                VersionInformation<Contact> thisVersionMetaData = await contact.GetVersionAsync(versionNumber, false, cancellationToken);
+
+                if (thisVersionMetaData == null)
+                {
+                    return NotFound($"Version {versionNumber} not found.");
+                }
+
+                //AuditEntry audit = await toolset.GetAuditForVersion(contact, versionNumber).ConfigureAwait(false);
+
+                //if (audit == null)
+                //{
+                //    return NotFound($"Version {versionNumber} not found.");
+                //}
+
+                return Ok(thisVersionMetaData);
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
+        }
+
         /// <summary>
         /// 
         /// Gets the full audit history for a Contact.
@@ -268,9 +317,13 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 }
                 else
                 {
-                    ChangeHistoryToolset<Database.Contact, ContactChangeHistory> toolset = Database.Contact.GetChangeHistoryToolsetForReading(_context, cancellationToken);
-                    List<AuditEntry> audits = await toolset.GetAuditTrailAsync(contact).ConfigureAwait(false);
-                    return Ok(audits);
+                    //ChangeHistoryToolset<Database.Contact, ContactChangeHistory> toolset = Database.Contact.GetChangeHistoryToolsetForReading(_context, cancellationToken);
+                    //List<AuditEntry> audits = await toolset.GetAuditTrailAsync(contact).ConfigureAwait(false);
+                    //return Ok(audits);
+
+                    List<VersionInformation<Database.Contact>> versions = await contact.GetAllVersionsAsync(includeData: false, cancellationToken).ConfigureAwait(false);
+                    return Ok(versions);
+
                 }
             }
             catch (Exception ex)

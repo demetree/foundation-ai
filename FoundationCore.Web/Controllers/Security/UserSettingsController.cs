@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 
-namespace Foundation.Scheduler.Controllers.WebAPI
+namespace Foundation.Security.Controllers.WebAPI
 {
     /// <summary>
     /// 

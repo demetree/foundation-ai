@@ -49,7 +49,7 @@ namespace Foundation
                     string tableName = entityType.GetTableName();
                     string entitySchema = entityType.GetSchema() ?? schemaName;
 
-                    
+
                     _logger.LogDebug($"About to check table named {entitySchema}.{tableName}.");
 
                     if (string.IsNullOrEmpty(tableName))
@@ -105,7 +105,7 @@ namespace Foundation
                         if (AreDataTypesCompatible(expected.DataType, actual.DataType, providerName, expected.Length, actual.Length, expected.IsDateTime, expected.ExpectedPrecision, actual.Precision) == false)
                         {
                             string message = $"Column '{expected.Name}' in table '{entitySchema}.{tableName}' has mismatched data type, length, or precision. Expected: {expected.DataType}{(expected.Length.HasValue ? $" (Length: {expected.Length})" : "")}{(expected.ExpectedPrecision.HasValue ? $" (Precision: {expected.ExpectedPrecision})" : "")}, Actual: {actual.DataType}{(actual.Length.HasValue ? $" (Length: {actual.Length})" : "")}{(actual.Precision.HasValue ? $" (Precision: {actual.Precision})" : "")}";
-                            
+
                             mismatches.Add(message);
                             _logger.LogDebug(message);
 
@@ -158,7 +158,7 @@ namespace Foundation
             try
             {
                 using DbCommand command = database.GetDbConnection().CreateCommand();
-            
+
                 command.CommandText = queries.TableExistsQuery;
 
                 if (providerName != "Microsoft.EntityFrameworkCore.Sqlite")
@@ -197,10 +197,17 @@ namespace Foundation
                 {
                     DbParameter schemaParam = CreateParameter(providerName, "@schemaName", schemaName);
                     command.Parameters.Add(schemaParam);
-                }
 
-                DbParameter tableParam = CreateParameter(providerName, "@tableName", tableName);
-                command.Parameters.Add(tableParam);
+                    DbParameter tableParam = CreateParameter(providerName, "@tableName", tableName);
+                    command.Parameters.Add(tableParam);
+                }
+                else
+                {
+                    //
+                    // For sqlite, swap out the @tableName directly in the  query.  It doesn't support parameters.
+                    // 
+                    command.CommandText = command.CommandText.Replace("@tableName", tableName);
+                }
 
                 using DbDataReader reader = await command.ExecuteReaderAsync();
 
@@ -389,14 +396,33 @@ namespace Foundation
                     return true;
                 }
             }
-
-            if (providerName == "Npgsql.EntityFrameworkCore.PostgreSQL" && isDateTime)
+            else if (providerName == "Npgsql.EntityFrameworkCore.PostgreSQL" && isDateTime)
             {
                 if (actual == "timestamp without time zone" && expected == "timestamp")
                 {
                     return actualPrecision >= 3; // Millisecond precision
                 }
                 return false;
+            }
+            else if (providerName == "Microsoft.EntityFrameworkCore.Sqlite")
+            {
+                if (expected.StartsWith("datetime") && actual == "TEXT")
+                {
+                    return true;
+                }
+                else if (expected == "text" && actual.ToUpper().Contains("VARCHAR") == true)
+                {
+                    return true;
+                }
+                else if (expected == "text" && actual.ToUpper().Contains("DATE") == true)
+                {
+                    return true;
+                }
+                else if (expected == "integer" && (actual == "bit" ||
+                                                  actual == "bigint"))
+                {
+                    return true;
+                }
             }
 
             return false;

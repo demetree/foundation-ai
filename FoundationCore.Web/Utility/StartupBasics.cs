@@ -1,5 +1,4 @@
 ﻿using Foundation.Auditor.Controllers.WebAPI;
-using Foundation.Scheduler.Controllers.WebAPI;
 using Foundation.Security.Controllers.WebAPI;
 using System;
 using System.Collections.Generic;
