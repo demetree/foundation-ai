@@ -1,4 +1,22 @@
-import { Component, OnInit } from '@angular/core';
+/*
+   GENERATED FORM FOR THE SECURITYUSERPASSWORDRESETTOKEN TABLE - DO NOT MODIFY DIRECTLY
+   =================================================================================
+
+   This is the default form generated from SecurityUserPasswordResetToken table metadata.
+
+   It is useful for low usage worksflows such as basic configuration, but is likely not good enough for primary workflow usage
+   because it's form layout and validation is too simple.
+   
+   For building better looking and/or versions with custom logic, create a custom version of this:
+
+   1. Copy this component
+   2. Rename to security-user-password-reset-token-custom (or similar)
+   3. Modify layout, grouping, field types, add workflow logic
+   
+   This generated version is kept simple on purpose so it's easy to use as a reference/scaffold.
+
+*/
+import { Component, OnInit, Input, Output } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NavigationService } from '../../../utility-services/navigation.service';
@@ -9,6 +27,25 @@ import { SecurityUserService } from '../../../security-data-services/security-us
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
+//
+// Define a type for the form values to improve readability and type safety.
+// This mirrors the structure of the FormGroup controls, with considerations for form input types:
+// - Numeric fields like latitude are strings in the form (due to input type="number" behavior).
+// - Allows null for optional fields.
+// - Does not include navigation properties or methods from domain models.
+//
+interface SecurityUserPasswordResetTokenFormValues {
+  securityUserId: number | bigint,       // For FK link number
+  token: string,
+  timeStamp: string,
+  expiry: string,
+  systemInitiated: boolean,
+  completed: boolean,
+  comments: string | null,
+  active: boolean,
+  deleted: boolean,
+};
+
 
 @Component({
   selector: 'app-security-user-password-reset-token-detail',
@@ -18,7 +55,22 @@ import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../uti
 
 export class SecurityUserPasswordResetTokenDetailComponent implements OnInit, CanComponentDeactivate {
 
-  securityUserPasswordResetTokenForm: FormGroup = this.fb.group({
+
+  //
+  // Input for pre-seeded data in add mode. This allows the parent component to provide
+  // initial values for one or more fields. Use Partial to allow selective seeding.
+  // Only applied in add mode (not edit mode, where existing data takes precedence).
+  //
+  @Input() preSeededData: Partial<SecurityUserPasswordResetTokenFormValues> | null = null;
+
+  //
+  // Input for fields to hide. This is an array of field names (e.g., ['name', 'description']).
+  // Hiding a field will remove its form group from the template and disable its validator.
+  //
+  @Input() hiddenFields: string[] = [];
+
+
+  public securityUserPasswordResetTokenForm: FormGroup = this.fb.group({
         securityUserId: [null, Validators.required],
         token: ['', Validators.required],
         timeStamp: ['', Validators.required],
@@ -42,7 +94,7 @@ export class SecurityUserPasswordResetTokenDetailComponent implements OnInit, Ca
   public isEditMode = true;   // Defaults to true (edit).  Gets set to false in ngOnInit if route is 'new'
 
   securityUserPasswordResetTokens$ = this.securityUserPasswordResetTokenService.GetSecurityUserPasswordResetTokenList();
-  securityUsers$ = this.securityUserService.GetSecurityUserList();
+  public securityUsers$ = this.securityUserService.GetSecurityUserList();
 
   private destroy$ = new Subject<void>();
 
@@ -72,6 +124,32 @@ export class SecurityUserPasswordResetTokenDetailComponent implements OnInit, Ca
       this.securityUserPasswordResetTokenData = null;
 
       this.buildFormValues(null);
+
+      //
+      // Apply pre-seeded data if provided and we are in add mode.
+      // This patches the form with partial values.
+      // Check explicitly for null/undefined to avoid errors.
+      //
+      if (this.preSeededData !== null && this.preSeededData !== undefined) {
+        this.securityUserPasswordResetTokenForm.patchValue(this.preSeededData);
+      }
+
+
+    //
+    // Disable validators for hidden fields to prevent form invalidation.
+    // This prevents requiring values for hidden fields.
+    //
+    let index: number;
+
+    for (index = 0; index < this.hiddenFields.length; index++) {
+      const fieldName = this.hiddenFields[index];
+      const control = this.securityUserPasswordResetTokenForm.get(fieldName);
+      if (control !== null) {
+        control.clearValidators();
+        control.updateValueAndValidity(); // Refresh validation state.
+      }
+    }
+
 
       this.isLoadingSubject.next(false); // No load needed for add mode
 
@@ -345,6 +423,20 @@ export class SecurityUserPasswordResetTokenDetailComponent implements OnInit, Ca
 
   public canGoBack(): boolean {
     return this.navigationService.canGoBack();
+  }
+
+
+  //
+  // Helper method to determine if a field should be hidden based on the hiddenFields input.
+  // Returns true if the field is in the array, false otherwise.
+  //
+  public isFieldHidden(fieldName: string): boolean {
+    // Explicit check for array existence to avoid runtime errors.
+    if (this.hiddenFields === null || this.hiddenFields === undefined) {
+      return false;
+    }
+    // Use traditional includes method for clarity.
+    return this.hiddenFields.includes(fieldName);
   }
 
 

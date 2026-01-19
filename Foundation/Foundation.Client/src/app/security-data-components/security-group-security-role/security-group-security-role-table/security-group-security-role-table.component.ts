@@ -1,3 +1,21 @@
+/*
+   GENERATED FORM FOR THE SECURITYGROUPSECURITYROLE TABLE - DO NOT MODIFY DIRECTLY
+   =================================================================================
+
+   This is the default form generated from SecurityGroupSecurityRole table metadata.
+
+   It is useful for low usage worksflows such as basic configuration, but is likely not good enough for primary workflow usage
+   because it's form layout and validation is too simple.
+   
+   For building better looking and/or versions with custom logic, create a custom version of this:
+
+   1. Copy this component
+   2. Rename to security-group-security-role-custom (or similar)
+   3. Modify layout, grouping, field types, add workflow logic
+   
+   This generated version is kept simple on purpose so it's easy to use as a reference/scaffold.
+
+*/
 import { Component, OnInit, AfterViewInit, OnChanges, SimpleChanges, Input, Output, EventEmitter, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { SecurityGroupSecurityRoleService, SecurityGroupSecurityRoleData, SecurityGroupSecurityRoleQueryParameters } from '../../../security-data-services/security-group-security-role.service';

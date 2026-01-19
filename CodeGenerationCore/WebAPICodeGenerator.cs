@@ -2679,7 +2679,10 @@ namespace Foundation.CodeGeneration
                     sb.AppendLine(optionalTab + "\t\t\t        // Now add the change history");
                     sb.AppendLine(optionalTab + "\t\t\t        //");
                     sb.AppendLine(optionalTab + "\t\t\t        " + entityName + "ChangeHistory " + camelCaseName + "ChangeHistory = new " + entityName + "ChangeHistory();");
-                    sb.AppendLine(optionalTab + "\t\t\t        " + camelCaseName + "ChangeHistory." + CamelCase(entityName, false) + "Id = " + camelCaseName + ".id;");
+
+                    // Note we are using the reserved word version of camel case here to suit EFPT's naming convention.  this may need to be tweaked later if that changes..
+                    sb.AppendLine(optionalTab + "\t\t\t        " + camelCaseName + "ChangeHistory." + CamelCase(entityName, true) + "Id = " + camelCaseName + ".id;");
+
                     sb.AppendLine(optionalTab + "\t\t\t        " + camelCaseName + "ChangeHistory.versionNumber = " + camelCaseName + ".versionNumber;");
                     sb.AppendLine(optionalTab + "\t\t\t        " + camelCaseName + "ChangeHistory.timeStamp = DateTime.UtcNow;");
 
@@ -3389,7 +3392,10 @@ namespace Foundation.CodeGeneration
 
                     sb.AppendLine();
                     sb.AppendLine("\t\t\t\t    " + entityName + "ChangeHistory " + camelCaseName + "ChangeHistory = new " + entityName + "ChangeHistory();");
-                    sb.AppendLine("\t\t\t\t    " + camelCaseName + "ChangeHistory." + CamelCase(entityName, false) + "Id = " + camelCaseName + ".id;");
+
+                    // Note we are using the reserved word handling version of camel case name here to accommodate EFPTs behaviour.  Might need to adjust later..
+                    sb.AppendLine("\t\t\t\t    " + camelCaseName + "ChangeHistory." + CamelCase(entityName, true) + "Id = " + camelCaseName + ".id;");
+
                     sb.AppendLine("\t\t\t\t    " + camelCaseName + "ChangeHistory.versionNumber = " + camelCaseName + ".versionNumber;");
                     sb.AppendLine("\t\t\t\t    " + camelCaseName + "ChangeHistory.timeStamp = DateTime.UtcNow;");
 
@@ -3643,7 +3649,9 @@ namespace Foundation.CodeGeneration
                     sb.AppendLine("\t\t\t\t");
                     sb.AppendLine("\t\t\t\t" + entityName + "ChangeHistory " + camelCaseName + "ChangeHistory = (from x in _context." + entityName + "ChangeHistories");
                     sb.AppendLine("\t\t\t\t                                               where");
-                    sb.AppendLine("\t\t\t\t                                               x." + CamelCase(entityName, false) + "Id == id &&");
+
+                    // Note we are using the reserved word handling of the camel case function here to suit EFPT.  This might tneed to change later.
+                    sb.AppendLine("\t\t\t\t                                               x." + CamelCase(entityName, true) + "Id == id &&");
 
                     if (multiTenancyEnabled == true)
                     {
@@ -3728,7 +3736,10 @@ namespace Foundation.CodeGeneration
                     sb.AppendLine("\t\t\t\t        // Now add the change history");
                     sb.AppendLine("\t\t\t\t        //");
                     sb.AppendLine("\t\t\t\t        " + entityName + "ChangeHistory new" + entityName + "ChangeHistory = new " + entityName + "ChangeHistory();");
-                    sb.AppendLine("\t\t\t\t        new" + entityName + "ChangeHistory." + CamelCase(entityName, false) + "Id = " + camelCaseName + ".id;");
+
+                    // Note we are using the reserved word version of camel case here to suit EFPT's naming convention.  this may need to be tweaked later if that changes..
+                    sb.AppendLine("\t\t\t\t        new" + entityName + "ChangeHistory." + CamelCase(entityName, true) + "Id = " + camelCaseName + ".id;");
+
                     sb.AppendLine("\t\t\t\t        new" + entityName + "ChangeHistory.versionNumber = " + camelCaseName + ".versionNumber;");
                     sb.AppendLine("\t\t\t\t        new" + entityName + "ChangeHistory.timeStamp = DateTime.UtcNow;");
 
@@ -3992,7 +4003,11 @@ namespace Foundation.CodeGeneration
                     sb.AppendLine("\t\t\t        // Now add the change history");
                     sb.AppendLine("\t\t\t        //");
                     sb.AppendLine("\t\t\t        " + entityName + "ChangeHistory " + camelCaseName + "ChangeHistory = new " + entityName + "ChangeHistory();");
-                    sb.AppendLine("\t\t\t        " + camelCaseName + "ChangeHistory." + CamelCase(entityName, false) + "Id = " + camelCaseName + ".id;");
+
+                    // Note we are using the reserved word version of camel case here to suit EFPT's naming convention.  this may need to be tweaked later if that changes..
+                    sb.AppendLine("\t\t\t        " + camelCaseName + "ChangeHistory." + CamelCase(entityName, true) + "Id = " + camelCaseName + ".id;");
+
+
                     sb.AppendLine("\t\t\t        " + camelCaseName + "ChangeHistory.versionNumber = " + camelCaseName + ".versionNumber;");
                     sb.AppendLine("\t\t\t        " + camelCaseName + "ChangeHistory.timeStamp = DateTime.UtcNow;");
 
@@ -5833,7 +5848,10 @@ namespace Foundation.CodeGeneration
                     {
                         sb.AppendLine("\t\t\t\t\t\t\t\t\tUser user = GetUser(" + camelCaseName + ".tenantGuid, securityUser);");
                         sb.AppendLine("\t\t\t\t\t\t\t\t\t" + entityName + "ChangeHistory " + camelCaseName + "ChangeHistory = new " + entityName + "ChangeHistory();");
-                        sb.AppendLine("\t\t\t\t\t\t\t\t\t" + camelCaseName + "ChangeHistory." + CamelCase(entityName, false) + "Id = " + camelCaseName + ".id;");
+
+                        // Note we are using the reserved word version of camel case here to suit EFPT's naming convention.  this may need to be tweaked later if that changes..
+                        sb.AppendLine("\t\t\t\t\t\t\t\t\t" + camelCaseName + "ChangeHistory." + CamelCase(entityName, true) + "Id = " + camelCaseName + ".id;");
+
                         sb.AppendLine("\t\t\t\t\t\t\t\t\t" + camelCaseName + "ChangeHistory.versionNumber = " + camelCaseName + ".versionNumber;");
                         sb.AppendLine("\t\t\t\t\t\t\t\t\t" + camelCaseName + "ChangeHistory.timeStamp = DateTime.UtcNow;");
                         sb.AppendLine("\t\t\t\t\t\t\t\t\t" + camelCaseName + "ChangeHistory.userId = user.id;");
@@ -5954,7 +5972,10 @@ namespace Foundation.CodeGeneration
                     {
                         sb.AppendLine("                            User user = GetUser(" + camelCaseName + ".tenantGuid, securityUser);");
                         sb.AppendLine("                            " + entityName + "ChangeHistory " + camelCaseName + "ChangeHistory = new " + entityName + "ChangeHistory();");
-                        sb.AppendLine("                            " + camelCaseName + "ChangeHistory." + CamelCase(entityName, false) + "Id = " + camelCaseName + ".id;");
+                    
+                        // Note we are using the reserved word version of camel case here to suit EFPT's naming convention.  this may need to be tweaked later if that changes..
+                        sb.AppendLine("                            " + camelCaseName + "ChangeHistory." + CamelCase(entityName, true) + "Id = " + camelCaseName + ".id;");
+
                         sb.AppendLine("                            " + camelCaseName + "ChangeHistory.versionNumber = " + camelCaseName + ".versionNumber;");
                         sb.AppendLine("                            " + camelCaseName + "ChangeHistory.timeStamp = DateTime.UtcNow;");
                         sb.AppendLine("                            " + camelCaseName + "ChangeHistory.userId = user.id;");

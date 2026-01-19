@@ -21,9 +21,9 @@
    </div>
    <div class="modal-body security-group-security-role-modal-body">
       <form [formGroup]="securityGroupSecurityRoleForm" (ngSubmit)="submitForm()">
-            <div class="form-group">
-                <label for="securityGroupId" id="label-securityGroupId"><span class="text-danger">*</span>Security Group</label>
-                <select id="securityGroupId" formControlName="securityGroupId" class="form-select security-group-security-role-select" [disabled]="!userIsSecuritySecurityGroupSecurityRoleWriter()">
+            <div class="form-group" *ngIf="!isFieldHidden('securityGroupId')">
+                <label for="SecurityGroupSecurityRole-securityGroupId" id="label-SecurityGroupSecurityRole-securityGroupId"><span class="text-danger">*</span>Security Group</label>
+                <select id="SecurityGroupSecurityRole-securityGroupId" formControlName="securityGroupId" class="form-select security-group-security-role-select" [disabled]="!userIsSecuritySecurityGroupSecurityRoleWriter()">
                     <option [ngValue]="null">Select Security Group</option>
                     <option *ngFor="let securityGroup of securityGroups$ | async" [ngValue]="securityGroup.id">{{securityGroup.name}}</option>
                 </select>
@@ -31,9 +31,9 @@
                     Security Group is required
                 </div>
             </div>
-            <div class="form-group">
-                <label for="securityRoleId" id="label-securityRoleId"><span class="text-danger">*</span>Security Role</label>
-                <select id="securityRoleId" formControlName="securityRoleId" class="form-select security-group-security-role-select" [disabled]="!userIsSecuritySecurityGroupSecurityRoleWriter()">
+            <div class="form-group" *ngIf="!isFieldHidden('securityRoleId')">
+                <label for="SecurityGroupSecurityRole-securityRoleId" id="label-SecurityGroupSecurityRole-securityRoleId"><span class="text-danger">*</span>Security Role</label>
+                <select id="SecurityGroupSecurityRole-securityRoleId" formControlName="securityRoleId" class="form-select security-group-security-role-select" [disabled]="!userIsSecuritySecurityGroupSecurityRoleWriter()">
                     <option [ngValue]="null">Select Security Role</option>
                     <option *ngFor="let securityRole of securityRoles$ | async" [ngValue]="securityRole.id">{{securityRole.name}}</option>
                 </select>
@@ -41,21 +41,30 @@
                     Security Role is required
                 </div>
             </div>
-            <div class="form-group">
-                <label for="comments" id="label-comments">Comments</label>
-                <textarea id="comments" formControlName="comments" placeholder="Enter Comments" class="form-control security-group-security-role-input" [disabled]="!userIsSecuritySecurityGroupSecurityRoleWriter()"></textarea>
+            <div class="form-group" *ngIf="!isFieldHidden('comments')">
+                <label for="SecurityGroupSecurityRole-comments" id="label-SecurityGroupSecurityRole-comments">Comments</label>
+                <textarea id="SecurityGroupSecurityRole-comments" formControlName="comments" placeholder="Enter Comments" class="form-control security-group-security-role-input" [disabled]="!userIsSecuritySecurityGroupSecurityRoleWriter()"></textarea>
             </div>
-            <div class="form-check my-2" *ngIf="isEditMode">
-                <input type="checkbox" id="active" formControlName="active" class="form-check-input" [disabled]="!userIsSecuritySecurityGroupSecurityRoleWriter()" />
-                <label for="active" class="form-check-label" id="label-active"><span class="text-danger">*</span>Active</label>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="SecurityGroupSecurityRole-active" formControlName="active" class="form-check-input" [disabled]="!userIsSecuritySecurityGroupSecurityRoleWriter()" />
+                <label for="SecurityGroupSecurityRole-active" class="form-check-label" id="label-SecurityGroupSecurityRole-active"><span class="text-danger">*</span>Active</label>
             </div>
-            <div class="form-check my-2" *ngIf="isEditMode">
-                <input type="checkbox" id="deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSecuritySecurityGroupSecurityRoleWriter()" />
-                <label for="deleted" class="form-check-label" id="label-deleted"><span class="text-danger">*</span>Deleted</label>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="SecurityGroupSecurityRole-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSecuritySecurityGroupSecurityRoleWriter()" />
+                <label for="SecurityGroupSecurityRole-deleted" class="form-check-label" id="label-SecurityGroupSecurityRole-deleted"><span class="text-danger">*</span>Deleted</label>
             </div>
          <div class="modal-footer security-group-security-role-modal-footer">
             <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Security Group Security Role changes and Close">Cancel</button>
-            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !securityGroupSecurityRoleForm.valid || securityGroupSecurityRoleForm.pristine || !userIsSecuritySecurityGroupSecurityRoleWriter()" ngbTooltip="Save the Security Group Security Role changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !securityGroupSecurityRoleForm.valid || securityGroupSecurityRoleForm.pristine  || userIsSecuritySecurityGroupSecurityRoleWriter() == false " ngbTooltip="Save the Security Group Security Role changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Security Group Security Role' }}
+                </span>
+            </button>
          </div>
       </form>
    </div>

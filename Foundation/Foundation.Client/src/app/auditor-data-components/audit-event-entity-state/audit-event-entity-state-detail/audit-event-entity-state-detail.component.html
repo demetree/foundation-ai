@@ -17,9 +17,9 @@
                 <div class="col m-2 audit-event-entity-state-details-body">
                     <div *showSpinner="isLoading$ | async">
                         <form [class.hidden]="isLoading$ | async" [formGroup]="auditEventEntityStateForm" (ngSubmit)="submitForm()" class="audit-event-entity-state-details-form">
-                            <div class="form-group">
-                                <label for="auditEventId" id="label-auditEventId"><span class="text-danger">*</span>Audit Event</label>
-                                <select id="auditEventId" formControlName="auditEventId" class="form-select audit-event-entity-state-select" [disabled]="!userIsAuditorAuditEventEntityStateWriter()">
+                            <div class="form-group" *ngIf="!isFieldHidden('auditEventId')">
+                                <label for="AuditEventEntityState-auditEventId" id="label-AuditEventEntityState-auditEventId"><span class="text-danger">*</span>Audit Event</label>
+                                <select id="AuditEventEntityState-auditEventId" formControlName="auditEventId" class="form-select audit-event-entity-state-select" [disabled]="!userIsAuditorAuditEventEntityStateWriter()">
                                     <option [ngValue]="null">Select Audit Event</option>
                                     <option *ngFor="let auditEvent of auditEvents$ | async" [ngValue]="auditEvent.id">{{[auditEvent.message] | filterAndJoin}}</option>
                                 </select>
@@ -27,17 +27,26 @@
                                     Audit Event is required
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <label for="beforeState" id="label-beforeState">Before State</label>
-                                <textarea id="beforeState" formControlName="beforeState" placeholder="Enter Before State" class="form-control audit-event-entity-state-input" [disabled]="!userIsAuditorAuditEventEntityStateWriter()"></textarea>
+                            <div class="form-group" *ngIf="!isFieldHidden('beforeState')">
+                                <label for="AuditEventEntityState-beforeState" id="label-AuditEventEntityState-beforeState">Before State</label>
+                                <textarea id="AuditEventEntityState-beforeState" formControlName="beforeState" placeholder="Enter Before State" class="form-control audit-event-entity-state-input" [disabled]="!userIsAuditorAuditEventEntityStateWriter()"></textarea>
                             </div>
-                            <div class="form-group">
-                                <label for="afterState" id="label-afterState">After State</label>
-                                <textarea id="afterState" formControlName="afterState" placeholder="Enter After State" class="form-control audit-event-entity-state-input" [disabled]="!userIsAuditorAuditEventEntityStateWriter()"></textarea>
+                            <div class="form-group" *ngIf="!isFieldHidden('afterState')">
+                                <label for="AuditEventEntityState-afterState" id="label-AuditEventEntityState-afterState">After State</label>
+                                <textarea id="AuditEventEntityState-afterState" formControlName="afterState" placeholder="Enter After State" class="form-control audit-event-entity-state-input" [disabled]="!userIsAuditorAuditEventEntityStateWriter()"></textarea>
                             </div>
                             <div class="audit-event-entity-state-details-footer">
                                 <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="auditEventEntityStateForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Audit Event Entity State">Reset</button>
-                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !auditEventEntityStateForm.valid || !auditEventEntityStateForm.dirty || auditEventEntityStateForm.pristine || userIsAuditorAuditEventEntityStateWriter() == false " ngbTooltip="Save Audit Event Entity State">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !auditEventEntityStateForm.valid || !auditEventEntityStateForm.dirty || auditEventEntityStateForm.pristine  || userIsAuditorAuditEventEntityStateWriter() == false " ngbTooltip="Save the Audit Event Entity State changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Audit Event Entity State' }}
+                                    </span>
+                                </button>
                             </div>
                         </form>
                     </div>

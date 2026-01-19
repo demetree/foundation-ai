@@ -17,24 +17,33 @@
                 <div class="col m-2 external-communication-recipient-details-body">
                     <div *showSpinner="isLoading$ | async">
                         <form [class.hidden]="isLoading$ | async" [formGroup]="externalCommunicationRecipientForm" (ngSubmit)="submitForm()" class="external-communication-recipient-details-form">
-                            <div class="form-group">
-                                <label for="externalCommunicationId" id="label-externalCommunicationId">External Communication</label>
-                                <select id="externalCommunicationId" formControlName="externalCommunicationId" class="form-select external-communication-recipient-select" [disabled]="!userIsAuditorExternalCommunicationRecipientWriter()">
+                            <div class="form-group" *ngIf="!isFieldHidden('externalCommunicationId')">
+                                <label for="ExternalCommunicationRecipient-externalCommunicationId" id="label-ExternalCommunicationRecipient-externalCommunicationId">External Communication</label>
+                                <select id="ExternalCommunicationRecipient-externalCommunicationId" formControlName="externalCommunicationId" class="form-select external-communication-recipient-select" [disabled]="!userIsAuditorExternalCommunicationRecipientWriter()">
                                     <option [ngValue]="null">Select External Communication</option>
                                     <option *ngFor="let externalCommunication of externalCommunications$ | async" [ngValue]="externalCommunication.id">{{externalCommunication.communicationType}}</option>
                                 </select>
                             </div>
-                            <div class="form-group">
-                                <label for="recipient" id="label-recipient">Recipient</label>
-                                <input type="text" id="recipient" formControlName="recipient" placeholder="Enter Recipient" class="form-control external-communication-recipient-input" [disabled]="!userIsAuditorExternalCommunicationRecipientWriter()" aria-labelledby="label-recipient" />
+                            <div class="form-group" *ngIf="!isFieldHidden('recipient')">
+                                <label for="ExternalCommunicationRecipient-recipient" id="label-ExternalCommunicationRecipient-recipient">Recipient</label>
+                                <input type="text" id="ExternalCommunicationRecipient-recipient" formControlName="recipient" placeholder="Enter Recipient" class="form-control external-communication-recipient-input" [disabled]="!userIsAuditorExternalCommunicationRecipientWriter()" aria-labelledby="label-recipient" />
                             </div>
-                            <div class="form-group">
-                                <label for="type" id="label-type">Type</label>
-                                <input type="text" id="type" formControlName="type" placeholder="Enter Type" class="form-control external-communication-recipient-input" [disabled]="!userIsAuditorExternalCommunicationRecipientWriter()" aria-labelledby="label-type" />
+                            <div class="form-group" *ngIf="!isFieldHidden('type')">
+                                <label for="ExternalCommunicationRecipient-type" id="label-ExternalCommunicationRecipient-type">Type</label>
+                                <input type="text" id="ExternalCommunicationRecipient-type" formControlName="type" placeholder="Enter Type" class="form-control external-communication-recipient-input" [disabled]="!userIsAuditorExternalCommunicationRecipientWriter()" aria-labelledby="label-type" />
                             </div>
                             <div class="external-communication-recipient-details-footer">
                                 <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="externalCommunicationRecipientForm.pristine" (click)="loadData(true)" ngbTooltip="Reload External Communication Recipient">Reset</button>
-                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !externalCommunicationRecipientForm.valid || !externalCommunicationRecipientForm.dirty || externalCommunicationRecipientForm.pristine || userIsAuditorExternalCommunicationRecipientWriter() == false " ngbTooltip="Save External Communication Recipient">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !externalCommunicationRecipientForm.valid || !externalCommunicationRecipientForm.dirty || externalCommunicationRecipientForm.pristine  || userIsAuditorExternalCommunicationRecipientWriter() == false " ngbTooltip="Save the External Communication Recipient changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add External Communication Recipient' }}
+                                    </span>
+                                </button>
                             </div>
                         </form>
                     </div>

@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Diagnostics;
+using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using Foundation.Security;
 using Foundation.Security.Database;
@@ -103,7 +104,73 @@ namespace Foundation.Tools
             Console.WriteLine("Foundation application code created in folder: " + outputFolder);
             Console.WriteLine();
 
-            Process.Start("explorer.exe", outputFolder);
+            //
+            // Auto-deploy logic
+            //
+            try
+            {
+                var builder = new ConfigurationBuilder()
+                    .SetBasePath(Directory.GetCurrentDirectory())
+                    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+                
+                // Add development settings if they exist
+                 builder.AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: true);
+                    
+                var config = builder.Build();
+
+                var deploymentPaths = config.GetSection("DeploymentPaths").Get<Dictionary<string, string>>();
+
+                if (deploymentPaths != null && deploymentPaths.Count > 0)
+                {
+                    bool deploySuccess = Foundation.CodeGeneration.DeploymentUtility.PromptAndDeploy(_outputDirectory, deploymentPaths);
+
+                    if (deploySuccess)
+                    {
+                         string angularAppRoot = config["AngularAppRoot"];
+                         string angularModuleFile = config["AngularModuleFile"] ?? "app.module.ts";
+                         string angularRoutingFile = config["AngularRoutingFile"] ?? "app-routing.module.ts";
+
+                         if (!string.IsNullOrEmpty(angularAppRoot))
+                         {
+                             // Foundation generates into a subfolder "FoundationEntityCode"
+                             string foundationOutputRoot = Path.Combine(_outputDirectory, "FoundationEntityCode");
+
+                             // Security
+                             Foundation.CodeGeneration.AngularAutomationUtility.IntegrateGeneratedCode(
+                                 Directory.GetCurrentDirectory(),
+                                 "Security",
+                                 foundationOutputRoot,
+                                 angularAppRoot,
+                                 angularModuleFile,
+                                 angularRoutingFile
+                             );
+
+                             // Auditor
+                             Foundation.CodeGeneration.AngularAutomationUtility.IntegrateGeneratedCode(
+                                 Directory.GetCurrentDirectory(),
+                                 "Auditor",
+                                 foundationOutputRoot,
+                                 angularAppRoot,
+                                 angularModuleFile,
+                                 angularRoutingFile
+                             );
+                         }
+                    }
+                    else
+                    {
+                        Process.Start("explorer.exe", outputFolder);
+                    }
+                }
+                else
+                {
+                    Process.Start("explorer.exe", outputFolder);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error reading configuration or deploying: {ex.Message}");
+                Process.Start("explorer.exe", outputFolder);
+            }
         }
 
 

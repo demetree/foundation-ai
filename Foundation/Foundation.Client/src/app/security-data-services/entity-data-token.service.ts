@@ -1,6 +1,16 @@
+/*
+
+   GENERATED SERVICE FOR THE ENTITYDATATOKEN TABLE - DO NOT MODIFY DIRECTLY
+   =======================================================================================
+   This is the default data interaction service for the EntityDataToken table.
+
+   It should suffice for many workflows and data access needs, but if anything more is needed, then extend this in a 
+   custom version or add an additional targeted helper service.
+
+*/
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
-import { Observable, BehaviorSubject, catchError, throwError, lastValueFrom, map  } from 'rxjs';
+import { Observable, BehaviorSubject, catchError, throwError, lastValueFrom, map } from 'rxjs';
 import { shareReplay, tap } from 'rxjs/operators';
 import { UtilityService } from '../utility-services/utility.service'
 import { AlertService } from '../services/alert.service';
@@ -119,6 +129,7 @@ export class EntityDataTokenData {
     private _entityDataTokenEventsPromise: Promise<EntityDataTokenEventData[]> | null  = null;
     private _entityDataTokenEventsSubject = new BehaviorSubject<EntityDataTokenEventData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -180,7 +191,9 @@ export class EntityDataTokenData {
 
 
   private clearAllLazyCaches(): void {
+     //
      // Reset every collection cache and notify subscribers
+     //
      this._entityDataTokenEvents = null;
      this._entityDataTokenEventsPromise = null;
      this._entityDataTokenEventsSubject.next(null);
@@ -200,9 +213,9 @@ export class EntityDataTokenData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.entityDataToken.EntityDataTokenEvents.then(entityDataTokenEvents => { ... })
+     *   this.entityDataToken.EntityDataTokenEvents.then(entityDataTokens => { ... })
      *   or
-     *   await this.entityDataToken.EntityDataTokenEvents
+     *   await this.entityDataToken.entityDataTokens
      *
     */
     public get EntityDataTokenEvents(): Promise<EntityDataTokenEventData[]> {
@@ -227,8 +240,8 @@ export class EntityDataTokenData {
         this._entityDataTokenEventsPromise = lastValueFrom(
             EntityDataTokenService.Instance.GetEntityDataTokenEventsForEntityDataToken(this.id)
         )
-        .then(entityDataTokenEvents => {
-            this._entityDataTokenEvents = entityDataTokenEvents ?? [];
+        .then(EntityDataTokenEvents => {
+            this._entityDataTokenEvents = EntityDataTokenEvents ?? [];
             this._entityDataTokenEventsSubject.next(this._entityDataTokenEvents);
             return this._entityDataTokenEvents;
          })
@@ -243,7 +256,7 @@ export class EntityDataTokenData {
     }
 
     /**
-     * Clears the cached crew members. Call after mutations to force refresh.
+     * Clears the cached EntityDataTokenEvent. Call after mutations to force refresh.
      */
     public ClearEntityDataTokenEventsCache(): void {
         this._entityDataTokenEvents = null;

@@ -17,9 +17,9 @@
                 <div class="col m-2 security-tenant-user-details-body">
                     <div *showSpinner="isLoading$ | async">
                         <form [class.hidden]="isLoading$ | async" [formGroup]="securityTenantUserForm" (ngSubmit)="submitForm()" class="security-tenant-user-details-form">
-                            <div class="form-group">
-                                <label for="securityTenantId" id="label-securityTenantId"><span class="text-danger">*</span>Security Tenant</label>
-                                <select id="securityTenantId" formControlName="securityTenantId" class="form-select security-tenant-user-select" [disabled]="!userIsSecuritySecurityTenantUserWriter()">
+                            <div class="form-group" *ngIf="!isFieldHidden('securityTenantId')">
+                                <label for="SecurityTenantUser-securityTenantId" id="label-SecurityTenantUser-securityTenantId"><span class="text-danger">*</span>Security Tenant</label>
+                                <select id="SecurityTenantUser-securityTenantId" formControlName="securityTenantId" class="form-select security-tenant-user-select" [disabled]="!userIsSecuritySecurityTenantUserWriter()">
                                     <option [ngValue]="null">Select Security Tenant</option>
                                     <option *ngFor="let securityTenant of securityTenants$ | async" [ngValue]="securityTenant.id">{{securityTenant.name}}</option>
                                 </select>
@@ -27,9 +27,9 @@
                                     Security Tenant is required
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <label for="securityUserId" id="label-securityUserId"><span class="text-danger">*</span>Security User</label>
-                                <select id="securityUserId" formControlName="securityUserId" class="form-select security-tenant-user-select" [disabled]="!userIsSecuritySecurityTenantUserWriter()">
+                            <div class="form-group" *ngIf="!isFieldHidden('securityUserId')">
+                                <label for="SecurityTenantUser-securityUserId" id="label-SecurityTenantUser-securityUserId"><span class="text-danger">*</span>Security User</label>
+                                <select id="SecurityTenantUser-securityUserId" formControlName="securityUserId" class="form-select security-tenant-user-select" [disabled]="!userIsSecuritySecurityTenantUserWriter()">
                                     <option [ngValue]="null">Select Security User</option>
                                     <option *ngFor="let securityUser of securityUsers$ | async" [ngValue]="securityUser.id">{{[securityUser.accountName] | filterAndJoin}}</option>
                                 </select>
@@ -37,17 +37,26 @@
                                     Security User is required
                                 </div>
                             </div>
-                            <div class="form-check my-2">
-                                <input type="checkbox" id="active" formControlName="active" class="form-check-input" [disabled]="!userIsSecuritySecurityTenantUserWriter()" />
-                                <label for="active" class="form-check-label" id="label-active"><span class="text-danger">*</span>Active</label>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="SecurityTenantUser-active" formControlName="active" class="form-check-input" [disabled]="!userIsSecuritySecurityTenantUserWriter()" />
+                                <label for="SecurityTenantUser-active" class="form-check-label" id="label-SecurityTenantUser-active"><span class="text-danger">*</span>Active</label>
                             </div>
-                            <div class="form-check my-2">
-                                <input type="checkbox" id="deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSecuritySecurityTenantUserWriter()" />
-                                <label for="deleted" class="form-check-label" id="label-deleted"><span class="text-danger">*</span>Deleted</label>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="SecurityTenantUser-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSecuritySecurityTenantUserWriter()" />
+                                <label for="SecurityTenantUser-deleted" class="form-check-label" id="label-SecurityTenantUser-deleted"><span class="text-danger">*</span>Deleted</label>
                             </div>
                             <div class="security-tenant-user-details-footer">
                                 <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="securityTenantUserForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Security Tenant User">Reset</button>
-                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !securityTenantUserForm.valid || !securityTenantUserForm.dirty || securityTenantUserForm.pristine || userIsSecuritySecurityTenantUserWriter() == false " ngbTooltip="Save Security Tenant User">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !securityTenantUserForm.valid || !securityTenantUserForm.dirty || securityTenantUserForm.pristine  || userIsSecuritySecurityTenantUserWriter() == false " ngbTooltip="Save the Security Tenant User changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Security Tenant User' }}
+                                    </span>
+                                </button>
                             </div>
                         </form>
                     </div>

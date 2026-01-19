@@ -1,6 +1,16 @@
+/*
+
+   GENERATED SERVICE FOR THE SECURITYROLE TABLE - DO NOT MODIFY DIRECTLY
+   =======================================================================================
+   This is the default data interaction service for the SecurityRole table.
+
+   It should suffice for many workflows and data access needs, but if anything more is needed, then extend this in a 
+   custom version or add an additional targeted helper service.
+
+*/
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
-import { Observable, BehaviorSubject, catchError, throwError, lastValueFrom, map  } from 'rxjs';
+import { Observable, BehaviorSubject, catchError, throwError, lastValueFrom, map } from 'rxjs';
 import { shareReplay, tap } from 'rxjs/operators';
 import { UtilityService } from '../utility-services/utility.service'
 import { AlertService } from '../services/alert.service';
@@ -107,14 +117,17 @@ export class SecurityRoleData {
     private _securityUserSecurityRolesPromise: Promise<SecurityUserSecurityRoleData[]> | null  = null;
     private _securityUserSecurityRolesSubject = new BehaviorSubject<SecurityUserSecurityRoleData[] | null>(null);
 
+                
     private _securityGroupSecurityRoles: SecurityGroupSecurityRoleData[] | null = null;
     private _securityGroupSecurityRolesPromise: Promise<SecurityGroupSecurityRoleData[]> | null  = null;
     private _securityGroupSecurityRolesSubject = new BehaviorSubject<SecurityGroupSecurityRoleData[] | null>(null);
 
+                
     private _moduleSecurityRoles: ModuleSecurityRoleData[] | null = null;
     private _moduleSecurityRolesPromise: Promise<ModuleSecurityRoleData[]> | null  = null;
     private _moduleSecurityRolesSubject = new BehaviorSubject<ModuleSecurityRoleData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -214,7 +227,9 @@ export class SecurityRoleData {
 
 
   private clearAllLazyCaches(): void {
+     //
      // Reset every collection cache and notify subscribers
+     //
      this._securityUserSecurityRoles = null;
      this._securityUserSecurityRolesPromise = null;
      this._securityUserSecurityRolesSubject.next(null);
@@ -242,9 +257,9 @@ export class SecurityRoleData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.securityRole.SecurityUserSecurityRoles.then(securityUserSecurityRoles => { ... })
+     *   this.securityRole.SecurityUserSecurityRoles.then(securityRoles => { ... })
      *   or
-     *   await this.securityRole.SecurityUserSecurityRoles
+     *   await this.securityRole.securityRoles
      *
     */
     public get SecurityUserSecurityRoles(): Promise<SecurityUserSecurityRoleData[]> {
@@ -269,8 +284,8 @@ export class SecurityRoleData {
         this._securityUserSecurityRolesPromise = lastValueFrom(
             SecurityRoleService.Instance.GetSecurityUserSecurityRolesForSecurityRole(this.id)
         )
-        .then(securityUserSecurityRoles => {
-            this._securityUserSecurityRoles = securityUserSecurityRoles ?? [];
+        .then(SecurityUserSecurityRoles => {
+            this._securityUserSecurityRoles = SecurityUserSecurityRoles ?? [];
             this._securityUserSecurityRolesSubject.next(this._securityUserSecurityRoles);
             return this._securityUserSecurityRoles;
          })
@@ -285,7 +300,7 @@ export class SecurityRoleData {
     }
 
     /**
-     * Clears the cached crew members. Call after mutations to force refresh.
+     * Clears the cached SecurityUserSecurityRole. Call after mutations to force refresh.
      */
     public ClearSecurityUserSecurityRolesCache(): void {
         this._securityUserSecurityRoles = null;
@@ -307,9 +322,9 @@ export class SecurityRoleData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.securityRole.SecurityGroupSecurityRoles.then(securityGroupSecurityRoles => { ... })
+     *   this.securityRole.SecurityGroupSecurityRoles.then(securityRoles => { ... })
      *   or
-     *   await this.securityRole.SecurityGroupSecurityRoles
+     *   await this.securityRole.securityRoles
      *
     */
     public get SecurityGroupSecurityRoles(): Promise<SecurityGroupSecurityRoleData[]> {
@@ -334,8 +349,8 @@ export class SecurityRoleData {
         this._securityGroupSecurityRolesPromise = lastValueFrom(
             SecurityRoleService.Instance.GetSecurityGroupSecurityRolesForSecurityRole(this.id)
         )
-        .then(securityGroupSecurityRoles => {
-            this._securityGroupSecurityRoles = securityGroupSecurityRoles ?? [];
+        .then(SecurityGroupSecurityRoles => {
+            this._securityGroupSecurityRoles = SecurityGroupSecurityRoles ?? [];
             this._securityGroupSecurityRolesSubject.next(this._securityGroupSecurityRoles);
             return this._securityGroupSecurityRoles;
          })
@@ -350,7 +365,7 @@ export class SecurityRoleData {
     }
 
     /**
-     * Clears the cached crew members. Call after mutations to force refresh.
+     * Clears the cached SecurityGroupSecurityRole. Call after mutations to force refresh.
      */
     public ClearSecurityGroupSecurityRolesCache(): void {
         this._securityGroupSecurityRoles = null;
@@ -372,9 +387,9 @@ export class SecurityRoleData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.securityRole.ModuleSecurityRoles.then(moduleSecurityRoles => { ... })
+     *   this.securityRole.ModuleSecurityRoles.then(securityRoles => { ... })
      *   or
-     *   await this.securityRole.ModuleSecurityRoles
+     *   await this.securityRole.securityRoles
      *
     */
     public get ModuleSecurityRoles(): Promise<ModuleSecurityRoleData[]> {
@@ -399,8 +414,8 @@ export class SecurityRoleData {
         this._moduleSecurityRolesPromise = lastValueFrom(
             SecurityRoleService.Instance.GetModuleSecurityRolesForSecurityRole(this.id)
         )
-        .then(moduleSecurityRoles => {
-            this._moduleSecurityRoles = moduleSecurityRoles ?? [];
+        .then(ModuleSecurityRoles => {
+            this._moduleSecurityRoles = ModuleSecurityRoles ?? [];
             this._moduleSecurityRolesSubject.next(this._moduleSecurityRoles);
             return this._moduleSecurityRoles;
          })
@@ -415,7 +430,7 @@ export class SecurityRoleData {
     }
 
     /**
-     * Clears the cached crew members. Call after mutations to force refresh.
+     * Clears the cached ModuleSecurityRole. Call after mutations to force refresh.
      */
     public ClearModuleSecurityRolesCache(): void {
         this._moduleSecurityRoles = null;

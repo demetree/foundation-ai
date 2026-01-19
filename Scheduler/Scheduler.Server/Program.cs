@@ -64,14 +64,14 @@ namespace Foundation.Scheduler
 
             try
             {
-                // Configure Kestrel to allow synchronous I/O
+                // Configure Kestrel to allow synchronous I/O - needed for Excel export
                 builder.WebHost.ConfigureKestrel(options =>
                 {
                     options.AllowSynchronousIO = true; // Enable synchronous I/O
                 });
 
 
-                //// Configure IIS to allow synchronous IO for when we run behind IIS.
+                //// Configure IIS to allow synchronous IO for when we run behind IIS. - needed for Excel export
                 builder.Services.Configure<IISServerOptions>(options =>
                 {
                     options.AllowSynchronousIO = true;
@@ -348,7 +348,6 @@ namespace Foundation.Scheduler
                 //
                 // Add Swagger.  Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
                 //
-
                 builder.Services.AddEndpointsApiExplorer();
 
                 builder.Services.AddSwaggerGen(c =>

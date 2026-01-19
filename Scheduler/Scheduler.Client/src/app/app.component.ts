@@ -147,7 +147,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
       this.auditorDataServiceManagerService.ClearAllCaches();
       this.securityDataServiceManagerService.ClearAllCaches();
-
+      this.schedulerDataServiceManagerService.ClearAllCaches();
 
       this.isUserLoggedIn = isLoggedIn;
 

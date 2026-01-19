@@ -1,4 +1,22 @@
-import { Component, OnInit } from '@angular/core';
+/*
+   GENERATED FORM FOR THE SECURITYUSER TABLE - DO NOT MODIFY DIRECTLY
+   =================================================================================
+
+   This is the default form generated from SecurityUser table metadata.
+
+   It is useful for low usage worksflows such as basic configuration, but is likely not good enough for primary workflow usage
+   because it's form layout and validation is too simple.
+   
+   For building better looking and/or versions with custom logic, create a custom version of this:
+
+   1. Copy this component
+   2. Rename to security-user-custom (or similar)
+   3. Modify layout, grouping, field types, add workflow logic
+   
+   This generated version is kept simple on purpose so it's easy to use as a reference/scaffold.
+
+*/
+import { Component, OnInit, Input, Output } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NavigationService } from '../../../utility-services/navigation.service';
@@ -22,6 +40,52 @@ import { EntityDataTokenService } from '../../../security-data-services/entity-d
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
+//
+// Define a type for the form values to improve readability and type safety.
+// This mirrors the structure of the FormGroup controls, with considerations for form input types:
+// - Numeric fields like latitude are strings in the form (due to input type="number" behavior).
+// - Allows null for optional fields.
+// - Does not include navigation properties or methods from domain models.
+//
+interface SecurityUserFormValues {
+  accountName: string,
+  activeDirectoryAccount: boolean,
+  canLogin: boolean,
+  mustChangePassword: boolean,
+  firstName: string | null,
+  middleName: string | null,
+  lastName: string | null,
+  dateOfBirth: string | null,
+  emailAddress: string | null,
+  cellPhoneNumber: string | null,
+  phoneNumber: string | null,
+  phoneExtension: string | null,
+  description: string | null,
+  securityUserTitleId: number | bigint | null,       // For FK link number
+  reportsToSecurityUserId: number | bigint | null,       // For FK link number
+  authenticationDomain: string | null,
+  failedLoginCount: string | null,     // Stored as string for form input, converted to number on submit.
+  lastLoginAttempt: string | null,
+  mostRecentActivity: string | null,
+  alternateIdentifier: string | null,
+  image: string | null,
+  settings: string | null,
+  securityTenantId: number | bigint | null,       // For FK link number
+  readPermissionLevel: string,     // Stored as string for form input, converted to number on submit.
+  writePermissionLevel: string,     // Stored as string for form input, converted to number on submit.
+  securityOrganizationId: number | bigint | null,       // For FK link number
+  securityDepartmentId: number | bigint | null,       // For FK link number
+  securityTeamId: number | bigint | null,       // For FK link number
+  authenticationToken: string | null,
+  authenticationTokenExpiry: string | null,
+  twoFactorToken: string | null,
+  twoFactorTokenExpiry: string | null,
+  twoFactorSendByEmail: boolean | null,
+  twoFactorSendBySMS: boolean | null,
+  active: boolean,
+  deleted: boolean,
+};
+
 
 @Component({
   selector: 'app-security-user-detail',
@@ -31,7 +95,22 @@ import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../uti
 
 export class SecurityUserDetailComponent implements OnInit, CanComponentDeactivate {
 
-  securityUserForm: FormGroup = this.fb.group({
+
+  //
+  // Input for pre-seeded data in add mode. This allows the parent component to provide
+  // initial values for one or more fields. Use Partial to allow selective seeding.
+  // Only applied in add mode (not edit mode, where existing data takes precedence).
+  //
+  @Input() preSeededData: Partial<SecurityUserFormValues> | null = null;
+
+  //
+  // Input for fields to hide. This is an array of field names (e.g., ['name', 'description']).
+  // Hiding a field will remove its form group from the template and disable its validator.
+  //
+  @Input() hiddenFields: string[] = [];
+
+
+  public securityUserForm: FormGroup = this.fb.group({
         accountName: ['', Validators.required],
         activeDirectoryAccount: [false],
         canLogin: [false],
@@ -82,20 +161,20 @@ export class SecurityUserDetailComponent implements OnInit, CanComponentDeactiva
   public isEditMode = true;   // Defaults to true (edit).  Gets set to false in ngOnInit if route is 'new'
 
   securityUsers$ = this.securityUserService.GetSecurityUserList();
-  securityUserTitles$ = this.securityUserTitleService.GetSecurityUserTitleList();
-  securityTenants$ = this.securityTenantService.GetSecurityTenantList();
-  securityOrganizations$ = this.securityOrganizationService.GetSecurityOrganizationList();
-  securityDepartments$ = this.securityDepartmentService.GetSecurityDepartmentList();
-  securityTeams$ = this.securityTeamService.GetSecurityTeamList();
-  securityTenantUsers$ = this.securityTenantUserService.GetSecurityTenantUserList();
-  securityOrganizationUsers$ = this.securityOrganizationUserService.GetSecurityOrganizationUserList();
-  securityDepartmentUsers$ = this.securityDepartmentUserService.GetSecurityDepartmentUserList();
-  securityTeamUsers$ = this.securityTeamUserService.GetSecurityTeamUserList();
-  securityUserEvents$ = this.securityUserEventService.GetSecurityUserEventList();
-  securityUserPasswordResetTokens$ = this.securityUserPasswordResetTokenService.GetSecurityUserPasswordResetTokenList();
-  securityUserSecurityGroups$ = this.securityUserSecurityGroupService.GetSecurityUserSecurityGroupList();
-  securityUserSecurityRoles$ = this.securityUserSecurityRoleService.GetSecurityUserSecurityRoleList();
-  entityDataTokens$ = this.entityDataTokenService.GetEntityDataTokenList();
+  public securityUserTitles$ = this.securityUserTitleService.GetSecurityUserTitleList();
+  public securityTenants$ = this.securityTenantService.GetSecurityTenantList();
+  public securityOrganizations$ = this.securityOrganizationService.GetSecurityOrganizationList();
+  public securityDepartments$ = this.securityDepartmentService.GetSecurityDepartmentList();
+  public securityTeams$ = this.securityTeamService.GetSecurityTeamList();
+  public securityTenantUsers$ = this.securityTenantUserService.GetSecurityTenantUserList();
+  public securityOrganizationUsers$ = this.securityOrganizationUserService.GetSecurityOrganizationUserList();
+  public securityDepartmentUsers$ = this.securityDepartmentUserService.GetSecurityDepartmentUserList();
+  public securityTeamUsers$ = this.securityTeamUserService.GetSecurityTeamUserList();
+  public securityUserEvents$ = this.securityUserEventService.GetSecurityUserEventList();
+  public securityUserPasswordResetTokens$ = this.securityUserPasswordResetTokenService.GetSecurityUserPasswordResetTokenList();
+  public securityUserSecurityGroups$ = this.securityUserSecurityGroupService.GetSecurityUserSecurityGroupList();
+  public securityUserSecurityRoles$ = this.securityUserSecurityRoleService.GetSecurityUserSecurityRoleList();
+  public entityDataTokens$ = this.entityDataTokenService.GetEntityDataTokenList();
 
   private destroy$ = new Subject<void>();
 
@@ -138,6 +217,32 @@ export class SecurityUserDetailComponent implements OnInit, CanComponentDeactiva
       this.securityUserData = null;
 
       this.buildFormValues(null);
+
+      //
+      // Apply pre-seeded data if provided and we are in add mode.
+      // This patches the form with partial values.
+      // Check explicitly for null/undefined to avoid errors.
+      //
+      if (this.preSeededData !== null && this.preSeededData !== undefined) {
+        this.securityUserForm.patchValue(this.preSeededData);
+      }
+
+
+    //
+    // Disable validators for hidden fields to prevent form invalidation.
+    // This prevents requiring values for hidden fields.
+    //
+    let index: number;
+
+    for (index = 0; index < this.hiddenFields.length; index++) {
+      const fieldName = this.hiddenFields[index];
+      const control = this.securityUserForm.get(fieldName);
+      if (control !== null) {
+        control.clearValidators();
+        control.updateValueAndValidity(); // Refresh validation state.
+      }
+    }
+
 
       this.isLoadingSubject.next(false); // No load needed for add mode
 
@@ -465,6 +570,20 @@ export class SecurityUserDetailComponent implements OnInit, CanComponentDeactiva
 
   public canGoBack(): boolean {
     return this.navigationService.canGoBack();
+  }
+
+
+  //
+  // Helper method to determine if a field should be hidden based on the hiddenFields input.
+  // Returns true if the field is in the array, false otherwise.
+  //
+  public isFieldHidden(fieldName: string): boolean {
+    // Explicit check for array existence to avoid runtime errors.
+    if (this.hiddenFields === null || this.hiddenFields === undefined) {
+      return false;
+    }
+    // Use traditional includes method for clarity.
+    return this.hiddenFields.includes(fieldName);
   }
 
 

@@ -17,32 +17,41 @@
                 <div class="col m-2 system-setting-details-body">
                     <div *showSpinner="isLoading$ | async">
                         <form [class.hidden]="isLoading$ | async" [formGroup]="systemSettingForm" (ngSubmit)="submitForm()" class="system-setting-details-form">
-                            <div class="form-group">
-                                <label for="name" id="label-name"><span class="text-danger">*</span>Name</label>
-                                <input type="text" id="name" formControlName="name" placeholder="Enter Name" class="form-control system-setting-input" [disabled]="!userIsSecuritySystemSettingWriter()" aria-labelledby="label-name" />
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="SystemSetting-name" id="label-SystemSetting-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="SystemSetting-name" formControlName="name" placeholder="Enter Name" class="form-control system-setting-input" [disabled]="!userIsSecuritySystemSettingWriter()" aria-labelledby="label-name" />
                                 <div *ngIf="systemSettingForm.get('name')?.invalid && systemSettingForm.get('name')?.touched" class="text-danger">
                                     Name is required
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <label for="description" id="label-description">Description</label>
-                                <textarea id="description" formControlName="description" placeholder="Enter Description" class="form-control system-setting-input" [disabled]="!userIsSecuritySystemSettingWriter()"></textarea>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="SystemSetting-description" id="label-SystemSetting-description">Description</label>
+                                <textarea id="SystemSetting-description" formControlName="description" placeholder="Enter Description" class="form-control system-setting-input" [disabled]="!userIsSecuritySystemSettingWriter()"></textarea>
                             </div>
-                            <div class="form-group">
-                                <label for="value" id="label-value">Value</label>
-                                <textarea id="value" formControlName="value" placeholder="Enter Value" class="form-control system-setting-input" [disabled]="!userIsSecuritySystemSettingWriter()"></textarea>
+                            <div class="form-group" *ngIf="!isFieldHidden('value')">
+                                <label for="SystemSetting-value" id="label-SystemSetting-value">Value</label>
+                                <textarea id="SystemSetting-value" formControlName="value" placeholder="Enter Value" class="form-control system-setting-input" [disabled]="!userIsSecuritySystemSettingWriter()"></textarea>
                             </div>
-                            <div class="form-check my-2">
-                                <input type="checkbox" id="active" formControlName="active" class="form-check-input" [disabled]="!userIsSecuritySystemSettingWriter()" />
-                                <label for="active" class="form-check-label" id="label-active"><span class="text-danger">*</span>Active</label>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="SystemSetting-active" formControlName="active" class="form-check-input" [disabled]="!userIsSecuritySystemSettingWriter()" />
+                                <label for="SystemSetting-active" class="form-check-label" id="label-SystemSetting-active"><span class="text-danger">*</span>Active</label>
                             </div>
-                            <div class="form-check my-2">
-                                <input type="checkbox" id="deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSecuritySystemSettingWriter()" />
-                                <label for="deleted" class="form-check-label" id="label-deleted"><span class="text-danger">*</span>Deleted</label>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="SystemSetting-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSecuritySystemSettingWriter()" />
+                                <label for="SystemSetting-deleted" class="form-check-label" id="label-SystemSetting-deleted"><span class="text-danger">*</span>Deleted</label>
                             </div>
                             <div class="system-setting-details-footer">
                                 <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="systemSettingForm.pristine" (click)="loadData(true)" ngbTooltip="Reload System Setting">Reset</button>
-                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !systemSettingForm.valid || !systemSettingForm.dirty || systemSettingForm.pristine || userIsSecuritySystemSettingWriter() == false " ngbTooltip="Save System Setting">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !systemSettingForm.valid || !systemSettingForm.dirty || systemSettingForm.pristine  || userIsSecuritySystemSettingWriter() == false " ngbTooltip="Save the System Setting changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add System Setting' }}
+                                    </span>
+                                </button>
                             </div>
                         </form>
                     </div>

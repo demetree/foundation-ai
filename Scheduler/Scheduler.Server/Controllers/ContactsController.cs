@@ -76,6 +76,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                         return Problem("Database has no 'Staff' contact type.");
                     }
 
+                    contactForCurrentUser = new Contact();
+
                     contactForCurrentUser.firstName = securityUser.firstName;
                     contactForCurrentUser.middleName = securityUser.middleName;
                     contactForCurrentUser.lastName = securityUser.lastName;

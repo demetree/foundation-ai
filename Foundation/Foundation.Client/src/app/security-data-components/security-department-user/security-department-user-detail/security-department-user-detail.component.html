@@ -17,9 +17,9 @@
                 <div class="col m-2 security-department-user-details-body">
                     <div *showSpinner="isLoading$ | async">
                         <form [class.hidden]="isLoading$ | async" [formGroup]="securityDepartmentUserForm" (ngSubmit)="submitForm()" class="security-department-user-details-form">
-                            <div class="form-group">
-                                <label for="securityDepartmentId" id="label-securityDepartmentId"><span class="text-danger">*</span>Security Department</label>
-                                <select id="securityDepartmentId" formControlName="securityDepartmentId" class="form-select security-department-user-select" [disabled]="!userIsSecuritySecurityDepartmentUserWriter()">
+                            <div class="form-group" *ngIf="!isFieldHidden('securityDepartmentId')">
+                                <label for="SecurityDepartmentUser-securityDepartmentId" id="label-SecurityDepartmentUser-securityDepartmentId"><span class="text-danger">*</span>Security Department</label>
+                                <select id="SecurityDepartmentUser-securityDepartmentId" formControlName="securityDepartmentId" class="form-select security-department-user-select" [disabled]="!userIsSecuritySecurityDepartmentUserWriter()">
                                     <option [ngValue]="null">Select Security Department</option>
                                     <option *ngFor="let securityDepartment of securityDepartments$ | async" [ngValue]="securityDepartment.id">{{securityDepartment.name}}</option>
                                 </select>
@@ -27,9 +27,9 @@
                                     Security Department is required
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <label for="securityUserId" id="label-securityUserId"><span class="text-danger">*</span>Security User</label>
-                                <select id="securityUserId" formControlName="securityUserId" class="form-select security-department-user-select" [disabled]="!userIsSecuritySecurityDepartmentUserWriter()">
+                            <div class="form-group" *ngIf="!isFieldHidden('securityUserId')">
+                                <label for="SecurityDepartmentUser-securityUserId" id="label-SecurityDepartmentUser-securityUserId"><span class="text-danger">*</span>Security User</label>
+                                <select id="SecurityDepartmentUser-securityUserId" formControlName="securityUserId" class="form-select security-department-user-select" [disabled]="!userIsSecuritySecurityDepartmentUserWriter()">
                                     <option [ngValue]="null">Select Security User</option>
                                     <option *ngFor="let securityUser of securityUsers$ | async" [ngValue]="securityUser.id">{{[securityUser.accountName] | filterAndJoin}}</option>
                                 </select>
@@ -37,33 +37,42 @@
                                     Security User is required
                                 </div>
                             </div>
-                            <div class="form-check my-2">
-                                <input type="checkbox" id="canRead" formControlName="canRead" class="form-check-input" [disabled]="!userIsSecuritySecurityDepartmentUserWriter()" />
-                                <label for="canRead" class="form-check-label" id="label-canRead"><span class="text-danger">*</span>Can Read</label>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('canRead')">
+                                <input type="checkbox" id="SecurityDepartmentUser-canRead" formControlName="canRead" class="form-check-input" [disabled]="!userIsSecuritySecurityDepartmentUserWriter()" />
+                                <label for="SecurityDepartmentUser-canRead" class="form-check-label" id="label-SecurityDepartmentUser-canRead"><span class="text-danger">*</span>Can Read</label>
                             </div>
-                            <div class="form-check my-2">
-                                <input type="checkbox" id="canWrite" formControlName="canWrite" class="form-check-input" [disabled]="!userIsSecuritySecurityDepartmentUserWriter()" />
-                                <label for="canWrite" class="form-check-label" id="label-canWrite"><span class="text-danger">*</span>Can Write</label>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('canWrite')">
+                                <input type="checkbox" id="SecurityDepartmentUser-canWrite" formControlName="canWrite" class="form-check-input" [disabled]="!userIsSecuritySecurityDepartmentUserWriter()" />
+                                <label for="SecurityDepartmentUser-canWrite" class="form-check-label" id="label-SecurityDepartmentUser-canWrite"><span class="text-danger">*</span>Can Write</label>
                             </div>
-                            <div class="form-check my-2">
-                                <input type="checkbox" id="canChangeHierarchy" formControlName="canChangeHierarchy" class="form-check-input" [disabled]="!userIsSecuritySecurityDepartmentUserWriter()" />
-                                <label for="canChangeHierarchy" class="form-check-label" id="label-canChangeHierarchy"><span class="text-danger">*</span>Can Change Hierarchy</label>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('canChangeHierarchy')">
+                                <input type="checkbox" id="SecurityDepartmentUser-canChangeHierarchy" formControlName="canChangeHierarchy" class="form-check-input" [disabled]="!userIsSecuritySecurityDepartmentUserWriter()" />
+                                <label for="SecurityDepartmentUser-canChangeHierarchy" class="form-check-label" id="label-SecurityDepartmentUser-canChangeHierarchy"><span class="text-danger">*</span>Can Change Hierarchy</label>
                             </div>
-                            <div class="form-check my-2">
-                                <input type="checkbox" id="canChangeOwner" formControlName="canChangeOwner" class="form-check-input" [disabled]="!userIsSecuritySecurityDepartmentUserWriter()" />
-                                <label for="canChangeOwner" class="form-check-label" id="label-canChangeOwner"><span class="text-danger">*</span>Can Change Owner</label>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('canChangeOwner')">
+                                <input type="checkbox" id="SecurityDepartmentUser-canChangeOwner" formControlName="canChangeOwner" class="form-check-input" [disabled]="!userIsSecuritySecurityDepartmentUserWriter()" />
+                                <label for="SecurityDepartmentUser-canChangeOwner" class="form-check-label" id="label-SecurityDepartmentUser-canChangeOwner"><span class="text-danger">*</span>Can Change Owner</label>
                             </div>
-                            <div class="form-check my-2">
-                                <input type="checkbox" id="active" formControlName="active" class="form-check-input" [disabled]="!userIsSecuritySecurityDepartmentUserWriter()" />
-                                <label for="active" class="form-check-label" id="label-active"><span class="text-danger">*</span>Active</label>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="SecurityDepartmentUser-active" formControlName="active" class="form-check-input" [disabled]="!userIsSecuritySecurityDepartmentUserWriter()" />
+                                <label for="SecurityDepartmentUser-active" class="form-check-label" id="label-SecurityDepartmentUser-active"><span class="text-danger">*</span>Active</label>
                             </div>
-                            <div class="form-check my-2">
-                                <input type="checkbox" id="deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSecuritySecurityDepartmentUserWriter()" />
-                                <label for="deleted" class="form-check-label" id="label-deleted"><span class="text-danger">*</span>Deleted</label>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="SecurityDepartmentUser-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSecuritySecurityDepartmentUserWriter()" />
+                                <label for="SecurityDepartmentUser-deleted" class="form-check-label" id="label-SecurityDepartmentUser-deleted"><span class="text-danger">*</span>Deleted</label>
                             </div>
                             <div class="security-department-user-details-footer">
                                 <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="securityDepartmentUserForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Security Department User">Reset</button>
-                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !securityDepartmentUserForm.valid || !securityDepartmentUserForm.dirty || securityDepartmentUserForm.pristine || userIsSecuritySecurityDepartmentUserWriter() == false " ngbTooltip="Save Security Department User">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !securityDepartmentUserForm.valid || !securityDepartmentUserForm.dirty || securityDepartmentUserForm.pristine  || userIsSecuritySecurityDepartmentUserWriter() == false " ngbTooltip="Save the Security Department User changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Security Department User' }}
+                                    </span>
+                                </button>
                             </div>
                         </form>
                     </div>

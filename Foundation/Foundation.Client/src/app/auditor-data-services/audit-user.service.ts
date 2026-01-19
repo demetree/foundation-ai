@@ -1,6 +1,16 @@
+/*
+
+   GENERATED SERVICE FOR THE AUDITUSER TABLE - DO NOT MODIFY DIRECTLY
+   =======================================================================================
+   This is the default data interaction service for the AuditUser table.
+
+   It should suffice for many workflows and data access needs, but if anything more is needed, then extend this in a 
+   custom version or add an additional targeted helper service.
+
+*/
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
-import { Observable, BehaviorSubject, catchError, throwError, lastValueFrom, map  } from 'rxjs';
+import { Observable, BehaviorSubject, catchError, throwError, lastValueFrom, map } from 'rxjs';
 import { shareReplay, tap } from 'rxjs/operators';
 import { UtilityService } from '../utility-services/utility.service'
 import { AlertService } from '../services/alert.service';
@@ -95,10 +105,12 @@ export class AuditUserData {
     private _auditEventsPromise: Promise<AuditEventData[]> | null  = null;
     private _auditEventsSubject = new BehaviorSubject<AuditEventData[] | null>(null);
 
+                
     private _externalCommunications: ExternalCommunicationData[] | null = null;
     private _externalCommunicationsPromise: Promise<ExternalCommunicationData[]> | null  = null;
     private _externalCommunicationsSubject = new BehaviorSubject<ExternalCommunicationData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -179,7 +191,9 @@ export class AuditUserData {
 
 
   private clearAllLazyCaches(): void {
+     //
      // Reset every collection cache and notify subscribers
+     //
      this._auditEvents = null;
      this._auditEventsPromise = null;
      this._auditEventsSubject.next(null);
@@ -203,9 +217,9 @@ export class AuditUserData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.auditUser.AuditEvents.then(auditEvents => { ... })
+     *   this.auditUser.AuditEvents.then(auditUsers => { ... })
      *   or
-     *   await this.auditUser.AuditEvents
+     *   await this.auditUser.auditUsers
      *
     */
     public get AuditEvents(): Promise<AuditEventData[]> {
@@ -230,8 +244,8 @@ export class AuditUserData {
         this._auditEventsPromise = lastValueFrom(
             AuditUserService.Instance.GetAuditEventsForAuditUser(this.id)
         )
-        .then(auditEvents => {
-            this._auditEvents = auditEvents ?? [];
+        .then(AuditEvents => {
+            this._auditEvents = AuditEvents ?? [];
             this._auditEventsSubject.next(this._auditEvents);
             return this._auditEvents;
          })
@@ -246,7 +260,7 @@ export class AuditUserData {
     }
 
     /**
-     * Clears the cached crew members. Call after mutations to force refresh.
+     * Clears the cached AuditEvent. Call after mutations to force refresh.
      */
     public ClearAuditEventsCache(): void {
         this._auditEvents = null;
@@ -268,9 +282,9 @@ export class AuditUserData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.auditUser.ExternalCommunications.then(externalCommunications => { ... })
+     *   this.auditUser.ExternalCommunications.then(auditUsers => { ... })
      *   or
-     *   await this.auditUser.ExternalCommunications
+     *   await this.auditUser.auditUsers
      *
     */
     public get ExternalCommunications(): Promise<ExternalCommunicationData[]> {
@@ -295,8 +309,8 @@ export class AuditUserData {
         this._externalCommunicationsPromise = lastValueFrom(
             AuditUserService.Instance.GetExternalCommunicationsForAuditUser(this.id)
         )
-        .then(externalCommunications => {
-            this._externalCommunications = externalCommunications ?? [];
+        .then(ExternalCommunications => {
+            this._externalCommunications = ExternalCommunications ?? [];
             this._externalCommunicationsSubject.next(this._externalCommunications);
             return this._externalCommunications;
          })
@@ -311,7 +325,7 @@ export class AuditUserData {
     }
 
     /**
-     * Clears the cached crew members. Call after mutations to force refresh.
+     * Clears the cached ExternalCommunication. Call after mutations to force refresh.
      */
     public ClearExternalCommunicationsCache(): void {
         this._externalCommunications = null;

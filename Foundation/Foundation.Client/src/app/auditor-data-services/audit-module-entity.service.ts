@@ -1,6 +1,16 @@
+/*
+
+   GENERATED SERVICE FOR THE AUDITMODULEENTITY TABLE - DO NOT MODIFY DIRECTLY
+   =======================================================================================
+   This is the default data interaction service for the AuditModuleEntity table.
+
+   It should suffice for many workflows and data access needs, but if anything more is needed, then extend this in a 
+   custom version or add an additional targeted helper service.
+
+*/
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
-import { Observable, BehaviorSubject, catchError, throwError, lastValueFrom, map  } from 'rxjs';
+import { Observable, BehaviorSubject, catchError, throwError, lastValueFrom, map } from 'rxjs';
 import { shareReplay, tap } from 'rxjs/operators';
 import { UtilityService } from '../utility-services/utility.service'
 import { AlertService } from '../services/alert.service';
@@ -99,6 +109,7 @@ export class AuditModuleEntityData {
     private _auditEventsPromise: Promise<AuditEventData[]> | null  = null;
     private _auditEventsSubject = new BehaviorSubject<AuditEventData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -160,7 +171,9 @@ export class AuditModuleEntityData {
 
 
   private clearAllLazyCaches(): void {
+     //
      // Reset every collection cache and notify subscribers
+     //
      this._auditEvents = null;
      this._auditEventsPromise = null;
      this._auditEventsSubject.next(null);
@@ -180,9 +193,9 @@ export class AuditModuleEntityData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.auditModuleEntity.AuditEvents.then(auditEvents => { ... })
+     *   this.auditModuleEntity.AuditEvents.then(auditModuleEntities => { ... })
      *   or
-     *   await this.auditModuleEntity.AuditEvents
+     *   await this.auditModuleEntity.auditModuleEntities
      *
     */
     public get AuditEvents(): Promise<AuditEventData[]> {
@@ -207,8 +220,8 @@ export class AuditModuleEntityData {
         this._auditEventsPromise = lastValueFrom(
             AuditModuleEntityService.Instance.GetAuditEventsForAuditModuleEntity(this.id)
         )
-        .then(auditEvents => {
-            this._auditEvents = auditEvents ?? [];
+        .then(AuditEvents => {
+            this._auditEvents = AuditEvents ?? [];
             this._auditEventsSubject.next(this._auditEvents);
             return this._auditEvents;
          })
@@ -223,7 +236,7 @@ export class AuditModuleEntityData {
     }
 
     /**
-     * Clears the cached crew members. Call after mutations to force refresh.
+     * Clears the cached AuditEvent. Call after mutations to force refresh.
      */
     public ClearAuditEventsCache(): void {
         this._auditEvents = null;

@@ -1,6 +1,16 @@
+/*
+
+   GENERATED SERVICE FOR THE SECURITYORGANIZATION TABLE - DO NOT MODIFY DIRECTLY
+   =======================================================================================
+   This is the default data interaction service for the SecurityOrganization table.
+
+   It should suffice for many workflows and data access needs, but if anything more is needed, then extend this in a 
+   custom version or add an additional targeted helper service.
+
+*/
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
-import { Observable, BehaviorSubject, catchError, throwError, lastValueFrom, map  } from 'rxjs';
+import { Observable, BehaviorSubject, catchError, throwError, lastValueFrom, map } from 'rxjs';
 import { shareReplay, tap } from 'rxjs/operators';
 import { UtilityService } from '../utility-services/utility.service'
 import { AlertService } from '../services/alert.service';
@@ -106,14 +116,17 @@ export class SecurityOrganizationData {
     private _securityDepartmentsPromise: Promise<SecurityDepartmentData[]> | null  = null;
     private _securityDepartmentsSubject = new BehaviorSubject<SecurityDepartmentData[] | null>(null);
 
+                
     private _securityUsers: SecurityUserData[] | null = null;
     private _securityUsersPromise: Promise<SecurityUserData[]> | null  = null;
     private _securityUsersSubject = new BehaviorSubject<SecurityUserData[] | null>(null);
 
+                
     private _securityOrganizationUsers: SecurityOrganizationUserData[] | null = null;
     private _securityOrganizationUsersPromise: Promise<SecurityOrganizationUserData[]> | null  = null;
     private _securityOrganizationUsersSubject = new BehaviorSubject<SecurityOrganizationUserData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -213,7 +226,9 @@ export class SecurityOrganizationData {
 
 
   private clearAllLazyCaches(): void {
+     //
      // Reset every collection cache and notify subscribers
+     //
      this._securityDepartments = null;
      this._securityDepartmentsPromise = null;
      this._securityDepartmentsSubject.next(null);
@@ -241,9 +256,9 @@ export class SecurityOrganizationData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.securityOrganization.SecurityDepartments.then(securityDepartments => { ... })
+     *   this.securityOrganization.SecurityDepartments.then(securityOrganizations => { ... })
      *   or
-     *   await this.securityOrganization.SecurityDepartments
+     *   await this.securityOrganization.securityOrganizations
      *
     */
     public get SecurityDepartments(): Promise<SecurityDepartmentData[]> {
@@ -268,8 +283,8 @@ export class SecurityOrganizationData {
         this._securityDepartmentsPromise = lastValueFrom(
             SecurityOrganizationService.Instance.GetSecurityDepartmentsForSecurityOrganization(this.id)
         )
-        .then(securityDepartments => {
-            this._securityDepartments = securityDepartments ?? [];
+        .then(SecurityDepartments => {
+            this._securityDepartments = SecurityDepartments ?? [];
             this._securityDepartmentsSubject.next(this._securityDepartments);
             return this._securityDepartments;
          })
@@ -284,7 +299,7 @@ export class SecurityOrganizationData {
     }
 
     /**
-     * Clears the cached crew members. Call after mutations to force refresh.
+     * Clears the cached SecurityDepartment. Call after mutations to force refresh.
      */
     public ClearSecurityDepartmentsCache(): void {
         this._securityDepartments = null;
@@ -306,9 +321,9 @@ export class SecurityOrganizationData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.securityOrganization.SecurityUsers.then(securityUsers => { ... })
+     *   this.securityOrganization.SecurityUsers.then(securityOrganizations => { ... })
      *   or
-     *   await this.securityOrganization.SecurityUsers
+     *   await this.securityOrganization.securityOrganizations
      *
     */
     public get SecurityUsers(): Promise<SecurityUserData[]> {
@@ -333,8 +348,8 @@ export class SecurityOrganizationData {
         this._securityUsersPromise = lastValueFrom(
             SecurityOrganizationService.Instance.GetSecurityUsersForSecurityOrganization(this.id)
         )
-        .then(securityUsers => {
-            this._securityUsers = securityUsers ?? [];
+        .then(SecurityUsers => {
+            this._securityUsers = SecurityUsers ?? [];
             this._securityUsersSubject.next(this._securityUsers);
             return this._securityUsers;
          })
@@ -349,7 +364,7 @@ export class SecurityOrganizationData {
     }
 
     /**
-     * Clears the cached crew members. Call after mutations to force refresh.
+     * Clears the cached SecurityUser. Call after mutations to force refresh.
      */
     public ClearSecurityUsersCache(): void {
         this._securityUsers = null;
@@ -371,9 +386,9 @@ export class SecurityOrganizationData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.securityOrganization.SecurityOrganizationUsers.then(securityOrganizationUsers => { ... })
+     *   this.securityOrganization.SecurityOrganizationUsers.then(securityOrganizations => { ... })
      *   or
-     *   await this.securityOrganization.SecurityOrganizationUsers
+     *   await this.securityOrganization.securityOrganizations
      *
     */
     public get SecurityOrganizationUsers(): Promise<SecurityOrganizationUserData[]> {
@@ -398,8 +413,8 @@ export class SecurityOrganizationData {
         this._securityOrganizationUsersPromise = lastValueFrom(
             SecurityOrganizationService.Instance.GetSecurityOrganizationUsersForSecurityOrganization(this.id)
         )
-        .then(securityOrganizationUsers => {
-            this._securityOrganizationUsers = securityOrganizationUsers ?? [];
+        .then(SecurityOrganizationUsers => {
+            this._securityOrganizationUsers = SecurityOrganizationUsers ?? [];
             this._securityOrganizationUsersSubject.next(this._securityOrganizationUsers);
             return this._securityOrganizationUsers;
          })
@@ -414,7 +429,7 @@ export class SecurityOrganizationData {
     }
 
     /**
-     * Clears the cached crew members. Call after mutations to force refresh.
+     * Clears the cached SecurityOrganizationUser. Call after mutations to force refresh.
      */
     public ClearSecurityOrganizationUsersCache(): void {
         this._securityOrganizationUsers = null;

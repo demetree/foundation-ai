@@ -21,9 +21,9 @@
    </div>
    <div class="modal-body security-department-modal-body">
       <form [formGroup]="securityDepartmentForm" (ngSubmit)="submitForm()">
-            <div class="form-group">
-                <label for="securityOrganizationId" id="label-securityOrganizationId"><span class="text-danger">*</span>Security Organization</label>
-                <select id="securityOrganizationId" formControlName="securityOrganizationId" class="form-select security-department-select" [disabled]="!userIsSecuritySecurityDepartmentWriter()">
+            <div class="form-group" *ngIf="!isFieldHidden('securityOrganizationId')">
+                <label for="SecurityDepartment-securityOrganizationId" id="label-SecurityDepartment-securityOrganizationId"><span class="text-danger">*</span>Security Organization</label>
+                <select id="SecurityDepartment-securityOrganizationId" formControlName="securityOrganizationId" class="form-select security-department-select" [disabled]="!userIsSecuritySecurityDepartmentWriter()">
                     <option [ngValue]="null">Select Security Organization</option>
                     <option *ngFor="let securityOrganization of securityOrganizations$ | async" [ngValue]="securityOrganization.id">{{securityOrganization.name}}</option>
                 </select>
@@ -31,28 +31,37 @@
                     Security Organization is required
                 </div>
             </div>
-            <div class="form-group">
-                <label for="name" id="label-name"><span class="text-danger">*</span>Name</label>
-                <input type="text" id="name" formControlName="name" placeholder="Enter Name" class="form-control security-department-input" [disabled]="!userIsSecuritySecurityDepartmentWriter()" aria-labelledby="label-name" />
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="SecurityDepartment-name" id="label-SecurityDepartment-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="SecurityDepartment-name" formControlName="name" placeholder="Enter Name" class="form-control security-department-input" [disabled]="!userIsSecuritySecurityDepartmentWriter()" aria-labelledby="label-name" />
                 <div *ngIf="securityDepartmentForm.get('name')?.invalid && securityDepartmentForm.get('name')?.touched" class="text-danger">
                     Name is required
                 </div>
             </div>
-            <div class="form-group">
-                <label for="description" id="label-description">Description</label>
-                <textarea id="description" formControlName="description" placeholder="Enter Description" class="form-control security-department-input" [disabled]="!userIsSecuritySecurityDepartmentWriter()"></textarea>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="SecurityDepartment-description" id="label-SecurityDepartment-description">Description</label>
+                <textarea id="SecurityDepartment-description" formControlName="description" placeholder="Enter Description" class="form-control security-department-input" [disabled]="!userIsSecuritySecurityDepartmentWriter()"></textarea>
             </div>
-            <div class="form-check my-2" *ngIf="isEditMode">
-                <input type="checkbox" id="active" formControlName="active" class="form-check-input" [disabled]="!userIsSecuritySecurityDepartmentWriter()" />
-                <label for="active" class="form-check-label" id="label-active"><span class="text-danger">*</span>Active</label>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="SecurityDepartment-active" formControlName="active" class="form-check-input" [disabled]="!userIsSecuritySecurityDepartmentWriter()" />
+                <label for="SecurityDepartment-active" class="form-check-label" id="label-SecurityDepartment-active"><span class="text-danger">*</span>Active</label>
             </div>
-            <div class="form-check my-2" *ngIf="isEditMode">
-                <input type="checkbox" id="deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSecuritySecurityDepartmentWriter()" />
-                <label for="deleted" class="form-check-label" id="label-deleted"><span class="text-danger">*</span>Deleted</label>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="SecurityDepartment-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSecuritySecurityDepartmentWriter()" />
+                <label for="SecurityDepartment-deleted" class="form-check-label" id="label-SecurityDepartment-deleted"><span class="text-danger">*</span>Deleted</label>
             </div>
          <div class="modal-footer security-department-modal-footer">
             <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Security Department changes and Close">Cancel</button>
-            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !securityDepartmentForm.valid || securityDepartmentForm.pristine || !userIsSecuritySecurityDepartmentWriter()" ngbTooltip="Save the Security Department changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !securityDepartmentForm.valid || securityDepartmentForm.pristine  || userIsSecuritySecurityDepartmentWriter() == false " ngbTooltip="Save the Security Department changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Security Department' }}
+                </span>
+            </button>
          </div>
       </form>
    </div>

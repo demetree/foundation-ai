@@ -1,6 +1,16 @@
+/*
+
+   GENERATED SERVICE FOR THE AUDITRESOURCE TABLE - DO NOT MODIFY DIRECTLY
+   =======================================================================================
+   This is the default data interaction service for the AuditResource table.
+
+   It should suffice for many workflows and data access needs, but if anything more is needed, then extend this in a 
+   custom version or add an additional targeted helper service.
+
+*/
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
-import { Observable, BehaviorSubject, catchError, throwError, lastValueFrom, map  } from 'rxjs';
+import { Observable, BehaviorSubject, catchError, throwError, lastValueFrom, map } from 'rxjs';
 import { shareReplay, tap } from 'rxjs/operators';
 import { UtilityService } from '../utility-services/utility.service'
 import { AlertService } from '../services/alert.service';
@@ -94,6 +104,7 @@ export class AuditResourceData {
     private _auditEventsPromise: Promise<AuditEventData[]> | null  = null;
     private _auditEventsSubject = new BehaviorSubject<AuditEventData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -155,7 +166,9 @@ export class AuditResourceData {
 
 
   private clearAllLazyCaches(): void {
+     //
      // Reset every collection cache and notify subscribers
+     //
      this._auditEvents = null;
      this._auditEventsPromise = null;
      this._auditEventsSubject.next(null);
@@ -175,9 +188,9 @@ export class AuditResourceData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.auditResource.AuditEvents.then(auditEvents => { ... })
+     *   this.auditResource.AuditEvents.then(auditResources => { ... })
      *   or
-     *   await this.auditResource.AuditEvents
+     *   await this.auditResource.auditResources
      *
     */
     public get AuditEvents(): Promise<AuditEventData[]> {
@@ -202,8 +215,8 @@ export class AuditResourceData {
         this._auditEventsPromise = lastValueFrom(
             AuditResourceService.Instance.GetAuditEventsForAuditResource(this.id)
         )
-        .then(auditEvents => {
-            this._auditEvents = auditEvents ?? [];
+        .then(AuditEvents => {
+            this._auditEvents = AuditEvents ?? [];
             this._auditEventsSubject.next(this._auditEvents);
             return this._auditEvents;
          })
@@ -218,7 +231,7 @@ export class AuditResourceData {
     }
 
     /**
-     * Clears the cached crew members. Call after mutations to force refresh.
+     * Clears the cached AuditEvent. Call after mutations to force refresh.
      */
     public ClearAuditEventsCache(): void {
         this._auditEvents = null;

@@ -88,7 +88,7 @@ import { CurrentUserService } from './services/current-user.service';
 
 
 //
-// Security Data services - Auto Generated
+// Beginning of imports for Security Data Services
 //
 import { SecurityDataServiceManagerService } from './security-data-services/security-data-service-manager.service';
 import { EntityDataTokenService } from './security-data-services/entity-data-token.service';
@@ -119,11 +119,12 @@ import { SecurityUserSecurityRoleService } from './security-data-services/securi
 import { SecurityUserTitleService } from './security-data-services/security-user-title.service';
 import { SystemSettingService } from './security-data-services/system-setting.service';
 //
-// End Security Data Services
+// End of imports for Security Data Services
 //
 
+
 //
-// Auditor Data Services - Auto Genrated
+// Beginning of imports for Auditor Data Services
 //
 import { AuditorDataServiceManagerService } from './auditor-data-services/auditor-data-service-manager.service';
 import { AuditAccessTypeService } from './auditor-data-services/audit-access-type.service';
@@ -141,16 +142,15 @@ import { AuditTypeService } from './auditor-data-services/audit-type.service';
 import { AuditUserService } from './auditor-data-services/audit-user.service';
 import { AuditUserAgentService } from './auditor-data-services/audit-user-agent.service';
 import { ExternalCommunicationService } from './auditor-data-services/external-communication.service';
-import { ExternalCommunicationRecipientService } from './auditor-data-services/external-communication-recipient.service'
+import { ExternalCommunicationRecipientService } from './auditor-data-services/external-communication-recipient.service';
 //
-// End Auditor Data Services
+// End of imports for Auditor Data Services
 //
 
 
 
-
 //
-// Security Data Components - Auto generated
+// Beginning of imports for Security Data Components
 //
 import { EntityDataTokenListingComponent } from './security-data-components/entity-data-token/entity-data-token-listing/entity-data-token-listing.component';
 import { EntityDataTokenAddEditComponent } from './security-data-components/entity-data-token/entity-data-token-add-edit/entity-data-token-add-edit.component';
@@ -261,14 +261,14 @@ import { SystemSettingAddEditComponent } from './security-data-components/system
 import { SystemSettingDetailComponent } from './security-data-components/system-setting/system-setting-detail/system-setting-detail.component';
 import { SystemSettingTableComponent } from './security-data-components/system-setting/system-setting-table/system-setting-table.component';
 //
-// End Security Data Components
+// End of imports for Security Data Components
 //
 
 
 
 
 //
-// Auditor Data Components - Auto generated
+// Beginning of imports for Auditor Data Components
 //
 import { AuditAccessTypeListingComponent } from './auditor-data-components/audit-access-type/audit-access-type-listing/audit-access-type-listing.component';
 import { AuditAccessTypeAddEditComponent } from './auditor-data-components/audit-access-type/audit-access-type-add-edit/audit-access-type-add-edit.component';
@@ -335,7 +335,7 @@ import { ExternalCommunicationRecipientAddEditComponent } from './auditor-data-c
 import { ExternalCommunicationRecipientDetailComponent } from './auditor-data-components/external-communication-recipient/external-communication-recipient-detail/external-communication-recipient-detail.component';
 import { ExternalCommunicationRecipientTableComponent } from './auditor-data-components/external-communication-recipient/external-communication-recipient-table/external-communication-recipient-table.component';
 //
-// End Auditor Data Components
+// End of imports for Auditor Data Components
 //
 
 //
@@ -368,190 +368,189 @@ import { ExternalCommunicationRecipientTableComponent } from './auditor-data-com
     SidebarComponent,
 
     //
-    // Security Data Components - Auto generated
-    //
-    EntityDataTokenListingComponent,
-    EntityDataTokenAddEditComponent,
-    EntityDataTokenDetailComponent,
-    EntityDataTokenTableComponent,
-    EntityDataTokenEventListingComponent,
-    EntityDataTokenEventAddEditComponent,
-    EntityDataTokenEventDetailComponent,
-    EntityDataTokenEventTableComponent,
-    EntityDataTokenEventTypeListingComponent,
-    EntityDataTokenEventTypeAddEditComponent,
-    EntityDataTokenEventTypeDetailComponent,
-    EntityDataTokenEventTypeTableComponent,
-    LoginAttemptListingComponent,
-    LoginAttemptAddEditComponent,
-    LoginAttemptDetailComponent,
-    LoginAttemptTableComponent,
-    ModuleListingComponent,
-    ModuleAddEditComponent,
-    ModuleDetailComponent,
-    ModuleTableComponent,
-    ModuleSecurityRoleListingComponent,
-    ModuleSecurityRoleAddEditComponent,
-    ModuleSecurityRoleDetailComponent,
-    ModuleSecurityRoleTableComponent,
-    OAUTHTokenListingComponent,
-    OAUTHTokenAddEditComponent,
-    OAUTHTokenDetailComponent,
-    OAUTHTokenTableComponent,
-    PrivilegeListingComponent,
-    PrivilegeAddEditComponent,
-    PrivilegeDetailComponent,
-    PrivilegeTableComponent,
-    SecurityDepartmentListingComponent,
-    SecurityDepartmentAddEditComponent,
-    SecurityDepartmentDetailComponent,
-    SecurityDepartmentTableComponent,
-    SecurityDepartmentUserListingComponent,
-    SecurityDepartmentUserAddEditComponent,
-    SecurityDepartmentUserDetailComponent,
-    SecurityDepartmentUserTableComponent,
-    SecurityGroupListingComponent,
-    SecurityGroupAddEditComponent,
-    SecurityGroupDetailComponent,
-    SecurityGroupTableComponent,
-    SecurityGroupSecurityRoleListingComponent,
-    SecurityGroupSecurityRoleAddEditComponent,
-    SecurityGroupSecurityRoleDetailComponent,
-    SecurityGroupSecurityRoleTableComponent,
-    SecurityOrganizationListingComponent,
-    SecurityOrganizationAddEditComponent,
-    SecurityOrganizationDetailComponent,
-    SecurityOrganizationTableComponent,
-    SecurityOrganizationUserListingComponent,
-    SecurityOrganizationUserAddEditComponent,
-    SecurityOrganizationUserDetailComponent,
-    SecurityOrganizationUserTableComponent,
-    SecurityRoleListingComponent,
-    SecurityRoleAddEditComponent,
-    SecurityRoleDetailComponent,
-    SecurityRoleTableComponent,
-    SecurityTeamListingComponent,
-    SecurityTeamAddEditComponent,
-    SecurityTeamDetailComponent,
-    SecurityTeamTableComponent,
-    SecurityTeamUserListingComponent,
-    SecurityTeamUserAddEditComponent,
-    SecurityTeamUserDetailComponent,
-    SecurityTeamUserTableComponent,
-    SecurityTenantListingComponent,
-    SecurityTenantAddEditComponent,
-    SecurityTenantDetailComponent,
-    SecurityTenantTableComponent,
-    SecurityTenantUserListingComponent,
-    SecurityTenantUserAddEditComponent,
-    SecurityTenantUserDetailComponent,
-    SecurityTenantUserTableComponent,
-    SecurityUserListingComponent,
-    SecurityUserAddEditComponent,
-    SecurityUserDetailComponent,
-    SecurityUserTableComponent,
-    SecurityUserEventListingComponent,
-    SecurityUserEventAddEditComponent,
-    SecurityUserEventDetailComponent,
-    SecurityUserEventTableComponent,
-    SecurityUserEventTypeListingComponent,
-    SecurityUserEventTypeAddEditComponent,
-    SecurityUserEventTypeDetailComponent,
-    SecurityUserEventTypeTableComponent,
-    SecurityUserPasswordResetTokenListingComponent,
-    SecurityUserPasswordResetTokenAddEditComponent,
-    SecurityUserPasswordResetTokenDetailComponent,
-    SecurityUserPasswordResetTokenTableComponent,
-    SecurityUserSecurityGroupListingComponent,
-    SecurityUserSecurityGroupAddEditComponent,
-    SecurityUserSecurityGroupDetailComponent,
-    SecurityUserSecurityGroupTableComponent,
-    SecurityUserSecurityRoleListingComponent,
-    SecurityUserSecurityRoleAddEditComponent,
-    SecurityUserSecurityRoleDetailComponent,
-    SecurityUserSecurityRoleTableComponent,
-    SecurityUserTitleListingComponent,
-    SecurityUserTitleAddEditComponent,
-    SecurityUserTitleDetailComponent,
-    SecurityUserTitleTableComponent,
-    SystemSettingListingComponent,
-    SystemSettingAddEditComponent,
-    SystemSettingDetailComponent,
-    SystemSettingTableComponent,
-    //
-    // End Security Data Components
+    // Beginning of declarations for Security Data Components
+//
+EntityDataTokenListingComponent,
+EntityDataTokenAddEditComponent,
+EntityDataTokenDetailComponent,
+EntityDataTokenTableComponent,
+EntityDataTokenEventListingComponent,
+EntityDataTokenEventAddEditComponent,
+EntityDataTokenEventDetailComponent,
+EntityDataTokenEventTableComponent,
+EntityDataTokenEventTypeListingComponent,
+EntityDataTokenEventTypeAddEditComponent,
+EntityDataTokenEventTypeDetailComponent,
+EntityDataTokenEventTypeTableComponent,
+LoginAttemptListingComponent,
+LoginAttemptAddEditComponent,
+LoginAttemptDetailComponent,
+LoginAttemptTableComponent,
+ModuleListingComponent,
+ModuleAddEditComponent,
+ModuleDetailComponent,
+ModuleTableComponent,
+ModuleSecurityRoleListingComponent,
+ModuleSecurityRoleAddEditComponent,
+ModuleSecurityRoleDetailComponent,
+ModuleSecurityRoleTableComponent,
+OAUTHTokenListingComponent,
+OAUTHTokenAddEditComponent,
+OAUTHTokenDetailComponent,
+OAUTHTokenTableComponent,
+PrivilegeListingComponent,
+PrivilegeAddEditComponent,
+PrivilegeDetailComponent,
+PrivilegeTableComponent,
+SecurityDepartmentListingComponent,
+SecurityDepartmentAddEditComponent,
+SecurityDepartmentDetailComponent,
+SecurityDepartmentTableComponent,
+SecurityDepartmentUserListingComponent,
+SecurityDepartmentUserAddEditComponent,
+SecurityDepartmentUserDetailComponent,
+SecurityDepartmentUserTableComponent,
+SecurityGroupListingComponent,
+SecurityGroupAddEditComponent,
+SecurityGroupDetailComponent,
+SecurityGroupTableComponent,
+SecurityGroupSecurityRoleListingComponent,
+SecurityGroupSecurityRoleAddEditComponent,
+SecurityGroupSecurityRoleDetailComponent,
+SecurityGroupSecurityRoleTableComponent,
+SecurityOrganizationListingComponent,
+SecurityOrganizationAddEditComponent,
+SecurityOrganizationDetailComponent,
+SecurityOrganizationTableComponent,
+SecurityOrganizationUserListingComponent,
+SecurityOrganizationUserAddEditComponent,
+SecurityOrganizationUserDetailComponent,
+SecurityOrganizationUserTableComponent,
+SecurityRoleListingComponent,
+SecurityRoleAddEditComponent,
+SecurityRoleDetailComponent,
+SecurityRoleTableComponent,
+SecurityTeamListingComponent,
+SecurityTeamAddEditComponent,
+SecurityTeamDetailComponent,
+SecurityTeamTableComponent,
+SecurityTeamUserListingComponent,
+SecurityTeamUserAddEditComponent,
+SecurityTeamUserDetailComponent,
+SecurityTeamUserTableComponent,
+SecurityTenantListingComponent,
+SecurityTenantAddEditComponent,
+SecurityTenantDetailComponent,
+SecurityTenantTableComponent,
+SecurityTenantUserListingComponent,
+SecurityTenantUserAddEditComponent,
+SecurityTenantUserDetailComponent,
+SecurityTenantUserTableComponent,
+SecurityUserListingComponent,
+SecurityUserAddEditComponent,
+SecurityUserDetailComponent,
+SecurityUserTableComponent,
+SecurityUserEventListingComponent,
+SecurityUserEventAddEditComponent,
+SecurityUserEventDetailComponent,
+SecurityUserEventTableComponent,
+SecurityUserEventTypeListingComponent,
+SecurityUserEventTypeAddEditComponent,
+SecurityUserEventTypeDetailComponent,
+SecurityUserEventTypeTableComponent,
+SecurityUserPasswordResetTokenListingComponent,
+SecurityUserPasswordResetTokenAddEditComponent,
+SecurityUserPasswordResetTokenDetailComponent,
+SecurityUserPasswordResetTokenTableComponent,
+SecurityUserSecurityGroupListingComponent,
+SecurityUserSecurityGroupAddEditComponent,
+SecurityUserSecurityGroupDetailComponent,
+SecurityUserSecurityGroupTableComponent,
+SecurityUserSecurityRoleListingComponent,
+SecurityUserSecurityRoleAddEditComponent,
+SecurityUserSecurityRoleDetailComponent,
+SecurityUserSecurityRoleTableComponent,
+SecurityUserTitleListingComponent,
+SecurityUserTitleAddEditComponent,
+SecurityUserTitleDetailComponent,
+SecurityUserTitleTableComponent,
+SystemSettingListingComponent,
+SystemSettingAddEditComponent,
+SystemSettingDetailComponent,
+SystemSettingTableComponent,
+//
+    // End of declarations for Security Data Components
     //
 
-
     //
-    // Auditor Data Components - Auto generated
-    //
-    AuditAccessTypeListingComponent,
-    AuditAccessTypeAddEditComponent,
-    AuditAccessTypeDetailComponent,
-    AuditAccessTypeTableComponent,
-    AuditEventListingComponent,
-    AuditEventAddEditComponent,
-    AuditEventDetailComponent,
-    AuditEventTableComponent,
-    AuditEventEntityStateListingComponent,
-    AuditEventEntityStateAddEditComponent,
-    AuditEventEntityStateDetailComponent,
-    AuditEventEntityStateTableComponent,
-    AuditEventErrorMessageListingComponent,
-    AuditEventErrorMessageAddEditComponent,
-    AuditEventErrorMessageDetailComponent,
-    AuditEventErrorMessageTableComponent,
-    AuditHostSystemListingComponent,
-    AuditHostSystemAddEditComponent,
-    AuditHostSystemDetailComponent,
-    AuditHostSystemTableComponent,
-    AuditModuleListingComponent,
-    AuditModuleAddEditComponent,
-    AuditModuleDetailComponent,
-    AuditModuleTableComponent,
-    AuditModuleEntityListingComponent,
-    AuditModuleEntityAddEditComponent,
-    AuditModuleEntityDetailComponent,
-    AuditModuleEntityTableComponent,
-    AuditPlanBListingComponent,
-    AuditPlanBAddEditComponent,
-    AuditPlanBDetailComponent,
-    AuditPlanBTableComponent,
-    AuditResourceListingComponent,
-    AuditResourceAddEditComponent,
-    AuditResourceDetailComponent,
-    AuditResourceTableComponent,
-    AuditSessionListingComponent,
-    AuditSessionAddEditComponent,
-    AuditSessionDetailComponent,
-    AuditSessionTableComponent,
-    AuditSourceListingComponent,
-    AuditSourceAddEditComponent,
-    AuditSourceDetailComponent,
-    AuditSourceTableComponent,
-    AuditTypeListingComponent,
-    AuditTypeAddEditComponent,
-    AuditTypeDetailComponent,
-    AuditTypeTableComponent,
-    AuditUserListingComponent,
-    AuditUserAddEditComponent,
-    AuditUserDetailComponent,
-    AuditUserTableComponent,
-    AuditUserAgentListingComponent,
-    AuditUserAgentAddEditComponent,
-    AuditUserAgentDetailComponent,
-    AuditUserAgentTableComponent,
-    ExternalCommunicationListingComponent,
-    ExternalCommunicationAddEditComponent,
-    ExternalCommunicationDetailComponent,
-    ExternalCommunicationTableComponent,
-    ExternalCommunicationRecipientListingComponent,
-    ExternalCommunicationRecipientAddEditComponent,
-    ExternalCommunicationRecipientDetailComponent,
-    ExternalCommunicationRecipientTableComponent,
-    //
-    // End Auditor Data Components
+    // Beginning of declarations for Auditor Data Components
+//
+AuditAccessTypeListingComponent,
+AuditAccessTypeAddEditComponent,
+AuditAccessTypeDetailComponent,
+AuditAccessTypeTableComponent,
+AuditEventListingComponent,
+AuditEventAddEditComponent,
+AuditEventDetailComponent,
+AuditEventTableComponent,
+AuditEventEntityStateListingComponent,
+AuditEventEntityStateAddEditComponent,
+AuditEventEntityStateDetailComponent,
+AuditEventEntityStateTableComponent,
+AuditEventErrorMessageListingComponent,
+AuditEventErrorMessageAddEditComponent,
+AuditEventErrorMessageDetailComponent,
+AuditEventErrorMessageTableComponent,
+AuditHostSystemListingComponent,
+AuditHostSystemAddEditComponent,
+AuditHostSystemDetailComponent,
+AuditHostSystemTableComponent,
+AuditModuleListingComponent,
+AuditModuleAddEditComponent,
+AuditModuleDetailComponent,
+AuditModuleTableComponent,
+AuditModuleEntityListingComponent,
+AuditModuleEntityAddEditComponent,
+AuditModuleEntityDetailComponent,
+AuditModuleEntityTableComponent,
+AuditPlanBListingComponent,
+AuditPlanBAddEditComponent,
+AuditPlanBDetailComponent,
+AuditPlanBTableComponent,
+AuditResourceListingComponent,
+AuditResourceAddEditComponent,
+AuditResourceDetailComponent,
+AuditResourceTableComponent,
+AuditSessionListingComponent,
+AuditSessionAddEditComponent,
+AuditSessionDetailComponent,
+AuditSessionTableComponent,
+AuditSourceListingComponent,
+AuditSourceAddEditComponent,
+AuditSourceDetailComponent,
+AuditSourceTableComponent,
+AuditTypeListingComponent,
+AuditTypeAddEditComponent,
+AuditTypeDetailComponent,
+AuditTypeTableComponent,
+AuditUserListingComponent,
+AuditUserAddEditComponent,
+AuditUserDetailComponent,
+AuditUserTableComponent,
+AuditUserAgentListingComponent,
+AuditUserAgentAddEditComponent,
+AuditUserAgentDetailComponent,
+AuditUserAgentTableComponent,
+ExternalCommunicationListingComponent,
+ExternalCommunicationAddEditComponent,
+ExternalCommunicationDetailComponent,
+ExternalCommunicationTableComponent,
+ExternalCommunicationRecipientListingComponent,
+ExternalCommunicationRecipientAddEditComponent,
+ExternalCommunicationRecipientDetailComponent,
+ExternalCommunicationRecipientTableComponent,
+//
+    // End of declarations for Auditor Data Components
     //
 
 
@@ -611,64 +610,64 @@ import { ExternalCommunicationRecipientTableComponent } from './auditor-data-com
     ConfirmationService,
 
     //
-    // Security Data Services - Auto generated
-    //
-    SecurityDataServiceManagerService,
-    EntityDataTokenService,
-    EntityDataTokenEventService,
-    EntityDataTokenEventTypeService,
-    LoginAttemptService,
-    ModuleService,
-    ModuleSecurityRoleService,
-    OAUTHTokenService,
-    PrivilegeService,
-    SecurityDepartmentService,
-    SecurityDepartmentUserService,
-    SecurityGroupService,
-    SecurityGroupSecurityRoleService,
-    SecurityOrganizationService,
-    SecurityOrganizationUserService,
-    SecurityRoleService,
-    SecurityTeamService,
-    SecurityTeamUserService,
-    SecurityTenantService,
-    SecurityTenantUserService,
-    SecurityUserService,
-    SecurityUserEventService,
-    SecurityUserEventTypeService,
-    SecurityUserPasswordResetTokenService,
-    SecurityUserSecurityGroupService,
-    SecurityUserSecurityRoleService,
-    SecurityUserTitleService,
-    SystemSettingService,
-    //
-    // End Security Data Services
+    // Beginning of provider declarations for Security Data Services
+//
+SecurityDataServiceManagerService,
+EntityDataTokenService,
+EntityDataTokenEventService,
+EntityDataTokenEventTypeService,
+LoginAttemptService,
+ModuleService,
+ModuleSecurityRoleService,
+OAUTHTokenService,
+PrivilegeService,
+SecurityDepartmentService,
+SecurityDepartmentUserService,
+SecurityGroupService,
+SecurityGroupSecurityRoleService,
+SecurityOrganizationService,
+SecurityOrganizationUserService,
+SecurityRoleService,
+SecurityTeamService,
+SecurityTeamUserService,
+SecurityTenantService,
+SecurityTenantUserService,
+SecurityUserService,
+SecurityUserEventService,
+SecurityUserEventTypeService,
+SecurityUserPasswordResetTokenService,
+SecurityUserSecurityGroupService,
+SecurityUserSecurityRoleService,
+SecurityUserTitleService,
+SystemSettingService,
+//
+    // End of provider declarations for Security Data Services
     //
 
 
     //
-    // Auditor Data Services - Auto Generated
-    // 
-    AuditorDataServiceManagerService,
-    AuditAccessTypeService,
-    AuditEventService,
-    AuditEventEntityStateService,
-    AuditEventErrorMessageService,
-    AuditHostSystemService,
-    AuditModuleService,
-    AuditModuleEntityService,
-    AuditPlanBService,
-    AuditResourceService,
-    AuditSessionService,
-    AuditSourceService,
-    AuditTypeService,
-    AuditUserService,
-    AuditUserAgentService,
-    ExternalCommunicationService,
-    ExternalCommunicationRecipientService,
+    // Beginning of provider declarations for Auditor Data Services
+//
+AuditorDataServiceManagerService,
+AuditAccessTypeService,
+AuditEventService,
+AuditEventEntityStateService,
+AuditEventErrorMessageService,
+AuditHostSystemService,
+AuditModuleService,
+AuditModuleEntityService,
+AuditPlanBService,
+AuditResourceService,
+AuditSessionService,
+AuditSourceService,
+AuditTypeService,
+AuditUserService,
+AuditUserAgentService,
+ExternalCommunicationService,
+ExternalCommunicationRecipientService,
+//
+    // End of provider declarations for Auditor Data Services
     //
-    // End Auditor Data Services
-    // 
 
 
     //

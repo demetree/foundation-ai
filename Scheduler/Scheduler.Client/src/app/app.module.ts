@@ -64,7 +64,6 @@ import { OverviewManagerTabComponent } from './components/overview/overview-mana
 import { OverviewDispatcherTabComponent } from './components/overview/overview-dispatcher-tab/overview-dispatcher-tab.component';
 import { OverviewSchedulerTabComponent } from './components/overview/overview-scheduler-tab/overview-scheduler-tab.component';
 
-import { ModalComponent } from './components/modal/modal.component';
 import { HeaderComponent } from './components/header/header.component';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
@@ -1157,7 +1156,6 @@ import { TributeTypeTableComponent } from './scheduler-data-components/tribute-t
     ContactFullNamePipe,
 
     OverviewComponent,
-    ModalComponent,
 
     HeaderComponent,
     SidebarComponent,

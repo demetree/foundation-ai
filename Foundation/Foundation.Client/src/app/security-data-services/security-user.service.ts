@@ -1,6 +1,16 @@
+/*
+
+   GENERATED SERVICE FOR THE SECURITYUSER TABLE - DO NOT MODIFY DIRECTLY
+   =======================================================================================
+   This is the default data interaction service for the SecurityUser table.
+
+   It should suffice for many workflows and data access needs, but if anything more is needed, then extend this in a 
+   custom version or add an additional targeted helper service.
+
+*/
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
-import { Observable, BehaviorSubject, catchError, throwError, lastValueFrom, map  } from 'rxjs';
+import { Observable, BehaviorSubject, catchError, throwError, lastValueFrom, map } from 'rxjs';
 import { shareReplay, tap } from 'rxjs/operators';
 import { UtilityService } from '../utility-services/utility.service'
 import { AlertService } from '../services/alert.service';
@@ -200,12 +210,12 @@ export class SecurityUserData {
     objectGuid!: string;
     active!: boolean;
     deleted!: boolean;
-    reportsToSecurityUser: any | null | undefined = null;            // Navigation property (populated when includeRelations=true)
     securityDepartment: SecurityDepartmentData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     securityOrganization: SecurityOrganizationData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     securityTeam: SecurityTeamData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     securityTenant: SecurityTenantData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     securityUserTitle: SecurityUserTitleData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
+    reportsToSecurityUser: SecurityUserData | null | undefined = null;            // Self referencing navigation property (populated when includeRelations=true)
 
     //
     // Private lazy-loading caches for related collections
@@ -214,38 +224,47 @@ export class SecurityUserData {
     private _securityTenantUsersPromise: Promise<SecurityTenantUserData[]> | null  = null;
     private _securityTenantUsersSubject = new BehaviorSubject<SecurityTenantUserData[] | null>(null);
 
+                
     private _securityOrganizationUsers: SecurityOrganizationUserData[] | null = null;
     private _securityOrganizationUsersPromise: Promise<SecurityOrganizationUserData[]> | null  = null;
     private _securityOrganizationUsersSubject = new BehaviorSubject<SecurityOrganizationUserData[] | null>(null);
 
+                
     private _securityDepartmentUsers: SecurityDepartmentUserData[] | null = null;
     private _securityDepartmentUsersPromise: Promise<SecurityDepartmentUserData[]> | null  = null;
     private _securityDepartmentUsersSubject = new BehaviorSubject<SecurityDepartmentUserData[] | null>(null);
 
+                
     private _securityTeamUsers: SecurityTeamUserData[] | null = null;
     private _securityTeamUsersPromise: Promise<SecurityTeamUserData[]> | null  = null;
     private _securityTeamUsersSubject = new BehaviorSubject<SecurityTeamUserData[] | null>(null);
 
+                
     private _securityUserEvents: SecurityUserEventData[] | null = null;
     private _securityUserEventsPromise: Promise<SecurityUserEventData[]> | null  = null;
     private _securityUserEventsSubject = new BehaviorSubject<SecurityUserEventData[] | null>(null);
 
+                
     private _securityUserPasswordResetTokens: SecurityUserPasswordResetTokenData[] | null = null;
     private _securityUserPasswordResetTokensPromise: Promise<SecurityUserPasswordResetTokenData[]> | null  = null;
     private _securityUserPasswordResetTokensSubject = new BehaviorSubject<SecurityUserPasswordResetTokenData[] | null>(null);
 
+                
     private _securityUserSecurityGroups: SecurityUserSecurityGroupData[] | null = null;
     private _securityUserSecurityGroupsPromise: Promise<SecurityUserSecurityGroupData[]> | null  = null;
     private _securityUserSecurityGroupsSubject = new BehaviorSubject<SecurityUserSecurityGroupData[] | null>(null);
 
+                
     private _securityUserSecurityRoles: SecurityUserSecurityRoleData[] | null = null;
     private _securityUserSecurityRolesPromise: Promise<SecurityUserSecurityRoleData[]> | null  = null;
     private _securityUserSecurityRolesSubject = new BehaviorSubject<SecurityUserSecurityRoleData[] | null>(null);
 
+                
     private _entityDataTokens: EntityDataTokenData[] | null = null;
     private _entityDataTokensPromise: Promise<EntityDataTokenData[]> | null  = null;
     private _entityDataTokensSubject = new BehaviorSubject<EntityDataTokenData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -459,7 +478,9 @@ export class SecurityUserData {
 
 
   private clearAllLazyCaches(): void {
+     //
      // Reset every collection cache and notify subscribers
+     //
      this._securityTenantUsers = null;
      this._securityTenantUsersPromise = null;
      this._securityTenantUsersSubject.next(null);
@@ -511,9 +532,9 @@ export class SecurityUserData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.securityUser.SecurityTenantUsers.then(securityTenantUsers => { ... })
+     *   this.securityUser.SecurityTenantUsers.then(securityUsers => { ... })
      *   or
-     *   await this.securityUser.SecurityTenantUsers
+     *   await this.securityUser.securityUsers
      *
     */
     public get SecurityTenantUsers(): Promise<SecurityTenantUserData[]> {
@@ -538,8 +559,8 @@ export class SecurityUserData {
         this._securityTenantUsersPromise = lastValueFrom(
             SecurityUserService.Instance.GetSecurityTenantUsersForSecurityUser(this.id)
         )
-        .then(securityTenantUsers => {
-            this._securityTenantUsers = securityTenantUsers ?? [];
+        .then(SecurityTenantUsers => {
+            this._securityTenantUsers = SecurityTenantUsers ?? [];
             this._securityTenantUsersSubject.next(this._securityTenantUsers);
             return this._securityTenantUsers;
          })
@@ -554,7 +575,7 @@ export class SecurityUserData {
     }
 
     /**
-     * Clears the cached crew members. Call after mutations to force refresh.
+     * Clears the cached SecurityTenantUser. Call after mutations to force refresh.
      */
     public ClearSecurityTenantUsersCache(): void {
         this._securityTenantUsers = null;
@@ -576,9 +597,9 @@ export class SecurityUserData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.securityUser.SecurityOrganizationUsers.then(securityOrganizationUsers => { ... })
+     *   this.securityUser.SecurityOrganizationUsers.then(securityUsers => { ... })
      *   or
-     *   await this.securityUser.SecurityOrganizationUsers
+     *   await this.securityUser.securityUsers
      *
     */
     public get SecurityOrganizationUsers(): Promise<SecurityOrganizationUserData[]> {
@@ -603,8 +624,8 @@ export class SecurityUserData {
         this._securityOrganizationUsersPromise = lastValueFrom(
             SecurityUserService.Instance.GetSecurityOrganizationUsersForSecurityUser(this.id)
         )
-        .then(securityOrganizationUsers => {
-            this._securityOrganizationUsers = securityOrganizationUsers ?? [];
+        .then(SecurityOrganizationUsers => {
+            this._securityOrganizationUsers = SecurityOrganizationUsers ?? [];
             this._securityOrganizationUsersSubject.next(this._securityOrganizationUsers);
             return this._securityOrganizationUsers;
          })
@@ -619,7 +640,7 @@ export class SecurityUserData {
     }
 
     /**
-     * Clears the cached crew members. Call after mutations to force refresh.
+     * Clears the cached SecurityOrganizationUser. Call after mutations to force refresh.
      */
     public ClearSecurityOrganizationUsersCache(): void {
         this._securityOrganizationUsers = null;
@@ -641,9 +662,9 @@ export class SecurityUserData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.securityUser.SecurityDepartmentUsers.then(securityDepartmentUsers => { ... })
+     *   this.securityUser.SecurityDepartmentUsers.then(securityUsers => { ... })
      *   or
-     *   await this.securityUser.SecurityDepartmentUsers
+     *   await this.securityUser.securityUsers
      *
     */
     public get SecurityDepartmentUsers(): Promise<SecurityDepartmentUserData[]> {
@@ -668,8 +689,8 @@ export class SecurityUserData {
         this._securityDepartmentUsersPromise = lastValueFrom(
             SecurityUserService.Instance.GetSecurityDepartmentUsersForSecurityUser(this.id)
         )
-        .then(securityDepartmentUsers => {
-            this._securityDepartmentUsers = securityDepartmentUsers ?? [];
+        .then(SecurityDepartmentUsers => {
+            this._securityDepartmentUsers = SecurityDepartmentUsers ?? [];
             this._securityDepartmentUsersSubject.next(this._securityDepartmentUsers);
             return this._securityDepartmentUsers;
          })
@@ -684,7 +705,7 @@ export class SecurityUserData {
     }
 
     /**
-     * Clears the cached crew members. Call after mutations to force refresh.
+     * Clears the cached SecurityDepartmentUser. Call after mutations to force refresh.
      */
     public ClearSecurityDepartmentUsersCache(): void {
         this._securityDepartmentUsers = null;
@@ -706,9 +727,9 @@ export class SecurityUserData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.securityUser.SecurityTeamUsers.then(securityTeamUsers => { ... })
+     *   this.securityUser.SecurityTeamUsers.then(securityUsers => { ... })
      *   or
-     *   await this.securityUser.SecurityTeamUsers
+     *   await this.securityUser.securityUsers
      *
     */
     public get SecurityTeamUsers(): Promise<SecurityTeamUserData[]> {
@@ -733,8 +754,8 @@ export class SecurityUserData {
         this._securityTeamUsersPromise = lastValueFrom(
             SecurityUserService.Instance.GetSecurityTeamUsersForSecurityUser(this.id)
         )
-        .then(securityTeamUsers => {
-            this._securityTeamUsers = securityTeamUsers ?? [];
+        .then(SecurityTeamUsers => {
+            this._securityTeamUsers = SecurityTeamUsers ?? [];
             this._securityTeamUsersSubject.next(this._securityTeamUsers);
             return this._securityTeamUsers;
          })
@@ -749,7 +770,7 @@ export class SecurityUserData {
     }
 
     /**
-     * Clears the cached crew members. Call after mutations to force refresh.
+     * Clears the cached SecurityTeamUser. Call after mutations to force refresh.
      */
     public ClearSecurityTeamUsersCache(): void {
         this._securityTeamUsers = null;
@@ -771,9 +792,9 @@ export class SecurityUserData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.securityUser.SecurityUserEvents.then(securityUserEvents => { ... })
+     *   this.securityUser.SecurityUserEvents.then(securityUsers => { ... })
      *   or
-     *   await this.securityUser.SecurityUserEvents
+     *   await this.securityUser.securityUsers
      *
     */
     public get SecurityUserEvents(): Promise<SecurityUserEventData[]> {
@@ -798,8 +819,8 @@ export class SecurityUserData {
         this._securityUserEventsPromise = lastValueFrom(
             SecurityUserService.Instance.GetSecurityUserEventsForSecurityUser(this.id)
         )
-        .then(securityUserEvents => {
-            this._securityUserEvents = securityUserEvents ?? [];
+        .then(SecurityUserEvents => {
+            this._securityUserEvents = SecurityUserEvents ?? [];
             this._securityUserEventsSubject.next(this._securityUserEvents);
             return this._securityUserEvents;
          })
@@ -814,7 +835,7 @@ export class SecurityUserData {
     }
 
     /**
-     * Clears the cached crew members. Call after mutations to force refresh.
+     * Clears the cached SecurityUserEvent. Call after mutations to force refresh.
      */
     public ClearSecurityUserEventsCache(): void {
         this._securityUserEvents = null;
@@ -836,9 +857,9 @@ export class SecurityUserData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.securityUser.SecurityUserPasswordResetTokens.then(securityUserPasswordResetTokens => { ... })
+     *   this.securityUser.SecurityUserPasswordResetTokens.then(securityUsers => { ... })
      *   or
-     *   await this.securityUser.SecurityUserPasswordResetTokens
+     *   await this.securityUser.securityUsers
      *
     */
     public get SecurityUserPasswordResetTokens(): Promise<SecurityUserPasswordResetTokenData[]> {
@@ -863,8 +884,8 @@ export class SecurityUserData {
         this._securityUserPasswordResetTokensPromise = lastValueFrom(
             SecurityUserService.Instance.GetSecurityUserPasswordResetTokensForSecurityUser(this.id)
         )
-        .then(securityUserPasswordResetTokens => {
-            this._securityUserPasswordResetTokens = securityUserPasswordResetTokens ?? [];
+        .then(SecurityUserPasswordResetTokens => {
+            this._securityUserPasswordResetTokens = SecurityUserPasswordResetTokens ?? [];
             this._securityUserPasswordResetTokensSubject.next(this._securityUserPasswordResetTokens);
             return this._securityUserPasswordResetTokens;
          })
@@ -879,7 +900,7 @@ export class SecurityUserData {
     }
 
     /**
-     * Clears the cached crew members. Call after mutations to force refresh.
+     * Clears the cached SecurityUserPasswordResetToken. Call after mutations to force refresh.
      */
     public ClearSecurityUserPasswordResetTokensCache(): void {
         this._securityUserPasswordResetTokens = null;
@@ -901,9 +922,9 @@ export class SecurityUserData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.securityUser.SecurityUserSecurityGroups.then(securityUserSecurityGroups => { ... })
+     *   this.securityUser.SecurityUserSecurityGroups.then(securityUsers => { ... })
      *   or
-     *   await this.securityUser.SecurityUserSecurityGroups
+     *   await this.securityUser.securityUsers
      *
     */
     public get SecurityUserSecurityGroups(): Promise<SecurityUserSecurityGroupData[]> {
@@ -928,8 +949,8 @@ export class SecurityUserData {
         this._securityUserSecurityGroupsPromise = lastValueFrom(
             SecurityUserService.Instance.GetSecurityUserSecurityGroupsForSecurityUser(this.id)
         )
-        .then(securityUserSecurityGroups => {
-            this._securityUserSecurityGroups = securityUserSecurityGroups ?? [];
+        .then(SecurityUserSecurityGroups => {
+            this._securityUserSecurityGroups = SecurityUserSecurityGroups ?? [];
             this._securityUserSecurityGroupsSubject.next(this._securityUserSecurityGroups);
             return this._securityUserSecurityGroups;
          })
@@ -944,7 +965,7 @@ export class SecurityUserData {
     }
 
     /**
-     * Clears the cached crew members. Call after mutations to force refresh.
+     * Clears the cached SecurityUserSecurityGroup. Call after mutations to force refresh.
      */
     public ClearSecurityUserSecurityGroupsCache(): void {
         this._securityUserSecurityGroups = null;
@@ -966,9 +987,9 @@ export class SecurityUserData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.securityUser.SecurityUserSecurityRoles.then(securityUserSecurityRoles => { ... })
+     *   this.securityUser.SecurityUserSecurityRoles.then(securityUsers => { ... })
      *   or
-     *   await this.securityUser.SecurityUserSecurityRoles
+     *   await this.securityUser.securityUsers
      *
     */
     public get SecurityUserSecurityRoles(): Promise<SecurityUserSecurityRoleData[]> {
@@ -993,8 +1014,8 @@ export class SecurityUserData {
         this._securityUserSecurityRolesPromise = lastValueFrom(
             SecurityUserService.Instance.GetSecurityUserSecurityRolesForSecurityUser(this.id)
         )
-        .then(securityUserSecurityRoles => {
-            this._securityUserSecurityRoles = securityUserSecurityRoles ?? [];
+        .then(SecurityUserSecurityRoles => {
+            this._securityUserSecurityRoles = SecurityUserSecurityRoles ?? [];
             this._securityUserSecurityRolesSubject.next(this._securityUserSecurityRoles);
             return this._securityUserSecurityRoles;
          })
@@ -1009,7 +1030,7 @@ export class SecurityUserData {
     }
 
     /**
-     * Clears the cached crew members. Call after mutations to force refresh.
+     * Clears the cached SecurityUserSecurityRole. Call after mutations to force refresh.
      */
     public ClearSecurityUserSecurityRolesCache(): void {
         this._securityUserSecurityRoles = null;
@@ -1031,9 +1052,9 @@ export class SecurityUserData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.securityUser.EntityDataTokens.then(entityDataTokens => { ... })
+     *   this.securityUser.EntityDataTokens.then(securityUsers => { ... })
      *   or
-     *   await this.securityUser.EntityDataTokens
+     *   await this.securityUser.securityUsers
      *
     */
     public get EntityDataTokens(): Promise<EntityDataTokenData[]> {
@@ -1058,8 +1079,8 @@ export class SecurityUserData {
         this._entityDataTokensPromise = lastValueFrom(
             SecurityUserService.Instance.GetEntityDataTokensForSecurityUser(this.id)
         )
-        .then(entityDataTokens => {
-            this._entityDataTokens = entityDataTokens ?? [];
+        .then(EntityDataTokens => {
+            this._entityDataTokens = EntityDataTokens ?? [];
             this._entityDataTokensSubject.next(this._entityDataTokens);
             return this._entityDataTokens;
          })
@@ -1074,7 +1095,7 @@ export class SecurityUserData {
     }
 
     /**
-     * Clears the cached crew members. Call after mutations to force refresh.
+     * Clears the cached EntityDataToken. Call after mutations to force refresh.
      */
     public ClearEntityDataTokensCache(): void {
         this._entityDataTokens = null;
@@ -1645,6 +1666,10 @@ export class SecurityUserService extends SecureEndpointBase {
     // Explicitly initialize all private caches
     // This ensures the getters work correctly on revived objects
     //
+    (revived as any)._securityUsers = null;
+    (revived as any)._securityUsersPromise = null;
+    (revived as any)._securityUsersSubject = new BehaviorSubject<SecurityUserData[] | null>(null);
+
     (revived as any)._securityTenantUsers = null;
     (revived as any)._securityTenantUsersPromise = null;
     (revived as any)._securityTenantUsersSubject = new BehaviorSubject<SecurityTenantUserData[] | null>(null);
@@ -1693,6 +1718,22 @@ export class SecurityUserService extends SecureEndpointBase {
     // 2. But private methods (loadSecurityUserXYZ, etc.) are not accessible via the typed variable
     // 3. This is a controlled revival context — safe and necessary
     //
+    (revived as any).SecurityUsers$ = (revived as any)._securityUsersSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._securityUsers === null && (revived as any)._securityUsersPromise === null) {
+                (revived as any).loadSecurityUsers();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).SecurityUsersCount$ = SecurityUserService.Instance.GetSecurityUsersRowCount({securityUserId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
     (revived as any).SecurityTenantUsers$ = (revived as any)._securityTenantUsersSubject.asObservable().pipe(
         tap(() => {
               if ((revived as any)._securityTenantUsers === null && (revived as any)._securityTenantUsersPromise === null) {

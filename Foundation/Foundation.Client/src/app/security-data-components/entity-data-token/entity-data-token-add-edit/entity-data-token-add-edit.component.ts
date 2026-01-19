@@ -1,3 +1,21 @@
+/*
+   GENERATED FORM FOR THE ENTITYDATATOKEN TABLE - DO NOT MODIFY DIRECTLY
+   =================================================================================
+
+   This is the default form generated from EntityDataToken table metadata.
+
+   It is useful for low usage worksflows such as basic configuration, but is likely not good enough for primary workflow usage
+   because it's form layout and validation is too simple.
+   
+   For building better looking and/or versions with custom logic, create a custom version of this:
+
+   1. Copy this component
+   2. Rename to entity-data-token-custom (or similar)
+   3. Modify layout, grouping, field types, add workflow logic
+   
+   This generated version is kept simple on purpose so it's easy to use as a reference/scaffold.
+
+*/
 import { Component, ViewChild, Output, Input, TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
@@ -9,6 +27,26 @@ import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../uti
 import { SecurityUserService } from '../../../security-data-services/security-user.service';
 import { ModuleService } from '../../../security-data-services/module.service';
 import { AuthService } from '../../../services/auth.service';
+
+//
+// Define a type for the form values to improve readability and type safety.
+// This mirrors the structure of the FormGroup controls, with considerations for form input types:
+// - Numeric fields like latitude are strings in the form (due to input type="number" behavior).
+// - Allows null for optional fields.
+// - Does not include navigation properties or methods from domain models.
+//
+interface EntityDataTokenFormValues {
+  securityUserId: number | bigint,       // For FK link number
+  moduleId: number | bigint,       // For FK link number
+  entity: string,
+  sessionId: string,
+  authenticationToken: string,
+  token: string,
+  timeStamp: string,
+  comments: string | null,
+  active: boolean,
+  deleted: boolean,
+};
 
 @Component({
   selector: 'app-entity-data-token-add-edit',
@@ -22,7 +60,22 @@ export class EntityDataTokenAddEditComponent {
   @Input() navigateToDetailsAfterAdd: boolean = true;
   @Input() showAddButton: boolean = true;
 
-  entityDataTokenForm: FormGroup = this.fb.group({
+
+  //
+  // Input for pre-seeded data in add mode. This allows the parent component to provide
+  // initial values for one or more fields. Use Partial to allow selective seeding.
+  // Only applied in add mode (not edit mode, where existing data takes precedence).
+  //
+  @Input() preSeededData: Partial<EntityDataTokenFormValues> | null = null;
+
+  //
+  // Input for fields to hide. This is an array of field names (e.g., ['name', 'description']).
+  // Hiding a field will remove its form group from the template and disable its validator.
+  //
+  @Input() hiddenFields: string[] = [];
+
+
+  public entityDataTokenForm: FormGroup = this.fb.group({
         securityUserId: [null, Validators.required],
         moduleId: [null, Validators.required],
         entity: ['', Validators.required],
@@ -89,6 +142,32 @@ export class EntityDataTokenAddEditComponent {
       this.isEditMode = false;
 
       this.buildFormValues(null);
+
+      //
+      // Apply pre-seeded data if provided and we are in add mode.
+      // This patches the form with partial values.
+      // Check explicitly for null/undefined to avoid errors.
+      //
+      if (this.preSeededData !== null && this.preSeededData !== undefined) {
+        this.entityDataTokenForm.patchValue(this.preSeededData);
+      }
+
+    }
+
+
+    //
+    // Disable validators for hidden fields to prevent form invalidation.
+    // This prevents requiring values for hidden fields.
+    //
+    let index: number;
+
+    for (index = 0; index < this.hiddenFields.length; index++) {
+      const fieldName = this.hiddenFields[index];
+      const control = this.entityDataTokenForm.get(fieldName);
+      if (control !== null) {
+        control.clearValidators();
+        control.updateValueAndValidity(); // Refresh validation state.
+      }
     }
 
     this.modalRef = this.modalService.open(this.entityDataTokenModal, {
@@ -313,6 +392,20 @@ export class EntityDataTokenAddEditComponent {
     this.entityDataTokenForm.markAsPristine();
     this.entityDataTokenForm.markAsUntouched();
   }
+
+  //
+  // Helper method to determine if a field should be hidden based on the hiddenFields input.
+  // Returns true if the field is in the array, false otherwise.
+  //
+  public isFieldHidden(fieldName: string): boolean {
+    // Explicit check for array existence to avoid runtime errors.
+    if (this.hiddenFields === null || this.hiddenFields === undefined) {
+      return false;
+    }
+    // Use traditional includes method for clarity.
+    return this.hiddenFields.includes(fieldName);
+  }
+
 
   public userIsSecurityEntityDataTokenReader(): boolean {
     return this.entityDataTokenService.userIsSecurityEntityDataTokenReader();

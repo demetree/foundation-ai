@@ -1,6 +1,16 @@
+/*
+
+   GENERATED SERVICE FOR THE MODULE TABLE - DO NOT MODIFY DIRECTLY
+   =======================================================================================
+   This is the default data interaction service for the Module table.
+
+   It should suffice for many workflows and data access needs, but if anything more is needed, then extend this in a 
+   custom version or add an additional targeted helper service.
+
+*/
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
-import { Observable, BehaviorSubject, catchError, throwError, lastValueFrom, map  } from 'rxjs';
+import { Observable, BehaviorSubject, catchError, throwError, lastValueFrom, map } from 'rxjs';
 import { shareReplay, tap } from 'rxjs/operators';
 import { UtilityService } from '../utility-services/utility.service'
 import { AlertService } from '../services/alert.service';
@@ -98,10 +108,12 @@ export class ModuleData {
     private _moduleSecurityRolesPromise: Promise<ModuleSecurityRoleData[]> | null  = null;
     private _moduleSecurityRolesSubject = new BehaviorSubject<ModuleSecurityRoleData[] | null>(null);
 
+                
     private _entityDataTokens: EntityDataTokenData[] | null = null;
     private _entityDataTokensPromise: Promise<EntityDataTokenData[]> | null  = null;
     private _entityDataTokensSubject = new BehaviorSubject<EntityDataTokenData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -182,7 +194,9 @@ export class ModuleData {
 
 
   private clearAllLazyCaches(): void {
+     //
      // Reset every collection cache and notify subscribers
+     //
      this._moduleSecurityRoles = null;
      this._moduleSecurityRolesPromise = null;
      this._moduleSecurityRolesSubject.next(null);
@@ -206,9 +220,9 @@ export class ModuleData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.module.ModuleSecurityRoles.then(moduleSecurityRoles => { ... })
+     *   this.module.ModuleSecurityRoles.then(modules => { ... })
      *   or
-     *   await this.module.ModuleSecurityRoles
+     *   await this.module.modules
      *
     */
     public get ModuleSecurityRoles(): Promise<ModuleSecurityRoleData[]> {
@@ -233,8 +247,8 @@ export class ModuleData {
         this._moduleSecurityRolesPromise = lastValueFrom(
             ModuleService.Instance.GetModuleSecurityRolesForModule(this.id)
         )
-        .then(moduleSecurityRoles => {
-            this._moduleSecurityRoles = moduleSecurityRoles ?? [];
+        .then(ModuleSecurityRoles => {
+            this._moduleSecurityRoles = ModuleSecurityRoles ?? [];
             this._moduleSecurityRolesSubject.next(this._moduleSecurityRoles);
             return this._moduleSecurityRoles;
          })
@@ -249,7 +263,7 @@ export class ModuleData {
     }
 
     /**
-     * Clears the cached crew members. Call after mutations to force refresh.
+     * Clears the cached ModuleSecurityRole. Call after mutations to force refresh.
      */
     public ClearModuleSecurityRolesCache(): void {
         this._moduleSecurityRoles = null;
@@ -271,9 +285,9 @@ export class ModuleData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.module.EntityDataTokens.then(entityDataTokens => { ... })
+     *   this.module.EntityDataTokens.then(modules => { ... })
      *   or
-     *   await this.module.EntityDataTokens
+     *   await this.module.modules
      *
     */
     public get EntityDataTokens(): Promise<EntityDataTokenData[]> {
@@ -298,8 +312,8 @@ export class ModuleData {
         this._entityDataTokensPromise = lastValueFrom(
             ModuleService.Instance.GetEntityDataTokensForModule(this.id)
         )
-        .then(entityDataTokens => {
-            this._entityDataTokens = entityDataTokens ?? [];
+        .then(EntityDataTokens => {
+            this._entityDataTokens = EntityDataTokens ?? [];
             this._entityDataTokensSubject.next(this._entityDataTokens);
             return this._entityDataTokens;
          })
@@ -314,7 +328,7 @@ export class ModuleData {
     }
 
     /**
-     * Clears the cached crew members. Call after mutations to force refresh.
+     * Clears the cached EntityDataToken. Call after mutations to force refresh.
      */
     public ClearEntityDataTokensCache(): void {
         this._entityDataTokens = null;

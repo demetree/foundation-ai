@@ -57,7 +57,7 @@ tr.row-inactive,
 /* Deleted rows */
 tr.row-deleted,
 .card.row-deleted {
-  text-decoration: line-through !important;
+  text-decoration: line-through;
   opacity: 0.6;
   color: #999; // Muted color
 }

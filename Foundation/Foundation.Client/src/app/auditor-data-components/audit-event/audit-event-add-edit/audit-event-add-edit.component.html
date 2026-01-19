@@ -21,27 +21,27 @@
    </div>
    <div class="modal-body audit-event-modal-body">
       <form [formGroup]="auditEventForm" (ngSubmit)="submitForm()">
-            <div class="form-group">
-                <label for="startTime" id="label-startTime"><span class="text-danger">*</span>Start Time</label>
-                <input type="datetime-local" id="startTime" formControlName="startTime" placeholder="Enter Start Time" class="form-control audit-event-input" [disabled]="!userIsAuditorAuditEventWriter()" aria-labelledby="label-startTime" />
+            <div class="form-group" *ngIf="!isFieldHidden('startTime')">
+                <label for="AuditEvent-startTime" id="label-AuditEvent-startTime"><span class="text-danger">*</span>Start Time</label>
+                <input type="datetime-local" id="AuditEvent-startTime" formControlName="startTime" placeholder="Enter Start Time" class="form-control audit-event-input" [disabled]="!userIsAuditorAuditEventWriter()" aria-labelledby="label-startTime" />
                 <div *ngIf="auditEventForm.get('startTime')?.invalid && auditEventForm.get('startTime')?.touched" class="text-danger">
                     Start Time is required
                 </div>
             </div>
-            <div class="form-group">
-                <label for="stopTime" id="label-stopTime"><span class="text-danger">*</span>Stop Time</label>
-                <input type="datetime-local" id="stopTime" formControlName="stopTime" placeholder="Enter Stop Time" class="form-control audit-event-input" [disabled]="!userIsAuditorAuditEventWriter()" aria-labelledby="label-stopTime" />
+            <div class="form-group" *ngIf="!isFieldHidden('stopTime')">
+                <label for="AuditEvent-stopTime" id="label-AuditEvent-stopTime"><span class="text-danger">*</span>Stop Time</label>
+                <input type="datetime-local" id="AuditEvent-stopTime" formControlName="stopTime" placeholder="Enter Stop Time" class="form-control audit-event-input" [disabled]="!userIsAuditorAuditEventWriter()" aria-labelledby="label-stopTime" />
                 <div *ngIf="auditEventForm.get('stopTime')?.invalid && auditEventForm.get('stopTime')?.touched" class="text-danger">
                     Stop Time is required
                 </div>
             </div>
-            <div class="form-check my-2">
-                <input type="checkbox" id="completedSuccessfully" formControlName="completedSuccessfully" class="form-check-input" [disabled]="!userIsAuditorAuditEventWriter()" />
-                <label for="completedSuccessfully" class="form-check-label" id="label-completedSuccessfully"><span class="text-danger">*</span>Completed Successfully</label>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('completedSuccessfully')">
+                <input type="checkbox" id="AuditEvent-completedSuccessfully" formControlName="completedSuccessfully" class="form-check-input" [disabled]="!userIsAuditorAuditEventWriter()" />
+                <label for="AuditEvent-completedSuccessfully" class="form-check-label" id="label-AuditEvent-completedSuccessfully"><span class="text-danger">*</span>Completed Successfully</label>
             </div>
-            <div class="form-group">
-                <label for="auditUserId" id="label-auditUserId"><span class="text-danger">*</span>Audit User</label>
-                <select id="auditUserId" formControlName="auditUserId" class="form-select audit-event-select" [disabled]="!userIsAuditorAuditEventWriter()">
+            <div class="form-group" *ngIf="!isFieldHidden('auditUserId')">
+                <label for="AuditEvent-auditUserId" id="label-AuditEvent-auditUserId"><span class="text-danger">*</span>Audit User</label>
+                <select id="AuditEvent-auditUserId" formControlName="auditUserId" class="form-select audit-event-select" [disabled]="!userIsAuditorAuditEventWriter()">
                     <option [ngValue]="null">Select Audit User</option>
                     <option *ngFor="let auditUser of auditUsers$ | async" [ngValue]="auditUser.id">{{auditUser.name}}</option>
                 </select>
@@ -49,9 +49,9 @@
                     Audit User is required
                 </div>
             </div>
-            <div class="form-group">
-                <label for="auditSessionId" id="label-auditSessionId"><span class="text-danger">*</span>Audit Session</label>
-                <select id="auditSessionId" formControlName="auditSessionId" class="form-select audit-event-select" [disabled]="!userIsAuditorAuditEventWriter()">
+            <div class="form-group" *ngIf="!isFieldHidden('auditSessionId')">
+                <label for="AuditEvent-auditSessionId" id="label-AuditEvent-auditSessionId"><span class="text-danger">*</span>Audit Session</label>
+                <select id="AuditEvent-auditSessionId" formControlName="auditSessionId" class="form-select audit-event-select" [disabled]="!userIsAuditorAuditEventWriter()">
                     <option [ngValue]="null">Select Audit Session</option>
                     <option *ngFor="let auditSession of auditSessions$ | async" [ngValue]="auditSession.id">{{auditSession.name}}</option>
                 </select>
@@ -59,9 +59,9 @@
                     Audit Session is required
                 </div>
             </div>
-            <div class="form-group">
-                <label for="auditTypeId" id="label-auditTypeId"><span class="text-danger">*</span>Audit Type</label>
-                <select id="auditTypeId" formControlName="auditTypeId" class="form-select audit-event-select" [disabled]="!userIsAuditorAuditEventWriter()">
+            <div class="form-group" *ngIf="!isFieldHidden('auditTypeId')">
+                <label for="AuditEvent-auditTypeId" id="label-AuditEvent-auditTypeId"><span class="text-danger">*</span>Audit Type</label>
+                <select id="AuditEvent-auditTypeId" formControlName="auditTypeId" class="form-select audit-event-select" [disabled]="!userIsAuditorAuditEventWriter()">
                     <option [ngValue]="null">Select Audit Type</option>
                     <option *ngFor="let auditType of auditTypes$ | async" [ngValue]="auditType.id">{{auditType.name}}</option>
                 </select>
@@ -69,9 +69,9 @@
                     Audit Type is required
                 </div>
             </div>
-            <div class="form-group">
-                <label for="auditAccessTypeId" id="label-auditAccessTypeId"><span class="text-danger">*</span>Audit Access Type</label>
-                <select id="auditAccessTypeId" formControlName="auditAccessTypeId" class="form-select audit-event-select" [disabled]="!userIsAuditorAuditEventWriter()">
+            <div class="form-group" *ngIf="!isFieldHidden('auditAccessTypeId')">
+                <label for="AuditEvent-auditAccessTypeId" id="label-AuditEvent-auditAccessTypeId"><span class="text-danger">*</span>Audit Access Type</label>
+                <select id="AuditEvent-auditAccessTypeId" formControlName="auditAccessTypeId" class="form-select audit-event-select" [disabled]="!userIsAuditorAuditEventWriter()">
                     <option [ngValue]="null">Select Audit Access Type</option>
                     <option *ngFor="let auditAccessType of auditAccessTypes$ | async" [ngValue]="auditAccessType.id">{{auditAccessType.name}}</option>
                 </select>
@@ -79,9 +79,9 @@
                     Audit Access Type is required
                 </div>
             </div>
-            <div class="form-group">
-                <label for="auditSourceId" id="label-auditSourceId"><span class="text-danger">*</span>Audit Source</label>
-                <select id="auditSourceId" formControlName="auditSourceId" class="form-select audit-event-select" [disabled]="!userIsAuditorAuditEventWriter()">
+            <div class="form-group" *ngIf="!isFieldHidden('auditSourceId')">
+                <label for="AuditEvent-auditSourceId" id="label-AuditEvent-auditSourceId"><span class="text-danger">*</span>Audit Source</label>
+                <select id="AuditEvent-auditSourceId" formControlName="auditSourceId" class="form-select audit-event-select" [disabled]="!userIsAuditorAuditEventWriter()">
                     <option [ngValue]="null">Select Audit Source</option>
                     <option *ngFor="let auditSource of auditSources$ | async" [ngValue]="auditSource.id">{{auditSource.name}}</option>
                 </select>
@@ -89,9 +89,9 @@
                     Audit Source is required
                 </div>
             </div>
-            <div class="form-group">
-                <label for="auditUserAgentId" id="label-auditUserAgentId"><span class="text-danger">*</span>Audit User Agent</label>
-                <select id="auditUserAgentId" formControlName="auditUserAgentId" class="form-select audit-event-select" [disabled]="!userIsAuditorAuditEventWriter()">
+            <div class="form-group" *ngIf="!isFieldHidden('auditUserAgentId')">
+                <label for="AuditEvent-auditUserAgentId" id="label-AuditEvent-auditUserAgentId"><span class="text-danger">*</span>Audit User Agent</label>
+                <select id="AuditEvent-auditUserAgentId" formControlName="auditUserAgentId" class="form-select audit-event-select" [disabled]="!userIsAuditorAuditEventWriter()">
                     <option [ngValue]="null">Select Audit User Agent</option>
                     <option *ngFor="let auditUserAgent of auditUserAgents$ | async" [ngValue]="auditUserAgent.id">{{auditUserAgent.name}}</option>
                 </select>
@@ -99,9 +99,9 @@
                     Audit User Agent is required
                 </div>
             </div>
-            <div class="form-group">
-                <label for="auditModuleId" id="label-auditModuleId"><span class="text-danger">*</span>Audit Module</label>
-                <select id="auditModuleId" formControlName="auditModuleId" class="form-select audit-event-select" [disabled]="!userIsAuditorAuditEventWriter()">
+            <div class="form-group" *ngIf="!isFieldHidden('auditModuleId')">
+                <label for="AuditEvent-auditModuleId" id="label-AuditEvent-auditModuleId"><span class="text-danger">*</span>Audit Module</label>
+                <select id="AuditEvent-auditModuleId" formControlName="auditModuleId" class="form-select audit-event-select" [disabled]="!userIsAuditorAuditEventWriter()">
                     <option [ngValue]="null">Select Audit Module</option>
                     <option *ngFor="let auditModule of auditModules$ | async" [ngValue]="auditModule.id">{{auditModule.name}}</option>
                 </select>
@@ -109,9 +109,9 @@
                     Audit Module is required
                 </div>
             </div>
-            <div class="form-group">
-                <label for="auditModuleEntityId" id="label-auditModuleEntityId"><span class="text-danger">*</span>Audit Module Entity</label>
-                <select id="auditModuleEntityId" formControlName="auditModuleEntityId" class="form-select audit-event-select" [disabled]="!userIsAuditorAuditEventWriter()">
+            <div class="form-group" *ngIf="!isFieldHidden('auditModuleEntityId')">
+                <label for="AuditEvent-auditModuleEntityId" id="label-AuditEvent-auditModuleEntityId"><span class="text-danger">*</span>Audit Module Entity</label>
+                <select id="AuditEvent-auditModuleEntityId" formControlName="auditModuleEntityId" class="form-select audit-event-select" [disabled]="!userIsAuditorAuditEventWriter()">
                     <option [ngValue]="null">Select Audit Module Entity</option>
                     <option *ngFor="let auditModuleEntity of auditModuleEntities$ | async" [ngValue]="auditModuleEntity.id">{{auditModuleEntity.name}}</option>
                 </select>
@@ -119,9 +119,9 @@
                     Audit Module Entity is required
                 </div>
             </div>
-            <div class="form-group">
-                <label for="auditResourceId" id="label-auditResourceId"><span class="text-danger">*</span>Audit Resource</label>
-                <select id="auditResourceId" formControlName="auditResourceId" class="form-select audit-event-select" [disabled]="!userIsAuditorAuditEventWriter()">
+            <div class="form-group" *ngIf="!isFieldHidden('auditResourceId')">
+                <label for="AuditEvent-auditResourceId" id="label-AuditEvent-auditResourceId"><span class="text-danger">*</span>Audit Resource</label>
+                <select id="AuditEvent-auditResourceId" formControlName="auditResourceId" class="form-select audit-event-select" [disabled]="!userIsAuditorAuditEventWriter()">
                     <option [ngValue]="null">Select Audit Resource</option>
                     <option *ngFor="let auditResource of auditResources$ | async" [ngValue]="auditResource.id">{{auditResource.name}}</option>
                 </select>
@@ -129,9 +129,9 @@
                     Audit Resource is required
                 </div>
             </div>
-            <div class="form-group">
-                <label for="auditHostSystemId" id="label-auditHostSystemId"><span class="text-danger">*</span>Audit Host System</label>
-                <select id="auditHostSystemId" formControlName="auditHostSystemId" class="form-select audit-event-select" [disabled]="!userIsAuditorAuditEventWriter()">
+            <div class="form-group" *ngIf="!isFieldHidden('auditHostSystemId')">
+                <label for="AuditEvent-auditHostSystemId" id="label-AuditEvent-auditHostSystemId"><span class="text-danger">*</span>Audit Host System</label>
+                <select id="AuditEvent-auditHostSystemId" formControlName="auditHostSystemId" class="form-select audit-event-select" [disabled]="!userIsAuditorAuditEventWriter()">
                     <option [ngValue]="null">Select Audit Host System</option>
                     <option *ngFor="let auditHostSystem of auditHostSystems$ | async" [ngValue]="auditHostSystem.id">{{auditHostSystem.name}}</option>
                 </select>
@@ -139,24 +139,33 @@
                     Audit Host System is required
                 </div>
             </div>
-            <div class="form-group">
-                <label for="primaryKey" id="label-primaryKey">Primary Key</label>
-                <input type="text" id="primaryKey" formControlName="primaryKey" placeholder="Enter Primary Key" class="form-control audit-event-input" [disabled]="!userIsAuditorAuditEventWriter()" aria-labelledby="label-primaryKey" />
+            <div class="form-group" *ngIf="!isFieldHidden('primaryKey')">
+                <label for="AuditEvent-primaryKey" id="label-AuditEvent-primaryKey">Primary Key</label>
+                <input type="text" id="AuditEvent-primaryKey" formControlName="primaryKey" placeholder="Enter Primary Key" class="form-control audit-event-input" [disabled]="!userIsAuditorAuditEventWriter()" aria-labelledby="label-primaryKey" />
             </div>
-            <div class="form-group">
-                <label for="threadId" id="label-threadId">Thread Id</label>
-                <input type="number" id="threadId" formControlName="threadId" placeholder="Enter Thread Id" class="form-control audit-event-input" [disabled]="!userIsAuditorAuditEventWriter()" aria-labelledby="label-threadId" />
+            <div class="form-group" *ngIf="!isFieldHidden('threadId')">
+                <label for="AuditEvent-threadId" id="label-AuditEvent-threadId">Thread Id</label>
+                <input type="number" id="AuditEvent-threadId" formControlName="threadId" placeholder="Enter Thread Id" class="form-control audit-event-input" [disabled]="!userIsAuditorAuditEventWriter()" aria-labelledby="label-threadId" />
             </div>
-            <div class="form-group">
-                <label for="message" id="label-message"><span class="text-danger">*</span>Message</label>
-                <textarea id="message" formControlName="message" placeholder="Enter Message" class="form-control audit-event-input" [disabled]="!userIsAuditorAuditEventWriter()"></textarea>
+            <div class="form-group" *ngIf="!isFieldHidden('message')">
+                <label for="AuditEvent-message" id="label-AuditEvent-message"><span class="text-danger">*</span>Message</label>
+                <textarea id="AuditEvent-message" formControlName="message" placeholder="Enter Message" class="form-control audit-event-input" [disabled]="!userIsAuditorAuditEventWriter()"></textarea>
                 <div *ngIf="auditEventForm.get('message')?.invalid && auditEventForm.get('message')?.touched" class="text-danger">
                     Message is required
                 </div>
             </div>
          <div class="modal-footer audit-event-modal-footer">
             <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Audit Event changes and Close">Cancel</button>
-            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !auditEventForm.valid || auditEventForm.pristine || !userIsAuditorAuditEventWriter()" ngbTooltip="Save the Audit Event changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !auditEventForm.valid || auditEventForm.pristine  || userIsAuditorAuditEventWriter() == false " ngbTooltip="Save the Audit Event changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Audit Event' }}
+                </span>
+            </button>
          </div>
       </form>
    </div>

@@ -5055,7 +5055,8 @@ td .color-swatch,
                 }
             }
 
-            System.IO.File.WriteAllText(filePath + moduleName + $"\\angular\\{moduleName}.data-component.list.for.app.modules.ts.txt", GenerateAppComponentListing(moduleName, contextType, database, addAuthorization));
+            System.IO.File.WriteAllText(filePath + moduleName + $"\\angular\\{moduleName}.data-component.list.for.app.modules.ts.txt", GenerateAppModuleComponentListing(moduleName, contextType, database, addAuthorization));
+            System.IO.File.WriteAllText(filePath + moduleName + $"\\angular\\{moduleName}.data-component.routes.for.app.routing.modules.ts.txt", GenerateAppRoutingComponentListing(moduleName, contextType, database, addAuthorization));
 
 
             System.IO.File.WriteAllText(filePath + moduleName + $"\\angular\\foundation.utility.ts", GenerateFoundationUtilityCode());
@@ -5153,14 +5154,10 @@ export function dateTimeLocalToIsoUtc(value: string | null | undefined): string 
 }";
         }
 
-        private static string GenerateAppComponentListing(string moduleName, Type contextType, DatabaseGenerator.Database database, bool addAuthentication = true)
+        private static string GenerateAppModuleComponentListing(string moduleName, Type contextType, DatabaseGenerator.Database database, bool addAuthentication = true)
         {
             StringBuilder importSb = new StringBuilder();
             StringBuilder declarationsParamSb = new StringBuilder();
-
-
-            StringBuilder routingImportsSb = new StringBuilder();
-            StringBuilder routingSb = new StringBuilder();
 
             foreach (PropertyInfo prop in contextType.GetProperties())
             {
@@ -5175,18 +5172,13 @@ export function dateTimeLocalToIsoUtc(value: string | null | undefined): string 
                         entityName = entityName.Replace("Datum", "Data");
                     }
 
-
-
                     string camelCaseName = CamelCase(entityName, false);
                     string suffixableCamelCaseName = StringUtility.CamelCase(entityName, false);
 
-                    // Fix nonsense with some pluralization
                     if (camelCaseName.EndsWith("Statu") == true || camelCaseName.EndsWith("Campu") == true)
                     {
                         camelCaseName += "s";
                     }
-
-
 
                     string pluralName = Pluralize(entityName);
                     string titleName = StringUtility.ConvertToHeader(suffixableCamelCaseName);
@@ -5200,7 +5192,6 @@ export function dateTimeLocalToIsoUtc(value: string | null | undefined): string 
 
                     Type type = propertyType.GenericTypeArguments[0];
 
-                    // Get the table spec from the script generator
                     DatabaseGenerator.Database.Table scriptGenTable = null;
                     foreach (DatabaseGenerator.Database.Table tbl in database.tables)
                     {
@@ -5211,13 +5202,9 @@ export function dateTimeLocalToIsoUtc(value: string | null | undefined): string 
                         }
                     }
 
-                    //
-                    // If table name ends with 'Statu' or 'Campu' then look again with an s on the end.  This is for the stupidity in the .Net Framework's plural determination.
-                    //
                     if (scriptGenTable == null && (type.Name.EndsWith("Statu") || type.Name.EndsWith("Campu")))
                     {
                         var realName = type.Name + "s";
-
                         foreach (DatabaseGenerator.Database.Table tbl in database.tables)
                         {
                             if (tbl.name == realName)
@@ -5228,21 +5215,14 @@ export function dateTimeLocalToIsoUtc(value: string | null | undefined): string 
                         }
                     }
 
-
-                    //
-                    // Datum is the plural for Date in the new EFCorePowerTools pluralizer.
-                    //
                     if (scriptGenTable == null && type.Name.EndsWith("Datum"))
                     {
                         var realName = type.Name.Replace("Datum", "Data");
-
                         foreach (DatabaseGenerator.Database.Table tbl in database.tables)
                         {
                             if (tbl.name == realName)
                             {
                                 scriptGenTable = tbl;
-
-                                // recalculate the angular name to be a function of the adjusted name.  This is for situations like the 'ProjectRollerData' table that becomes an entity of name 'ProjectRollerDatum', and we want to use the real table name as the service name
                                 angularName = StringUtility.ConvertToAngularComponentName(realName);
                                 break;
                             }
@@ -5253,7 +5233,6 @@ export function dateTimeLocalToIsoUtc(value: string | null | undefined): string 
                     if (scriptGenTable != null)
                     {
                         string entity;
-
                         if (type.Name.EndsWith("Datum") == false)
                         {
                             entity = type.Name;
@@ -5263,65 +5242,17 @@ export function dateTimeLocalToIsoUtc(value: string | null | undefined): string 
                             entity = type.Name.Replace("Datum", "Data");
                         }
 
-                        string plural = Pluralize(entity);
-
-
-                        //
                         // For the component import 
-                        //
                         importSb.AppendLine("import { " + entity + $"ListingComponent }} from './{moduleName.ToLower()}-data-components/" + angularName + "/" + angularName + "-listing/" + angularName + "-listing.component';");
                         importSb.AppendLine("import { " + entity + $"AddEditComponent }} from './{moduleName.ToLower()}-data-components/" + angularName + "/" + angularName + "-add-edit/" + angularName + "-add-edit.component';");
                         importSb.AppendLine("import { " + entity + $"DetailComponent }} from './{moduleName.ToLower()}-data-components/" + angularName + "/" + angularName + "-detail/" + angularName + "-detail.component';");
                         importSb.AppendLine("import { " + entity + $"TableComponent }} from './{moduleName.ToLower()}-data-components/" + angularName + "/" + angularName + "-table/" + angularName + "-table.component';");
 
-                        //
                         // for the declarations
-                        //
                         declarationsParamSb.AppendLine(entity + "ListingComponent,");
                         declarationsParamSb.AppendLine(entity + "AddEditComponent,");
                         declarationsParamSb.AppendLine(entity + "DetailComponent,");
                         declarationsParamSb.AppendLine(entity + "TableComponent,");
-
-                        //
-                        // For case insensitive routing
-                        //
-                        // This is made case insensitive, and it depends on the caseInsensitiveMatcher function
-                        //
-                        routingImportsSb.AppendLine("import { " + entity + $"ListingComponent }} from './{moduleName.ToLower()}-data-components/" + angularName + "/" + angularName + "-listing/" + angularName + "-listing.component';");
-                        routingImportsSb.AppendLine("import { " + entity + $"DetailComponent }} from './{moduleName.ToLower()}-data-components/" + angularName + "/" + angularName + "-detail/" + angularName + "-detail.component';");
-
-                        if (addAuthentication == true)
-                        {
-                            routingSb.AppendLine($"  {{path: '{pluralName.ToLower()}', component: {entityName}ListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: '{Pluralize(titleName)}' }},");
-                            //routingSb.AppendLine($"  {{path: '{entityName.ToLower()}/:{suffixableCamelCaseName}Id', component: {entityName}DetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: '{titleName}' }},");
-
-                            /*
-
-                            { path: 'crews/new', component: CrewDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Crew' },
-                              { path: 'crews/:crewId', component: CrewDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Crew' },
-                              { path: 'crew/:crewId', component: CrewDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Crew' },
-                              { path: 'crew', redirectTo: 'crews' }, 
-
-                             */
-
-                            routingSb.AppendLine($"  {{path: '{pluralName.ToLower()}/new', component: {entityName}DetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create {titleName}' }},");
-                            routingSb.AppendLine($"  {{path: '{pluralName.ToLower()}/:{suffixableCamelCaseName}Id', component: {entityName}DetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit {titleName}' }},");
-                            routingSb.AppendLine($"  {{path: '{entityName.ToLower()}/:{suffixableCamelCaseName}Id', component: {entityName}DetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit {titleName}' }},");
-                            routingSb.AppendLine($"  {{path: '{entityName.ToLower()}',  redirectTo: '{pluralName.ToLower()}'}},");
-
-                        }
-                        else
-                        {
-                            routingSb.AppendLine($"  {{path: '{pluralName.ToLower()}', component: {entityName}ListingComponent, canDeactivate: [UnsavedChangesGuard], title: '{Pluralize(titleName)}' }},");
-                            //routingSb.AppendLine($"  {{path: '{entityName.ToLower()}/:{suffixableCamelCaseName}Id', component: {entityName}DetailComponent, canDeactivate: [UnsavedChangesGuard], title: '{titleName}' }},");
-
-                            routingSb.AppendLine($"  {{path: '{pluralName.ToLower()}/new', component: {entityName}DetailComponent, canDeactivate: [UnsavedChangesGuard], title: 'Create {titleName}' }},");
-                            routingSb.AppendLine($"  {{path: '{pluralName.ToLower()}/:{suffixableCamelCaseName}Id', component: {entityName}DetailComponent, canDeactivate: [UnsavedChangesGuard], title: 'Edit {titleName}' }},");
-                            routingSb.AppendLine($"  {{path: '{entityName.ToLower()}/:{suffixableCamelCaseName}Id', component: {entityName}DetailComponent, canDeactivate: [UnsavedChangesGuard], title: 'Edit {titleName}' }},");
-                            routingSb.AppendLine($"  {{path: '{entityName.ToLower()}',  redirectTo: '{pluralName.ToLower()}'}},");
-
-
-                        }
                     }
                 }
             }
@@ -5331,11 +5262,11 @@ export function dateTimeLocalToIsoUtc(value: string | null | undefined): string 
             outputSb.AppendLine(("These are the import lines to add to the top of app.module.ts file to import the auto generated component files.  This has listing and Add/Edit components"));
             outputSb.AppendLine();
             outputSb.AppendLine(@"//");
-            outputSb.AppendLine($@"// Beginning of imports for {moduleName} Data Components ");
+            outputSb.AppendLine($@"// Beginning of imports for {moduleName} Data Components");
             outputSb.AppendLine(@"//");
             outputSb.Append(importSb.ToString());
             outputSb.AppendLine(@"//");
-            outputSb.AppendLine($@"// End of imports for {moduleName} Data Components ");
+            outputSb.AppendLine($@"// End of imports for {moduleName} Data Components");
             outputSb.AppendLine(@"//");
             outputSb.AppendLine();
             outputSb.AppendLine();
@@ -5344,27 +5275,109 @@ export function dateTimeLocalToIsoUtc(value: string | null | undefined): string 
             outputSb.AppendLine(("These are the import lines to add to declarations section of the the app.module.ts to reference the auto generated component objects"));
             outputSb.AppendLine();
             outputSb.AppendLine(@"//");
-            outputSb.AppendLine($@"// Beginning of declarations for {moduleName} Data Components ");
+            outputSb.AppendLine($@"// Beginning of declarations for {moduleName} Data Components");
             outputSb.AppendLine(@"//");
             outputSb.Append(declarationsParamSb.ToString());
             outputSb.AppendLine(@"//");
-            outputSb.AppendLine($@"// End of declarations for {moduleName} Data Components ");
+            outputSb.AppendLine($@"// End of declarations for {moduleName} Data Components");
             outputSb.AppendLine(@"//");
             outputSb.AppendLine();
             outputSb.AppendLine();
             outputSb.AppendLine();
 
+            return outputSb.ToString();
+        }
+
+        private static string GenerateAppRoutingComponentListing(string moduleName, Type contextType, DatabaseGenerator.Database database, bool addAuthentication = true)
+        {
+            StringBuilder routingImportsSb = new StringBuilder();
+            StringBuilder routingSb = new StringBuilder();
+
+            foreach (PropertyInfo prop in contextType.GetProperties())
+            {
+                Type propertyType = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
+
+                if (propertyType.GenericTypeArguments != null && propertyType.GenericTypeArguments.Length > 0)
+                {
+                    string entityName = propertyType.GenericTypeArguments[0].Name;
+                    if (entityName.EndsWith("Datum") == true) entityName = entityName.Replace("Datum", "Data");
+
+                    string camelCaseName = CamelCase(entityName, false);
+                    string suffixableCamelCaseName = StringUtility.CamelCase(entityName, false);
+                    if (camelCaseName.EndsWith("Statu") || camelCaseName.EndsWith("Campu")) camelCaseName += "s";
+
+                    string pluralName = Pluralize(entityName);
+                    string titleName = StringUtility.ConvertToHeader(suffixableCamelCaseName);
+
+                    string angularName = StringUtility.ConvertToAngularComponentName(entityName);
+                    if (angularName.EndsWith("statu") || angularName.EndsWith("campu")) angularName += "s";
+
+                    Type type = propertyType.GenericTypeArguments[0];
+                    DatabaseGenerator.Database.Table scriptGenTable = null;
+                    foreach (DatabaseGenerator.Database.Table tbl in database.tables)
+                    {
+                        if (tbl.name == type.Name) { scriptGenTable = tbl; break; }
+                    }
+                    if (scriptGenTable == null && (type.Name.EndsWith("Statu") || type.Name.EndsWith("Campu")))
+                    {
+                        var realName = type.Name + "s";
+                        foreach (DatabaseGenerator.Database.Table tbl in database.tables) { if (tbl.name == realName) { scriptGenTable = tbl; break; } }
+                    }
+                    if (scriptGenTable == null && type.Name.EndsWith("Datum"))
+                    {
+                        var realName = type.Name.Replace("Datum", "Data");
+                        foreach (DatabaseGenerator.Database.Table tbl in database.tables)
+                        {
+                            if (tbl.name == realName)
+                            {
+                                scriptGenTable = tbl;
+                                angularName = StringUtility.ConvertToAngularComponentName(realName);
+                                break;
+                            }
+                        }
+                    }
+
+                    if (scriptGenTable != null)
+                    {
+                        string entity = type.Name.EndsWith("Datum") ? type.Name.Replace("Datum", "Data") : type.Name;
+                        string plural = Pluralize(entity);
+
+                        // Routing Imports (Only strict subset for routes)
+                        routingImportsSb.AppendLine("import { " + entity + $"ListingComponent }} from './{moduleName.ToLower()}-data-components/" + angularName + "/" + angularName + "-listing/" + angularName + "-listing.component';");
+                        routingImportsSb.AppendLine("import { " + entity + $"DetailComponent }} from './{moduleName.ToLower()}-data-components/" + angularName + "/" + angularName + "-detail/" + angularName + "-detail.component';");
+
+                        // Routes
+                        if (addAuthentication == true)
+                        {
+                            routingSb.AppendLine($"  {{path: '{pluralName.ToLower()}', component: {entityName}ListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: '{Pluralize(titleName)}' }},");
+                            routingSb.AppendLine($"  {{path: '{pluralName.ToLower()}/new', component: {entityName}DetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create {titleName}' }},");
+                            routingSb.AppendLine($"  {{path: '{pluralName.ToLower()}/:{suffixableCamelCaseName}Id', component: {entityName}DetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit {titleName}' }},");
+                            routingSb.AppendLine($"  {{path: '{entityName.ToLower()}/:{suffixableCamelCaseName}Id', component: {entityName}DetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit {titleName}' }},");
+                            routingSb.AppendLine($"  {{path: '{entityName.ToLower()}',  redirectTo: '{pluralName.ToLower()}'}},");
+                        }
+                        else
+                        {
+                            routingSb.AppendLine($"  {{path: '{pluralName.ToLower()}', component: {entityName}ListingComponent, canDeactivate: [UnsavedChangesGuard], title: '{Pluralize(titleName)}' }},");
+                            routingSb.AppendLine($"  {{path: '{pluralName.ToLower()}/new', component: {entityName}DetailComponent, canDeactivate: [UnsavedChangesGuard], title: 'Create {titleName}' }},");
+                            routingSb.AppendLine($"  {{path: '{pluralName.ToLower()}/:{suffixableCamelCaseName}Id', component: {entityName}DetailComponent, canDeactivate: [UnsavedChangesGuard], title: 'Edit {titleName}' }},");
+                            routingSb.AppendLine($"  {{path: '{entityName.ToLower()}/:{suffixableCamelCaseName}Id', component: {entityName}DetailComponent, canDeactivate: [UnsavedChangesGuard], title: 'Edit {titleName}' }},");
+                            routingSb.AppendLine($"  {{path: '{entityName.ToLower()}',  redirectTo: '{pluralName.ToLower()}'}},");
+                        }
+                    }
+                }
+            }
+
+            StringBuilder outputSb = new StringBuilder();
 
             outputSb.AppendLine(("These are the import lines to add to the top of routing module file to import the auto generated component files.  List is just listing components."));
             outputSb.AppendLine();
             outputSb.AppendLine(@"//");
-            outputSb.AppendLine($@"// Beginning of imports for {moduleName} Data Components ");
+            outputSb.AppendLine($@"// Beginning of imports for {moduleName} Data Components");
             outputSb.AppendLine(@"//");
             outputSb.Append(routingImportsSb.ToString());
             outputSb.AppendLine(@"//");
-            outputSb.AppendLine($@"// End of imports for {moduleName} Data Components ");
+            outputSb.AppendLine($@"// End of imports for {moduleName} Data Components");
             outputSb.AppendLine(@"//");
-            outputSb.AppendLine();
             outputSb.AppendLine();
             outputSb.AppendLine();
 
@@ -5372,15 +5385,14 @@ export function dateTimeLocalToIsoUtc(value: string | null | undefined): string 
             outputSb.AppendLine(("These are the lines to add to routing module to reference case insensitively reference the auto generated component objects"));
             outputSb.AppendLine();
             outputSb.AppendLine(@"//");
-            outputSb.AppendLine($@"// Beginning of routes for {moduleName} Data Components ");
+            outputSb.AppendLine($@"// Beginning of routes for {moduleName} Data Components");
             outputSb.AppendLine(@"//");
             outputSb.Append(routingSb.ToString());
             outputSb.AppendLine(@"//");
-            outputSb.AppendLine($@"// End of routes for {moduleName} Data Components ");
+            outputSb.AppendLine($@"// End of routes for {moduleName} Data Components");
             outputSb.AppendLine(@"//");
             outputSb.AppendLine();
             outputSb.AppendLine();
-
 
             return outputSb.ToString();
         }
