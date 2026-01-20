@@ -284,7 +284,7 @@ namespace Foundation.Scheduler.Database
 				timeStamp = tenantProfileChangeHistory.timeStamp,
 				userId = tenantProfileChangeHistory.userId,
 				data = tenantProfileChangeHistory.data,
-				tenantProfile = TenantProfile.CreateMinimalAnonymous(tenantProfileChangeHistory.tenantProfile)
+				tenantProfile = TenantProfile.CreateMinimalAnonymous(tenantProfileChangeHistory.tenantProfile),
 			 };
 		}
 

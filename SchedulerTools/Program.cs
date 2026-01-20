@@ -1,11 +1,14 @@
-﻿using System;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using DocumentFormat.OpenXml.Spreadsheet;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
+using Foundation.CodeGeneration;
 using Foundation.Scheduler.Database;
 using Foundation.Security;
 using Foundation.Security.Database;
+using Microsoft.Extensions.Configuration;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 
 namespace Foundation.Scheduler.CodeGeneration
 {
@@ -1108,7 +1111,6 @@ namespace Foundation.Scheduler.CodeGeneration
 
         static void GenerateSchedulerApplicationCode()
         {
-
             //
             // This depends upon the SchedulerContext class, and its child data classes to be created in this project, presumably with the ADO.Net 'Code First From Database' tool.  Namespace adjustments and file moves may be necessary.
             //
@@ -1137,7 +1139,63 @@ namespace Foundation.Scheduler.CodeGeneration
             Console.WriteLine("Scheduler application code created in folder: " + outputFolder);
             Console.WriteLine();
 
-            Process.Start("explorer.exe", outputFolder);
+            Console.WriteLine();
+            Console.WriteLine("Basecamp application code created in folder: " + outputFolder);
+            Console.WriteLine();
+
+            //
+            // Auto-deploy logic
+            //
+            try
+            {
+                var config = new ConfigurationBuilder()
+                    .SetBasePath(Directory.GetCurrentDirectory())
+                    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                    .Build();
+
+                var deploymentPaths = config.GetSection("DeploymentPaths").Get<Dictionary<string, string>>();
+
+                if (deploymentPaths != null && deploymentPaths.Count > 0)
+                {
+                    bool deploySuccess = DeploymentUtility.PromptAndDeploy(_outputDirectory, deploymentPaths);
+
+                    if (deploySuccess)
+                    {
+                        //
+                        // If deployment was successful, try to automate the Angular module integration
+                        //
+                        string angularAppRoot = config["AngularAppRoot"];
+                        string angularModuleFile = config["AngularModuleFile"] ?? "app.module.ts";
+                        string angularRoutingFile = config["AngularRoutingFile"] ?? "app-routing.module.ts";
+
+                        if (!string.IsNullOrEmpty(angularAppRoot))
+                        {
+                            Console.WriteLine("Automating Angular module integration...");
+                            AngularAutomationUtility.IntegrateGeneratedCode(
+                                Directory.GetCurrentDirectory(),
+                                "Scheduler", // Module Name
+                                outputFolder,
+                                angularAppRoot,
+                                angularModuleFile,
+                                angularRoutingFile
+                            );
+                        }
+                    }
+                    else
+                    {
+                        Process.Start("explorer.exe", outputFolder);
+                    }
+                }
+                else
+                {
+                    Process.Start("explorer.exe", outputFolder);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error reading configuration or deploying: {ex.Message}");
+                Process.Start("explorer.exe", outputFolder);
+            }
 
         }
     }

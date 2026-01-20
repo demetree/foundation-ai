@@ -284,7 +284,7 @@ namespace Foundation.Scheduler.Database
 				timeStamp = tributeChangeHistory.timeStamp,
 				userId = tributeChangeHistory.userId,
 				data = tributeChangeHistory.data,
-				tribute = Tribute.CreateMinimalAnonymous(tributeChangeHistory.tribute)
+				tribute = Tribute.CreateMinimalAnonymous(tributeChangeHistory.tribute),
 			 };
 		}
 

@@ -284,7 +284,7 @@ namespace Foundation.Scheduler.Database
 				timeStamp = constituentChangeHistory.timeStamp,
 				userId = constituentChangeHistory.userId,
 				data = constituentChangeHistory.data,
-				constituent = Constituent.CreateMinimalAnonymous(constituentChangeHistory.constituent)
+				constituent = Constituent.CreateMinimalAnonymous(constituentChangeHistory.constituent),
 			 };
 		}
 
