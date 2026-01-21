@@ -74,6 +74,19 @@ export class ContactInteractionSubmitData {
 }
 
 
+
+//
+// Version history information returned from version history API endpoints.
+// Matches server-side VersionInformation<T> structure.
+//
+export interface VersionInformation<T> {
+    timeStamp: string;           // ISO 8601
+    userId: bigint | number;
+    userName: string;
+    versionNumber: number;
+    data: T | null;
+}
+
 export class ContactInteractionBasicListData {
   id!: bigint | number;
   name!: string;
@@ -147,6 +160,15 @@ export class ContactInteractionData {
 
                 
 
+
+    //
+    // Version history lazy-loading cache for current version metadata
+    //
+    private _currentVersionInfo: VersionInformation<ContactInteractionData> | null = null;
+    private _currentVersionInfoPromise: Promise<VersionInformation<ContactInteractionData>> | null = null;
+    private _currentVersionInfoSubject = new BehaviorSubject<VersionInformation<ContactInteractionData> | null>(null);
+
+
     //
     // Public observables — use with | async in templates
     // Subscription triggers lazy load if not already cached
@@ -214,6 +236,9 @@ export class ContactInteractionData {
      this._contactInteractionChangeHistoriesPromise = null;
      this._contactInteractionChangeHistoriesSubject.next(null);
 
+     this._currentVersionInfo = null;
+     this._currentVersionInfoPromise = null;
+     this._currentVersionInfoSubject.next(null);
   }
 
     //
@@ -284,6 +309,49 @@ export class ContactInteractionData {
         return this.ContactInteractionChangeHistories.then(contactInteractionChangeHistories => contactInteractionChangeHistories.length > 0);
     }
 
+
+
+
+    //
+    // Version History — Lazy-loading observable for current version metadata
+    //
+    // Usage examples:
+    //   Template: {{ (contactInteraction.CurrentVersionInfo$ | async)?.userName }}
+    //   Code:     const info = await contactInteraction.CurrentVersionInfo;
+    //
+    public CurrentVersionInfo$ = this._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if (this._currentVersionInfo === null && this._currentVersionInfoPromise === null) {
+                this.loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
+
+
+    public get CurrentVersionInfo(): Promise<VersionInformation<ContactInteractionData>> {
+        if (this._currentVersionInfoPromise === null) {
+            this._currentVersionInfoPromise = this.loadCurrentVersionInfo();
+        }
+        return this._currentVersionInfoPromise;
+    }
+
+
+    private async loadCurrentVersionInfo(): Promise<VersionInformation<ContactInteractionData>> {
+        const info = await lastValueFrom(
+            ContactInteractionService.Instance.GetContactInteractionChangeMetadata(this.id, this.versionNumber as number)
+        );
+        this._currentVersionInfo = info;
+        this._currentVersionInfoSubject.next(info);
+        return info;
+    }
+
+
+    public ClearCurrentVersionInfoCache(): void {
+        this._currentVersionInfo = null;
+        this._currentVersionInfoPromise = null;
+        this._currentVersionInfoSubject.next(null);
+    }
 
 
 
@@ -632,6 +700,92 @@ export class ContactInteractionService extends SecureEndpointBase {
                 return this.handleError(error, () => this.RollbackContactInteraction(id, versionNumber));
         }));
     }
+
+
+    /**
+     * Gets version metadata for a specific version of a ContactInteraction.
+     */
+    public GetContactInteractionChangeMetadata(id: bigint | number, versionNumber?: number): Observable<VersionInformation<ContactInteractionData>> {
+
+        let queryParams = new HttpParams();
+
+        if (versionNumber !== undefined && versionNumber !== null) {
+            queryParams = queryParams.append('versionNumber', versionNumber.toString());
+        }
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<ContactInteractionData>>(this.baseUrl + 'api/ContactInteraction/' + id.toString() + '/ChangeMetadata', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetContactInteractionChangeMetadata(id, versionNumber));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the full audit history of a ContactInteraction.
+     */
+    public GetContactInteractionAuditHistory(id: bigint | number, includeData: boolean = false): Observable<VersionInformation<ContactInteractionData>[]> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('includeData', includeData.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<ContactInteractionData>[]>(this.baseUrl + 'api/ContactInteraction/' + id.toString() + '/AuditHistory', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetContactInteractionAuditHistory(id, includeData));
+            })
+        );
+    }
+
+
+    /**
+     * Gets a specific historical version of a ContactInteraction.
+     */
+    public GetContactInteractionVersion(id: bigint | number, version: number): Observable<ContactInteractionData> {
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<ContactInteractionData>(this.baseUrl + 'api/ContactInteraction/' + id.toString() + '/Version/' + version.toString(), {
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveContactInteraction(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetContactInteractionVersion(id, version));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the state of a ContactInteraction at a specific point in time.
+     */
+    public GetContactInteractionStateAtTime(id: bigint | number, time: string): Observable<ContactInteractionData> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('time', time);
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<ContactInteractionData>(this.baseUrl + 'api/ContactInteraction/' + id.toString() + '/StateAtTime', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveContactInteraction(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetContactInteractionStateAtTime(id, time));
+            })
+        );
+    }
+
 
     private getConfigHash(config: ContactInteractionQueryParameters | any): string {
 

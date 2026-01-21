@@ -82,6 +82,19 @@ export class PledgeSubmitData {
 }
 
 
+
+//
+// Version history information returned from version history API endpoints.
+// Matches server-side VersionInformation<T> structure.
+//
+export interface VersionInformation<T> {
+    timeStamp: string;           // ISO 8601
+    userId: bigint | number;
+    userName: string;
+    versionNumber: number;
+    data: T | null;
+}
+
 export class PledgeBasicListData {
   id!: bigint | number;
   name!: string;
@@ -162,6 +175,15 @@ export class PledgeData {
     private _giftsSubject = new BehaviorSubject<GiftData[] | null>(null);
 
                 
+
+
+    //
+    // Version history lazy-loading cache for current version metadata
+    //
+    private _currentVersionInfo: VersionInformation<PledgeData> | null = null;
+    private _currentVersionInfoPromise: Promise<VersionInformation<PledgeData>> | null = null;
+    private _currentVersionInfoSubject = new BehaviorSubject<VersionInformation<PledgeData> | null>(null);
+
 
     //
     // Public observables — use with | async in templates
@@ -253,6 +275,9 @@ export class PledgeData {
      this._giftsPromise = null;
      this._giftsSubject.next(null);
 
+     this._currentVersionInfo = null;
+     this._currentVersionInfoPromise = null;
+     this._currentVersionInfoSubject.next(null);
   }
 
     //
@@ -388,6 +413,49 @@ export class PledgeData {
         return this.Gifts.then(gifts => gifts.length > 0);
     }
 
+
+
+
+    //
+    // Version History — Lazy-loading observable for current version metadata
+    //
+    // Usage examples:
+    //   Template: {{ (pledge.CurrentVersionInfo$ | async)?.userName }}
+    //   Code:     const info = await pledge.CurrentVersionInfo;
+    //
+    public CurrentVersionInfo$ = this._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if (this._currentVersionInfo === null && this._currentVersionInfoPromise === null) {
+                this.loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
+
+
+    public get CurrentVersionInfo(): Promise<VersionInformation<PledgeData>> {
+        if (this._currentVersionInfoPromise === null) {
+            this._currentVersionInfoPromise = this.loadCurrentVersionInfo();
+        }
+        return this._currentVersionInfoPromise;
+    }
+
+
+    private async loadCurrentVersionInfo(): Promise<VersionInformation<PledgeData>> {
+        const info = await lastValueFrom(
+            PledgeService.Instance.GetPledgeChangeMetadata(this.id, this.versionNumber as number)
+        );
+        this._currentVersionInfo = info;
+        this._currentVersionInfoSubject.next(info);
+        return info;
+    }
+
+
+    public ClearCurrentVersionInfoCache(): void {
+        this._currentVersionInfo = null;
+        this._currentVersionInfoPromise = null;
+        this._currentVersionInfoSubject.next(null);
+    }
 
 
 
@@ -740,6 +808,92 @@ export class PledgeService extends SecureEndpointBase {
                 return this.handleError(error, () => this.RollbackPledge(id, versionNumber));
         }));
     }
+
+
+    /**
+     * Gets version metadata for a specific version of a Pledge.
+     */
+    public GetPledgeChangeMetadata(id: bigint | number, versionNumber?: number): Observable<VersionInformation<PledgeData>> {
+
+        let queryParams = new HttpParams();
+
+        if (versionNumber !== undefined && versionNumber !== null) {
+            queryParams = queryParams.append('versionNumber', versionNumber.toString());
+        }
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<PledgeData>>(this.baseUrl + 'api/Pledge/' + id.toString() + '/ChangeMetadata', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetPledgeChangeMetadata(id, versionNumber));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the full audit history of a Pledge.
+     */
+    public GetPledgeAuditHistory(id: bigint | number, includeData: boolean = false): Observable<VersionInformation<PledgeData>[]> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('includeData', includeData.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<PledgeData>[]>(this.baseUrl + 'api/Pledge/' + id.toString() + '/AuditHistory', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetPledgeAuditHistory(id, includeData));
+            })
+        );
+    }
+
+
+    /**
+     * Gets a specific historical version of a Pledge.
+     */
+    public GetPledgeVersion(id: bigint | number, version: number): Observable<PledgeData> {
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<PledgeData>(this.baseUrl + 'api/Pledge/' + id.toString() + '/Version/' + version.toString(), {
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.RevivePledge(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetPledgeVersion(id, version));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the state of a Pledge at a specific point in time.
+     */
+    public GetPledgeStateAtTime(id: bigint | number, time: string): Observable<PledgeData> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('time', time);
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<PledgeData>(this.baseUrl + 'api/Pledge/' + id.toString() + '/StateAtTime', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.RevivePledge(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetPledgeStateAtTime(id, time));
+            })
+        );
+    }
+
 
     private getConfigHash(config: PledgeQueryParameters | any): string {
 

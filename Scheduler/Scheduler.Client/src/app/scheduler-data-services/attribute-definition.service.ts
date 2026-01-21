@@ -66,6 +66,19 @@ export class AttributeDefinitionSubmitData {
 }
 
 
+
+//
+// Version history information returned from version history API endpoints.
+// Matches server-side VersionInformation<T> structure.
+//
+export interface VersionInformation<T> {
+    timeStamp: string;           // ISO 8601
+    userId: bigint | number;
+    userName: string;
+    versionNumber: number;
+    data: T | null;
+}
+
 export class AttributeDefinitionBasicListData {
   id!: bigint | number;
   name!: string;
@@ -132,6 +145,15 @@ export class AttributeDefinitionData {
     private _attributeDefinitionChangeHistoriesSubject = new BehaviorSubject<AttributeDefinitionChangeHistoryData[] | null>(null);
 
                 
+
+
+    //
+    // Version history lazy-loading cache for current version metadata
+    //
+    private _currentVersionInfo: VersionInformation<AttributeDefinitionData> | null = null;
+    private _currentVersionInfoPromise: Promise<VersionInformation<AttributeDefinitionData>> | null = null;
+    private _currentVersionInfoSubject = new BehaviorSubject<VersionInformation<AttributeDefinitionData> | null>(null);
+
 
     //
     // Public observables — use with | async in templates
@@ -200,6 +222,9 @@ export class AttributeDefinitionData {
      this._attributeDefinitionChangeHistoriesPromise = null;
      this._attributeDefinitionChangeHistoriesSubject.next(null);
 
+     this._currentVersionInfo = null;
+     this._currentVersionInfoPromise = null;
+     this._currentVersionInfoSubject.next(null);
   }
 
     //
@@ -270,6 +295,49 @@ export class AttributeDefinitionData {
         return this.AttributeDefinitionChangeHistories.then(attributeDefinitionChangeHistories => attributeDefinitionChangeHistories.length > 0);
     }
 
+
+
+
+    //
+    // Version History — Lazy-loading observable for current version metadata
+    //
+    // Usage examples:
+    //   Template: {{ (attributeDefinition.CurrentVersionInfo$ | async)?.userName }}
+    //   Code:     const info = await attributeDefinition.CurrentVersionInfo;
+    //
+    public CurrentVersionInfo$ = this._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if (this._currentVersionInfo === null && this._currentVersionInfoPromise === null) {
+                this.loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
+
+
+    public get CurrentVersionInfo(): Promise<VersionInformation<AttributeDefinitionData>> {
+        if (this._currentVersionInfoPromise === null) {
+            this._currentVersionInfoPromise = this.loadCurrentVersionInfo();
+        }
+        return this._currentVersionInfoPromise;
+    }
+
+
+    private async loadCurrentVersionInfo(): Promise<VersionInformation<AttributeDefinitionData>> {
+        const info = await lastValueFrom(
+            AttributeDefinitionService.Instance.GetAttributeDefinitionChangeMetadata(this.id, this.versionNumber as number)
+        );
+        this._currentVersionInfo = info;
+        this._currentVersionInfoSubject.next(info);
+        return info;
+    }
+
+
+    public ClearCurrentVersionInfoCache(): void {
+        this._currentVersionInfo = null;
+        this._currentVersionInfoPromise = null;
+        this._currentVersionInfoSubject.next(null);
+    }
 
 
 
@@ -615,6 +683,92 @@ export class AttributeDefinitionService extends SecureEndpointBase {
                 return this.handleError(error, () => this.RollbackAttributeDefinition(id, versionNumber));
         }));
     }
+
+
+    /**
+     * Gets version metadata for a specific version of a AttributeDefinition.
+     */
+    public GetAttributeDefinitionChangeMetadata(id: bigint | number, versionNumber?: number): Observable<VersionInformation<AttributeDefinitionData>> {
+
+        let queryParams = new HttpParams();
+
+        if (versionNumber !== undefined && versionNumber !== null) {
+            queryParams = queryParams.append('versionNumber', versionNumber.toString());
+        }
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<AttributeDefinitionData>>(this.baseUrl + 'api/AttributeDefinition/' + id.toString() + '/ChangeMetadata', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetAttributeDefinitionChangeMetadata(id, versionNumber));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the full audit history of a AttributeDefinition.
+     */
+    public GetAttributeDefinitionAuditHistory(id: bigint | number, includeData: boolean = false): Observable<VersionInformation<AttributeDefinitionData>[]> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('includeData', includeData.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<AttributeDefinitionData>[]>(this.baseUrl + 'api/AttributeDefinition/' + id.toString() + '/AuditHistory', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetAttributeDefinitionAuditHistory(id, includeData));
+            })
+        );
+    }
+
+
+    /**
+     * Gets a specific historical version of a AttributeDefinition.
+     */
+    public GetAttributeDefinitionVersion(id: bigint | number, version: number): Observable<AttributeDefinitionData> {
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<AttributeDefinitionData>(this.baseUrl + 'api/AttributeDefinition/' + id.toString() + '/Version/' + version.toString(), {
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveAttributeDefinition(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetAttributeDefinitionVersion(id, version));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the state of a AttributeDefinition at a specific point in time.
+     */
+    public GetAttributeDefinitionStateAtTime(id: bigint | number, time: string): Observable<AttributeDefinitionData> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('time', time);
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<AttributeDefinitionData>(this.baseUrl + 'api/AttributeDefinition/' + id.toString() + '/StateAtTime', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveAttributeDefinition(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetAttributeDefinitionStateAtTime(id, time));
+            })
+        );
+    }
+
 
     private getConfigHash(config: AttributeDefinitionQueryParameters | any): string {
 

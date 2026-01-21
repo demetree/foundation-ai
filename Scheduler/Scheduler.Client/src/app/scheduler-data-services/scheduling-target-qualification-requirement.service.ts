@@ -58,6 +58,19 @@ export class SchedulingTargetQualificationRequirementSubmitData {
 }
 
 
+
+//
+// Version history information returned from version history API endpoints.
+// Matches server-side VersionInformation<T> structure.
+//
+export interface VersionInformation<T> {
+    timeStamp: string;           // ISO 8601
+    userId: bigint | number;
+    userName: string;
+    versionNumber: number;
+    data: T | null;
+}
+
 export class SchedulingTargetQualificationRequirementBasicListData {
   id!: bigint | number;
   name!: string;
@@ -120,6 +133,15 @@ export class SchedulingTargetQualificationRequirementData {
     private _schedulingTargetQualificationRequirementChangeHistoriesSubject = new BehaviorSubject<SchedulingTargetQualificationRequirementChangeHistoryData[] | null>(null);
 
                 
+
+
+    //
+    // Version history lazy-loading cache for current version metadata
+    //
+    private _currentVersionInfo: VersionInformation<SchedulingTargetQualificationRequirementData> | null = null;
+    private _currentVersionInfoPromise: Promise<VersionInformation<SchedulingTargetQualificationRequirementData>> | null = null;
+    private _currentVersionInfoSubject = new BehaviorSubject<VersionInformation<SchedulingTargetQualificationRequirementData> | null>(null);
+
 
     //
     // Public observables — use with | async in templates
@@ -188,6 +210,9 @@ export class SchedulingTargetQualificationRequirementData {
      this._schedulingTargetQualificationRequirementChangeHistoriesPromise = null;
      this._schedulingTargetQualificationRequirementChangeHistoriesSubject.next(null);
 
+     this._currentVersionInfo = null;
+     this._currentVersionInfoPromise = null;
+     this._currentVersionInfoSubject.next(null);
   }
 
     //
@@ -258,6 +283,49 @@ export class SchedulingTargetQualificationRequirementData {
         return this.SchedulingTargetQualificationRequirementChangeHistories.then(schedulingTargetQualificationRequirementChangeHistories => schedulingTargetQualificationRequirementChangeHistories.length > 0);
     }
 
+
+
+
+    //
+    // Version History — Lazy-loading observable for current version metadata
+    //
+    // Usage examples:
+    //   Template: {{ (schedulingTargetQualificationRequirement.CurrentVersionInfo$ | async)?.userName }}
+    //   Code:     const info = await schedulingTargetQualificationRequirement.CurrentVersionInfo;
+    //
+    public CurrentVersionInfo$ = this._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if (this._currentVersionInfo === null && this._currentVersionInfoPromise === null) {
+                this.loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
+
+
+    public get CurrentVersionInfo(): Promise<VersionInformation<SchedulingTargetQualificationRequirementData>> {
+        if (this._currentVersionInfoPromise === null) {
+            this._currentVersionInfoPromise = this.loadCurrentVersionInfo();
+        }
+        return this._currentVersionInfoPromise;
+    }
+
+
+    private async loadCurrentVersionInfo(): Promise<VersionInformation<SchedulingTargetQualificationRequirementData>> {
+        const info = await lastValueFrom(
+            SchedulingTargetQualificationRequirementService.Instance.GetSchedulingTargetQualificationRequirementChangeMetadata(this.id, this.versionNumber as number)
+        );
+        this._currentVersionInfo = info;
+        this._currentVersionInfoSubject.next(info);
+        return info;
+    }
+
+
+    public ClearCurrentVersionInfoCache(): void {
+        this._currentVersionInfo = null;
+        this._currentVersionInfoPromise = null;
+        this._currentVersionInfoSubject.next(null);
+    }
 
 
 
@@ -599,6 +667,92 @@ export class SchedulingTargetQualificationRequirementService extends SecureEndpo
                 return this.handleError(error, () => this.RollbackSchedulingTargetQualificationRequirement(id, versionNumber));
         }));
     }
+
+
+    /**
+     * Gets version metadata for a specific version of a SchedulingTargetQualificationRequirement.
+     */
+    public GetSchedulingTargetQualificationRequirementChangeMetadata(id: bigint | number, versionNumber?: number): Observable<VersionInformation<SchedulingTargetQualificationRequirementData>> {
+
+        let queryParams = new HttpParams();
+
+        if (versionNumber !== undefined && versionNumber !== null) {
+            queryParams = queryParams.append('versionNumber', versionNumber.toString());
+        }
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<SchedulingTargetQualificationRequirementData>>(this.baseUrl + 'api/SchedulingTargetQualificationRequirement/' + id.toString() + '/ChangeMetadata', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetSchedulingTargetQualificationRequirementChangeMetadata(id, versionNumber));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the full audit history of a SchedulingTargetQualificationRequirement.
+     */
+    public GetSchedulingTargetQualificationRequirementAuditHistory(id: bigint | number, includeData: boolean = false): Observable<VersionInformation<SchedulingTargetQualificationRequirementData>[]> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('includeData', includeData.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<SchedulingTargetQualificationRequirementData>[]>(this.baseUrl + 'api/SchedulingTargetQualificationRequirement/' + id.toString() + '/AuditHistory', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetSchedulingTargetQualificationRequirementAuditHistory(id, includeData));
+            })
+        );
+    }
+
+
+    /**
+     * Gets a specific historical version of a SchedulingTargetQualificationRequirement.
+     */
+    public GetSchedulingTargetQualificationRequirementVersion(id: bigint | number, version: number): Observable<SchedulingTargetQualificationRequirementData> {
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<SchedulingTargetQualificationRequirementData>(this.baseUrl + 'api/SchedulingTargetQualificationRequirement/' + id.toString() + '/Version/' + version.toString(), {
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveSchedulingTargetQualificationRequirement(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetSchedulingTargetQualificationRequirementVersion(id, version));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the state of a SchedulingTargetQualificationRequirement at a specific point in time.
+     */
+    public GetSchedulingTargetQualificationRequirementStateAtTime(id: bigint | number, time: string): Observable<SchedulingTargetQualificationRequirementData> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('time', time);
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<SchedulingTargetQualificationRequirementData>(this.baseUrl + 'api/SchedulingTargetQualificationRequirement/' + id.toString() + '/StateAtTime', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveSchedulingTargetQualificationRequirement(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetSchedulingTargetQualificationRequirementStateAtTime(id, time));
+            })
+        );
+    }
+
 
     private getConfigHash(config: SchedulingTargetQualificationRequirementQueryParameters | any): string {
 

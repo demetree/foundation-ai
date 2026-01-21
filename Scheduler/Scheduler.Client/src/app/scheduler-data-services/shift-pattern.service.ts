@@ -61,6 +61,19 @@ export class ShiftPatternSubmitData {
 }
 
 
+
+//
+// Version history information returned from version history API endpoints.
+// Matches server-side VersionInformation<T> structure.
+//
+export interface VersionInformation<T> {
+    timeStamp: string;           // ISO 8601
+    userId: bigint | number;
+    userName: string;
+    versionNumber: number;
+    data: T | null;
+}
+
 export class ShiftPatternBasicListData {
   id!: bigint | number;
   name!: string;
@@ -133,6 +146,15 @@ export class ShiftPatternData {
     private _resourcesSubject = new BehaviorSubject<ResourceData[] | null>(null);
 
                 
+
+
+    //
+    // Version history lazy-loading cache for current version metadata
+    //
+    private _currentVersionInfo: VersionInformation<ShiftPatternData> | null = null;
+    private _currentVersionInfoPromise: Promise<VersionInformation<ShiftPatternData>> | null = null;
+    private _currentVersionInfoSubject = new BehaviorSubject<VersionInformation<ShiftPatternData> | null>(null);
+
 
     //
     // Public observables — use with | async in templates
@@ -247,6 +269,9 @@ export class ShiftPatternData {
      this._resourcesPromise = null;
      this._resourcesSubject.next(null);
 
+     this._currentVersionInfo = null;
+     this._currentVersionInfoPromise = null;
+     this._currentVersionInfoSubject.next(null);
   }
 
     //
@@ -447,6 +472,49 @@ export class ShiftPatternData {
         return this.Resources.then(resources => resources.length > 0);
     }
 
+
+
+
+    //
+    // Version History — Lazy-loading observable for current version metadata
+    //
+    // Usage examples:
+    //   Template: {{ (shiftPattern.CurrentVersionInfo$ | async)?.userName }}
+    //   Code:     const info = await shiftPattern.CurrentVersionInfo;
+    //
+    public CurrentVersionInfo$ = this._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if (this._currentVersionInfo === null && this._currentVersionInfoPromise === null) {
+                this.loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
+
+
+    public get CurrentVersionInfo(): Promise<VersionInformation<ShiftPatternData>> {
+        if (this._currentVersionInfoPromise === null) {
+            this._currentVersionInfoPromise = this.loadCurrentVersionInfo();
+        }
+        return this._currentVersionInfoPromise;
+    }
+
+
+    private async loadCurrentVersionInfo(): Promise<VersionInformation<ShiftPatternData>> {
+        const info = await lastValueFrom(
+            ShiftPatternService.Instance.GetShiftPatternChangeMetadata(this.id, this.versionNumber as number)
+        );
+        this._currentVersionInfo = info;
+        this._currentVersionInfoSubject.next(info);
+        return info;
+    }
+
+
+    public ClearCurrentVersionInfoCache(): void {
+        this._currentVersionInfo = null;
+        this._currentVersionInfoPromise = null;
+        this._currentVersionInfoSubject.next(null);
+    }
 
 
 
@@ -791,6 +859,92 @@ export class ShiftPatternService extends SecureEndpointBase {
                 return this.handleError(error, () => this.RollbackShiftPattern(id, versionNumber));
         }));
     }
+
+
+    /**
+     * Gets version metadata for a specific version of a ShiftPattern.
+     */
+    public GetShiftPatternChangeMetadata(id: bigint | number, versionNumber?: number): Observable<VersionInformation<ShiftPatternData>> {
+
+        let queryParams = new HttpParams();
+
+        if (versionNumber !== undefined && versionNumber !== null) {
+            queryParams = queryParams.append('versionNumber', versionNumber.toString());
+        }
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<ShiftPatternData>>(this.baseUrl + 'api/ShiftPattern/' + id.toString() + '/ChangeMetadata', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetShiftPatternChangeMetadata(id, versionNumber));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the full audit history of a ShiftPattern.
+     */
+    public GetShiftPatternAuditHistory(id: bigint | number, includeData: boolean = false): Observable<VersionInformation<ShiftPatternData>[]> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('includeData', includeData.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<ShiftPatternData>[]>(this.baseUrl + 'api/ShiftPattern/' + id.toString() + '/AuditHistory', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetShiftPatternAuditHistory(id, includeData));
+            })
+        );
+    }
+
+
+    /**
+     * Gets a specific historical version of a ShiftPattern.
+     */
+    public GetShiftPatternVersion(id: bigint | number, version: number): Observable<ShiftPatternData> {
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<ShiftPatternData>(this.baseUrl + 'api/ShiftPattern/' + id.toString() + '/Version/' + version.toString(), {
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveShiftPattern(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetShiftPatternVersion(id, version));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the state of a ShiftPattern at a specific point in time.
+     */
+    public GetShiftPatternStateAtTime(id: bigint | number, time: string): Observable<ShiftPatternData> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('time', time);
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<ShiftPatternData>(this.baseUrl + 'api/ShiftPattern/' + id.toString() + '/StateAtTime', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveShiftPattern(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetShiftPatternStateAtTime(id, time));
+            })
+        );
+    }
+
 
     private getConfigHash(config: ShiftPatternQueryParameters | any): string {
 

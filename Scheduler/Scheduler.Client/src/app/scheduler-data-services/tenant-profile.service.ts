@@ -98,6 +98,19 @@ export class TenantProfileSubmitData {
 }
 
 
+
+//
+// Version history information returned from version history API endpoints.
+// Matches server-side VersionInformation<T> structure.
+//
+export interface VersionInformation<T> {
+    timeStamp: string;           // ISO 8601
+    userId: bigint | number;
+    userName: string;
+    versionNumber: number;
+    data: T | null;
+}
+
 export class TenantProfileBasicListData {
   id!: bigint | number;
   name!: string;
@@ -182,6 +195,15 @@ export class TenantProfileData {
 
                 
 
+
+    //
+    // Version history lazy-loading cache for current version metadata
+    //
+    private _currentVersionInfo: VersionInformation<TenantProfileData> | null = null;
+    private _currentVersionInfoPromise: Promise<VersionInformation<TenantProfileData>> | null = null;
+    private _currentVersionInfoSubject = new BehaviorSubject<VersionInformation<TenantProfileData> | null>(null);
+
+
     //
     // Public observables — use with | async in templates
     // Subscription triggers lazy load if not already cached
@@ -249,6 +271,9 @@ export class TenantProfileData {
      this._tenantProfileChangeHistoriesPromise = null;
      this._tenantProfileChangeHistoriesSubject.next(null);
 
+     this._currentVersionInfo = null;
+     this._currentVersionInfoPromise = null;
+     this._currentVersionInfoSubject.next(null);
   }
 
     //
@@ -319,6 +344,49 @@ export class TenantProfileData {
         return this.TenantProfileChangeHistories.then(tenantProfileChangeHistories => tenantProfileChangeHistories.length > 0);
     }
 
+
+
+
+    //
+    // Version History — Lazy-loading observable for current version metadata
+    //
+    // Usage examples:
+    //   Template: {{ (tenantProfile.CurrentVersionInfo$ | async)?.userName }}
+    //   Code:     const info = await tenantProfile.CurrentVersionInfo;
+    //
+    public CurrentVersionInfo$ = this._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if (this._currentVersionInfo === null && this._currentVersionInfoPromise === null) {
+                this.loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
+
+
+    public get CurrentVersionInfo(): Promise<VersionInformation<TenantProfileData>> {
+        if (this._currentVersionInfoPromise === null) {
+            this._currentVersionInfoPromise = this.loadCurrentVersionInfo();
+        }
+        return this._currentVersionInfoPromise;
+    }
+
+
+    private async loadCurrentVersionInfo(): Promise<VersionInformation<TenantProfileData>> {
+        const info = await lastValueFrom(
+            TenantProfileService.Instance.GetTenantProfileChangeMetadata(this.id, this.versionNumber as number)
+        );
+        this._currentVersionInfo = info;
+        this._currentVersionInfoSubject.next(info);
+        return info;
+    }
+
+
+    public ClearCurrentVersionInfoCache(): void {
+        this._currentVersionInfo = null;
+        this._currentVersionInfoPromise = null;
+        this._currentVersionInfoSubject.next(null);
+    }
 
 
 
@@ -680,6 +748,92 @@ export class TenantProfileService extends SecureEndpointBase {
                 return this.handleError(error, () => this.RollbackTenantProfile(id, versionNumber));
         }));
     }
+
+
+    /**
+     * Gets version metadata for a specific version of a TenantProfile.
+     */
+    public GetTenantProfileChangeMetadata(id: bigint | number, versionNumber?: number): Observable<VersionInformation<TenantProfileData>> {
+
+        let queryParams = new HttpParams();
+
+        if (versionNumber !== undefined && versionNumber !== null) {
+            queryParams = queryParams.append('versionNumber', versionNumber.toString());
+        }
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<TenantProfileData>>(this.baseUrl + 'api/TenantProfile/' + id.toString() + '/ChangeMetadata', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetTenantProfileChangeMetadata(id, versionNumber));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the full audit history of a TenantProfile.
+     */
+    public GetTenantProfileAuditHistory(id: bigint | number, includeData: boolean = false): Observable<VersionInformation<TenantProfileData>[]> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('includeData', includeData.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<TenantProfileData>[]>(this.baseUrl + 'api/TenantProfile/' + id.toString() + '/AuditHistory', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetTenantProfileAuditHistory(id, includeData));
+            })
+        );
+    }
+
+
+    /**
+     * Gets a specific historical version of a TenantProfile.
+     */
+    public GetTenantProfileVersion(id: bigint | number, version: number): Observable<TenantProfileData> {
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<TenantProfileData>(this.baseUrl + 'api/TenantProfile/' + id.toString() + '/Version/' + version.toString(), {
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveTenantProfile(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetTenantProfileVersion(id, version));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the state of a TenantProfile at a specific point in time.
+     */
+    public GetTenantProfileStateAtTime(id: bigint | number, time: string): Observable<TenantProfileData> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('time', time);
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<TenantProfileData>(this.baseUrl + 'api/TenantProfile/' + id.toString() + '/StateAtTime', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveTenantProfile(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetTenantProfileStateAtTime(id, time));
+            })
+        );
+    }
+
 
     private getConfigHash(config: TenantProfileQueryParameters | any): string {
 

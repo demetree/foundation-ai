@@ -108,6 +108,19 @@ export class ClientSubmitData {
 }
 
 
+
+//
+// Version history information returned from version history API endpoints.
+// Matches server-side VersionInformation<T> structure.
+//
+export interface VersionInformation<T> {
+    timeStamp: string;           // ISO 8601
+    userId: bigint | number;
+    userName: string;
+    versionNumber: number;
+    data: T | null;
+}
+
 export class ClientBasicListData {
   id!: bigint | number;
   name!: string;
@@ -220,6 +233,15 @@ export class ClientData {
     private _constituentsSubject = new BehaviorSubject<ConstituentData[] | null>(null);
 
                 
+
+
+    //
+    // Version history lazy-loading cache for current version metadata
+    //
+    private _currentVersionInfo: VersionInformation<ClientData> | null = null;
+    private _currentVersionInfoPromise: Promise<VersionInformation<ClientData>> | null = null;
+    private _currentVersionInfoSubject = new BehaviorSubject<VersionInformation<ClientData> | null>(null);
+
 
     //
     // Public observables — use with | async in templates
@@ -403,6 +425,9 @@ export class ClientData {
      this._constituentsPromise = null;
      this._constituentsSubject.next(null);
 
+     this._currentVersionInfo = null;
+     this._currentVersionInfoPromise = null;
+     this._currentVersionInfoSubject.next(null);
   }
 
     //
@@ -801,6 +826,49 @@ export class ClientData {
 
 
 
+    //
+    // Version History — Lazy-loading observable for current version metadata
+    //
+    // Usage examples:
+    //   Template: {{ (client.CurrentVersionInfo$ | async)?.userName }}
+    //   Code:     const info = await client.CurrentVersionInfo;
+    //
+    public CurrentVersionInfo$ = this._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if (this._currentVersionInfo === null && this._currentVersionInfoPromise === null) {
+                this.loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
+
+
+    public get CurrentVersionInfo(): Promise<VersionInformation<ClientData>> {
+        if (this._currentVersionInfoPromise === null) {
+            this._currentVersionInfoPromise = this.loadCurrentVersionInfo();
+        }
+        return this._currentVersionInfoPromise;
+    }
+
+
+    private async loadCurrentVersionInfo(): Promise<VersionInformation<ClientData>> {
+        const info = await lastValueFrom(
+            ClientService.Instance.GetClientChangeMetadata(this.id, this.versionNumber as number)
+        );
+        this._currentVersionInfo = info;
+        this._currentVersionInfoSubject.next(info);
+        return info;
+    }
+
+
+    public ClearCurrentVersionInfoCache(): void {
+        this._currentVersionInfo = null;
+        this._currentVersionInfoPromise = null;
+        this._currentVersionInfoSubject.next(null);
+    }
+
+
+
     /**
      * Updates the state of this ClientData object using values from another object that has some or all of the fields needed.
      */
@@ -1165,6 +1233,92 @@ export class ClientService extends SecureEndpointBase {
                 return this.handleError(error, () => this.RollbackClient(id, versionNumber));
         }));
     }
+
+
+    /**
+     * Gets version metadata for a specific version of a Client.
+     */
+    public GetClientChangeMetadata(id: bigint | number, versionNumber?: number): Observable<VersionInformation<ClientData>> {
+
+        let queryParams = new HttpParams();
+
+        if (versionNumber !== undefined && versionNumber !== null) {
+            queryParams = queryParams.append('versionNumber', versionNumber.toString());
+        }
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<ClientData>>(this.baseUrl + 'api/Client/' + id.toString() + '/ChangeMetadata', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetClientChangeMetadata(id, versionNumber));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the full audit history of a Client.
+     */
+    public GetClientAuditHistory(id: bigint | number, includeData: boolean = false): Observable<VersionInformation<ClientData>[]> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('includeData', includeData.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<ClientData>[]>(this.baseUrl + 'api/Client/' + id.toString() + '/AuditHistory', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetClientAuditHistory(id, includeData));
+            })
+        );
+    }
+
+
+    /**
+     * Gets a specific historical version of a Client.
+     */
+    public GetClientVersion(id: bigint | number, version: number): Observable<ClientData> {
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<ClientData>(this.baseUrl + 'api/Client/' + id.toString() + '/Version/' + version.toString(), {
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveClient(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetClientVersion(id, version));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the state of a Client at a specific point in time.
+     */
+    public GetClientStateAtTime(id: bigint | number, time: string): Observable<ClientData> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('time', time);
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<ClientData>(this.baseUrl + 'api/Client/' + id.toString() + '/StateAtTime', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveClient(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetClientStateAtTime(id, time));
+            })
+        );
+    }
+
 
     private getConfigHash(config: ClientQueryParameters | any): string {
 

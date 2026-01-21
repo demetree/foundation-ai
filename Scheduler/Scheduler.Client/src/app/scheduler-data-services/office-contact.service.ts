@@ -61,6 +61,19 @@ export class OfficeContactSubmitData {
 }
 
 
+
+//
+// Version history information returned from version history API endpoints.
+// Matches server-side VersionInformation<T> structure.
+//
+export interface VersionInformation<T> {
+    timeStamp: string;           // ISO 8601
+    userId: bigint | number;
+    userName: string;
+    versionNumber: number;
+    data: T | null;
+}
+
 export class OfficeContactBasicListData {
   id!: bigint | number;
   name!: string;
@@ -125,6 +138,15 @@ export class OfficeContactData {
     private _officeContactChangeHistoriesSubject = new BehaviorSubject<OfficeContactChangeHistoryData[] | null>(null);
 
                 
+
+
+    //
+    // Version history lazy-loading cache for current version metadata
+    //
+    private _currentVersionInfo: VersionInformation<OfficeContactData> | null = null;
+    private _currentVersionInfoPromise: Promise<VersionInformation<OfficeContactData>> | null = null;
+    private _currentVersionInfoSubject = new BehaviorSubject<VersionInformation<OfficeContactData> | null>(null);
+
 
     //
     // Public observables — use with | async in templates
@@ -193,6 +215,9 @@ export class OfficeContactData {
      this._officeContactChangeHistoriesPromise = null;
      this._officeContactChangeHistoriesSubject.next(null);
 
+     this._currentVersionInfo = null;
+     this._currentVersionInfoPromise = null;
+     this._currentVersionInfoSubject.next(null);
   }
 
     //
@@ -263,6 +288,49 @@ export class OfficeContactData {
         return this.OfficeContactChangeHistories.then(officeContactChangeHistories => officeContactChangeHistories.length > 0);
     }
 
+
+
+
+    //
+    // Version History — Lazy-loading observable for current version metadata
+    //
+    // Usage examples:
+    //   Template: {{ (officeContact.CurrentVersionInfo$ | async)?.userName }}
+    //   Code:     const info = await officeContact.CurrentVersionInfo;
+    //
+    public CurrentVersionInfo$ = this._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if (this._currentVersionInfo === null && this._currentVersionInfoPromise === null) {
+                this.loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
+
+
+    public get CurrentVersionInfo(): Promise<VersionInformation<OfficeContactData>> {
+        if (this._currentVersionInfoPromise === null) {
+            this._currentVersionInfoPromise = this.loadCurrentVersionInfo();
+        }
+        return this._currentVersionInfoPromise;
+    }
+
+
+    private async loadCurrentVersionInfo(): Promise<VersionInformation<OfficeContactData>> {
+        const info = await lastValueFrom(
+            OfficeContactService.Instance.GetOfficeContactChangeMetadata(this.id, this.versionNumber as number)
+        );
+        this._currentVersionInfo = info;
+        this._currentVersionInfoSubject.next(info);
+        return info;
+    }
+
+
+    public ClearCurrentVersionInfoCache(): void {
+        this._currentVersionInfo = null;
+        this._currentVersionInfoPromise = null;
+        this._currentVersionInfoSubject.next(null);
+    }
 
 
 
@@ -605,6 +673,92 @@ export class OfficeContactService extends SecureEndpointBase {
                 return this.handleError(error, () => this.RollbackOfficeContact(id, versionNumber));
         }));
     }
+
+
+    /**
+     * Gets version metadata for a specific version of a OfficeContact.
+     */
+    public GetOfficeContactChangeMetadata(id: bigint | number, versionNumber?: number): Observable<VersionInformation<OfficeContactData>> {
+
+        let queryParams = new HttpParams();
+
+        if (versionNumber !== undefined && versionNumber !== null) {
+            queryParams = queryParams.append('versionNumber', versionNumber.toString());
+        }
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<OfficeContactData>>(this.baseUrl + 'api/OfficeContact/' + id.toString() + '/ChangeMetadata', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetOfficeContactChangeMetadata(id, versionNumber));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the full audit history of a OfficeContact.
+     */
+    public GetOfficeContactAuditHistory(id: bigint | number, includeData: boolean = false): Observable<VersionInformation<OfficeContactData>[]> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('includeData', includeData.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<OfficeContactData>[]>(this.baseUrl + 'api/OfficeContact/' + id.toString() + '/AuditHistory', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetOfficeContactAuditHistory(id, includeData));
+            })
+        );
+    }
+
+
+    /**
+     * Gets a specific historical version of a OfficeContact.
+     */
+    public GetOfficeContactVersion(id: bigint | number, version: number): Observable<OfficeContactData> {
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<OfficeContactData>(this.baseUrl + 'api/OfficeContact/' + id.toString() + '/Version/' + version.toString(), {
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveOfficeContact(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetOfficeContactVersion(id, version));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the state of a OfficeContact at a specific point in time.
+     */
+    public GetOfficeContactStateAtTime(id: bigint | number, time: string): Observable<OfficeContactData> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('time', time);
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<OfficeContactData>(this.baseUrl + 'api/OfficeContact/' + id.toString() + '/StateAtTime', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveOfficeContact(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetOfficeContactStateAtTime(id, time));
+            })
+        );
+    }
+
 
     private getConfigHash(config: OfficeContactQueryParameters | any): string {
 

@@ -77,6 +77,19 @@ export class TributeSubmitData {
 }
 
 
+
+//
+// Version history information returned from version history API endpoints.
+// Matches server-side VersionInformation<T> structure.
+//
+export interface VersionInformation<T> {
+    timeStamp: string;           // ISO 8601
+    userId: bigint | number;
+    userName: string;
+    versionNumber: number;
+    data: T | null;
+}
+
 export class TributeBasicListData {
   id!: bigint | number;
   name!: string;
@@ -154,6 +167,15 @@ export class TributeData {
     private _giftsSubject = new BehaviorSubject<GiftData[] | null>(null);
 
                 
+
+
+    //
+    // Version history lazy-loading cache for current version metadata
+    //
+    private _currentVersionInfo: VersionInformation<TributeData> | null = null;
+    private _currentVersionInfoPromise: Promise<VersionInformation<TributeData>> | null = null;
+    private _currentVersionInfoSubject = new BehaviorSubject<VersionInformation<TributeData> | null>(null);
+
 
     //
     // Public observables — use with | async in templates
@@ -245,6 +267,9 @@ export class TributeData {
      this._giftsPromise = null;
      this._giftsSubject.next(null);
 
+     this._currentVersionInfo = null;
+     this._currentVersionInfoPromise = null;
+     this._currentVersionInfoSubject.next(null);
   }
 
     //
@@ -380,6 +405,49 @@ export class TributeData {
         return this.Gifts.then(gifts => gifts.length > 0);
     }
 
+
+
+
+    //
+    // Version History — Lazy-loading observable for current version metadata
+    //
+    // Usage examples:
+    //   Template: {{ (tribute.CurrentVersionInfo$ | async)?.userName }}
+    //   Code:     const info = await tribute.CurrentVersionInfo;
+    //
+    public CurrentVersionInfo$ = this._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if (this._currentVersionInfo === null && this._currentVersionInfoPromise === null) {
+                this.loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
+
+
+    public get CurrentVersionInfo(): Promise<VersionInformation<TributeData>> {
+        if (this._currentVersionInfoPromise === null) {
+            this._currentVersionInfoPromise = this.loadCurrentVersionInfo();
+        }
+        return this._currentVersionInfoPromise;
+    }
+
+
+    private async loadCurrentVersionInfo(): Promise<VersionInformation<TributeData>> {
+        const info = await lastValueFrom(
+            TributeService.Instance.GetTributeChangeMetadata(this.id, this.versionNumber as number)
+        );
+        this._currentVersionInfo = info;
+        this._currentVersionInfoSubject.next(info);
+        return info;
+    }
+
+
+    public ClearCurrentVersionInfoCache(): void {
+        this._currentVersionInfo = null;
+        this._currentVersionInfoPromise = null;
+        this._currentVersionInfoSubject.next(null);
+    }
 
 
 
@@ -731,6 +799,92 @@ export class TributeService extends SecureEndpointBase {
                 return this.handleError(error, () => this.RollbackTribute(id, versionNumber));
         }));
     }
+
+
+    /**
+     * Gets version metadata for a specific version of a Tribute.
+     */
+    public GetTributeChangeMetadata(id: bigint | number, versionNumber?: number): Observable<VersionInformation<TributeData>> {
+
+        let queryParams = new HttpParams();
+
+        if (versionNumber !== undefined && versionNumber !== null) {
+            queryParams = queryParams.append('versionNumber', versionNumber.toString());
+        }
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<TributeData>>(this.baseUrl + 'api/Tribute/' + id.toString() + '/ChangeMetadata', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetTributeChangeMetadata(id, versionNumber));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the full audit history of a Tribute.
+     */
+    public GetTributeAuditHistory(id: bigint | number, includeData: boolean = false): Observable<VersionInformation<TributeData>[]> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('includeData', includeData.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<TributeData>[]>(this.baseUrl + 'api/Tribute/' + id.toString() + '/AuditHistory', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetTributeAuditHistory(id, includeData));
+            })
+        );
+    }
+
+
+    /**
+     * Gets a specific historical version of a Tribute.
+     */
+    public GetTributeVersion(id: bigint | number, version: number): Observable<TributeData> {
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<TributeData>(this.baseUrl + 'api/Tribute/' + id.toString() + '/Version/' + version.toString(), {
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveTribute(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetTributeVersion(id, version));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the state of a Tribute at a specific point in time.
+     */
+    public GetTributeStateAtTime(id: bigint | number, time: string): Observable<TributeData> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('time', time);
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<TributeData>(this.baseUrl + 'api/Tribute/' + id.toString() + '/StateAtTime', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveTribute(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetTributeStateAtTime(id, time));
+            })
+        );
+    }
+
 
     private getConfigHash(config: TributeQueryParameters | any): string {
 

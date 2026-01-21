@@ -60,6 +60,19 @@ export class ContactContactSubmitData {
 }
 
 
+
+//
+// Version history information returned from version history API endpoints.
+// Matches server-side VersionInformation<T> structure.
+//
+export interface VersionInformation<T> {
+    timeStamp: string;           // ISO 8601
+    userId: bigint | number;
+    userName: string;
+    versionNumber: number;
+    data: T | null;
+}
+
 export class ContactContactBasicListData {
   id!: bigint | number;
   name!: string;
@@ -124,6 +137,15 @@ export class ContactContactData {
     private _contactContactChangeHistoriesSubject = new BehaviorSubject<ContactContactChangeHistoryData[] | null>(null);
 
                 
+
+
+    //
+    // Version history lazy-loading cache for current version metadata
+    //
+    private _currentVersionInfo: VersionInformation<ContactContactData> | null = null;
+    private _currentVersionInfoPromise: Promise<VersionInformation<ContactContactData>> | null = null;
+    private _currentVersionInfoSubject = new BehaviorSubject<VersionInformation<ContactContactData> | null>(null);
+
 
     //
     // Public observables — use with | async in templates
@@ -192,6 +214,9 @@ export class ContactContactData {
      this._contactContactChangeHistoriesPromise = null;
      this._contactContactChangeHistoriesSubject.next(null);
 
+     this._currentVersionInfo = null;
+     this._currentVersionInfoPromise = null;
+     this._currentVersionInfoSubject.next(null);
   }
 
     //
@@ -262,6 +287,49 @@ export class ContactContactData {
         return this.ContactContactChangeHistories.then(contactContactChangeHistories => contactContactChangeHistories.length > 0);
     }
 
+
+
+
+    //
+    // Version History — Lazy-loading observable for current version metadata
+    //
+    // Usage examples:
+    //   Template: {{ (contactContact.CurrentVersionInfo$ | async)?.userName }}
+    //   Code:     const info = await contactContact.CurrentVersionInfo;
+    //
+    public CurrentVersionInfo$ = this._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if (this._currentVersionInfo === null && this._currentVersionInfoPromise === null) {
+                this.loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
+
+
+    public get CurrentVersionInfo(): Promise<VersionInformation<ContactContactData>> {
+        if (this._currentVersionInfoPromise === null) {
+            this._currentVersionInfoPromise = this.loadCurrentVersionInfo();
+        }
+        return this._currentVersionInfoPromise;
+    }
+
+
+    private async loadCurrentVersionInfo(): Promise<VersionInformation<ContactContactData>> {
+        const info = await lastValueFrom(
+            ContactContactService.Instance.GetContactContactChangeMetadata(this.id, this.versionNumber as number)
+        );
+        this._currentVersionInfo = info;
+        this._currentVersionInfoSubject.next(info);
+        return info;
+    }
+
+
+    public ClearCurrentVersionInfoCache(): void {
+        this._currentVersionInfo = null;
+        this._currentVersionInfoPromise = null;
+        this._currentVersionInfoSubject.next(null);
+    }
 
 
 
@@ -604,6 +672,92 @@ export class ContactContactService extends SecureEndpointBase {
                 return this.handleError(error, () => this.RollbackContactContact(id, versionNumber));
         }));
     }
+
+
+    /**
+     * Gets version metadata for a specific version of a ContactContact.
+     */
+    public GetContactContactChangeMetadata(id: bigint | number, versionNumber?: number): Observable<VersionInformation<ContactContactData>> {
+
+        let queryParams = new HttpParams();
+
+        if (versionNumber !== undefined && versionNumber !== null) {
+            queryParams = queryParams.append('versionNumber', versionNumber.toString());
+        }
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<ContactContactData>>(this.baseUrl + 'api/ContactContact/' + id.toString() + '/ChangeMetadata', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetContactContactChangeMetadata(id, versionNumber));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the full audit history of a ContactContact.
+     */
+    public GetContactContactAuditHistory(id: bigint | number, includeData: boolean = false): Observable<VersionInformation<ContactContactData>[]> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('includeData', includeData.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<ContactContactData>[]>(this.baseUrl + 'api/ContactContact/' + id.toString() + '/AuditHistory', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetContactContactAuditHistory(id, includeData));
+            })
+        );
+    }
+
+
+    /**
+     * Gets a specific historical version of a ContactContact.
+     */
+    public GetContactContactVersion(id: bigint | number, version: number): Observable<ContactContactData> {
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<ContactContactData>(this.baseUrl + 'api/ContactContact/' + id.toString() + '/Version/' + version.toString(), {
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveContactContact(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetContactContactVersion(id, version));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the state of a ContactContact at a specific point in time.
+     */
+    public GetContactContactStateAtTime(id: bigint | number, time: string): Observable<ContactContactData> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('time', time);
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<ContactContactData>(this.baseUrl + 'api/ContactContact/' + id.toString() + '/StateAtTime', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveContactContact(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetContactContactStateAtTime(id, time));
+            })
+        );
+    }
+
 
     private getConfigHash(config: ContactContactQueryParameters | any): string {
 

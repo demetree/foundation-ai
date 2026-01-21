@@ -93,6 +93,19 @@ export class GiftSubmitData {
 }
 
 
+
+//
+// Version history information returned from version history API endpoints.
+// Matches server-side VersionInformation<T> structure.
+//
+export interface VersionInformation<T> {
+    timeStamp: string;           // ISO 8601
+    userId: bigint | number;
+    userName: string;
+    versionNumber: number;
+    data: T | null;
+}
+
 export class GiftBasicListData {
   id!: bigint | number;
   name!: string;
@@ -181,6 +194,15 @@ export class GiftData {
     private _softCreditsSubject = new BehaviorSubject<SoftCreditData[] | null>(null);
 
                 
+
+
+    //
+    // Version history lazy-loading cache for current version metadata
+    //
+    private _currentVersionInfo: VersionInformation<GiftData> | null = null;
+    private _currentVersionInfoPromise: Promise<VersionInformation<GiftData>> | null = null;
+    private _currentVersionInfoSubject = new BehaviorSubject<VersionInformation<GiftData> | null>(null);
+
 
     //
     // Public observables — use with | async in templates
@@ -272,6 +294,9 @@ export class GiftData {
      this._softCreditsPromise = null;
      this._softCreditsSubject.next(null);
 
+     this._currentVersionInfo = null;
+     this._currentVersionInfoPromise = null;
+     this._currentVersionInfoSubject.next(null);
   }
 
     //
@@ -407,6 +432,49 @@ export class GiftData {
         return this.SoftCredits.then(softCredits => softCredits.length > 0);
     }
 
+
+
+
+    //
+    // Version History — Lazy-loading observable for current version metadata
+    //
+    // Usage examples:
+    //   Template: {{ (gift.CurrentVersionInfo$ | async)?.userName }}
+    //   Code:     const info = await gift.CurrentVersionInfo;
+    //
+    public CurrentVersionInfo$ = this._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if (this._currentVersionInfo === null && this._currentVersionInfoPromise === null) {
+                this.loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
+
+
+    public get CurrentVersionInfo(): Promise<VersionInformation<GiftData>> {
+        if (this._currentVersionInfoPromise === null) {
+            this._currentVersionInfoPromise = this.loadCurrentVersionInfo();
+        }
+        return this._currentVersionInfoPromise;
+    }
+
+
+    private async loadCurrentVersionInfo(): Promise<VersionInformation<GiftData>> {
+        const info = await lastValueFrom(
+            GiftService.Instance.GetGiftChangeMetadata(this.id, this.versionNumber as number)
+        );
+        this._currentVersionInfo = info;
+        this._currentVersionInfoSubject.next(info);
+        return info;
+    }
+
+
+    public ClearCurrentVersionInfoCache(): void {
+        this._currentVersionInfo = null;
+        this._currentVersionInfoPromise = null;
+        this._currentVersionInfoSubject.next(null);
+    }
 
 
 
@@ -762,6 +830,92 @@ export class GiftService extends SecureEndpointBase {
                 return this.handleError(error, () => this.RollbackGift(id, versionNumber));
         }));
     }
+
+
+    /**
+     * Gets version metadata for a specific version of a Gift.
+     */
+    public GetGiftChangeMetadata(id: bigint | number, versionNumber?: number): Observable<VersionInformation<GiftData>> {
+
+        let queryParams = new HttpParams();
+
+        if (versionNumber !== undefined && versionNumber !== null) {
+            queryParams = queryParams.append('versionNumber', versionNumber.toString());
+        }
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<GiftData>>(this.baseUrl + 'api/Gift/' + id.toString() + '/ChangeMetadata', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetGiftChangeMetadata(id, versionNumber));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the full audit history of a Gift.
+     */
+    public GetGiftAuditHistory(id: bigint | number, includeData: boolean = false): Observable<VersionInformation<GiftData>[]> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('includeData', includeData.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<GiftData>[]>(this.baseUrl + 'api/Gift/' + id.toString() + '/AuditHistory', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetGiftAuditHistory(id, includeData));
+            })
+        );
+    }
+
+
+    /**
+     * Gets a specific historical version of a Gift.
+     */
+    public GetGiftVersion(id: bigint | number, version: number): Observable<GiftData> {
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<GiftData>(this.baseUrl + 'api/Gift/' + id.toString() + '/Version/' + version.toString(), {
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveGift(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetGiftVersion(id, version));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the state of a Gift at a specific point in time.
+     */
+    public GetGiftStateAtTime(id: bigint | number, time: string): Observable<GiftData> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('time', time);
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<GiftData>(this.baseUrl + 'api/Gift/' + id.toString() + '/StateAtTime', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveGift(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetGiftStateAtTime(id, time));
+            })
+        );
+    }
+
 
     private getConfigHash(config: GiftQueryParameters | any): string {
 

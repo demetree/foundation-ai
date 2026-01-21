@@ -69,6 +69,19 @@ export class AppealSubmitData {
 }
 
 
+
+//
+// Version history information returned from version history API endpoints.
+// Matches server-side VersionInformation<T> structure.
+//
+export interface VersionInformation<T> {
+    timeStamp: string;           // ISO 8601
+    userId: bigint | number;
+    userName: string;
+    versionNumber: number;
+    data: T | null;
+}
+
 export class AppealBasicListData {
   id!: bigint | number;
   name!: string;
@@ -149,6 +162,15 @@ export class AppealData {
     private _giftsSubject = new BehaviorSubject<GiftData[] | null>(null);
 
                 
+
+
+    //
+    // Version history lazy-loading cache for current version metadata
+    //
+    private _currentVersionInfo: VersionInformation<AppealData> | null = null;
+    private _currentVersionInfoPromise: Promise<VersionInformation<AppealData>> | null = null;
+    private _currentVersionInfoSubject = new BehaviorSubject<VersionInformation<AppealData> | null>(null);
+
 
     //
     // Public observables — use with | async in templates
@@ -285,6 +307,9 @@ export class AppealData {
      this._giftsPromise = null;
      this._giftsSubject.next(null);
 
+     this._currentVersionInfo = null;
+     this._currentVersionInfoPromise = null;
+     this._currentVersionInfoSubject.next(null);
   }
 
     //
@@ -550,6 +575,49 @@ export class AppealData {
         return this.Gifts.then(gifts => gifts.length > 0);
     }
 
+
+
+
+    //
+    // Version History — Lazy-loading observable for current version metadata
+    //
+    // Usage examples:
+    //   Template: {{ (appeal.CurrentVersionInfo$ | async)?.userName }}
+    //   Code:     const info = await appeal.CurrentVersionInfo;
+    //
+    public CurrentVersionInfo$ = this._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if (this._currentVersionInfo === null && this._currentVersionInfoPromise === null) {
+                this.loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
+
+
+    public get CurrentVersionInfo(): Promise<VersionInformation<AppealData>> {
+        if (this._currentVersionInfoPromise === null) {
+            this._currentVersionInfoPromise = this.loadCurrentVersionInfo();
+        }
+        return this._currentVersionInfoPromise;
+    }
+
+
+    private async loadCurrentVersionInfo(): Promise<VersionInformation<AppealData>> {
+        const info = await lastValueFrom(
+            AppealService.Instance.GetAppealChangeMetadata(this.id, this.versionNumber as number)
+        );
+        this._currentVersionInfo = info;
+        this._currentVersionInfoSubject.next(info);
+        return info;
+    }
+
+
+    public ClearCurrentVersionInfoCache(): void {
+        this._currentVersionInfo = null;
+        this._currentVersionInfoPromise = null;
+        this._currentVersionInfoSubject.next(null);
+    }
 
 
 
@@ -898,6 +966,92 @@ export class AppealService extends SecureEndpointBase {
                 return this.handleError(error, () => this.RollbackAppeal(id, versionNumber));
         }));
     }
+
+
+    /**
+     * Gets version metadata for a specific version of a Appeal.
+     */
+    public GetAppealChangeMetadata(id: bigint | number, versionNumber?: number): Observable<VersionInformation<AppealData>> {
+
+        let queryParams = new HttpParams();
+
+        if (versionNumber !== undefined && versionNumber !== null) {
+            queryParams = queryParams.append('versionNumber', versionNumber.toString());
+        }
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<AppealData>>(this.baseUrl + 'api/Appeal/' + id.toString() + '/ChangeMetadata', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetAppealChangeMetadata(id, versionNumber));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the full audit history of a Appeal.
+     */
+    public GetAppealAuditHistory(id: bigint | number, includeData: boolean = false): Observable<VersionInformation<AppealData>[]> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('includeData', includeData.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<AppealData>[]>(this.baseUrl + 'api/Appeal/' + id.toString() + '/AuditHistory', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetAppealAuditHistory(id, includeData));
+            })
+        );
+    }
+
+
+    /**
+     * Gets a specific historical version of a Appeal.
+     */
+    public GetAppealVersion(id: bigint | number, version: number): Observable<AppealData> {
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<AppealData>(this.baseUrl + 'api/Appeal/' + id.toString() + '/Version/' + version.toString(), {
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveAppeal(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetAppealVersion(id, version));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the state of a Appeal at a specific point in time.
+     */
+    public GetAppealStateAtTime(id: bigint | number, time: string): Observable<AppealData> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('time', time);
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<AppealData>(this.baseUrl + 'api/Appeal/' + id.toString() + '/StateAtTime', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveAppeal(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetAppealStateAtTime(id, time));
+            })
+        );
+    }
+
 
     private getConfigHash(config: AppealQueryParameters | any): string {
 

@@ -109,6 +109,19 @@ export class OfficeSubmitData {
 }
 
 
+
+//
+// Version history information returned from version history API endpoints.
+// Matches server-side VersionInformation<T> structure.
+//
+export interface VersionInformation<T> {
+    timeStamp: string;           // ISO 8601
+    userId: bigint | number;
+    userName: string;
+    versionNumber: number;
+    data: T | null;
+}
+
 export class OfficeBasicListData {
   id!: bigint | number;
   name!: string;
@@ -239,6 +252,15 @@ export class OfficeData {
     private _giftsSubject = new BehaviorSubject<GiftData[] | null>(null);
 
                 
+
+
+    //
+    // Version history lazy-loading cache for current version metadata
+    //
+    private _currentVersionInfo: VersionInformation<OfficeData> | null = null;
+    private _currentVersionInfoPromise: Promise<VersionInformation<OfficeData>> | null = null;
+    private _currentVersionInfoSubject = new BehaviorSubject<VersionInformation<OfficeData> | null>(null);
+
 
     //
     // Public observables — use with | async in templates
@@ -514,6 +536,9 @@ export class OfficeData {
      this._giftsPromise = null;
      this._giftsSubject.next(null);
 
+     this._currentVersionInfo = null;
+     this._currentVersionInfoPromise = null;
+     this._currentVersionInfoSubject.next(null);
   }
 
     //
@@ -1172,6 +1197,49 @@ export class OfficeData {
 
 
 
+    //
+    // Version History — Lazy-loading observable for current version metadata
+    //
+    // Usage examples:
+    //   Template: {{ (office.CurrentVersionInfo$ | async)?.userName }}
+    //   Code:     const info = await office.CurrentVersionInfo;
+    //
+    public CurrentVersionInfo$ = this._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if (this._currentVersionInfo === null && this._currentVersionInfoPromise === null) {
+                this.loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
+
+
+    public get CurrentVersionInfo(): Promise<VersionInformation<OfficeData>> {
+        if (this._currentVersionInfoPromise === null) {
+            this._currentVersionInfoPromise = this.loadCurrentVersionInfo();
+        }
+        return this._currentVersionInfoPromise;
+    }
+
+
+    private async loadCurrentVersionInfo(): Promise<VersionInformation<OfficeData>> {
+        const info = await lastValueFrom(
+            OfficeService.Instance.GetOfficeChangeMetadata(this.id, this.versionNumber as number)
+        );
+        this._currentVersionInfo = info;
+        this._currentVersionInfoSubject.next(info);
+        return info;
+    }
+
+
+    public ClearCurrentVersionInfoCache(): void {
+        this._currentVersionInfo = null;
+        this._currentVersionInfoPromise = null;
+        this._currentVersionInfoSubject.next(null);
+    }
+
+
+
     /**
      * Updates the state of this OfficeData object using values from another object that has some or all of the fields needed.
      */
@@ -1539,6 +1607,92 @@ export class OfficeService extends SecureEndpointBase {
                 return this.handleError(error, () => this.RollbackOffice(id, versionNumber));
         }));
     }
+
+
+    /**
+     * Gets version metadata for a specific version of a Office.
+     */
+    public GetOfficeChangeMetadata(id: bigint | number, versionNumber?: number): Observable<VersionInformation<OfficeData>> {
+
+        let queryParams = new HttpParams();
+
+        if (versionNumber !== undefined && versionNumber !== null) {
+            queryParams = queryParams.append('versionNumber', versionNumber.toString());
+        }
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<OfficeData>>(this.baseUrl + 'api/Office/' + id.toString() + '/ChangeMetadata', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetOfficeChangeMetadata(id, versionNumber));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the full audit history of a Office.
+     */
+    public GetOfficeAuditHistory(id: bigint | number, includeData: boolean = false): Observable<VersionInformation<OfficeData>[]> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('includeData', includeData.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<OfficeData>[]>(this.baseUrl + 'api/Office/' + id.toString() + '/AuditHistory', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetOfficeAuditHistory(id, includeData));
+            })
+        );
+    }
+
+
+    /**
+     * Gets a specific historical version of a Office.
+     */
+    public GetOfficeVersion(id: bigint | number, version: number): Observable<OfficeData> {
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<OfficeData>(this.baseUrl + 'api/Office/' + id.toString() + '/Version/' + version.toString(), {
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveOffice(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetOfficeVersion(id, version));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the state of a Office at a specific point in time.
+     */
+    public GetOfficeStateAtTime(id: bigint | number, time: string): Observable<OfficeData> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('time', time);
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<OfficeData>(this.baseUrl + 'api/Office/' + id.toString() + '/StateAtTime', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveOffice(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetOfficeStateAtTime(id, time));
+            })
+        );
+    }
+
 
     private getConfigHash(config: OfficeQueryParameters | any): string {
 

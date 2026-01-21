@@ -78,6 +78,19 @@ export class SchedulingTargetAddressSubmitData {
 }
 
 
+
+//
+// Version history information returned from version history API endpoints.
+// Matches server-side VersionInformation<T> structure.
+//
+export interface VersionInformation<T> {
+    timeStamp: string;           // ISO 8601
+    userId: bigint | number;
+    userName: string;
+    versionNumber: number;
+    data: T | null;
+}
+
 export class SchedulingTargetAddressBasicListData {
   id!: bigint | number;
   name!: string;
@@ -152,6 +165,15 @@ export class SchedulingTargetAddressData {
 
                 
 
+
+    //
+    // Version history lazy-loading cache for current version metadata
+    //
+    private _currentVersionInfo: VersionInformation<SchedulingTargetAddressData> | null = null;
+    private _currentVersionInfoPromise: Promise<VersionInformation<SchedulingTargetAddressData>> | null = null;
+    private _currentVersionInfoSubject = new BehaviorSubject<VersionInformation<SchedulingTargetAddressData> | null>(null);
+
+
     //
     // Public observables — use with | async in templates
     // Subscription triggers lazy load if not already cached
@@ -219,6 +241,9 @@ export class SchedulingTargetAddressData {
      this._schedulingTargetAddressChangeHistoriesPromise = null;
      this._schedulingTargetAddressChangeHistoriesSubject.next(null);
 
+     this._currentVersionInfo = null;
+     this._currentVersionInfoPromise = null;
+     this._currentVersionInfoSubject.next(null);
   }
 
     //
@@ -289,6 +314,49 @@ export class SchedulingTargetAddressData {
         return this.SchedulingTargetAddressChangeHistories.then(schedulingTargetAddressChangeHistories => schedulingTargetAddressChangeHistories.length > 0);
     }
 
+
+
+
+    //
+    // Version History — Lazy-loading observable for current version metadata
+    //
+    // Usage examples:
+    //   Template: {{ (schedulingTargetAddress.CurrentVersionInfo$ | async)?.userName }}
+    //   Code:     const info = await schedulingTargetAddress.CurrentVersionInfo;
+    //
+    public CurrentVersionInfo$ = this._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if (this._currentVersionInfo === null && this._currentVersionInfoPromise === null) {
+                this.loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
+
+
+    public get CurrentVersionInfo(): Promise<VersionInformation<SchedulingTargetAddressData>> {
+        if (this._currentVersionInfoPromise === null) {
+            this._currentVersionInfoPromise = this.loadCurrentVersionInfo();
+        }
+        return this._currentVersionInfoPromise;
+    }
+
+
+    private async loadCurrentVersionInfo(): Promise<VersionInformation<SchedulingTargetAddressData>> {
+        const info = await lastValueFrom(
+            SchedulingTargetAddressService.Instance.GetSchedulingTargetAddressChangeMetadata(this.id, this.versionNumber as number)
+        );
+        this._currentVersionInfo = info;
+        this._currentVersionInfoSubject.next(info);
+        return info;
+    }
+
+
+    public ClearCurrentVersionInfoCache(): void {
+        this._currentVersionInfo = null;
+        this._currentVersionInfoPromise = null;
+        this._currentVersionInfoSubject.next(null);
+    }
 
 
 
@@ -639,6 +707,92 @@ export class SchedulingTargetAddressService extends SecureEndpointBase {
                 return this.handleError(error, () => this.RollbackSchedulingTargetAddress(id, versionNumber));
         }));
     }
+
+
+    /**
+     * Gets version metadata for a specific version of a SchedulingTargetAddress.
+     */
+    public GetSchedulingTargetAddressChangeMetadata(id: bigint | number, versionNumber?: number): Observable<VersionInformation<SchedulingTargetAddressData>> {
+
+        let queryParams = new HttpParams();
+
+        if (versionNumber !== undefined && versionNumber !== null) {
+            queryParams = queryParams.append('versionNumber', versionNumber.toString());
+        }
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<SchedulingTargetAddressData>>(this.baseUrl + 'api/SchedulingTargetAddress/' + id.toString() + '/ChangeMetadata', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetSchedulingTargetAddressChangeMetadata(id, versionNumber));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the full audit history of a SchedulingTargetAddress.
+     */
+    public GetSchedulingTargetAddressAuditHistory(id: bigint | number, includeData: boolean = false): Observable<VersionInformation<SchedulingTargetAddressData>[]> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('includeData', includeData.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<SchedulingTargetAddressData>[]>(this.baseUrl + 'api/SchedulingTargetAddress/' + id.toString() + '/AuditHistory', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetSchedulingTargetAddressAuditHistory(id, includeData));
+            })
+        );
+    }
+
+
+    /**
+     * Gets a specific historical version of a SchedulingTargetAddress.
+     */
+    public GetSchedulingTargetAddressVersion(id: bigint | number, version: number): Observable<SchedulingTargetAddressData> {
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<SchedulingTargetAddressData>(this.baseUrl + 'api/SchedulingTargetAddress/' + id.toString() + '/Version/' + version.toString(), {
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveSchedulingTargetAddress(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetSchedulingTargetAddressVersion(id, version));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the state of a SchedulingTargetAddress at a specific point in time.
+     */
+    public GetSchedulingTargetAddressStateAtTime(id: bigint | number, time: string): Observable<SchedulingTargetAddressData> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('time', time);
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<SchedulingTargetAddressData>(this.baseUrl + 'api/SchedulingTargetAddress/' + id.toString() + '/StateAtTime', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveSchedulingTargetAddress(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetSchedulingTargetAddressStateAtTime(id, time));
+            })
+        );
+    }
+
 
     private getConfigHash(config: SchedulingTargetAddressQueryParameters | any): string {
 

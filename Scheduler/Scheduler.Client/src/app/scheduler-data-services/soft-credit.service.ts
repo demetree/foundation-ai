@@ -60,6 +60,19 @@ export class SoftCreditSubmitData {
 }
 
 
+
+//
+// Version history information returned from version history API endpoints.
+// Matches server-side VersionInformation<T> structure.
+//
+export interface VersionInformation<T> {
+    timeStamp: string;           // ISO 8601
+    userId: bigint | number;
+    userName: string;
+    versionNumber: number;
+    data: T | null;
+}
+
 export class SoftCreditBasicListData {
   id!: bigint | number;
   name!: string;
@@ -123,6 +136,15 @@ export class SoftCreditData {
     private _softCreditChangeHistoriesSubject = new BehaviorSubject<SoftCreditChangeHistoryData[] | null>(null);
 
                 
+
+
+    //
+    // Version history lazy-loading cache for current version metadata
+    //
+    private _currentVersionInfo: VersionInformation<SoftCreditData> | null = null;
+    private _currentVersionInfoPromise: Promise<VersionInformation<SoftCreditData>> | null = null;
+    private _currentVersionInfoSubject = new BehaviorSubject<VersionInformation<SoftCreditData> | null>(null);
+
 
     //
     // Public observables — use with | async in templates
@@ -191,6 +213,9 @@ export class SoftCreditData {
      this._softCreditChangeHistoriesPromise = null;
      this._softCreditChangeHistoriesSubject.next(null);
 
+     this._currentVersionInfo = null;
+     this._currentVersionInfoPromise = null;
+     this._currentVersionInfoSubject.next(null);
   }
 
     //
@@ -261,6 +286,49 @@ export class SoftCreditData {
         return this.SoftCreditChangeHistories.then(softCreditChangeHistories => softCreditChangeHistories.length > 0);
     }
 
+
+
+
+    //
+    // Version History — Lazy-loading observable for current version metadata
+    //
+    // Usage examples:
+    //   Template: {{ (softCredit.CurrentVersionInfo$ | async)?.userName }}
+    //   Code:     const info = await softCredit.CurrentVersionInfo;
+    //
+    public CurrentVersionInfo$ = this._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if (this._currentVersionInfo === null && this._currentVersionInfoPromise === null) {
+                this.loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
+
+
+    public get CurrentVersionInfo(): Promise<VersionInformation<SoftCreditData>> {
+        if (this._currentVersionInfoPromise === null) {
+            this._currentVersionInfoPromise = this.loadCurrentVersionInfo();
+        }
+        return this._currentVersionInfoPromise;
+    }
+
+
+    private async loadCurrentVersionInfo(): Promise<VersionInformation<SoftCreditData>> {
+        const info = await lastValueFrom(
+            SoftCreditService.Instance.GetSoftCreditChangeMetadata(this.id, this.versionNumber as number)
+        );
+        this._currentVersionInfo = info;
+        this._currentVersionInfoSubject.next(info);
+        return info;
+    }
+
+
+    public ClearCurrentVersionInfoCache(): void {
+        this._currentVersionInfo = null;
+        this._currentVersionInfoPromise = null;
+        this._currentVersionInfoSubject.next(null);
+    }
 
 
 
@@ -603,6 +671,92 @@ export class SoftCreditService extends SecureEndpointBase {
                 return this.handleError(error, () => this.RollbackSoftCredit(id, versionNumber));
         }));
     }
+
+
+    /**
+     * Gets version metadata for a specific version of a SoftCredit.
+     */
+    public GetSoftCreditChangeMetadata(id: bigint | number, versionNumber?: number): Observable<VersionInformation<SoftCreditData>> {
+
+        let queryParams = new HttpParams();
+
+        if (versionNumber !== undefined && versionNumber !== null) {
+            queryParams = queryParams.append('versionNumber', versionNumber.toString());
+        }
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<SoftCreditData>>(this.baseUrl + 'api/SoftCredit/' + id.toString() + '/ChangeMetadata', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetSoftCreditChangeMetadata(id, versionNumber));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the full audit history of a SoftCredit.
+     */
+    public GetSoftCreditAuditHistory(id: bigint | number, includeData: boolean = false): Observable<VersionInformation<SoftCreditData>[]> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('includeData', includeData.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<SoftCreditData>[]>(this.baseUrl + 'api/SoftCredit/' + id.toString() + '/AuditHistory', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetSoftCreditAuditHistory(id, includeData));
+            })
+        );
+    }
+
+
+    /**
+     * Gets a specific historical version of a SoftCredit.
+     */
+    public GetSoftCreditVersion(id: bigint | number, version: number): Observable<SoftCreditData> {
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<SoftCreditData>(this.baseUrl + 'api/SoftCredit/' + id.toString() + '/Version/' + version.toString(), {
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveSoftCredit(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetSoftCreditVersion(id, version));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the state of a SoftCredit at a specific point in time.
+     */
+    public GetSoftCreditStateAtTime(id: bigint | number, time: string): Observable<SoftCreditData> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('time', time);
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<SoftCreditData>(this.baseUrl + 'api/SoftCredit/' + id.toString() + '/StateAtTime', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveSoftCredit(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetSoftCreditStateAtTime(id, time));
+            })
+        );
+    }
+
 
     private getConfigHash(config: SoftCreditQueryParameters | any): string {
 

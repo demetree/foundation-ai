@@ -116,6 +116,19 @@ export class ScheduledEventSubmitData {
 }
 
 
+
+//
+// Version history information returned from version history API endpoints.
+// Matches server-side VersionInformation<T> structure.
+//
+export interface VersionInformation<T> {
+    timeStamp: string;           // ISO 8601
+    userId: bigint | number;
+    userName: string;
+    versionNumber: number;
+    data: T | null;
+}
+
 export class ScheduledEventBasicListData {
   id!: bigint | number;
   name!: string;
@@ -247,6 +260,15 @@ export class ScheduledEventData {
     private _eventResourceAssignmentsSubject = new BehaviorSubject<EventResourceAssignmentData[] | null>(null);
 
                 
+
+
+    //
+    // Version history lazy-loading cache for current version metadata
+    //
+    private _currentVersionInfo: VersionInformation<ScheduledEventData> | null = null;
+    private _currentVersionInfoPromise: Promise<VersionInformation<ScheduledEventData>> | null = null;
+    private _currentVersionInfoSubject = new BehaviorSubject<VersionInformation<ScheduledEventData> | null>(null);
+
 
     //
     // Public observables — use with | async in templates
@@ -497,6 +519,9 @@ export class ScheduledEventData {
      this._eventResourceAssignmentsPromise = null;
      this._eventResourceAssignmentsSubject.next(null);
 
+     this._currentVersionInfo = null;
+     this._currentVersionInfoPromise = null;
+     this._currentVersionInfoSubject.next(null);
   }
 
     //
@@ -1090,6 +1115,49 @@ export class ScheduledEventData {
 
 
 
+    //
+    // Version History — Lazy-loading observable for current version metadata
+    //
+    // Usage examples:
+    //   Template: {{ (scheduledEvent.CurrentVersionInfo$ | async)?.userName }}
+    //   Code:     const info = await scheduledEvent.CurrentVersionInfo;
+    //
+    public CurrentVersionInfo$ = this._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if (this._currentVersionInfo === null && this._currentVersionInfoPromise === null) {
+                this.loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
+
+
+    public get CurrentVersionInfo(): Promise<VersionInformation<ScheduledEventData>> {
+        if (this._currentVersionInfoPromise === null) {
+            this._currentVersionInfoPromise = this.loadCurrentVersionInfo();
+        }
+        return this._currentVersionInfoPromise;
+    }
+
+
+    private async loadCurrentVersionInfo(): Promise<VersionInformation<ScheduledEventData>> {
+        const info = await lastValueFrom(
+            ScheduledEventService.Instance.GetScheduledEventChangeMetadata(this.id, this.versionNumber as number)
+        );
+        this._currentVersionInfo = info;
+        this._currentVersionInfoSubject.next(info);
+        return info;
+    }
+
+
+    public ClearCurrentVersionInfoCache(): void {
+        this._currentVersionInfo = null;
+        this._currentVersionInfoPromise = null;
+        this._currentVersionInfoSubject.next(null);
+    }
+
+
+
     /**
      * Updates the state of this ScheduledEventData object using values from another object that has some or all of the fields needed.
      */
@@ -1456,6 +1524,92 @@ export class ScheduledEventService extends SecureEndpointBase {
                 return this.handleError(error, () => this.RollbackScheduledEvent(id, versionNumber));
         }));
     }
+
+
+    /**
+     * Gets version metadata for a specific version of a ScheduledEvent.
+     */
+    public GetScheduledEventChangeMetadata(id: bigint | number, versionNumber?: number): Observable<VersionInformation<ScheduledEventData>> {
+
+        let queryParams = new HttpParams();
+
+        if (versionNumber !== undefined && versionNumber !== null) {
+            queryParams = queryParams.append('versionNumber', versionNumber.toString());
+        }
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<ScheduledEventData>>(this.baseUrl + 'api/ScheduledEvent/' + id.toString() + '/ChangeMetadata', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetScheduledEventChangeMetadata(id, versionNumber));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the full audit history of a ScheduledEvent.
+     */
+    public GetScheduledEventAuditHistory(id: bigint | number, includeData: boolean = false): Observable<VersionInformation<ScheduledEventData>[]> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('includeData', includeData.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<ScheduledEventData>[]>(this.baseUrl + 'api/ScheduledEvent/' + id.toString() + '/AuditHistory', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetScheduledEventAuditHistory(id, includeData));
+            })
+        );
+    }
+
+
+    /**
+     * Gets a specific historical version of a ScheduledEvent.
+     */
+    public GetScheduledEventVersion(id: bigint | number, version: number): Observable<ScheduledEventData> {
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<ScheduledEventData>(this.baseUrl + 'api/ScheduledEvent/' + id.toString() + '/Version/' + version.toString(), {
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveScheduledEvent(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetScheduledEventVersion(id, version));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the state of a ScheduledEvent at a specific point in time.
+     */
+    public GetScheduledEventStateAtTime(id: bigint | number, time: string): Observable<ScheduledEventData> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('time', time);
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<ScheduledEventData>(this.baseUrl + 'api/ScheduledEvent/' + id.toString() + '/StateAtTime', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveScheduledEvent(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetScheduledEventStateAtTime(id, time));
+            })
+        );
+    }
+
 
     private getConfigHash(config: ScheduledEventQueryParameters | any): string {
 

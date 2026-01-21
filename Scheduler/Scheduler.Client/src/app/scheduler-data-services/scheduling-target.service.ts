@@ -90,6 +90,19 @@ export class SchedulingTargetSubmitData {
 }
 
 
+
+//
+// Version history information returned from version history API endpoints.
+// Matches server-side VersionInformation<T> structure.
+//
+export interface VersionInformation<T> {
+    timeStamp: string;           // ISO 8601
+    userId: bigint | number;
+    userName: string;
+    versionNumber: number;
+    data: T | null;
+}
+
 export class SchedulingTargetBasicListData {
   id!: bigint | number;
   name!: string;
@@ -197,6 +210,15 @@ export class SchedulingTargetData {
     private _householdsSubject = new BehaviorSubject<HouseholdData[] | null>(null);
 
                 
+
+
+    //
+    // Version history lazy-loading cache for current version metadata
+    //
+    private _currentVersionInfo: VersionInformation<SchedulingTargetData> | null = null;
+    private _currentVersionInfoPromise: Promise<VersionInformation<SchedulingTargetData>> | null = null;
+    private _currentVersionInfoSubject = new BehaviorSubject<VersionInformation<SchedulingTargetData> | null>(null);
+
 
     //
     // Public observables — use with | async in templates
@@ -403,6 +425,9 @@ export class SchedulingTargetData {
      this._householdsPromise = null;
      this._householdsSubject.next(null);
 
+     this._currentVersionInfo = null;
+     this._currentVersionInfoPromise = null;
+     this._currentVersionInfoSubject.next(null);
   }
 
     //
@@ -866,6 +891,49 @@ export class SchedulingTargetData {
 
 
 
+    //
+    // Version History — Lazy-loading observable for current version metadata
+    //
+    // Usage examples:
+    //   Template: {{ (schedulingTarget.CurrentVersionInfo$ | async)?.userName }}
+    //   Code:     const info = await schedulingTarget.CurrentVersionInfo;
+    //
+    public CurrentVersionInfo$ = this._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if (this._currentVersionInfo === null && this._currentVersionInfoPromise === null) {
+                this.loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
+
+
+    public get CurrentVersionInfo(): Promise<VersionInformation<SchedulingTargetData>> {
+        if (this._currentVersionInfoPromise === null) {
+            this._currentVersionInfoPromise = this.loadCurrentVersionInfo();
+        }
+        return this._currentVersionInfoPromise;
+    }
+
+
+    private async loadCurrentVersionInfo(): Promise<VersionInformation<SchedulingTargetData>> {
+        const info = await lastValueFrom(
+            SchedulingTargetService.Instance.GetSchedulingTargetChangeMetadata(this.id, this.versionNumber as number)
+        );
+        this._currentVersionInfo = info;
+        this._currentVersionInfoSubject.next(info);
+        return info;
+    }
+
+
+    public ClearCurrentVersionInfoCache(): void {
+        this._currentVersionInfo = null;
+        this._currentVersionInfoPromise = null;
+        this._currentVersionInfoSubject.next(null);
+    }
+
+
+
     /**
      * Updates the state of this SchedulingTargetData object using values from another object that has some or all of the fields needed.
      */
@@ -1222,6 +1290,92 @@ export class SchedulingTargetService extends SecureEndpointBase {
                 return this.handleError(error, () => this.RollbackSchedulingTarget(id, versionNumber));
         }));
     }
+
+
+    /**
+     * Gets version metadata for a specific version of a SchedulingTarget.
+     */
+    public GetSchedulingTargetChangeMetadata(id: bigint | number, versionNumber?: number): Observable<VersionInformation<SchedulingTargetData>> {
+
+        let queryParams = new HttpParams();
+
+        if (versionNumber !== undefined && versionNumber !== null) {
+            queryParams = queryParams.append('versionNumber', versionNumber.toString());
+        }
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<SchedulingTargetData>>(this.baseUrl + 'api/SchedulingTarget/' + id.toString() + '/ChangeMetadata', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetSchedulingTargetChangeMetadata(id, versionNumber));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the full audit history of a SchedulingTarget.
+     */
+    public GetSchedulingTargetAuditHistory(id: bigint | number, includeData: boolean = false): Observable<VersionInformation<SchedulingTargetData>[]> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('includeData', includeData.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<SchedulingTargetData>[]>(this.baseUrl + 'api/SchedulingTarget/' + id.toString() + '/AuditHistory', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetSchedulingTargetAuditHistory(id, includeData));
+            })
+        );
+    }
+
+
+    /**
+     * Gets a specific historical version of a SchedulingTarget.
+     */
+    public GetSchedulingTargetVersion(id: bigint | number, version: number): Observable<SchedulingTargetData> {
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<SchedulingTargetData>(this.baseUrl + 'api/SchedulingTarget/' + id.toString() + '/Version/' + version.toString(), {
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveSchedulingTarget(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetSchedulingTargetVersion(id, version));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the state of a SchedulingTarget at a specific point in time.
+     */
+    public GetSchedulingTargetStateAtTime(id: bigint | number, time: string): Observable<SchedulingTargetData> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('time', time);
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<SchedulingTargetData>(this.baseUrl + 'api/SchedulingTarget/' + id.toString() + '/StateAtTime', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveSchedulingTarget(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetSchedulingTargetStateAtTime(id, time));
+            })
+        );
+    }
+
 
     private getConfigHash(config: SchedulingTargetQueryParameters | any): string {
 

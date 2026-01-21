@@ -77,6 +77,19 @@ export class BatchSubmitData {
 }
 
 
+
+//
+// Version history information returned from version history API endpoints.
+// Matches server-side VersionInformation<T> structure.
+//
+export interface VersionInformation<T> {
+    timeStamp: string;           // ISO 8601
+    userId: bigint | number;
+    userName: string;
+    versionNumber: number;
+    data: T | null;
+}
+
 export class BatchBasicListData {
   id!: bigint | number;
   name!: string;
@@ -154,6 +167,15 @@ export class BatchData {
     private _giftsSubject = new BehaviorSubject<GiftData[] | null>(null);
 
                 
+
+
+    //
+    // Version history lazy-loading cache for current version metadata
+    //
+    private _currentVersionInfo: VersionInformation<BatchData> | null = null;
+    private _currentVersionInfoPromise: Promise<VersionInformation<BatchData>> | null = null;
+    private _currentVersionInfoSubject = new BehaviorSubject<VersionInformation<BatchData> | null>(null);
+
 
     //
     // Public observables — use with | async in templates
@@ -245,6 +267,9 @@ export class BatchData {
      this._giftsPromise = null;
      this._giftsSubject.next(null);
 
+     this._currentVersionInfo = null;
+     this._currentVersionInfoPromise = null;
+     this._currentVersionInfoSubject.next(null);
   }
 
     //
@@ -380,6 +405,49 @@ export class BatchData {
         return this.Gifts.then(gifts => gifts.length > 0);
     }
 
+
+
+
+    //
+    // Version History — Lazy-loading observable for current version metadata
+    //
+    // Usage examples:
+    //   Template: {{ (batch.CurrentVersionInfo$ | async)?.userName }}
+    //   Code:     const info = await batch.CurrentVersionInfo;
+    //
+    public CurrentVersionInfo$ = this._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if (this._currentVersionInfo === null && this._currentVersionInfoPromise === null) {
+                this.loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
+
+
+    public get CurrentVersionInfo(): Promise<VersionInformation<BatchData>> {
+        if (this._currentVersionInfoPromise === null) {
+            this._currentVersionInfoPromise = this.loadCurrentVersionInfo();
+        }
+        return this._currentVersionInfoPromise;
+    }
+
+
+    private async loadCurrentVersionInfo(): Promise<VersionInformation<BatchData>> {
+        const info = await lastValueFrom(
+            BatchService.Instance.GetBatchChangeMetadata(this.id, this.versionNumber as number)
+        );
+        this._currentVersionInfo = info;
+        this._currentVersionInfoSubject.next(info);
+        return info;
+    }
+
+
+    public ClearCurrentVersionInfoCache(): void {
+        this._currentVersionInfo = null;
+        this._currentVersionInfoPromise = null;
+        this._currentVersionInfoSubject.next(null);
+    }
 
 
 
@@ -730,6 +798,92 @@ export class BatchService extends SecureEndpointBase {
                 return this.handleError(error, () => this.RollbackBatch(id, versionNumber));
         }));
     }
+
+
+    /**
+     * Gets version metadata for a specific version of a Batch.
+     */
+    public GetBatchChangeMetadata(id: bigint | number, versionNumber?: number): Observable<VersionInformation<BatchData>> {
+
+        let queryParams = new HttpParams();
+
+        if (versionNumber !== undefined && versionNumber !== null) {
+            queryParams = queryParams.append('versionNumber', versionNumber.toString());
+        }
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<BatchData>>(this.baseUrl + 'api/Batch/' + id.toString() + '/ChangeMetadata', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetBatchChangeMetadata(id, versionNumber));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the full audit history of a Batch.
+     */
+    public GetBatchAuditHistory(id: bigint | number, includeData: boolean = false): Observable<VersionInformation<BatchData>[]> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('includeData', includeData.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<BatchData>[]>(this.baseUrl + 'api/Batch/' + id.toString() + '/AuditHistory', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetBatchAuditHistory(id, includeData));
+            })
+        );
+    }
+
+
+    /**
+     * Gets a specific historical version of a Batch.
+     */
+    public GetBatchVersion(id: bigint | number, version: number): Observable<BatchData> {
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<BatchData>(this.baseUrl + 'api/Batch/' + id.toString() + '/Version/' + version.toString(), {
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveBatch(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetBatchVersion(id, version));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the state of a Batch at a specific point in time.
+     */
+    public GetBatchStateAtTime(id: bigint | number, time: string): Observable<BatchData> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('time', time);
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<BatchData>(this.baseUrl + 'api/Batch/' + id.toString() + '/StateAtTime', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveBatch(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetBatchStateAtTime(id, time));
+            })
+        );
+    }
+
 
     private getConfigHash(config: BatchQueryParameters | any): string {
 

@@ -58,6 +58,19 @@ export class ScheduledEventTemplateQualificationRequirementSubmitData {
 }
 
 
+
+//
+// Version history information returned from version history API endpoints.
+// Matches server-side VersionInformation<T> structure.
+//
+export interface VersionInformation<T> {
+    timeStamp: string;           // ISO 8601
+    userId: bigint | number;
+    userName: string;
+    versionNumber: number;
+    data: T | null;
+}
+
 export class ScheduledEventTemplateQualificationRequirementBasicListData {
   id!: bigint | number;
   name!: string;
@@ -120,6 +133,15 @@ export class ScheduledEventTemplateQualificationRequirementData {
     private _scheduledEventTemplateQualificationRequirementChangeHistoriesSubject = new BehaviorSubject<ScheduledEventTemplateQualificationRequirementChangeHistoryData[] | null>(null);
 
                 
+
+
+    //
+    // Version history lazy-loading cache for current version metadata
+    //
+    private _currentVersionInfo: VersionInformation<ScheduledEventTemplateQualificationRequirementData> | null = null;
+    private _currentVersionInfoPromise: Promise<VersionInformation<ScheduledEventTemplateQualificationRequirementData>> | null = null;
+    private _currentVersionInfoSubject = new BehaviorSubject<VersionInformation<ScheduledEventTemplateQualificationRequirementData> | null>(null);
+
 
     //
     // Public observables — use with | async in templates
@@ -188,6 +210,9 @@ export class ScheduledEventTemplateQualificationRequirementData {
      this._scheduledEventTemplateQualificationRequirementChangeHistoriesPromise = null;
      this._scheduledEventTemplateQualificationRequirementChangeHistoriesSubject.next(null);
 
+     this._currentVersionInfo = null;
+     this._currentVersionInfoPromise = null;
+     this._currentVersionInfoSubject.next(null);
   }
 
     //
@@ -258,6 +283,49 @@ export class ScheduledEventTemplateQualificationRequirementData {
         return this.ScheduledEventTemplateQualificationRequirementChangeHistories.then(scheduledEventTemplateQualificationRequirementChangeHistories => scheduledEventTemplateQualificationRequirementChangeHistories.length > 0);
     }
 
+
+
+
+    //
+    // Version History — Lazy-loading observable for current version metadata
+    //
+    // Usage examples:
+    //   Template: {{ (scheduledEventTemplateQualificationRequirement.CurrentVersionInfo$ | async)?.userName }}
+    //   Code:     const info = await scheduledEventTemplateQualificationRequirement.CurrentVersionInfo;
+    //
+    public CurrentVersionInfo$ = this._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if (this._currentVersionInfo === null && this._currentVersionInfoPromise === null) {
+                this.loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
+
+
+    public get CurrentVersionInfo(): Promise<VersionInformation<ScheduledEventTemplateQualificationRequirementData>> {
+        if (this._currentVersionInfoPromise === null) {
+            this._currentVersionInfoPromise = this.loadCurrentVersionInfo();
+        }
+        return this._currentVersionInfoPromise;
+    }
+
+
+    private async loadCurrentVersionInfo(): Promise<VersionInformation<ScheduledEventTemplateQualificationRequirementData>> {
+        const info = await lastValueFrom(
+            ScheduledEventTemplateQualificationRequirementService.Instance.GetScheduledEventTemplateQualificationRequirementChangeMetadata(this.id, this.versionNumber as number)
+        );
+        this._currentVersionInfo = info;
+        this._currentVersionInfoSubject.next(info);
+        return info;
+    }
+
+
+    public ClearCurrentVersionInfoCache(): void {
+        this._currentVersionInfo = null;
+        this._currentVersionInfoPromise = null;
+        this._currentVersionInfoSubject.next(null);
+    }
 
 
 
@@ -599,6 +667,92 @@ export class ScheduledEventTemplateQualificationRequirementService extends Secur
                 return this.handleError(error, () => this.RollbackScheduledEventTemplateQualificationRequirement(id, versionNumber));
         }));
     }
+
+
+    /**
+     * Gets version metadata for a specific version of a ScheduledEventTemplateQualificationRequirement.
+     */
+    public GetScheduledEventTemplateQualificationRequirementChangeMetadata(id: bigint | number, versionNumber?: number): Observable<VersionInformation<ScheduledEventTemplateQualificationRequirementData>> {
+
+        let queryParams = new HttpParams();
+
+        if (versionNumber !== undefined && versionNumber !== null) {
+            queryParams = queryParams.append('versionNumber', versionNumber.toString());
+        }
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<ScheduledEventTemplateQualificationRequirementData>>(this.baseUrl + 'api/ScheduledEventTemplateQualificationRequirement/' + id.toString() + '/ChangeMetadata', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetScheduledEventTemplateQualificationRequirementChangeMetadata(id, versionNumber));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the full audit history of a ScheduledEventTemplateQualificationRequirement.
+     */
+    public GetScheduledEventTemplateQualificationRequirementAuditHistory(id: bigint | number, includeData: boolean = false): Observable<VersionInformation<ScheduledEventTemplateQualificationRequirementData>[]> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('includeData', includeData.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<ScheduledEventTemplateQualificationRequirementData>[]>(this.baseUrl + 'api/ScheduledEventTemplateQualificationRequirement/' + id.toString() + '/AuditHistory', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetScheduledEventTemplateQualificationRequirementAuditHistory(id, includeData));
+            })
+        );
+    }
+
+
+    /**
+     * Gets a specific historical version of a ScheduledEventTemplateQualificationRequirement.
+     */
+    public GetScheduledEventTemplateQualificationRequirementVersion(id: bigint | number, version: number): Observable<ScheduledEventTemplateQualificationRequirementData> {
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<ScheduledEventTemplateQualificationRequirementData>(this.baseUrl + 'api/ScheduledEventTemplateQualificationRequirement/' + id.toString() + '/Version/' + version.toString(), {
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveScheduledEventTemplateQualificationRequirement(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetScheduledEventTemplateQualificationRequirementVersion(id, version));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the state of a ScheduledEventTemplateQualificationRequirement at a specific point in time.
+     */
+    public GetScheduledEventTemplateQualificationRequirementStateAtTime(id: bigint | number, time: string): Observable<ScheduledEventTemplateQualificationRequirementData> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('time', time);
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<ScheduledEventTemplateQualificationRequirementData>(this.baseUrl + 'api/ScheduledEventTemplateQualificationRequirement/' + id.toString() + '/StateAtTime', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveScheduledEventTemplateQualificationRequirement(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetScheduledEventTemplateQualificationRequirementStateAtTime(id, time));
+            })
+        );
+    }
+
 
     private getConfigHash(config: ScheduledEventTemplateQualificationRequirementQueryParameters | any): string {
 

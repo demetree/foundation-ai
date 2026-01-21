@@ -66,6 +66,19 @@ export class CrewMemberSubmitData {
 }
 
 
+
+//
+// Version history information returned from version history API endpoints.
+// Matches server-side VersionInformation<T> structure.
+//
+export interface VersionInformation<T> {
+    timeStamp: string;           // ISO 8601
+    userId: bigint | number;
+    userName: string;
+    versionNumber: number;
+    data: T | null;
+}
+
 export class CrewMemberBasicListData {
   id!: bigint | number;
   name!: string;
@@ -134,6 +147,15 @@ export class CrewMemberData {
 
                 
 
+
+    //
+    // Version history lazy-loading cache for current version metadata
+    //
+    private _currentVersionInfo: VersionInformation<CrewMemberData> | null = null;
+    private _currentVersionInfoPromise: Promise<VersionInformation<CrewMemberData>> | null = null;
+    private _currentVersionInfoSubject = new BehaviorSubject<VersionInformation<CrewMemberData> | null>(null);
+
+
     //
     // Public observables — use with | async in templates
     // Subscription triggers lazy load if not already cached
@@ -201,6 +223,9 @@ export class CrewMemberData {
      this._crewMemberChangeHistoriesPromise = null;
      this._crewMemberChangeHistoriesSubject.next(null);
 
+     this._currentVersionInfo = null;
+     this._currentVersionInfoPromise = null;
+     this._currentVersionInfoSubject.next(null);
   }
 
     //
@@ -271,6 +296,49 @@ export class CrewMemberData {
         return this.CrewMemberChangeHistories.then(crewMemberChangeHistories => crewMemberChangeHistories.length > 0);
     }
 
+
+
+
+    //
+    // Version History — Lazy-loading observable for current version metadata
+    //
+    // Usage examples:
+    //   Template: {{ (crewMember.CurrentVersionInfo$ | async)?.userName }}
+    //   Code:     const info = await crewMember.CurrentVersionInfo;
+    //
+    public CurrentVersionInfo$ = this._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if (this._currentVersionInfo === null && this._currentVersionInfoPromise === null) {
+                this.loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
+
+
+    public get CurrentVersionInfo(): Promise<VersionInformation<CrewMemberData>> {
+        if (this._currentVersionInfoPromise === null) {
+            this._currentVersionInfoPromise = this.loadCurrentVersionInfo();
+        }
+        return this._currentVersionInfoPromise;
+    }
+
+
+    private async loadCurrentVersionInfo(): Promise<VersionInformation<CrewMemberData>> {
+        const info = await lastValueFrom(
+            CrewMemberService.Instance.GetCrewMemberChangeMetadata(this.id, this.versionNumber as number)
+        );
+        this._currentVersionInfo = info;
+        this._currentVersionInfoSubject.next(info);
+        return info;
+    }
+
+
+    public ClearCurrentVersionInfoCache(): void {
+        this._currentVersionInfo = null;
+        this._currentVersionInfoPromise = null;
+        this._currentVersionInfoSubject.next(null);
+    }
 
 
 
@@ -615,6 +683,92 @@ export class CrewMemberService extends SecureEndpointBase {
                 return this.handleError(error, () => this.RollbackCrewMember(id, versionNumber));
         }));
     }
+
+
+    /**
+     * Gets version metadata for a specific version of a CrewMember.
+     */
+    public GetCrewMemberChangeMetadata(id: bigint | number, versionNumber?: number): Observable<VersionInformation<CrewMemberData>> {
+
+        let queryParams = new HttpParams();
+
+        if (versionNumber !== undefined && versionNumber !== null) {
+            queryParams = queryParams.append('versionNumber', versionNumber.toString());
+        }
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<CrewMemberData>>(this.baseUrl + 'api/CrewMember/' + id.toString() + '/ChangeMetadata', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetCrewMemberChangeMetadata(id, versionNumber));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the full audit history of a CrewMember.
+     */
+    public GetCrewMemberAuditHistory(id: bigint | number, includeData: boolean = false): Observable<VersionInformation<CrewMemberData>[]> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('includeData', includeData.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<CrewMemberData>[]>(this.baseUrl + 'api/CrewMember/' + id.toString() + '/AuditHistory', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetCrewMemberAuditHistory(id, includeData));
+            })
+        );
+    }
+
+
+    /**
+     * Gets a specific historical version of a CrewMember.
+     */
+    public GetCrewMemberVersion(id: bigint | number, version: number): Observable<CrewMemberData> {
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<CrewMemberData>(this.baseUrl + 'api/CrewMember/' + id.toString() + '/Version/' + version.toString(), {
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveCrewMember(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetCrewMemberVersion(id, version));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the state of a CrewMember at a specific point in time.
+     */
+    public GetCrewMemberStateAtTime(id: bigint | number, time: string): Observable<CrewMemberData> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('time', time);
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<CrewMemberData>(this.baseUrl + 'api/CrewMember/' + id.toString() + '/StateAtTime', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveCrewMember(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetCrewMemberStateAtTime(id, time));
+            })
+        );
+    }
+
 
     private getConfigHash(config: CrewMemberQueryParameters | any): string {
 

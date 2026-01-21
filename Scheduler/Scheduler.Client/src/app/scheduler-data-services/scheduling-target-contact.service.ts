@@ -61,6 +61,19 @@ export class SchedulingTargetContactSubmitData {
 }
 
 
+
+//
+// Version history information returned from version history API endpoints.
+// Matches server-side VersionInformation<T> structure.
+//
+export interface VersionInformation<T> {
+    timeStamp: string;           // ISO 8601
+    userId: bigint | number;
+    userName: string;
+    versionNumber: number;
+    data: T | null;
+}
+
 export class SchedulingTargetContactBasicListData {
   id!: bigint | number;
   name!: string;
@@ -125,6 +138,15 @@ export class SchedulingTargetContactData {
     private _schedulingTargetContactChangeHistoriesSubject = new BehaviorSubject<SchedulingTargetContactChangeHistoryData[] | null>(null);
 
                 
+
+
+    //
+    // Version history lazy-loading cache for current version metadata
+    //
+    private _currentVersionInfo: VersionInformation<SchedulingTargetContactData> | null = null;
+    private _currentVersionInfoPromise: Promise<VersionInformation<SchedulingTargetContactData>> | null = null;
+    private _currentVersionInfoSubject = new BehaviorSubject<VersionInformation<SchedulingTargetContactData> | null>(null);
+
 
     //
     // Public observables — use with | async in templates
@@ -193,6 +215,9 @@ export class SchedulingTargetContactData {
      this._schedulingTargetContactChangeHistoriesPromise = null;
      this._schedulingTargetContactChangeHistoriesSubject.next(null);
 
+     this._currentVersionInfo = null;
+     this._currentVersionInfoPromise = null;
+     this._currentVersionInfoSubject.next(null);
   }
 
     //
@@ -263,6 +288,49 @@ export class SchedulingTargetContactData {
         return this.SchedulingTargetContactChangeHistories.then(schedulingTargetContactChangeHistories => schedulingTargetContactChangeHistories.length > 0);
     }
 
+
+
+
+    //
+    // Version History — Lazy-loading observable for current version metadata
+    //
+    // Usage examples:
+    //   Template: {{ (schedulingTargetContact.CurrentVersionInfo$ | async)?.userName }}
+    //   Code:     const info = await schedulingTargetContact.CurrentVersionInfo;
+    //
+    public CurrentVersionInfo$ = this._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if (this._currentVersionInfo === null && this._currentVersionInfoPromise === null) {
+                this.loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
+
+
+    public get CurrentVersionInfo(): Promise<VersionInformation<SchedulingTargetContactData>> {
+        if (this._currentVersionInfoPromise === null) {
+            this._currentVersionInfoPromise = this.loadCurrentVersionInfo();
+        }
+        return this._currentVersionInfoPromise;
+    }
+
+
+    private async loadCurrentVersionInfo(): Promise<VersionInformation<SchedulingTargetContactData>> {
+        const info = await lastValueFrom(
+            SchedulingTargetContactService.Instance.GetSchedulingTargetContactChangeMetadata(this.id, this.versionNumber as number)
+        );
+        this._currentVersionInfo = info;
+        this._currentVersionInfoSubject.next(info);
+        return info;
+    }
+
+
+    public ClearCurrentVersionInfoCache(): void {
+        this._currentVersionInfo = null;
+        this._currentVersionInfoPromise = null;
+        this._currentVersionInfoSubject.next(null);
+    }
 
 
 
@@ -605,6 +673,92 @@ export class SchedulingTargetContactService extends SecureEndpointBase {
                 return this.handleError(error, () => this.RollbackSchedulingTargetContact(id, versionNumber));
         }));
     }
+
+
+    /**
+     * Gets version metadata for a specific version of a SchedulingTargetContact.
+     */
+    public GetSchedulingTargetContactChangeMetadata(id: bigint | number, versionNumber?: number): Observable<VersionInformation<SchedulingTargetContactData>> {
+
+        let queryParams = new HttpParams();
+
+        if (versionNumber !== undefined && versionNumber !== null) {
+            queryParams = queryParams.append('versionNumber', versionNumber.toString());
+        }
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<SchedulingTargetContactData>>(this.baseUrl + 'api/SchedulingTargetContact/' + id.toString() + '/ChangeMetadata', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetSchedulingTargetContactChangeMetadata(id, versionNumber));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the full audit history of a SchedulingTargetContact.
+     */
+    public GetSchedulingTargetContactAuditHistory(id: bigint | number, includeData: boolean = false): Observable<VersionInformation<SchedulingTargetContactData>[]> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('includeData', includeData.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<SchedulingTargetContactData>[]>(this.baseUrl + 'api/SchedulingTargetContact/' + id.toString() + '/AuditHistory', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetSchedulingTargetContactAuditHistory(id, includeData));
+            })
+        );
+    }
+
+
+    /**
+     * Gets a specific historical version of a SchedulingTargetContact.
+     */
+    public GetSchedulingTargetContactVersion(id: bigint | number, version: number): Observable<SchedulingTargetContactData> {
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<SchedulingTargetContactData>(this.baseUrl + 'api/SchedulingTargetContact/' + id.toString() + '/Version/' + version.toString(), {
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveSchedulingTargetContact(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetSchedulingTargetContactVersion(id, version));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the state of a SchedulingTargetContact at a specific point in time.
+     */
+    public GetSchedulingTargetContactStateAtTime(id: bigint | number, time: string): Observable<SchedulingTargetContactData> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('time', time);
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<SchedulingTargetContactData>(this.baseUrl + 'api/SchedulingTargetContact/' + id.toString() + '/StateAtTime', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveSchedulingTargetContact(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetSchedulingTargetContactStateAtTime(id, time));
+            })
+        );
+    }
+
 
     private getConfigHash(config: SchedulingTargetContactQueryParameters | any): string {
 

@@ -76,6 +76,19 @@ export class ChargeTypeSubmitData {
 }
 
 
+
+//
+// Version history information returned from version history API endpoints.
+// Matches server-side VersionInformation<T> structure.
+//
+export interface VersionInformation<T> {
+    timeStamp: string;           // ISO 8601
+    userId: bigint | number;
+    userName: string;
+    versionNumber: number;
+    data: T | null;
+}
+
 export class ChargeTypeBasicListData {
   id!: bigint | number;
   name!: string;
@@ -156,6 +169,15 @@ export class ChargeTypeData {
     private _eventChargesSubject = new BehaviorSubject<EventChargeData[] | null>(null);
 
                 
+
+
+    //
+    // Version history lazy-loading cache for current version metadata
+    //
+    private _currentVersionInfo: VersionInformation<ChargeTypeData> | null = null;
+    private _currentVersionInfoPromise: Promise<VersionInformation<ChargeTypeData>> | null = null;
+    private _currentVersionInfoSubject = new BehaviorSubject<VersionInformation<ChargeTypeData> | null>(null);
+
 
     //
     // Public observables — use with | async in templates
@@ -270,6 +292,9 @@ export class ChargeTypeData {
      this._eventChargesPromise = null;
      this._eventChargesSubject.next(null);
 
+     this._currentVersionInfo = null;
+     this._currentVersionInfoPromise = null;
+     this._currentVersionInfoSubject.next(null);
   }
 
     //
@@ -470,6 +495,49 @@ export class ChargeTypeData {
         return this.EventCharges.then(eventCharges => eventCharges.length > 0);
     }
 
+
+
+
+    //
+    // Version History — Lazy-loading observable for current version metadata
+    //
+    // Usage examples:
+    //   Template: {{ (chargeType.CurrentVersionInfo$ | async)?.userName }}
+    //   Code:     const info = await chargeType.CurrentVersionInfo;
+    //
+    public CurrentVersionInfo$ = this._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if (this._currentVersionInfo === null && this._currentVersionInfoPromise === null) {
+                this.loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
+
+
+    public get CurrentVersionInfo(): Promise<VersionInformation<ChargeTypeData>> {
+        if (this._currentVersionInfoPromise === null) {
+            this._currentVersionInfoPromise = this.loadCurrentVersionInfo();
+        }
+        return this._currentVersionInfoPromise;
+    }
+
+
+    private async loadCurrentVersionInfo(): Promise<VersionInformation<ChargeTypeData>> {
+        const info = await lastValueFrom(
+            ChargeTypeService.Instance.GetChargeTypeChangeMetadata(this.id, this.versionNumber as number)
+        );
+        this._currentVersionInfo = info;
+        this._currentVersionInfoSubject.next(info);
+        return info;
+    }
+
+
+    public ClearCurrentVersionInfoCache(): void {
+        this._currentVersionInfo = null;
+        this._currentVersionInfoPromise = null;
+        this._currentVersionInfoSubject.next(null);
+    }
 
 
 
@@ -821,6 +889,92 @@ export class ChargeTypeService extends SecureEndpointBase {
                 return this.handleError(error, () => this.RollbackChargeType(id, versionNumber));
         }));
     }
+
+
+    /**
+     * Gets version metadata for a specific version of a ChargeType.
+     */
+    public GetChargeTypeChangeMetadata(id: bigint | number, versionNumber?: number): Observable<VersionInformation<ChargeTypeData>> {
+
+        let queryParams = new HttpParams();
+
+        if (versionNumber !== undefined && versionNumber !== null) {
+            queryParams = queryParams.append('versionNumber', versionNumber.toString());
+        }
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<ChargeTypeData>>(this.baseUrl + 'api/ChargeType/' + id.toString() + '/ChangeMetadata', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetChargeTypeChangeMetadata(id, versionNumber));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the full audit history of a ChargeType.
+     */
+    public GetChargeTypeAuditHistory(id: bigint | number, includeData: boolean = false): Observable<VersionInformation<ChargeTypeData>[]> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('includeData', includeData.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<ChargeTypeData>[]>(this.baseUrl + 'api/ChargeType/' + id.toString() + '/AuditHistory', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetChargeTypeAuditHistory(id, includeData));
+            })
+        );
+    }
+
+
+    /**
+     * Gets a specific historical version of a ChargeType.
+     */
+    public GetChargeTypeVersion(id: bigint | number, version: number): Observable<ChargeTypeData> {
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<ChargeTypeData>(this.baseUrl + 'api/ChargeType/' + id.toString() + '/Version/' + version.toString(), {
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveChargeType(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetChargeTypeVersion(id, version));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the state of a ChargeType at a specific point in time.
+     */
+    public GetChargeTypeStateAtTime(id: bigint | number, time: string): Observable<ChargeTypeData> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('time', time);
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<ChargeTypeData>(this.baseUrl + 'api/ChargeType/' + id.toString() + '/StateAtTime', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveChargeType(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetChargeTypeStateAtTime(id, time));
+            })
+        );
+    }
+
 
     private getConfigHash(config: ChargeTypeQueryParameters | any): string {
 

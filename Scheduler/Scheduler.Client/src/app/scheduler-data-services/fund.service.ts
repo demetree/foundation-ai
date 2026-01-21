@@ -72,6 +72,19 @@ export class FundSubmitData {
 }
 
 
+
+//
+// Version history information returned from version history API endpoints.
+// Matches server-side VersionInformation<T> structure.
+//
+export interface VersionInformation<T> {
+    timeStamp: string;           // ISO 8601
+    userId: bigint | number;
+    userName: string;
+    versionNumber: number;
+    data: T | null;
+}
+
 export class FundBasicListData {
   id!: bigint | number;
   name!: string;
@@ -153,6 +166,15 @@ export class FundData {
     private _giftsSubject = new BehaviorSubject<GiftData[] | null>(null);
 
                 
+
+
+    //
+    // Version history lazy-loading cache for current version metadata
+    //
+    private _currentVersionInfo: VersionInformation<FundData> | null = null;
+    private _currentVersionInfoPromise: Promise<VersionInformation<FundData>> | null = null;
+    private _currentVersionInfoSubject = new BehaviorSubject<VersionInformation<FundData> | null>(null);
+
 
     //
     // Public observables — use with | async in templates
@@ -289,6 +311,9 @@ export class FundData {
      this._giftsPromise = null;
      this._giftsSubject.next(null);
 
+     this._currentVersionInfo = null;
+     this._currentVersionInfoPromise = null;
+     this._currentVersionInfoSubject.next(null);
   }
 
     //
@@ -554,6 +579,49 @@ export class FundData {
         return this.Gifts.then(gifts => gifts.length > 0);
     }
 
+
+
+
+    //
+    // Version History — Lazy-loading observable for current version metadata
+    //
+    // Usage examples:
+    //   Template: {{ (fund.CurrentVersionInfo$ | async)?.userName }}
+    //   Code:     const info = await fund.CurrentVersionInfo;
+    //
+    public CurrentVersionInfo$ = this._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if (this._currentVersionInfo === null && this._currentVersionInfoPromise === null) {
+                this.loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
+
+
+    public get CurrentVersionInfo(): Promise<VersionInformation<FundData>> {
+        if (this._currentVersionInfoPromise === null) {
+            this._currentVersionInfoPromise = this.loadCurrentVersionInfo();
+        }
+        return this._currentVersionInfoPromise;
+    }
+
+
+    private async loadCurrentVersionInfo(): Promise<VersionInformation<FundData>> {
+        const info = await lastValueFrom(
+            FundService.Instance.GetFundChangeMetadata(this.id, this.versionNumber as number)
+        );
+        this._currentVersionInfo = info;
+        this._currentVersionInfoSubject.next(info);
+        return info;
+    }
+
+
+    public ClearCurrentVersionInfoCache(): void {
+        this._currentVersionInfo = null;
+        this._currentVersionInfoPromise = null;
+        this._currentVersionInfoSubject.next(null);
+    }
 
 
 
@@ -904,6 +972,92 @@ export class FundService extends SecureEndpointBase {
                 return this.handleError(error, () => this.RollbackFund(id, versionNumber));
         }));
     }
+
+
+    /**
+     * Gets version metadata for a specific version of a Fund.
+     */
+    public GetFundChangeMetadata(id: bigint | number, versionNumber?: number): Observable<VersionInformation<FundData>> {
+
+        let queryParams = new HttpParams();
+
+        if (versionNumber !== undefined && versionNumber !== null) {
+            queryParams = queryParams.append('versionNumber', versionNumber.toString());
+        }
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<FundData>>(this.baseUrl + 'api/Fund/' + id.toString() + '/ChangeMetadata', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetFundChangeMetadata(id, versionNumber));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the full audit history of a Fund.
+     */
+    public GetFundAuditHistory(id: bigint | number, includeData: boolean = false): Observable<VersionInformation<FundData>[]> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('includeData', includeData.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<FundData>[]>(this.baseUrl + 'api/Fund/' + id.toString() + '/AuditHistory', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetFundAuditHistory(id, includeData));
+            })
+        );
+    }
+
+
+    /**
+     * Gets a specific historical version of a Fund.
+     */
+    public GetFundVersion(id: bigint | number, version: number): Observable<FundData> {
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<FundData>(this.baseUrl + 'api/Fund/' + id.toString() + '/Version/' + version.toString(), {
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveFund(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetFundVersion(id, version));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the state of a Fund at a specific point in time.
+     */
+    public GetFundStateAtTime(id: bigint | number, time: string): Observable<FundData> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('time', time);
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<FundData>(this.baseUrl + 'api/Fund/' + id.toString() + '/StateAtTime', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveFund(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetFundStateAtTime(id, time));
+            })
+        );
+    }
+
 
     private getConfigHash(config: FundQueryParameters | any): string {
 

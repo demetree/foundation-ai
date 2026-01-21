@@ -532,6 +532,13 @@ const routes: Routes = [
   { path: 'client/:clientId', component: ClientCustomDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Client' },
 
 
+  { path: 'schedulingtargets', component: SchedulingTargetCustomListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Scheduling Targets' },
+  { path: 'schedulingtargets/new', component: SchedulingTargetCustomDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Scheduling Target' },
+  { path: 'schedulingtargets/:schedulingTargetId', component: SchedulingTargetCustomDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Scheduling Target' },
+  { path: 'schedulingtarget/:schedulingTargetId', component: SchedulingTargetCustomDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Scheduling Target' },
+
+
+
   //
   // Security Data Component references - Auto Generated.
   //

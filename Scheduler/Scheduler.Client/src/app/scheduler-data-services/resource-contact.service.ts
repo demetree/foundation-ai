@@ -61,6 +61,19 @@ export class ResourceContactSubmitData {
 }
 
 
+
+//
+// Version history information returned from version history API endpoints.
+// Matches server-side VersionInformation<T> structure.
+//
+export interface VersionInformation<T> {
+    timeStamp: string;           // ISO 8601
+    userId: bigint | number;
+    userName: string;
+    versionNumber: number;
+    data: T | null;
+}
+
 export class ResourceContactBasicListData {
   id!: bigint | number;
   name!: string;
@@ -125,6 +138,15 @@ export class ResourceContactData {
     private _resourceContactChangeHistoriesSubject = new BehaviorSubject<ResourceContactChangeHistoryData[] | null>(null);
 
                 
+
+
+    //
+    // Version history lazy-loading cache for current version metadata
+    //
+    private _currentVersionInfo: VersionInformation<ResourceContactData> | null = null;
+    private _currentVersionInfoPromise: Promise<VersionInformation<ResourceContactData>> | null = null;
+    private _currentVersionInfoSubject = new BehaviorSubject<VersionInformation<ResourceContactData> | null>(null);
+
 
     //
     // Public observables — use with | async in templates
@@ -193,6 +215,9 @@ export class ResourceContactData {
      this._resourceContactChangeHistoriesPromise = null;
      this._resourceContactChangeHistoriesSubject.next(null);
 
+     this._currentVersionInfo = null;
+     this._currentVersionInfoPromise = null;
+     this._currentVersionInfoSubject.next(null);
   }
 
     //
@@ -263,6 +288,49 @@ export class ResourceContactData {
         return this.ResourceContactChangeHistories.then(resourceContactChangeHistories => resourceContactChangeHistories.length > 0);
     }
 
+
+
+
+    //
+    // Version History — Lazy-loading observable for current version metadata
+    //
+    // Usage examples:
+    //   Template: {{ (resourceContact.CurrentVersionInfo$ | async)?.userName }}
+    //   Code:     const info = await resourceContact.CurrentVersionInfo;
+    //
+    public CurrentVersionInfo$ = this._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if (this._currentVersionInfo === null && this._currentVersionInfoPromise === null) {
+                this.loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
+
+
+    public get CurrentVersionInfo(): Promise<VersionInformation<ResourceContactData>> {
+        if (this._currentVersionInfoPromise === null) {
+            this._currentVersionInfoPromise = this.loadCurrentVersionInfo();
+        }
+        return this._currentVersionInfoPromise;
+    }
+
+
+    private async loadCurrentVersionInfo(): Promise<VersionInformation<ResourceContactData>> {
+        const info = await lastValueFrom(
+            ResourceContactService.Instance.GetResourceContactChangeMetadata(this.id, this.versionNumber as number)
+        );
+        this._currentVersionInfo = info;
+        this._currentVersionInfoSubject.next(info);
+        return info;
+    }
+
+
+    public ClearCurrentVersionInfoCache(): void {
+        this._currentVersionInfo = null;
+        this._currentVersionInfoPromise = null;
+        this._currentVersionInfoSubject.next(null);
+    }
 
 
 
@@ -605,6 +673,92 @@ export class ResourceContactService extends SecureEndpointBase {
                 return this.handleError(error, () => this.RollbackResourceContact(id, versionNumber));
         }));
     }
+
+
+    /**
+     * Gets version metadata for a specific version of a ResourceContact.
+     */
+    public GetResourceContactChangeMetadata(id: bigint | number, versionNumber?: number): Observable<VersionInformation<ResourceContactData>> {
+
+        let queryParams = new HttpParams();
+
+        if (versionNumber !== undefined && versionNumber !== null) {
+            queryParams = queryParams.append('versionNumber', versionNumber.toString());
+        }
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<ResourceContactData>>(this.baseUrl + 'api/ResourceContact/' + id.toString() + '/ChangeMetadata', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetResourceContactChangeMetadata(id, versionNumber));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the full audit history of a ResourceContact.
+     */
+    public GetResourceContactAuditHistory(id: bigint | number, includeData: boolean = false): Observable<VersionInformation<ResourceContactData>[]> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('includeData', includeData.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<ResourceContactData>[]>(this.baseUrl + 'api/ResourceContact/' + id.toString() + '/AuditHistory', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetResourceContactAuditHistory(id, includeData));
+            })
+        );
+    }
+
+
+    /**
+     * Gets a specific historical version of a ResourceContact.
+     */
+    public GetResourceContactVersion(id: bigint | number, version: number): Observable<ResourceContactData> {
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<ResourceContactData>(this.baseUrl + 'api/ResourceContact/' + id.toString() + '/Version/' + version.toString(), {
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveResourceContact(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetResourceContactVersion(id, version));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the state of a ResourceContact at a specific point in time.
+     */
+    public GetResourceContactStateAtTime(id: bigint | number, time: string): Observable<ResourceContactData> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('time', time);
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<ResourceContactData>(this.baseUrl + 'api/ResourceContact/' + id.toString() + '/StateAtTime', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveResourceContact(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetResourceContactStateAtTime(id, time));
+            })
+        );
+    }
+
 
     private getConfigHash(config: ResourceContactQueryParameters | any): string {
 

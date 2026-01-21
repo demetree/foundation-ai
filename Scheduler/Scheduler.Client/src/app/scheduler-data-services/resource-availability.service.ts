@@ -64,6 +64,19 @@ export class ResourceAvailabilitySubmitData {
 }
 
 
+
+//
+// Version history information returned from version history API endpoints.
+// Matches server-side VersionInformation<T> structure.
+//
+export interface VersionInformation<T> {
+    timeStamp: string;           // ISO 8601
+    userId: bigint | number;
+    userName: string;
+    versionNumber: number;
+    data: T | null;
+}
+
 export class ResourceAvailabilityBasicListData {
   id!: bigint | number;
   name!: string;
@@ -129,6 +142,15 @@ export class ResourceAvailabilityData {
     private _resourceAvailabilityChangeHistoriesSubject = new BehaviorSubject<ResourceAvailabilityChangeHistoryData[] | null>(null);
 
                 
+
+
+    //
+    // Version history lazy-loading cache for current version metadata
+    //
+    private _currentVersionInfo: VersionInformation<ResourceAvailabilityData> | null = null;
+    private _currentVersionInfoPromise: Promise<VersionInformation<ResourceAvailabilityData>> | null = null;
+    private _currentVersionInfoSubject = new BehaviorSubject<VersionInformation<ResourceAvailabilityData> | null>(null);
+
 
     //
     // Public observables — use with | async in templates
@@ -197,6 +219,9 @@ export class ResourceAvailabilityData {
      this._resourceAvailabilityChangeHistoriesPromise = null;
      this._resourceAvailabilityChangeHistoriesSubject.next(null);
 
+     this._currentVersionInfo = null;
+     this._currentVersionInfoPromise = null;
+     this._currentVersionInfoSubject.next(null);
   }
 
     //
@@ -267,6 +292,49 @@ export class ResourceAvailabilityData {
         return this.ResourceAvailabilityChangeHistories.then(resourceAvailabilityChangeHistories => resourceAvailabilityChangeHistories.length > 0);
     }
 
+
+
+
+    //
+    // Version History — Lazy-loading observable for current version metadata
+    //
+    // Usage examples:
+    //   Template: {{ (resourceAvailability.CurrentVersionInfo$ | async)?.userName }}
+    //   Code:     const info = await resourceAvailability.CurrentVersionInfo;
+    //
+    public CurrentVersionInfo$ = this._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if (this._currentVersionInfo === null && this._currentVersionInfoPromise === null) {
+                this.loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
+
+
+    public get CurrentVersionInfo(): Promise<VersionInformation<ResourceAvailabilityData>> {
+        if (this._currentVersionInfoPromise === null) {
+            this._currentVersionInfoPromise = this.loadCurrentVersionInfo();
+        }
+        return this._currentVersionInfoPromise;
+    }
+
+
+    private async loadCurrentVersionInfo(): Promise<VersionInformation<ResourceAvailabilityData>> {
+        const info = await lastValueFrom(
+            ResourceAvailabilityService.Instance.GetResourceAvailabilityChangeMetadata(this.id, this.versionNumber as number)
+        );
+        this._currentVersionInfo = info;
+        this._currentVersionInfoSubject.next(info);
+        return info;
+    }
+
+
+    public ClearCurrentVersionInfoCache(): void {
+        this._currentVersionInfo = null;
+        this._currentVersionInfoPromise = null;
+        this._currentVersionInfoSubject.next(null);
+    }
 
 
 
@@ -611,6 +679,92 @@ export class ResourceAvailabilityService extends SecureEndpointBase {
                 return this.handleError(error, () => this.RollbackResourceAvailability(id, versionNumber));
         }));
     }
+
+
+    /**
+     * Gets version metadata for a specific version of a ResourceAvailability.
+     */
+    public GetResourceAvailabilityChangeMetadata(id: bigint | number, versionNumber?: number): Observable<VersionInformation<ResourceAvailabilityData>> {
+
+        let queryParams = new HttpParams();
+
+        if (versionNumber !== undefined && versionNumber !== null) {
+            queryParams = queryParams.append('versionNumber', versionNumber.toString());
+        }
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<ResourceAvailabilityData>>(this.baseUrl + 'api/ResourceAvailability/' + id.toString() + '/ChangeMetadata', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetResourceAvailabilityChangeMetadata(id, versionNumber));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the full audit history of a ResourceAvailability.
+     */
+    public GetResourceAvailabilityAuditHistory(id: bigint | number, includeData: boolean = false): Observable<VersionInformation<ResourceAvailabilityData>[]> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('includeData', includeData.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<ResourceAvailabilityData>[]>(this.baseUrl + 'api/ResourceAvailability/' + id.toString() + '/AuditHistory', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetResourceAvailabilityAuditHistory(id, includeData));
+            })
+        );
+    }
+
+
+    /**
+     * Gets a specific historical version of a ResourceAvailability.
+     */
+    public GetResourceAvailabilityVersion(id: bigint | number, version: number): Observable<ResourceAvailabilityData> {
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<ResourceAvailabilityData>(this.baseUrl + 'api/ResourceAvailability/' + id.toString() + '/Version/' + version.toString(), {
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveResourceAvailability(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetResourceAvailabilityVersion(id, version));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the state of a ResourceAvailability at a specific point in time.
+     */
+    public GetResourceAvailabilityStateAtTime(id: bigint | number, time: string): Observable<ResourceAvailabilityData> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('time', time);
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<ResourceAvailabilityData>(this.baseUrl + 'api/ResourceAvailability/' + id.toString() + '/StateAtTime', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveResourceAvailability(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetResourceAvailabilityStateAtTime(id, time));
+            })
+        );
+    }
+
 
     private getConfigHash(config: ResourceAvailabilityQueryParameters | any): string {
 
