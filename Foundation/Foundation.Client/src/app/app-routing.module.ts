@@ -19,6 +19,7 @@ import { OverviewComponent } from './components/overview/overview.component'
 import { NewUserComponent } from './components/new-user/new-user.component';
 import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
 import { UserCustomListingComponent } from './components/user-custom/user-custom-listing/user-custom-listing.component';
+import { UserCustomDetailComponent } from './components/user-custom/user-custom-detail/user-custom-detail.component';
 
 
 //
@@ -164,6 +165,7 @@ const routes: Routes = [
   { path: 'overview', component: OverviewComponent, canActivate: [AuthGuard], title: 'Overview' },
   { path: 'reset-password/:token', component: ResetPasswordComponent, title: 'Reset Password' },
   { path: 'users', component: UserCustomListingComponent, canActivate: [AuthGuard], title: 'Users' },
+  { path: 'user/:id', component: UserCustomDetailComponent, canActivate: [AuthGuard], title: 'User Detail' },
 
 
   //

@@ -1,0 +1,111 @@
+<div class="page-container">
+
+    <!-- Premium Header -->
+    <div class="card mb-3 header-card premium-header shadow-lg border-0">
+        <div
+            class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3 border-0 bg-transparent">
+            <div class="header-left">
+                <!-- Back Button -->
+                <button class="btn btn-sm btn-glass back-button me-3" (click)="goBack()" ngbTooltip="Go Back"
+                    *ngIf="canGoBack()">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+
+                <!-- User Avatar & Name -->
+                <div class="avatar-circle-lg me-3" *ngIf="user" [class.inactive]="user.active !== true">
+                    {{ getUserInitials() }}
+                </div>
+                <div class="text-white" *ngIf="user">
+                    <h3 class="page-title mb-0 fw-bold text-shadow">{{ getUserDisplayName() }}</h3>
+                    <small class="text-white-50">{{ user.emailAddress || user.accountName }}</small>
+                </div>
+                <div class="text-white" *ngIf="!user && (isLoading$ | async)">
+                    <h3 class="page-title mb-0 fw-bold text-shadow">Loading...</h3>
+                </div>
+            </div>
+
+            <div class="header-right" *ngIf="user">
+                <!-- Status Badge -->
+                <span class="badge badge-glass me-2" [ngClass]="getStatusClass()">
+                    {{ getStatusLabel() }}
+                </span>
+
+                <!-- 2FA Badge -->
+                <span class="badge badge-glass me-2" *ngIf="has2FA()">
+                    <i class="fa-solid fa-shield-check me-1"></i> 2FA
+                </span>
+
+                <!-- Quick Actions -->
+                <div class="btn-group" *ngIf="userIsSecurityUserWriter()">
+                    <button class="btn btn-glass btn-sm"
+                        [ngbTooltip]="user.active ? 'Deactivate User' : 'Activate User'" (click)="toggleActive()"
+                        [disabled]="actionInProgress">
+                        <i class="fa-solid" [ngClass]="user.active ? 'fa-toggle-on' : 'fa-toggle-off'"></i>
+                    </button>
+                    <button class="btn btn-glass btn-sm" *ngIf="canUnlock()" ngbTooltip="Unlock Account"
+                        (click)="unlockUser()" [disabled]="actionInProgress">
+                        <i class="fa-solid fa-lock-open"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading$ | async" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="text-muted mt-3">Loading user details...</p>
+    </div>
+
+    <!-- Not Found State -->
+    <div *ngIf="isNotFound && !(isLoading$ | async)" class="text-center py-5">
+        <i class="fa-solid fa-user-slash fa-4x text-muted mb-3 opacity-50"></i>
+        <h4 class="text-muted">User Not Found</h4>
+        <p class="text-muted">The requested user could not be found.</p>
+        <button class="btn btn-primary" (click)="goBack()">Go Back</button>
+    </div>
+
+    <!-- Tabbed Content -->
+    <div class="card border-0 shadow-sm" *ngIf="user && !(isLoading$ | async) && !isNotFound">
+        <div class="card-body p-0">
+            <ul ngbNav #nav="ngbNav" [(activeId)]="activeTabId" class="nav-tabs nav-tabs-premium"
+                (navChange)="onTabChange($event.nextId)">
+
+                <!-- Overview Tab -->
+                <li [ngbNavItem]="'overview'">
+                    <button ngbNavLink>
+                        <i class="fa-solid fa-user me-2"></i>Overview
+                    </button>
+                    <ng-template ngbNavContent>
+                        <app-user-overview-tab [user]="user"></app-user-overview-tab>
+                    </ng-template>
+                </li>
+
+                <!-- Roles & Groups Tab -->
+                <li [ngbNavItem]="'roles'">
+                    <button ngbNavLink>
+                        <i class="fa-solid fa-shield-halved me-2"></i>Roles & Groups
+                    </button>
+                    <ng-template ngbNavContent>
+                        <app-user-roles-tab [user]="user"></app-user-roles-tab>
+                    </ng-template>
+                </li>
+
+                <!-- Activity Tab -->
+                <li [ngbNavItem]="'activity'">
+                    <button ngbNavLink>
+                        <i class="fa-solid fa-clock-rotate-left me-2"></i>Activity
+                    </button>
+                    <ng-template ngbNavContent>
+                        <app-user-activity-tab [user]="user"></app-user-activity-tab>
+                    </ng-template>
+                </li>
+
+            </ul>
+            <div [ngbNavOutlet]="nav" class="tab-content-area"></div>
+        </div>
+    </div>
+
+</div>

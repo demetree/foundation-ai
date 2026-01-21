@@ -384,7 +384,7 @@ export class UserCustomTableComponent implements OnInit, AfterViewInit, OnChange
     // Navigation
     //
     public navigateToDetail(user: SecurityUserData): void {
-        this.router.navigate(['/securityuser', user.id]);
+        this.router.navigate(['/user', user.id]);
     }
 
 

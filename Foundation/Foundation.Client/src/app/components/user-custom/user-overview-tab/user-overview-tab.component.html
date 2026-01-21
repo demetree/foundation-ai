@@ -1,0 +1,144 @@
+<div class="overview-container" *ngIf="user">
+    <div class="row g-4">
+
+        <!-- Contact Information Card -->
+        <div class="col-md-6">
+            <div class="info-card h-100">
+                <h6 class="card-subtitle mb-3">
+                    <i class="fa-solid fa-address-card me-2 text-primary"></i>Contact Information
+                </h6>
+                <div class="info-grid">
+                    <div class="info-item" *ngIf="user.firstName || user.lastName">
+                        <span class="info-label">Full Name</span>
+                        <span class="info-value">{{ user.firstName }} {{ user.lastName }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Account Name</span>
+                        <span class="info-value">{{ user.accountName }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Email</span>
+                        <span class="info-value">
+                            <a *ngIf="user.emailAddress" [href]="'mailto:' + user.emailAddress">{{ user.emailAddress
+                                }}</a>
+                            <span *ngIf="!user.emailAddress" class="text-muted fst-italic">Not set</span>
+                        </span>
+                    </div>
+                    <div class="info-item" *ngIf="user.cellPhoneNumber">
+                        <span class="info-label">Cell Phone</span>
+                        <span class="info-value">
+                            <a [href]="'tel:' + user.cellPhoneNumber">{{ user.cellPhoneNumber }}</a>
+                        </span>
+                    </div>
+                    <div class="info-item" *ngIf="user.phoneNumber">
+                        <span class="info-label">Phone</span>
+                        <span class="info-value">
+                            <a [href]="'tel:' + user.phoneNumber">{{ user.phoneNumber }}</a>
+                            <span *ngIf="user.phoneExtension"> ext. {{ user.phoneExtension }}</span>
+                        </span>
+                    </div>
+                    <div class="info-item" *ngIf="user.description">
+                        <span class="info-label">Description</span>
+                        <span class="info-value">{{ user.description }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Settings Card -->
+        <div class="col-md-6">
+            <div class="info-card h-100">
+                <h6 class="card-subtitle mb-3">
+                    <i class="fa-solid fa-gear me-2 text-primary"></i>Account Settings
+                </h6>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Active Directory</span>
+                        <span class="info-value">
+                            <i class="fa-solid"
+                                [ngClass]="user.activeDirectoryAccount ? 'fa-check text-success' : 'fa-times text-muted'"></i>
+                            {{ user.activeDirectoryAccount ? 'Yes' : 'No' }}
+                        </span>
+                    </div>
+                    <div class="info-item" *ngIf="user.authenticationDomain">
+                        <span class="info-label">Auth Domain</span>
+                        <span class="info-value">{{ user.authenticationDomain }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Can Login</span>
+                        <span class="info-value">
+                            <i class="fa-solid"
+                                [ngClass]="user.canLogin ? 'fa-check text-success' : 'fa-times text-danger'"></i>
+                            {{ user.canLogin ? 'Yes' : 'No' }}
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Must Change Password</span>
+                        <span class="info-value">
+                            <i class="fa-solid"
+                                [ngClass]="user.mustChangePassword ? 'fa-exclamation-triangle text-warning' : 'fa-check text-success'"></i>
+                            {{ user.mustChangePassword ? 'Yes' : 'No' }}
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Failed Login Count</span>
+                        <span class="info-value" [ngClass]="{'text-danger fw-bold': (user.failedLoginCount ?? 0) >= 4}">
+                            {{ user.failedLoginCount ?? 0 }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Two-Factor Authentication Card -->
+        <div class="col-md-6">
+            <div class="info-card h-100">
+                <h6 class="card-subtitle mb-3">
+                    <i class="fa-solid fa-shield-halved me-2 text-primary"></i>Two-Factor Authentication
+                </h6>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">2FA via Email</span>
+                        <span class="info-value">
+                            <i class="fa-solid"
+                                [ngClass]="user.twoFactorSendByEmail ? 'fa-check-circle text-success' : 'fa-circle-xmark text-muted'"></i>
+                            {{ user.twoFactorSendByEmail ? 'Enabled' : 'Disabled' }}
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">2FA via SMS</span>
+                        <span class="info-value">
+                            <i class="fa-solid"
+                                [ngClass]="user.twoFactorSendBySMS ? 'fa-check-circle text-success' : 'fa-circle-xmark text-muted'"></i>
+                            {{ user.twoFactorSendBySMS ? 'Enabled' : 'Disabled' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity Card -->
+        <div class="col-md-6">
+            <div class="info-card h-100">
+                <h6 class="card-subtitle mb-3">
+                    <i class="fa-solid fa-clock me-2 text-primary"></i>Activity
+                </h6>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Last Login Attempt</span>
+                        <span class="info-value" [ngbTooltip]="formatDate(user.lastLoginAttempt)">
+                            {{ formatRelativeTime(user.lastLoginAttempt) }}
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Most Recent Activity</span>
+                        <span class="info-value" [ngbTooltip]="formatDate(user.mostRecentActivity)">
+                            {{ formatRelativeTime(user.mostRecentActivity) }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

@@ -1,0 +1,102 @@
+<div class="activity-container" *ngIf="user">
+    <div class="row g-4">
+
+        <!-- Login Attempts Section -->
+        <div class="col-12">
+            <div class="section-card">
+                <h6 class="section-title mb-3">
+                    <i class="fa-solid fa-right-to-bracket me-2 text-primary"></i>Recent Login Attempts
+                </h6>
+
+                <!-- Loading -->
+                <div *ngIf="loadingAttempts" class="text-center py-4">
+                    <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                    <span class="ms-2 text-muted">Loading login attempts...</span>
+                </div>
+
+                <!-- Empty State -->
+                <div *ngIf="!loadingAttempts && loginAttempts.length === 0" class="text-center py-4">
+                    <i class="fa-solid fa-clipboard-list fa-2x text-muted opacity-50 mb-2"></i>
+                    <p class="text-muted mb-0">No login attempts recorded</p>
+                </div>
+
+                <!-- Login Attempts Table -->
+                <div class="table-responsive" *ngIf="!loadingAttempts && loginAttempts.length > 0">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Time</th>
+                                <th>Result</th>
+                                <th>IP Address</th>
+                                <th>Source</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let attempt of loginAttempts">
+                                <td [ngbTooltip]="formatDate(attempt.timeStamp)">
+                                    {{ formatRelativeTime(attempt.timeStamp) }}
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">
+                                        {{ attempt.resource ?? 'Login' }}
+                                    </span>
+                                </td>
+                                <td>{{ attempt.ipAddress ?? '—' }}</td>
+                                <td>{{ attempt.userAgent ?? '—' }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Events Section -->
+        <div class="col-12">
+            <div class="section-card">
+                <h6 class="section-title mb-3">
+                    <i class="fa-solid fa-timeline me-2 text-primary"></i>Security Events
+                </h6>
+
+                <!-- Loading -->
+                <div *ngIf="loadingEvents" class="text-center py-4">
+                    <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                    <span class="ms-2 text-muted">Loading events...</span>
+                </div>
+
+                <!-- Empty State -->
+                <div *ngIf="!loadingEvents && events.length === 0" class="text-center py-4">
+                    <i class="fa-solid fa-list-check fa-2x text-muted opacity-50 mb-2"></i>
+                    <p class="text-muted mb-0">No security events recorded</p>
+                </div>
+
+                <!-- Events Table -->
+                <div class="table-responsive" *ngIf="!loadingEvents && events.length > 0">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Time</th>
+                                <th>Event Type</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let event of events">
+                                <td [ngbTooltip]="formatDate(event.timeStamp)">
+                                    {{ formatRelativeTime(event.timeStamp) }}
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ event.securityUserEventType?.name ?? 'Unknown'
+                                        }}</span>
+                                </td>
+                                <td class="text-truncate" style="max-width: 300px;">
+                                    {{ event.comments ?? '—' }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

@@ -343,6 +343,10 @@ import { ExternalCommunicationRecipientTableComponent } from './auditor-data-com
 //
 import { UserCustomListingComponent } from './components/user-custom/user-custom-listing/user-custom-listing.component';
 import { UserCustomTableComponent } from './components/user-custom/user-custom-table/user-custom-table.component';
+import { UserCustomDetailComponent } from './components/user-custom/user-custom-detail/user-custom-detail.component';
+import { UserOverviewTabComponent } from './components/user-custom/user-overview-tab/user-overview-tab.component';
+import { UserRolesTabComponent } from './components/user-custom/user-roles-tab/user-roles-tab.component';
+import { UserActivityTabComponent } from './components/user-custom/user-activity-tab/user-activity-tab.component';
 
 
 @NgModule({
@@ -564,6 +568,10 @@ import { UserCustomTableComponent } from './components/user-custom/user-custom-t
     NewUserComponent,
     UserCustomListingComponent,
     UserCustomTableComponent,
+    UserCustomDetailComponent,
+    UserOverviewTabComponent,
+    UserRolesTabComponent,
+    UserActivityTabComponent,
   ],
   imports: [
     BrowserModule,

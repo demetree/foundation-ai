@@ -1,0 +1,105 @@
+<div class="roles-container" *ngIf="user">
+    <div class="row g-4">
+
+        <!-- Security Roles Section -->
+        <div class="col-12">
+            <div class="section-card">
+                <div class="section-header d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="section-title mb-0">
+                        <i class="fa-solid fa-shield-halved me-2 text-primary"></i>Security Roles
+                    </h6>
+                    <button class="btn btn-sm btn-outline-primary" *ngIf="userCanManageRoles()"
+                        [routerLink]="['/securityusersecurityrole/new']" [queryParams]="{securityUserId: user.id}">
+                        <i class="fa-solid fa-plus me-1"></i>Add Role
+                    </button>
+                </div>
+
+                <!-- Loading -->
+                <div *ngIf="loadingRoles" class="text-center py-4">
+                    <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                    <span class="ms-2 text-muted">Loading roles...</span>
+                </div>
+
+                <!-- Empty State -->
+                <div *ngIf="!loadingRoles && roles.length === 0" class="text-center py-4">
+                    <i class="fa-solid fa-shield-xmark fa-2x text-muted opacity-50 mb-2"></i>
+                    <p class="text-muted mb-0">No roles assigned</p>
+                </div>
+
+                <!-- Roles Table -->
+                <div class="table-responsive" *ngIf="!loadingRoles && roles.length > 0">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Role</th>
+                                <th>Description</th>
+                                <th class="text-center">Active</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let userRole of roles">
+                                <td class="fw-semibold">{{ userRole.securityRole?.name ?? 'Unknown Role' }}</td>
+                                <td>{{ userRole.securityRole?.description ?? '—' }}</td>
+                                <td class="text-center">
+                                    <i class="fa-solid"
+                                        [ngClass]="userRole.active ? 'fa-check-circle text-success' : 'fa-times-circle text-muted'"></i>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Groups Section -->
+        <div class="col-12">
+            <div class="section-card">
+                <div class="section-header d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="section-title mb-0">
+                        <i class="fa-solid fa-users-rectangle me-2 text-primary"></i>Security Groups
+                    </h6>
+                    <button class="btn btn-sm btn-outline-primary" *ngIf="userCanManageGroups()"
+                        [routerLink]="['/securityusersecuritygroup/new']" [queryParams]="{securityUserId: user.id}">
+                        <i class="fa-solid fa-plus me-1"></i>Add to Group
+                    </button>
+                </div>
+
+                <!-- Loading -->
+                <div *ngIf="loadingGroups" class="text-center py-4">
+                    <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                    <span class="ms-2 text-muted">Loading groups...</span>
+                </div>
+
+                <!-- Empty State -->
+                <div *ngIf="!loadingGroups && groups.length === 0" class="text-center py-4">
+                    <i class="fa-solid fa-users-slash fa-2x text-muted opacity-50 mb-2"></i>
+                    <p class="text-muted mb-0">Not a member of any groups</p>
+                </div>
+
+                <!-- Groups Table -->
+                <div class="table-responsive" *ngIf="!loadingGroups && groups.length > 0">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Group Name</th>
+                                <th>Description</th>
+                                <th class="text-center">Active</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let userGroup of groups">
+                                <td class="fw-semibold">{{ userGroup.securityGroup?.name ?? 'Unknown Group' }}</td>
+                                <td>{{ userGroup.securityGroup?.description ?? '—' }}</td>
+                                <td class="text-center">
+                                    <i class="fa-solid"
+                                        [ngClass]="userGroup.active ? 'fa-check-circle text-success' : 'fa-times-circle text-muted'"></i>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
