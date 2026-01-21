@@ -70,6 +70,15 @@
                     </div>
                 </div>
                 <div class="stat-item">
+                    <div class="stat-icon users-icon">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <div class="stat-details">
+                        <span class="stat-number">{{ (totalUserCount$ | async) ?? '...' }}</span>
+                        <span class="stat-label">User Assignments</span>
+                    </div>
+                </div>
+                <div class="stat-item">
                     <div class="stat-icon tokens-icon">
                         <i class="fa-solid fa-key"></i>
                     </div>

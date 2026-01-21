@@ -58,7 +58,7 @@
     }
 
     tbody {
-        tr {
+        .role-row {
             &:not(:last-child) td {
                 border-bottom: 1px solid #dee2e6;
             }
@@ -67,10 +67,23 @@
                 background: rgba(13, 71, 161, 0.04);
             }
 
+            &.expanded {
+                background: rgba(102, 126, 234, 0.05);
+            }
+
             td {
                 padding: 0.875rem 1rem;
                 color: #495057;
                 vertical-align: middle;
+            }
+        }
+
+        .users-row {
+            background: #f8f9fa;
+
+            td {
+                padding: 0;
+                border-bottom: 1px solid #dee2e6;
             }
         }
     }
@@ -107,6 +120,54 @@
     font-size: 0.9rem;
 }
 
+// User Count Button
+.user-count-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.4rem 0.75rem;
+    border-radius: 20px;
+    border: 1px solid #dee2e6;
+    background: #f8f9fa;
+    color: #6c757d;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: default;
+    transition: all 0.2s ease;
+
+    &.has-users {
+        cursor: pointer;
+        background: rgba(34, 197, 94, 0.1);
+        border-color: rgba(34, 197, 94, 0.3);
+        color: #16a34a;
+
+        &:hover {
+            background: rgba(34, 197, 94, 0.2);
+        }
+    }
+
+    &.expanded {
+        background: #16a34a;
+        border-color: #16a34a;
+        color: white;
+    }
+
+    &:disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    .expand-icon {
+        transition: transform 0.2s ease;
+        font-size: 0.7rem;
+    }
+
+    &.expanded .expand-icon {
+        transform: rotate(180deg);
+    }
+}
+
+// Status badges
 .status-badge {
     display: inline-block;
     padding: 0.3rem 0.7rem;
@@ -130,4 +191,96 @@
         background: rgba(239, 68, 68, 0.15);
         color: #dc2626;
     }
+}
+
+// Expanded Users Panel
+.users-panel {
+    padding: 1rem 1.5rem;
+}
+
+.users-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    color: #6c757d;
+}
+
+.users-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.user-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: white;
+    border-radius: 10px;
+    border: 1px solid #e9ecef;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+        border-color: #667eea;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+        transform: translateX(4px);
+
+        .navigate-icon {
+            opacity: 1;
+            color: #667eea;
+        }
+    }
+}
+
+.user-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+
+    .user-name {
+        font-weight: 500;
+        color: #212529;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .user-email {
+        font-size: 0.8rem;
+        color: #6c757d;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+.navigate-icon {
+    color: #adb5bd;
+    opacity: 0.5;
+    transition: all 0.2s ease;
+}
+
+.no-users {
+    padding: 1rem;
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
 }

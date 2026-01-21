@@ -3,7 +3,7 @@
 
     <!-- Loading State -->
     <div *ngIf="isLoading" class="loading-state">
-        <div class="spinner-border spinner-border-sm text-light" role="status">
+        <div class="spinner-border spinner-border-sm text-primary" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>
         <span class="ms-2">Loading security roles...</span>
@@ -11,7 +11,7 @@
 
     <!-- Error State -->
     <div *ngIf="errorMessage && !isLoading" class="error-state">
-        <i class="fa-solid fa-exclamation-triangle"></i>
+        <i class="fa-solid fa-exclamation-triangle text-warning"></i>
         <span class="ms-2">{{ errorMessage }}</span>
     </div>
 
@@ -28,30 +28,81 @@
                 <tr>
                     <th>Security Role</th>
                     <th>Comments</th>
+                    <th class="text-center">Users</th>
                     <th class="text-center">Status</th>
                 </tr>
             </thead>
             <tbody>
-                <tr *ngFor="let role of roles; trackBy: trackByRoleId">
-                    <td>
-                        <div class="role-info">
-                            <i class="fa-solid fa-user-shield role-icon"></i>
-                            <div class="role-details">
-                                <span class="role-name">{{ role.securityRole?.name || 'Role #' + role.securityRoleId
-                                    }}</span>
-                                <span class="role-id">ID: {{ role.id }}</span>
+                <ng-container *ngFor="let role of roles; trackBy: trackByRoleId">
+                    <!-- Role Row -->
+                    <tr class="role-row" [class.expanded]="role.isExpanded">
+                        <td>
+                            <div class="role-info">
+                                <i class="fa-solid fa-user-shield role-icon"></i>
+                                <div class="role-details">
+                                    <span class="role-name">{{ role.securityRole?.name || 'Role #' + role.securityRoleId
+                                        }}</span>
+                                    <span class="role-id">ID: {{ role.id }}</span>
+                                </div>
                             </div>
-                        </div>
-                    </td>
-                    <td>
-                        <span class="comments-text">{{ role.comments || '—' }}</span>
-                    </td>
-                    <td class="text-center">
-                        <span class="status-badge" [ngClass]="getStatusBadgeClass(role)">
-                            {{ getStatusText(role) }}
-                        </span>
-                    </td>
-                </tr>
+                        </td>
+                        <td>
+                            <span class="comments-text">{{ role.comments || '—' }}</span>
+                        </td>
+                        <td class="text-center">
+                            <button class="user-count-btn" [class.has-users]="role.userCount && role.userCount > 0"
+                                [class.expanded]="role.isExpanded" (click)="toggleUserList(role)"
+                                [disabled]="role.userCount === 0">
+                                <i class="fa-solid fa-users me-1"></i>
+                                <span *ngIf="role.userCount !== undefined">{{ role.userCount }}</span>
+                                <span *ngIf="role.userCount === undefined"
+                                    class="spinner-border spinner-border-sm"></span>
+                                <i class="fa-solid fa-chevron-down expand-icon ms-1"
+                                    *ngIf="role.userCount && role.userCount > 0"></i>
+                            </button>
+                        </td>
+                        <td class="text-center">
+                            <span class="status-badge" [ngClass]="getStatusBadgeClass(role)">
+                                {{ getStatusText(role) }}
+                            </span>
+                        </td>
+                    </tr>
+
+                    <!-- Expanded Users Row -->
+                    <tr *ngIf="role.isExpanded" class="users-row">
+                        <td colspan="4">
+                            <div class="users-panel">
+                                <!-- Loading Users -->
+                                <div *ngIf="role.isLoadingUsers" class="users-loading">
+                                    <div class="spinner-border spinner-border-sm text-primary"></div>
+                                    <span class="ms-2">Loading users...</span>
+                                </div>
+
+                                <!-- Users List -->
+                                <div *ngIf="!role.isLoadingUsers && role.users" class="users-list">
+                                    <div *ngFor="let user of role.users; trackBy: trackByUserId" class="user-item"
+                                        (click)="navigateToUser(user.securityUserId)">
+                                        <div class="user-avatar">
+                                            {{ getInitials(user) }}
+                                        </div>
+                                        <div class="user-info">
+                                            <span class="user-name">{{ user.securityUser?.firstName }} {{
+                                                user.securityUser?.lastName || user.securityUser?.accountName || 'User
+                                                #' + user.securityUserId }}</span>
+                                            <span class="user-email">{{ user.securityUser?.emailAddress || '' }}</span>
+                                        </div>
+                                        <i class="fa-solid fa-chevron-right navigate-icon"></i>
+                                    </div>
+
+                                    <!-- No Users Message -->
+                                    <div *ngIf="role.users.length === 0" class="no-users">
+                                        No users assigned to this role.
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-container>
             </tbody>
         </table>
     </div>
