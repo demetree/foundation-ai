@@ -250,6 +250,14 @@ namespace Foundation.CodeGeneration
             // Add in the module specific database, with custom namespace if provided
             sb.AppendLine($"using {rootNameSpace}.{module}.{databaseNamespace};");
 
+            //
+            // AI-Developed: Add Foundation.ChangeHistory import for version-controlled entities
+            //
+            if (versionControlEnabled == true && ignoreFoundationServices == false)
+            {
+                sb.AppendLine("using Foundation.ChangeHistory;");
+            }
+
 
             // Don't need this since I moved the BackgroundJob class into the Foundation namespace
             //if (ignoreFoundationServices == false)
@@ -3798,6 +3806,326 @@ namespace Foundation.CodeGeneration
                 }
 
                 sb.AppendLine();
+
+                #endregion
+
+                #region Version_History_Endpoints
+
+                //
+                // AI-Developed: Version History Accessor Endpoints
+                //
+                // These endpoints provide read-only access to the version history of entities with version control enabled.
+                // They leverage the entity extension methods (GetVersionAsync, GetAllVersionsAsync, GetVersionAtTimeAsync)
+                // that are generated for version-controlled entities.
+                //
+
+                if (versionControlEnabled == true && ignoreFoundationServices == false)
+                {
+                    //
+                    // GetChangeMetadata Endpoint - Returns version metadata (timestamp, user) for a specific version
+                    //
+                    sb.AppendLine($@"
+        /// <summary>
+        /// 
+        /// Gets the change metadata (version info, timestamp, user) for a specific version of a {entityName}.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+        /// <param name=""id"">The primary key of the {entityName}</param>
+        /// <param name=""versionNumber"">The version number to retrieve metadata for</param>
+        /// <returns>VersionInformation containing timestamp and user details</returns>");
+                    sb.AppendLine("\t\t[HttpGet]");
+                    sb.AppendLine("\t\t[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]");
+                    sb.AppendLine("\t\t[Route(\"api/" + singularForRouting + "/{id}/ChangeMetadata\")]");
+                    sb.AppendLine("\t\tpublic async Task<IActionResult> Get" + entityName + "ChangeMetadata(int id, int versionNumber, CancellationToken cancellationToken = default)");
+                    sb.AppendLine("\t\t{");
+                    sb.AppendLine("\t\t\tif (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)");
+                    sb.AppendLine("\t\t\t{");
+                    sb.AppendLine("\t\t\t\treturn Forbid();");
+                    sb.AppendLine("\t\t\t}");
+                    sb.AppendLine();
+                    sb.AppendLine("\t\t\tSecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);");
+
+                    if (multiTenancyEnabled == true)
+                    {
+                        sb.AppendLine();
+                        sb.AppendLine(UserTenantGuidCommands(3));
+                    }
+
+                    sb.AppendLine();
+                    sb.AppendLine("\t\t\t" + qualifiedEntity + " " + camelCaseName + " = await _context." + plural + ".Where(x => x.id == id");
+
+                    if (multiTenancyEnabled == true)
+                    {
+                        sb.AppendLine("\t\t\t\t&& x.tenantGuid == userTenantGuid");
+                    }
+
+                    sb.AppendLine("\t\t\t).FirstOrDefaultAsync(cancellationToken);");
+                    sb.AppendLine();
+                    sb.AppendLine("\t\t\tif (" + camelCaseName + " == null)");
+                    sb.AppendLine("\t\t\t{");
+                    sb.AppendLine("\t\t\t\treturn NotFound();");
+                    sb.AppendLine("\t\t\t}");
+                    sb.AppendLine();
+                    sb.AppendLine("\t\t\ttry");
+                    sb.AppendLine("\t\t\t{");
+
+                    if (multiTenancyEnabled == true)
+                    {
+                        sb.AppendLine("\t\t\t\t" + camelCaseName + ".SetupVersionInquiry(_context, userTenantGuid);");
+                    }
+                    else
+                    {
+                        sb.AppendLine("\t\t\t\t" + camelCaseName + ".SetupVersionInquiry(_context, Guid.Empty);");
+                    }
+
+                    sb.AppendLine();
+                    sb.AppendLine("\t\t\t\tVersionInformation<" + qualifiedEntity + "> versionInfo = await " + camelCaseName + ".GetVersionAsync(versionNumber, includeData: false, cancellationToken).ConfigureAwait(false);");
+                    sb.AppendLine();
+                    sb.AppendLine("\t\t\t\tif (versionInfo == null)");
+                    sb.AppendLine("\t\t\t\t{");
+                    sb.AppendLine("\t\t\t\t\treturn NotFound($\"Version {versionNumber} not found.\");");
+                    sb.AppendLine("\t\t\t\t}");
+                    sb.AppendLine();
+                    sb.AppendLine("\t\t\t\treturn Ok(versionInfo);");
+                    sb.AppendLine("\t\t\t}");
+                    sb.AppendLine("\t\t\tcatch (Exception ex)");
+                    sb.AppendLine("\t\t\t{");
+                    sb.AppendLine("\t\t\t\treturn Problem(ex.Message);");
+                    sb.AppendLine("\t\t\t}");
+                    sb.AppendLine("\t\t}");
+                    sb.AppendLine();
+                    sb.AppendLine();
+
+
+                    //
+                    // GetAuditHistory Endpoint - Returns the full audit history for an entity
+                    //
+                    sb.AppendLine($@"
+        /// <summary>
+        /// 
+        /// Gets the full audit history for a {entityName}.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+        /// <param name=""id"">The primary key of the {entityName}</param>
+        /// <param name=""includeData"">Whether to include the full entity data for each version (can be large)</param>
+        /// <returns>List of VersionInformation items</returns>");
+                    sb.AppendLine("\t\t[HttpGet]");
+                    sb.AppendLine("\t\t[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]");
+                    sb.AppendLine("\t\t[Route(\"api/" + singularForRouting + "/{id}/AuditHistory\")]");
+                    sb.AppendLine("\t\tpublic async Task<IActionResult> Get" + entityName + "AuditHistory(int id, bool includeData = false, CancellationToken cancellationToken = default)");
+                    sb.AppendLine("\t\t{");
+                    sb.AppendLine("\t\t\tif (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)");
+                    sb.AppendLine("\t\t\t{");
+                    sb.AppendLine("\t\t\t\treturn Forbid();");
+                    sb.AppendLine("\t\t\t}");
+                    sb.AppendLine();
+                    sb.AppendLine("\t\t\tSecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);");
+
+                    if (multiTenancyEnabled == true)
+                    {
+                        sb.AppendLine();
+                        sb.AppendLine(UserTenantGuidCommands(3));
+                    }
+
+                    sb.AppendLine();
+                    sb.AppendLine("\t\t\t" + qualifiedEntity + " " + camelCaseName + " = await _context." + plural + ".Where(x => x.id == id");
+
+                    if (multiTenancyEnabled == true)
+                    {
+                        sb.AppendLine("\t\t\t\t&& x.tenantGuid == userTenantGuid");
+                    }
+
+                    sb.AppendLine("\t\t\t).FirstOrDefaultAsync(cancellationToken);");
+                    sb.AppendLine();
+                    sb.AppendLine("\t\t\tif (" + camelCaseName + " == null)");
+                    sb.AppendLine("\t\t\t{");
+                    sb.AppendLine("\t\t\t\treturn NotFound();");
+                    sb.AppendLine("\t\t\t}");
+                    sb.AppendLine();
+                    sb.AppendLine("\t\t\ttry");
+                    sb.AppendLine("\t\t\t{");
+
+                    if (multiTenancyEnabled == true)
+                    {
+                        sb.AppendLine("\t\t\t\t" + camelCaseName + ".SetupVersionInquiry(_context, userTenantGuid);");
+                    }
+                    else
+                    {
+                        sb.AppendLine("\t\t\t\t" + camelCaseName + ".SetupVersionInquiry(_context, Guid.Empty);");
+                    }
+
+                    sb.AppendLine();
+                    sb.AppendLine("\t\t\t\tList<VersionInformation<" + qualifiedEntity + ">> versions = await " + camelCaseName + ".GetAllVersionsAsync(includeData: includeData, cancellationToken).ConfigureAwait(false);");
+                    sb.AppendLine();
+                    sb.AppendLine("\t\t\t\treturn Ok(versions);");
+                    sb.AppendLine("\t\t\t}");
+                    sb.AppendLine("\t\t\tcatch (Exception ex)");
+                    sb.AppendLine("\t\t\t{");
+                    sb.AppendLine("\t\t\t\treturn Problem(ex.Message);");
+                    sb.AppendLine("\t\t\t}");
+                    sb.AppendLine("\t\t}");
+                    sb.AppendLine();
+                    sb.AppendLine();
+
+
+                    //
+                    // GetVersion Endpoint - Returns the entity at a specific version number
+                    //
+                    sb.AppendLine($@"
+        /// <summary>
+        /// 
+        /// Gets a specific version of a {entityName}.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+        /// <param name=""id"">The primary key of the {entityName}</param>
+        /// <param name=""version"">The version number to retrieve</param>
+        /// <returns>The {entityName} object at that version</returns>");
+                    sb.AppendLine("\t\t[HttpGet]");
+                    sb.AppendLine("\t\t[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]");
+                    sb.AppendLine("\t\t[Route(\"api/" + singularForRouting + "/{id}/Version/{version}\")]");
+                    sb.AppendLine("\t\tpublic async Task<IActionResult> Get" + entityName + "Version(int id, int version, CancellationToken cancellationToken = default)");
+                    sb.AppendLine("\t\t{");
+                    sb.AppendLine("\t\t\tif (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)");
+                    sb.AppendLine("\t\t\t{");
+                    sb.AppendLine("\t\t\t\treturn Forbid();");
+                    sb.AppendLine("\t\t\t}");
+                    sb.AppendLine();
+                    sb.AppendLine("\t\t\tSecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);");
+
+                    if (multiTenancyEnabled == true)
+                    {
+                        sb.AppendLine();
+                        sb.AppendLine(UserTenantGuidCommands(3));
+                    }
+
+                    sb.AppendLine();
+                    sb.AppendLine("\t\t\t" + qualifiedEntity + " " + camelCaseName + " = await _context." + plural + ".Where(x => x.id == id");
+
+                    if (multiTenancyEnabled == true)
+                    {
+                        sb.AppendLine("\t\t\t\t&& x.tenantGuid == userTenantGuid");
+                    }
+
+                    sb.AppendLine("\t\t\t).FirstOrDefaultAsync(cancellationToken);");
+                    sb.AppendLine();
+                    sb.AppendLine("\t\t\tif (" + camelCaseName + " == null)");
+                    sb.AppendLine("\t\t\t{");
+                    sb.AppendLine("\t\t\t\treturn NotFound();");
+                    sb.AppendLine("\t\t\t}");
+                    sb.AppendLine();
+                    sb.AppendLine("\t\t\ttry");
+                    sb.AppendLine("\t\t\t{");
+
+                    if (multiTenancyEnabled == true)
+                    {
+                        sb.AppendLine("\t\t\t\t" + camelCaseName + ".SetupVersionInquiry(_context, userTenantGuid);");
+                    }
+                    else
+                    {
+                        sb.AppendLine("\t\t\t\t" + camelCaseName + ".SetupVersionInquiry(_context, Guid.Empty);");
+                    }
+
+                    sb.AppendLine();
+                    sb.AppendLine("\t\t\t\tVersionInformation<" + qualifiedEntity + "> versionInfo = await " + camelCaseName + ".GetVersionAsync(version, includeData: true, cancellationToken).ConfigureAwait(false);");
+                    sb.AppendLine();
+                    sb.AppendLine("\t\t\t\tif (versionInfo == null || versionInfo.data == null)");
+                    sb.AppendLine("\t\t\t\t{");
+                    sb.AppendLine("\t\t\t\t\treturn NotFound();");
+                    sb.AppendLine("\t\t\t\t}");
+                    sb.AppendLine();
+                    sb.AppendLine("\t\t\t\treturn Ok(versionInfo.data.ToOutputDTO());");
+                    sb.AppendLine("\t\t\t}");
+                    sb.AppendLine("\t\t\tcatch (Exception ex)");
+                    sb.AppendLine("\t\t\t{");
+                    sb.AppendLine("\t\t\t\treturn Problem(ex.Message);");
+                    sb.AppendLine("\t\t\t}");
+                    sb.AppendLine("\t\t}");
+                    sb.AppendLine();
+                    sb.AppendLine();
+
+
+                    //
+                    // GetVersionAtTime Endpoint - Returns the entity state at a specific point in time
+                    //
+                    sb.AppendLine($@"
+        /// <summary>
+        /// 
+        /// Gets the state of a {entityName} at a specific point in time.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+        /// <param name=""id"">The primary key of the {entityName}</param>
+        /// <param name=""time"">The point in time (ISO format, UTC)</param>
+        /// <returns>The {entityName} object at that time</returns>");
+                    sb.AppendLine("\t\t[HttpGet]");
+                    sb.AppendLine("\t\t[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]");
+                    sb.AppendLine("\t\t[Route(\"api/" + singularForRouting + "/{id}/StateAtTime\")]");
+                    sb.AppendLine("\t\tpublic async Task<IActionResult> Get" + entityName + "StateAtTime(int id, DateTime time, CancellationToken cancellationToken = default)");
+                    sb.AppendLine("\t\t{");
+                    sb.AppendLine("\t\t\tif (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)");
+                    sb.AppendLine("\t\t\t{");
+                    sb.AppendLine("\t\t\t\treturn Forbid();");
+                    sb.AppendLine("\t\t\t}");
+                    sb.AppendLine();
+                    sb.AppendLine("\t\t\tSecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);");
+
+                    if (multiTenancyEnabled == true)
+                    {
+                        sb.AppendLine();
+                        sb.AppendLine(UserTenantGuidCommands(3));
+                    }
+
+                    sb.AppendLine();
+                    sb.AppendLine("\t\t\t" + qualifiedEntity + " " + camelCaseName + " = await _context." + plural + ".Where(x => x.id == id");
+
+                    if (multiTenancyEnabled == true)
+                    {
+                        sb.AppendLine("\t\t\t\t&& x.tenantGuid == userTenantGuid");
+                    }
+
+                    sb.AppendLine("\t\t\t).FirstOrDefaultAsync(cancellationToken);");
+                    sb.AppendLine();
+                    sb.AppendLine("\t\t\tif (" + camelCaseName + " == null)");
+                    sb.AppendLine("\t\t\t{");
+                    sb.AppendLine("\t\t\t\treturn NotFound();");
+                    sb.AppendLine("\t\t\t}");
+                    sb.AppendLine();
+                    sb.AppendLine("\t\t\ttry");
+                    sb.AppendLine("\t\t\t{");
+
+                    if (multiTenancyEnabled == true)
+                    {
+                        sb.AppendLine("\t\t\t\t" + camelCaseName + ".SetupVersionInquiry(_context, userTenantGuid);");
+                    }
+                    else
+                    {
+                        sb.AppendLine("\t\t\t\t" + camelCaseName + ".SetupVersionInquiry(_context, Guid.Empty);");
+                    }
+
+                    sb.AppendLine();
+                    sb.AppendLine("\t\t\t\tVersionInformation<" + qualifiedEntity + "> versionInfo = await " + camelCaseName + ".GetVersionAtTimeAsync(time, includeData: true, cancellationToken).ConfigureAwait(false);");
+                    sb.AppendLine();
+                    sb.AppendLine("\t\t\t\tif (versionInfo == null || versionInfo.data == null)");
+                    sb.AppendLine("\t\t\t\t{");
+                    sb.AppendLine("\t\t\t\t\treturn NotFound(\"No state found at specified time.\");");
+                    sb.AppendLine("\t\t\t\t}");
+                    sb.AppendLine();
+                    sb.AppendLine("\t\t\t\treturn Ok(versionInfo.data.ToOutputDTO());");
+                    sb.AppendLine("\t\t\t}");
+                    sb.AppendLine("\t\t\tcatch (Exception ex)");
+                    sb.AppendLine("\t\t\t{");
+                    sb.AppendLine("\t\t\t\treturn Problem(ex.Message);");
+                    sb.AppendLine("\t\t\t}");
+                    sb.AppendLine("\t\t}");
+                    sb.AppendLine();
+                }
 
                 #endregion
 
