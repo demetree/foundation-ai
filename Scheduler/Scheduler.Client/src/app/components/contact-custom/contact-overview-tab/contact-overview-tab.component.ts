@@ -3,7 +3,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { Observable, of, Subject, combineLatest } from 'rxjs';
 import { map, takeUntil } from 'rxjs/operators';
 
-import { ContactService, ContactData } from '../../../scheduler-data-services/contact.service';
+import { ContactService, ContactData, VersionInformation } from '../../../scheduler-data-services/contact.service';
 import { ContactInteractionService, ContactInteractionData } from '../../../scheduler-data-services/contact-interaction.service';
 import { AuthService } from '../../../services/auth.service';
 
@@ -21,6 +21,7 @@ export class ContactOverviewTabComponent implements OnInit, OnDestroy {
   @Output() editContactRequested = new EventEmitter<void>();
   @Output() addRelationshipRequested = new EventEmitter<void>();
   @Output() manageTagsRequested = new EventEmitter<void>();
+  @Output() viewHistoryRequested = new EventEmitter<void>();
 
   //
   // Recent interactions observable (last 5)
@@ -41,6 +42,11 @@ export class ContactOverviewTabComponent implements OnInit, OnDestroy {
   public isLoadingCounts$: Observable<boolean>;
 
   //
+  // Version history metadata
+  //
+  public versionInfo$: Observable<VersionInformation<ContactData> | null>;
+
+  //
   // Cleanup subject
   //
   private destroy$ = new Subject<void>();
@@ -56,6 +62,7 @@ export class ContactOverviewTabComponent implements OnInit, OnDestroy {
     this.isLoadingInteractions$ = of(true);
     this.entityCounts$ = of({ offices: 0, clients: 0, schedulingTargets: 0, resources: 0, relationships: 0 });
     this.isLoadingCounts$ = of(true);
+    this.versionInfo$ = of(null);
   }
 
 
@@ -105,6 +112,13 @@ export class ContactOverviewTabComponent implements OnInit, OnDestroy {
 
     this.isLoadingCounts$ = this.entityCounts$.pipe(
       map(() => false) // Once combineLatest emits, we're done loading
+    );
+
+    //
+    // Load version history metadata via lazy-loading observable
+    //
+    this.versionInfo$ = this.contact.CurrentVersionInfo$.pipe(
+      takeUntil(this.destroy$)
     );
   }
 
@@ -190,6 +204,14 @@ export class ContactOverviewTabComponent implements OnInit, OnDestroy {
    */
   manageTags(): void {
     this.manageTagsRequested.emit();
+  }
+
+
+  /**
+   * Opens version history modal by emitting event to parent
+   */
+  openVersionHistoryModal(): void {
+    this.viewHistoryRequested.emit();
   }
 
 

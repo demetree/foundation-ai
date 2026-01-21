@@ -34,7 +34,17 @@
               {{ contact?.active ? 'Active' : 'Inactive' }}
             </span>
             <span *ngIf="contact?.deleted" class="badge bg-danger">Deleted</span>
-            <span class="badge bg-secondary">Version: {{ contact?.versionNumber }}</span>
+            <span class="badge version-badge clickable" (click)="openVersionHistoryModal()"
+              [ngbTooltip]="versionTooltip" placement="bottom">
+              <i class="fa-solid fa-clock-rotate-left me-1"></i>v{{ contact?.versionNumber }}
+            </span>
+            <ng-template #versionTooltip>
+              <div class="text-start">
+                <div class="small">Last modified by:</div>
+                <div class="fw-bold">{{ (currentVersionInfo$ | async)?.userName || 'Loading...' }}</div>
+                <div class="small text-muted mt-1">Click for full history</div>
+              </div>
+            </ng-template>
 
             <!-- Donor Journey Stage -->
             <ng-container *ngIf="constituent$ | async as constituent">
@@ -122,7 +132,7 @@
         <ng-template ngbNavContent>
           <div *ngIf="contact; else loadingTemplate">
             <app-contact-overview-tab [contact]="contact" (editContactRequested)="openEditModal()"
-              (manageTagsRequested)="openEditModal()">
+              (manageTagsRequested)="openEditModal()" (viewHistoryRequested)="openVersionHistoryModal()">
             </app-contact-overview-tab>
           </div>
           <ng-template #loadingTemplate>

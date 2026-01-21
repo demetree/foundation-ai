@@ -2,11 +2,11 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NavigationService } from '../../../utility-services/navigation.service';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
-import { ContactService, ContactData, ContactSubmitData } from '../../../scheduler-data-services/contact.service';
+import { ContactService, ContactData, ContactSubmitData, VersionInformation } from '../../../scheduler-data-services/contact.service';
 import { IconService } from '../../../scheduler-data-services/icon.service';
 import { ContactTagData } from '../../../scheduler-data-services/contact-tag.service';
 import { AuthService } from '../../../services/auth.service';
-import { Observable, BehaviorSubject, Subject, takeUntil, finalize, switchMap, forkJoin, shareReplay, map } from 'rxjs';
+import { Observable, BehaviorSubject, Subject, takeUntil, finalize, switchMap, forkJoin, shareReplay, map, of } from 'rxjs';
 import { ContactCustomAddEditComponent } from '../contact-custom-add-edit/contact-custom-add-edit.component';
 import { TagService } from '../../../scheduler-data-services/tag.service';
 import { ConstituentData, ConstituentService } from '../../../scheduler-data-services/constituent.service';
@@ -41,6 +41,7 @@ export class ContactCustomDetailComponent implements OnInit {
 
   public contactTagsWithIcons$!: Observable<Array<ContactTagData> | null>;
   public constituent$: Observable<ConstituentData | null> = new BehaviorSubject<ConstituentData | null>(null);
+  public currentVersionInfo$: Observable<VersionInformation<ContactData> | null> = of(null);
 
   private destroy$ = new Subject<void>();
 
@@ -268,6 +269,11 @@ export class ContactCustomDetailComponent implements OnInit {
             shareReplay(1)
           );
 
+          // Load version history metadata for the header badge tooltip
+          this.currentVersionInfo$ = this.contact.CurrentVersionInfo$.pipe(
+            takeUntil(this.destroy$)
+          );
+
           if (forceLoadAndDisplaySuccessAlert === true) {
             this.alertService.showMessage(
               'Contact loaded successfully',
@@ -423,6 +429,22 @@ export class ContactCustomDetailComponent implements OnInit {
     if (this.contact) {
       this.addEditComponent.openModal(this.contact);
     }
+  }
+
+
+  /**
+   * Opens the version history modal to show full audit history and rollback options
+   */
+  public openVersionHistoryModal(): void {
+    if (!this.contact) return;
+
+    // TODO: Open the version history modal component
+    // For now, show an alert that functionality is coming
+    this.alertService.showMessage(
+      'Version History coming soon! This will show the full audit trail and rollback options.',
+      'v' + this.contact.versionNumber,
+      MessageSeverity.info
+    );
   }
 
 

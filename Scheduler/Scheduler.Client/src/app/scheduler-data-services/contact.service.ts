@@ -125,8 +125,8 @@ export interface VersionInformation<T> {
 }
 
 export class ContactBasicListData {
-  id!: bigint | number;
-  name!: string;
+    id!: bigint | number;
+    name!: string;
 }
 
 
@@ -206,63 +206,63 @@ export class ContactData {
     // Private lazy-loading caches for related collections
     //
     private _contactChangeHistories: ContactChangeHistoryData[] | null = null;
-    private _contactChangeHistoriesPromise: Promise<ContactChangeHistoryData[]> | null  = null;
+    private _contactChangeHistoriesPromise: Promise<ContactChangeHistoryData[]> | null = null;
     private _contactChangeHistoriesSubject = new BehaviorSubject<ContactChangeHistoryData[] | null>(null);
 
-                
+
     private _contactTags: ContactTagData[] | null = null;
-    private _contactTagsPromise: Promise<ContactTagData[]> | null  = null;
+    private _contactTagsPromise: Promise<ContactTagData[]> | null = null;
     private _contactTagsSubject = new BehaviorSubject<ContactTagData[] | null>(null);
 
-                
+
     private _contactContacts: ContactContactData[] | null = null;
-    private _contactContactsPromise: Promise<ContactContactData[]> | null  = null;
+    private _contactContactsPromise: Promise<ContactContactData[]> | null = null;
     private _contactContactsSubject = new BehaviorSubject<ContactContactData[] | null>(null);
 
-                
+
     private _contactContactRelatedContacts: ContactContactData[] | null = null;
-    private _contactContactRelatedContactsPromise: Promise<ContactContactData[]> | null  = null;
+    private _contactContactRelatedContactsPromise: Promise<ContactContactData[]> | null = null;
     private _contactContactRelatedContactsSubject = new BehaviorSubject<ContactContactData[] | null>(null);
-                    
+
     private _officeContacts: OfficeContactData[] | null = null;
-    private _officeContactsPromise: Promise<OfficeContactData[]> | null  = null;
+    private _officeContactsPromise: Promise<OfficeContactData[]> | null = null;
     private _officeContactsSubject = new BehaviorSubject<OfficeContactData[] | null>(null);
 
-                
+
     private _clientContacts: ClientContactData[] | null = null;
-    private _clientContactsPromise: Promise<ClientContactData[]> | null  = null;
+    private _clientContactsPromise: Promise<ClientContactData[]> | null = null;
     private _clientContactsSubject = new BehaviorSubject<ClientContactData[] | null>(null);
 
-                
+
     private _schedulingTargetContacts: SchedulingTargetContactData[] | null = null;
-    private _schedulingTargetContactsPromise: Promise<SchedulingTargetContactData[]> | null  = null;
+    private _schedulingTargetContactsPromise: Promise<SchedulingTargetContactData[]> | null = null;
     private _schedulingTargetContactsSubject = new BehaviorSubject<SchedulingTargetContactData[] | null>(null);
 
-                
+
     private _resourceContacts: ResourceContactData[] | null = null;
-    private _resourceContactsPromise: Promise<ResourceContactData[]> | null  = null;
+    private _resourceContactsPromise: Promise<ResourceContactData[]> | null = null;
     private _resourceContactsSubject = new BehaviorSubject<ResourceContactData[] | null>(null);
 
-                
+
     private _contactInteractions: ContactInteractionData[] | null = null;
-    private _contactInteractionsPromise: Promise<ContactInteractionData[]> | null  = null;
+    private _contactInteractionsPromise: Promise<ContactInteractionData[]> | null = null;
     private _contactInteractionsSubject = new BehaviorSubject<ContactInteractionData[] | null>(null);
 
-                
+
     private _contactInteractionInitiatingContacts: ContactInteractionData[] | null = null;
-    private _contactInteractionInitiatingContactsPromise: Promise<ContactInteractionData[]> | null  = null;
+    private _contactInteractionInitiatingContactsPromise: Promise<ContactInteractionData[]> | null = null;
     private _contactInteractionInitiatingContactsSubject = new BehaviorSubject<ContactInteractionData[] | null>(null);
-                    
+
     private _notificationSubscriptions: NotificationSubscriptionData[] | null = null;
-    private _notificationSubscriptionsPromise: Promise<NotificationSubscriptionData[]> | null  = null;
+    private _notificationSubscriptionsPromise: Promise<NotificationSubscriptionData[]> | null = null;
     private _notificationSubscriptionsSubject = new BehaviorSubject<NotificationSubscriptionData[] | null>(null);
 
-                
+
     private _constituents: ConstituentData[] | null = null;
-    private _constituentsPromise: Promise<ConstituentData[]> | null  = null;
+    private _constituentsPromise: Promise<ConstituentData[]> | null = null;
     private _constituentsSubject = new BehaviorSubject<ConstituentData[] | null>(null);
 
-                
+
 
 
     //
@@ -283,17 +283,18 @@ export class ContactData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-          if (this._contactChangeHistories === null && this._contactChangeHistoriesPromise === null) {
-            this.loadContactChangeHistories(); // Private method to start fetch
-          }
+            if (this._contactChangeHistories === null && this._contactChangeHistoriesPromise === null) {
+                this.loadContactChangeHistories(); // Private method to start fetch
+            }
         }),
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ContactChangeHistoriesCount$ = ContactChangeHistoryService.Instance.GetContactChangeHistoriesRowCount({contactId: this.id,
-      active: true,
-      deleted: false
+
+    public ContactChangeHistoriesCount$ = ContactChangeHistoryService.Instance.GetContactChangeHistoriesRowCount({
+        contactId: this.id,
+        active: true,
+        deleted: false
     });
 
 
@@ -302,17 +303,18 @@ export class ContactData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-          if (this._contactTags === null && this._contactTagsPromise === null) {
-            this.loadContactTags(); // Private method to start fetch
-          }
+            if (this._contactTags === null && this._contactTagsPromise === null) {
+                this.loadContactTags(); // Private method to start fetch
+            }
         }),
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ContactTagsCount$ = ContactTagService.Instance.GetContactTagsRowCount({contactId: this.id,
-      active: true,
-      deleted: false
+
+    public ContactTagsCount$ = ContactTagService.Instance.GetContactTagsRowCount({
+        contactId: this.id,
+        active: true,
+        deleted: false
     });
 
 
@@ -321,17 +323,18 @@ export class ContactData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-          if (this._contactContacts === null && this._contactContactsPromise === null) {
-            this.loadContactContacts(); // Private method to start fetch
-          }
+            if (this._contactContacts === null && this._contactContactsPromise === null) {
+                this.loadContactContacts(); // Private method to start fetch
+            }
         }),
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ContactContactsCount$ = ContactContactService.Instance.GetContactContactsRowCount({contactId: this.id,
-      active: true,
-      deleted: false
+
+    public ContactContactsCount$ = ContactContactService.Instance.GetContactContactsRowCount({
+        contactId: this.id,
+        active: true,
+        deleted: false
     });
 
 
@@ -340,17 +343,18 @@ export class ContactData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-          if (this._contactContactRelatedContacts === null && this._contactContactRelatedContactsPromise === null) {
-            this.loadContactContactRelatedContacts(); // Private method to start fetch
-          }
+            if (this._contactContactRelatedContacts === null && this._contactContactRelatedContactsPromise === null) {
+                this.loadContactContactRelatedContacts(); // Private method to start fetch
+            }
         }),
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ContactContactRelatedContactsCount$ = ContactContactService.Instance.GetContactContactsRowCount({relatedContactId: this.id,
-      active: true,
-      deleted: false
+
+    public ContactContactRelatedContactsCount$ = ContactContactService.Instance.GetContactContactsRowCount({
+        relatedContactId: this.id,
+        active: true,
+        deleted: false
     });
 
 
@@ -358,17 +362,18 @@ export class ContactData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-          if (this._officeContacts === null && this._officeContactsPromise === null) {
-            this.loadOfficeContacts(); // Private method to start fetch
-          }
+            if (this._officeContacts === null && this._officeContactsPromise === null) {
+                this.loadOfficeContacts(); // Private method to start fetch
+            }
         }),
         shareReplay(1) // Cache last emit
     );
 
-  
-    public OfficeContactsCount$ = OfficeContactService.Instance.GetOfficeContactsRowCount({contactId: this.id,
-      active: true,
-      deleted: false
+
+    public OfficeContactsCount$ = OfficeContactService.Instance.GetOfficeContactsRowCount({
+        contactId: this.id,
+        active: true,
+        deleted: false
     });
 
 
@@ -377,17 +382,18 @@ export class ContactData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-          if (this._clientContacts === null && this._clientContactsPromise === null) {
-            this.loadClientContacts(); // Private method to start fetch
-          }
+            if (this._clientContacts === null && this._clientContactsPromise === null) {
+                this.loadClientContacts(); // Private method to start fetch
+            }
         }),
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ClientContactsCount$ = ClientContactService.Instance.GetClientContactsRowCount({contactId: this.id,
-      active: true,
-      deleted: false
+
+    public ClientContactsCount$ = ClientContactService.Instance.GetClientContactsRowCount({
+        contactId: this.id,
+        active: true,
+        deleted: false
     });
 
 
@@ -396,17 +402,18 @@ export class ContactData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-          if (this._schedulingTargetContacts === null && this._schedulingTargetContactsPromise === null) {
-            this.loadSchedulingTargetContacts(); // Private method to start fetch
-          }
+            if (this._schedulingTargetContacts === null && this._schedulingTargetContactsPromise === null) {
+                this.loadSchedulingTargetContacts(); // Private method to start fetch
+            }
         }),
         shareReplay(1) // Cache last emit
     );
 
-  
-    public SchedulingTargetContactsCount$ = SchedulingTargetContactService.Instance.GetSchedulingTargetContactsRowCount({contactId: this.id,
-      active: true,
-      deleted: false
+
+    public SchedulingTargetContactsCount$ = SchedulingTargetContactService.Instance.GetSchedulingTargetContactsRowCount({
+        contactId: this.id,
+        active: true,
+        deleted: false
     });
 
 
@@ -415,17 +422,18 @@ export class ContactData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-          if (this._resourceContacts === null && this._resourceContactsPromise === null) {
-            this.loadResourceContacts(); // Private method to start fetch
-          }
+            if (this._resourceContacts === null && this._resourceContactsPromise === null) {
+                this.loadResourceContacts(); // Private method to start fetch
+            }
         }),
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ResourceContactsCount$ = ResourceContactService.Instance.GetResourceContactsRowCount({contactId: this.id,
-      active: true,
-      deleted: false
+
+    public ResourceContactsCount$ = ResourceContactService.Instance.GetResourceContactsRowCount({
+        contactId: this.id,
+        active: true,
+        deleted: false
     });
 
 
@@ -434,17 +442,18 @@ export class ContactData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-          if (this._contactInteractions === null && this._contactInteractionsPromise === null) {
-            this.loadContactInteractions(); // Private method to start fetch
-          }
+            if (this._contactInteractions === null && this._contactInteractionsPromise === null) {
+                this.loadContactInteractions(); // Private method to start fetch
+            }
         }),
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ContactInteractionsCount$ = ContactInteractionService.Instance.GetContactInteractionsRowCount({contactId: this.id,
-      active: true,
-      deleted: false
+
+    public ContactInteractionsCount$ = ContactInteractionService.Instance.GetContactInteractionsRowCount({
+        contactId: this.id,
+        active: true,
+        deleted: false
     });
 
 
@@ -453,17 +462,18 @@ export class ContactData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-          if (this._contactInteractionInitiatingContacts === null && this._contactInteractionInitiatingContactsPromise === null) {
-            this.loadContactInteractionInitiatingContacts(); // Private method to start fetch
-          }
+            if (this._contactInteractionInitiatingContacts === null && this._contactInteractionInitiatingContactsPromise === null) {
+                this.loadContactInteractionInitiatingContacts(); // Private method to start fetch
+            }
         }),
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ContactInteractionInitiatingContactsCount$ = ContactInteractionService.Instance.GetContactInteractionsRowCount({initiatingContactId: this.id,
-      active: true,
-      deleted: false
+
+    public ContactInteractionInitiatingContactsCount$ = ContactInteractionService.Instance.GetContactInteractionsRowCount({
+        initiatingContactId: this.id,
+        active: true,
+        deleted: false
     });
 
 
@@ -471,17 +481,18 @@ export class ContactData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-          if (this._notificationSubscriptions === null && this._notificationSubscriptionsPromise === null) {
-            this.loadNotificationSubscriptions(); // Private method to start fetch
-          }
+            if (this._notificationSubscriptions === null && this._notificationSubscriptionsPromise === null) {
+                this.loadNotificationSubscriptions(); // Private method to start fetch
+            }
         }),
         shareReplay(1) // Cache last emit
     );
 
-  
-    public NotificationSubscriptionsCount$ = NotificationSubscriptionService.Instance.GetNotificationSubscriptionsRowCount({contactId: this.id,
-      active: true,
-      deleted: false
+
+    public NotificationSubscriptionsCount$ = NotificationSubscriptionService.Instance.GetNotificationSubscriptionsRowCount({
+        contactId: this.id,
+        active: true,
+        deleted: false
     });
 
 
@@ -490,111 +501,109 @@ export class ContactData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-          if (this._constituents === null && this._constituentsPromise === null) {
-            this.loadConstituents(); // Private method to start fetch
-          }
+            if (this._constituents === null && this._constituentsPromise === null) {
+                this.loadConstituents(); // Private method to start fetch
+            }
         }),
         shareReplay(1) // Cache last emit
     );
 
-  
-    public ConstituentsCount$ = ConstituentService.Instance.GetConstituentsRowCount({contactId: this.id,
-      active: true,
-      deleted: false
+
+    public ConstituentsCount$ = ConstituentService.Instance.GetConstituentsRowCount({
+        contactId: this.id,
+        active: true,
     });
 
 
+    //
+    // Full reload — refreshes the entire object and clears all lazy caches 
+    //
+    // Promise based reload method to allow rebuilding of any ContactData object with all of it's relations on demand.  Useful for navigating into nav property
+    // objects and getting full state after put or post that may not have returned all nav properties.
+    //
+    // Usage examples:;
+    //
+    //  Async:
+    //   await this.contact.Reload();
+    //
+    //  Non Async:
+    //
+    //     contact[0].Reload().then(x => {
+    //        this.contact = x;
+    //    });
+    //
+    public async Reload(includeRelations: boolean = true): Promise<this> {
+
+        const fresh = await lastValueFrom(
+            ContactService.Instance.GetContact(this.id, includeRelations)
+        );
+
+        // Merge fresh data into this instance (preserves reference)
+        this.UpdateFrom(fresh as this);
+
+        // Clear all lazy caches to force re-load on next access
+        this.clearAllLazyCaches();
+
+        return this;
+    }
 
 
-  //
-  // Full reload — refreshes the entire object and clears all lazy caches 
-  //
-  // Promise based reload method to allow rebuilding of any ContactData object with all of it's relations on demand.  Useful for navigating into nav property
-  // objects and getting full state after put or post that may not have returned all nav properties.
-  //
-  // Usage examples:;
-  //
-  //  Async:
-  //   await this.contact.Reload();
-  //
-  //  Non Async:
-  //
-  //     contact[0].Reload().then(x => {
-  //        this.contact = x;
-  //    });
-  //
-  public async Reload(includeRelations: boolean = true): Promise<this> {
+    private clearAllLazyCaches(): void {
+        //
+        // Reset every collection cache and notify subscribers
+        //
+        this._contactChangeHistories = null;
+        this._contactChangeHistoriesPromise = null;
+        this._contactChangeHistoriesSubject.next(null);
 
-    const fresh = await lastValueFrom(
-      ContactService.Instance.GetContact(this.id, includeRelations)
-    );
+        this._contactTags = null;
+        this._contactTagsPromise = null;
+        this._contactTagsSubject.next(null);
 
-    // Merge fresh data into this instance (preserves reference)
-    this.UpdateFrom(fresh as this);
+        this._contactContacts = null;
+        this._contactContactsPromise = null;
+        this._contactContactsSubject.next(null);
 
-    // Clear all lazy caches to force re-load on next access
-    this.clearAllLazyCaches();
+        this._contactContactRelatedContacts = null;
+        this._contactContactRelatedContactsPromise = null;
+        this._contactContactRelatedContactsSubject.next(null);
 
-    return this;
-  }
+        this._officeContacts = null;
+        this._officeContactsPromise = null;
+        this._officeContactsSubject.next(null);
 
+        this._clientContacts = null;
+        this._clientContactsPromise = null;
+        this._clientContactsSubject.next(null);
 
-  private clearAllLazyCaches(): void {
-     //
-     // Reset every collection cache and notify subscribers
-     //
-     this._contactChangeHistories = null;
-     this._contactChangeHistoriesPromise = null;
-     this._contactChangeHistoriesSubject.next(null);
+        this._schedulingTargetContacts = null;
+        this._schedulingTargetContactsPromise = null;
+        this._schedulingTargetContactsSubject.next(null);
 
-     this._contactTags = null;
-     this._contactTagsPromise = null;
-     this._contactTagsSubject.next(null);
+        this._resourceContacts = null;
+        this._resourceContactsPromise = null;
+        this._resourceContactsSubject.next(null);
 
-     this._contactContacts = null;
-     this._contactContactsPromise = null;
-     this._contactContactsSubject.next(null);
+        this._contactInteractions = null;
+        this._contactInteractionsPromise = null;
+        this._contactInteractionsSubject.next(null);
 
-     this._contactContactRelatedContacts = null;
-     this._contactContactRelatedContactsPromise = null;
-     this._contactContactRelatedContactsSubject.next(null);
+        this._contactInteractionInitiatingContacts = null;
+        this._contactInteractionInitiatingContactsPromise = null;
+        this._contactInteractionInitiatingContactsSubject.next(null);
 
-     this._officeContacts = null;
-     this._officeContactsPromise = null;
-     this._officeContactsSubject.next(null);
+        this._notificationSubscriptions = null;
+        this._notificationSubscriptionsPromise = null;
+        this._notificationSubscriptionsSubject.next(null);
 
-     this._clientContacts = null;
-     this._clientContactsPromise = null;
-     this._clientContactsSubject.next(null);
+        this._constituents = null;
+        this._constituentsPromise = null;
+        this._constituentsSubject.next(null);
 
-     this._schedulingTargetContacts = null;
-     this._schedulingTargetContactsPromise = null;
-     this._schedulingTargetContactsSubject.next(null);
-
-     this._resourceContacts = null;
-     this._resourceContactsPromise = null;
-     this._resourceContactsSubject.next(null);
-
-     this._contactInteractions = null;
-     this._contactInteractionsPromise = null;
-     this._contactInteractionsSubject.next(null);
-
-     this._contactInteractionInitiatingContacts = null;
-     this._contactInteractionInitiatingContactsPromise = null;
-     this._contactInteractionInitiatingContactsSubject.next(null);
-
-     this._notificationSubscriptions = null;
-     this._notificationSubscriptionsPromise = null;
-     this._notificationSubscriptionsSubject.next(null);
-
-     this._constituents = null;
-     this._constituentsPromise = null;
-     this._constituentsSubject.next(null);
-
-     this._currentVersionInfo = null;
-     this._currentVersionInfoPromise = null;
-     this._currentVersionInfoSubject.next(null);
-  }
+        this._currentVersionInfo = null;
+        this._currentVersionInfoPromise = null;
+        this._currentVersionInfoSubject.next(null);
+    }
 
     //
     // Promise-based getters below — same lazy-load logic as observables
@@ -636,19 +645,19 @@ export class ContactData {
         this._contactChangeHistoriesPromise = lastValueFrom(
             ContactService.Instance.GetContactChangeHistoriesForContact(this.id)
         )
-        .then(ContactChangeHistories => {
-            this._contactChangeHistories = ContactChangeHistories ?? [];
-            this._contactChangeHistoriesSubject.next(this._contactChangeHistories);
-            return this._contactChangeHistories;
-         })
-        .catch(err => {
-            this._contactChangeHistories = [];
-            this._contactChangeHistoriesSubject.next(this._contactChangeHistories);
-            throw err;
-        })
-        .finally(() => {
-            this._contactChangeHistoriesPromise = null; // Allow retry if needed
-        });
+            .then(ContactChangeHistories => {
+                this._contactChangeHistories = ContactChangeHistories ?? [];
+                this._contactChangeHistoriesSubject.next(this._contactChangeHistories);
+                return this._contactChangeHistories;
+            })
+            .catch(err => {
+                this._contactChangeHistories = [];
+                this._contactChangeHistoriesSubject.next(this._contactChangeHistories);
+                throw err;
+            })
+            .finally(() => {
+                this._contactChangeHistoriesPromise = null; // Allow retry if needed
+            });
     }
 
     /**
@@ -701,19 +710,19 @@ export class ContactData {
         this._contactTagsPromise = lastValueFrom(
             ContactService.Instance.GetContactTagsForContact(this.id)
         )
-        .then(ContactTags => {
-            this._contactTags = ContactTags ?? [];
-            this._contactTagsSubject.next(this._contactTags);
-            return this._contactTags;
-         })
-        .catch(err => {
-            this._contactTags = [];
-            this._contactTagsSubject.next(this._contactTags);
-            throw err;
-        })
-        .finally(() => {
-            this._contactTagsPromise = null; // Allow retry if needed
-        });
+            .then(ContactTags => {
+                this._contactTags = ContactTags ?? [];
+                this._contactTagsSubject.next(this._contactTags);
+                return this._contactTags;
+            })
+            .catch(err => {
+                this._contactTags = [];
+                this._contactTagsSubject.next(this._contactTags);
+                throw err;
+            })
+            .finally(() => {
+                this._contactTagsPromise = null; // Allow retry if needed
+            });
     }
 
     /**
@@ -766,19 +775,19 @@ export class ContactData {
         this._contactContactsPromise = lastValueFrom(
             ContactService.Instance.GetContactContactsForContact(this.id)
         )
-        .then(ContactContacts => {
-            this._contactContacts = ContactContacts ?? [];
-            this._contactContactsSubject.next(this._contactContacts);
-            return this._contactContacts;
-         })
-        .catch(err => {
-            this._contactContacts = [];
-            this._contactContactsSubject.next(this._contactContacts);
-            throw err;
-        })
-        .finally(() => {
-            this._contactContactsPromise = null; // Allow retry if needed
-        });
+            .then(ContactContacts => {
+                this._contactContacts = ContactContacts ?? [];
+                this._contactContactsSubject.next(this._contactContacts);
+                return this._contactContacts;
+            })
+            .catch(err => {
+                this._contactContacts = [];
+                this._contactContactsSubject.next(this._contactContacts);
+                throw err;
+            })
+            .finally(() => {
+                this._contactContactsPromise = null; // Allow retry if needed
+            });
     }
 
     /**
@@ -831,19 +840,19 @@ export class ContactData {
         this._contactContactRelatedContactsPromise = lastValueFrom(
             ContactService.Instance.GetContactContactRelatedContactsForContact(this.id)
         )
-        .then(ContactContactRelatedContacts => {
-            this._contactContactRelatedContacts = ContactContactRelatedContacts ?? [];
-            this._contactContactRelatedContactsSubject.next(this._contactContactRelatedContacts);
-            return this._contactContactRelatedContacts;
-         })
-        .catch(err => {
-            this._contactContactRelatedContacts = [];
-            this._contactContactRelatedContactsSubject.next(this._contactContactRelatedContacts);
-            throw err;
-        })
-        .finally(() => {
-            this._contactContactRelatedContactsPromise = null; // Allow retry if needed
-        });
+            .then(ContactContactRelatedContacts => {
+                this._contactContactRelatedContacts = ContactContactRelatedContacts ?? [];
+                this._contactContactRelatedContactsSubject.next(this._contactContactRelatedContacts);
+                return this._contactContactRelatedContacts;
+            })
+            .catch(err => {
+                this._contactContactRelatedContacts = [];
+                this._contactContactRelatedContactsSubject.next(this._contactContactRelatedContacts);
+                throw err;
+            })
+            .finally(() => {
+                this._contactContactRelatedContactsPromise = null; // Allow retry if needed
+            });
     }
 
     /**
@@ -896,19 +905,19 @@ export class ContactData {
         this._officeContactsPromise = lastValueFrom(
             ContactService.Instance.GetOfficeContactsForContact(this.id)
         )
-        .then(OfficeContacts => {
-            this._officeContacts = OfficeContacts ?? [];
-            this._officeContactsSubject.next(this._officeContacts);
-            return this._officeContacts;
-         })
-        .catch(err => {
-            this._officeContacts = [];
-            this._officeContactsSubject.next(this._officeContacts);
-            throw err;
-        })
-        .finally(() => {
-            this._officeContactsPromise = null; // Allow retry if needed
-        });
+            .then(OfficeContacts => {
+                this._officeContacts = OfficeContacts ?? [];
+                this._officeContactsSubject.next(this._officeContacts);
+                return this._officeContacts;
+            })
+            .catch(err => {
+                this._officeContacts = [];
+                this._officeContactsSubject.next(this._officeContacts);
+                throw err;
+            })
+            .finally(() => {
+                this._officeContactsPromise = null; // Allow retry if needed
+            });
     }
 
     /**
@@ -961,19 +970,19 @@ export class ContactData {
         this._clientContactsPromise = lastValueFrom(
             ContactService.Instance.GetClientContactsForContact(this.id)
         )
-        .then(ClientContacts => {
-            this._clientContacts = ClientContacts ?? [];
-            this._clientContactsSubject.next(this._clientContacts);
-            return this._clientContacts;
-         })
-        .catch(err => {
-            this._clientContacts = [];
-            this._clientContactsSubject.next(this._clientContacts);
-            throw err;
-        })
-        .finally(() => {
-            this._clientContactsPromise = null; // Allow retry if needed
-        });
+            .then(ClientContacts => {
+                this._clientContacts = ClientContacts ?? [];
+                this._clientContactsSubject.next(this._clientContacts);
+                return this._clientContacts;
+            })
+            .catch(err => {
+                this._clientContacts = [];
+                this._clientContactsSubject.next(this._clientContacts);
+                throw err;
+            })
+            .finally(() => {
+                this._clientContactsPromise = null; // Allow retry if needed
+            });
     }
 
     /**
@@ -1026,19 +1035,19 @@ export class ContactData {
         this._schedulingTargetContactsPromise = lastValueFrom(
             ContactService.Instance.GetSchedulingTargetContactsForContact(this.id)
         )
-        .then(SchedulingTargetContacts => {
-            this._schedulingTargetContacts = SchedulingTargetContacts ?? [];
-            this._schedulingTargetContactsSubject.next(this._schedulingTargetContacts);
-            return this._schedulingTargetContacts;
-         })
-        .catch(err => {
-            this._schedulingTargetContacts = [];
-            this._schedulingTargetContactsSubject.next(this._schedulingTargetContacts);
-            throw err;
-        })
-        .finally(() => {
-            this._schedulingTargetContactsPromise = null; // Allow retry if needed
-        });
+            .then(SchedulingTargetContacts => {
+                this._schedulingTargetContacts = SchedulingTargetContacts ?? [];
+                this._schedulingTargetContactsSubject.next(this._schedulingTargetContacts);
+                return this._schedulingTargetContacts;
+            })
+            .catch(err => {
+                this._schedulingTargetContacts = [];
+                this._schedulingTargetContactsSubject.next(this._schedulingTargetContacts);
+                throw err;
+            })
+            .finally(() => {
+                this._schedulingTargetContactsPromise = null; // Allow retry if needed
+            });
     }
 
     /**
@@ -1091,19 +1100,19 @@ export class ContactData {
         this._resourceContactsPromise = lastValueFrom(
             ContactService.Instance.GetResourceContactsForContact(this.id)
         )
-        .then(ResourceContacts => {
-            this._resourceContacts = ResourceContacts ?? [];
-            this._resourceContactsSubject.next(this._resourceContacts);
-            return this._resourceContacts;
-         })
-        .catch(err => {
-            this._resourceContacts = [];
-            this._resourceContactsSubject.next(this._resourceContacts);
-            throw err;
-        })
-        .finally(() => {
-            this._resourceContactsPromise = null; // Allow retry if needed
-        });
+            .then(ResourceContacts => {
+                this._resourceContacts = ResourceContacts ?? [];
+                this._resourceContactsSubject.next(this._resourceContacts);
+                return this._resourceContacts;
+            })
+            .catch(err => {
+                this._resourceContacts = [];
+                this._resourceContactsSubject.next(this._resourceContacts);
+                throw err;
+            })
+            .finally(() => {
+                this._resourceContactsPromise = null; // Allow retry if needed
+            });
     }
 
     /**
@@ -1156,19 +1165,19 @@ export class ContactData {
         this._contactInteractionsPromise = lastValueFrom(
             ContactService.Instance.GetContactInteractionsForContact(this.id)
         )
-        .then(ContactInteractions => {
-            this._contactInteractions = ContactInteractions ?? [];
-            this._contactInteractionsSubject.next(this._contactInteractions);
-            return this._contactInteractions;
-         })
-        .catch(err => {
-            this._contactInteractions = [];
-            this._contactInteractionsSubject.next(this._contactInteractions);
-            throw err;
-        })
-        .finally(() => {
-            this._contactInteractionsPromise = null; // Allow retry if needed
-        });
+            .then(ContactInteractions => {
+                this._contactInteractions = ContactInteractions ?? [];
+                this._contactInteractionsSubject.next(this._contactInteractions);
+                return this._contactInteractions;
+            })
+            .catch(err => {
+                this._contactInteractions = [];
+                this._contactInteractionsSubject.next(this._contactInteractions);
+                throw err;
+            })
+            .finally(() => {
+                this._contactInteractionsPromise = null; // Allow retry if needed
+            });
     }
 
     /**
@@ -1221,19 +1230,19 @@ export class ContactData {
         this._contactInteractionInitiatingContactsPromise = lastValueFrom(
             ContactService.Instance.GetContactInteractionInitiatingContactsForContact(this.id)
         )
-        .then(ContactInteractionInitiatingContacts => {
-            this._contactInteractionInitiatingContacts = ContactInteractionInitiatingContacts ?? [];
-            this._contactInteractionInitiatingContactsSubject.next(this._contactInteractionInitiatingContacts);
-            return this._contactInteractionInitiatingContacts;
-         })
-        .catch(err => {
-            this._contactInteractionInitiatingContacts = [];
-            this._contactInteractionInitiatingContactsSubject.next(this._contactInteractionInitiatingContacts);
-            throw err;
-        })
-        .finally(() => {
-            this._contactInteractionInitiatingContactsPromise = null; // Allow retry if needed
-        });
+            .then(ContactInteractionInitiatingContacts => {
+                this._contactInteractionInitiatingContacts = ContactInteractionInitiatingContacts ?? [];
+                this._contactInteractionInitiatingContactsSubject.next(this._contactInteractionInitiatingContacts);
+                return this._contactInteractionInitiatingContacts;
+            })
+            .catch(err => {
+                this._contactInteractionInitiatingContacts = [];
+                this._contactInteractionInitiatingContactsSubject.next(this._contactInteractionInitiatingContacts);
+                throw err;
+            })
+            .finally(() => {
+                this._contactInteractionInitiatingContactsPromise = null; // Allow retry if needed
+            });
     }
 
     /**
@@ -1286,19 +1295,19 @@ export class ContactData {
         this._notificationSubscriptionsPromise = lastValueFrom(
             ContactService.Instance.GetNotificationSubscriptionsForContact(this.id)
         )
-        .then(NotificationSubscriptions => {
-            this._notificationSubscriptions = NotificationSubscriptions ?? [];
-            this._notificationSubscriptionsSubject.next(this._notificationSubscriptions);
-            return this._notificationSubscriptions;
-         })
-        .catch(err => {
-            this._notificationSubscriptions = [];
-            this._notificationSubscriptionsSubject.next(this._notificationSubscriptions);
-            throw err;
-        })
-        .finally(() => {
-            this._notificationSubscriptionsPromise = null; // Allow retry if needed
-        });
+            .then(NotificationSubscriptions => {
+                this._notificationSubscriptions = NotificationSubscriptions ?? [];
+                this._notificationSubscriptionsSubject.next(this._notificationSubscriptions);
+                return this._notificationSubscriptions;
+            })
+            .catch(err => {
+                this._notificationSubscriptions = [];
+                this._notificationSubscriptionsSubject.next(this._notificationSubscriptions);
+                throw err;
+            })
+            .finally(() => {
+                this._notificationSubscriptionsPromise = null; // Allow retry if needed
+            });
     }
 
     /**
@@ -1351,19 +1360,19 @@ export class ContactData {
         this._constituentsPromise = lastValueFrom(
             ContactService.Instance.GetConstituentsForContact(this.id)
         )
-        .then(Constituents => {
-            this._constituents = Constituents ?? [];
-            this._constituentsSubject.next(this._constituents);
-            return this._constituents;
-         })
-        .catch(err => {
-            this._constituents = [];
-            this._constituentsSubject.next(this._constituents);
-            throw err;
-        })
-        .finally(() => {
-            this._constituentsPromise = null; // Allow retry if needed
-        });
+            .then(Constituents => {
+                this._constituents = Constituents ?? [];
+                this._constituentsSubject.next(this._constituents);
+                return this._constituents;
+            })
+            .catch(err => {
+                this._constituents = [];
+                this._constituentsSubject.next(this._constituents);
+                throw err;
+            })
+            .finally(() => {
+                this._constituentsPromise = null; // Allow retry if needed
+            });
     }
 
     /**
@@ -1443,7 +1452,7 @@ export class ContactData {
 
 
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root'
 })
 export class ContactService extends SecureEndpointBase {
 
@@ -1480,7 +1489,7 @@ export class ContactService extends SecureEndpointBase {
     }
 
     public static get Instance(): ContactService {
-      return ContactService._instance;
+        return ContactService._instance;
     }
 
 
@@ -1489,7 +1498,7 @@ export class ContactService extends SecureEndpointBase {
         const configHash = this.getConfigHash(config);
 
         if (this.listCache.has(configHash)) {
-          this.listCache.delete(configHash);
+            this.listCache.delete(configHash);
         }
 
         if (this.rowCountCache.has(configHash)) {
@@ -1556,7 +1565,7 @@ export class ContactService extends SecureEndpointBase {
         return output;
     }
 
-    public GetContact(id: bigint | number, includeRelations: boolean = true) : Observable<ContactData> {
+    public GetContact(id: bigint | number, includeRelations: boolean = true): Observable<ContactData> {
 
         const configHash = this.utilityService.hashCode("_" + id.toString() + "_" + includeRelations.toString());
 
@@ -1566,7 +1575,7 @@ export class ContactService extends SecureEndpointBase {
                 shareReplay({ bufferSize: SHARE_REPLAY_CACHE_SIZE, refCount: true }),
                 catchError((error) => {
                     this.recordCache.delete(configHash);
-          
+
                     //this.alertService.showHttpErrorMessage("Unable to get Contact", error);
 
                     return throwError(() => error);
@@ -1581,7 +1590,7 @@ export class ContactService extends SecureEndpointBase {
         return this.recordCache.get(configHash) as Observable<ContactData>;
     }
 
-    private requestContact(id: bigint | number, includeRelations: boolean = true) : Observable<ContactData> {
+    private requestContact(id: bigint | number, includeRelations: boolean = true): Observable<ContactData> {
 
         let queryParams = new HttpParams();
 
@@ -1589,16 +1598,17 @@ export class ContactService extends SecureEndpointBase {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.get<ContactData>(this.baseUrl + 'api/Contact/' + id.toString(), { 
-            params: queryParams, 
-            headers: authenticationHeaders }).pipe(
+        return this.http.get<ContactData>(this.baseUrl + 'api/Contact/' + id.toString(), {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
             map(raw => this.ReviveContact(raw)),
             catchError(error => {
                 return this.handleError(error, () => this.requestContact(id, includeRelations));
             }));
     }
 
-    public GetContactList(config: ContactQueryParameters | any = null) : Observable<Array<ContactData>> {
+    public GetContactList(config: ContactQueryParameters | any = null): Observable<Array<ContactData>> {
 
         const configHash = this.getConfigHash(config);
 
@@ -1623,7 +1633,7 @@ export class ContactService extends SecureEndpointBase {
     }
 
 
-    private requestContactList(config: ContactQueryParameters | any) : Observable <Array<ContactData>> {
+    private requestContactList(config: ContactQueryParameters | any): Observable<Array<ContactData>> {
 
         let queryParams = new HttpParams();
 
@@ -1638,16 +1648,17 @@ export class ContactService extends SecureEndpointBase {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.get<Array<ContactData>>(this.baseUrl + 'api/Contacts', { 
-            params: queryParams, 
-            headers: authenticationHeaders }).pipe(
+        return this.http.get<Array<ContactData>>(this.baseUrl + 'api/Contacts', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
             map(rawList => this.ReviveContactList(rawList)),
             catchError(error => {
                 return this.handleError(error, () => this.requestContactList(config));
             }));
     }
 
-    public GetContactsRowCount(config: ContactQueryParameters | any = null) : Observable<bigint | number> {
+    public GetContactsRowCount(config: ContactQueryParameters | any = null): Observable<bigint | number> {
 
         const configHash = this.getConfigHash(config);
 
@@ -1656,7 +1667,7 @@ export class ContactService extends SecureEndpointBase {
                 shareReplay({ bufferSize: SHARE_REPLAY_CACHE_SIZE, refCount: true }),
                 catchError((error) => {
                     this.rowCountCache.delete(configHash);
-          
+
                     //this.alertService.showHttpErrorMessage("Unable to get Contacts row count", error);
 
                     return throwError(() => error);
@@ -1671,7 +1682,7 @@ export class ContactService extends SecureEndpointBase {
         return this.rowCountCache.get(configHash) as Observable<bigint | number>;
     }
 
-    private requestContactsRowCount(config: ContactQueryParameters | any) : Observable<bigint | number> {
+    private requestContactsRowCount(config: ContactQueryParameters | any): Observable<bigint | number> {
 
         let queryParams = new HttpParams();
 
@@ -1692,7 +1703,7 @@ export class ContactService extends SecureEndpointBase {
             }));
     }
 
-    public GetContactsBasicListData(config: ContactQueryParameters | any = null) : Observable<Array<ContactBasicListData>> {
+    public GetContactsBasicListData(config: ContactQueryParameters | any = null): Observable<Array<ContactBasicListData>> {
 
         const configHash = this.getConfigHash(config);
 
@@ -1707,7 +1718,7 @@ export class ContactService extends SecureEndpointBase {
                     return throwError(() => error);
                 })
             );
-      
+
             this.basicListDataCache.set(configHash, contactsBasicListData$);
 
             return contactsBasicListData$;
@@ -1717,7 +1728,7 @@ export class ContactService extends SecureEndpointBase {
     }
 
 
-    private requestContactsBasicListData(config: ContactQueryParameters | any) : Observable<Array<ContactBasicListData>> {
+    private requestContactsBasicListData(config: ContactQueryParameters | any): Observable<Array<ContactBasicListData>> {
 
         let queryParams = new HttpParams();
 
@@ -1740,11 +1751,11 @@ export class ContactService extends SecureEndpointBase {
     }
 
 
-    public PutContact(id: bigint | number, contact: ContactSubmitData) : Observable<ContactData> {
+    public PutContact(id: bigint | number, contact: ContactSubmitData): Observable<ContactData> {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.put<ContactData>(this.baseUrl + 'api/Contact/' + id.toString(), contact, { headers: authenticationHeaders } ).pipe(
+        return this.http.put<ContactData>(this.baseUrl + 'api/Contact/' + id.toString(), contact, { headers: authenticationHeaders }).pipe(
             tap(() => this.ClearAllCaches()),
             map(raw => this.ReviveContact(raw)),
             catchError(error => {
@@ -1753,31 +1764,31 @@ export class ContactService extends SecureEndpointBase {
     }
 
 
-    public PostContact(contact: ContactSubmitData) : Observable<ContactData> {
+    public PostContact(contact: ContactSubmitData): Observable<ContactData> {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.post<ContactData>(this.baseUrl + 'api/Contact', contact, { headers: authenticationHeaders } ).pipe(
+        return this.http.post<ContactData>(this.baseUrl + 'api/Contact', contact, { headers: authenticationHeaders }).pipe(
             tap(() => this.ClearAllCaches()),
             map(raw => this.ReviveContact(raw)),
             catchError(error => {
-              return this.handleError(error, () => this.PostContact(contact));
+                return this.handleError(error, () => this.PostContact(contact));
             }));
     }
 
-  
-    public DeleteContact(id: bigint | number) : Observable<any> {
+
+    public DeleteContact(id: bigint | number): Observable<any> {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.delete<void>(this.baseUrl + 'api/Contact/' + id.toString(), { headers: authenticationHeaders } ).pipe(
+        return this.http.delete<void>(this.baseUrl + 'api/Contact/' + id.toString(), { headers: authenticationHeaders }).pipe(
             tap(() => this.ClearAllCaches()),
             catchError(error => {
                 return this.handleError(error, () => this.DeleteContact(id));
             }));
     }
 
-    public RollbackContact(id: bigint | number, versionNumber: bigint | number) : Observable<ContactData>{
+    public RollbackContact(id: bigint | number, versionNumber: bigint | number): Observable<ContactData> {
 
         let queryParams = new HttpParams();
 
@@ -1791,7 +1802,7 @@ export class ContactService extends SecureEndpointBase {
             map(raw => this.ReviveContact(raw)),
             catchError(error => {
                 return this.handleError(error, () => this.RollbackContact(id, versionNumber));
-        }));
+            }));
     }
 
 
@@ -1938,13 +1949,13 @@ export class ContactService extends SecureEndpointBase {
         // Next test to see if the user has a high enough write permission level to write to Scheduler.Contacts
         //
         if (userIsSchedulerContactWriter == true) {
-          let user = this.authService.currentUser;
+            let user = this.authService.currentUser;
 
-          if (user != null) {
-            userIsSchedulerContactWriter = user.writePermission >= 1;
-          } else {
-            userIsSchedulerContactWriter = false;
-          }      
+            if (user != null) {
+                userIsSchedulerContactWriter = user.writePermission >= 1;
+            } else {
+                userIsSchedulerContactWriter = false;
+            }
         }
 
         return userIsSchedulerContactWriter;
@@ -2070,264 +2081,289 @@ export class ContactService extends SecureEndpointBase {
     }
 
 
- /**
-   *
-   * Revives a plain object from the server into a full ContactData instance.
-   *
-   * This is critical for the lazy-loading pattern to work correctly.
-   *
-   * When the server returns JSON, it is a plain object with no prototype methods
-   * or observable properties. This method:
-   * 1. Re-attaches the ContactData prototype
-   * 2. Copies all properties from the raw object
-   * 3. Re-initializes all private caches and BehaviorSubjects
-   * 4. Re-creates all public observable properties ($ suffixed) with their
-   *    original tap() triggers that initiate lazy loading on first subscription
-   *
-   * Without this, revived objects would not trigger loads when ContactTags$ etc.
-   * are subscribed to in templates.
-   *
-   */
-  public ReviveContact(raw: any): ContactData {
-    if (!raw) return raw;
+    /**
+      *
+      * Revives a plain object from the server into a full ContactData instance.
+      *
+      * This is critical for the lazy-loading pattern to work correctly.
+      *
+      * When the server returns JSON, it is a plain object with no prototype methods
+      * or observable properties. This method:
+      * 1. Re-attaches the ContactData prototype
+      * 2. Copies all properties from the raw object
+      * 3. Re-initializes all private caches and BehaviorSubjects
+      * 4. Re-creates all public observable properties ($ suffixed) with their
+      *    original tap() triggers that initiate lazy loading on first subscription
+      *
+      * Without this, revived objects would not trigger loads when ContactTags$ etc.
+      * are subscribed to in templates.
+      *
+      */
+    public ReviveContact(raw: any): ContactData {
+        if (!raw) return raw;
 
-    //
-    // Create a ContactData object instance with correct prototype
-    //
-    const revived = Object.create(ContactData.prototype) as ContactData;
+        //
+        // Create a ContactData object instance with correct prototype
+        //
+        const revived = Object.create(ContactData.prototype) as ContactData;
 
-    //
-    // Copy all raw properties
-    //
-    Object.assign(revived, raw);
+        //
+        // Copy all raw properties
+        //
+        Object.assign(revived, raw);
 
-    //
-    // Explicitly initialize all private caches
-    // This ensures the getters work correctly on revived objects
-    //
-    (revived as any)._contactChangeHistories = null;
-    (revived as any)._contactChangeHistoriesPromise = null;
-    (revived as any)._contactChangeHistoriesSubject = new BehaviorSubject<ContactChangeHistoryData[] | null>(null);
+        //
+        // Explicitly initialize all private caches
+        // This ensures the getters work correctly on revived objects
+        //
+        (revived as any)._contactChangeHistories = null;
+        (revived as any)._contactChangeHistoriesPromise = null;
+        (revived as any)._contactChangeHistoriesSubject = new BehaviorSubject<ContactChangeHistoryData[] | null>(null);
 
-    (revived as any)._contactTags = null;
-    (revived as any)._contactTagsPromise = null;
-    (revived as any)._contactTagsSubject = new BehaviorSubject<ContactTagData[] | null>(null);
+        (revived as any)._contactTags = null;
+        (revived as any)._contactTagsPromise = null;
+        (revived as any)._contactTagsSubject = new BehaviorSubject<ContactTagData[] | null>(null);
 
-    (revived as any)._contactContacts = null;
-    (revived as any)._contactContactsPromise = null;
-    (revived as any)._contactContactsSubject = new BehaviorSubject<ContactContactData[] | null>(null);
+        (revived as any)._contactContacts = null;
+        (revived as any)._contactContactsPromise = null;
+        (revived as any)._contactContactsSubject = new BehaviorSubject<ContactContactData[] | null>(null);
 
-    (revived as any)._officeContacts = null;
-    (revived as any)._officeContactsPromise = null;
-    (revived as any)._officeContactsSubject = new BehaviorSubject<OfficeContactData[] | null>(null);
+        (revived as any)._officeContacts = null;
+        (revived as any)._officeContactsPromise = null;
+        (revived as any)._officeContactsSubject = new BehaviorSubject<OfficeContactData[] | null>(null);
 
-    (revived as any)._clientContacts = null;
-    (revived as any)._clientContactsPromise = null;
-    (revived as any)._clientContactsSubject = new BehaviorSubject<ClientContactData[] | null>(null);
+        (revived as any)._clientContacts = null;
+        (revived as any)._clientContactsPromise = null;
+        (revived as any)._clientContactsSubject = new BehaviorSubject<ClientContactData[] | null>(null);
 
-    (revived as any)._schedulingTargetContacts = null;
-    (revived as any)._schedulingTargetContactsPromise = null;
-    (revived as any)._schedulingTargetContactsSubject = new BehaviorSubject<SchedulingTargetContactData[] | null>(null);
+        (revived as any)._schedulingTargetContacts = null;
+        (revived as any)._schedulingTargetContactsPromise = null;
+        (revived as any)._schedulingTargetContactsSubject = new BehaviorSubject<SchedulingTargetContactData[] | null>(null);
 
-    (revived as any)._resourceContacts = null;
-    (revived as any)._resourceContactsPromise = null;
-    (revived as any)._resourceContactsSubject = new BehaviorSubject<ResourceContactData[] | null>(null);
+        (revived as any)._resourceContacts = null;
+        (revived as any)._resourceContactsPromise = null;
+        (revived as any)._resourceContactsSubject = new BehaviorSubject<ResourceContactData[] | null>(null);
 
-    (revived as any)._contactInteractions = null;
-    (revived as any)._contactInteractionsPromise = null;
-    (revived as any)._contactInteractionsSubject = new BehaviorSubject<ContactInteractionData[] | null>(null);
+        (revived as any)._contactInteractions = null;
+        (revived as any)._contactInteractionsPromise = null;
+        (revived as any)._contactInteractionsSubject = new BehaviorSubject<ContactInteractionData[] | null>(null);
 
-    (revived as any)._notificationSubscriptions = null;
-    (revived as any)._notificationSubscriptionsPromise = null;
-    (revived as any)._notificationSubscriptionsSubject = new BehaviorSubject<NotificationSubscriptionData[] | null>(null);
+        (revived as any)._notificationSubscriptions = null;
+        (revived as any)._notificationSubscriptionsPromise = null;
+        (revived as any)._notificationSubscriptionsSubject = new BehaviorSubject<NotificationSubscriptionData[] | null>(null);
 
-    (revived as any)._constituents = null;
-    (revived as any)._constituentsPromise = null;
-    (revived as any)._constituentsSubject = new BehaviorSubject<ConstituentData[] | null>(null);
-
-
-    //
-    // Re-attach ALL public observables with their lazy-load tap() triggers
-    // This mirrors the original class definition exactly
-    //
-    //
-    // Re-create all public observables with their lazy-load triggers
-    // We use 'as any' because:
-    // 1. The revived object has the correct prototype
-    // 2. But private methods (loadContactXYZ, etc.) are not accessible via the typed variable
-    // 3. This is a controlled revival context — safe and necessary
-    //
-    (revived as any).ContactChangeHistories$ = (revived as any)._contactChangeHistoriesSubject.asObservable().pipe(
-        tap(() => {
-              if ((revived as any)._contactChangeHistories === null && (revived as any)._contactChangeHistoriesPromise === null) {
-                (revived as any).loadContactChangeHistories();        // Need to cast to any to invoke private load method
-              }
-        }),
-        shareReplay(1)
-      );
-
-    (revived as any).ContactChangeHistoriesCount$ = ContactChangeHistoryService.Instance.GetContactChangeHistoriesRowCount({contactId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
+        (revived as any)._constituents = null;
+        (revived as any)._constituentsPromise = null;
+        (revived as any)._constituentsSubject = new BehaviorSubject<ConstituentData[] | null>(null);
 
 
+        //
+        // Re-attach ALL public observables with their lazy-load tap() triggers
+        // This mirrors the original class definition exactly
+        //
+        //
+        // Re-create all public observables with their lazy-load triggers
+        // We use 'as any' because:
+        // 1. The revived object has the correct prototype
+        // 2. But private methods (loadContactXYZ, etc.) are not accessible via the typed variable
+        // 3. This is a controlled revival context — safe and necessary
+        //
+        (revived as any).ContactChangeHistories$ = (revived as any)._contactChangeHistoriesSubject.asObservable().pipe(
+            tap(() => {
+                if ((revived as any)._contactChangeHistories === null && (revived as any)._contactChangeHistoriesPromise === null) {
+                    (revived as any).loadContactChangeHistories();        // Need to cast to any to invoke private load method
+                }
+            }),
+            shareReplay(1)
+        );
 
-    (revived as any).ContactTags$ = (revived as any)._contactTagsSubject.asObservable().pipe(
-        tap(() => {
-              if ((revived as any)._contactTags === null && (revived as any)._contactTagsPromise === null) {
-                (revived as any).loadContactTags();        // Need to cast to any to invoke private load method
-              }
-        }),
-        shareReplay(1)
-      );
-
-    (revived as any).ContactTagsCount$ = ContactTagService.Instance.GetContactTagsRowCount({contactId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
+        (revived as any).ContactChangeHistoriesCount$ = ContactChangeHistoryService.Instance.GetContactChangeHistoriesRowCount({
+            contactId: (revived as any).id,
+            active: true,
+            deleted: false
+        });
 
 
 
-    (revived as any).ContactContacts$ = (revived as any)._contactContactsSubject.asObservable().pipe(
-        tap(() => {
-              if ((revived as any)._contactContacts === null && (revived as any)._contactContactsPromise === null) {
-                (revived as any).loadContactContacts();        // Need to cast to any to invoke private load method
-              }
-        }),
-        shareReplay(1)
-      );
+        (revived as any).ContactTags$ = (revived as any)._contactTagsSubject.asObservable().pipe(
+            tap(() => {
+                if ((revived as any)._contactTags === null && (revived as any)._contactTagsPromise === null) {
+                    (revived as any).loadContactTags();        // Need to cast to any to invoke private load method
+                }
+            }),
+            shareReplay(1)
+        );
 
-    (revived as any).ContactContactsCount$ = ContactContactService.Instance.GetContactContactsRowCount({contactId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
-
-
-    (revived as any).OfficeContacts$ = (revived as any)._officeContactsSubject.asObservable().pipe(
-        tap(() => {
-              if ((revived as any)._officeContacts === null && (revived as any)._officeContactsPromise === null) {
-                (revived as any).loadOfficeContacts();        // Need to cast to any to invoke private load method
-              }
-        }),
-        shareReplay(1)
-      );
-
-    (revived as any).OfficeContactsCount$ = OfficeContactService.Instance.GetOfficeContactsRowCount({contactId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
+        (revived as any).ContactTagsCount$ = ContactTagService.Instance.GetContactTagsRowCount({
+            contactId: (revived as any).id,
+            active: true,
+            deleted: false
+        });
 
 
 
-    (revived as any).ClientContacts$ = (revived as any)._clientContactsSubject.asObservable().pipe(
-        tap(() => {
-              if ((revived as any)._clientContacts === null && (revived as any)._clientContactsPromise === null) {
-                (revived as any).loadClientContacts();        // Need to cast to any to invoke private load method
-              }
-        }),
-        shareReplay(1)
-      );
+        (revived as any).ContactContacts$ = (revived as any)._contactContactsSubject.asObservable().pipe(
+            tap(() => {
+                if ((revived as any)._contactContacts === null && (revived as any)._contactContactsPromise === null) {
+                    (revived as any).loadContactContacts();        // Need to cast to any to invoke private load method
+                }
+            }),
+            shareReplay(1)
+        );
 
-    (revived as any).ClientContactsCount$ = ClientContactService.Instance.GetClientContactsRowCount({contactId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
-
-
-    (revived as any).SchedulingTargetContacts$ = (revived as any)._schedulingTargetContactsSubject.asObservable().pipe(
-        tap(() => {
-              if ((revived as any)._schedulingTargetContacts === null && (revived as any)._schedulingTargetContactsPromise === null) {
-                (revived as any).loadSchedulingTargetContacts();        // Need to cast to any to invoke private load method
-              }
-        }),
-        shareReplay(1)
-      );
-
-    (revived as any).SchedulingTargetContactsCount$ = SchedulingTargetContactService.Instance.GetSchedulingTargetContactsRowCount({contactId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
+        (revived as any).ContactContactsCount$ = ContactContactService.Instance.GetContactContactsRowCount({
+            contactId: (revived as any).id,
+            active: true,
+            deleted: false
+        });
 
 
 
-    (revived as any).ResourceContacts$ = (revived as any)._resourceContactsSubject.asObservable().pipe(
-        tap(() => {
-              if ((revived as any)._resourceContacts === null && (revived as any)._resourceContactsPromise === null) {
-                (revived as any).loadResourceContacts();        // Need to cast to any to invoke private load method
-              }
-        }),
-        shareReplay(1)
-      );
+        (revived as any).OfficeContacts$ = (revived as any)._officeContactsSubject.asObservable().pipe(
+            tap(() => {
+                if ((revived as any)._officeContacts === null && (revived as any)._officeContactsPromise === null) {
+                    (revived as any).loadOfficeContacts();        // Need to cast to any to invoke private load method
+                }
+            }),
+            shareReplay(1)
+        );
 
-    (revived as any).ResourceContactsCount$ = ResourceContactService.Instance.GetResourceContactsRowCount({contactId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
-
-
-    (revived as any).ContactInteractions$ = (revived as any)._contactInteractionsSubject.asObservable().pipe(
-        tap(() => {
-              if ((revived as any)._contactInteractions === null && (revived as any)._contactInteractionsPromise === null) {
-                (revived as any).loadContactInteractions();        // Need to cast to any to invoke private load method
-              }
-        }),
-        shareReplay(1)
-      );
-
-    (revived as any).ContactInteractionsCount$ = ContactInteractionService.Instance.GetContactInteractionsRowCount({contactId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
+        (revived as any).OfficeContactsCount$ = OfficeContactService.Instance.GetOfficeContactsRowCount({
+            contactId: (revived as any).id,
+            active: true,
+            deleted: false
+        });
 
 
 
-    (revived as any).NotificationSubscriptions$ = (revived as any)._notificationSubscriptionsSubject.asObservable().pipe(
-        tap(() => {
-              if ((revived as any)._notificationSubscriptions === null && (revived as any)._notificationSubscriptionsPromise === null) {
-                (revived as any).loadNotificationSubscriptions();        // Need to cast to any to invoke private load method
-              }
-        }),
-        shareReplay(1)
-      );
+        (revived as any).ClientContacts$ = (revived as any)._clientContactsSubject.asObservable().pipe(
+            tap(() => {
+                if ((revived as any)._clientContacts === null && (revived as any)._clientContactsPromise === null) {
+                    (revived as any).loadClientContacts();        // Need to cast to any to invoke private load method
+                }
+            }),
+            shareReplay(1)
+        );
 
-    (revived as any).NotificationSubscriptionsCount$ = NotificationSubscriptionService.Instance.GetNotificationSubscriptionsRowCount({contactId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
-
-
-    (revived as any).Constituents$ = (revived as any)._constituentsSubject.asObservable().pipe(
-        tap(() => {
-              if ((revived as any)._constituents === null && (revived as any)._constituentsPromise === null) {
-                (revived as any).loadConstituents();        // Need to cast to any to invoke private load method
-              }
-        }),
-        shareReplay(1)
-      );
-
-    (revived as any).ConstituentsCount$ = ConstituentService.Instance.GetConstituentsRowCount({contactId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
+        (revived as any).ClientContactsCount$ = ClientContactService.Instance.GetClientContactsRowCount({
+            contactId: (revived as any).id,
+            active: true,
+            deleted: false
+        });
 
 
 
+        (revived as any).SchedulingTargetContacts$ = (revived as any)._schedulingTargetContactsSubject.asObservable().pipe(
+            tap(() => {
+                if ((revived as any)._schedulingTargetContacts === null && (revived as any)._schedulingTargetContactsPromise === null) {
+                    (revived as any).loadSchedulingTargetContacts();        // Need to cast to any to invoke private load method
+                }
+            }),
+            shareReplay(1)
+        );
 
-    return revived;
-  }
+        (revived as any).SchedulingTargetContactsCount$ = SchedulingTargetContactService.Instance.GetSchedulingTargetContactsRowCount({
+            contactId: (revived as any).id,
+            active: true,
+            deleted: false
+        });
 
-  private ReviveContactList(rawList: any[]): ContactData[] {
 
-    if (!rawList) {
-        return [];
+
+        (revived as any).ResourceContacts$ = (revived as any)._resourceContactsSubject.asObservable().pipe(
+            tap(() => {
+                if ((revived as any)._resourceContacts === null && (revived as any)._resourceContactsPromise === null) {
+                    (revived as any).loadResourceContacts();        // Need to cast to any to invoke private load method
+                }
+            }),
+            shareReplay(1)
+        );
+
+        (revived as any).ResourceContactsCount$ = ResourceContactService.Instance.GetResourceContactsRowCount({
+            contactId: (revived as any).id,
+            active: true,
+            deleted: false
+        });
+
+
+
+        (revived as any).ContactInteractions$ = (revived as any)._contactInteractionsSubject.asObservable().pipe(
+            tap(() => {
+                if ((revived as any)._contactInteractions === null && (revived as any)._contactInteractionsPromise === null) {
+                    (revived as any).loadContactInteractions();        // Need to cast to any to invoke private load method
+                }
+            }),
+            shareReplay(1)
+        );
+
+        (revived as any).ContactInteractionsCount$ = ContactInteractionService.Instance.GetContactInteractionsRowCount({
+            contactId: (revived as any).id,
+            active: true,
+            deleted: false
+        });
+
+
+
+        (revived as any).NotificationSubscriptions$ = (revived as any)._notificationSubscriptionsSubject.asObservable().pipe(
+            tap(() => {
+                if ((revived as any)._notificationSubscriptions === null && (revived as any)._notificationSubscriptionsPromise === null) {
+                    (revived as any).loadNotificationSubscriptions();        // Need to cast to any to invoke private load method
+                }
+            }),
+            shareReplay(1)
+        );
+
+        (revived as any).NotificationSubscriptionsCount$ = NotificationSubscriptionService.Instance.GetNotificationSubscriptionsRowCount({
+            contactId: (revived as any).id,
+            active: true,
+            deleted: false
+        });
+
+
+
+        (revived as any).Constituents$ = (revived as any)._constituentsSubject.asObservable().pipe(
+            tap(() => {
+                if ((revived as any)._constituents === null && (revived as any)._constituentsPromise === null) {
+                    (revived as any).loadConstituents();        // Need to cast to any to invoke private load method
+                }
+            }),
+            shareReplay(1)
+        );
+
+        (revived as any).ConstituentsCount$ = ConstituentService.Instance.GetConstituentsRowCount({
+            contactId: (revived as any).id,
+            active: true,
+            deleted: false
+        });
+
+
+        //
+        // Version history metadata cache and observable
+        //
+        (revived as any)._currentVersionInfo = null;
+        (revived as any)._currentVersionInfoPromise = null;
+        (revived as any)._currentVersionInfoSubject = new BehaviorSubject<VersionInformation<ContactData> | null>(null);
+
+        (revived as any).CurrentVersionInfo$ = (revived as any)._currentVersionInfoSubject.asObservable().pipe(
+            tap(() => {
+                if ((revived as any)._currentVersionInfo === null && (revived as any)._currentVersionInfoPromise === null) {
+                    (revived as any).loadCurrentVersionInfo();
+                }
+            }),
+            shareReplay(1)
+        );
+
+
+        return revived;
     }
 
-    return rawList.map(raw => this.ReviveContact(raw));
-  }
+    private ReviveContactList(rawList: any[]): ContactData[] {
+
+        if (!rawList) {
+            return [];
+        }
+
+        return rawList.map(raw => this.ReviveContact(raw));
+    }
 
 }

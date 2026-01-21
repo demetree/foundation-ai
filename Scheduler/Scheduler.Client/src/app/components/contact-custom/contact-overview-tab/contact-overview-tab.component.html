@@ -294,4 +294,65 @@
     </div>
   </div>
 
+  <!-- Record Metadata Card -->
+  <div class="card shadow-sm border-0 mt-4 record-metadata-card">
+    <div class="card-header bg-light border-0 d-flex justify-content-between align-items-center">
+      <h6 class="mb-0 fw-semibold">
+        <i class="fa-solid fa-clock-rotate-left me-2 text-info"></i>Record History
+      </h6>
+      <button class="btn btn-sm btn-outline-info" (click)="openVersionHistoryModal()">
+        <i class="fa-solid fa-history me-1"></i>View Full History
+      </button>
+    </div>
+    <div class="card-body">
+      <ng-container *ngIf="versionInfo$ | async as versionInfo; else loadingMetadata">
+        <div class="row align-items-center">
+          <!-- Version Badge -->
+          <div class="col-auto">
+            <div class="version-badge-large d-flex align-items-center justify-content-center">
+              <span class="h4 mb-0 fw-bold text-info">v{{ contact.versionNumber }}</span>
+            </div>
+          </div>
+          <!-- Meta Details -->
+          <div class="col">
+            <dl class="row mb-0 small">
+              <dt class="col-sm-4 text-muted">Last Modified</dt>
+              <dd class="col-sm-8">{{ versionInfo.timeStamp | date:'medium' }}</dd>
+              
+              <dt class="col-sm-4 text-muted">Modified By</dt>
+              <dd class="col-sm-8">
+                <span class="badge bg-secondary">
+                  <i class="fa-solid fa-user me-1"></i>{{ versionInfo.userName }}
+                </span>
+              </dd>
+              
+              <dt class="col-sm-4 text-muted">Total Versions</dt>
+              <dd class="col-sm-8">{{ contact.versionNumber }}</dd>
+            </dl>
+          </div>
+          <!-- Timeline Preview -->
+          <div class="col-auto d-none d-md-block">
+            <div class="timeline-mini">
+              <div class="timeline-dot active" [ngbTooltip]="'Current: v' + contact.versionNumber"></div>
+              <div class="timeline-line"></div>
+              <div class="timeline-dot" *ngIf="(contact.versionNumber || 0) > 1" ngbTooltip="Earlier versions"></div>
+              <div class="timeline-line" *ngIf="(contact.versionNumber || 0) > 2"></div>
+              <div class="timeline-dot" *ngIf="(contact.versionNumber || 0) > 2" ngbTooltip="First version"></div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Loading State -->
+      <ng-template #loadingMetadata>
+        <div class="d-flex align-items-center">
+          <div class="spinner-border spinner-border-sm text-info me-2" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <span class="text-muted small">Loading version metadata...</span>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+
 </div>

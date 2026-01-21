@@ -59,3 +59,60 @@
     text-decoration: underline;
   }
 }
+
+// Record Metadata Card - Premium styling for version history widget
+.record-metadata-card {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-left: 4px solid #17a2b8 !important;
+
+  .card-header {
+    background: transparent !important;
+  }
+
+  // Large version badge
+  .version-badge-large {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(23, 162, 184, 0.3);
+    
+    span {
+      color: white !important;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+  }
+
+  // Mini timeline visualization
+  .timeline-mini {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    .timeline-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #ced4da;
+      border: 2px solid #adb5bd;
+      transition: all 0.2s ease;
+      cursor: pointer;
+
+      &.active {
+        background: #17a2b8;
+        border-color: #138496;
+        box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.3);
+      }
+
+      &:hover {
+        transform: scale(1.2);
+      }
+    }
+
+    .timeline-line {
+      width: 20px;
+      height: 2px;
+      background: linear-gradient(90deg, #adb5bd 0%, #ced4da 100%);
+    }
+  }
+}
