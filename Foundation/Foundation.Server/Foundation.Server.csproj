@@ -19,11 +19,6 @@
     <Content Remove="appsettings.development.json" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Remove="Certificates\foundation.cert.pem" />
-    <None Remove="Certificates\foundation.key.pem" />
-  </ItemGroup>
-
 	<ItemGroup>
 		<Folder Include="wwwroot\" />
 	</ItemGroup>
