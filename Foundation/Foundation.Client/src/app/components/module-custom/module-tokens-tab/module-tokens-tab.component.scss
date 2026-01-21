@@ -1,0 +1,132 @@
+//
+// Module Tokens Tab Styles
+//
+
+.tokens-tab {
+    min-height: 200px;
+}
+
+.loading-state,
+.error-state,
+.empty-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 2rem;
+    color: #6c757d;
+
+    i {
+        font-size: 2rem;
+        opacity: 0.5;
+    }
+}
+
+.empty-state {
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
+
+    p {
+        margin: 0;
+    }
+}
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+.premium-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #dee2e6;
+
+    thead {
+        th {
+            padding: 0.875rem 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #6c757d;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #dee2e6;
+            background: #f8f9fa;
+        }
+    }
+
+    tbody {
+        tr {
+            &:not(:last-child) td {
+                border-bottom: 1px solid #dee2e6;
+            }
+
+            &:hover {
+                background: rgba(13, 71, 161, 0.04);
+            }
+
+            td {
+                padding: 0.875rem 1rem;
+                color: #495057;
+                vertical-align: middle;
+            }
+        }
+    }
+}
+
+.token-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    .token-icon {
+        color: #ec4899;
+        font-size: 1rem;
+    }
+
+    .entity-name {
+        font-weight: 500;
+        color: #212529;
+    }
+}
+
+.token-code {
+    background: rgba(102, 126, 234, 0.1);
+    color: #5a67d8;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-family: 'Monaco', 'Consolas', monospace;
+}
+
+.description-text {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.3rem 0.7rem;
+    border-radius: 16px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+
+    &.badge-active {
+        background: rgba(34, 197, 94, 0.15);
+        color: #16a34a;
+    }
+
+    &.badge-inactive {
+        background: rgba(234, 179, 8, 0.15);
+        color: #ca8a04;
+    }
+
+    &.badge-deleted {
+        background: rgba(239, 68, 68, 0.15);
+        color: #dc2626;
+    }
+}

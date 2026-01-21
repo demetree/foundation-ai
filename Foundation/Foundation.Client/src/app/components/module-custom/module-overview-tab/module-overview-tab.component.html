@@ -1,0 +1,86 @@
+<!-- Module Overview Tab -->
+<div class="overview-tab" *ngIf="module">
+
+    <div class="info-grid">
+
+        <!-- Basic Information Card -->
+        <div class="info-card">
+            <h3 class="card-title">
+                <i class="fa-solid fa-info-circle me-2"></i>
+                Module Information
+            </h3>
+            <div class="info-list">
+                <div class="info-item">
+                    <span class="info-label">Module ID</span>
+                    <span class="info-value">{{ module.id }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Name</span>
+                    <span class="info-value">{{ module.name }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Description</span>
+                    <span class="info-value">{{ module.description || '—' }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Card -->
+        <div class="info-card">
+            <h3 class="card-title">
+                <i class="fa-solid fa-toggle-on me-2"></i>
+                Status
+            </h3>
+            <div class="info-list">
+                <div class="info-item">
+                    <span class="info-label">Active</span>
+                    <span class="info-value">
+                        <span class="status-indicator" [class.active]="module.active">
+                            <i class="fa-solid" [ngClass]="module.active ? 'fa-check-circle' : 'fa-times-circle'"></i>
+                            {{ module.active ? 'Yes' : 'No' }}
+                        </span>
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Deleted</span>
+                    <span class="info-value">
+                        <span class="status-indicator" [class.deleted]="module.deleted">
+                            <i class="fa-solid" [ngClass]="module.deleted ? 'fa-check-circle' : 'fa-times-circle'"></i>
+                            {{ module.deleted ? 'Yes' : 'No' }}
+                        </span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Card -->
+        <div class="info-card stats-card">
+            <h3 class="card-title">
+                <i class="fa-solid fa-chart-bar me-2"></i>
+                Statistics
+            </h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-icon roles-icon">
+                        <i class="fa-solid fa-user-shield"></i>
+                    </div>
+                    <div class="stat-details">
+                        <span class="stat-number">{{ (module.ModuleSecurityRolesCount$ | async) ?? '...' }}</span>
+                        <span class="stat-label">Security Roles</span>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon tokens-icon">
+                        <i class="fa-solid fa-key"></i>
+                    </div>
+                    <div class="stat-details">
+                        <span class="stat-number">{{ (module.EntityDataTokensCount$ | async) ?? '...' }}</span>
+                        <span class="stat-label">Entity Tokens</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>

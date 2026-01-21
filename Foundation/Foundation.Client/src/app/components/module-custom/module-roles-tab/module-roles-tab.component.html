@@ -1,0 +1,59 @@
+<!-- Module Roles Tab -->
+<div class="roles-tab">
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-state">
+        <div class="spinner-border spinner-border-sm text-light" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <span class="ms-2">Loading security roles...</span>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="errorMessage && !isLoading" class="error-state">
+        <i class="fa-solid fa-exclamation-triangle"></i>
+        <span class="ms-2">{{ errorMessage }}</span>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && !errorMessage && roles.length === 0" class="empty-state">
+        <i class="fa-solid fa-user-shield"></i>
+        <p>No security roles have been assigned to this module.</p>
+    </div>
+
+    <!-- Roles Table -->
+    <div *ngIf="!isLoading && !errorMessage && roles.length > 0" class="table-wrapper">
+        <table class="premium-table">
+            <thead>
+                <tr>
+                    <th>Security Role</th>
+                    <th>Comments</th>
+                    <th class="text-center">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let role of roles; trackBy: trackByRoleId">
+                    <td>
+                        <div class="role-info">
+                            <i class="fa-solid fa-user-shield role-icon"></i>
+                            <div class="role-details">
+                                <span class="role-name">{{ role.securityRole?.name || 'Role #' + role.securityRoleId
+                                    }}</span>
+                                <span class="role-id">ID: {{ role.id }}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="comments-text">{{ role.comments || '—' }}</span>
+                    </td>
+                    <td class="text-center">
+                        <span class="status-badge" [ngClass]="getStatusBadgeClass(role)">
+                            {{ getStatusText(role) }}
+                        </span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>

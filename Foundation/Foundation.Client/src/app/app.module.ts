@@ -347,6 +347,12 @@ import { UserCustomDetailComponent } from './components/user-custom/user-custom-
 import { UserOverviewTabComponent } from './components/user-custom/user-overview-tab/user-overview-tab.component';
 import { UserRolesTabComponent } from './components/user-custom/user-roles-tab/user-roles-tab.component';
 import { UserActivityTabComponent } from './components/user-custom/user-activity-tab/user-activity-tab.component';
+import { ModuleCustomListingComponent } from './components/module-custom/module-custom-listing/module-custom-listing.component';
+import { ModuleCustomTableComponent } from './components/module-custom/module-custom-table/module-custom-table.component';
+import { ModuleCustomDetailComponent } from './components/module-custom/module-custom-detail/module-custom-detail.component';
+import { ModuleOverviewTabComponent } from './components/module-custom/module-overview-tab/module-overview-tab.component';
+import { ModuleRolesTabComponent } from './components/module-custom/module-roles-tab/module-roles-tab.component';
+import { ModuleTokensTabComponent } from './components/module-custom/module-tokens-tab/module-tokens-tab.component';
 
 
 @NgModule({
@@ -572,6 +578,12 @@ import { UserActivityTabComponent } from './components/user-custom/user-activity
     UserOverviewTabComponent,
     UserRolesTabComponent,
     UserActivityTabComponent,
+    ModuleCustomListingComponent,
+    ModuleCustomTableComponent,
+    ModuleCustomDetailComponent,
+    ModuleOverviewTabComponent,
+    ModuleRolesTabComponent,
+    ModuleTokensTabComponent,
   ],
   imports: [
     BrowserModule,

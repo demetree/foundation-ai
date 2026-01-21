@@ -1,0 +1,59 @@
+<!-- Module Tokens Tab -->
+<div class="tokens-tab">
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-state">
+        <div class="spinner-border spinner-border-sm text-light" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <span class="ms-2">Loading entity tokens...</span>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="errorMessage && !isLoading" class="error-state">
+        <i class="fa-solid fa-exclamation-triangle"></i>
+        <span class="ms-2">{{ errorMessage }}</span>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && !errorMessage && tokens.length === 0" class="empty-state">
+        <i class="fa-solid fa-key"></i>
+        <p>No entity tokens have been configured for this module.</p>
+    </div>
+
+    <!-- Tokens Table -->
+    <div *ngIf="!isLoading && !errorMessage && tokens.length > 0" class="table-wrapper">
+        <table class="premium-table">
+            <thead>
+                <tr>
+                    <th>Entity Name</th>
+                    <th>Token</th>
+                    <th>Description</th>
+                    <th class="text-center">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let token of tokens; trackBy: trackByTokenId">
+                    <td>
+                        <div class="token-info">
+                            <i class="fa-solid fa-database token-icon"></i>
+                            <span class="entity-name">{{ token.entity || 'Entity #' + token.id }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <code class="token-code">{{ token.token || '—' }}</code>
+                    </td>
+                    <td>
+                        <span class="description-text">{{ token.comments || '—' }}</span>
+                    </td>
+                    <td class="text-center">
+                        <span class="status-badge" [ngClass]="getStatusBadgeClass(token)">
+                            {{ getStatusText(token) }}
+                        </span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>

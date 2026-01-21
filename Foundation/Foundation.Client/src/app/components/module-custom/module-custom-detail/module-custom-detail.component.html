@@ -1,0 +1,112 @@
+<!-- Module Custom Detail -->
+<div class="module-detail-container">
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading$ | async" class="loading-state">
+        <div class="spinner-border text-light" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p>Loading module details...</p>
+    </div>
+
+    <!-- Not Found State -->
+    <div *ngIf="notFound && !(isLoading$ | async)" class="not-found-state">
+        <i class="fa-solid fa-puzzle-piece"></i>
+        <h3>Module Not Found</h3>
+        <p>The requested module could not be found.</p>
+        <button class="btn btn-glass" (click)="navigateToModules()">
+            <i class="fa-solid fa-arrow-left me-2"></i> Back to Modules
+        </button>
+    </div>
+
+    <!-- Module Content -->
+    <ng-container *ngIf="moduleData && !(isLoading$ | async)">
+
+        <!-- Premium Header -->
+        <div class="detail-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <button *ngIf="canGoBack()" class="btn btn-sm btn-glass back-btn" (click)="goBack()">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                    <div class="module-info">
+                        <div class="module-icon-wrapper">
+                            <i class="fa-solid fa-puzzle-piece"></i>
+                        </div>
+                        <div class="module-details">
+                            <h1 class="module-name">{{ moduleData.name }}</h1>
+                            <p class="module-description" *ngIf="moduleData.description">
+                                {{ moduleData.description }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <!-- Status Badge -->
+                    <span class="status-badge" [ngClass]="getStatusBadgeClass()">
+                        {{ getStatusText() }}
+                    </span>
+
+                    <!-- Quick Actions -->
+                    <div class="quick-actions" *ngIf="canEdit()">
+                        <button class="btn btn-sm btn-glass action-btn" (click)="toggleActive()" [disabled]="isToggling"
+                            [ngbTooltip]="moduleData.active ? 'Deactivate Module' : 'Activate Module'">
+                            <span *ngIf="isToggling" class="spinner-border spinner-border-sm"></span>
+                            <i *ngIf="!isToggling" class="fa-solid"
+                                [ngClass]="moduleData.active ? 'fa-toggle-on' : 'fa-toggle-off'"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs Section -->
+        <div class="tabs-section">
+            <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs premium-tabs">
+
+                <!-- Overview Tab -->
+                <li [ngbNavItem]="1">
+                    <button ngbNavLink>
+                        <i class="fa-solid fa-info-circle me-2"></i>
+                        Overview
+                    </button>
+                    <ng-template ngbNavContent>
+                        <app-module-overview-tab [module]="moduleData"></app-module-overview-tab>
+                    </ng-template>
+                </li>
+
+                <!-- Roles Tab -->
+                <li [ngbNavItem]="2">
+                    <button ngbNavLink>
+                        <i class="fa-solid fa-user-shield me-2"></i>
+                        Roles
+                        <span class="badge bg-primary ms-2">
+                            {{ (moduleData.ModuleSecurityRolesCount$ | async) ?? '...' }}
+                        </span>
+                    </button>
+                    <ng-template ngbNavContent>
+                        <app-module-roles-tab [module]="moduleData"></app-module-roles-tab>
+                    </ng-template>
+                </li>
+
+                <!-- Tokens Tab -->
+                <li [ngbNavItem]="3">
+                    <button ngbNavLink>
+                        <i class="fa-solid fa-key me-2"></i>
+                        Entity Tokens
+                        <span class="badge bg-primary ms-2">
+                            {{ (moduleData.EntityDataTokensCount$ | async) ?? '...' }}
+                        </span>
+                    </button>
+                    <ng-template ngbNavContent>
+                        <app-module-tokens-tab [module]="moduleData"></app-module-tokens-tab>
+                    </ng-template>
+                </li>
+
+            </ul>
+            <div [ngbNavOutlet]="nav" class="tab-content"></div>
+        </div>
+
+    </ng-container>
+
+</div>

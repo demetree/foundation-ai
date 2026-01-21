@@ -66,6 +66,16 @@
       </a>
     </li>
 
+    <!-- Modules -->
+    <li class="nav-item">
+      <a routerLink="/modules" routerLinkActive="active" class="nav-link text-white"
+        [ngbTooltip]="!isExpanded ? 'Modules' : null" triggers="hover" #tModules="ngbTooltip" (click)="tModules.close()"
+        placement="right" tooltipClass="sidebar-tip">
+        <i class="fa-solid fa-puzzle-piece"></i>
+        <span class="label px-2">Modules</span>
+      </a>
+    </li>
+
     <!-- Divider: Auditing & Monitoring -->
     <li class="nav-item" *ngIf="isExpanded">
       <hr class="dropdown-divider text-secondary my-2">
@@ -88,16 +98,6 @@
         (click)="tLogins.close()" placement="right" tooltipClass="sidebar-tip">
         <i class="fa-solid fa-right-to-bracket"></i>
         <span class="label px-2">Login Attempts</span>
-      </a>
-    </li>
-
-    <!-- Sessions -->
-    <li class="nav-item">
-      <a routerLink="/auditsessions" routerLinkActive="active" class="nav-link text-white"
-        [ngbTooltip]="!isExpanded ? 'Sessions' : null" triggers="hover" #tSessions="ngbTooltip"
-        (click)="tSessions.close()" placement="right" tooltipClass="sidebar-tip">
-        <i class="fa-solid fa-clock-rotate-left"></i>
-        <span class="label px-2">Sessions</span>
       </a>
     </li>
 
