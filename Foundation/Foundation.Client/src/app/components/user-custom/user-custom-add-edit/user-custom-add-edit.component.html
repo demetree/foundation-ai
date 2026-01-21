@@ -1,0 +1,376 @@
+<!-- Add User Button (optional) -->
+<div class="add-user-btn-container" *ngIf="showAddButton">
+    <button type="button" class="btn btn-add-user" (click)="openModal()" ngbTooltip="Add New User" placement="top">
+        <i class="fa-solid fa-user-plus me-2"></i>Add User
+    </button>
+</div>
+
+<!-- User Add/Edit Modal -->
+<ng-template #userModal let-modal>
+    <div class="user-modal">
+        <!-- Premium Header -->
+        <div class="modal-header user-modal-header">
+            <div class="header-content">
+                <div class="header-icon">
+                    <i class="fa-solid fa-user-pen"></i>
+                </div>
+                <div class="header-text">
+                    <h4 class="modal-title mb-0">
+                        {{ isEditMode ? 'Edit User' : 'Create New User' }}
+                    </h4>
+                    <small class="text-light opacity-75" *ngIf="isEditMode">
+                        {{ getDisplayName() }}
+                    </small>
+                </div>
+            </div>
+            <button type="button" class="btn-close btn-close-white" (click)="closeModal()" aria-label="Close"></button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="modal-body user-modal-body">
+            <form [formGroup]="userForm" (ngSubmit)="submitForm()">
+
+                <!-- Section Navigation -->
+                <div class="section-nav mb-4">
+                    <button type="button" class="section-btn" [class.active]="activeSection === 'personal'"
+                        (click)="setActiveSection('personal')">
+                        <i class="fa-solid fa-user me-2"></i>Personal
+                    </button>
+                    <button type="button" class="section-btn" [class.active]="activeSection === 'contact'"
+                        (click)="setActiveSection('contact')">
+                        <i class="fa-solid fa-address-book me-2"></i>Contact
+                    </button>
+                    <button type="button" class="section-btn" [class.active]="activeSection === 'organization'"
+                        (click)="setActiveSection('organization')">
+                        <i class="fa-solid fa-building me-2"></i>Organization
+                    </button>
+                    <button type="button" class="section-btn" [class.active]="activeSection === 'security'"
+                        (click)="setActiveSection('security')">
+                        <i class="fa-solid fa-shield-halved me-2"></i>Security
+                    </button>
+                </div>
+
+                <!-- Personal Information Section -->
+                <div class="form-section" [class.active]="activeSection === 'personal'">
+                    <h5 class="section-title">
+                        <i class="fa-solid fa-user me-2"></i>Personal Information
+                    </h5>
+
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label for="firstName" class="form-label">First Name</label>
+                            <input type="text" id="firstName" formControlName="firstName" class="form-control"
+                                placeholder="Enter first name">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="middleName" class="form-label">Middle Name</label>
+                            <input type="text" id="middleName" formControlName="middleName" class="form-control"
+                                placeholder="Enter middle name">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="lastName" class="form-label">Last Name</label>
+                            <input type="text" id="lastName" formControlName="lastName" class="form-control"
+                                placeholder="Enter last name">
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mt-2">
+                        <div class="col-md-6">
+                            <label for="accountName" class="form-label">
+                                <span class="text-danger">*</span> Account Name
+                            </label>
+                            <input type="text" id="accountName" formControlName="accountName" class="form-control"
+                                placeholder="Enter account name" required>
+                            <div *ngIf="userForm.get('accountName')?.invalid && userForm.get('accountName')?.touched"
+                                class="text-danger small mt-1">
+                                Account name is required
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="dateOfBirth" class="form-label">Date of Birth</label>
+                            <input type="date" id="dateOfBirth" formControlName="dateOfBirth" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mt-2">
+                        <div class="col-md-6">
+                            <label for="securityUserTitleId" class="form-label">Title</label>
+                            <select id="securityUserTitleId" formControlName="securityUserTitleId" class="form-select">
+                                <option [ngValue]="null">Select title...</option>
+                                <option *ngFor="let title of securityUserTitles$ | async" [ngValue]="title.id">{{
+                                    title.name }}</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="reportsToSecurityUserId" class="form-label">Reports To</label>
+                            <select id="reportsToSecurityUserId" formControlName="reportsToSecurityUserId"
+                                class="form-select">
+                                <option [ngValue]="null">Select supervisor...</option>
+                                <option *ngFor="let user of securityUsers$ | async" [ngValue]="user.id">{{
+                                    user.firstName ? (user.firstName + ' ' + user.lastName) : user.accountName }}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mt-2">
+                        <div class="col-12">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea id="description" formControlName="description" class="form-control" rows="3"
+                                placeholder="Enter description or notes"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Information Section -->
+                <div class="form-section" [class.active]="activeSection === 'contact'">
+                    <h5 class="section-title">
+                        <i class="fa-solid fa-address-book me-2"></i>Contact Information
+                    </h5>
+
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label for="emailAddress" class="form-label">
+                                <i class="fa-solid fa-envelope me-1 text-muted"></i>Email Address
+                            </label>
+                            <input type="email" id="emailAddress" formControlName="emailAddress" class="form-control"
+                                placeholder="Enter email address">
+                            <div *ngIf="userForm.get('emailAddress')?.invalid && userForm.get('emailAddress')?.touched"
+                                class="text-danger small mt-1">
+                                Please enter a valid email address
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mt-2">
+                        <div class="col-md-6">
+                            <label for="cellPhoneNumber" class="form-label">
+                                <i class="fa-solid fa-mobile-screen me-1 text-muted"></i>Cell Phone
+                            </label>
+                            <input type="tel" id="cellPhoneNumber" formControlName="cellPhoneNumber"
+                                class="form-control" placeholder="Enter cell phone number">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="phoneNumber" class="form-label">
+                                <i class="fa-solid fa-phone me-1 text-muted"></i>Office Phone
+                            </label>
+                            <div class="input-group">
+                                <input type="tel" id="phoneNumber" formControlName="phoneNumber" class="form-control"
+                                    placeholder="Phone number">
+                                <input type="text" id="phoneExtension" formControlName="phoneExtension"
+                                    class="form-control" placeholder="Ext" style="max-width: 80px;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Organization Section -->
+                <div class="form-section" [class.active]="activeSection === 'organization'">
+                    <h5 class="section-title">
+                        <i class="fa-solid fa-building me-2"></i>Organization Assignment
+                    </h5>
+
+                    <div class="org-hierarchy">
+                        <div class="org-level">
+                            <label for="securityTenantId" class="form-label">
+                                <i class="fa-solid fa-landmark me-1"></i>Tenant
+                            </label>
+                            <select id="securityTenantId" formControlName="securityTenantId" class="form-select">
+                                <option [ngValue]="null">Select tenant...</option>
+                                <option *ngFor="let tenant of securityTenants$ | async" [ngValue]="tenant.id">{{
+                                    tenant.name }}</option>
+                            </select>
+                        </div>
+
+                        <div class="org-arrow" *ngIf="(filteredOrganizations$ | async)?.length">
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+
+                        <div class="org-level" *ngIf="(filteredOrganizations$ | async)?.length">
+                            <label for="securityOrganizationId" class="form-label">
+                                <i class="fa-solid fa-building me-1"></i>Organization
+                            </label>
+                            <select id="securityOrganizationId" formControlName="securityOrganizationId"
+                                class="form-select">
+                                <option [ngValue]="null">Select organization...</option>
+                                <option *ngFor="let org of filteredOrganizations$ | async" [ngValue]="org.id">{{
+                                    org.name }}</option>
+                            </select>
+                        </div>
+
+                        <div class="org-arrow" *ngIf="(filteredDepartments$ | async)?.length">
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+
+                        <div class="org-level" *ngIf="(filteredDepartments$ | async)?.length">
+                            <label for="securityDepartmentId" class="form-label">
+                                <i class="fa-solid fa-sitemap me-1"></i>Department
+                            </label>
+                            <select id="securityDepartmentId" formControlName="securityDepartmentId"
+                                class="form-select">
+                                <option [ngValue]="null">Select department...</option>
+                                <option *ngFor="let dept of filteredDepartments$ | async" [ngValue]="dept.id">{{
+                                    dept.name }}</option>
+                            </select>
+                        </div>
+
+                        <div class="org-arrow" *ngIf="(filteredTeams$ | async)?.length">
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+
+                        <div class="org-level" *ngIf="(filteredTeams$ | async)?.length">
+                            <label for="securityTeamId" class="form-label">
+                                <i class="fa-solid fa-people-group me-1"></i>Team
+                            </label>
+                            <select id="securityTeamId" formControlName="securityTeamId" class="form-select">
+                                <option [ngValue]="null">Select team...</option>
+                                <option *ngFor="let team of filteredTeams$ | async" [ngValue]="team.id">{{ team.name }}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info mt-3" *ngIf="!userForm.get('securityTenantId')?.value">
+                        <i class="fa-solid fa-circle-info me-2"></i>
+                        Select a tenant to see available organizations, departments, and teams.
+                    </div>
+                </div>
+
+                <!-- Security Section -->
+                <div class="form-section" [class.active]="activeSection === 'security'">
+                    <h5 class="section-title">
+                        <i class="fa-solid fa-shield-halved me-2"></i>Security Settings
+                    </h5>
+
+                    <!-- Login Settings -->
+                    <div class="security-group mb-4">
+                        <h6 class="security-group-title">Login Settings</h6>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="form-check form-switch">
+                                    <input type="checkbox" class="form-check-input" id="canLogin"
+                                        formControlName="canLogin">
+                                    <label class="form-check-label" for="canLogin">Can Login</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check form-switch">
+                                    <input type="checkbox" class="form-check-input" id="mustChangePassword"
+                                        formControlName="mustChangePassword">
+                                    <label class="form-check-label" for="mustChangePassword">
+                                        Must Change Password
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check form-switch">
+                                    <input type="checkbox" class="form-check-input" id="activeDirectoryAccount"
+                                        formControlName="activeDirectoryAccount">
+                                    <label class="form-check-label" for="activeDirectoryAccount">
+                                        Active Directory
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Permission Levels -->
+                    <div class="security-group mb-4">
+                        <h6 class="security-group-title">Permission Levels</h6>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="readPermissionLevel" class="form-label">
+                                    <span class="text-danger">*</span> Read Permission Level
+                                </label>
+                                <input type="number" id="readPermissionLevel" formControlName="readPermissionLevel"
+                                    class="form-control" min="0" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="writePermissionLevel" class="form-label">
+                                    <span class="text-danger">*</span> Write Permission Level
+                                </label>
+                                <input type="number" id="writePermissionLevel" formControlName="writePermissionLevel"
+                                    class="form-control" min="0" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Two-Factor Authentication -->
+                    <div class="security-group mb-4">
+                        <h6 class="security-group-title">Two-Factor Authentication</h6>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="form-check form-switch">
+                                    <input type="checkbox" class="form-check-input" id="twoFactorSendByEmail"
+                                        formControlName="twoFactorSendByEmail">
+                                    <label class="form-check-label" for="twoFactorSendByEmail">
+                                        <i class="fa-solid fa-envelope me-1"></i>Send by Email
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check form-switch">
+                                    <input type="checkbox" class="form-check-input" id="twoFactorSendBySMS"
+                                        formControlName="twoFactorSendBySMS">
+                                    <label class="form-check-label" for="twoFactorSendBySMS">
+                                        <i class="fa-solid fa-message me-1"></i>Send by SMS
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Status (Edit Mode Only) -->
+                    <div class="security-group" *ngIf="isEditMode">
+                        <h6 class="security-group-title">Account Status</h6>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="form-check form-switch">
+                                    <input type="checkbox" class="form-check-input" id="active"
+                                        formControlName="active">
+                                    <label class="form-check-label" for="active">
+                                        <span class="badge" [class.bg-success]="userForm.get('active')?.value"
+                                            [class.bg-secondary]="!userForm.get('active')?.value">
+                                            {{ userForm.get('active')?.value ? 'Active' : 'Inactive' }}
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check form-switch">
+                                    <input type="checkbox" class="form-check-input" id="deleted"
+                                        formControlName="deleted">
+                                    <label class="form-check-label" for="deleted">
+                                        <span class="badge" [class.bg-danger]="userForm.get('deleted')?.value"
+                                            [class.bg-secondary]="!userForm.get('deleted')?.value">
+                                            {{ userForm.get('deleted')?.value ? 'Deleted' : 'Not Deleted' }}
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="modal-footer user-modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="closeModal()">
+                <i class="fa-solid fa-xmark me-1"></i>Cancel
+            </button>
+            <button type="button" class="btn btn-primary"
+                [disabled]="isSaving || !userForm.valid || userForm.pristine || !userIsWriter()" (click)="submitForm()">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Create User' }}
+                </span>
+            </button>
+        </div>
+    </div>
+</ng-template>

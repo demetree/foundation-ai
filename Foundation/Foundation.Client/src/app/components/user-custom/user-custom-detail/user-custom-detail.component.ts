@@ -15,6 +15,7 @@ import { SecurityUserService, SecurityUserData, SecurityUserQueryParameters, Sec
 import { AuthService } from '../../../services/auth.service';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { NavigationService } from '../../../utility-services/navigation.service';
+import { UserCustomAddEditComponent } from '../user-custom-add-edit/user-custom-add-edit.component';
 
 export type UserStatusType = 'active' | 'cooling-down' | 'locked' | 'inactive' | 'no-login';
 
@@ -47,6 +48,11 @@ export class UserCustomDetailComponent implements OnInit, OnDestroy {
     // Action state
     //
     public actionInProgress: boolean = false;
+
+    //
+    // Add/Edit component reference
+    //
+    @ViewChild('userAddEdit') userAddEdit!: UserCustomAddEditComponent;
 
 
     constructor(
@@ -313,5 +319,21 @@ export class UserCustomDetailComponent implements OnInit, OnDestroy {
 
     public userIsSecurityUserWriter(): boolean {
         return this.securityUserService.userIsSecuritySecurityUserWriter();
+    }
+
+
+    //
+    // Edit User
+    //
+    public editUser(): void {
+        if (this.user && this.userAddEdit) {
+            this.userAddEdit.openModal(this.user);
+        }
+    }
+
+
+    public onUserChanged(updatedUser: SecurityUserData): void {
+        this.user = updatedUser;
+        this.alertService.showMessage('Success', 'User updated successfully', MessageSeverity.success);
     }
 }

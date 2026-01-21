@@ -5,14 +5,15 @@
 // search, and quick actions. Modeled after Scheduler.Client contact-custom-listing pattern.
 //
 
-import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 import { Subject, BehaviorSubject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { AuthService } from '../../../services/auth.service';
-import { SecurityUserService, SecurityUserQueryParameters } from '../../../security-data-services/security-user.service';
+import { SecurityUserService, SecurityUserQueryParameters, SecurityUserData } from '../../../security-data-services/security-user.service';
+import { UserCustomAddEditComponent } from '../user-custom-add-edit/user-custom-add-edit.component';
 
 @Component({
     selector: 'app-user-custom-listing',
@@ -45,6 +46,11 @@ export class UserCustomListingComponent implements OnInit, OnDestroy {
     //
     public isSmallScreen: boolean = false;
     private readonly SMALL_SCREEN_BREAKPOINT = 768;
+
+    //
+    // Add/Edit component reference
+    //
+    @ViewChild('userAddEdit') userAddEdit!: UserCustomAddEditComponent;
 
 
     constructor(
@@ -176,5 +182,24 @@ export class UserCustomListingComponent implements OnInit, OnDestroy {
 
     public userIsSecurityUserWriter(): boolean {
         return this.securityUserService.userIsSecuritySecurityUserWriter();
+    }
+
+
+    //
+    // Add User
+    //
+    public addUser(): void {
+        if (this.userAddEdit) {
+            this.userAddEdit.openModal();
+        }
+    }
+
+
+    public onUserChanged(newUser: SecurityUserData): void {
+        // Refresh the count after user is added
+        this.loadTotalCount();
+        if (this.filterText) {
+            this.loadFilteredCount(this.filterText);
+        }
     }
 }

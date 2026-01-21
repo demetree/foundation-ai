@@ -358,6 +358,7 @@ import { TenantCustomTableComponent } from './components/tenant-custom/tenant-cu
 import { TenantCustomDetailComponent } from './components/tenant-custom/tenant-custom-detail/tenant-custom-detail.component';
 import { TenantOverviewTabComponent } from './components/tenant-custom/tenant-overview-tab/tenant-overview-tab.component';
 import { TenantUsersTabComponent } from './components/tenant-custom/tenant-users-tab/tenant-users-tab.component';
+import { UserCustomAddEditComponent } from './components/user-custom/user-custom-add-edit/user-custom-add-edit.component';
 
 
 @NgModule({
@@ -594,6 +595,7 @@ import { TenantUsersTabComponent } from './components/tenant-custom/tenant-users
     TenantCustomDetailComponent,
     TenantOverviewTabComponent,
     TenantUsersTabComponent,
+    UserCustomAddEditComponent,
   ],
   imports: [
     BrowserModule,

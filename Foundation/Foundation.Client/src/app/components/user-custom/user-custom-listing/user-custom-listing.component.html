@@ -73,14 +73,16 @@
                 </div>
 
                 <!-- Add User Button -->
-                <button class="btn btn-glass btn-add" routerLink="/securityusers/new"
-                    *ngIf="userIsSecurityUserWriter()">
+                <button class="btn btn-glass btn-add" (click)="addUser()" *ngIf="userIsSecurityUserWriter()">
                     <i class="fa-solid fa-plus me-1"></i>
                     <span class="d-none d-md-inline">Add User</span>
                 </button>
             </div>
         </div>
     </div>
+
+    <!-- User Add/Edit Component -->
+    <app-user-custom-add-edit #userAddEdit (userChanged)="onUserChanged($event)"></app-user-custom-add-edit>
 
     <app-user-custom-table *ngIf="userIsSecurityUserReader() == true" [filterText]="filterText"
         [isSmallScreen]="isSmallScreen">

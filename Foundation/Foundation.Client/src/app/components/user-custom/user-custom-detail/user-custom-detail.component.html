@@ -37,6 +37,9 @@
 
                 <!-- Quick Actions -->
                 <div class="btn-group" *ngIf="userIsSecurityUserWriter()">
+                    <button class="btn btn-glass btn-sm" ngbTooltip="Edit User" (click)="editUser()">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </button>
                     <button class="btn btn-glass btn-sm"
                         [ngbTooltip]="user.active ? 'Deactivate User' : 'Activate User'" (click)="toggleActive()"
                         [disabled]="actionInProgress">
@@ -50,6 +53,9 @@
             </div>
         </div>
     </div>
+
+    <!-- User Add/Edit Component -->
+    <app-user-custom-add-edit #userAddEdit (userChanged)="onUserChanged($event)"></app-user-custom-add-edit>
 
     <!-- Loading State -->
     <div *ngIf="isLoading$ | async" class="text-center py-5">
