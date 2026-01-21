@@ -388,7 +388,7 @@ export class OverviewComponent implements OnInit, OnDestroy, AfterViewInit {
   // Navigation
   //
   public navigateToUsers(): void {
-    this.router.navigate(['/securityusers']);
+    this.router.navigate(['/users']);
   }
 
   public navigateToAudit(): void {
