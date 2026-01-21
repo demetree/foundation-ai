@@ -1,0 +1,168 @@
+<!-- User Custom Table -->
+<div class="table-container">
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="text-muted mt-3">Loading users...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="errorState && !loading" class="text-center py-5">
+        <i class="fa-solid fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+        <p class="text-muted">Failed to load users. Please try again.</p>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!loading && !errorState && filteredUsers.length === 0" class="text-center py-5">
+        <i class="fa-solid fa-users-slash fa-3x text-muted mb-3 opacity-50"></i>
+        <p class="text-muted" *ngIf="filterText">No users match your search.</p>
+        <p class="text-muted" *ngIf="!filterText">No users found.</p>
+    </div>
+
+    <!-- Desktop Table -->
+    <div class="card border-0 shadow-sm" *ngIf="!loading && !errorState && filteredUsers.length > 0 && !isSmallScreen">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="sortable" (click)="sortBy('lastName')">
+                            User
+                            <i class="fa-solid fa-sort ms-1 opacity-50" *ngIf="sortColumn !== 'lastName'"></i>
+                            <i class="fa-solid fa-sort-up ms-1"
+                                *ngIf="sortColumn === 'lastName' && sortDirection === 'asc'"></i>
+                            <i class="fa-solid fa-sort-down ms-1"
+                                *ngIf="sortColumn === 'lastName' && sortDirection === 'desc'"></i>
+                        </th>
+                        <th class="sortable" (click)="sortBy('emailAddress')">
+                            Email
+                            <i class="fa-solid fa-sort ms-1 opacity-50" *ngIf="sortColumn !== 'emailAddress'"></i>
+                            <i class="fa-solid fa-sort-up ms-1"
+                                *ngIf="sortColumn === 'emailAddress' && sortDirection === 'asc'"></i>
+                            <i class="fa-solid fa-sort-down ms-1"
+                                *ngIf="sortColumn === 'emailAddress' && sortDirection === 'desc'"></i>
+                        </th>
+                        <th>Status</th>
+                        <th class="text-center">2FA</th>
+                        <th class="sortable" (click)="sortBy('lastLoginAttempt')">
+                            Last Login
+                            <i class="fa-solid fa-sort ms-1 opacity-50" *ngIf="sortColumn !== 'lastLoginAttempt'"></i>
+                            <i class="fa-solid fa-sort-up ms-1"
+                                *ngIf="sortColumn === 'lastLoginAttempt' && sortDirection === 'asc'"></i>
+                            <i class="fa-solid fa-sort-down ms-1"
+                                *ngIf="sortColumn === 'lastLoginAttempt' && sortDirection === 'desc'"></i>
+                        </th>
+                        <th class="text-end" *ngIf="userIsSecurityUserWriter()">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let user of filteredUsers; trackBy: trackByUserId" class="user-row"
+                        (click)="navigateToDetail(user)">
+
+                        <!-- User Column -->
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-circle me-3" [class.inactive]="user.active !== true">
+                                    {{ getUserInitials(user) }}
+                                </div>
+                                <div>
+                                    <div class="fw-semibold">{{ getUserDisplayName(user) }}</div>
+                                    <small class="text-muted">{{ user.accountName }}</small>
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- Email Column -->
+                        <td>
+                            <span *ngIf="user.emailAddress">{{ user.emailAddress }}</span>
+                            <span *ngIf="!user.emailAddress" class="text-muted fst-italic">No email</span>
+                        </td>
+
+                        <!-- Status Column -->
+                        <td>
+                            <span class="badge rounded-pill" [ngClass]="getStatusClass(getUserStatus(user))">
+                                {{ getStatusLabel(getUserStatus(user)) }}
+                            </span>
+                            <small class="text-muted d-block" *ngIf="(user.failedLoginCount ?? 0) > 0">
+                                {{ user.failedLoginCount }} failed attempts
+                            </small>
+                        </td>
+
+                        <!-- 2FA Column -->
+                        <td class="text-center">
+                            <i class="fa-solid fa-shield-check text-success" *ngIf="has2FA(user)"
+                                [ngbTooltip]="get2FATooltip(user)"></i>
+                            <i class="fa-solid fa-shield-xmark text-muted opacity-50" *ngIf="!has2FA(user)"
+                                ngbTooltip="No 2FA configured"></i>
+                        </td>
+
+                        <!-- Last Login Column -->
+                        <td>
+                            <span [ngbTooltip]="user.lastLoginAttempt | date:'medium'">
+                                {{ formatRelativeTime(user.lastLoginAttempt) }}
+                            </span>
+                        </td>
+
+                        <!-- Actions Column -->
+                        <td class="text-end" *ngIf="userIsSecurityUserWriter()">
+                            <div class="btn-group btn-group-sm">
+                                <!-- Toggle Active -->
+                                <button class="btn btn-outline-secondary"
+                                    [ngbTooltip]="user.active ? 'Deactivate' : 'Activate'"
+                                    (click)="toggleActive(user, $event)" [disabled]="isActionInProgress(user)">
+                                    <i class="fa-solid"
+                                        [ngClass]="user.active ? 'fa-toggle-on text-success' : 'fa-toggle-off'"></i>
+                                </button>
+
+                                <!-- Unlock -->
+                                <button class="btn btn-outline-warning" *ngIf="canUnlock(user)"
+                                    ngbTooltip="Unlock Account" (click)="unlockUser(user, $event)"
+                                    [disabled]="isActionInProgress(user)">
+                                    <i class="fa-solid fa-lock-open"></i>
+                                </button>
+
+                                <!-- Edit -->
+                                <button class="btn btn-outline-primary" ngbTooltip="Edit User"
+                                    [routerLink]="['/securityuser', user.id]" (click)="$event.stopPropagation()">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Mobile Card View -->
+    <div *ngIf="!loading && !errorState && filteredUsers.length > 0 && isSmallScreen" class="mobile-cards">
+        <div *ngFor="let user of filteredUsers; trackBy: trackByUserId" class="card mb-2 shadow-sm user-card"
+            (click)="navigateToDetail(user)">
+            <div class="card-body py-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar-circle me-3" [class.inactive]="user.active !== true">
+                            {{ getUserInitials(user) }}
+                        </div>
+                        <div>
+                            <div class="fw-semibold">{{ getUserDisplayName(user) }}</div>
+                            <small class="text-muted">{{ user.emailAddress || user.accountName }}</small>
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge rounded-pill" [ngClass]="getStatusClass(getUserStatus(user))">
+                            {{ getStatusLabel(getUserStatus(user)) }}
+                        </span>
+                        <div class="mt-1">
+                            <i class="fa-solid fa-shield-check text-success" *ngIf="has2FA(user)"></i>
+                            <small class="text-muted ms-2">{{ formatRelativeTime(user.lastLoginAttempt) }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

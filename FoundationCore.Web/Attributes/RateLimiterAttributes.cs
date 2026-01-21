@@ -82,8 +82,8 @@ namespace Foundation.Controllers
                 logger?.LogWarning("Rate limit exceeded for key: {Key}. Try again in {Seconds} seconds.", key, bucket.NextRefillSeconds());
                 context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
                 context.HttpContext.Response.ContentType = "application/json";
-                context.HttpContext.Response.Headers.Add("Retry-After", bucket.NextRefillSeconds().ToString());
-                
+                context.HttpContext.Response.Headers.Append("Retry-After", bucket.NextRefillSeconds().ToString());
+
                 await context.HttpContext.Response.WriteAsJsonAsync(new
                 {
                     error = string.Format(ErrorMessage, bucket.NextRefillSeconds()),
@@ -98,8 +98,8 @@ namespace Foundation.Controllers
             //
             // Add limit remaining headers when not rejecting.
             //
-            context.HttpContext.Response.Headers.Add("X-RateLimit-Limit", requests.ToString());
-            context.HttpContext.Response.Headers.Add("X-RateLimit-Remaining", bucket.Tokens.ToString());
+            context.HttpContext.Response.Headers.Append("X-RateLimit-Limit", requests.ToString());
+            context.HttpContext.Response.Headers.Append("X-RateLimit-Remaining", bucket.Tokens.ToString());
 
             await base.OnActionExecutionAsync(context, next);
         }
@@ -114,8 +114,8 @@ namespace Foundation.Controllers
                 context.HttpContext.Items.TryGetValue("RateLimitRequests", out var requestsObj) &&
                 bucketObj is TokenBucket bucket && requestsObj is int requests)
             {
-                context.HttpContext.Response.Headers.Add("X-RateLimit-Limit", requests.ToString());
-                context.HttpContext.Response.Headers.Add("X-RateLimit-Remaining", bucket.Tokens.ToString());
+                context.HttpContext.Response.Headers.Append("X-RateLimit-Limit", requests.ToString());
+                context.HttpContext.Response.Headers.Append("X-RateLimit-Remaining", bucket.Tokens.ToString());
             }
 
             await base.OnResultExecutionAsync(context, next);
@@ -129,7 +129,7 @@ namespace Foundation.Controllers
             switch (Scope)
             {
                 case RateLimitScope.PerUser:
-                    
+
                     // Use user ID or name from claims if authenticated, otherwise fall back to IP
                     clientIdentifier = context.HttpContext.User.Identity?.IsAuthenticated == true
                         ? context.HttpContext.User.Identity.Name ?? context.HttpContext.User.FindFirst("sub")?.Value ?? "anonymous"

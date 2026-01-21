@@ -1,0 +1,136 @@
+//
+// User Custom Table Component Styles
+//
+
+.table-container {
+    // Table container styles
+}
+
+//
+// Avatar Circle
+//
+.avatar-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.875rem;
+    flex-shrink: 0;
+
+    &.inactive {
+        background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        opacity: 0.7;
+    }
+}
+
+//
+// Table Styling
+//
+.table {
+    th {
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #6c757d;
+        border-bottom: 2px solid #dee2e6;
+        padding: 1rem;
+
+        &.sortable {
+            cursor: pointer;
+            user-select: none;
+
+            &:hover {
+                background-color: rgba(0, 0, 0, 0.02);
+            }
+        }
+    }
+
+    td {
+        padding: 1rem;
+        vertical-align: middle;
+    }
+
+    .user-row {
+        cursor: pointer;
+        transition: background-color 0.15s ease;
+
+        &:hover {
+            background-color: rgba(13, 71, 161, 0.04);
+        }
+    }
+}
+
+//
+// Status Badges
+//
+.badge {
+    font-weight: 500;
+    padding: 0.4em 0.8em;
+}
+
+//
+// Action Buttons
+//
+.btn-group-sm {
+    .btn {
+        padding: 0.25rem 0.5rem;
+
+        &:focus {
+            box-shadow: none;
+        }
+    }
+}
+
+//
+// Mobile Cards
+//
+.mobile-cards {
+    .user-card {
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border-radius: 12px;
+        border: none;
+
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        &:active {
+            transform: translateY(0);
+        }
+    }
+}
+
+//
+// 2FA Icons
+//
+.fa-shield-check,
+.fa-shield-xmark {
+    font-size: 1.1rem;
+}
+
+//
+// Empty/Error States
+//
+.fa-users-slash,
+.fa-exclamation-triangle {
+    opacity: 0.6;
+}
+
+//
+// Responsive Adjustments
+//
+@media (max-width: 991px) {
+
+    .table th,
+    .table td {
+        padding: 0.75rem;
+    }
+}
