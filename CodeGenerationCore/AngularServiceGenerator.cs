@@ -403,6 +403,26 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
 
             sb.AppendLine(GenerateDataSetterOutputClass(type, scriptGenTable));
 
+            //
+            // Generate VersionInformation interface for version-controlled entities
+            //
+            if (scriptGenTable.IsVersionControlEnabled() == true)
+            {
+                sb.AppendLine(@"
+//
+// Version history information returned from version history API endpoints.
+// Matches server-side VersionInformation<T> structure.
+//
+export interface VersionInformation<T> {
+    timeStamp: string;           // ISO 8601
+    userId: bigint | number;
+    userName: string;
+    versionNumber: number;
+    data: T | null;
+}
+");
+            }
+
             sb.AppendLine(GenerateDataGetterOutputClass(type, scriptGenTable, tablesThatLinkHere, foreignKeysThatLinkHere));
 
             sb.AppendLine(@"@Injectable({
@@ -947,6 +967,139 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
                 return this.handleError(error, () => this.Rollback"" + entity + @""(id, versionNumber));
         }}));
     }}");
+                }
+
+                //
+                // Generate version history accessor methods for version-controlled entities
+                //
+                if (addAuthorization == true)
+                {
+                    sb.AppendLine($@"
+
+    /**
+     * Gets version metadata for a specific version of a {entity}.
+     */
+    public Get{entity}ChangeMetadata(id: bigint | number, versionNumber?: number): Observable<VersionInformation<{entity}Data>> {{
+
+        let queryParams = new HttpParams();
+
+        if (versionNumber !== undefined && versionNumber !== null) {{
+            queryParams = queryParams.append('versionNumber', versionNumber.toString());
+        }}
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<{entity}Data>>(this.baseUrl + 'api/{entity}/' + id.toString() + '/ChangeMetadata', {{
+            params: queryParams,
+            headers: authenticationHeaders
+        }}).pipe(
+            catchError(error => {{
+                return this.handleError(error, () => this.Get{entity}ChangeMetadata(id, versionNumber));
+            }})
+        );
+    }}
+
+
+    /**
+     * Gets the full audit history of a {entity}.
+     */
+    public Get{entity}AuditHistory(id: bigint | number, includeData: boolean = false): Observable<VersionInformation<{entity}Data>[]> {{
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('includeData', includeData.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<{entity}Data>[]>(this.baseUrl + 'api/{entity}/' + id.toString() + '/AuditHistory', {{
+            params: queryParams,
+            headers: authenticationHeaders
+        }}).pipe(
+            catchError(error => {{
+                return this.handleError(error, () => this.Get{entity}AuditHistory(id, includeData));
+            }})
+        );
+    }}
+
+
+    /**
+     * Gets a specific historical version of a {entity}.
+     */
+    public Get{entity}Version(id: bigint | number, version: number): Observable<{entity}Data> {{
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<{entity}Data>(this.baseUrl + 'api/{entity}/' + id.toString() + '/Version/' + version.toString(), {{
+            headers: authenticationHeaders
+        }}).pipe(
+            map(raw => this.Revive{entity}(raw)),
+            catchError(error => {{
+                return this.handleError(error, () => this.Get{entity}Version(id, version));
+            }})
+        );
+    }}
+
+
+    /**
+     * Gets the state of a {entity} at a specific point in time.
+     */
+    public Get{entity}StateAtTime(id: bigint | number, time: string): Observable<{entity}Data> {{
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('time', time);
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<{entity}Data>(this.baseUrl + 'api/{entity}/' + id.toString() + '/StateAtTime', {{
+            params: queryParams,
+            headers: authenticationHeaders
+        }}).pipe(
+            map(raw => this.Revive{entity}(raw)),
+            catchError(error => {{
+                return this.handleError(error, () => this.Get{entity}StateAtTime(id, time));
+            }})
+        );
+    }}
+");
+                }
+                else
+                {
+                    // Non-auth version of version history methods
+                    sb.AppendLine($@"
+
+    public Get{entity}ChangeMetadata(id: bigint | number, versionNumber?: number): Observable<VersionInformation<{entity}Data>> {{
+        let queryParams = new HttpParams();
+        if (versionNumber !== undefined && versionNumber !== null) {{
+            queryParams = queryParams.append('versionNumber', versionNumber.toString());
+        }}
+        return this.http.get<VersionInformation<{entity}Data>>(this.baseUrl + 'api/{entity}/' + id.toString() + '/ChangeMetadata', {{ params: queryParams }}).pipe(
+            catchError(error => {{ return this.handleError(error, () => this.Get{entity}ChangeMetadata(id, versionNumber)); }})
+        );
+    }}
+
+    public Get{entity}AuditHistory(id: bigint | number, includeData: boolean = false): Observable<VersionInformation<{entity}Data>[]> {{
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('includeData', includeData.toString());
+        return this.http.get<VersionInformation<{entity}Data>[]>(this.baseUrl + 'api/{entity}/' + id.toString() + '/AuditHistory', {{ params: queryParams }}).pipe(
+            catchError(error => {{ return this.handleError(error, () => this.Get{entity}AuditHistory(id, includeData)); }})
+        );
+    }}
+
+    public Get{entity}Version(id: bigint | number, version: number): Observable<{entity}Data> {{
+        return this.http.get<{entity}Data>(this.baseUrl + 'api/{entity}/' + id.toString() + '/Version/' + version.toString()).pipe(
+            map(raw => this.Revive{entity}(raw)),
+            catchError(error => {{ return this.handleError(error, () => this.Get{entity}Version(id, version)); }})
+        );
+    }}
+
+    public Get{entity}StateAtTime(id: bigint | number, time: string): Observable<{entity}Data> {{
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('time', time);
+        return this.http.get<{entity}Data>(this.baseUrl + 'api/{entity}/' + id.toString() + '/StateAtTime', {{ params: queryParams }}).pipe(
+            map(raw => this.Revive{entity}(raw)),
+            catchError(error => {{ return this.handleError(error, () => this.Get{entity}StateAtTime(id, time)); }})
+        );
+    }}
+");
                 }
             }
 
@@ -1670,6 +1823,22 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
                 }
             }
 
+            //
+            // Add version history lazy-loading cache for version-controlled entities
+            //
+            if (table.IsVersionControlEnabled() == true)
+            {
+                sb.AppendLine($@"
+
+    //
+    // Version history lazy-loading cache for current version metadata
+    //
+    private _currentVersionInfo: VersionInformation<{entity}Data> | null = null;
+    private _currentVersionInfoPromise: Promise<VersionInformation<{entity}Data>> | null = null;
+    private _currentVersionInfoSubject = new BehaviorSubject<VersionInformation<{entity}Data> | null>(null);
+");
+            }
+
             sb.AppendLine();
             sb.AppendLine("    //");
             sb.AppendLine("    // Public observables — use with | async in templates");
@@ -1863,6 +2032,17 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
 
                 sb.AppendLine();
             }
+
+            //
+            // Clear version history cache for version-controlled entities
+            //
+            if (table.IsVersionControlEnabled() == true)
+            {
+                sb.AppendLine("     this._currentVersionInfo = null;");
+                sb.AppendLine("     this._currentVersionInfoPromise = null;");
+                sb.AppendLine("     this._currentVersionInfoSubject.next(null);");
+            }
+
             sb.AppendLine("  }");
             sb.AppendLine();
 
@@ -1985,6 +2165,56 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';")
 ");
             }
 
+
+            //
+            // Add version history observable, getter, loader, and cache clear for version-controlled entities
+            //
+            if (table.IsVersionControlEnabled() == true)
+            {
+                sb.AppendLine($@"
+
+    //
+    // Version History — Lazy-loading observable for current version metadata
+    //
+    // Usage examples:
+    //   Template: {{{{ ({camelCaseName}.CurrentVersionInfo$ | async)?.userName }}}}
+    //   Code:     const info = await {camelCaseName}.CurrentVersionInfo;
+    //
+    public CurrentVersionInfo$ = this._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {{
+            if (this._currentVersionInfo === null && this._currentVersionInfoPromise === null) {{
+                this.loadCurrentVersionInfo();
+            }}
+        }}),
+        shareReplay(1)
+    );
+
+
+    public get CurrentVersionInfo(): Promise<VersionInformation<{entity}Data>> {{
+        if (this._currentVersionInfoPromise === null) {{
+            this._currentVersionInfoPromise = this.loadCurrentVersionInfo();
+        }}
+        return this._currentVersionInfoPromise;
+    }}
+
+
+    private async loadCurrentVersionInfo(): Promise<VersionInformation<{entity}Data>> {{
+        const info = await lastValueFrom(
+            {entity}Service.Instance.Get{entity}ChangeMetadata(this.id, this.versionNumber as number)
+        );
+        this._currentVersionInfo = info;
+        this._currentVersionInfoSubject.next(info);
+        return info;
+    }}
+
+
+    public ClearCurrentVersionInfoCache(): void {{
+        this._currentVersionInfo = null;
+        this._currentVersionInfoPromise = null;
+        this._currentVersionInfoSubject.next(null);
+    }}
+");
+            }
 
             //
             // Add some final helper methods for updating and converting to submit data
