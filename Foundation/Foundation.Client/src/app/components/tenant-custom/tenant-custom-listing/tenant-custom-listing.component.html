@@ -1,0 +1,55 @@
+<!-- Premium Tenant Listing Header -->
+<div class="tenant-listing-container">
+
+    <!-- Gradient Header -->
+    <div class="listing-header">
+        <div class="header-content">
+            <div class="header-left">
+                <button *ngIf="canGoBack()" class="btn btn-sm btn-glass back-btn" (click)="goBack()">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <div class="title-section">
+                    <h1 class="page-title">
+                        <i class="fa-solid fa-building me-2"></i>
+                        Tenants
+                    </h1>
+                    <p class="page-subtitle">Manage organizational tenants and user assignments</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <!-- Tenant Count Badge -->
+                <div class="count-badge" *ngIf="!loadingTotalCount">
+                    <span class="count-number">{{ filteredTenantCount$ | async }}</span>
+                    <span class="count-label">
+                        {{ (filteredTenantCount$ | async) === (totalTenantCount$ | async) ? 'Total' : 'Filtered' }}
+                    </span>
+                </div>
+                <div class="count-badge loading" *ngIf="loadingTotalCount">
+                    <span class="spinner-border spinner-border-sm"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="search-section">
+            <div class="search-container">
+                <i class="fa-solid fa-search search-icon"></i>
+                <input type="text" class="search-input" placeholder="Search tenants by name or description..."
+                    [ngModel]="filterText" (ngModelChange)="onFilterChange($event)">
+                <button *ngIf="filterText" class="clear-btn" (click)="clearFilter()">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+                <span *ngIf="loadingFilteredCount" class="search-spinner">
+                    <span class="spinner-border spinner-border-sm"></span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tenant Table -->
+    <div class="table-section">
+        <app-tenant-custom-table [filterText]="filterText" (countChange)="filteredTenantCount$.next($event)">
+        </app-tenant-custom-table>
+    </div>
+
+</div>

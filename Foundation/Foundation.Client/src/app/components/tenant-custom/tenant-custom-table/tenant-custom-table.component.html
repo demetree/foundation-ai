@@ -1,0 +1,106 @@
+<!-- Tenant Custom Table -->
+<div class="tenant-table-container">
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-state">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="loading-text">Loading tenants...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="errorMessage && !isLoading" class="error-state">
+        <i class="fa-solid fa-exclamation-triangle"></i>
+        <p>{{ errorMessage }}</p>
+        <button class="btn btn-outline-primary btn-sm" (click)="loadTenants()">
+            <i class="fa-solid fa-refresh me-1"></i> Retry
+        </button>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && !errorMessage && tenants.length === 0" class="empty-state">
+        <i class="fa-solid fa-building"></i>
+        <h3>No Tenants Found</h3>
+        <p *ngIf="filterText">No tenants match your search criteria.</p>
+        <p *ngIf="!filterText">No tenants have been configured yet.</p>
+    </div>
+
+    <!-- Table -->
+    <div *ngIf="!isLoading && !errorMessage && tenants.length > 0" class="table-wrapper">
+        <table class="premium-table">
+            <thead>
+                <tr>
+                    <th class="col-name">Tenant Name</th>
+                    <th class="col-description">Description</th>
+                    <th class="col-users text-center">Users</th>
+                    <th class="col-orgs text-center">Organizations</th>
+                    <th class="col-status text-center">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let tenant of tenants; trackBy: trackByTenantId" class="tenant-row"
+                    (click)="navigateToDetail(tenant)">
+
+                    <!-- Tenant Name -->
+                    <td class="col-name">
+                        <div class="tenant-name">
+                            <i class="fa-solid fa-building tenant-icon"></i>
+                            <span class="name-text">{{ tenant.name }}</span>
+                        </div>
+                    </td>
+
+                    <!-- Description -->
+                    <td class="col-description">
+                        <span class="description-text" [title]="tenant.description || ''">
+                            {{ tenant.description || '—' }}
+                        </span>
+                    </td>
+
+                    <!-- Users Count -->
+                    <td class="col-users text-center">
+                        <span class="count-badge users-badge">
+                            <i class="fa-solid fa-users me-1"></i>
+                            {{ (tenant.SecurityUsersCount$ | async) ?? '...' }}
+                        </span>
+                    </td>
+
+                    <!-- Organizations Count -->
+                    <td class="col-orgs text-center">
+                        <span class="count-badge orgs-badge">
+                            <i class="fa-solid fa-sitemap me-1"></i>
+                            {{ (tenant.SecurityOrganizationsCount$ | async) ?? '...' }}
+                        </span>
+                    </td>
+
+                    <!-- Status -->
+                    <td class="col-status text-center">
+                        <span class="status-badge" [ngClass]="getStatusBadgeClass(tenant)">
+                            {{ getStatusText(tenant) }}
+                        </span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div *ngIf="totalPages > 1" class="pagination-container">
+            <div class="pagination-info">
+                Showing {{ ((currentPage - 1) * pageSize) + 1 }} - {{ Math.min(currentPage * pageSize, totalCount) }} of
+                {{ totalCount }}
+            </div>
+            <div class="pagination-controls">
+                <button class="btn btn-sm btn-glass" [disabled]="currentPage === 1"
+                    (click)="onPageChange(currentPage - 1)">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                <span class="page-indicator">{{ currentPage }} / {{ totalPages }}</span>
+                <button class="btn btn-sm btn-glass" [disabled]="currentPage >= totalPages"
+                    (click)="onPageChange(currentPage + 1)">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+</div>

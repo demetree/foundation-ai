@@ -1,0 +1,72 @@
+<!-- Tenant Users Tab -->
+<div class="users-tab">
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-state">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="loading-text">Loading users...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="errorMessage && !isLoading" class="error-state">
+        <i class="fa-solid fa-exclamation-triangle"></i>
+        <p>{{ errorMessage }}</p>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && !errorMessage && users.length === 0" class="empty-state">
+        <i class="fa-solid fa-users"></i>
+        <h3>No Users</h3>
+        <p>No users are currently assigned to this tenant.</p>
+    </div>
+
+    <!-- Users Table -->
+    <div *ngIf="!isLoading && !errorMessage && users.length > 0" class="table-wrapper">
+        <table class="users-table">
+            <thead>
+                <tr>
+                    <th class="col-user">User</th>
+                    <th class="col-email">Email</th>
+                    <th class="col-account">Account Name</th>
+                    <th class="col-status text-center">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let user of users; trackBy: trackByUserId" class="user-row" (click)="navigateToUser(user)">
+
+                    <!-- User Info -->
+                    <td class="col-user">
+                        <div class="user-info">
+                            <div class="user-avatar">
+                                {{ getInitials(user) }}
+                            </div>
+                            <div class="user-details">
+                                <span class="user-name">{{ getDisplayName(user) }}</span>
+                            </div>
+                        </div>
+                    </td>
+
+                    <!-- Email -->
+                    <td class="col-email">
+                        <span class="email-text">{{ user.emailAddress || '—' }}</span>
+                    </td>
+
+                    <!-- Account Name -->
+                    <td class="col-account">
+                        <span class="account-text">{{ user.accountName || '—' }}</span>
+                    </td>
+
+                    <!-- Status -->
+                    <td class="col-status text-center">
+                        <span class="status-badge" [ngClass]="getStatusBadgeClass(user)">
+                            {{ getStatusText(user) }}
+                        </span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>

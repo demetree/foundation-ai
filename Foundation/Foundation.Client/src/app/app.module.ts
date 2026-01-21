@@ -353,6 +353,11 @@ import { ModuleCustomDetailComponent } from './components/module-custom/module-c
 import { ModuleOverviewTabComponent } from './components/module-custom/module-overview-tab/module-overview-tab.component';
 import { ModuleRolesTabComponent } from './components/module-custom/module-roles-tab/module-roles-tab.component';
 import { ModuleTokensTabComponent } from './components/module-custom/module-tokens-tab/module-tokens-tab.component';
+import { TenantCustomListingComponent } from './components/tenant-custom/tenant-custom-listing/tenant-custom-listing.component';
+import { TenantCustomTableComponent } from './components/tenant-custom/tenant-custom-table/tenant-custom-table.component';
+import { TenantCustomDetailComponent } from './components/tenant-custom/tenant-custom-detail/tenant-custom-detail.component';
+import { TenantOverviewTabComponent } from './components/tenant-custom/tenant-overview-tab/tenant-overview-tab.component';
+import { TenantUsersTabComponent } from './components/tenant-custom/tenant-users-tab/tenant-users-tab.component';
 
 
 @NgModule({
@@ -584,6 +589,11 @@ import { ModuleTokensTabComponent } from './components/module-custom/module-toke
     ModuleOverviewTabComponent,
     ModuleRolesTabComponent,
     ModuleTokensTabComponent,
+    TenantCustomListingComponent,
+    TenantCustomTableComponent,
+    TenantCustomDetailComponent,
+    TenantOverviewTabComponent,
+    TenantUsersTabComponent,
   ],
   imports: [
     BrowserModule,

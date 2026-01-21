@@ -1,0 +1,98 @@
+<!-- Tenant Custom Detail -->
+<div class="tenant-detail-container">
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading$ | async" class="loading-state">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p>Loading tenant details...</p>
+    </div>
+
+    <!-- Not Found State -->
+    <div *ngIf="notFound && !(isLoading$ | async)" class="not-found-state">
+        <i class="fa-solid fa-building"></i>
+        <h3>Tenant Not Found</h3>
+        <p>The requested tenant could not be found.</p>
+        <button class="btn btn-glass" (click)="navigateToTenants()">
+            <i class="fa-solid fa-arrow-left me-2"></i> Back to Tenants
+        </button>
+    </div>
+
+    <!-- Tenant Content -->
+    <ng-container *ngIf="tenantData && !(isLoading$ | async)">
+
+        <!-- Premium Header -->
+        <div class="detail-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <button *ngIf="canGoBack()" class="btn btn-sm btn-glass back-btn" (click)="goBack()">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                    <div class="tenant-info">
+                        <div class="tenant-icon-wrapper">
+                            <i class="fa-solid fa-building"></i>
+                        </div>
+                        <div class="tenant-details">
+                            <h1 class="tenant-name">{{ tenantData.name }}</h1>
+                            <p class="tenant-description" *ngIf="tenantData.description">
+                                {{ tenantData.description }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <!-- Status Badge -->
+                    <span class="status-badge" [ngClass]="getStatusBadgeClass()">
+                        {{ getStatusText() }}
+                    </span>
+
+                    <!-- Quick Actions -->
+                    <div class="quick-actions" *ngIf="canEdit()">
+                        <button class="btn btn-sm btn-glass action-btn" (click)="toggleActive()" [disabled]="isToggling"
+                            [ngbTooltip]="tenantData.active ? 'Deactivate Tenant' : 'Activate Tenant'">
+                            <span *ngIf="isToggling" class="spinner-border spinner-border-sm"></span>
+                            <i *ngIf="!isToggling" class="fa-solid"
+                                [ngClass]="tenantData.active ? 'fa-toggle-on' : 'fa-toggle-off'"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs Section -->
+        <div class="tabs-section">
+            <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs premium-tabs">
+
+                <!-- Overview Tab -->
+                <li [ngbNavItem]="1">
+                    <button ngbNavLink>
+                        <i class="fa-solid fa-info-circle me-2"></i>
+                        Overview
+                    </button>
+                    <ng-template ngbNavContent>
+                        <app-tenant-overview-tab [tenant]="tenantData"></app-tenant-overview-tab>
+                    </ng-template>
+                </li>
+
+                <!-- Users Tab -->
+                <li [ngbNavItem]="2">
+                    <button ngbNavLink>
+                        <i class="fa-solid fa-users me-2"></i>
+                        Users
+                        <span class="badge bg-primary ms-2">
+                            {{ (tenantData.SecurityUsersCount$ | async) ?? '...' }}
+                        </span>
+                    </button>
+                    <ng-template ngbNavContent>
+                        <app-tenant-users-tab [tenant]="tenantData"></app-tenant-users-tab>
+                    </ng-template>
+                </li>
+
+            </ul>
+            <div [ngbNavOutlet]="nav" class="tab-content"></div>
+        </div>
+
+    </ng-container>
+
+</div>

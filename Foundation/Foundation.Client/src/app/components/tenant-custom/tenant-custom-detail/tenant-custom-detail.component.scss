@@ -1,0 +1,278 @@
+//
+// Tenant Custom Detail Styles
+//
+// Premium styling matching module-custom-detail pattern
+//
+
+.tenant-detail-container {
+    padding: 1rem;
+}
+
+// Loading/Not Found States
+.loading-state,
+.not-found-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    color: #6c757d;
+    text-align: center;
+
+    i {
+        font-size: 4rem;
+        margin-bottom: 1.5rem;
+        opacity: 0.5;
+    }
+
+    h3 {
+        color: #343a40;
+        margin-bottom: 0.5rem;
+    }
+
+    p {
+        margin-bottom: 1.5rem;
+    }
+
+    .btn-glass {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        color: #495057;
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+
+        &:hover {
+            background: #e9ecef;
+        }
+    }
+}
+
+// Premium Header
+.detail-header {
+    background: linear-gradient(135deg, #2c5282 0%, #1a365d 100%);
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(44, 82, 130, 0.3);
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1.5rem;
+}
+
+.header-left {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    flex: 1;
+}
+
+.back-btn {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.25);
+        transform: translateX(-3px);
+    }
+}
+
+.tenant-info {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.tenant-icon-wrapper {
+    width: 56px;
+    height: 56px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    i {
+        font-size: 1.5rem;
+        color: white;
+    }
+}
+
+.tenant-details {
+    .tenant-name {
+        color: white;
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .tenant-description {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.95rem;
+        margin: 0.5rem 0 0 0;
+        max-width: 500px;
+    }
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-shrink: 0;
+}
+
+.status-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+
+    &.badge-active {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    &.badge-inactive {
+        background: rgba(234, 179, 8, 0.3);
+        color: #fde047;
+        border: 1px solid rgba(234, 179, 8, 0.4);
+    }
+
+    &.badge-deleted {
+        background: rgba(239, 68, 68, 0.3);
+        color: #fca5a5;
+        border: 1px solid rgba(239, 68, 68, 0.4);
+    }
+}
+
+.quick-actions {
+    display: flex;
+    gap: 0.5rem;
+
+    .action-btn {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+
+        &:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    }
+}
+
+// Tabs Section
+.tabs-section {
+    padding: 1.5rem 0;
+}
+
+.premium-tabs {
+    border-bottom: 2px solid #e9ecef;
+    padding: 0 0.5rem;
+    margin-bottom: 1.5rem;
+
+    .nav-link {
+        border: none;
+        border-bottom: 3px solid transparent;
+        color: #6c757d;
+        font-weight: 500;
+        padding: 1rem 1.5rem;
+        margin-bottom: -2px;
+        transition: all 0.2s ease;
+        background: transparent;
+        border-radius: 0;
+
+        &:hover {
+            color: #2c5282;
+            border-color: transparent;
+        }
+
+        &.active {
+            color: #2c5282;
+            border-bottom-color: #2c5282;
+            background: transparent;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+        }
+    }
+}
+
+.tab-content {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #dee2e6;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+// Responsive
+@media (max-width: 768px) {
+    .detail-header {
+        padding: 1.5rem 1rem;
+    }
+
+    .header-content {
+        flex-direction: column;
+    }
+
+    .header-right {
+        align-self: flex-start;
+    }
+
+    .tenant-icon-wrapper {
+        width: 48px;
+        height: 48px;
+
+        i {
+            font-size: 1.25rem;
+        }
+    }
+
+    .tenant-details .tenant-name {
+        font-size: 1.35rem;
+    }
+
+    .tabs-section {
+        padding: 1rem 0;
+    }
+
+    .premium-tabs .nav-link {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
+}

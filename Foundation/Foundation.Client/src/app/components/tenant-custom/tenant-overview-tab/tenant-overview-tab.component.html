@@ -1,0 +1,90 @@
+<!-- Tenant Overview Tab -->
+<div class="overview-tab" *ngIf="tenant">
+
+    <div class="info-grid">
+
+        <!-- Basic Information Card -->
+        <div class="info-card">
+            <h3 class="card-title">
+                <i class="fa-solid fa-info-circle me-2"></i>
+                Tenant Information
+            </h3>
+            <div class="info-list">
+                <div class="info-item">
+                    <span class="info-label">Tenant ID</span>
+                    <span class="info-value">{{ tenant.id }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Name</span>
+                    <span class="info-value">{{ tenant.name }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Description</span>
+                    <span class="info-value">{{ tenant.description || '—' }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Object GUID</span>
+                    <span class="info-value guid-value">{{ tenant.objectGuid || '—' }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Card -->
+        <div class="info-card">
+            <h3 class="card-title">
+                <i class="fa-solid fa-toggle-on me-2"></i>
+                Status
+            </h3>
+            <div class="info-list">
+                <div class="info-item">
+                    <span class="info-label">Active</span>
+                    <span class="info-value">
+                        <span class="status-indicator" [class.active]="tenant.active">
+                            <i class="fa-solid" [ngClass]="tenant.active ? 'fa-check-circle' : 'fa-times-circle'"></i>
+                            {{ tenant.active ? 'Yes' : 'No' }}
+                        </span>
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Deleted</span>
+                    <span class="info-value">
+                        <span class="status-indicator" [class.deleted]="tenant.deleted">
+                            <i class="fa-solid" [ngClass]="tenant.deleted ? 'fa-check-circle' : 'fa-times-circle'"></i>
+                            {{ tenant.deleted ? 'Yes' : 'No' }}
+                        </span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Card -->
+        <div class="info-card stats-card">
+            <h3 class="card-title">
+                <i class="fa-solid fa-chart-bar me-2"></i>
+                Statistics
+            </h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-icon users-icon">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <div class="stat-details">
+                        <span class="stat-number">{{ (tenant.SecurityUsersCount$ | async) ?? '...' }}</span>
+                        <span class="stat-label">Users</span>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon orgs-icon">
+                        <i class="fa-solid fa-sitemap"></i>
+                    </div>
+                    <div class="stat-details">
+                        <span class="stat-number">{{ (tenant.SecurityOrganizationsCount$ | async) ?? '...' }}</span>
+                        <span class="stat-label">Organizations</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>

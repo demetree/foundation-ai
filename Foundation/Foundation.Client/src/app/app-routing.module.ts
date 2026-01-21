@@ -22,6 +22,8 @@ import { UserCustomListingComponent } from './components/user-custom/user-custom
 import { UserCustomDetailComponent } from './components/user-custom/user-custom-detail/user-custom-detail.component';
 import { ModuleCustomListingComponent } from './components/module-custom/module-custom-listing/module-custom-listing.component';
 import { ModuleCustomDetailComponent } from './components/module-custom/module-custom-detail/module-custom-detail.component';
+import { TenantCustomListingComponent } from './components/tenant-custom/tenant-custom-listing/tenant-custom-listing.component';
+import { TenantCustomDetailComponent } from './components/tenant-custom/tenant-custom-detail/tenant-custom-detail.component';
 
 
 //
@@ -170,6 +172,8 @@ const routes: Routes = [
   { path: 'user/:id', component: UserCustomDetailComponent, canActivate: [AuthGuard], title: 'User Detail' },
   { path: 'modules', component: ModuleCustomListingComponent, canActivate: [AuthGuard], title: 'Modules' },
   { path: 'module/:id', component: ModuleCustomDetailComponent, canActivate: [AuthGuard], title: 'Module Detail' },
+  { path: 'tenants', component: TenantCustomListingComponent, canActivate: [AuthGuard], title: 'Tenants' },
+  { path: 'tenant/:id', component: TenantCustomDetailComponent, canActivate: [AuthGuard], title: 'Tenant Detail' },
 
 
   //
