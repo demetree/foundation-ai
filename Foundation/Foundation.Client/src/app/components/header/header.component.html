@@ -16,21 +16,13 @@
 
 
     <!-- Profile dropdown (desktop/tablet) -->
-    <div *ngIf="isUserLoggedIn"
-         ngbDropdown
-         placement="bottom-end"
-         [autoClose]="'outside'"
-         #profileMenu="ngbDropdown"
-         class="ms-2 position-relative d-none d-md-block">
-      <button class="btn btn-dark d-flex align-items-center profile-btn"
-              id="profileDropdown"
-              ngbDropdownToggle>
+    <div *ngIf="isUserLoggedIn" ngbDropdown placement="bottom-end" [autoClose]="'outside'" #profileMenu="ngbDropdown"
+      class="ms-2 position-relative d-none d-md-block">
+      <button class="btn btn-dark d-flex align-items-center profile-btn" id="profileDropdown" ngbDropdownToggle>
         <span class="avatar me-2">{{ userInitials }}</span>
         <span class="d-md-inline">{{ currentUserFirstName }}</span>
       </button>
-      <div ngbDropdownMenu
-           class="dropdown-menu shadow-lg header-profile-menu"
-           aria-labelledby="profileDropdown">
+      <div ngbDropdownMenu class="dropdown-menu shadow-lg header-profile-menu" aria-labelledby="profileDropdown">
         <div class="menu-anim">
           <!-- Header -->
           <div class="px-3 py-2 border-bottom small">
@@ -54,27 +46,67 @@
 <!-- Mobile Menu Dropdown (Visible only on small screens) -->
 <div *ngIf="isMobileMenuOpen" class="mobile-menu bg-black text-white p-3 d-md-none">
   <div ngbAccordion class="custom-accordion">
-    
-    <div ngbAccordionItem [collapsed]="true" class="border-0">
+
+    <!-- Security Section -->
+    <div ngbAccordionItem [collapsed]="false" class="border-0">
       <h2 ngbAccordionHeader class="custom-accordion-header">
         <button ngbAccordionButton class="w-100 text-start bg-light text-dark border-0 py-2">
-          <i class="fa-solid fa-users"></i>&nbsp;Something One
+          <i class="fa-solid fa-shield-halved"></i>&nbsp;Security
         </button>
       </h2>
       <div ngbAccordionCollapse>
         <div ngbAccordionBody class="p-0">
           <ul class="nav flex-column custom-accordion-content bg-light text-dark">
-            <li class="nav-item"><a routerLink="/somewhere" class="nav-link text-grey" (click)="closeMobileMenu()">Something Two</a></li>
+            <li class="nav-item"><a routerLink="/securityusers" class="nav-link text-grey"
+                (click)="closeMobileMenu()"><i class="fa-solid fa-users me-2"></i>Users</a></li>
+            <li class="nav-item"><a routerLink="/securitytenants" class="nav-link text-grey"
+                (click)="closeMobileMenu()"><i class="fa-solid fa-building me-2"></i>Tenants</a></li>
+            <li class="nav-item"><a routerLink="/securityroles" class="nav-link text-grey"
+                (click)="closeMobileMenu()"><i class="fa-solid fa-user-shield me-2"></i>Roles</a></li>
+            <li class="nav-item"><a routerLink="/securitygroups" class="nav-link text-grey"
+                (click)="closeMobileMenu()"><i class="fa-solid fa-users-rectangle me-2"></i>Groups</a></li>
           </ul>
         </div>
       </div>
     </div>
 
+    <!-- Auditing Section -->
+    <div ngbAccordionItem [collapsed]="true" class="border-0">
+      <h2 ngbAccordionHeader class="custom-accordion-header">
+        <button ngbAccordionButton class="w-100 text-start bg-light text-dark border-0 py-2">
+          <i class="fa-solid fa-clipboard-list"></i>&nbsp;Auditing
+        </button>
+      </h2>
+      <div ngbAccordionCollapse>
+        <div ngbAccordionBody class="p-0">
+          <ul class="nav flex-column custom-accordion-content bg-light text-dark">
+            <li class="nav-item"><a routerLink="/auditevents" class="nav-link text-grey" (click)="closeMobileMenu()"><i
+                  class="fa-solid fa-clipboard-list me-2"></i>Audit Events</a></li>
+            <li class="nav-item"><a routerLink="/loginattempts" class="nav-link text-grey"
+                (click)="closeMobileMenu()"><i class="fa-solid fa-right-to-bracket me-2"></i>Login Attempts</a></li>
+            <li class="nav-item"><a routerLink="/auditsessions" class="nav-link text-grey"
+                (click)="closeMobileMenu()"><i class="fa-solid fa-clock-rotate-left me-2"></i>Sessions</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
 
-  
-
-
-
+    <!-- Configuration Section -->
+    <div ngbAccordionItem [collapsed]="true" class="border-0">
+      <h2 ngbAccordionHeader class="custom-accordion-header">
+        <button ngbAccordionButton class="w-100 text-start bg-light text-dark border-0 py-2">
+          <i class="fa-solid fa-sliders"></i>&nbsp;Configuration
+        </button>
+      </h2>
+      <div ngbAccordionCollapse>
+        <div ngbAccordionBody class="p-0">
+          <ul class="nav flex-column custom-accordion-content bg-light text-dark">
+            <li class="nav-item"><a routerLink="/systemsettings" class="nav-link text-grey"
+                (click)="closeMobileMenu()"><i class="fa-solid fa-sliders me-2"></i>System Settings</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
 
   </div>
 </div>

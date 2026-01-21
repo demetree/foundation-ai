@@ -1,36 +1,118 @@
 <!-- Sidebar (collapsible/overlay when expanded) -->
-<div *ngIf="isUserLoggedIn"
-     class="sidebar text-bg-dark no-select"
-     [class.expanded]="isExpanded"
-     [class.collapsed]="!isExpanded">
+<div *ngIf="isUserLoggedIn" class="sidebar text-bg-dark no-select" [class.expanded]="isExpanded"
+  [class.collapsed]="!isExpanded">
 
   <!-- Toggle button (tooltip only when collapsed) -->
-  <button class="toggle-btn"
-          type="button"
-          (click)="tToggle.close(); toggle()"
-          [attr.aria-expanded]="isExpanded"
-          [ngbTooltip]="!isExpanded ? 'Expand' : null"
-          triggers="hover"
-          #tToggle="ngbTooltip"
-          placement="right"
-          tooltipClass="sidebar-tip"
-          aria-label="Toggle sidebar">
+  <button class="toggle-btn" type="button" (click)="tToggle.close(); toggle()" [attr.aria-expanded]="isExpanded"
+    [ngbTooltip]="!isExpanded ? 'Expand' : null" triggers="hover" #tToggle="ngbTooltip" placement="right"
+    tooltipClass="sidebar-tip" aria-label="Toggle sidebar">
     <i class="fa" [ngClass]="{ 'fa-angle-right': !isExpanded, 'fa-angle-left': isExpanded }"></i>
   </button>
 
   <ul class="nav nav-pills flex-column">
+
     <!-- Overview -->
     <li class="nav-item">
-      <a routerLink="/"
-         routerLinkActive="active"
-         [routerLinkActiveOptions]="{ exact: true }"
-         class="nav-link text-white"
-         [ngbTooltip]="!isExpanded ? 'Overview' : null"
-         triggers="hover" #tOverview="ngbTooltip"
-         (click)="tOverview.close()"
-         placement="right" tooltipClass="sidebar-tip">
-        <i class="fa-solid fa-gear"></i>
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"
+        class="nav-link text-white" [ngbTooltip]="!isExpanded ? 'Overview' : null" triggers="hover"
+        #tOverview="ngbTooltip" (click)="tOverview.close()" placement="right" tooltipClass="sidebar-tip">
+        <i class="fa-solid fa-house"></i>
         <span class="label px-2">Overview</span>
+      </a>
+    </li>
+
+    <!-- Divider: Security Management -->
+    <li class="nav-item" *ngIf="isExpanded">
+      <hr class="dropdown-divider text-secondary my-2">
+    </li>
+
+    <!-- Users -->
+    <li class="nav-item">
+      <a routerLink="/securityusers" routerLinkActive="active" class="nav-link text-white"
+        [ngbTooltip]="!isExpanded ? 'Users' : null" triggers="hover" #tUsers="ngbTooltip" (click)="tUsers.close()"
+        placement="right" tooltipClass="sidebar-tip">
+        <i class="fa-solid fa-users"></i>
+        <span class="label px-2">Users</span>
+      </a>
+    </li>
+
+    <!-- Tenants -->
+    <li class="nav-item">
+      <a routerLink="/securitytenants" routerLinkActive="active" class="nav-link text-white"
+        [ngbTooltip]="!isExpanded ? 'Tenants' : null" triggers="hover" #tTenants="ngbTooltip" (click)="tTenants.close()"
+        placement="right" tooltipClass="sidebar-tip">
+        <i class="fa-solid fa-building"></i>
+        <span class="label px-2">Tenants</span>
+      </a>
+    </li>
+
+    <!-- Roles -->
+    <li class="nav-item">
+      <a routerLink="/securityroles" routerLinkActive="active" class="nav-link text-white"
+        [ngbTooltip]="!isExpanded ? 'Roles' : null" triggers="hover" #tRoles="ngbTooltip" (click)="tRoles.close()"
+        placement="right" tooltipClass="sidebar-tip">
+        <i class="fa-solid fa-user-shield"></i>
+        <span class="label px-2">Roles</span>
+      </a>
+    </li>
+
+    <!-- Groups -->
+    <li class="nav-item">
+      <a routerLink="/securitygroups" routerLinkActive="active" class="nav-link text-white"
+        [ngbTooltip]="!isExpanded ? 'Groups' : null" triggers="hover" #tGroups="ngbTooltip" (click)="tGroups.close()"
+        placement="right" tooltipClass="sidebar-tip">
+        <i class="fa-solid fa-users-rectangle"></i>
+        <span class="label px-2">Groups</span>
+      </a>
+    </li>
+
+    <!-- Divider: Auditing & Monitoring -->
+    <li class="nav-item" *ngIf="isExpanded">
+      <hr class="dropdown-divider text-secondary my-2">
+    </li>
+
+    <!-- Audit Events -->
+    <li class="nav-item">
+      <a routerLink="/auditevents" routerLinkActive="active" class="nav-link text-white"
+        [ngbTooltip]="!isExpanded ? 'Audit Events' : null" triggers="hover" #tAudit="ngbTooltip"
+        (click)="tAudit.close()" placement="right" tooltipClass="sidebar-tip">
+        <i class="fa-solid fa-clipboard-list"></i>
+        <span class="label px-2">Audit Events</span>
+      </a>
+    </li>
+
+    <!-- Login Attempts -->
+    <li class="nav-item">
+      <a routerLink="/loginattempts" routerLinkActive="active" class="nav-link text-white"
+        [ngbTooltip]="!isExpanded ? 'Login Attempts' : null" triggers="hover" #tLogins="ngbTooltip"
+        (click)="tLogins.close()" placement="right" tooltipClass="sidebar-tip">
+        <i class="fa-solid fa-right-to-bracket"></i>
+        <span class="label px-2">Login Attempts</span>
+      </a>
+    </li>
+
+    <!-- Sessions -->
+    <li class="nav-item">
+      <a routerLink="/auditsessions" routerLinkActive="active" class="nav-link text-white"
+        [ngbTooltip]="!isExpanded ? 'Sessions' : null" triggers="hover" #tSessions="ngbTooltip"
+        (click)="tSessions.close()" placement="right" tooltipClass="sidebar-tip">
+        <i class="fa-solid fa-clock-rotate-left"></i>
+        <span class="label px-2">Sessions</span>
+      </a>
+    </li>
+
+    <!-- Divider: Configuration -->
+    <li class="nav-item" *ngIf="isExpanded">
+      <hr class="dropdown-divider text-secondary my-2">
+    </li>
+
+    <!-- System Settings -->
+    <li class="nav-item">
+      <a routerLink="/systemsettings" routerLinkActive="active" class="nav-link text-white"
+        [ngbTooltip]="!isExpanded ? 'System Settings' : null" triggers="hover" #tSettings="ngbTooltip"
+        (click)="tSettings.close()" placement="right" tooltipClass="sidebar-tip">
+        <i class="fa-solid fa-sliders"></i>
+        <span class="label px-2">System Settings</span>
       </a>
     </li>
 
