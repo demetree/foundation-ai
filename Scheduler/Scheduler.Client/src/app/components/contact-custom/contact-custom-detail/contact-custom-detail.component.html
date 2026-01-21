@@ -41,7 +41,7 @@
             <ng-template #versionTooltip>
               <div class="text-start">
                 <div class="small">Last modified by:</div>
-                <div class="fw-bold">{{ (currentVersionInfo$ | async)?.userName || 'Loading...' }}</div>
+                <div class="fw-bold">{{ (currentVersionInfo$ | async)?.user?.userName || 'Loading...' }}</div>
                 <div class="small text-muted mt-1">Click for full history</div>
               </div>
             </ng-template>

@@ -93,10 +93,17 @@ export class EventResourceAssignmentSubmitData {
 // Version history information returned from version history API endpoints.
 // Matches server-side VersionInformation<T> structure.
 //
+export interface VersionInformationUser {
+    id: bigint | number;
+    userName: string;
+    firstName: string | null;
+    middleName: string | null;
+    lastName: string | null;
+}
+
 export interface VersionInformation<T> {
     timeStamp: string;           // ISO 8601
-    userId: bigint | number;
-    userName: string;
+    user: VersionInformationUser;
     versionNumber: number;
     data: T | null;
 }
@@ -960,6 +967,23 @@ export class EventResourceAssignmentService extends SecureEndpointBase {
     });
 
 
+
+
+    //
+    // Version history metadata cache and observable
+    //
+    (revived as any)._currentVersionInfo = null;
+    (revived as any)._currentVersionInfoPromise = null;
+    (revived as any)._currentVersionInfoSubject = new BehaviorSubject<VersionInformation<EventResourceAssignmentData> | null>(null);
+
+    (revived as any).CurrentVersionInfo$ = (revived as any)._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if ((revived as any)._currentVersionInfo === null && (revived as any)._currentVersionInfoPromise === null) {
+                (revived as any).loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
 
 
     return revived;

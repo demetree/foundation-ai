@@ -318,14 +318,14 @@
             <dl class="row mb-0 small">
               <dt class="col-sm-4 text-muted">Last Modified</dt>
               <dd class="col-sm-8">{{ versionInfo.timeStamp | date:'medium' }}</dd>
-              
+
               <dt class="col-sm-4 text-muted">Modified By</dt>
               <dd class="col-sm-8">
                 <span class="badge bg-secondary">
-                  <i class="fa-solid fa-user me-1"></i>{{ versionInfo.userName }}
+                  <i class="fa-solid fa-user me-1"></i>{{ versionInfo.user.userName }}
                 </span>
               </dd>
-              
+
               <dt class="col-sm-4 text-muted">Total Versions</dt>
               <dd class="col-sm-8">{{ contact.versionNumber }}</dd>
             </dl>
