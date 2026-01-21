@@ -1,3 +1,21 @@
+/*
+   GENERATED FORM FOR THE AUDITMODULEENTITY TABLE - DO NOT MODIFY DIRECTLY
+   =================================================================================
+
+   This is the default form generated from AuditModuleEntity table metadata.
+
+   It is useful for low usage worksflows such as basic configuration, but is likely not good enough for primary workflow usage
+   because it's form layout and validation is too simple.
+   
+   For building better looking and/or versions with custom logic, create a custom version of this:
+
+   1. Copy this component
+   2. Rename to audit-module-entity-custom (or similar)
+   3. Modify layout, grouping, field types, add workflow logic
+   
+   This generated version is kept simple on purpose so it's easy to use as a reference/scaffold.
+
+*/
 import { Component, ViewChild, Output, Input, TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
@@ -8,6 +26,20 @@ import { AuditModuleEntityService, AuditModuleEntityData, AuditModuleEntitySubmi
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
 import { AuditModuleService } from '../../../auditor-data-services/audit-module.service';
 import { AuthService } from '../../../services/auth.service';
+
+//
+// Define a type for the form values to improve readability and type safety.
+// This mirrors the structure of the FormGroup controls, with considerations for form input types:
+// - Numeric fields like latitude are strings in the form (due to input type="number" behavior).
+// - Allows null for optional fields.
+// - Does not include navigation properties or methods from domain models.
+//
+interface AuditModuleEntityFormValues {
+  auditModuleId: number | bigint,       // For FK link number
+  name: string,
+  comments: string | null,
+  firstAccess: string | null,
+};
 
 @Component({
   selector: 'app-audit-module-entity-add-edit',
@@ -21,7 +53,22 @@ export class AuditModuleEntityAddEditComponent {
   @Input() navigateToDetailsAfterAdd: boolean = true;
   @Input() showAddButton: boolean = true;
 
-  auditModuleEntityForm: FormGroup = this.fb.group({
+
+  //
+  // Input for pre-seeded data in add mode. This allows the parent component to provide
+  // initial values for one or more fields. Use Partial to allow selective seeding.
+  // Only applied in add mode (not edit mode, where existing data takes precedence).
+  //
+  @Input() preSeededData: Partial<AuditModuleEntityFormValues> | null = null;
+
+  //
+  // Input for fields to hide. This is an array of field names (e.g., ['name', 'description']).
+  // Hiding a field will remove its form group from the template and disable its validator.
+  //
+  @Input() hiddenFields: string[] = [];
+
+
+  public auditModuleEntityForm: FormGroup = this.fb.group({
         auditModuleId: [null, Validators.required],
         name: ['', Validators.required],
         comments: [''],
@@ -80,6 +127,32 @@ export class AuditModuleEntityAddEditComponent {
       this.isEditMode = false;
 
       this.buildFormValues(null);
+
+      //
+      // Apply pre-seeded data if provided and we are in add mode.
+      // This patches the form with partial values.
+      // Check explicitly for null/undefined to avoid errors.
+      //
+      if (this.preSeededData !== null && this.preSeededData !== undefined) {
+        this.auditModuleEntityForm.patchValue(this.preSeededData);
+      }
+
+    }
+
+
+    //
+    // Disable validators for hidden fields to prevent form invalidation.
+    // This prevents requiring values for hidden fields.
+    //
+    let index: number;
+
+    for (index = 0; index < this.hiddenFields.length; index++) {
+      const fieldName = this.hiddenFields[index];
+      const control = this.auditModuleEntityForm.get(fieldName);
+      if (control !== null) {
+        control.clearValidators();
+        control.updateValueAndValidity(); // Refresh validation state.
+      }
     }
 
     this.modalRef = this.modalService.open(this.auditModuleEntityModal, {
@@ -283,6 +356,20 @@ export class AuditModuleEntityAddEditComponent {
     this.auditModuleEntityForm.markAsPristine();
     this.auditModuleEntityForm.markAsUntouched();
   }
+
+  //
+  // Helper method to determine if a field should be hidden based on the hiddenFields input.
+  // Returns true if the field is in the array, false otherwise.
+  //
+  public isFieldHidden(fieldName: string): boolean {
+    // Explicit check for array existence to avoid runtime errors.
+    if (this.hiddenFields === null || this.hiddenFields === undefined) {
+      return false;
+    }
+    // Use traditional includes method for clarity.
+    return this.hiddenFields.includes(fieldName);
+  }
+
 
   public userIsAuditorAuditModuleEntityReader(): boolean {
     return this.auditModuleEntityService.userIsAuditorAuditModuleEntityReader();

@@ -21,9 +21,9 @@
    </div>
    <div class="modal-body audit-event-error-message-modal-body">
       <form [formGroup]="auditEventErrorMessageForm" (ngSubmit)="submitForm()">
-            <div class="form-group">
-                <label for="auditEventId" id="label-auditEventId"><span class="text-danger">*</span>Audit Event</label>
-                <select id="auditEventId" formControlName="auditEventId" class="form-select audit-event-error-message-select" [disabled]="!userIsAuditorAuditEventErrorMessageWriter()">
+            <div class="form-group" *ngIf="!isFieldHidden('auditEventId')">
+                <label for="AuditEventErrorMessage-auditEventId" id="label-AuditEventErrorMessage-auditEventId"><span class="text-danger">*</span>Audit Event</label>
+                <select id="AuditEventErrorMessage-auditEventId" formControlName="auditEventId" class="form-select audit-event-error-message-select" [disabled]="!userIsAuditorAuditEventErrorMessageWriter()">
                     <option [ngValue]="null">Select Audit Event</option>
                     <option *ngFor="let auditEvent of auditEvents$ | async" [ngValue]="auditEvent.id">{{[auditEvent.message] | filterAndJoin}}</option>
                 </select>
@@ -31,16 +31,25 @@
                     Audit Event is required
                 </div>
             </div>
-            <div class="form-group">
-                <label for="errorMessage" id="label-errorMessage"><span class="text-danger">*</span>Error Message</label>
-                <textarea id="errorMessage" formControlName="errorMessage" placeholder="Enter Error Message" class="form-control audit-event-error-message-input" [disabled]="!userIsAuditorAuditEventErrorMessageWriter()"></textarea>
+            <div class="form-group" *ngIf="!isFieldHidden('errorMessage')">
+                <label for="AuditEventErrorMessage-errorMessage" id="label-AuditEventErrorMessage-errorMessage"><span class="text-danger">*</span>Error Message</label>
+                <textarea id="AuditEventErrorMessage-errorMessage" formControlName="errorMessage" placeholder="Enter Error Message" class="form-control audit-event-error-message-input" [disabled]="!userIsAuditorAuditEventErrorMessageWriter()"></textarea>
                 <div *ngIf="auditEventErrorMessageForm.get('errorMessage')?.invalid && auditEventErrorMessageForm.get('errorMessage')?.touched" class="text-danger">
                     Error Message is required
                 </div>
             </div>
          <div class="modal-footer audit-event-error-message-modal-footer">
             <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Audit Event Error Message changes and Close">Cancel</button>
-            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !auditEventErrorMessageForm.valid || auditEventErrorMessageForm.pristine || !userIsAuditorAuditEventErrorMessageWriter()" ngbTooltip="Save the Audit Event Error Message changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !auditEventErrorMessageForm.valid || auditEventErrorMessageForm.pristine  || userIsAuditorAuditEventErrorMessageWriter() == false " ngbTooltip="Save the Audit Event Error Message changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Audit Event Error Message' }}
+                </span>
+            </button>
          </div>
       </form>
    </div>

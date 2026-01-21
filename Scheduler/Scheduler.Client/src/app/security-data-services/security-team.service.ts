@@ -1,6 +1,16 @@
+/*
+
+   GENERATED SERVICE FOR THE SECURITYTEAM TABLE - DO NOT MODIFY DIRECTLY
+   =======================================================================================
+   This is the default data interaction service for the SecurityTeam table.
+
+   It should suffice for many workflows and data access needs, but if anything more is needed, then extend this in a 
+   custom version or add an additional targeted helper service.
+
+*/
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
-import { Observable, BehaviorSubject, catchError, throwError, lastValueFrom, map  } from 'rxjs';
+import { Observable, BehaviorSubject, catchError, throwError, lastValueFrom, map } from 'rxjs';
 import { shareReplay, tap } from 'rxjs/operators';
 import { UtilityService } from '../utility-services/utility.service'
 import { AlertService } from '../services/alert.service';
@@ -105,10 +115,12 @@ export class SecurityTeamData {
     private _securityUsersPromise: Promise<SecurityUserData[]> | null  = null;
     private _securityUsersSubject = new BehaviorSubject<SecurityUserData[] | null>(null);
 
+                
     private _securityTeamUsers: SecurityTeamUserData[] | null = null;
     private _securityTeamUsersPromise: Promise<SecurityTeamUserData[]> | null  = null;
     private _securityTeamUsersSubject = new BehaviorSubject<SecurityTeamUserData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -189,7 +201,9 @@ export class SecurityTeamData {
 
 
   private clearAllLazyCaches(): void {
+     //
      // Reset every collection cache and notify subscribers
+     //
      this._securityUsers = null;
      this._securityUsersPromise = null;
      this._securityUsersSubject.next(null);
@@ -213,9 +227,9 @@ export class SecurityTeamData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.securityTeam.SecurityUsers.then(securityUsers => { ... })
+     *   this.securityTeam.SecurityUsers.then(securityTeams => { ... })
      *   or
-     *   await this.securityTeam.SecurityUsers
+     *   await this.securityTeam.securityTeams
      *
     */
     public get SecurityUsers(): Promise<SecurityUserData[]> {
@@ -240,8 +254,8 @@ export class SecurityTeamData {
         this._securityUsersPromise = lastValueFrom(
             SecurityTeamService.Instance.GetSecurityUsersForSecurityTeam(this.id)
         )
-        .then(securityUsers => {
-            this._securityUsers = securityUsers ?? [];
+        .then(SecurityUsers => {
+            this._securityUsers = SecurityUsers ?? [];
             this._securityUsersSubject.next(this._securityUsers);
             return this._securityUsers;
          })
@@ -256,7 +270,7 @@ export class SecurityTeamData {
     }
 
     /**
-     * Clears the cached crew members. Call after mutations to force refresh.
+     * Clears the cached SecurityUser. Call after mutations to force refresh.
      */
     public ClearSecurityUsersCache(): void {
         this._securityUsers = null;
@@ -278,9 +292,9 @@ export class SecurityTeamData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.securityTeam.SecurityTeamUsers.then(securityTeamUsers => { ... })
+     *   this.securityTeam.SecurityTeamUsers.then(securityTeams => { ... })
      *   or
-     *   await this.securityTeam.SecurityTeamUsers
+     *   await this.securityTeam.securityTeams
      *
     */
     public get SecurityTeamUsers(): Promise<SecurityTeamUserData[]> {
@@ -305,8 +319,8 @@ export class SecurityTeamData {
         this._securityTeamUsersPromise = lastValueFrom(
             SecurityTeamService.Instance.GetSecurityTeamUsersForSecurityTeam(this.id)
         )
-        .then(securityTeamUsers => {
-            this._securityTeamUsers = securityTeamUsers ?? [];
+        .then(SecurityTeamUsers => {
+            this._securityTeamUsers = SecurityTeamUsers ?? [];
             this._securityTeamUsersSubject.next(this._securityTeamUsers);
             return this._securityTeamUsers;
          })
@@ -321,7 +335,7 @@ export class SecurityTeamData {
     }
 
     /**
-     * Clears the cached crew members. Call after mutations to force refresh.
+     * Clears the cached SecurityTeamUser. Call after mutations to force refresh.
      */
     public ClearSecurityTeamUsersCache(): void {
         this._securityTeamUsers = null;

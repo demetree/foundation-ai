@@ -1,6 +1,16 @@
+/*
+
+   GENERATED SERVICE FOR THE SECURITYGROUP TABLE - DO NOT MODIFY DIRECTLY
+   =======================================================================================
+   This is the default data interaction service for the SecurityGroup table.
+
+   It should suffice for many workflows and data access needs, but if anything more is needed, then extend this in a 
+   custom version or add an additional targeted helper service.
+
+*/
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
-import { Observable, BehaviorSubject, catchError, throwError, lastValueFrom, map  } from 'rxjs';
+import { Observable, BehaviorSubject, catchError, throwError, lastValueFrom, map } from 'rxjs';
 import { shareReplay, tap } from 'rxjs/operators';
 import { UtilityService } from '../utility-services/utility.service'
 import { AlertService } from '../services/alert.service';
@@ -98,10 +108,12 @@ export class SecurityGroupData {
     private _securityUserSecurityGroupsPromise: Promise<SecurityUserSecurityGroupData[]> | null  = null;
     private _securityUserSecurityGroupsSubject = new BehaviorSubject<SecurityUserSecurityGroupData[] | null>(null);
 
+                
     private _securityGroupSecurityRoles: SecurityGroupSecurityRoleData[] | null = null;
     private _securityGroupSecurityRolesPromise: Promise<SecurityGroupSecurityRoleData[]> | null  = null;
     private _securityGroupSecurityRolesSubject = new BehaviorSubject<SecurityGroupSecurityRoleData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -182,7 +194,9 @@ export class SecurityGroupData {
 
 
   private clearAllLazyCaches(): void {
+     //
      // Reset every collection cache and notify subscribers
+     //
      this._securityUserSecurityGroups = null;
      this._securityUserSecurityGroupsPromise = null;
      this._securityUserSecurityGroupsSubject.next(null);
@@ -206,9 +220,9 @@ export class SecurityGroupData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.securityGroup.SecurityUserSecurityGroups.then(securityUserSecurityGroups => { ... })
+     *   this.securityGroup.SecurityUserSecurityGroups.then(securityGroups => { ... })
      *   or
-     *   await this.securityGroup.SecurityUserSecurityGroups
+     *   await this.securityGroup.securityGroups
      *
     */
     public get SecurityUserSecurityGroups(): Promise<SecurityUserSecurityGroupData[]> {
@@ -233,8 +247,8 @@ export class SecurityGroupData {
         this._securityUserSecurityGroupsPromise = lastValueFrom(
             SecurityGroupService.Instance.GetSecurityUserSecurityGroupsForSecurityGroup(this.id)
         )
-        .then(securityUserSecurityGroups => {
-            this._securityUserSecurityGroups = securityUserSecurityGroups ?? [];
+        .then(SecurityUserSecurityGroups => {
+            this._securityUserSecurityGroups = SecurityUserSecurityGroups ?? [];
             this._securityUserSecurityGroupsSubject.next(this._securityUserSecurityGroups);
             return this._securityUserSecurityGroups;
          })
@@ -249,7 +263,7 @@ export class SecurityGroupData {
     }
 
     /**
-     * Clears the cached crew members. Call after mutations to force refresh.
+     * Clears the cached SecurityUserSecurityGroup. Call after mutations to force refresh.
      */
     public ClearSecurityUserSecurityGroupsCache(): void {
         this._securityUserSecurityGroups = null;
@@ -271,9 +285,9 @@ export class SecurityGroupData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.securityGroup.SecurityGroupSecurityRoles.then(securityGroupSecurityRoles => { ... })
+     *   this.securityGroup.SecurityGroupSecurityRoles.then(securityGroups => { ... })
      *   or
-     *   await this.securityGroup.SecurityGroupSecurityRoles
+     *   await this.securityGroup.securityGroups
      *
     */
     public get SecurityGroupSecurityRoles(): Promise<SecurityGroupSecurityRoleData[]> {
@@ -298,8 +312,8 @@ export class SecurityGroupData {
         this._securityGroupSecurityRolesPromise = lastValueFrom(
             SecurityGroupService.Instance.GetSecurityGroupSecurityRolesForSecurityGroup(this.id)
         )
-        .then(securityGroupSecurityRoles => {
-            this._securityGroupSecurityRoles = securityGroupSecurityRoles ?? [];
+        .then(SecurityGroupSecurityRoles => {
+            this._securityGroupSecurityRoles = SecurityGroupSecurityRoles ?? [];
             this._securityGroupSecurityRolesSubject.next(this._securityGroupSecurityRoles);
             return this._securityGroupSecurityRoles;
          })
@@ -314,7 +328,7 @@ export class SecurityGroupData {
     }
 
     /**
-     * Clears the cached crew members. Call after mutations to force refresh.
+     * Clears the cached SecurityGroupSecurityRole. Call after mutations to force refresh.
      */
     public ClearSecurityGroupSecurityRolesCache(): void {
         this._securityGroupSecurityRoles = null;

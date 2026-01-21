@@ -21,9 +21,9 @@
    </div>
    <div class="modal-body entity-data-token-modal-body">
       <form [formGroup]="entityDataTokenForm" (ngSubmit)="submitForm()">
-            <div class="form-group">
-                <label for="securityUserId" id="label-securityUserId"><span class="text-danger">*</span>Security User</label>
-                <select id="securityUserId" formControlName="securityUserId" class="form-select entity-data-token-select" [disabled]="!userIsSecurityEntityDataTokenWriter()">
+            <div class="form-group" *ngIf="!isFieldHidden('securityUserId')">
+                <label for="EntityDataToken-securityUserId" id="label-EntityDataToken-securityUserId"><span class="text-danger">*</span>Security User</label>
+                <select id="EntityDataToken-securityUserId" formControlName="securityUserId" class="form-select entity-data-token-select" [disabled]="!userIsSecurityEntityDataTokenWriter()">
                     <option [ngValue]="null">Select Security User</option>
                     <option *ngFor="let securityUser of securityUsers$ | async" [ngValue]="securityUser.id">{{[securityUser.accountName] | filterAndJoin}}</option>
                 </select>
@@ -31,9 +31,9 @@
                     Security User is required
                 </div>
             </div>
-            <div class="form-group">
-                <label for="moduleId" id="label-moduleId"><span class="text-danger">*</span>Module</label>
-                <select id="moduleId" formControlName="moduleId" class="form-select entity-data-token-select" [disabled]="!userIsSecurityEntityDataTokenWriter()">
+            <div class="form-group" *ngIf="!isFieldHidden('moduleId')">
+                <label for="EntityDataToken-moduleId" id="label-EntityDataToken-moduleId"><span class="text-danger">*</span>Module</label>
+                <select id="EntityDataToken-moduleId" formControlName="moduleId" class="form-select entity-data-token-select" [disabled]="!userIsSecurityEntityDataTokenWriter()">
                     <option [ngValue]="null">Select Module</option>
                     <option *ngFor="let module of modules$ | async" [ngValue]="module.id">{{module.name}}</option>
                 </select>
@@ -41,56 +41,65 @@
                     Module is required
                 </div>
             </div>
-            <div class="form-group">
-                <label for="entity" id="label-entity"><span class="text-danger">*</span>Entity</label>
-                <input type="text" id="entity" formControlName="entity" placeholder="Enter Entity" class="form-control entity-data-token-input" [disabled]="!userIsSecurityEntityDataTokenWriter()" aria-labelledby="label-entity" />
+            <div class="form-group" *ngIf="!isFieldHidden('entity')">
+                <label for="EntityDataToken-entity" id="label-EntityDataToken-entity"><span class="text-danger">*</span>Entity</label>
+                <input type="text" id="EntityDataToken-entity" formControlName="entity" placeholder="Enter Entity" class="form-control entity-data-token-input" [disabled]="!userIsSecurityEntityDataTokenWriter()" aria-labelledby="label-entity" />
                 <div *ngIf="entityDataTokenForm.get('entity')?.invalid && entityDataTokenForm.get('entity')?.touched" class="text-danger">
                     Entity is required
                 </div>
             </div>
-            <div class="form-group">
-                <label for="sessionId" id="label-sessionId"><span class="text-danger">*</span>Session Id</label>
-                <input type="text" id="sessionId" formControlName="sessionId" placeholder="Enter Session Id" class="form-control entity-data-token-input" [disabled]="!userIsSecurityEntityDataTokenWriter()" aria-labelledby="label-sessionId" />
+            <div class="form-group" *ngIf="!isFieldHidden('sessionId')">
+                <label for="EntityDataToken-sessionId" id="label-EntityDataToken-sessionId"><span class="text-danger">*</span>Session Id</label>
+                <input type="text" id="EntityDataToken-sessionId" formControlName="sessionId" placeholder="Enter Session Id" class="form-control entity-data-token-input" [disabled]="!userIsSecurityEntityDataTokenWriter()" aria-labelledby="label-sessionId" />
                 <div *ngIf="entityDataTokenForm.get('sessionId')?.invalid && entityDataTokenForm.get('sessionId')?.touched" class="text-danger">
                     Session Id is required
                 </div>
             </div>
-            <div class="form-group">
-                <label for="authenticationToken" id="label-authenticationToken"><span class="text-danger">*</span>Authentication Token</label>
-                <input type="text" id="authenticationToken" formControlName="authenticationToken" placeholder="Enter Authentication Token" class="form-control entity-data-token-input" [disabled]="!userIsSecurityEntityDataTokenWriter()" aria-labelledby="label-authenticationToken" />
+            <div class="form-group" *ngIf="!isFieldHidden('authenticationToken')">
+                <label for="EntityDataToken-authenticationToken" id="label-EntityDataToken-authenticationToken"><span class="text-danger">*</span>Authentication Token</label>
+                <input type="text" id="EntityDataToken-authenticationToken" formControlName="authenticationToken" placeholder="Enter Authentication Token" class="form-control entity-data-token-input" [disabled]="!userIsSecurityEntityDataTokenWriter()" aria-labelledby="label-authenticationToken" />
                 <div *ngIf="entityDataTokenForm.get('authenticationToken')?.invalid && entityDataTokenForm.get('authenticationToken')?.touched" class="text-danger">
                     Authentication Token is required
                 </div>
             </div>
-            <div class="form-group">
-                <label for="token" id="label-token"><span class="text-danger">*</span>Token</label>
-                <input type="text" id="token" formControlName="token" placeholder="Enter Token" class="form-control entity-data-token-input" [disabled]="!userIsSecurityEntityDataTokenWriter()" aria-labelledby="label-token" />
+            <div class="form-group" *ngIf="!isFieldHidden('token')">
+                <label for="EntityDataToken-token" id="label-EntityDataToken-token"><span class="text-danger">*</span>Token</label>
+                <input type="text" id="EntityDataToken-token" formControlName="token" placeholder="Enter Token" class="form-control entity-data-token-input" [disabled]="!userIsSecurityEntityDataTokenWriter()" aria-labelledby="label-token" />
                 <div *ngIf="entityDataTokenForm.get('token')?.invalid && entityDataTokenForm.get('token')?.touched" class="text-danger">
                     Token is required
                 </div>
             </div>
-            <div class="form-group">
-                <label for="timeStamp" id="label-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
-                <input type="datetime-local" id="timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control entity-data-token-input" [disabled]="!userIsSecurityEntityDataTokenWriter()" aria-labelledby="label-timeStamp" />
+            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                <label for="EntityDataToken-timeStamp" id="label-EntityDataToken-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                <input type="datetime-local" id="EntityDataToken-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control entity-data-token-input" [disabled]="!userIsSecurityEntityDataTokenWriter()" aria-labelledby="label-timeStamp" />
                 <div *ngIf="entityDataTokenForm.get('timeStamp')?.invalid && entityDataTokenForm.get('timeStamp')?.touched" class="text-danger">
                     Time Stamp is required
                 </div>
             </div>
-            <div class="form-group">
-                <label for="comments" id="label-comments">Comments</label>
-                <textarea id="comments" formControlName="comments" placeholder="Enter Comments" class="form-control entity-data-token-input" [disabled]="!userIsSecurityEntityDataTokenWriter()"></textarea>
+            <div class="form-group" *ngIf="!isFieldHidden('comments')">
+                <label for="EntityDataToken-comments" id="label-EntityDataToken-comments">Comments</label>
+                <textarea id="EntityDataToken-comments" formControlName="comments" placeholder="Enter Comments" class="form-control entity-data-token-input" [disabled]="!userIsSecurityEntityDataTokenWriter()"></textarea>
             </div>
-            <div class="form-check my-2" *ngIf="isEditMode">
-                <input type="checkbox" id="active" formControlName="active" class="form-check-input" [disabled]="!userIsSecurityEntityDataTokenWriter()" />
-                <label for="active" class="form-check-label" id="label-active"><span class="text-danger">*</span>Active</label>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="EntityDataToken-active" formControlName="active" class="form-check-input" [disabled]="!userIsSecurityEntityDataTokenWriter()" />
+                <label for="EntityDataToken-active" class="form-check-label" id="label-EntityDataToken-active"><span class="text-danger">*</span>Active</label>
             </div>
-            <div class="form-check my-2" *ngIf="isEditMode">
-                <input type="checkbox" id="deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSecurityEntityDataTokenWriter()" />
-                <label for="deleted" class="form-check-label" id="label-deleted"><span class="text-danger">*</span>Deleted</label>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="EntityDataToken-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSecurityEntityDataTokenWriter()" />
+                <label for="EntityDataToken-deleted" class="form-check-label" id="label-EntityDataToken-deleted"><span class="text-danger">*</span>Deleted</label>
             </div>
          <div class="modal-footer entity-data-token-modal-footer">
             <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Entity Data Token changes and Close">Cancel</button>
-            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !entityDataTokenForm.valid || entityDataTokenForm.pristine || !userIsSecurityEntityDataTokenWriter()" ngbTooltip="Save the Entity Data Token changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !entityDataTokenForm.valid || entityDataTokenForm.pristine  || userIsSecurityEntityDataTokenWriter() == false " ngbTooltip="Save the Entity Data Token changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Entity Data Token' }}
+                </span>
+            </button>
          </div>
       </form>
    </div>

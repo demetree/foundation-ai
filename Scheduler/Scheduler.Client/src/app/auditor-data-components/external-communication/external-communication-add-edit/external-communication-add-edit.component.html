@@ -21,44 +21,53 @@
    </div>
    <div class="modal-body external-communication-modal-body">
       <form [formGroup]="externalCommunicationForm" (ngSubmit)="submitForm()">
-            <div class="form-group">
-                <label for="timeStamp" id="label-timeStamp">Time Stamp</label>
-                <input type="datetime-local" id="timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control external-communication-input" [disabled]="!userIsAuditorExternalCommunicationWriter()" aria-labelledby="label-timeStamp" />
+            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                <label for="ExternalCommunication-timeStamp" id="label-ExternalCommunication-timeStamp">Time Stamp</label>
+                <input type="datetime-local" id="ExternalCommunication-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control external-communication-input" [disabled]="!userIsAuditorExternalCommunicationWriter()" aria-labelledby="label-timeStamp" />
             </div>
-            <div class="form-group">
-                <label for="auditUserId" id="label-auditUserId">Audit User</label>
-                <select id="auditUserId" formControlName="auditUserId" class="form-select external-communication-select" [disabled]="!userIsAuditorExternalCommunicationWriter()">
+            <div class="form-group" *ngIf="!isFieldHidden('auditUserId')">
+                <label for="ExternalCommunication-auditUserId" id="label-ExternalCommunication-auditUserId">Audit User</label>
+                <select id="ExternalCommunication-auditUserId" formControlName="auditUserId" class="form-select external-communication-select" [disabled]="!userIsAuditorExternalCommunicationWriter()">
                     <option [ngValue]="null">Select Audit User</option>
                     <option *ngFor="let auditUser of auditUsers$ | async" [ngValue]="auditUser.id">{{auditUser.name}}</option>
                 </select>
             </div>
-            <div class="form-group">
-                <label for="communicationType" id="label-communicationType">Communication Type</label>
-                <input type="text" id="communicationType" formControlName="communicationType" placeholder="Enter Communication Type" class="form-control external-communication-input" [disabled]="!userIsAuditorExternalCommunicationWriter()" aria-labelledby="label-communicationType" />
+            <div class="form-group" *ngIf="!isFieldHidden('communicationType')">
+                <label for="ExternalCommunication-communicationType" id="label-ExternalCommunication-communicationType">Communication Type</label>
+                <input type="text" id="ExternalCommunication-communicationType" formControlName="communicationType" placeholder="Enter Communication Type" class="form-control external-communication-input" [disabled]="!userIsAuditorExternalCommunicationWriter()" aria-labelledby="label-communicationType" />
             </div>
-            <div class="form-group">
-                <label for="subject" id="label-subject">Subject</label>
-                <textarea id="subject" formControlName="subject" placeholder="Enter Subject" class="form-control external-communication-input" [disabled]="!userIsAuditorExternalCommunicationWriter()"></textarea>
+            <div class="form-group" *ngIf="!isFieldHidden('subject')">
+                <label for="ExternalCommunication-subject" id="label-ExternalCommunication-subject">Subject</label>
+                <textarea id="ExternalCommunication-subject" formControlName="subject" placeholder="Enter Subject" class="form-control external-communication-input" [disabled]="!userIsAuditorExternalCommunicationWriter()"></textarea>
             </div>
-            <div class="form-group">
-                <label for="message" id="label-message">Message</label>
-                <textarea id="message" formControlName="message" placeholder="Enter Message" class="form-control external-communication-input" [disabled]="!userIsAuditorExternalCommunicationWriter()"></textarea>
+            <div class="form-group" *ngIf="!isFieldHidden('message')">
+                <label for="ExternalCommunication-message" id="label-ExternalCommunication-message">Message</label>
+                <textarea id="ExternalCommunication-message" formControlName="message" placeholder="Enter Message" class="form-control external-communication-input" [disabled]="!userIsAuditorExternalCommunicationWriter()"></textarea>
             </div>
-            <div class="form-check my-2">
-                <input type="checkbox" id="completedSuccessfully" formControlName="completedSuccessfully" class="form-check-input" [disabled]="!userIsAuditorExternalCommunicationWriter()" />
-                <label for="completedSuccessfully" class="form-check-label" id="label-completedSuccessfully"><span class="text-danger">*</span>Completed Successfully</label>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('completedSuccessfully')">
+                <input type="checkbox" id="ExternalCommunication-completedSuccessfully" formControlName="completedSuccessfully" class="form-check-input" [disabled]="!userIsAuditorExternalCommunicationWriter()" />
+                <label for="ExternalCommunication-completedSuccessfully" class="form-check-label" id="label-ExternalCommunication-completedSuccessfully"><span class="text-danger">*</span>Completed Successfully</label>
             </div>
-            <div class="form-group">
-                <label for="responseMessage" id="label-responseMessage">Response Message</label>
-                <textarea id="responseMessage" formControlName="responseMessage" placeholder="Enter Response Message" class="form-control external-communication-input" [disabled]="!userIsAuditorExternalCommunicationWriter()"></textarea>
+            <div class="form-group" *ngIf="!isFieldHidden('responseMessage')">
+                <label for="ExternalCommunication-responseMessage" id="label-ExternalCommunication-responseMessage">Response Message</label>
+                <textarea id="ExternalCommunication-responseMessage" formControlName="responseMessage" placeholder="Enter Response Message" class="form-control external-communication-input" [disabled]="!userIsAuditorExternalCommunicationWriter()"></textarea>
             </div>
-            <div class="form-group">
-                <label for="exceptionText" id="label-exceptionText">Exception Text</label>
-                <textarea id="exceptionText" formControlName="exceptionText" placeholder="Enter Exception Text" class="form-control external-communication-input" [disabled]="!userIsAuditorExternalCommunicationWriter()"></textarea>
+            <div class="form-group" *ngIf="!isFieldHidden('exceptionText')">
+                <label for="ExternalCommunication-exceptionText" id="label-ExternalCommunication-exceptionText">Exception Text</label>
+                <textarea id="ExternalCommunication-exceptionText" formControlName="exceptionText" placeholder="Enter Exception Text" class="form-control external-communication-input" [disabled]="!userIsAuditorExternalCommunicationWriter()"></textarea>
             </div>
          <div class="modal-footer external-communication-modal-footer">
             <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the External Communication changes and Close">Cancel</button>
-            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !externalCommunicationForm.valid || externalCommunicationForm.pristine || !userIsAuditorExternalCommunicationWriter()" ngbTooltip="Save the External Communication changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !externalCommunicationForm.valid || externalCommunicationForm.pristine  || userIsAuditorExternalCommunicationWriter() == false " ngbTooltip="Save the External Communication changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add External Communication' }}
+                </span>
+            </button>
          </div>
       </form>
    </div>

@@ -17,9 +17,9 @@
                 <div class="col m-2 security-role-details-body">
                     <div *showSpinner="isLoading$ | async">
                         <form [class.hidden]="isLoading$ | async" [formGroup]="securityRoleForm" (ngSubmit)="submitForm()" class="security-role-details-form">
-                            <div class="form-group">
-                                <label for="privilegeId" id="label-privilegeId"><span class="text-danger">*</span>Privilege</label>
-                                <select id="privilegeId" formControlName="privilegeId" class="form-select security-role-select" [disabled]="!userIsSecuritySecurityRoleWriter()">
+                            <div class="form-group" *ngIf="!isFieldHidden('privilegeId')">
+                                <label for="SecurityRole-privilegeId" id="label-SecurityRole-privilegeId"><span class="text-danger">*</span>Privilege</label>
+                                <select id="SecurityRole-privilegeId" formControlName="privilegeId" class="form-select security-role-select" [disabled]="!userIsSecuritySecurityRoleWriter()">
                                     <option [ngValue]="null">Select Privilege</option>
                                     <option *ngFor="let privilege of privileges$ | async" [ngValue]="privilege.id">{{privilege.name}}</option>
                                 </select>
@@ -27,32 +27,41 @@
                                     Privilege is required
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <label for="name" id="label-name"><span class="text-danger">*</span>Name</label>
-                                <input type="text" id="name" formControlName="name" placeholder="Enter Name" class="form-control security-role-input" [disabled]="!userIsSecuritySecurityRoleWriter()" aria-labelledby="label-name" />
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="SecurityRole-name" id="label-SecurityRole-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="SecurityRole-name" formControlName="name" placeholder="Enter Name" class="form-control security-role-input" [disabled]="!userIsSecuritySecurityRoleWriter()" aria-labelledby="label-name" />
                                 <div *ngIf="securityRoleForm.get('name')?.invalid && securityRoleForm.get('name')?.touched" class="text-danger">
                                     Name is required
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <label for="description" id="label-description">Description</label>
-                                <textarea id="description" formControlName="description" placeholder="Enter Description" class="form-control security-role-input" [disabled]="!userIsSecuritySecurityRoleWriter()"></textarea>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="SecurityRole-description" id="label-SecurityRole-description">Description</label>
+                                <textarea id="SecurityRole-description" formControlName="description" placeholder="Enter Description" class="form-control security-role-input" [disabled]="!userIsSecuritySecurityRoleWriter()"></textarea>
                             </div>
-                            <div class="form-group">
-                                <label for="comments" id="label-comments">Comments</label>
-                                <textarea id="comments" formControlName="comments" placeholder="Enter Comments" class="form-control security-role-input" [disabled]="!userIsSecuritySecurityRoleWriter()"></textarea>
+                            <div class="form-group" *ngIf="!isFieldHidden('comments')">
+                                <label for="SecurityRole-comments" id="label-SecurityRole-comments">Comments</label>
+                                <textarea id="SecurityRole-comments" formControlName="comments" placeholder="Enter Comments" class="form-control security-role-input" [disabled]="!userIsSecuritySecurityRoleWriter()"></textarea>
                             </div>
-                            <div class="form-check my-2">
-                                <input type="checkbox" id="active" formControlName="active" class="form-check-input" [disabled]="!userIsSecuritySecurityRoleWriter()" />
-                                <label for="active" class="form-check-label" id="label-active"><span class="text-danger">*</span>Active</label>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="SecurityRole-active" formControlName="active" class="form-check-input" [disabled]="!userIsSecuritySecurityRoleWriter()" />
+                                <label for="SecurityRole-active" class="form-check-label" id="label-SecurityRole-active"><span class="text-danger">*</span>Active</label>
                             </div>
-                            <div class="form-check my-2">
-                                <input type="checkbox" id="deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSecuritySecurityRoleWriter()" />
-                                <label for="deleted" class="form-check-label" id="label-deleted"><span class="text-danger">*</span>Deleted</label>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="SecurityRole-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSecuritySecurityRoleWriter()" />
+                                <label for="SecurityRole-deleted" class="form-check-label" id="label-SecurityRole-deleted"><span class="text-danger">*</span>Deleted</label>
                             </div>
                             <div class="security-role-details-footer">
                                 <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="securityRoleForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Security Role">Reset</button>
-                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !securityRoleForm.valid || !securityRoleForm.dirty || securityRoleForm.pristine || userIsSecuritySecurityRoleWriter() == false " ngbTooltip="Save Security Role">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !securityRoleForm.valid || !securityRoleForm.dirty || securityRoleForm.pristine  || userIsSecuritySecurityRoleWriter() == false " ngbTooltip="Save the Security Role changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Security Role' }}
+                                    </span>
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -65,33 +74,54 @@
 
                     <ul ngbNav #nav="ngbNav" class="nav-tabs">
                       <li ngbNavItem *ngIf="securityUserSecurityRoleService.userIsSecuritySecurityUserSecurityRoleReader()">
-                            <button ngbNavLink>SecurityUserSecurityRoles
+                            <button ngbNavLink>Security User Security Roles
                                 <span class="badge bg-primary ms-2">
                                     {{ (securityRoleData?.SecurityUserSecurityRolesCount$ | async) ?? '-' }}
                                 </span>
                             </button>
                             <ng-template ngbNavContent>
-                            <app-security-user-security-role-table [queryParams]="GetQueryParameters()"></app-security-user-security-role-table>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-security-user-security-role-table [queryParams]="{ securityRoleId: securityRoleData?.id }"></app-security-user-security-role-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-security-user-security-role-add-edit [preSeededData]="{ securityRoleId: securityRoleData?.id }" [hiddenFields]="['securityRoleId']"></app-security-user-security-role-add-edit>
+                                </div>
+                            </div>
                             </ng-template>
                         </li>
                       <li ngbNavItem *ngIf="securityGroupSecurityRoleService.userIsSecuritySecurityGroupSecurityRoleReader()">
-                            <button ngbNavLink>SecurityGroupSecurityRoles
+                            <button ngbNavLink>Security Group Security Roles
                                 <span class="badge bg-primary ms-2">
                                     {{ (securityRoleData?.SecurityGroupSecurityRolesCount$ | async) ?? '-' }}
                                 </span>
                             </button>
                             <ng-template ngbNavContent>
-                            <app-security-group-security-role-table [queryParams]="GetQueryParameters()"></app-security-group-security-role-table>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-security-group-security-role-table [queryParams]="{ securityRoleId: securityRoleData?.id }"></app-security-group-security-role-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-security-group-security-role-add-edit [preSeededData]="{ securityRoleId: securityRoleData?.id }" [hiddenFields]="['securityRoleId']"></app-security-group-security-role-add-edit>
+                                </div>
+                            </div>
                             </ng-template>
                         </li>
                       <li ngbNavItem *ngIf="moduleSecurityRoleService.userIsSecurityModuleSecurityRoleReader()">
-                            <button ngbNavLink>ModuleSecurityRoles
+                            <button ngbNavLink>Module Security Roles
                                 <span class="badge bg-primary ms-2">
                                     {{ (securityRoleData?.ModuleSecurityRolesCount$ | async) ?? '-' }}
                                 </span>
                             </button>
                             <ng-template ngbNavContent>
-                            <app-module-security-role-table [queryParams]="GetQueryParameters()"></app-module-security-role-table>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-module-security-role-table [queryParams]="{ securityRoleId: securityRoleData?.id }"></app-module-security-role-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-module-security-role-add-edit [preSeededData]="{ securityRoleId: securityRoleData?.id }" [hiddenFields]="['securityRoleId']"></app-module-security-role-add-edit>
+                                </div>
+                            </div>
                             </ng-template>
                         </li>
                     </ul>

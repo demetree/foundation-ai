@@ -1,6 +1,16 @@
+/*
+
+   GENERATED SERVICE FOR THE SECURITYUSERTITLE TABLE - DO NOT MODIFY DIRECTLY
+   =======================================================================================
+   This is the default data interaction service for the SecurityUserTitle table.
+
+   It should suffice for many workflows and data access needs, but if anything more is needed, then extend this in a 
+   custom version or add an additional targeted helper service.
+
+*/
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
-import { Observable, BehaviorSubject, catchError, throwError, lastValueFrom, map  } from 'rxjs';
+import { Observable, BehaviorSubject, catchError, throwError, lastValueFrom, map } from 'rxjs';
 import { shareReplay, tap } from 'rxjs/operators';
 import { UtilityService } from '../utility-services/utility.service'
 import { AlertService } from '../services/alert.service';
@@ -99,6 +109,7 @@ export class SecurityUserTitleData {
     private _securityUsersPromise: Promise<SecurityUserData[]> | null  = null;
     private _securityUsersSubject = new BehaviorSubject<SecurityUserData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -160,7 +171,9 @@ export class SecurityUserTitleData {
 
 
   private clearAllLazyCaches(): void {
+     //
      // Reset every collection cache and notify subscribers
+     //
      this._securityUsers = null;
      this._securityUsersPromise = null;
      this._securityUsersSubject.next(null);
@@ -180,9 +193,9 @@ export class SecurityUserTitleData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.securityUserTitle.SecurityUsers.then(securityUsers => { ... })
+     *   this.securityUserTitle.SecurityUsers.then(securityUserTitles => { ... })
      *   or
-     *   await this.securityUserTitle.SecurityUsers
+     *   await this.securityUserTitle.securityUserTitles
      *
     */
     public get SecurityUsers(): Promise<SecurityUserData[]> {
@@ -207,8 +220,8 @@ export class SecurityUserTitleData {
         this._securityUsersPromise = lastValueFrom(
             SecurityUserTitleService.Instance.GetSecurityUsersForSecurityUserTitle(this.id)
         )
-        .then(securityUsers => {
-            this._securityUsers = securityUsers ?? [];
+        .then(SecurityUsers => {
+            this._securityUsers = SecurityUsers ?? [];
             this._securityUsersSubject.next(this._securityUsers);
             return this._securityUsers;
          })
@@ -223,7 +236,7 @@ export class SecurityUserTitleData {
     }
 
     /**
-     * Clears the cached crew members. Call after mutations to force refresh.
+     * Clears the cached SecurityUser. Call after mutations to force refresh.
      */
     public ClearSecurityUsersCache(): void {
         this._securityUsers = null;

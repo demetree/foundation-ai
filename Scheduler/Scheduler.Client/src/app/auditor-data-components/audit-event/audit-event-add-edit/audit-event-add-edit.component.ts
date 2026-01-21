@@ -1,3 +1,21 @@
+/*
+   GENERATED FORM FOR THE AUDITEVENT TABLE - DO NOT MODIFY DIRECTLY
+   =================================================================================
+
+   This is the default form generated from AuditEvent table metadata.
+
+   It is useful for low usage worksflows such as basic configuration, but is likely not good enough for primary workflow usage
+   because it's form layout and validation is too simple.
+   
+   For building better looking and/or versions with custom logic, create a custom version of this:
+
+   1. Copy this component
+   2. Rename to audit-event-custom (or similar)
+   3. Modify layout, grouping, field types, add workflow logic
+   
+   This generated version is kept simple on purpose so it's easy to use as a reference/scaffold.
+
+*/
 import { Component, ViewChild, Output, Input, TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
@@ -18,6 +36,32 @@ import { AuditResourceService } from '../../../auditor-data-services/audit-resou
 import { AuditHostSystemService } from '../../../auditor-data-services/audit-host-system.service';
 import { AuthService } from '../../../services/auth.service';
 
+//
+// Define a type for the form values to improve readability and type safety.
+// This mirrors the structure of the FormGroup controls, with considerations for form input types:
+// - Numeric fields like latitude are strings in the form (due to input type="number" behavior).
+// - Allows null for optional fields.
+// - Does not include navigation properties or methods from domain models.
+//
+interface AuditEventFormValues {
+  startTime: string,
+  stopTime: string,
+  completedSuccessfully: boolean,
+  auditUserId: number | bigint,       // For FK link number
+  auditSessionId: number | bigint,       // For FK link number
+  auditTypeId: number | bigint,       // For FK link number
+  auditAccessTypeId: number | bigint,       // For FK link number
+  auditSourceId: number | bigint,       // For FK link number
+  auditUserAgentId: number | bigint,       // For FK link number
+  auditModuleId: number | bigint,       // For FK link number
+  auditModuleEntityId: number | bigint,       // For FK link number
+  auditResourceId: number | bigint,       // For FK link number
+  auditHostSystemId: number | bigint,       // For FK link number
+  primaryKey: string | null,
+  threadId: string | null,     // Stored as string for form input, converted to number on submit.
+  message: string,
+};
+
 @Component({
   selector: 'app-audit-event-add-edit',
   templateUrl: './audit-event-add-edit.component.html',
@@ -30,7 +74,22 @@ export class AuditEventAddEditComponent {
   @Input() navigateToDetailsAfterAdd: boolean = true;
   @Input() showAddButton: boolean = true;
 
-  auditEventForm: FormGroup = this.fb.group({
+
+  //
+  // Input for pre-seeded data in add mode. This allows the parent component to provide
+  // initial values for one or more fields. Use Partial to allow selective seeding.
+  // Only applied in add mode (not edit mode, where existing data takes precedence).
+  //
+  @Input() preSeededData: Partial<AuditEventFormValues> | null = null;
+
+  //
+  // Input for fields to hide. This is an array of field names (e.g., ['name', 'description']).
+  // Hiding a field will remove its form group from the template and disable its validator.
+  //
+  @Input() hiddenFields: string[] = [];
+
+
+  public auditEventForm: FormGroup = this.fb.group({
         startTime: ['', Validators.required],
         stopTime: ['', Validators.required],
         completedSuccessfully: [false],
@@ -119,6 +178,32 @@ export class AuditEventAddEditComponent {
       this.isEditMode = false;
 
       this.buildFormValues(null);
+
+      //
+      // Apply pre-seeded data if provided and we are in add mode.
+      // This patches the form with partial values.
+      // Check explicitly for null/undefined to avoid errors.
+      //
+      if (this.preSeededData !== null && this.preSeededData !== undefined) {
+        this.auditEventForm.patchValue(this.preSeededData);
+      }
+
+    }
+
+
+    //
+    // Disable validators for hidden fields to prevent form invalidation.
+    // This prevents requiring values for hidden fields.
+    //
+    let index: number;
+
+    for (index = 0; index < this.hiddenFields.length; index++) {
+      const fieldName = this.hiddenFields[index];
+      const control = this.auditEventForm.get(fieldName);
+      if (control !== null) {
+        control.clearValidators();
+        control.updateValueAndValidity(); // Refresh validation state.
+      }
     }
 
     this.modalRef = this.modalService.open(this.auditEventModal, {
@@ -358,6 +443,20 @@ export class AuditEventAddEditComponent {
     this.auditEventForm.markAsPristine();
     this.auditEventForm.markAsUntouched();
   }
+
+  //
+  // Helper method to determine if a field should be hidden based on the hiddenFields input.
+  // Returns true if the field is in the array, false otherwise.
+  //
+  public isFieldHidden(fieldName: string): boolean {
+    // Explicit check for array existence to avoid runtime errors.
+    if (this.hiddenFields === null || this.hiddenFields === undefined) {
+      return false;
+    }
+    // Use traditional includes method for clarity.
+    return this.hiddenFields.includes(fieldName);
+  }
+
 
   public userIsAuditorAuditEventReader(): boolean {
     return this.auditEventService.userIsAuditorAuditEventReader();

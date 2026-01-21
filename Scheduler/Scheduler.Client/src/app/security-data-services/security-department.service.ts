@@ -1,6 +1,16 @@
+/*
+
+   GENERATED SERVICE FOR THE SECURITYDEPARTMENT TABLE - DO NOT MODIFY DIRECTLY
+   =======================================================================================
+   This is the default data interaction service for the SecurityDepartment table.
+
+   It should suffice for many workflows and data access needs, but if anything more is needed, then extend this in a 
+   custom version or add an additional targeted helper service.
+
+*/
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
-import { Observable, BehaviorSubject, catchError, throwError, lastValueFrom, map  } from 'rxjs';
+import { Observable, BehaviorSubject, catchError, throwError, lastValueFrom, map } from 'rxjs';
 import { shareReplay, tap } from 'rxjs/operators';
 import { UtilityService } from '../utility-services/utility.service'
 import { AlertService } from '../services/alert.service';
@@ -106,14 +116,17 @@ export class SecurityDepartmentData {
     private _securityTeamsPromise: Promise<SecurityTeamData[]> | null  = null;
     private _securityTeamsSubject = new BehaviorSubject<SecurityTeamData[] | null>(null);
 
+                
     private _securityUsers: SecurityUserData[] | null = null;
     private _securityUsersPromise: Promise<SecurityUserData[]> | null  = null;
     private _securityUsersSubject = new BehaviorSubject<SecurityUserData[] | null>(null);
 
+                
     private _securityDepartmentUsers: SecurityDepartmentUserData[] | null = null;
     private _securityDepartmentUsersPromise: Promise<SecurityDepartmentUserData[]> | null  = null;
     private _securityDepartmentUsersSubject = new BehaviorSubject<SecurityDepartmentUserData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -213,7 +226,9 @@ export class SecurityDepartmentData {
 
 
   private clearAllLazyCaches(): void {
+     //
      // Reset every collection cache and notify subscribers
+     //
      this._securityTeams = null;
      this._securityTeamsPromise = null;
      this._securityTeamsSubject.next(null);
@@ -241,9 +256,9 @@ export class SecurityDepartmentData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.securityDepartment.SecurityTeams.then(securityTeams => { ... })
+     *   this.securityDepartment.SecurityTeams.then(securityDepartments => { ... })
      *   or
-     *   await this.securityDepartment.SecurityTeams
+     *   await this.securityDepartment.securityDepartments
      *
     */
     public get SecurityTeams(): Promise<SecurityTeamData[]> {
@@ -268,8 +283,8 @@ export class SecurityDepartmentData {
         this._securityTeamsPromise = lastValueFrom(
             SecurityDepartmentService.Instance.GetSecurityTeamsForSecurityDepartment(this.id)
         )
-        .then(securityTeams => {
-            this._securityTeams = securityTeams ?? [];
+        .then(SecurityTeams => {
+            this._securityTeams = SecurityTeams ?? [];
             this._securityTeamsSubject.next(this._securityTeams);
             return this._securityTeams;
          })
@@ -284,7 +299,7 @@ export class SecurityDepartmentData {
     }
 
     /**
-     * Clears the cached crew members. Call after mutations to force refresh.
+     * Clears the cached SecurityTeam. Call after mutations to force refresh.
      */
     public ClearSecurityTeamsCache(): void {
         this._securityTeams = null;
@@ -306,9 +321,9 @@ export class SecurityDepartmentData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.securityDepartment.SecurityUsers.then(securityUsers => { ... })
+     *   this.securityDepartment.SecurityUsers.then(securityDepartments => { ... })
      *   or
-     *   await this.securityDepartment.SecurityUsers
+     *   await this.securityDepartment.securityDepartments
      *
     */
     public get SecurityUsers(): Promise<SecurityUserData[]> {
@@ -333,8 +348,8 @@ export class SecurityDepartmentData {
         this._securityUsersPromise = lastValueFrom(
             SecurityDepartmentService.Instance.GetSecurityUsersForSecurityDepartment(this.id)
         )
-        .then(securityUsers => {
-            this._securityUsers = securityUsers ?? [];
+        .then(SecurityUsers => {
+            this._securityUsers = SecurityUsers ?? [];
             this._securityUsersSubject.next(this._securityUsers);
             return this._securityUsers;
          })
@@ -349,7 +364,7 @@ export class SecurityDepartmentData {
     }
 
     /**
-     * Clears the cached crew members. Call after mutations to force refresh.
+     * Clears the cached SecurityUser. Call after mutations to force refresh.
      */
     public ClearSecurityUsersCache(): void {
         this._securityUsers = null;
@@ -371,9 +386,9 @@ export class SecurityDepartmentData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.securityDepartment.SecurityDepartmentUsers.then(securityDepartmentUsers => { ... })
+     *   this.securityDepartment.SecurityDepartmentUsers.then(securityDepartments => { ... })
      *   or
-     *   await this.securityDepartment.SecurityDepartmentUsers
+     *   await this.securityDepartment.securityDepartments
      *
     */
     public get SecurityDepartmentUsers(): Promise<SecurityDepartmentUserData[]> {
@@ -398,8 +413,8 @@ export class SecurityDepartmentData {
         this._securityDepartmentUsersPromise = lastValueFrom(
             SecurityDepartmentService.Instance.GetSecurityDepartmentUsersForSecurityDepartment(this.id)
         )
-        .then(securityDepartmentUsers => {
-            this._securityDepartmentUsers = securityDepartmentUsers ?? [];
+        .then(SecurityDepartmentUsers => {
+            this._securityDepartmentUsers = SecurityDepartmentUsers ?? [];
             this._securityDepartmentUsersSubject.next(this._securityDepartmentUsers);
             return this._securityDepartmentUsers;
          })
@@ -414,7 +429,7 @@ export class SecurityDepartmentData {
     }
 
     /**
-     * Clears the cached crew members. Call after mutations to force refresh.
+     * Clears the cached SecurityDepartmentUser. Call after mutations to force refresh.
      */
     public ClearSecurityDepartmentUsersCache(): void {
         this._securityDepartmentUsers = null;

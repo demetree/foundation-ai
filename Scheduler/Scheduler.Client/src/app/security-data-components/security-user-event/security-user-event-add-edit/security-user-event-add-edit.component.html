@@ -21,9 +21,9 @@
    </div>
    <div class="modal-body security-user-event-modal-body">
       <form [formGroup]="securityUserEventForm" (ngSubmit)="submitForm()">
-            <div class="form-group">
-                <label for="securityUserId" id="label-securityUserId"><span class="text-danger">*</span>Security User</label>
-                <select id="securityUserId" formControlName="securityUserId" class="form-select security-user-event-select" [disabled]="!userIsSecuritySecurityUserEventWriter()">
+            <div class="form-group" *ngIf="!isFieldHidden('securityUserId')">
+                <label for="SecurityUserEvent-securityUserId" id="label-SecurityUserEvent-securityUserId"><span class="text-danger">*</span>Security User</label>
+                <select id="SecurityUserEvent-securityUserId" formControlName="securityUserId" class="form-select security-user-event-select" [disabled]="!userIsSecuritySecurityUserEventWriter()">
                     <option [ngValue]="null">Select Security User</option>
                     <option *ngFor="let securityUser of securityUsers$ | async" [ngValue]="securityUser.id">{{[securityUser.accountName] | filterAndJoin}}</option>
                 </select>
@@ -31,9 +31,9 @@
                     Security User is required
                 </div>
             </div>
-            <div class="form-group">
-                <label for="securityUserEventTypeId" id="label-securityUserEventTypeId"><span class="text-danger">*</span>Security User Event Type</label>
-                <select id="securityUserEventTypeId" formControlName="securityUserEventTypeId" class="form-select security-user-event-select" [disabled]="!userIsSecuritySecurityUserEventWriter()">
+            <div class="form-group" *ngIf="!isFieldHidden('securityUserEventTypeId')">
+                <label for="SecurityUserEvent-securityUserEventTypeId" id="label-SecurityUserEvent-securityUserEventTypeId"><span class="text-danger">*</span>Security User Event Type</label>
+                <select id="SecurityUserEvent-securityUserEventTypeId" formControlName="securityUserEventTypeId" class="form-select security-user-event-select" [disabled]="!userIsSecuritySecurityUserEventWriter()">
                     <option [ngValue]="null">Select Security User Event Type</option>
                     <option *ngFor="let securityUserEventType of securityUserEventTypes$ | async" [ngValue]="securityUserEventType.id">{{securityUserEventType.name}}</option>
                 </select>
@@ -41,28 +41,37 @@
                     Security User Event Type is required
                 </div>
             </div>
-            <div class="form-group">
-                <label for="timeStamp" id="label-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
-                <input type="datetime-local" id="timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control security-user-event-input" [disabled]="!userIsSecuritySecurityUserEventWriter()" aria-labelledby="label-timeStamp" />
+            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                <label for="SecurityUserEvent-timeStamp" id="label-SecurityUserEvent-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                <input type="datetime-local" id="SecurityUserEvent-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control security-user-event-input" [disabled]="!userIsSecuritySecurityUserEventWriter()" aria-labelledby="label-timeStamp" />
                 <div *ngIf="securityUserEventForm.get('timeStamp')?.invalid && securityUserEventForm.get('timeStamp')?.touched" class="text-danger">
                     Time Stamp is required
                 </div>
             </div>
-            <div class="form-group">
-                <label for="comments" id="label-comments">Comments</label>
-                <textarea id="comments" formControlName="comments" placeholder="Enter Comments" class="form-control security-user-event-input" [disabled]="!userIsSecuritySecurityUserEventWriter()"></textarea>
+            <div class="form-group" *ngIf="!isFieldHidden('comments')">
+                <label for="SecurityUserEvent-comments" id="label-SecurityUserEvent-comments">Comments</label>
+                <textarea id="SecurityUserEvent-comments" formControlName="comments" placeholder="Enter Comments" class="form-control security-user-event-input" [disabled]="!userIsSecuritySecurityUserEventWriter()"></textarea>
             </div>
-            <div class="form-check my-2" *ngIf="isEditMode">
-                <input type="checkbox" id="active" formControlName="active" class="form-check-input" [disabled]="!userIsSecuritySecurityUserEventWriter()" />
-                <label for="active" class="form-check-label" id="label-active"><span class="text-danger">*</span>Active</label>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="SecurityUserEvent-active" formControlName="active" class="form-check-input" [disabled]="!userIsSecuritySecurityUserEventWriter()" />
+                <label for="SecurityUserEvent-active" class="form-check-label" id="label-SecurityUserEvent-active"><span class="text-danger">*</span>Active</label>
             </div>
-            <div class="form-check my-2" *ngIf="isEditMode">
-                <input type="checkbox" id="deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSecuritySecurityUserEventWriter()" />
-                <label for="deleted" class="form-check-label" id="label-deleted"><span class="text-danger">*</span>Deleted</label>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="SecurityUserEvent-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSecuritySecurityUserEventWriter()" />
+                <label for="SecurityUserEvent-deleted" class="form-check-label" id="label-SecurityUserEvent-deleted"><span class="text-danger">*</span>Deleted</label>
             </div>
          <div class="modal-footer security-user-event-modal-footer">
             <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Security User Event changes and Close">Cancel</button>
-            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !securityUserEventForm.valid || securityUserEventForm.pristine || !userIsSecuritySecurityUserEventWriter()" ngbTooltip="Save the Security User Event changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !securityUserEventForm.valid || securityUserEventForm.pristine  || userIsSecuritySecurityUserEventWriter() == false " ngbTooltip="Save the Security User Event changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Security User Event' }}
+                </span>
+            </button>
          </div>
       </form>
    </div>

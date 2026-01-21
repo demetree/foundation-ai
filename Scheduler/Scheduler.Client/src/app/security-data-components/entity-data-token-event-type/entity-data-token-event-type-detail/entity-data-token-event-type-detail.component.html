@@ -17,20 +17,29 @@
                 <div class="col m-2 entity-data-token-event-type-details-body">
                     <div *showSpinner="isLoading$ | async">
                         <form [class.hidden]="isLoading$ | async" [formGroup]="entityDataTokenEventTypeForm" (ngSubmit)="submitForm()" class="entity-data-token-event-type-details-form">
-                            <div class="form-group">
-                                <label for="name" id="label-name"><span class="text-danger">*</span>Name</label>
-                                <input type="text" id="name" formControlName="name" placeholder="Enter Name" class="form-control entity-data-token-event-type-input" [disabled]="!userIsSecurityEntityDataTokenEventTypeWriter()" aria-labelledby="label-name" />
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="EntityDataTokenEventType-name" id="label-EntityDataTokenEventType-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="EntityDataTokenEventType-name" formControlName="name" placeholder="Enter Name" class="form-control entity-data-token-event-type-input" [disabled]="!userIsSecurityEntityDataTokenEventTypeWriter()" aria-labelledby="label-name" />
                                 <div *ngIf="entityDataTokenEventTypeForm.get('name')?.invalid && entityDataTokenEventTypeForm.get('name')?.touched" class="text-danger">
                                     Name is required
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <label for="description" id="label-description">Description</label>
-                                <textarea id="description" formControlName="description" placeholder="Enter Description" class="form-control entity-data-token-event-type-input" [disabled]="!userIsSecurityEntityDataTokenEventTypeWriter()"></textarea>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="EntityDataTokenEventType-description" id="label-EntityDataTokenEventType-description">Description</label>
+                                <textarea id="EntityDataTokenEventType-description" formControlName="description" placeholder="Enter Description" class="form-control entity-data-token-event-type-input" [disabled]="!userIsSecurityEntityDataTokenEventTypeWriter()"></textarea>
                             </div>
                             <div class="entity-data-token-event-type-details-footer">
                                 <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="entityDataTokenEventTypeForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Entity Data Token Event Type">Reset</button>
-                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !entityDataTokenEventTypeForm.valid || !entityDataTokenEventTypeForm.dirty || entityDataTokenEventTypeForm.pristine || userIsSecurityEntityDataTokenEventTypeWriter() == false " ngbTooltip="Save Entity Data Token Event Type">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !entityDataTokenEventTypeForm.valid || !entityDataTokenEventTypeForm.dirty || entityDataTokenEventTypeForm.pristine  || userIsSecurityEntityDataTokenEventTypeWriter() == false " ngbTooltip="Save the Entity Data Token Event Type changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Entity Data Token Event Type' }}
+                                    </span>
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -43,13 +52,20 @@
 
                     <ul ngbNav #nav="ngbNav" class="nav-tabs">
                       <li ngbNavItem *ngIf="entityDataTokenEventService.userIsSecurityEntityDataTokenEventReader()">
-                            <button ngbNavLink>EntityDataTokenEvents
+                            <button ngbNavLink>Entity Data Token Events
                                 <span class="badge bg-primary ms-2">
                                     {{ (entityDataTokenEventTypeData?.EntityDataTokenEventsCount$ | async) ?? '-' }}
                                 </span>
                             </button>
                             <ng-template ngbNavContent>
-                            <app-entity-data-token-event-table [queryParams]="GetQueryParameters()"></app-entity-data-token-event-table>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-entity-data-token-event-table [queryParams]="{ entityDataTokenEventTypeId: entityDataTokenEventTypeData?.id }"></app-entity-data-token-event-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-entity-data-token-event-add-edit [preSeededData]="{ entityDataTokenEventTypeId: entityDataTokenEventTypeData?.id }" [hiddenFields]="['entityDataTokenEventTypeId']"></app-entity-data-token-event-add-edit>
+                                </div>
+                            </div>
                             </ng-template>
                         </li>
                     </ul>

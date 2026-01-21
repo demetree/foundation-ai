@@ -17,28 +17,37 @@
                 <div class="col m-2 security-tenant-details-body">
                     <div *showSpinner="isLoading$ | async">
                         <form [class.hidden]="isLoading$ | async" [formGroup]="securityTenantForm" (ngSubmit)="submitForm()" class="security-tenant-details-form">
-                            <div class="form-group">
-                                <label for="name" id="label-name"><span class="text-danger">*</span>Name</label>
-                                <input type="text" id="name" formControlName="name" placeholder="Enter Name" class="form-control security-tenant-input" [disabled]="!userIsSecuritySecurityTenantWriter()" aria-labelledby="label-name" />
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="SecurityTenant-name" id="label-SecurityTenant-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="SecurityTenant-name" formControlName="name" placeholder="Enter Name" class="form-control security-tenant-input" [disabled]="!userIsSecuritySecurityTenantWriter()" aria-labelledby="label-name" />
                                 <div *ngIf="securityTenantForm.get('name')?.invalid && securityTenantForm.get('name')?.touched" class="text-danger">
                                     Name is required
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <label for="description" id="label-description">Description</label>
-                                <textarea id="description" formControlName="description" placeholder="Enter Description" class="form-control security-tenant-input" [disabled]="!userIsSecuritySecurityTenantWriter()"></textarea>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="SecurityTenant-description" id="label-SecurityTenant-description">Description</label>
+                                <textarea id="SecurityTenant-description" formControlName="description" placeholder="Enter Description" class="form-control security-tenant-input" [disabled]="!userIsSecuritySecurityTenantWriter()"></textarea>
                             </div>
-                            <div class="form-check my-2">
-                                <input type="checkbox" id="active" formControlName="active" class="form-check-input" [disabled]="!userIsSecuritySecurityTenantWriter()" />
-                                <label for="active" class="form-check-label" id="label-active"><span class="text-danger">*</span>Active</label>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="SecurityTenant-active" formControlName="active" class="form-check-input" [disabled]="!userIsSecuritySecurityTenantWriter()" />
+                                <label for="SecurityTenant-active" class="form-check-label" id="label-SecurityTenant-active"><span class="text-danger">*</span>Active</label>
                             </div>
-                            <div class="form-check my-2">
-                                <input type="checkbox" id="deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSecuritySecurityTenantWriter()" />
-                                <label for="deleted" class="form-check-label" id="label-deleted"><span class="text-danger">*</span>Deleted</label>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="SecurityTenant-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSecuritySecurityTenantWriter()" />
+                                <label for="SecurityTenant-deleted" class="form-check-label" id="label-SecurityTenant-deleted"><span class="text-danger">*</span>Deleted</label>
                             </div>
                             <div class="security-tenant-details-footer">
                                 <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="securityTenantForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Security Tenant">Reset</button>
-                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !securityTenantForm.valid || !securityTenantForm.dirty || securityTenantForm.pristine || userIsSecuritySecurityTenantWriter() == false " ngbTooltip="Save Security Tenant">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !securityTenantForm.valid || !securityTenantForm.dirty || securityTenantForm.pristine  || userIsSecuritySecurityTenantWriter() == false " ngbTooltip="Save the Security Tenant changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Security Tenant' }}
+                                    </span>
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -51,33 +60,54 @@
 
                     <ul ngbNav #nav="ngbNav" class="nav-tabs">
                       <li ngbNavItem *ngIf="securityOrganizationService.userIsSecuritySecurityOrganizationReader()">
-                            <button ngbNavLink>SecurityOrganizations
+                            <button ngbNavLink>Security Organizations
                                 <span class="badge bg-primary ms-2">
                                     {{ (securityTenantData?.SecurityOrganizationsCount$ | async) ?? '-' }}
                                 </span>
                             </button>
                             <ng-template ngbNavContent>
-                            <app-security-organization-table [queryParams]="GetQueryParameters()"></app-security-organization-table>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-security-organization-table [queryParams]="{ securityTenantId: securityTenantData?.id }"></app-security-organization-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-security-organization-add-edit [preSeededData]="{ securityTenantId: securityTenantData?.id }" [hiddenFields]="['securityTenantId']"></app-security-organization-add-edit>
+                                </div>
+                            </div>
                             </ng-template>
                         </li>
                       <li ngbNavItem *ngIf="securityUserService.userIsSecuritySecurityUserReader()">
-                            <button ngbNavLink>SecurityUsers
+                            <button ngbNavLink>Security Users
                                 <span class="badge bg-primary ms-2">
                                     {{ (securityTenantData?.SecurityUsersCount$ | async) ?? '-' }}
                                 </span>
                             </button>
                             <ng-template ngbNavContent>
-                            <app-security-user-table [queryParams]="GetQueryParameters()"></app-security-user-table>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-security-user-table [queryParams]="{ securityTenantId: securityTenantData?.id }"></app-security-user-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-security-user-add-edit [preSeededData]="{ securityTenantId: securityTenantData?.id }" [hiddenFields]="['securityTenantId']"></app-security-user-add-edit>
+                                </div>
+                            </div>
                             </ng-template>
                         </li>
                       <li ngbNavItem *ngIf="securityTenantUserService.userIsSecuritySecurityTenantUserReader()">
-                            <button ngbNavLink>SecurityTenantUsers
+                            <button ngbNavLink>Security Tenant Users
                                 <span class="badge bg-primary ms-2">
                                     {{ (securityTenantData?.SecurityTenantUsersCount$ | async) ?? '-' }}
                                 </span>
                             </button>
                             <ng-template ngbNavContent>
-                            <app-security-tenant-user-table [queryParams]="GetQueryParameters()"></app-security-tenant-user-table>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-security-tenant-user-table [queryParams]="{ securityTenantId: securityTenantData?.id }"></app-security-tenant-user-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-security-tenant-user-add-edit [preSeededData]="{ securityTenantId: securityTenantData?.id }" [hiddenFields]="['securityTenantId']"></app-security-tenant-user-add-edit>
+                                </div>
+                            </div>
                             </ng-template>
                         </li>
                     </ul>

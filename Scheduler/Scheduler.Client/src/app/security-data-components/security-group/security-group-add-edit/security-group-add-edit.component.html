@@ -21,28 +21,37 @@
    </div>
    <div class="modal-body security-group-modal-body">
       <form [formGroup]="securityGroupForm" (ngSubmit)="submitForm()">
-            <div class="form-group">
-                <label for="name" id="label-name"><span class="text-danger">*</span>Name</label>
-                <input type="text" id="name" formControlName="name" placeholder="Enter Name" class="form-control security-group-input" [disabled]="!userIsSecuritySecurityGroupWriter()" aria-labelledby="label-name" />
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="SecurityGroup-name" id="label-SecurityGroup-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="SecurityGroup-name" formControlName="name" placeholder="Enter Name" class="form-control security-group-input" [disabled]="!userIsSecuritySecurityGroupWriter()" aria-labelledby="label-name" />
                 <div *ngIf="securityGroupForm.get('name')?.invalid && securityGroupForm.get('name')?.touched" class="text-danger">
                     Name is required
                 </div>
             </div>
-            <div class="form-group">
-                <label for="description" id="label-description">Description</label>
-                <textarea id="description" formControlName="description" placeholder="Enter Description" class="form-control security-group-input" [disabled]="!userIsSecuritySecurityGroupWriter()"></textarea>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="SecurityGroup-description" id="label-SecurityGroup-description">Description</label>
+                <textarea id="SecurityGroup-description" formControlName="description" placeholder="Enter Description" class="form-control security-group-input" [disabled]="!userIsSecuritySecurityGroupWriter()"></textarea>
             </div>
-            <div class="form-check my-2" *ngIf="isEditMode">
-                <input type="checkbox" id="active" formControlName="active" class="form-check-input" [disabled]="!userIsSecuritySecurityGroupWriter()" />
-                <label for="active" class="form-check-label" id="label-active"><span class="text-danger">*</span>Active</label>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="SecurityGroup-active" formControlName="active" class="form-check-input" [disabled]="!userIsSecuritySecurityGroupWriter()" />
+                <label for="SecurityGroup-active" class="form-check-label" id="label-SecurityGroup-active"><span class="text-danger">*</span>Active</label>
             </div>
-            <div class="form-check my-2" *ngIf="isEditMode">
-                <input type="checkbox" id="deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSecuritySecurityGroupWriter()" />
-                <label for="deleted" class="form-check-label" id="label-deleted"><span class="text-danger">*</span>Deleted</label>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="SecurityGroup-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSecuritySecurityGroupWriter()" />
+                <label for="SecurityGroup-deleted" class="form-check-label" id="label-SecurityGroup-deleted"><span class="text-danger">*</span>Deleted</label>
             </div>
          <div class="modal-footer security-group-modal-footer">
             <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Security Group changes and Close">Cancel</button>
-            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !securityGroupForm.valid || securityGroupForm.pristine || !userIsSecuritySecurityGroupWriter()" ngbTooltip="Save the Security Group changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !securityGroupForm.valid || securityGroupForm.pristine  || userIsSecuritySecurityGroupWriter() == false " ngbTooltip="Save the Security Group changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Security Group' }}
+                </span>
+            </button>
          </div>
       </form>
    </div>

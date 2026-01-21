@@ -1,6 +1,16 @@
+/*
+
+   GENERATED SERVICE FOR THE AUDITMODULE TABLE - DO NOT MODIFY DIRECTLY
+   =======================================================================================
+   This is the default data interaction service for the AuditModule table.
+
+   It should suffice for many workflows and data access needs, but if anything more is needed, then extend this in a 
+   custom version or add an additional targeted helper service.
+
+*/
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
-import { Observable, BehaviorSubject, catchError, throwError, lastValueFrom, map  } from 'rxjs';
+import { Observable, BehaviorSubject, catchError, throwError, lastValueFrom, map } from 'rxjs';
 import { shareReplay, tap } from 'rxjs/operators';
 import { UtilityService } from '../utility-services/utility.service'
 import { AlertService } from '../services/alert.service';
@@ -95,10 +105,12 @@ export class AuditModuleData {
     private _auditModuleEntitiesPromise: Promise<AuditModuleEntityData[]> | null  = null;
     private _auditModuleEntitiesSubject = new BehaviorSubject<AuditModuleEntityData[] | null>(null);
 
+                
     private _auditEvents: AuditEventData[] | null = null;
     private _auditEventsPromise: Promise<AuditEventData[]> | null  = null;
     private _auditEventsSubject = new BehaviorSubject<AuditEventData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -179,7 +191,9 @@ export class AuditModuleData {
 
 
   private clearAllLazyCaches(): void {
+     //
      // Reset every collection cache and notify subscribers
+     //
      this._auditModuleEntities = null;
      this._auditModuleEntitiesPromise = null;
      this._auditModuleEntitiesSubject.next(null);
@@ -203,9 +217,9 @@ export class AuditModuleData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.auditModule.AuditModuleEntities.then(auditModuleEntities => { ... })
+     *   this.auditModule.AuditModuleEntities.then(auditModules => { ... })
      *   or
-     *   await this.auditModule.AuditModuleEntities
+     *   await this.auditModule.auditModules
      *
     */
     public get AuditModuleEntities(): Promise<AuditModuleEntityData[]> {
@@ -230,8 +244,8 @@ export class AuditModuleData {
         this._auditModuleEntitiesPromise = lastValueFrom(
             AuditModuleService.Instance.GetAuditModuleEntitiesForAuditModule(this.id)
         )
-        .then(auditModuleEntities => {
-            this._auditModuleEntities = auditModuleEntities ?? [];
+        .then(AuditModuleEntities => {
+            this._auditModuleEntities = AuditModuleEntities ?? [];
             this._auditModuleEntitiesSubject.next(this._auditModuleEntities);
             return this._auditModuleEntities;
          })
@@ -246,7 +260,7 @@ export class AuditModuleData {
     }
 
     /**
-     * Clears the cached crew members. Call after mutations to force refresh.
+     * Clears the cached AuditModuleEntity. Call after mutations to force refresh.
      */
     public ClearAuditModuleEntitiesCache(): void {
         this._auditModuleEntities = null;
@@ -268,9 +282,9 @@ export class AuditModuleData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.auditModule.AuditEvents.then(auditEvents => { ... })
+     *   this.auditModule.AuditEvents.then(auditModules => { ... })
      *   or
-     *   await this.auditModule.AuditEvents
+     *   await this.auditModule.auditModules
      *
     */
     public get AuditEvents(): Promise<AuditEventData[]> {
@@ -295,8 +309,8 @@ export class AuditModuleData {
         this._auditEventsPromise = lastValueFrom(
             AuditModuleService.Instance.GetAuditEventsForAuditModule(this.id)
         )
-        .then(auditEvents => {
-            this._auditEvents = auditEvents ?? [];
+        .then(AuditEvents => {
+            this._auditEvents = AuditEvents ?? [];
             this._auditEventsSubject.next(this._auditEvents);
             return this._auditEvents;
          })
@@ -311,7 +325,7 @@ export class AuditModuleData {
     }
 
     /**
-     * Clears the cached crew members. Call after mutations to force refresh.
+     * Clears the cached AuditEvent. Call after mutations to force refresh.
      */
     public ClearAuditEventsCache(): void {
         this._auditEvents = null;

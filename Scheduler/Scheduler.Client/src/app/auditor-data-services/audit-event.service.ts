@@ -1,6 +1,16 @@
+/*
+
+   GENERATED SERVICE FOR THE AUDITEVENT TABLE - DO NOT MODIFY DIRECTLY
+   =======================================================================================
+   This is the default data interaction service for the AuditEvent table.
+
+   It should suffice for many workflows and data access needs, but if anything more is needed, then extend this in a 
+   custom version or add an additional targeted helper service.
+
+*/
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
-import { Observable, BehaviorSubject, catchError, throwError, lastValueFrom, map  } from 'rxjs';
+import { Observable, BehaviorSubject, catchError, throwError, lastValueFrom, map } from 'rxjs';
 import { shareReplay, tap } from 'rxjs/operators';
 import { UtilityService } from '../utility-services/utility.service'
 import { AlertService } from '../services/alert.service';
@@ -154,10 +164,12 @@ export class AuditEventData {
     private _auditEventEntityStatesPromise: Promise<AuditEventEntityStateData[]> | null  = null;
     private _auditEventEntityStatesSubject = new BehaviorSubject<AuditEventEntityStateData[] | null>(null);
 
+                
     private _auditEventErrorMessages: AuditEventErrorMessageData[] | null = null;
     private _auditEventErrorMessagesPromise: Promise<AuditEventErrorMessageData[]> | null  = null;
     private _auditEventErrorMessagesSubject = new BehaviorSubject<AuditEventErrorMessageData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -238,7 +250,9 @@ export class AuditEventData {
 
 
   private clearAllLazyCaches(): void {
+     //
      // Reset every collection cache and notify subscribers
+     //
      this._auditEventEntityStates = null;
      this._auditEventEntityStatesPromise = null;
      this._auditEventEntityStatesSubject.next(null);
@@ -262,9 +276,9 @@ export class AuditEventData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.auditEvent.AuditEventEntityStates.then(auditEventEntityStates => { ... })
+     *   this.auditEvent.AuditEventEntityStates.then(auditEvents => { ... })
      *   or
-     *   await this.auditEvent.AuditEventEntityStates
+     *   await this.auditEvent.auditEvents
      *
     */
     public get AuditEventEntityStates(): Promise<AuditEventEntityStateData[]> {
@@ -289,8 +303,8 @@ export class AuditEventData {
         this._auditEventEntityStatesPromise = lastValueFrom(
             AuditEventService.Instance.GetAuditEventEntityStatesForAuditEvent(this.id)
         )
-        .then(auditEventEntityStates => {
-            this._auditEventEntityStates = auditEventEntityStates ?? [];
+        .then(AuditEventEntityStates => {
+            this._auditEventEntityStates = AuditEventEntityStates ?? [];
             this._auditEventEntityStatesSubject.next(this._auditEventEntityStates);
             return this._auditEventEntityStates;
          })
@@ -305,7 +319,7 @@ export class AuditEventData {
     }
 
     /**
-     * Clears the cached crew members. Call after mutations to force refresh.
+     * Clears the cached AuditEventEntityState. Call after mutations to force refresh.
      */
     public ClearAuditEventEntityStatesCache(): void {
         this._auditEventEntityStates = null;
@@ -327,9 +341,9 @@ export class AuditEventData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.auditEvent.AuditEventErrorMessages.then(auditEventErrorMessages => { ... })
+     *   this.auditEvent.AuditEventErrorMessages.then(auditEvents => { ... })
      *   or
-     *   await this.auditEvent.AuditEventErrorMessages
+     *   await this.auditEvent.auditEvents
      *
     */
     public get AuditEventErrorMessages(): Promise<AuditEventErrorMessageData[]> {
@@ -354,8 +368,8 @@ export class AuditEventData {
         this._auditEventErrorMessagesPromise = lastValueFrom(
             AuditEventService.Instance.GetAuditEventErrorMessagesForAuditEvent(this.id)
         )
-        .then(auditEventErrorMessages => {
-            this._auditEventErrorMessages = auditEventErrorMessages ?? [];
+        .then(AuditEventErrorMessages => {
+            this._auditEventErrorMessages = AuditEventErrorMessages ?? [];
             this._auditEventErrorMessagesSubject.next(this._auditEventErrorMessages);
             return this._auditEventErrorMessages;
          })
@@ -370,7 +384,7 @@ export class AuditEventData {
     }
 
     /**
-     * Clears the cached crew members. Call after mutations to force refresh.
+     * Clears the cached AuditEventErrorMessage. Call after mutations to force refresh.
      */
     public ClearAuditEventErrorMessagesCache(): void {
         this._auditEventErrorMessages = null;

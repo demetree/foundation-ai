@@ -17,24 +17,33 @@
                 <div class="col m-2 audit-user-details-body">
                     <div *showSpinner="isLoading$ | async">
                         <form [class.hidden]="isLoading$ | async" [formGroup]="auditUserForm" (ngSubmit)="submitForm()" class="audit-user-details-form">
-                            <div class="form-group">
-                                <label for="name" id="label-name"><span class="text-danger">*</span>Name</label>
-                                <textarea id="name" formControlName="name" placeholder="Enter Name" class="form-control audit-user-input" [disabled]="!userIsAuditorAuditUserWriter()"></textarea>
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="AuditUser-name" id="label-AuditUser-name"><span class="text-danger">*</span>Name</label>
+                                <textarea id="AuditUser-name" formControlName="name" placeholder="Enter Name" class="form-control audit-user-input" [disabled]="!userIsAuditorAuditUserWriter()"></textarea>
                                 <div *ngIf="auditUserForm.get('name')?.invalid && auditUserForm.get('name')?.touched" class="text-danger">
                                     Name is required
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <label for="comments" id="label-comments">Comments</label>
-                                <textarea id="comments" formControlName="comments" placeholder="Enter Comments" class="form-control audit-user-input" [disabled]="!userIsAuditorAuditUserWriter()"></textarea>
+                            <div class="form-group" *ngIf="!isFieldHidden('comments')">
+                                <label for="AuditUser-comments" id="label-AuditUser-comments">Comments</label>
+                                <textarea id="AuditUser-comments" formControlName="comments" placeholder="Enter Comments" class="form-control audit-user-input" [disabled]="!userIsAuditorAuditUserWriter()"></textarea>
                             </div>
-                            <div class="form-group">
-                                <label for="firstAccess" id="label-firstAccess">First Access</label>
-                                <input type="datetime-local" id="firstAccess" formControlName="firstAccess" placeholder="Enter First Access" class="form-control audit-user-input" [disabled]="!userIsAuditorAuditUserWriter()" aria-labelledby="label-firstAccess" />
+                            <div class="form-group" *ngIf="!isFieldHidden('firstAccess')">
+                                <label for="AuditUser-firstAccess" id="label-AuditUser-firstAccess">First Access</label>
+                                <input type="datetime-local" id="AuditUser-firstAccess" formControlName="firstAccess" placeholder="Enter First Access" class="form-control audit-user-input" [disabled]="!userIsAuditorAuditUserWriter()" aria-labelledby="label-firstAccess" />
                             </div>
                             <div class="audit-user-details-footer">
                                 <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="auditUserForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Audit User">Reset</button>
-                                <button type="submit" class="btn btm-sm btn-primary" [disabled]="isSaving || !auditUserForm.valid || !auditUserForm.dirty || auditUserForm.pristine || userIsAuditorAuditUserWriter() == false " ngbTooltip="Save Audit User">{{ isEditMode ? 'Save' : 'Create' }}</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !auditUserForm.valid || !auditUserForm.dirty || auditUserForm.pristine  || userIsAuditorAuditUserWriter() == false " ngbTooltip="Save the Audit User changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Audit User' }}
+                                    </span>
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -47,23 +56,37 @@
 
                     <ul ngbNav #nav="ngbNav" class="nav-tabs">
                       <li ngbNavItem *ngIf="auditEventService.userIsAuditorAuditEventReader()">
-                            <button ngbNavLink>AuditEvents
+                            <button ngbNavLink>Audit Events
                                 <span class="badge bg-primary ms-2">
                                     {{ (auditUserData?.AuditEventsCount$ | async) ?? '-' }}
                                 </span>
                             </button>
                             <ng-template ngbNavContent>
-                            <app-audit-event-table [queryParams]="GetQueryParameters()"></app-audit-event-table>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-audit-event-table [queryParams]="{ auditUserId: auditUserData?.id }"></app-audit-event-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-audit-event-add-edit [preSeededData]="{ auditUserId: auditUserData?.id }" [hiddenFields]="['auditUserId']"></app-audit-event-add-edit>
+                                </div>
+                            </div>
                             </ng-template>
                         </li>
                       <li ngbNavItem *ngIf="externalCommunicationService.userIsAuditorExternalCommunicationReader()">
-                            <button ngbNavLink>ExternalCommunications
+                            <button ngbNavLink>External Communications
                                 <span class="badge bg-primary ms-2">
                                     {{ (auditUserData?.ExternalCommunicationsCount$ | async) ?? '-' }}
                                 </span>
                             </button>
                             <ng-template ngbNavContent>
-                            <app-external-communication-table [queryParams]="GetQueryParameters()"></app-external-communication-table>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-external-communication-table [queryParams]="{ auditUserId: auditUserData?.id }"></app-external-communication-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-external-communication-add-edit [preSeededData]="{ auditUserId: auditUserData?.id }" [hiddenFields]="['auditUserId']"></app-external-communication-add-edit>
+                                </div>
+                            </div>
                             </ng-template>
                         </li>
                     </ul>

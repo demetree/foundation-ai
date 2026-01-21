@@ -1,6 +1,16 @@
+/*
+
+   GENERATED SERVICE FOR THE PRIVILEGE TABLE - DO NOT MODIFY DIRECTLY
+   =======================================================================================
+   This is the default data interaction service for the Privilege table.
+
+   It should suffice for many workflows and data access needs, but if anything more is needed, then extend this in a 
+   custom version or add an additional targeted helper service.
+
+*/
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
-import { Observable, BehaviorSubject, catchError, throwError, lastValueFrom, map  } from 'rxjs';
+import { Observable, BehaviorSubject, catchError, throwError, lastValueFrom, map } from 'rxjs';
 import { shareReplay, tap } from 'rxjs/operators';
 import { UtilityService } from '../utility-services/utility.service'
 import { AlertService } from '../services/alert.service';
@@ -91,6 +101,7 @@ export class PrivilegeData {
     private _securityRolesPromise: Promise<SecurityRoleData[]> | null  = null;
     private _securityRolesSubject = new BehaviorSubject<SecurityRoleData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -152,7 +163,9 @@ export class PrivilegeData {
 
 
   private clearAllLazyCaches(): void {
+     //
      // Reset every collection cache and notify subscribers
+     //
      this._securityRoles = null;
      this._securityRolesPromise = null;
      this._securityRolesSubject.next(null);
@@ -172,9 +185,9 @@ export class PrivilegeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.privilege.SecurityRoles.then(securityRoles => { ... })
+     *   this.privilege.SecurityRoles.then(privileges => { ... })
      *   or
-     *   await this.privilege.SecurityRoles
+     *   await this.privilege.privileges
      *
     */
     public get SecurityRoles(): Promise<SecurityRoleData[]> {
@@ -199,8 +212,8 @@ export class PrivilegeData {
         this._securityRolesPromise = lastValueFrom(
             PrivilegeService.Instance.GetSecurityRolesForPrivilege(this.id)
         )
-        .then(securityRoles => {
-            this._securityRoles = securityRoles ?? [];
+        .then(SecurityRoles => {
+            this._securityRoles = SecurityRoles ?? [];
             this._securityRolesSubject.next(this._securityRoles);
             return this._securityRoles;
          })
@@ -215,7 +228,7 @@ export class PrivilegeData {
     }
 
     /**
-     * Clears the cached crew members. Call after mutations to force refresh.
+     * Clears the cached SecurityRole. Call after mutations to force refresh.
      */
     public ClearSecurityRolesCache(): void {
         this._securityRoles = null;

@@ -21,9 +21,9 @@
    </div>
    <div class="modal-body security-organization-modal-body">
       <form [formGroup]="securityOrganizationForm" (ngSubmit)="submitForm()">
-            <div class="form-group">
-                <label for="securityTenantId" id="label-securityTenantId"><span class="text-danger">*</span>Security Tenant</label>
-                <select id="securityTenantId" formControlName="securityTenantId" class="form-select security-organization-select" [disabled]="!userIsSecuritySecurityOrganizationWriter()">
+            <div class="form-group" *ngIf="!isFieldHidden('securityTenantId')">
+                <label for="SecurityOrganization-securityTenantId" id="label-SecurityOrganization-securityTenantId"><span class="text-danger">*</span>Security Tenant</label>
+                <select id="SecurityOrganization-securityTenantId" formControlName="securityTenantId" class="form-select security-organization-select" [disabled]="!userIsSecuritySecurityOrganizationWriter()">
                     <option [ngValue]="null">Select Security Tenant</option>
                     <option *ngFor="let securityTenant of securityTenants$ | async" [ngValue]="securityTenant.id">{{securityTenant.name}}</option>
                 </select>
@@ -31,28 +31,37 @@
                     Security Tenant is required
                 </div>
             </div>
-            <div class="form-group">
-                <label for="name" id="label-name"><span class="text-danger">*</span>Name</label>
-                <input type="text" id="name" formControlName="name" placeholder="Enter Name" class="form-control security-organization-input" [disabled]="!userIsSecuritySecurityOrganizationWriter()" aria-labelledby="label-name" />
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="SecurityOrganization-name" id="label-SecurityOrganization-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="SecurityOrganization-name" formControlName="name" placeholder="Enter Name" class="form-control security-organization-input" [disabled]="!userIsSecuritySecurityOrganizationWriter()" aria-labelledby="label-name" />
                 <div *ngIf="securityOrganizationForm.get('name')?.invalid && securityOrganizationForm.get('name')?.touched" class="text-danger">
                     Name is required
                 </div>
             </div>
-            <div class="form-group">
-                <label for="description" id="label-description">Description</label>
-                <textarea id="description" formControlName="description" placeholder="Enter Description" class="form-control security-organization-input" [disabled]="!userIsSecuritySecurityOrganizationWriter()"></textarea>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="SecurityOrganization-description" id="label-SecurityOrganization-description">Description</label>
+                <textarea id="SecurityOrganization-description" formControlName="description" placeholder="Enter Description" class="form-control security-organization-input" [disabled]="!userIsSecuritySecurityOrganizationWriter()"></textarea>
             </div>
-            <div class="form-check my-2" *ngIf="isEditMode">
-                <input type="checkbox" id="active" formControlName="active" class="form-check-input" [disabled]="!userIsSecuritySecurityOrganizationWriter()" />
-                <label for="active" class="form-check-label" id="label-active"><span class="text-danger">*</span>Active</label>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="SecurityOrganization-active" formControlName="active" class="form-check-input" [disabled]="!userIsSecuritySecurityOrganizationWriter()" />
+                <label for="SecurityOrganization-active" class="form-check-label" id="label-SecurityOrganization-active"><span class="text-danger">*</span>Active</label>
             </div>
-            <div class="form-check my-2" *ngIf="isEditMode">
-                <input type="checkbox" id="deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSecuritySecurityOrganizationWriter()" />
-                <label for="deleted" class="form-check-label" id="label-deleted"><span class="text-danger">*</span>Deleted</label>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="SecurityOrganization-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSecuritySecurityOrganizationWriter()" />
+                <label for="SecurityOrganization-deleted" class="form-check-label" id="label-SecurityOrganization-deleted"><span class="text-danger">*</span>Deleted</label>
             </div>
          <div class="modal-footer security-organization-modal-footer">
             <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Security Organization changes and Close">Cancel</button>
-            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !securityOrganizationForm.valid || securityOrganizationForm.pristine || !userIsSecuritySecurityOrganizationWriter()" ngbTooltip="Save the Security Organization changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !securityOrganizationForm.valid || securityOrganizationForm.pristine  || userIsSecuritySecurityOrganizationWriter() == false " ngbTooltip="Save the Security Organization changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Security Organization' }}
+                </span>
+            </button>
          </div>
       </form>
    </div>

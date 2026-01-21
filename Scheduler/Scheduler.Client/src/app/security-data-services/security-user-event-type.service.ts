@@ -1,6 +1,16 @@
+/*
+
+   GENERATED SERVICE FOR THE SECURITYUSEREVENTTYPE TABLE - DO NOT MODIFY DIRECTLY
+   =======================================================================================
+   This is the default data interaction service for the SecurityUserEventType table.
+
+   It should suffice for many workflows and data access needs, but if anything more is needed, then extend this in a 
+   custom version or add an additional targeted helper service.
+
+*/
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
-import { Observable, BehaviorSubject, catchError, throwError, lastValueFrom, map  } from 'rxjs';
+import { Observable, BehaviorSubject, catchError, throwError, lastValueFrom, map } from 'rxjs';
 import { shareReplay, tap } from 'rxjs/operators';
 import { UtilityService } from '../utility-services/utility.service'
 import { AlertService } from '../services/alert.service';
@@ -91,6 +101,7 @@ export class SecurityUserEventTypeData {
     private _securityUserEventsPromise: Promise<SecurityUserEventData[]> | null  = null;
     private _securityUserEventsSubject = new BehaviorSubject<SecurityUserEventData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -152,7 +163,9 @@ export class SecurityUserEventTypeData {
 
 
   private clearAllLazyCaches(): void {
+     //
      // Reset every collection cache and notify subscribers
+     //
      this._securityUserEvents = null;
      this._securityUserEventsPromise = null;
      this._securityUserEventsSubject.next(null);
@@ -172,9 +185,9 @@ export class SecurityUserEventTypeData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.securityUserEventType.SecurityUserEvents.then(securityUserEvents => { ... })
+     *   this.securityUserEventType.SecurityUserEvents.then(securityUserEventTypes => { ... })
      *   or
-     *   await this.securityUserEventType.SecurityUserEvents
+     *   await this.securityUserEventType.securityUserEventTypes
      *
     */
     public get SecurityUserEvents(): Promise<SecurityUserEventData[]> {
@@ -199,8 +212,8 @@ export class SecurityUserEventTypeData {
         this._securityUserEventsPromise = lastValueFrom(
             SecurityUserEventTypeService.Instance.GetSecurityUserEventsForSecurityUserEventType(this.id)
         )
-        .then(securityUserEvents => {
-            this._securityUserEvents = securityUserEvents ?? [];
+        .then(SecurityUserEvents => {
+            this._securityUserEvents = SecurityUserEvents ?? [];
             this._securityUserEventsSubject.next(this._securityUserEvents);
             return this._securityUserEvents;
          })
@@ -215,7 +228,7 @@ export class SecurityUserEventTypeData {
     }
 
     /**
-     * Clears the cached crew members. Call after mutations to force refresh.
+     * Clears the cached SecurityUserEvent. Call after mutations to force refresh.
      */
     public ClearSecurityUserEventsCache(): void {
         this._securityUserEvents = null;

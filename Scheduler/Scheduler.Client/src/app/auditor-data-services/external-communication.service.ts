@@ -1,6 +1,16 @@
+/*
+
+   GENERATED SERVICE FOR THE EXTERNALCOMMUNICATION TABLE - DO NOT MODIFY DIRECTLY
+   =======================================================================================
+   This is the default data interaction service for the ExternalCommunication table.
+
+   It should suffice for many workflows and data access needs, but if anything more is needed, then extend this in a 
+   custom version or add an additional targeted helper service.
+
+*/
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
-import { Observable, BehaviorSubject, catchError, throwError, lastValueFrom, map  } from 'rxjs';
+import { Observable, BehaviorSubject, catchError, throwError, lastValueFrom, map } from 'rxjs';
 import { shareReplay, tap } from 'rxjs/operators';
 import { UtilityService } from '../utility-services/utility.service'
 import { AlertService } from '../services/alert.service';
@@ -111,6 +121,7 @@ export class ExternalCommunicationData {
     private _externalCommunicationRecipientsPromise: Promise<ExternalCommunicationRecipientData[]> | null  = null;
     private _externalCommunicationRecipientsSubject = new BehaviorSubject<ExternalCommunicationRecipientData[] | null>(null);
 
+                
 
     //
     // Public observables — use with | async in templates
@@ -172,7 +183,9 @@ export class ExternalCommunicationData {
 
 
   private clearAllLazyCaches(): void {
+     //
      // Reset every collection cache and notify subscribers
+     //
      this._externalCommunicationRecipients = null;
      this._externalCommunicationRecipientsPromise = null;
      this._externalCommunicationRecipientsSubject.next(null);
@@ -192,9 +205,9 @@ export class ExternalCommunicationData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.externalCommunication.ExternalCommunicationRecipients.then(externalCommunicationRecipients => { ... })
+     *   this.externalCommunication.ExternalCommunicationRecipients.then(externalCommunications => { ... })
      *   or
-     *   await this.externalCommunication.ExternalCommunicationRecipients
+     *   await this.externalCommunication.externalCommunications
      *
     */
     public get ExternalCommunicationRecipients(): Promise<ExternalCommunicationRecipientData[]> {
@@ -219,8 +232,8 @@ export class ExternalCommunicationData {
         this._externalCommunicationRecipientsPromise = lastValueFrom(
             ExternalCommunicationService.Instance.GetExternalCommunicationRecipientsForExternalCommunication(this.id)
         )
-        .then(externalCommunicationRecipients => {
-            this._externalCommunicationRecipients = externalCommunicationRecipients ?? [];
+        .then(ExternalCommunicationRecipients => {
+            this._externalCommunicationRecipients = ExternalCommunicationRecipients ?? [];
             this._externalCommunicationRecipientsSubject.next(this._externalCommunicationRecipients);
             return this._externalCommunicationRecipients;
          })
@@ -235,7 +248,7 @@ export class ExternalCommunicationData {
     }
 
     /**
-     * Clears the cached crew members. Call after mutations to force refresh.
+     * Clears the cached ExternalCommunicationRecipient. Call after mutations to force refresh.
      */
     public ClearExternalCommunicationRecipientsCache(): void {
         this._externalCommunicationRecipients = null;

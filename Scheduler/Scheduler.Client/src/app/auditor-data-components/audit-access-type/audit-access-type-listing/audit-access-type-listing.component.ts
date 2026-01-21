@@ -1,3 +1,21 @@
+/*
+   GENERATED FORM FOR THE AUDITACCESSTYPE TABLE - DO NOT MODIFY DIRECTLY
+   =================================================================================
+
+   This is the default form generated from AuditAccessType table metadata.
+
+   It is useful for low usage worksflows such as basic configuration, but is likely not good enough for primary workflow usage
+   because it's form layout and validation is too simple.
+   
+   For building better looking and/or versions with custom logic, create a custom version of this:
+
+   1. Copy this component
+   2. Rename to audit-access-type-custom (or similar)
+   3. Modify layout, grouping, field types, add workflow logic
+   
+   This generated version is kept simple on purpose so it's easy to use as a reference/scaffold.
+
+*/
 import { Component, OnInit, AfterViewInit, ViewChild } from '@angular/core';
 import { Observable, map, finalize, startWith, shareReplay } from 'rxjs';
 import { BreakpointObserver } from '@angular/cdk/layout';

@@ -50,16 +50,16 @@
 /* Inactive (deactivated) rows */
 tr.row-inactive,
 .card.row-inactive {
-  font-style: italic !important;
-  opacity: 0.75 !important; // Slightly faded for extra clarity
+  font-style: italic;
+  opacity: 0.75; // Slightly faded for extra clarity
 }
 
 /* Deleted rows */
 tr.row-deleted,
 .card.row-deleted {
-  text-decoration: line-through !important;
-  opacity: 0.6 !important;
-  color: #999 !important; // Muted color
+  text-decoration: line-through;
+  opacity: 0.6;
+  color: #999; // Muted color
 }
 
 /* Combine both if deleted takes precedence */

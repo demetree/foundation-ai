@@ -21,24 +21,33 @@
    </div>
    <div class="modal-body audit-user-agent-modal-body">
       <form [formGroup]="auditUserAgentForm" (ngSubmit)="submitForm()">
-            <div class="form-group">
-                <label for="name" id="label-name"><span class="text-danger">*</span>Name</label>
-                <textarea id="name" formControlName="name" placeholder="Enter Name" class="form-control audit-user-agent-input" [disabled]="!userIsAuditorAuditUserAgentWriter()"></textarea>
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="AuditUserAgent-name" id="label-AuditUserAgent-name"><span class="text-danger">*</span>Name</label>
+                <textarea id="AuditUserAgent-name" formControlName="name" placeholder="Enter Name" class="form-control audit-user-agent-input" [disabled]="!userIsAuditorAuditUserAgentWriter()"></textarea>
                 <div *ngIf="auditUserAgentForm.get('name')?.invalid && auditUserAgentForm.get('name')?.touched" class="text-danger">
                     Name is required
                 </div>
             </div>
-            <div class="form-group">
-                <label for="comments" id="label-comments">Comments</label>
-                <textarea id="comments" formControlName="comments" placeholder="Enter Comments" class="form-control audit-user-agent-input" [disabled]="!userIsAuditorAuditUserAgentWriter()"></textarea>
+            <div class="form-group" *ngIf="!isFieldHidden('comments')">
+                <label for="AuditUserAgent-comments" id="label-AuditUserAgent-comments">Comments</label>
+                <textarea id="AuditUserAgent-comments" formControlName="comments" placeholder="Enter Comments" class="form-control audit-user-agent-input" [disabled]="!userIsAuditorAuditUserAgentWriter()"></textarea>
             </div>
-            <div class="form-group">
-                <label for="firstAccess" id="label-firstAccess">First Access</label>
-                <input type="datetime-local" id="firstAccess" formControlName="firstAccess" placeholder="Enter First Access" class="form-control audit-user-agent-input" [disabled]="!userIsAuditorAuditUserAgentWriter()" aria-labelledby="label-firstAccess" />
+            <div class="form-group" *ngIf="!isFieldHidden('firstAccess')">
+                <label for="AuditUserAgent-firstAccess" id="label-AuditUserAgent-firstAccess">First Access</label>
+                <input type="datetime-local" id="AuditUserAgent-firstAccess" formControlName="firstAccess" placeholder="Enter First Access" class="form-control audit-user-agent-input" [disabled]="!userIsAuditorAuditUserAgentWriter()" aria-labelledby="label-firstAccess" />
             </div>
          <div class="modal-footer audit-user-agent-modal-footer">
             <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Audit User Agent changes and Close">Cancel</button>
-            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !auditUserAgentForm.valid || auditUserAgentForm.pristine || !userIsAuditorAuditUserAgentWriter()" ngbTooltip="Save the Audit User Agent changes and Close">{{ isEditMode ? 'Save' : 'Create' }}</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !auditUserAgentForm.valid || auditUserAgentForm.pristine  || userIsAuditorAuditUserAgentWriter() == false " ngbTooltip="Save the Audit User Agent changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Audit User Agent' }}
+                </span>
+            </button>
          </div>
       </form>
    </div>
