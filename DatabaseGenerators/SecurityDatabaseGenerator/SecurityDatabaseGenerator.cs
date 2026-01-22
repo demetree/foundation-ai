@@ -316,6 +316,18 @@ namespace Foundation.Security.Database
             securityUserEventTypeTable.AddData(new Dictionary<string, string> { { "name", "SystemInitiatedPasswordResetCompleted" },
                                                                     { "description", "SystemInitiatedPasswordResetCompleted" } });
 
+            //
+            // AI-Generated: Added for admin user management actions
+            //
+            securityUserEventTypeTable.AddData(new Dictionary<string, string> { { "name", "AdminInitiatedPasswordSet" },
+                                                                    { "description", "Admin Initiated Password Set" } });
+
+            securityUserEventTypeTable.AddData(new Dictionary<string, string> { { "name", "AdminActionLockAccount" },
+                                                                    { "description", "Admin Action Lock Account" } });
+
+            securityUserEventTypeTable.AddData(new Dictionary<string, string> { { "name", "AccountUnlocked" },
+                                                                    { "description", "Account Unlocked" } });
+
 
 
             Database.Table securityUserEventTable = database.AddTable("SecurityUserEvent");

@@ -31,6 +31,9 @@ namespace Foundation.Security
             CUSTOM = 6
         }
 
+        //
+        // AI-Generated: Added AdminInitiatedPasswordSet, AdminActionLockAccount, AccountUnlocked for admin actions
+        //
         public enum SecurityUserEventTypes
         {
             LoginSuccess = 1,
@@ -43,7 +46,10 @@ namespace Foundation.Security
             UserInitiatedPasswordResetRequest = 8,
             UserInitiatedPasswordResetCompleted = 9,
             SystemInitiatedPasswordResetRequest = 10,
-            SystemInitiatedPasswordResetCompleted = 11
+            SystemInitiatedPasswordResetCompleted = 11,
+            AdminInitiatedPasswordSet = 12,
+            AdminActionLockAccount = 13,
+            AccountUnlocked = 14
         }
 
 
@@ -290,7 +296,7 @@ namespace Foundation.Security
             {
                 List<SecurityUserEventType> allSUETs = (from x in db.SecurityUserEventTypes select x).AsNoTracking().ToList();
 
-                if (allSUETs.Count != 11)
+                if (allSUETs.Count != 14)
                 {
                     throw new Exception("Security System Integrity Error.  Incorrect number of Security User Event Types in Security database.");
                 }
@@ -306,10 +312,13 @@ namespace Foundation.Security
                                                               (x.id == 8 && x.name == "UserInitiatedPasswordResetRequest") ||
                                                               (x.id == 9 && x.name == "UserInitiatedPasswordResetCompleted") ||
                                                               (x.id == 10 && x.name == "SystemInitiatedPasswordResetRequest") ||
-                                                              (x.id == 11 && x.name == "SystemInitiatedPasswordResetCompleted"))
+                                                              (x.id == 11 && x.name == "SystemInitiatedPasswordResetCompleted") ||
+                                                              (x.id == 12 && x.name == "AdminInitiatedPasswordSet") ||
+                                                              (x.id == 13 && x.name == "AdminActionLockAccount") ||
+                                                              (x.id == 14 && x.name == "AccountUnlocked"))
                                                               select x).ToList();
 
-                if (validatedTypes.Count != 11)
+                if (validatedTypes.Count != 14)
                 {
                     throw new Exception("Security System Integrity Error.  Security User Event Type configuration is incorrect in the Security database.");
                 }

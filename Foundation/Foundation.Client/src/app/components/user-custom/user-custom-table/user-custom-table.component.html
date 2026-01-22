@@ -108,12 +108,27 @@
                         <!-- Actions Column -->
                         <td class="text-end" *ngIf="userIsSecurityUserWriter()">
                             <div class="btn-group btn-group-sm">
-                                <!-- Toggle Active -->
-                                <button class="btn btn-outline-secondary"
-                                    [ngbTooltip]="user.active ? 'Deactivate' : 'Activate'"
-                                    (click)="toggleActive(user, $event)" [disabled]="isActionInProgress(user)">
-                                    <i class="fa-solid"
-                                        [ngClass]="user.active ? 'fa-toggle-on text-success' : 'fa-toggle-off'"></i>
+                                <!-- Password Reset Dropdown -->
+                                <div class="btn-group btn-group-sm" ngbDropdown>
+                                    <button class="btn btn-outline-info" ngbDropdownToggle ngbTooltip="Password Actions"
+                                        [disabled]="isActionInProgress(user)" (click)="$event.stopPropagation()">
+                                        <i class="fa-solid fa-key"></i>
+                                    </button>
+                                    <div ngbDropdownMenu>
+                                        <button ngbDropdownItem (click)="sendPasswordReset(user, $event)">
+                                            <i class="fa-solid fa-envelope me-2"></i>Send Reset Email
+                                        </button>
+                                        <button ngbDropdownItem (click)="setTemporaryPassword(user, $event)">
+                                            <i class="fa-solid fa-lock me-2"></i>Set Temporary Password
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Lock Account -->
+                                <button class="btn btn-outline-danger" *ngIf="user.active === true"
+                                    ngbTooltip="Lock Account" (click)="lockAccount(user, $event)"
+                                    [disabled]="isActionInProgress(user)">
+                                    <i class="fa-solid fa-lock"></i>
                                 </button>
 
                                 <!-- Unlock -->

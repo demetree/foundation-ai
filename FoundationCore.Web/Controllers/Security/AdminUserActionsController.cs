@@ -1,0 +1,479 @@
+//
+// AdminUserActionsController.cs
+//
+// AI-Generated: Provides admin-only endpoints for user management actions
+// such as password reset, account locking, and unlocking.
+//
+// Each action logs a SecurityUserEvent for audit trail.
+//
+
+using System;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+using Foundation.Auditor;
+using Foundation.Security.Database;
+
+using SendGrid;
+using SendGrid.Helpers.Mail;
+
+
+namespace Foundation.Security.Controllers.WebAPI
+{
+    [Authorize]
+    public partial class AdminUserActionsController : SecureWebAPIController
+    {
+        private SecurityContext _securityDb;
+
+
+        //
+        // Request Models
+        //
+        public class SetPasswordRequest
+        {
+            public string Password { get; set; }
+        }
+
+
+        public AdminUserActionsController(SecurityContext securityDb) : base("Security", "SecurityUser")
+        {
+            _securityDb = securityDb;
+        }
+
+
+        /// <summary>
+        /// 
+        /// Sends a password reset email to the specified user (admin-initiated).
+        /// 
+        /// </summary>
+        [Route("api/Admin/User/{id}/SendPasswordReset")]
+        [HttpPost]
+        public async Task<IActionResult> SendPasswordReset(long id)
+        {
+            StartAuditEventClock();
+
+            //
+            // Verify admin privileges
+            //
+            if (await UserCanAdministerAsync() == false)
+            {
+                await CreateAuditEventAsync(AuditEngine.AuditType.UnauthorizedAccessAttempt, $"Non-admin user attempted to send password reset for user id {id}", false);
+
+                return Forbid();
+            }
+
+            try
+            {
+                //
+                // Get the target user
+                //
+                SecurityUser targetUser = await (from su in _securityDb.SecurityUsers
+                                                  where su.id == id &&
+                                                  su.deleted == false
+                                                  select su)
+                                                  .FirstOrDefaultAsync();
+
+                if (targetUser == null)
+                {
+                    return NotFound("User not found.");
+                }
+
+                //
+                // Generate reset token
+                //
+                byte[] randomBytes = new byte[128];
+
+                using (var rng = RandomNumberGenerator.Create())
+                {
+                    rng.GetBytes(randomBytes);
+                }
+
+                string token = Convert.ToBase64String(randomBytes)
+                                  .Replace('+', '-')
+                                  .Replace('/', '_')
+                                  .TrimEnd('=');
+
+                string baseUrl = $"{Request.Scheme}://{Request.Host}";
+                string resetUrl = $"{baseUrl}/reset-password/{token}";
+
+                //
+                // Send email
+                //
+                await SendPasswordResetEmailViaSendGridAsync(targetUser.emailAddress, targetUser.firstName, resetUrl);
+
+                int passwordResetTokenHours = Foundation.Configuration.GetIntegerConfigurationSetting("PasswordResetTokenHours", 1);
+
+                //
+                // Create reset token record
+                //
+                SecurityUserPasswordResetToken resetTokenEntry = new SecurityUserPasswordResetToken
+                {
+                    securityUserId = targetUser.id,
+                    token = token,
+                    timeStamp = DateTime.UtcNow,
+                    expiry = DateTime.UtcNow.AddHours(passwordResetTokenHours),
+                    systemInitiated = true,
+                    completed = false,
+                    comments = $"Admin-initiated password reset via '/api/Admin/User/{id}/SendPasswordReset' at {DateTime.UtcNow.ToString("s")}.",
+                    active = true,
+                    deleted = false
+                };
+
+                _securityDb.SecurityUserPasswordResetTokens.Add(resetTokenEntry);
+
+                //
+                // Log the event
+                //
+                SecurityUserEvent userEvent = new SecurityUserEvent
+                {
+                    securityUserId = targetUser.id,
+                    securityUserEventTypeId = (int)SecurityLogic.SecurityUserEventTypes.SystemInitiatedPasswordResetRequest,
+                    timeStamp = DateTime.UtcNow,
+                    comments = $"Admin-initiated password reset email sent by user {GetSecurityUser()?.accountName ?? "Unknown"}.",
+                    active = true,
+                    deleted = false
+                };
+
+                _securityDb.SecurityUserEvents.Add(userEvent);
+                await _securityDb.SaveChangesAsync();
+
+                await CreateAuditEventAsync(AuditEngine.AuditType.ConfirmationRequested, $"Admin-initiated password reset email sent for user {targetUser.accountName}", targetUser.id.ToString());
+
+                return Ok(new { message = "Password reset email sent successfully." });
+            }
+            catch (Exception ex)
+            {
+                await CreateAuditEventAsync(AuditEngine.AuditType.Error, $"Error sending admin-initiated password reset.", false, "", "", "", ex);
+
+                return StatusCode(500, "An error occurred while sending the password reset email.");
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// Sets a temporary password for the specified user (admin-initiated).
+        /// 
+        /// </summary>
+        [Route("api/Admin/User/{id}/SetPassword")]
+        [HttpPost]
+        public async Task<IActionResult> SetPassword(long id, [FromBody] SetPasswordRequest request)
+        {
+            StartAuditEventClock();
+
+            //
+            // Verify admin privileges
+            //
+            if (await UserCanAdministerAsync() == false)
+            {
+                await CreateAuditEventAsync(AuditEngine.AuditType.UnauthorizedAccessAttempt, $"Non-admin user attempted to set password for user id {id}", false);
+
+                return Forbid();
+            }
+
+            if (request == null || string.IsNullOrWhiteSpace(request.Password))
+            {
+                return BadRequest("Password is required.");
+            }
+
+            try
+            {
+                //
+                // Get the target user
+                //
+                SecurityUser targetUser = await (from su in _securityDb.SecurityUsers
+                                                  where su.id == id &&
+                                                  su.deleted == false
+                                                  select su)
+                                                  .FirstOrDefaultAsync();
+
+                if (targetUser == null)
+                {
+                    return NotFound("User not found.");
+                }
+
+                //
+                // Validate password complexity
+                //
+                if (PasswordCheck.IsValidPassword(request.Password, 8, 4, true, true, true, true) == false)
+                {
+                    return BadRequest("Password must be at least 8 characters long and contain uppercase, lowercase, digit, and special character.");
+                }
+
+                //
+                // Set the new password
+                //
+                targetUser.password = SecurityLogic.SecurePasswordHasher.Hash(request.Password);
+                targetUser.mustChangePassword = true;
+                targetUser.failedLoginCount = 0;
+
+                //
+                // Log the event
+                //
+                SecurityUserEvent userEvent = new SecurityUserEvent
+                {
+                    securityUserId = targetUser.id,
+                    securityUserEventTypeId = (int)SecurityLogic.SecurityUserEventTypes.AdminInitiatedPasswordSet,
+                    timeStamp = DateTime.UtcNow,
+                    comments = $"Password set by admin user {GetSecurityUser()?.accountName ?? "Unknown"}. User must change password on next login.",
+                    active = true,
+                    deleted = false
+                };
+
+                _securityDb.SecurityUserEvents.Add(userEvent);
+                await _securityDb.SaveChangesAsync();
+
+                await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, $"Admin set password for user {targetUser.accountName}", targetUser.id.ToString());
+
+                return Ok(new { message = "Password set successfully. User will be required to change password on next login." });
+            }
+            catch (Exception ex)
+            {
+                await CreateAuditEventAsync(AuditEngine.AuditType.Error, $"Error setting password for user.", false, "", "", "", ex);
+
+                return StatusCode(500, "An error occurred while setting the password.");
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// Locks the specified user account (sets active = false).
+        /// 
+        /// </summary>
+        [Route("api/Admin/User/{id}/Lock")]
+        [HttpPost]
+        public async Task<IActionResult> LockAccount(long id)
+        {
+            StartAuditEventClock();
+
+            //
+            // Verify admin privileges
+            //
+            if (await UserCanAdministerAsync() == false)
+            {
+                await CreateAuditEventAsync(AuditEngine.AuditType.UnauthorizedAccessAttempt, $"Non-admin user attempted to lock account for user id {id}", false);
+
+                return Forbid();
+            }
+
+            try
+            {
+                //
+                // Get the target user
+                //
+                SecurityUser targetUser = await (from su in _securityDb.SecurityUsers
+                                                  where su.id == id &&
+                                                  su.deleted == false
+                                                  select su)
+                                                  .FirstOrDefaultAsync();
+
+                if (targetUser == null)
+                {
+                    return NotFound("User not found.");
+                }
+
+                //
+                // Lock the account
+                //
+                targetUser.active = false;
+
+                //
+                // Log the event
+                //
+                SecurityUserEvent userEvent = new SecurityUserEvent
+                {
+                    securityUserId = targetUser.id,
+                    securityUserEventTypeId = (int)SecurityLogic.SecurityUserEventTypes.AdminActionLockAccount,
+                    timeStamp = DateTime.UtcNow,
+                    comments = $"Account locked by admin user {GetSecurityUser()?.accountName ?? "Unknown"}.",
+                    active = true,
+                    deleted = false
+                };
+
+                _securityDb.SecurityUserEvents.Add(userEvent);
+                await _securityDb.SaveChangesAsync();
+
+                await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, $"Admin locked account for user {targetUser.accountName}", targetUser.id.ToString());
+
+                return Ok(new { message = "Account locked successfully." });
+            }
+            catch (Exception ex)
+            {
+                await CreateAuditEventAsync(AuditEngine.AuditType.Error, $"Error locking user account.", false, "", "", "", ex);
+
+                return StatusCode(500, "An error occurred while locking the account.");
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// Unlocks the specified user account (sets active = true, resets failed login count).
+        /// 
+        /// </summary>
+        [Route("api/Admin/User/{id}/Unlock")]
+        [HttpPost]
+        public async Task<IActionResult> UnlockAccount(long id)
+        {
+            StartAuditEventClock();
+
+            //
+            // Verify admin privileges
+            //
+            if (await UserCanAdministerAsync() == false)
+            {
+                await CreateAuditEventAsync(AuditEngine.AuditType.UnauthorizedAccessAttempt, $"Non-admin user attempted to unlock account for user id {id}", false);
+
+                return Forbid();
+            }
+
+            try
+            {
+                //
+                // Get the target user
+                //
+                SecurityUser targetUser = await (from su in _securityDb.SecurityUsers
+                                                  where su.id == id &&
+                                                  su.deleted == false
+                                                  select su)
+                                                  .FirstOrDefaultAsync();
+
+                if (targetUser == null)
+                {
+                    return NotFound("User not found.");
+                }
+
+                //
+                // Unlock the account
+                //
+                targetUser.active = true;
+                targetUser.failedLoginCount = 0;
+
+                //
+                // Log the event
+                //
+                SecurityUserEvent userEvent = new SecurityUserEvent
+                {
+                    securityUserId = targetUser.id,
+                    securityUserEventTypeId = (int)SecurityLogic.SecurityUserEventTypes.AccountUnlocked,
+                    timeStamp = DateTime.UtcNow,
+                    comments = $"Account unlocked by admin user {GetSecurityUser()?.accountName ?? "Unknown"}.",
+                    active = true,
+                    deleted = false
+                };
+
+                _securityDb.SecurityUserEvents.Add(userEvent);
+                await _securityDb.SaveChangesAsync();
+
+                await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, $"Admin unlocked account for user {targetUser.accountName}", targetUser.id.ToString());
+
+                return Ok(new { message = "Account unlocked successfully." });
+            }
+            catch (Exception ex)
+            {
+                await CreateAuditEventAsync(AuditEngine.AuditType.Error, $"Error unlocking user account.", false, "", "", "", ex);
+
+                return StatusCode(500, "An error occurred while unlocking the account.");
+            }
+        }
+
+
+        //
+        // Helper method to send password reset email via SendGrid
+        //
+        private async Task<bool> SendPasswordResetEmailViaSendGridAsync(string toEmail, string greetingName, string resetUrl)
+        {
+            try
+            {
+                string apiKey = Foundation.Configuration.GetStringConfigurationSetting("SendGridAPIKey", null);
+                string emailFromAccount = Foundation.Configuration.GetStringConfigurationSetting("EmailFromAddress", "donotreply@notconfigured.com");
+                string emailDisplayName = Foundation.Configuration.GetStringConfigurationSetting("EmailDisplayName", "donotreply@notconfigured.com");
+                string emailSignature = Foundation.Configuration.GetStringConfigurationSetting("EmailSignature", "donotreply@notconfigured.com");
+                string companyName = Foundation.Configuration.GetStringConfigurationSetting("CompanyName", "Not Configured");
+                int passwordResetTokenHours = Foundation.Configuration.GetIntegerConfigurationSetting("PasswordResetTokenHours", 1);
+
+                if (string.IsNullOrEmpty(apiKey) == true)
+                {
+                    throw new Exception("Unable to send email because API key for SendGrid is not found in the appSettings");
+                }
+
+                var client = new SendGridClient(apiKey);
+                var from = new EmailAddress(emailFromAccount, emailDisplayName);
+                var to = new EmailAddress(toEmail, greetingName);
+                var subject = $"{companyName} Password Reset Request (Admin Initiated)";
+
+                var htmlContent = $@"
+<html>
+  <body style=""font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;"">
+    <table width=""100%"" cellspacing=""0"" cellpadding=""0"" style=""max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"">
+      <tr>
+        <td style=""background-color: #004aad; color: white; padding: 20px; text-align: center;"">
+          <h2 style=""margin: 0;"">{companyName} Password Reset</h2>
+        </td>
+      </tr>
+      <tr>
+        <td style=""padding: 30px;"">
+          <p style=""font-size: 16px; color: #333;"">Dear {greetingName},</p>
+          <p style=""font-size: 16px; color: #333;"">
+            An administrator has requested a password reset for your account.
+          </p>
+          <p style=""font-size: 16px; color: #333;"">
+            To set a new password, please click the button below:
+          </p>
+          <p style=""text-align: center; margin: 30px 0;"">
+            <a href=""{resetUrl}"" style=""background-color: #004aad; color: white; text-decoration: none; padding: 12px 24px; font-size: 16px; border-radius: 5px; display: inline-block;"">
+              Reset Your Password
+            </a>
+          </p>
+          <p style=""font-size: 14px; color: #666;"">
+            If the button above doesn't work, copy and paste the following link into your browser:
+          </p>
+          <p style=""font-size: 14px; color: #666; word-break: break-word;"">
+            <a href=""{resetUrl}"" style=""color: #004aad;"">{resetUrl}</a>
+          </p>
+          <p style=""font-size: 14px; color: #999; margin-top: 40px;"">
+            This link will expire in {passwordResetTokenHours} hour{(passwordResetTokenHours > 1 ? "s" : "")}.
+          </p>
+          <p style=""font-size: 14px; color: #333;"">
+            Best regards,<br />
+            <strong>{emailSignature}</strong>
+          </p>
+        </td>
+      </tr>
+      <tr>
+        <td style=""background-color: #f4f4f4; text-align: center; padding: 15px; font-size: 12px; color: #999;"">
+          © {DateTime.UtcNow.Year} {companyName}. All rights reserved.
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>";
+
+                var msg = MailHelper.CreateSingleEmail(from, to, subject, null, htmlContent);
+
+                var response = await client.SendEmailAsync(msg);
+
+                if ((int)response.StatusCode >= 400)
+                {
+                    var errorBody = await response.Body.ReadAsStringAsync();
+
+                    throw new Exception($"SendGrid API Error: {(int)response.StatusCode} - {errorBody}");
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await CreateAuditEventAsync(AuditEngine.AuditType.Error, $"Caught error trying to send admin-initiated password reset email through SendGrid to email address {toEmail}.", false, "", "", "", ex);
+
+                return false;
+            }
+        }
+    }
+}

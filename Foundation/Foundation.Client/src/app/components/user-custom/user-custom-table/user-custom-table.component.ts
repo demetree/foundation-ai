@@ -13,6 +13,7 @@ import { SecurityUserService, SecurityUserData, SecurityUserQueryParameters, Sec
 import { AuthService } from '../../../services/auth.service';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { ConfirmationService } from '../../../services/confirmation-service';
+import { AdminUserActionsService } from '../admin-user-actions.service';
 
 //
 // Status badge types for visual display
@@ -62,7 +63,8 @@ export class UserCustomTableComponent implements OnInit, AfterViewInit, OnChange
         private securityUserService: SecurityUserService,
         private authService: AuthService,
         private alertService: AlertService,
-        private confirmationService: ConfirmationService
+        private confirmationService: ConfirmationService,
+        private adminUserActionsService: AdminUserActionsService
     ) { }
 
 
@@ -405,6 +407,126 @@ export class UserCustomTableComponent implements OnInit, AfterViewInit, OnChange
     //
     public refreshData(): void {
         this.loadData();
+    }
+
+
+    //
+    // AI-Generated: Admin Actions
+    //
+
+    public async sendPasswordReset(user: SecurityUserData, event: Event): Promise<void> {
+        event.stopPropagation();
+
+        const confirmed = await this.confirmationService.confirm(
+            'Send Password Reset',
+            `Send a password reset email to ${user.emailAddress ?? user.accountName}?`
+        );
+
+        if (confirmed !== true) {
+            return;
+        }
+
+        const userId = Number(user.id);
+
+        if (this.actionInProgress[userId] === true) {
+            return;
+        }
+
+        this.actionInProgress[userId] = true;
+
+        this.adminUserActionsService.sendPasswordReset(user.id).subscribe({
+            next: () => {
+                this.actionInProgress[userId] = false;
+                this.alertService.showMessage('Success', 'Password reset email sent', MessageSeverity.success);
+            },
+            error: (err) => {
+                this.actionInProgress[userId] = false;
+                this.alertService.showMessage('Error', 'Failed to send password reset email', MessageSeverity.error);
+            }
+        });
+    }
+
+
+    public async setTemporaryPassword(user: SecurityUserData, event: Event): Promise<void> {
+        event.stopPropagation();
+
+        //
+        // Prompt for new password
+        //
+        const password = prompt('Enter temporary password (min 8 chars, uppercase, lowercase, digit, special):');
+
+        if (password == null || password.trim() === '') {
+            return;
+        }
+
+        const confirmed = await this.confirmationService.confirm(
+            'Set Temporary Password',
+            `Set a temporary password for ${user.accountName}? The user will be required to change it on next login.`
+        );
+
+        if (confirmed !== true) {
+            return;
+        }
+
+        const userId = Number(user.id);
+
+        if (this.actionInProgress[userId] === true) {
+            return;
+        }
+
+        this.actionInProgress[userId] = true;
+
+        this.adminUserActionsService.setTemporaryPassword(user.id, password).subscribe({
+            next: () => {
+                this.actionInProgress[userId] = false;
+                this.alertService.showMessage('Success', 'Temporary password set. User must change on next login.', MessageSeverity.success);
+            },
+            error: (err) => {
+                this.actionInProgress[userId] = false;
+
+                let errorMsg = 'Failed to set password';
+
+                if (err.error && typeof err.error === 'string') {
+                    errorMsg = err.error;
+                }
+
+                this.alertService.showMessage('Error', errorMsg, MessageSeverity.error);
+            }
+        });
+    }
+
+
+    public async lockAccount(user: SecurityUserData, event: Event): Promise<void> {
+        event.stopPropagation();
+
+        const confirmed = await this.confirmationService.confirm(
+            'Lock Account',
+            `Are you sure you want to lock the account for ${user.accountName}? They will not be able to log in.`
+        );
+
+        if (confirmed !== true) {
+            return;
+        }
+
+        const userId = Number(user.id);
+
+        if (this.actionInProgress[userId] === true) {
+            return;
+        }
+
+        this.actionInProgress[userId] = true;
+
+        this.adminUserActionsService.lockAccount(user.id).subscribe({
+            next: () => {
+                user.active = false;
+                this.actionInProgress[userId] = false;
+                this.alertService.showMessage('Success', 'Account locked', MessageSeverity.success);
+            },
+            error: (err) => {
+                this.actionInProgress[userId] = false;
+                this.alertService.showMessage('Error', 'Failed to lock account', MessageSeverity.error);
+            }
+        });
     }
 
 
