@@ -124,7 +124,7 @@
                 <div class="entity-list" *ngIf="!(isLoadingUsers$ | async) && (users$ | async)?.length">
                     <div class="entity-item" *ngFor="let user of users$ | async">
                         <div class="entity-icon user-avatar">
-                            {{ user.firstName?.charAt(0) || user.accountName?.charAt(0) || '?' }}
+                            {{ user.firstName?.charAt(0) || user.accountName.charAt(0) || '?' }}
                         </div>
                         <div class="entity-info">
                             <div class="entity-name">{{ user.firstName ? user.firstName + ' ' + user.lastName :

@@ -82,8 +82,8 @@
                     </div>
                     <div class="info-item">
                         <span class="info-label">Failed Login Count</span>
-                        <span class="info-value" [ngClass]="{'text-danger fw-bold': (user.failedLoginCount ?? 0) >= 4}">
-                            {{ user.failedLoginCount ?? 0 }}
+                        <span class="info-value" [ngClass]="{'text-danger fw-bold': (user.failedLoginCount >= 4)}">
+                            {{ user.failedLoginCount }}
                         </span>
                     </div>
                 </div>
