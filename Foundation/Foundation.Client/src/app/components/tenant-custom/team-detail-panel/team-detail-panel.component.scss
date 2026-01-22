@@ -214,4 +214,9 @@
 ::ng-deep .team-detail-panel {
     width: 450px !important;
     max-width: 90vw;
+    z-index: 1060 !important; // Highest - deepest level panel
+}
+
+::ng-deep .offcanvas-backdrop {
+    z-index: 1050 !important;
 }

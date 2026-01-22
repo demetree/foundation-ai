@@ -56,6 +56,171 @@ namespace Foundation.Security
         public const string FIRST_AND_LAST_USER_ACCOUNT_SUFFIX = "@FirstAndLastPlaceholderUserAccount";
 
 
+        //
+        // LoginAttempt Auto-Purge Configuration
+        //
+        private const string LOGIN_ATTEMPT_AUTO_PURGE = "LoginAttemptAutoPurge";
+        private const int LOGIN_ATTEMPT_PURGE_BATCH_SIZE = 1000;
+        public static object loginAttemptPurgeSyncRoot = new object();
+
+
+        /// <summary>
+        /// 
+        /// Enables automatic purging of LoginAttempt records older than the specified number of days.
+        /// Runs hourly via Hangfire recurring job.
+        /// 
+        /// </summary>
+        /// <param name="daysToKeep">Number of days to retain LoginAttempt records. Must be greater than 0.</param>
+        public static void EnableLoginAttemptAutoPurge(int daysToKeep)
+        {
+            if (daysToKeep <= 0)
+            {
+                return;
+            }
+
+            try
+            {
+                RecurringJob.AddOrUpdate(LOGIN_ATTEMPT_AUTO_PURGE, () => PurgeLoginAttempts(daysToKeep), RecurringJob.CRON_HOURLY);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Error enabling LoginAttempt auto-purge: " + ex.ToString());
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// Disables the automatic LoginAttempt purge job.
+        /// 
+        /// </summary>
+        public static void DisableLoginAttemptAutoPurge()
+        {
+            try
+            {
+                RecurringJob.RemoveIfExists(LOGIN_ATTEMPT_AUTO_PURGE);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Error disabling LoginAttempt auto-purge: " + ex.ToString());
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// Purges LoginAttempt records older than the specified number of days.
+        /// Deletes in batches to handle large datasets without running out of memory.
+        /// 
+        /// </summary>
+        /// <param name="daysToKeep">Number of days to retain. Records older than this will be deleted.</param>
+        public static void PurgeLoginAttempts(int daysToKeep)
+        {
+            if (daysToKeep <= 0)
+            {
+                return;
+            }
+
+            lock (loginAttemptPurgeSyncRoot)
+            {
+                try
+                {
+                    DateTime cutoffDate = DateTime.UtcNow.AddDays(-1 * daysToKeep);
+
+                    //
+                    // Get the count of records to remove
+                    //
+                    int removalCount = 0;
+
+                    using (SecurityContext countDb = new SecurityContext())
+                    {
+                        removalCount = (from la in countDb.LoginAttempts
+                                        where la.timeStamp <= cutoffDate
+                                        select la).Count();
+                    }
+
+                    if (removalCount == 0)
+                    {
+                        return;
+                    }
+
+                    Foundation.Auditor.AuditEngine.Instance.CreateAuditEvent(
+                        DateTime.UtcNow, 
+                        DateTime.UtcNow, 
+                        true, 
+                        Foundation.Auditor.AuditEngine.AuditAccessType.Ambiguous, 
+                        Foundation.Auditor.AuditEngine.AuditType.Miscellaneous, 
+                        null, null, null, null, 
+                        "Security", 
+                        "LoginAttempt", 
+                        null, null, null, 
+                        System.Threading.Thread.CurrentThread.ManagedThreadId, 
+                        "Beginning LoginAttempt purge process. Days to keep: " + daysToKeep.ToString() + ". Records to remove: " + removalCount.ToString(), 
+                        null, null, null);
+
+                    int rowsLeftToRemove = removalCount;
+
+                    //
+                    // Delete in batches to avoid memory issues with large datasets
+                    //
+                    while (rowsLeftToRemove > 0)
+                    {
+                        using (SecurityContext iterationDb = new SecurityContext())
+                        {
+                            int rowsToRemoveThisPass = (rowsLeftToRemove > LOGIN_ATTEMPT_PURGE_BATCH_SIZE ? LOGIN_ATTEMPT_PURGE_BATCH_SIZE : rowsLeftToRemove);
+
+                            List<LoginAttempt> recordsToRemove = (from la in iterationDb.LoginAttempts
+                                                                   where la.timeStamp <= cutoffDate
+                                                                   orderby la.id
+                                                                   select la).Take(rowsToRemoveThisPass).ToList();
+
+                            if (recordsToRemove.Count == 0)
+                            {
+                                break;
+                            }
+
+                            iterationDb.LoginAttempts.RemoveRange(recordsToRemove);
+                            iterationDb.SaveChanges();
+
+                            rowsLeftToRemove -= recordsToRemove.Count;
+                        }
+                    }
+
+                    Foundation.Auditor.AuditEngine.Instance.CreateAuditEvent(
+                        DateTime.UtcNow, 
+                        DateTime.UtcNow, 
+                        true, 
+                        Foundation.Auditor.AuditEngine.AuditAccessType.Ambiguous, 
+                        Foundation.Auditor.AuditEngine.AuditType.Miscellaneous, 
+                        null, null, null, null, 
+                        "Security", 
+                        "LoginAttempt", 
+                        null, null, null, 
+                        System.Threading.Thread.CurrentThread.ManagedThreadId, 
+                        "Completed LoginAttempt purge process. Removed " + removalCount.ToString() + " records.", 
+                        null, null, null);
+                }
+                catch (Exception ex)
+                {
+                    Foundation.Auditor.AuditEngine.Instance.CreateAuditEvent(
+                        DateTime.UtcNow, 
+                        DateTime.UtcNow, 
+                        false, 
+                        Foundation.Auditor.AuditEngine.AuditAccessType.Ambiguous, 
+                        Foundation.Auditor.AuditEngine.AuditType.Error, 
+                        null, null, null, null, 
+                        "Security", 
+                        "LoginAttempt", 
+                        null, null, null, 
+                        System.Threading.Thread.CurrentThread.ManagedThreadId, 
+                        "Error during LoginAttempt purge process: " + ex.Message, 
+                        null, null, 
+                        new List<string> { ex.ToString() });
+                }
+            }
+        }
+
+
         public static void IntegrityCheckPrivilegeTable()
         {
             //

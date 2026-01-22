@@ -1,0 +1,73 @@
+<ng-template #modalTemplate>
+    <div class="org-modal">
+        <!-- Header -->
+        <div class="modal-header org-modal-header">
+            <div class="header-content">
+                <div class="header-icon">
+                    <i class="fa-solid fa-building"></i>
+                </div>
+                <div class="header-text">
+                    <h5 class="modal-title mb-0">
+                        {{ isEditMode ? 'Edit Organization' : 'New Organization' }}
+                    </h5>
+                    <small class="text-light opacity-75" *ngIf="tenant">
+                        {{ tenant.name }}
+                    </small>
+                </div>
+            </div>
+            <button type="button" class="btn-close btn-close-white" (click)="closeModal()"></button>
+        </div>
+
+        <!-- Body -->
+        <div class="modal-body">
+            <form [formGroup]="orgForm">
+                <div class="mb-3">
+                    <label for="name" class="form-label">
+                        <span class="text-danger">*</span> Name
+                    </label>
+                    <input type="text" id="name" formControlName="name" class="form-control"
+                        placeholder="Enter organization name" required>
+                    <div *ngIf="orgForm.get('name')?.invalid && orgForm.get('name')?.touched"
+                        class="text-danger small mt-1">
+                        Name is required
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea id="description" formControlName="description" class="form-control" rows="3"
+                        placeholder="Enter description (optional)"></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <div class="form-check form-switch">
+                        <input type="checkbox" class="form-check-input" id="active" formControlName="active">
+                        <label class="form-check-label" for="active">
+                            <span class="badge" [class.bg-success]="orgForm.get('active')?.value"
+                                [class.bg-secondary]="!orgForm.get('active')?.value">
+                                {{ orgForm.get('active')?.value ? 'Active' : 'Inactive' }}
+                            </span>
+                        </label>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Footer -->
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="closeModal()">
+                <i class="fa-solid fa-xmark me-1"></i>Cancel
+            </button>
+            <button type="button" class="btn btn-primary" [disabled]="isSaving || orgForm.invalid || orgForm.pristine"
+                (click)="submitForm()">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1"></span>Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Create Organization' }}
+                </span>
+            </button>
+        </div>
+    </div>
+</ng-template>

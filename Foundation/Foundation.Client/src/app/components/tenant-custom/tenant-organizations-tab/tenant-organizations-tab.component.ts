@@ -5,6 +5,7 @@ import { takeUntil } from 'rxjs/operators';
 import { SecurityTenantData } from '../../../security-data-services/security-tenant.service';
 import { SecurityOrganizationService, SecurityOrganizationData, SecurityOrganizationQueryParameters } from '../../../security-data-services/security-organization.service';
 import { OrganizationDetailPanelComponent } from '../organization-detail-panel/organization-detail-panel.component';
+import { OrganizationAddEditComponent } from '../organization-add-edit/organization-add-edit.component';
 
 @Component({
     selector: 'app-tenant-organizations-tab',
@@ -14,6 +15,7 @@ import { OrganizationDetailPanelComponent } from '../organization-detail-panel/o
 export class TenantOrganizationsTabComponent implements OnInit, OnDestroy {
     @Input() tenant!: SecurityTenantData;
     @ViewChild('orgPanel') orgPanel!: OrganizationDetailPanelComponent;
+    @ViewChild('orgAddEdit') orgAddEdit!: OrganizationAddEditComponent;
 
     private destroy$ = new Subject<void>();
 
@@ -63,16 +65,21 @@ export class TenantOrganizationsTabComponent implements OnInit, OnDestroy {
         }
     }
 
+    addOrganization(): void {
+        if (this.orgAddEdit && this.tenant) {
+            this.orgAddEdit.openForCreate(this.tenant);
+        }
+    }
+
+    onOrganizationSaved(org: SecurityOrganizationData): void {
+        this.loadOrganizations();
+    }
+
     onOrganizationClosed(): void {
         this.selectedOrganization = null;
     }
 
     onOrganizationChanged(): void {
         this.loadOrganizations();
-    }
-
-    getDepartmentCount(org: SecurityOrganizationData): number {
-        // This would ideally use a count observable, but we'll show placeholder for now
-        return 0;
     }
 }

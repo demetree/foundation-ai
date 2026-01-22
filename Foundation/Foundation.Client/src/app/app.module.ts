@@ -362,6 +362,9 @@ import { TenantOrganizationsTabComponent } from './components/tenant-custom/tena
 import { OrganizationDetailPanelComponent } from './components/tenant-custom/organization-detail-panel/organization-detail-panel.component';
 import { DepartmentDetailPanelComponent } from './components/tenant-custom/department-detail-panel/department-detail-panel.component';
 import { TeamDetailPanelComponent } from './components/tenant-custom/team-detail-panel/team-detail-panel.component';
+import { OrganizationAddEditComponent } from './components/tenant-custom/organization-add-edit/organization-add-edit.component';
+import { DepartmentAddEditComponent } from './components/tenant-custom/department-add-edit/department-add-edit.component';
+import { TeamAddEditComponent } from './components/tenant-custom/team-add-edit/team-add-edit.component';
 import { UserCustomAddEditComponent } from './components/user-custom/user-custom-add-edit/user-custom-add-edit.component';
 
 
@@ -603,6 +606,9 @@ import { UserCustomAddEditComponent } from './components/user-custom/user-custom
     OrganizationDetailPanelComponent,
     DepartmentDetailPanelComponent,
     TeamDetailPanelComponent,
+    OrganizationAddEditComponent,
+    DepartmentAddEditComponent,
+    TeamAddEditComponent,
     UserCustomAddEditComponent,
   ],
   imports: [

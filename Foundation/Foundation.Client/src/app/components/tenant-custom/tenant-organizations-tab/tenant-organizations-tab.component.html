@@ -1,4 +1,14 @@
 <div class="organizations-tab">
+    <!-- Toolbar -->
+    <div class="tab-toolbar d-flex justify-content-between align-items-center mb-3">
+        <div class="toolbar-title">
+            <span class="text-muted small">{{ (organizations$ | async)?.length || 0 }} organizations</span>
+        </div>
+        <button class="btn btn-primary btn-sm" (click)="addOrganization()">
+            <i class="fa-solid fa-plus me-1"></i>Add Organization
+        </button>
+    </div>
+
     <!-- Loading State -->
     <div *ngIf="isLoading$ | async" class="text-center py-5">
         <div class="spinner-border text-primary" role="status">
@@ -14,6 +24,9 @@
             <i class="fa-solid fa-building fa-3x text-muted opacity-50 mb-3"></i>
             <h5 class="text-muted">No Organizations</h5>
             <p class="text-muted">This tenant has no organizations yet.</p>
+            <button class="btn btn-outline-primary" (click)="addOrganization()">
+                <i class="fa-solid fa-plus me-1"></i>Create First Organization
+            </button>
         </div>
 
         <!-- Organizations Table -->
@@ -54,4 +67,7 @@
     <!-- Organization Detail Panel -->
     <app-organization-detail-panel #orgPanel (closed)="onOrganizationClosed()" (changed)="onOrganizationChanged()">
     </app-organization-detail-panel>
+
+    <!-- Organization Add/Edit Component -->
+    <app-organization-add-edit #orgAddEdit (saved)="onOrganizationSaved($event)"></app-organization-add-edit>
 </div>

@@ -67,6 +67,16 @@
 
             <!-- Departments Tab -->
             <div class="tab-content" *ngIf="activeTab === 'departments'">
+                <!-- Toolbar -->
+                <div class="tab-toolbar d-flex justify-content-between align-items-center mb-3">
+                    <div class="toolbar-title">
+                        <span class="text-muted small">{{ (departments$ | async)?.length || 0 }} departments</span>
+                    </div>
+                    <button class="btn btn-primary btn-sm" (click)="addDepartment()">
+                        <i class="fa-solid fa-plus me-1"></i>Add Department
+                    </button>
+                </div>
+
                 <div *ngIf="isLoadingDepartments$ | async" class="text-center py-4">
                     <div class="spinner-border spinner-border-sm text-primary"></div>
                 </div>
@@ -75,6 +85,9 @@
                     class="text-center py-4">
                     <i class="fa-solid fa-sitemap fa-2x text-muted opacity-50 mb-2"></i>
                     <p class="text-muted mb-0">No departments</p>
+                    <button class="btn btn-outline-primary btn-sm mt-2" (click)="addDepartment()">
+                        <i class="fa-solid fa-plus me-1"></i>Create First Department
+                    </button>
                 </div>
 
                 <div class="entity-list" *ngIf="!(isLoadingDepartments$ | async) && (departments$ | async)?.length">
@@ -128,8 +141,11 @@
             </div>
         </div>
     </div>
-
-    <!-- Department Detail Panel -->
-    <app-department-detail-panel #deptPanel (closed)="onDepartmentClosed()" (changed)="onDepartmentChanged()">
-    </app-department-detail-panel>
 </ng-template>
+
+<!-- Department Detail Panel (outside ng-template for ViewChild accessibility) -->
+<app-department-detail-panel #deptPanel (closed)="onDepartmentClosed()" (changed)="onDepartmentChanged()">
+</app-department-detail-panel>
+
+<!-- Department Add/Edit Component (outside ng-template for ViewChild accessibility) -->
+<app-department-add-edit #deptAddEdit (saved)="onDepartmentSaved($event)"></app-department-add-edit>

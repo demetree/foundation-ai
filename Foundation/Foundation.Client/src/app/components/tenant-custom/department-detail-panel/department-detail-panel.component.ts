@@ -9,6 +9,7 @@ import { SecurityDepartmentData } from '../../../security-data-services/security
 import { SecurityTeamService, SecurityTeamData, SecurityTeamQueryParameters } from '../../../security-data-services/security-team.service';
 import { SecurityUserService, SecurityUserData, SecurityUserQueryParameters } from '../../../security-data-services/security-user.service';
 import { TeamDetailPanelComponent } from '../team-detail-panel/team-detail-panel.component';
+import { TeamAddEditComponent } from '../team-add-edit/team-add-edit.component';
 
 @Component({
     selector: 'app-department-detail-panel',
@@ -18,6 +19,7 @@ import { TeamDetailPanelComponent } from '../team-detail-panel/team-detail-panel
 export class DepartmentDetailPanelComponent {
     @ViewChild('panelTemplate') panelTemplate!: TemplateRef<any>;
     @ViewChild('teamPanel') teamPanel!: TeamDetailPanelComponent;
+    @ViewChild('teamAddEdit') teamAddEdit!: TeamAddEditComponent;
     @Output() closed = new EventEmitter<void>();
     @Output() changed = new EventEmitter<void>();
 
@@ -119,6 +121,17 @@ export class DepartmentDetailPanelComponent {
         if (this.teamPanel && this.department) {
             this.teamPanel.open(team, this.department, this.organization!, this.tenant!);
         }
+    }
+
+    addTeam(): void {
+        if (this.teamAddEdit && this.department) {
+            this.teamAddEdit.openForCreate(this.department);
+        }
+    }
+
+    onTeamSaved(team: SecurityTeamData): void {
+        this.loadTeams();
+        this.changed.emit();
     }
 
     onTeamClosed(): void {

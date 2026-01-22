@@ -171,4 +171,10 @@
 ::ng-deep .dept-detail-panel {
     width: 450px !important;
     max-width: 90vw;
+    z-index: 1055 !important; // Above app header (typically 1030-1040)
+}
+
+// Ensure backdrop also has high z-index
+::ng-deep .offcanvas-backdrop {
+    z-index: 1050 !important;
 }

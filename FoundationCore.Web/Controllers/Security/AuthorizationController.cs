@@ -118,7 +118,12 @@ namespace Foundation.Security.Controllers.WebAPI
             }
             else if (request.IsRefreshTokenGrantType())
             {
-                SecurityLogic.CreateLoginAttemptRecord(request.Username, request.Password, "Request For OIDC Refresh Token Grant", "/connect/token", GetClientIP(), Request.Headers.UserAgent);
+                //
+                // Note: Refresh token grants are NOT logged to LoginAttempt table.
+                // These are automatic token renewals, not actual login attempts, and logging them
+                // was generating millions of unnecessary records (observed ~3M in production).
+                // Actual login attempts (password grants, extension grants) are still logged.
+                //
 
                 AuthenticateResult result = await HttpContext.AuthenticateAsync(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
 

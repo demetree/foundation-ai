@@ -8,6 +8,7 @@ import { SecurityOrganizationData } from '../../../security-data-services/securi
 import { SecurityDepartmentService, SecurityDepartmentData, SecurityDepartmentQueryParameters } from '../../../security-data-services/security-department.service';
 import { SecurityUserService, SecurityUserData, SecurityUserQueryParameters } from '../../../security-data-services/security-user.service';
 import { DepartmentDetailPanelComponent } from '../department-detail-panel/department-detail-panel.component';
+import { DepartmentAddEditComponent } from '../department-add-edit/department-add-edit.component';
 
 @Component({
     selector: 'app-organization-detail-panel',
@@ -17,6 +18,7 @@ import { DepartmentDetailPanelComponent } from '../department-detail-panel/depar
 export class OrganizationDetailPanelComponent {
     @ViewChild('panelTemplate') panelTemplate!: TemplateRef<any>;
     @ViewChild('deptPanel') deptPanel!: DepartmentDetailPanelComponent;
+    @ViewChild('deptAddEdit') deptAddEdit!: DepartmentAddEditComponent;
     @Output() closed = new EventEmitter<void>();
     @Output() changed = new EventEmitter<void>();
 
@@ -116,6 +118,17 @@ export class OrganizationDetailPanelComponent {
         if (this.deptPanel && this.organization) {
             this.deptPanel.open(dept, this.organization, this.tenant!);
         }
+    }
+
+    addDepartment(): void {
+        if (this.deptAddEdit && this.organization) {
+            this.deptAddEdit.openForCreate(this.organization);
+        }
+    }
+
+    onDepartmentSaved(dept: SecurityDepartmentData): void {
+        this.loadDepartments();
+        this.changed.emit();
     }
 
     onDepartmentClosed(): void {

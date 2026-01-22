@@ -192,4 +192,9 @@
 ::ng-deep .org-detail-panel {
     width: 450px !important;
     max-width: 90vw;
+    z-index: 1055 !important; // Above app header
+}
+
+::ng-deep .offcanvas-backdrop {
+    z-index: 1050 !important;
 }

@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
 using Cronos;
+using Foundation.Auditor;
 
 namespace Foundation
 {
@@ -52,7 +53,16 @@ namespace Foundation
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Job {jobId} execution failed: {ex.Message}");
+                        // Log job failures to the audit system for visibility and troubleshooting
+                        try
+                        {
+                            AuditEngine.Instance.CreateAuditEvent($"RecurringJob '{jobId}' execution failed: {ex.Message}", ex);
+                        }
+                        catch
+                        {
+                            // If audit logging itself fails, fall back to console to avoid masking the original error
+                            Console.WriteLine($"RecurringJob '{jobId}' execution failed: {ex.Message}");
+                        }
                     }
                     finally
                     {
@@ -84,13 +94,21 @@ namespace Foundation
                 }
                 catch (Exception ex)
                 {
+                    // Log job failures to the audit system for visibility and troubleshooting
+                    try
+                    {
+                        AuditEngine.Instance.CreateAuditEvent($"RecurringJob '{jobId}' manual trigger failed: {ex.Message}", ex);
+                    }
+                    catch
+                    {
+                        // Silent fallback if audit logging fails
+                    }
+
                     return false;
                 }
             }
             else
             {
-                //throw new ArgumentException($"Job with ID {jobId} not found.", nameof(jobId));
-
                 return false;
             }
         }
@@ -104,11 +122,6 @@ namespace Foundation
             if (_jobs.TryRemove(jobId, out var job))
             {
                 job.Timer.Dispose();
-                //Console.WriteLine($"Job {jobId} has been removed.");
-            }
-            else
-            {
-                //Console.WriteLine($"Job {jobId} was not found to remove.");
             }
         }
     }

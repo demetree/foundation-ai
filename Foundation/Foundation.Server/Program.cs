@@ -256,7 +256,22 @@ namespace Foundation.Server
                 }
                 else
                 {
-                    //app.UseExceptionHandler("/Home/Error");       Add an error handler to deal with this in prod
+                    // Production error handling middleware - logs exceptions and returns a generic error response
+                    app.UseExceptionHandler(errorApp =>
+                    {
+                        errorApp.Run(async context =>
+                        {
+                            var exceptionFeature = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>();
+                            if (exceptionFeature?.Error != null)
+                            {
+                                logger.LogException($"Unhandled exception: {exceptionFeature.Error.Message}", exceptionFeature.Error);
+                            }
+
+                            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                            context.Response.ContentType = "application/json";
+                            await context.Response.WriteAsync("{\"error\": \"An unexpected error occurred. Please try again later.\"}");
+                        });
+                    });
 
                     // See https://aka.ms/aspnetcore-hsts.
                     app.UseHsts();
@@ -287,7 +302,7 @@ namespace Foundation.Server
                     //
                     // This is for production
                     //
-                    string allowedDomains = Configuration.GetStringConfigurationSetting("AllowedCORSDomains", "https:////k2research.ca;");
+                    string allowedDomains = Configuration.GetStringConfigurationSetting("AllowedCORSDomains", "https://k2research.ca");
 
                     // Note that since bearer tokens are used, we do not need to use .AllowCredentials
                     app.UseCors(builder => builder
@@ -361,6 +376,19 @@ namespace Foundation.Server
 
 
                 //
+                // Log database statistics for startup diagnostics
+                //
+                using (var securityContext = new SecurityContext())
+                using (var auditorContext = new AuditorContext())
+                {
+                    LogDatabaseStatistics(logger,
+                        ("Security", securityContext),
+                        ("Auditor", auditorContext)
+                    );
+                }
+
+
+                //
                 // Run Foundation
                 //
                 logger.LogSystem("About to run Foundation web server.");
@@ -402,7 +430,7 @@ namespace Foundation.Server
                 }
                 else
                 {
-                    foundationLogger.LogCritical("Security database schema validation passed.");
+                    foundationLogger.LogInformation("Security database schema validation passed.");
                 }
             }
             catch (Exception ex)
@@ -440,7 +468,7 @@ namespace Foundation.Server
                 }
                 else
                 {
-                    foundationLogger.LogCritical("Auditor database schema validation passed.");
+                    foundationLogger.LogInformation("Auditor database schema validation passed.");
                 }
             }
             catch (Exception ex)
