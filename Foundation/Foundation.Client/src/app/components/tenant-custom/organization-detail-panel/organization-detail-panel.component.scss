@@ -1,0 +1,195 @@
+// Organization Detail Panel Styles
+// Uses purple/indigo gradient for distinction from tenant (blue) and user (green)
+
+.org-panel {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: #f8f9fa;
+}
+
+.panel-header {
+    background: linear-gradient(135deg, #6f42c1 0%, #6610f2 50%, #0dcaf0 100%);
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+
+    .header-content {
+        color: white;
+    }
+
+    .breadcrumb-nav {
+        font-size: 0.8125rem;
+        opacity: 0.85;
+        margin-bottom: 0.5rem;
+
+        .breadcrumb-item {
+            cursor: pointer;
+            transition: opacity 0.2s;
+
+            &:hover:not(.active) {
+                opacity: 1;
+                text-decoration: underline;
+            }
+
+            &.active {
+                font-weight: 500;
+            }
+        }
+    }
+
+    .panel-title {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .badge {
+        font-size: 0.75rem;
+    }
+}
+
+.panel-tabs {
+    display: flex;
+    background: white;
+    border-bottom: 1px solid #dee2e6;
+    padding: 0 1rem;
+
+    .tab-btn {
+        padding: 0.875rem 1rem;
+        border: none;
+        background: transparent;
+        color: #6c757d;
+        font-weight: 500;
+        font-size: 0.875rem;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        transition: all 0.2s ease;
+
+        &:hover {
+            color: #6f42c1;
+        }
+
+        &.active {
+            color: #6f42c1;
+            border-bottom-color: #6f42c1;
+        }
+
+        .badge {
+            font-size: 0.7rem;
+        }
+    }
+}
+
+.panel-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.25rem;
+}
+
+.info-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f0f0f0;
+
+    &:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        color: #6c757d;
+        font-size: 0.875rem;
+    }
+
+    .info-value {
+        font-weight: 500;
+        color: #212529;
+    }
+}
+
+.entity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.entity-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    background: white;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+    &:hover {
+        background: #f8f9fa;
+        transform: translateX(4px);
+    }
+
+    &.selected {
+        background: rgba(111, 66, 193, 0.1);
+        border-left: 3px solid #6f42c1;
+    }
+}
+
+.entity-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #6f42c1 0%, #6610f2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1rem;
+
+    &.user-avatar {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+}
+
+.entity-info {
+    flex: 1;
+    min-width: 0;
+
+    .entity-name {
+        font-weight: 500;
+        color: #212529;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .entity-desc {
+        font-size: 0.8125rem;
+        color: #6c757d;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+.entity-status {
+    .badge {
+        font-size: 0.7rem;
+    }
+}
+
+// Global style for offcanvas panel width
+::ng-deep .org-detail-panel {
+    width: 450px !important;
+    max-width: 90vw;
+}

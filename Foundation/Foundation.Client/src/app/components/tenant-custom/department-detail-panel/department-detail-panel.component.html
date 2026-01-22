@@ -1,0 +1,137 @@
+<ng-template #panelTemplate>
+    <div class="dept-panel" *ngIf="department">
+        <!-- Premium Header -->
+        <div class="panel-header">
+            <div class="header-content">
+                <div class="breadcrumb-nav">
+                    <span class="breadcrumb-item" (click)="close()">
+                        <i class="fa-solid fa-building me-1"></i>{{ organization?.name }}
+                    </span>
+                    <i class="fa-solid fa-chevron-right mx-2"></i>
+                    <span class="breadcrumb-item active">
+                        <i class="fa-solid fa-sitemap me-1"></i>{{ department.name }}
+                    </span>
+                </div>
+                <h4 class="panel-title mb-0">{{ department.name }}</h4>
+                <span class="badge" [class.bg-success]="department.active" [class.bg-secondary]="!department.active">
+                    {{ department.active ? 'Active' : 'Inactive' }}
+                </span>
+            </div>
+            <button class="btn-close btn-close-white" (click)="close()"></button>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="panel-tabs">
+            <button class="tab-btn" [class.active]="activeTab === 'overview'" (click)="setActiveTab('overview')">
+                <i class="fa-solid fa-info-circle me-1"></i>Overview
+            </button>
+            <button class="tab-btn" [class.active]="activeTab === 'teams'" (click)="setActiveTab('teams')">
+                <i class="fa-solid fa-people-group me-1"></i>Teams
+                <span class="badge bg-light text-dark ms-1">{{ (teams$ | async)?.length || 0 }}</span>
+            </button>
+            <button class="tab-btn" [class.active]="activeTab === 'users'" (click)="setActiveTab('users')">
+                <i class="fa-solid fa-users me-1"></i>Users
+                <span class="badge bg-light text-dark ms-1">{{ (users$ | async)?.length || 0 }}</span>
+            </button>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="panel-body">
+            <!-- Overview Tab -->
+            <div class="tab-content" *ngIf="activeTab === 'overview'">
+                <div class="info-card">
+                    <div class="info-row">
+                        <span class="info-label">ID</span>
+                        <span class="info-value">{{ department.id }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Name</span>
+                        <span class="info-value">{{ department.name }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Description</span>
+                        <span class="info-value">{{ department.description || '—' }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Organization</span>
+                        <span class="info-value">{{ organization?.name }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Status</span>
+                        <span class="info-value">
+                            <span class="badge" [class.bg-success]="department.active"
+                                [class.bg-secondary]="!department.active">
+                                {{ department.active ? 'Active' : 'Inactive' }}
+                            </span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Teams Tab -->
+            <div class="tab-content" *ngIf="activeTab === 'teams'">
+                <div *ngIf="isLoadingTeams$ | async" class="text-center py-4">
+                    <div class="spinner-border spinner-border-sm text-primary"></div>
+                </div>
+
+                <div *ngIf="!(isLoadingTeams$ | async) && (teams$ | async)?.length === 0" class="text-center py-4">
+                    <i class="fa-solid fa-people-group fa-2x text-muted opacity-50 mb-2"></i>
+                    <p class="text-muted mb-0">No teams</p>
+                </div>
+
+                <div class="entity-list" *ngIf="!(isLoadingTeams$ | async) && (teams$ | async)?.length">
+                    <div class="entity-item" *ngFor="let team of teams$ | async"
+                        [class.selected]="selectedTeam?.id === team.id" (click)="openTeam(team)">
+                        <div class="entity-icon">
+                            <i class="fa-solid fa-people-group"></i>
+                        </div>
+                        <div class="entity-info">
+                            <div class="entity-name">{{ team.name }}</div>
+                            <div class="entity-desc">{{ team.description || 'No description' }}</div>
+                        </div>
+                        <div class="entity-status">
+                            <span class="badge" [class.bg-success]="team.active" [class.bg-secondary]="!team.active">
+                                {{ team.active ? 'Active' : 'Inactive' }}
+                            </span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-muted"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Tab -->
+            <div class="tab-content" *ngIf="activeTab === 'users'">
+                <div *ngIf="isLoadingUsers$ | async" class="text-center py-4">
+                    <div class="spinner-border spinner-border-sm text-primary"></div>
+                </div>
+
+                <div *ngIf="!(isLoadingUsers$ | async) && (users$ | async)?.length === 0" class="text-center py-4">
+                    <i class="fa-solid fa-users fa-2x text-muted opacity-50 mb-2"></i>
+                    <p class="text-muted mb-0">No users in this department</p>
+                </div>
+
+                <div class="entity-list" *ngIf="!(isLoadingUsers$ | async) && (users$ | async)?.length">
+                    <div class="entity-item" *ngFor="let user of users$ | async">
+                        <div class="entity-icon user-avatar">
+                            {{ user.firstName?.charAt(0) || user.accountName?.charAt(0) || '?' }}
+                        </div>
+                        <div class="entity-info">
+                            <div class="entity-name">{{ user.firstName ? user.firstName + ' ' + user.lastName :
+                                user.accountName }}</div>
+                            <div class="entity-desc">{{ user.emailAddress || user.accountName }}</div>
+                        </div>
+                        <div class="entity-status">
+                            <span class="badge" [class.bg-success]="user.active" [class.bg-secondary]="!user.active">
+                                {{ user.active ? 'Active' : 'Inactive' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Team Detail Panel -->
+    <app-team-detail-panel #teamPanel (closed)="onTeamClosed()" (changed)="onTeamChanged()">
+    </app-team-detail-panel>
+</ng-template>

@@ -89,6 +89,20 @@
                     </ng-template>
                 </li>
 
+                <!-- Organizations Tab -->
+                <li [ngbNavItem]="3">
+                    <button ngbNavLink>
+                        <i class="fa-solid fa-building me-2"></i>
+                        Organizations
+                        <span class="badge bg-primary ms-2">
+                            {{ (tenantData.SecurityOrganizationsCount$ | async) ?? '...' }}
+                        </span>
+                    </button>
+                    <ng-template ngbNavContent>
+                        <app-tenant-organizations-tab [tenant]="tenantData"></app-tenant-organizations-tab>
+                    </ng-template>
+                </li>
+
             </ul>
             <div [ngbNavOutlet]="nav" class="tab-content"></div>
         </div>
