@@ -346,7 +346,7 @@ namespace Foundation
                         query = @"
                             SELECT 
                                 t.name                                      AS TableName,
-                                p.rows                                      AS RowCount,
+                                p.rows                                      AS [RowCount],
                                 SUM(a.used_pages) * 8 / 1024.0              AS UsedSizeMB
                             FROM 
                                 sys.tables t

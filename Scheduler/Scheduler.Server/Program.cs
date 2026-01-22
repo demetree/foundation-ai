@@ -423,8 +423,23 @@ namespace Foundation.Scheduler
                 }
                 else
                 {
-                    //app.UseExceptionHandler("/Home/Error");       Add an error handler to deal with this in prod
+                    // Production error handling middleware - logs exceptions and returns a generic error response
+                    app.UseExceptionHandler(errorApp =>
+                    {
+                        errorApp.Run(async context =>
+                        {
+                            var exceptionFeature = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>();
+                            if (exceptionFeature?.Error != null)
+                            {
+                                logger.LogException($"Unhandled exception: {exceptionFeature.Error.Message}", exceptionFeature.Error);
+                            }
 
+                            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                            context.Response.ContentType = "application/json";
+                            await context.Response.WriteAsync("{\"error\": \"An unexpected error occurred. Please try again later.\"}");
+                        });
+                    });                    
+                    
                     // See https://aka.ms/aspnetcore-hsts.
                     app.UseHsts();
                 }
