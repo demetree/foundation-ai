@@ -85,6 +85,6 @@
     <app-user-custom-add-edit #userAddEdit (userChanged)="onUserChanged($event)"></app-user-custom-add-edit>
 
     <app-user-custom-table *ngIf="userIsSecurityUserReader() == true" [filterText]="filterText"
-        [isSmallScreen]="isSmallScreen">
+        [isSmallScreen]="isSmallScreen" (editRequested)="editUser($event)">
     </app-user-custom-table>
 </div>

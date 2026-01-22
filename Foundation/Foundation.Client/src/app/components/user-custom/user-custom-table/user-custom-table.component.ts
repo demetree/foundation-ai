@@ -33,6 +33,11 @@ export class UserCustomTableComponent implements OnInit, AfterViewInit, OnChange
     @Input() isSmallScreen: boolean = false;
 
     //
+    // Outputs
+    //
+    @Output() editRequested = new EventEmitter<SecurityUserData>();
+
+    //
     // Data state
     //
     public users: SecurityUserData[] = [];
@@ -385,6 +390,21 @@ export class UserCustomTableComponent implements OnInit, AfterViewInit, OnChange
     //
     public navigateToDetail(user: SecurityUserData): void {
         this.router.navigate(['/user', user.id]);
+    }
+
+    //
+    // Edit request (emits to parent for modal handling)
+    //
+    public editUser(user: SecurityUserData, event: Event): void {
+        event.stopPropagation();
+        this.editRequested.emit(user);
+    }
+
+    //
+    // Public refresh method for parent to call after edits
+    //
+    public refreshData(): void {
+        this.loadData();
     }
 
 

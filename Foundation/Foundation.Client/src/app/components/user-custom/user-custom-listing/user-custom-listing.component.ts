@@ -14,6 +14,7 @@ import { takeUntil } from 'rxjs/operators';
 import { AuthService } from '../../../services/auth.service';
 import { SecurityUserService, SecurityUserQueryParameters, SecurityUserData } from '../../../security-data-services/security-user.service';
 import { UserCustomAddEditComponent } from '../user-custom-add-edit/user-custom-add-edit.component';
+import { UserCustomTableComponent } from '../user-custom-table/user-custom-table.component';
 
 @Component({
     selector: 'app-user-custom-listing',
@@ -51,6 +52,7 @@ export class UserCustomListingComponent implements OnInit, OnDestroy {
     // Add/Edit component reference
     //
     @ViewChild('userAddEdit') userAddEdit!: UserCustomAddEditComponent;
+    @ViewChild(UserCustomTableComponent) userTable!: UserCustomTableComponent;
 
 
     constructor(
@@ -195,11 +197,25 @@ export class UserCustomListingComponent implements OnInit, OnDestroy {
     }
 
 
-    public onUserChanged(newUser: SecurityUserData): void {
-        // Refresh the count after user is added
+    public onUserChanged(changedUser: SecurityUserData): void {
+        // Refresh the count and table after user is added/edited
         this.loadTotalCount();
         if (this.filterText) {
             this.loadFilteredCount(this.filterText);
+        }
+        // Refresh the table to show updated data
+        if (this.userTable) {
+            this.userTable.refreshData();
+        }
+    }
+
+
+    //
+    // Edit User (called from table component)
+    //
+    public editUser(user: SecurityUserData): void {
+        if (this.userAddEdit) {
+            this.userAddEdit.openModal(user);
         }
     }
 }

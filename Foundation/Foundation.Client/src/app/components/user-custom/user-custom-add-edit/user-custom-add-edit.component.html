@@ -274,6 +274,33 @@
                         </div>
                     </div>
 
+                    <!-- Password (New Users Only) -->
+                    <div class="security-group mb-4" *ngIf="!isEditMode">
+                        <h6 class="security-group-title">
+                            <i class="fa-solid fa-key me-1"></i>Set Password
+                        </h6>
+                        <div class="alert alert-info small mb-3">
+                            <i class="fa-solid fa-circle-info me-1"></i>
+                            Password must be at least 6 characters.
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="password" class="form-label">
+                                    <span class="text-danger">*</span> Password
+                                </label>
+                                <input type="password" id="password" formControlName="password" class="form-control"
+                                    placeholder="Enter password" autocomplete="new-password">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="confirmPassword" class="form-label">
+                                    <span class="text-danger">*</span> Confirm Password
+                                </label>
+                                <input type="password" id="confirmPassword" formControlName="confirmPassword"
+                                    class="form-control" placeholder="Confirm password" autocomplete="new-password">
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Permission Levels -->
                     <div class="security-group mb-4">
                         <h6 class="security-group-title">Permission Levels</h6>

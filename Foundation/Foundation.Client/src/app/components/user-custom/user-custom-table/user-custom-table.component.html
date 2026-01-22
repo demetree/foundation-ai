@@ -125,7 +125,7 @@
 
                                 <!-- Edit -->
                                 <button class="btn btn-outline-primary" ngbTooltip="Edit User"
-                                    [routerLink]="['/securityuser', user.id]" (click)="$event.stopPropagation()">
+                                    (click)="editUser(user, $event)">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
                             </div>

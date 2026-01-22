@@ -95,6 +95,8 @@ export class UserCustomAddEditComponent implements OnInit, OnDestroy {
             // Account Information
             accountName: ['', Validators.required],
             emailAddress: ['', [Validators.email]],
+            password: [''],
+            confirmPassword: [''],
 
             // Contact Information
             cellPhoneNumber: [''],
@@ -307,10 +309,22 @@ export class UserCustomAddEditComponent implements OnInit, OnDestroy {
             return;
         }
 
-        this.isSaving = true;
+        // For new users, validate password
         const formValues = this.userForm.value;
+        if (!this.isEditMode) {
+            if (!formValues.password || formValues.password.length < 6) {
+                this.alertService.showMessage('Validation Error', 'Password is required and must be at least 6 characters', MessageSeverity.error);
+                return;
+            }
+            if (formValues.password !== formValues.confirmPassword) {
+                this.alertService.showMessage('Validation Error', 'Passwords do not match', MessageSeverity.error);
+                return;
+            }
+        }
 
-        const submitData: SecurityUserSubmitData = {
+        this.isSaving = true;
+
+        const submitData: any = {
             id: this.currentUser?.id || 0,
             accountName: formValues.accountName,
             activeDirectoryAccount: formValues.activeDirectoryAccount,
@@ -349,6 +363,11 @@ export class UserCustomAddEditComponent implements OnInit, OnDestroy {
             active: formValues.active,
             deleted: formValues.deleted
         };
+
+        // Include password for new users
+        if (!this.isEditMode && formValues.password) {
+            submitData.password = formValues.password;
+        }
 
         if (this.isEditMode) {
             this.updateUser(submitData);
