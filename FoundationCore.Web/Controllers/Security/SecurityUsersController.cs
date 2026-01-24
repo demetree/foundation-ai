@@ -742,6 +742,17 @@ namespace Foundation.Security.Controllers.WebAPI
                 securityUserToReturn.password = null;
 
 
+                //
+                // Create a SecurityUserEvent to track this user modification
+                //
+                string changeSummary = GenerateUserChangeSummary(cloneOfExisting, securityUser);
+                await CreateSecurityUserEventAsync(
+                    securityUser.id,
+                    "User Modified",
+                    $"User '{securityUser.accountName}' modified by '{user?.accountName ?? "Unknown"}'. Changes: {changeSummary}",
+                    cancellationToken);
+
+
                 // end of custom bit 
                 return Ok(Database.SecurityUser.CreateAnonymous(securityUserToReturn));
 
@@ -1400,6 +1411,16 @@ namespace Foundation.Security.Controllers.WebAPI
                     JsonSerializer.Serialize(Database.SecurityUser.CreateAnonymousWithFirstLevelSubObjects(securityUser)),
                     null);
 
+                //
+                // Create a SecurityUserEvent to track user creation
+                //
+                string displayName = $"{securityUser.firstName} {securityUser.lastName}".Trim();
+                await CreateSecurityUserEventAsync(
+                    securityUser.id,
+                    "User Created",
+                    $"User account created for {displayName} ({securityUser.accountName})",
+                    cancellationToken);
+
             }
             catch (Exception ex)
             {
@@ -1467,6 +1488,16 @@ namespace Foundation.Security.Controllers.WebAPI
                     JsonSerializer.Serialize(Database.SecurityUser.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
                     JsonSerializer.Serialize(Database.SecurityUser.CreateAnonymousWithFirstLevelSubObjects(securityUserObject)),
                     null);
+
+                //
+                // Create a SecurityUserEvent to track user deletion
+                //
+                string displayName = $"{cloneOfExisting.firstName} {cloneOfExisting.lastName}".Trim();
+                await CreateSecurityUserEventAsync(
+                    id,
+                    "User Deleted",
+                    $"User account deleted for {displayName} ({cloneOfExisting.accountName}) by '{securityUserForCurrentUser?.accountName ?? "Unknown"}'",
+                    cancellationToken);
 
             }
             catch (Exception ex)
@@ -1945,6 +1976,137 @@ namespace Foundation.Security.Controllers.WebAPI
         }
 
 
+        //
+        // Security User Event Logging Helpers
+        //
+        // These methods create human-readable audit trail entries in the SecurityUserEvent table
+        // when user accounts are created, modified, or deleted.
+        //
+
+        /// <summary>
+        /// 
+        /// Generates a human-readable summary of changes between two SecurityUser states.
+        /// 
+        /// </summary>
+        private string GenerateUserChangeSummary(SecurityUser before, SecurityUser after)
+        {
+            var changes = new List<string>();
+
+            // Name changes
+            if (before.firstName != after.firstName)
+                changes.Add($"First name: '{before.firstName ?? "(empty)"}' → '{after.firstName ?? "(empty)"}'");
+            if (before.middleName != after.middleName)
+                changes.Add($"Middle name: '{before.middleName ?? "(empty)"}' → '{after.middleName ?? "(empty)"}'");
+            if (before.lastName != after.lastName)
+                changes.Add($"Last name: '{before.lastName ?? "(empty)"}' → '{after.lastName ?? "(empty)"}'");
+
+            // Contact info
+            if (before.emailAddress != after.emailAddress)
+                changes.Add($"Email: '{before.emailAddress ?? "(empty)"}' → '{after.emailAddress ?? "(empty)"}'");
+            if (before.cellPhoneNumber != after.cellPhoneNumber)
+                changes.Add($"Cell phone changed");
+            if (before.phoneNumber != after.phoneNumber)
+                changes.Add($"Phone number changed");
+
+            // Account status
+            if (before.active != after.active)
+                changes.Add(after.active ? "Account activated" : "Account deactivated");
+            if (before.deleted != after.deleted)
+                changes.Add(after.deleted ? "Account deleted" : "Account restored");
+            if (before.accountName != after.accountName)
+                changes.Add($"Account name: '{before.accountName}' → '{after.accountName}'");
+
+            // Authentication
+            if (before.activeDirectoryAccount != after.activeDirectoryAccount)
+                changes.Add(after.activeDirectoryAccount ? "Switched to AD authentication" : "Switched to local authentication");
+            if (before.authenticationDomain != after.authenticationDomain)
+                changes.Add($"Auth domain: '{before.authenticationDomain ?? "(none)"}' → '{after.authenticationDomain ?? "(none)"}'");
+
+            // Organization hierarchy
+            if (before.securityTenantId != after.securityTenantId)
+                changes.Add("Tenant assignment changed");
+            if (before.securityOrganizationId != after.securityOrganizationId)
+                changes.Add("Organization assignment changed");
+            if (before.securityDepartmentId != after.securityDepartmentId)
+                changes.Add("Department assignment changed");
+            if (before.securityTeamId != after.securityTeamId)
+                changes.Add("Team assignment changed");
+            if (before.reportsToSecurityUserId != after.reportsToSecurityUserId)
+                changes.Add("Manager (reports to) changed");
+
+            // Password change (we can't see the actual password, but we know if it changed)
+            if (before.password != after.password && !string.IsNullOrEmpty(after.password))
+                changes.Add("Password updated");
+
+            // Description
+            if (before.description != after.description)
+                changes.Add("Description updated");
+
+            // Image
+            bool beforeHasImage = before.image != null && before.image.Length > 0;
+            bool afterHasImage = after.image != null && after.image.Length > 0;
+            if (beforeHasImage != afterHasImage)
+                changes.Add(afterHasImage ? "Profile image added" : "Profile image removed");
+            else if (beforeHasImage && afterHasImage && !before.image.SequenceEqual(after.image))
+                changes.Add("Profile image updated");
+
+            return changes.Count > 0
+                ? string.Join("; ", changes)
+                : "No significant changes detected";
+        }
+
+
+        /// <summary>
+        /// 
+        /// Creates a SecurityUserEvent record to track user account changes.
+        /// 
+        /// Event Types (assumed IDs - will use names to look up):
+        /// - "User Created", "User Modified", "User Deleted"
+        /// 
+        /// </summary>
+        private async Task CreateSecurityUserEventAsync(
+            int targetUserId,
+            string eventTypeName,
+            string comments,
+            CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                // Look up the event type by name, or create it if it doesn't exist
+                var eventType = await _context.SecurityUserEventTypes
+                    .FirstOrDefaultAsync(t => t.name == eventTypeName, cancellationToken);
+
+                if (eventType == null)
+                {
+                    // Event type doesn't exist, create it
+                    eventType = new SecurityUserEventType
+                    {
+                        name = eventTypeName,
+                        description = $"Auto-created event type for {eventTypeName}"
+                    };
+                    _context.SecurityUserEventTypes.Add(eventType);
+                    await _context.SaveChangesAsync(cancellationToken);
+                }
+
+                var userEvent = new SecurityUserEvent
+                {
+                    securityUserId = targetUserId,
+                    securityUserEventTypeId = eventType.id,
+                    timeStamp = DateTime.UtcNow,
+                    comments = comments?.Length > 4000 ? comments.Substring(0, 4000) : comments, // Truncate if too long
+                    active = true,
+                    deleted = false
+                };
+
+                _context.SecurityUserEvents.Add(userEvent);
+                await _context.SaveChangesAsync(cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                // Don't let event logging failures break the main operation
+                Logger.GetCommonLogger().LogWarning($"Failed to create SecurityUserEvent: {ex.Message}");
+            }
+        }
 
 
         private void ValidatePasswordStrength(string password)

@@ -343,6 +343,12 @@ import { ExternalCommunicationRecipientTableComponent } from './auditor-data-com
 //
 
 //
+// Log Viewer Component
+//
+import { LogViewerListingComponent } from './components/log-viewer/log-viewer-listing/log-viewer-listing.component';
+import { LogViewerService } from './services/log-viewer.service';
+
+//
 // Custom screens
 //
 import { UserCustomListingComponent } from './components/user-custom/user-custom-listing/user-custom-listing.component';
@@ -583,7 +589,10 @@ import { UserCustomAddEditComponent } from './components/user-custom/user-custom
     // End of declarations for Auditor Data Components
     //
 
-
+    //
+    // Log Viewer Component
+    //
+    LogViewerListingComponent,
 
     //
     // Custom components

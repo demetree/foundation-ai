@@ -41,6 +41,16 @@
       </a>
     </li>
 
+    <!-- System Logs -->
+    <li class="nav-item">
+      <a routerLink="/logs" routerLinkActive="active" class="nav-link text-white"
+        [ngbTooltip]="!isExpanded ? 'System Logs' : null" triggers="hover" #tLogs="ngbTooltip" (click)="tLogs.close()"
+        placement="right" tooltipClass="sidebar-tip">
+        <i class="fa-solid fa-file-alt"></i>
+        <span class="label px-2">System Logs</span>
+      </a>
+    </li>
+
     <!-- Tenants -->
     <li class="nav-item">
       <a routerLink="/tenants" routerLinkActive="active" class="nav-link text-white"

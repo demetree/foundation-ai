@@ -15,6 +15,11 @@ namespace Foundation.Web.Utility
             controllers.Add(typeof(ResetPasswordController));
             controllers.Add(typeof(NewUserController));
 
+            //
+            // Utility Controllers
+            //
+            controllers.Add(typeof(Foundation.Controllers.WebAPI.LogViewerController));  // Log file viewer
+
         }
 
 

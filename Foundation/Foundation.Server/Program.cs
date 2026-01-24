@@ -213,6 +213,20 @@ namespace Foundation.Server
                 builder.Services.AddSingleton<Foundation.Logger>(logger);
 
                 //
+                // Configure LogViewer service
+                //
+                var logViewerConfig = new Foundation.LogViewer.LogViewerConfiguration();
+                builder.Configuration.GetSection("LogViewer").Bind(logViewerConfig);
+                builder.Services.AddSingleton(logViewerConfig);
+
+                builder.Services.AddSingleton<Foundation.LogViewer.ILogFileService>(sp =>
+                    new Foundation.LogViewer.LogFileService(
+                        logViewerConfig,
+                        //AppContext.BaseDirectory,
+                        Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) ?? AppContext.BaseDirectory,
+                        sp.GetService<ILogger<Foundation.LogViewer.LogFileService>>()));
+
+                //
                 // Configurations
                 //
                 builder.Services.Configure<AppSettings>(builder.Configuration);

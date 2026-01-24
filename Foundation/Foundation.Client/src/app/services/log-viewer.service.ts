@@ -1,0 +1,122 @@
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { AuthService } from './auth.service';
+
+//
+// Log Viewer Service
+//
+// Angular service for interacting with the LogViewer API endpoints.
+//
+
+export interface LogFolder {
+    name: string;
+}
+
+export interface LogFileInfo {
+    fileName: string;
+    lastModified: Date;
+    sizeBytes: number;
+    sizeDisplay: string;
+    errorCount: number;
+    warningCount: number;
+}
+
+export interface LogEntry {
+    timestamp: Date;
+    timeOfDay: string;
+    level: string;
+    threadName: string;
+    message: string;
+    fileName: string;
+    lineNumber: number;
+}
+
+export interface LogEntriesResponse {
+    entries: LogEntry[];
+    totalCount: number;
+    levelCounts: { [level: string]: number };
+    skip: number;
+    take: number;
+}
+
+@Injectable({
+    providedIn: 'root'
+})
+export class LogViewerService {
+    private readonly baseUrl = '/api/LogViewer';
+
+    constructor(
+        private http: HttpClient,
+        private authService: AuthService
+    ) { }
+
+    /**
+     * Get list of configured log folders
+     */
+    getFolders(): Observable<LogFolder[]> {
+        return this.http.get<LogFolder[]>(
+            `${this.baseUrl}/folders`,
+            { headers: this.authService.GetAuthenticationHeaders() }
+        );
+    }
+
+    /**
+     * Get list of log files in a folder
+     */
+    getFiles(folderName: string): Observable<LogFileInfo[]> {
+        return this.http.get<LogFileInfo[]>(
+            `${this.baseUrl}/files/${encodeURIComponent(folderName)}`,
+            { headers: this.authService.GetAuthenticationHeaders() }
+        );
+    }
+
+    /**
+     * Get log entries from a file with filtering and pagination
+     */
+    getEntries(
+        folderName: string,
+        fileName: string,
+        skip: number = 0,
+        take: number = 100,
+        level?: string,
+        search?: string
+    ): Observable<LogEntriesResponse> {
+        let params = new HttpParams()
+            .set('skip', skip.toString())
+            .set('take', take.toString());
+
+        if (level && level !== 'All') {
+            params = params.set('level', level);
+        }
+        if (search) {
+            params = params.set('search', search);
+        }
+
+        return this.http.get<LogEntriesResponse>(
+            `${this.baseUrl}/entries/${encodeURIComponent(folderName)}/${encodeURIComponent(fileName)}`,
+            { params, headers: this.authService.GetAuthenticationHeaders() }
+        );
+    }
+
+    /**
+     * Get most recent log entries (for live tailing)
+     */
+    tail(
+        folderName: string,
+        fileName: string,
+        count: number = 50,
+        level?: string
+    ): Observable<{ entries: LogEntry[]; totalCount: number }> {
+        let params = new HttpParams().set('count', count.toString());
+
+        if (level && level !== 'All') {
+            params = params.set('level', level);
+        }
+
+        return this.http.get<{ entries: LogEntry[]; totalCount: number }>(
+            `${this.baseUrl}/tail/${encodeURIComponent(folderName)}/${encodeURIComponent(fileName)}`,
+            { params, headers: this.authService.GetAuthenticationHeaders() }
+        );
+    }
+}
