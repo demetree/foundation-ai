@@ -6,10 +6,10 @@
 //
 // Each action logs a SecurityUserEvent for audit trail.
 //
-
 using System;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Authorization;
@@ -53,14 +53,14 @@ namespace Foundation.Security.Controllers.WebAPI
         /// </summary>
         [Route("api/Admin/User/{id}/SendPasswordReset")]
         [HttpPost]
-        public async Task<IActionResult> SendPasswordReset(long id)
+        public async Task<IActionResult> SendPasswordReset(long id, CancellationToken cancellationToken = default)
         {
             StartAuditEventClock();
 
             //
             // Verify admin privileges
             //
-            if (await UserCanAdministerAsync() == false)
+            if (await UserCanAdministerAsync(cancellationToken) == false)
             {
                 await CreateAuditEventAsync(AuditEngine.AuditType.UnauthorizedAccessAttempt, $"Non-admin user attempted to send password reset for user id {id}", false);
 
@@ -76,7 +76,7 @@ namespace Foundation.Security.Controllers.WebAPI
                                                   where su.id == id &&
                                                   su.deleted == false
                                                   select su)
-                                                  .FirstOrDefaultAsync();
+                                                  .FirstOrDefaultAsync(cancellationToken);
 
                 if (targetUser == null)
                 {
@@ -140,7 +140,7 @@ namespace Foundation.Security.Controllers.WebAPI
                 };
 
                 _securityDb.SecurityUserEvents.Add(userEvent);
-                await _securityDb.SaveChangesAsync();
+                await _securityDb.SaveChangesAsync(cancellationToken);
 
                 await CreateAuditEventAsync(AuditEngine.AuditType.ConfirmationRequested, $"Admin-initiated password reset email sent for user {targetUser.accountName}", targetUser.id.ToString());
 
@@ -162,14 +162,14 @@ namespace Foundation.Security.Controllers.WebAPI
         /// </summary>
         [Route("api/Admin/User/{id}/SetPassword")]
         [HttpPost]
-        public async Task<IActionResult> SetPassword(long id, [FromBody] SetPasswordRequest request)
+        public async Task<IActionResult> SetPassword(long id, [FromBody] SetPasswordRequest request, CancellationToken cancellationToken = default)
         {
             StartAuditEventClock();
 
             //
             // Verify admin privileges
             //
-            if (await UserCanAdministerAsync() == false)
+            if (await UserCanAdministerAsync(cancellationToken) == false)
             {
                 await CreateAuditEventAsync(AuditEngine.AuditType.UnauthorizedAccessAttempt, $"Non-admin user attempted to set password for user id {id}", false);
 
@@ -190,7 +190,7 @@ namespace Foundation.Security.Controllers.WebAPI
                                                   where su.id == id &&
                                                   su.deleted == false
                                                   select su)
-                                                  .FirstOrDefaultAsync();
+                                                  .FirstOrDefaultAsync(cancellationToken);
 
                 if (targetUser == null)
                 {
@@ -226,7 +226,7 @@ namespace Foundation.Security.Controllers.WebAPI
                 };
 
                 _securityDb.SecurityUserEvents.Add(userEvent);
-                await _securityDb.SaveChangesAsync();
+                await _securityDb.SaveChangesAsync(cancellationToken);
 
                 await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, $"Admin set password for user {targetUser.accountName}", targetUser.id.ToString());
 
@@ -248,14 +248,14 @@ namespace Foundation.Security.Controllers.WebAPI
         /// </summary>
         [Route("api/Admin/User/{id}/Lock")]
         [HttpPost]
-        public async Task<IActionResult> LockAccount(long id)
+        public async Task<IActionResult> LockAccount(long id, CancellationToken cancellationToken = default)
         {
             StartAuditEventClock();
 
             //
             // Verify admin privileges
             //
-            if (await UserCanAdministerAsync() == false)
+            if (await UserCanAdministerAsync(cancellationToken) == false)
             {
                 await CreateAuditEventAsync(AuditEngine.AuditType.UnauthorizedAccessAttempt, $"Non-admin user attempted to lock account for user id {id}", false);
 
@@ -271,7 +271,7 @@ namespace Foundation.Security.Controllers.WebAPI
                                                   where su.id == id &&
                                                   su.deleted == false
                                                   select su)
-                                                  .FirstOrDefaultAsync();
+                                                  .FirstOrDefaultAsync(cancellationToken);
 
                 if (targetUser == null)
                 {
@@ -297,7 +297,7 @@ namespace Foundation.Security.Controllers.WebAPI
                 };
 
                 _securityDb.SecurityUserEvents.Add(userEvent);
-                await _securityDb.SaveChangesAsync();
+                await _securityDb.SaveChangesAsync(cancellationToken);
 
                 await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, $"Admin locked account for user {targetUser.accountName}", targetUser.id.ToString());
 
@@ -319,14 +319,14 @@ namespace Foundation.Security.Controllers.WebAPI
         /// </summary>
         [Route("api/Admin/User/{id}/Unlock")]
         [HttpPost]
-        public async Task<IActionResult> UnlockAccount(long id)
+        public async Task<IActionResult> UnlockAccount(long id, CancellationToken cancellationToken = default)
         {
             StartAuditEventClock();
 
             //
             // Verify admin privileges
             //
-            if (await UserCanAdministerAsync() == false)
+            if (await UserCanAdministerAsync(cancellationToken) == false)
             {
                 await CreateAuditEventAsync(AuditEngine.AuditType.UnauthorizedAccessAttempt, $"Non-admin user attempted to unlock account for user id {id}", false);
 
@@ -342,7 +342,7 @@ namespace Foundation.Security.Controllers.WebAPI
                                                   where su.id == id &&
                                                   su.deleted == false
                                                   select su)
-                                                  .FirstOrDefaultAsync();
+                                                  .FirstOrDefaultAsync(cancellationToken);
 
                 if (targetUser == null)
                 {
@@ -369,7 +369,7 @@ namespace Foundation.Security.Controllers.WebAPI
                 };
 
                 _securityDb.SecurityUserEvents.Add(userEvent);
-                await _securityDb.SaveChangesAsync();
+                await _securityDb.SaveChangesAsync(cancellationToken);
 
                 await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, $"Admin unlocked account for user {targetUser.accountName}", targetUser.id.ToString());
 

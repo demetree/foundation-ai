@@ -21,6 +21,7 @@ using Foundation.Security.Controllers.WebAPI;
 using Foundation.Security.OIDC;
 using Foundation.Extensions;
 using Foundation.Security.Database;
+using Foundation.Security;
 using Foundation.Auditor.Database;
 
 
@@ -371,6 +372,13 @@ namespace Foundation.Server
                 // Validate the database schemas are correct before we start.  These will throw if there is a problem.
                 //
                 await ValidateSecuritySchema(logger).ConfigureAwait(false);
+
+                //
+                // Auto-seed missing SecurityUserEventType records for easier upgrades
+                //
+                await SecurityLogic.EnsureSecurityUserEventTypesAsync(
+                    msg => logger.LogError(msg)
+                ).ConfigureAwait(false);
 
                 await ValidateAuditorSchema(logger).ConfigureAwait(false);
 

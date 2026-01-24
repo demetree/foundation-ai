@@ -5,11 +5,14 @@
 // such as password reset, account locking, and unlocking.
 //
 
-import { Injectable, Inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, catchError } from 'rxjs';
 
 import { Utilities } from '../../services/utilities';
+import { AuthService } from '../../services/auth.service';
+import { AlertService } from '../../services/alert.service';
+import { SecureEndpointBase } from '../../services/secure-endpoint-base.service';
 
 
 //
@@ -23,7 +26,7 @@ export interface AdminActionResponse {
 @Injectable({
     providedIn: 'root'
 })
-export class AdminUserActionsService {
+export class AdminUserActionsService extends SecureEndpointBase {
 
     //
     // API base URL
@@ -31,7 +34,12 @@ export class AdminUserActionsService {
     private baseUrl: string = '';
 
 
-    constructor(private http: HttpClient) {
+    constructor(
+        http: HttpClient,
+        authService: AuthService,
+        alertService: AlertService
+    ) {
+        super(http, alertService, authService);
         this.baseUrl = Utilities.baseUrl();
     }
 
@@ -42,9 +50,14 @@ export class AdminUserActionsService {
     ///
     /// </summary>
     public sendPasswordReset(userId: bigint | number): Observable<AdminActionResponse> {
+        const authHeaders = this.authService.GetAuthenticationHeaders();
+
         return this.http.post<AdminActionResponse>(
-            `${this.baseUrl}api/Admin/User/${userId}/SendPasswordReset`,
-            {}
+            `${this.baseUrl}/api/Admin/User/${userId}/SendPasswordReset`,
+            {},
+            { headers: authHeaders }
+        ).pipe(
+            catchError(error => this.handleError(error, () => this.sendPasswordReset(userId)))
         );
     }
 
@@ -55,9 +68,14 @@ export class AdminUserActionsService {
     ///
     /// </summary>
     public setTemporaryPassword(userId: bigint | number, password: string): Observable<AdminActionResponse> {
+        const authHeaders = this.authService.GetAuthenticationHeaders();
+
         return this.http.post<AdminActionResponse>(
-            `${this.baseUrl}api/Admin/User/${userId}/SetPassword`,
-            { password: password }
+            `${this.baseUrl}/api/Admin/User/${userId}/SetPassword`,
+            { password: password },
+            { headers: authHeaders }
+        ).pipe(
+            catchError(error => this.handleError(error, () => this.setTemporaryPassword(userId, password)))
         );
     }
 
@@ -68,9 +86,14 @@ export class AdminUserActionsService {
     ///
     /// </summary>
     public lockAccount(userId: bigint | number): Observable<AdminActionResponse> {
+        const authHeaders = this.authService.GetAuthenticationHeaders();
+
         return this.http.post<AdminActionResponse>(
-            `${this.baseUrl}api/Admin/User/${userId}/Lock`,
-            {}
+            `${this.baseUrl}/api/Admin/User/${userId}/Lock`,
+            {},
+            { headers: authHeaders }
+        ).pipe(
+            catchError(error => this.handleError(error, () => this.lockAccount(userId)))
         );
     }
 
@@ -81,9 +104,14 @@ export class AdminUserActionsService {
     ///
     /// </summary>
     public unlockAccount(userId: bigint | number): Observable<AdminActionResponse> {
+        const authHeaders = this.authService.GetAuthenticationHeaders();
+
         return this.http.post<AdminActionResponse>(
-            `${this.baseUrl}api/Admin/User/${userId}/Unlock`,
-            {}
+            `${this.baseUrl}/api/Admin/User/${userId}/Unlock`,
+            {},
+            { headers: authHeaders }
+        ).pipe(
+            catchError(error => this.handleError(error, () => this.unlockAccount(userId)))
         );
     }
 }

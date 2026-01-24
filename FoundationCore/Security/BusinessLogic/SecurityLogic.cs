@@ -325,6 +325,155 @@ namespace Foundation.Security
             }
         }
 
+
+        /// <summary>
+        /// 
+        /// Ensures all expected SecurityUserEventType records exist in the database.
+        /// Inserts any missing records with explicit IDs using provider-specific syntax.
+        /// Supports SQL Server, PostgreSQL, MySQL, and SQLite.
+        /// Call this at startup to auto-seed new event types added in code updates.
+        /// 
+        /// </summary>
+        public static async Task EnsureSecurityUserEventTypesAsync(Action<string> logAction = null)
+        {
+            //
+            // Define expected records in order (id, name, description)
+            // Must match the SecurityUserEventTypes enum and SecurityDatabaseGenerator seed data
+            //
+            var expectedTypes = new List<(int id, string name, string description)>
+            {
+                (1, "LoginSuccess", "Login Success"),
+                (2, "LoginFailure", "Login Failure"),
+                (3, "LoginAttemptDuringCooldown", "Login Attempt During Cooldown"),
+                (4, "Logout", "Logout"),
+                (5, "TwoFactorSend", "TwoFactorSend"),
+                (6, "Miscellaneous", "Miscellaneous"),
+                (7, "AccountInactivated", "AccountInactivated"),
+                (8, "UserInitiatedPasswordResetRequest", "UserInitiatedPasswordResetRequest"),
+                (9, "UserInitiatedPasswordResetCompleted", "UserInitiatedPasswordResetCompleted"),
+                (10, "SystemInitiatedPasswordResetRequest", "SystemInitiatedPasswordResetRequest"),
+                (11, "SystemInitiatedPasswordResetCompleted", "SystemInitiatedPasswordResetCompleted"),
+                (12, "AdminInitiatedPasswordSet", "Admin Initiated Password Set"),
+                (13, "AdminActionLockAccount", "Admin Action Lock Account"),
+                (14, "AccountUnlocked", "Account Unlocked")
+            };
+
+            try
+            {
+                using (SecurityContext db = new SecurityContext())
+                {
+                    List<int> existingIds = await db.SecurityUserEventTypes
+                        .Select(x => x.id)
+                        .ToListAsync();
+
+                    var missing = expectedTypes.Where(e => !existingIds.Contains(e.id)).ToList();
+
+                    if (missing.Count > 0)
+                    {
+                        //
+                        // Detect provider and use appropriate insert syntax
+                        //
+                        string providerName = db.Database.ProviderName ?? "";
+
+                        if (providerName.Contains("SqlServer"))
+                        {
+                            //
+                            // SQL Server: Use IDENTITY_INSERT
+                            // Must use a transaction to ensure all commands run on the same connection
+                            // (IDENTITY_INSERT is session-scoped)
+                            //
+                            using (var transaction = await db.Database.BeginTransactionAsync())
+                            {
+                                try
+                                {
+                                    await db.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT Security.SecurityUserEventType ON");
+
+                                    foreach (var (id, name, description) in missing)
+                                    {
+                                        await db.Database.ExecuteSqlRawAsync(
+                                            "INSERT INTO Security.SecurityUserEventType (id, name, description) VALUES ({0}, {1}, {2})",
+                                            id, name, description);
+
+                                        logAction?.Invoke($"Seeded SecurityUserEventType: {name} (id={id})");
+                                    }
+
+                                    await db.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT Security.SecurityUserEventType OFF");
+
+                                    await transaction.CommitAsync();
+                                }
+                                catch
+                                {
+                                    await transaction.RollbackAsync();
+                                    throw;
+                                }
+                            }
+                        }
+                        else if (providerName.Contains("Npgsql") || providerName.Contains("PostgreSQL"))
+                        {
+                            //
+                            // PostgreSQL: Use OVERRIDING SYSTEM VALUE
+                            //
+                            foreach (var (id, name, description) in missing)
+                            {
+                                await db.Database.ExecuteSqlRawAsync(
+                                    "INSERT INTO \"SecurityUserEventType\" (id, name, description) OVERRIDING SYSTEM VALUE VALUES ({0}, {1}, {2})",
+                                    id, name, description);
+
+                                logAction?.Invoke($"Seeded SecurityUserEventType: {name} (id={id})");
+                            }
+                        }
+                        else
+                        {
+                            //
+                            // MySQL, SQLite, and others: Direct insert with explicit ID works by default
+                            //
+                            foreach (var (id, name, description) in missing)
+                            {
+                                await db.Database.ExecuteSqlRawAsync(
+                                    "INSERT INTO SecurityUserEventType (id, name, description) VALUES ({0}, {1}, {2})",
+                                    id, name, description);
+
+                                logAction?.Invoke($"Seeded Missing SecurityUserEventType: {name} (id={id})");
+                            }
+                        }
+                    }
+
+                    //
+                    // Final validation: Ensure all records exist with correct IDs
+                    //
+                    List<SecurityUserEventType> allTypes = await db.SecurityUserEventTypes
+                        .AsNoTracking()
+                        .ToListAsync();
+
+                    foreach (var expected in expectedTypes)
+                    {
+                        var actual = allTypes.FirstOrDefault(x => x.id == expected.id);
+
+                        if (actual == null)
+                        {
+                            string errorMsg = $"SecurityUserEventType validation failed: Missing id={expected.id} ({expected.name})";
+                            logAction?.Invoke($"ERROR: {errorMsg}");
+                            throw new Exception(errorMsg);
+                        }
+
+                        if (actual.name != expected.name)
+                        {
+                            string errorMsg = $"SecurityUserEventType validation failed: id={expected.id} has name '{actual.name}' but expected '{expected.name}'";
+                            logAction?.Invoke($"ERROR: {errorMsg}");
+                            throw new Exception(errorMsg);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                string errorMsg = $"Error - unable to ensure Security User Event Types: {ex.Message}";
+                logAction?.Invoke(errorMsg);
+                Console.WriteLine(errorMsg);
+                throw;
+            }
+        }
+
         public static bool ValidateOAUTHStateToken(string stateToken)
         {
             using (SecurityContext db = new SecurityContext())

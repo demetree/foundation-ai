@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Foundation.Security.Controllers.WebAPI
@@ -28,10 +29,12 @@ namespace Foundation.Security.Controllers.WebAPI
         [Route("api/User/GetUserByToken")]
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> GetUserByToken([FromQuery] string token)
+        public async Task<IActionResult> GetUserByToken([FromQuery] string token, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(token))
+            {
                 return BadRequest("Token is required.");
+            }
 
             try
             {
@@ -55,10 +58,12 @@ namespace Foundation.Security.Controllers.WebAPI
 
                 // Look for the token entry
                 var tokenEntry = await _securityDb.SecurityUserPasswordResetTokens
-                    .FirstOrDefaultAsync(t => t.token == token && t.active && !t.deleted);
+                    .FirstOrDefaultAsync(t => t.token == token && t.active && !t.deleted, cancellationToken);
 
                 if (tokenEntry == null)
+                {
                     return NotFound("Token not found or expired.");
+                }
 
                 // Now get the user
                 var user = await _securityDb.SecurityUsers
@@ -76,10 +81,12 @@ namespace Foundation.Security.Controllers.WebAPI
                         u.phoneNumber,
                         u.image
                     })
-                    .FirstOrDefaultAsync();
+                    .FirstOrDefaultAsync(cancellationToken);
 
                 if (user == null)
+                {
                     return NotFound("Associated user not found.");
+                }
 
                 return Ok(user);
             }
@@ -93,7 +100,7 @@ namespace Foundation.Security.Controllers.WebAPI
         [Route("api/User/ActivateUser")]
         [HttpPut]
         [AllowAnonymous]
-        public async Task<IActionResult> ActivateUser([FromBody] SubmitUserRequest request)
+        public async Task<IActionResult> ActivateUser([FromBody] SubmitUserRequest request, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(request.Token))
             {
@@ -138,7 +145,7 @@ namespace Foundation.Security.Controllers.WebAPI
                         t.active &&
                         !t.deleted &&
                         !t.completed &&
-                        t.expiry > DateTime.UtcNow);
+                        t.expiry > DateTime.UtcNow, cancellationToken);
 
                 if (tokenEntry == null)
                 {
@@ -146,7 +153,7 @@ namespace Foundation.Security.Controllers.WebAPI
                     return NotFound("Token not found, expired, or already completed.");
                 }
 
-                var user = await _securityDb.SecurityUsers.FirstOrDefaultAsync(u => u.id == tokenEntry.securityUserId);
+                var user = await _securityDb.SecurityUsers.FirstOrDefaultAsync(u => u.id == tokenEntry.securityUserId, cancellationToken);
 
                 if (user == null)
                 {
@@ -200,7 +207,7 @@ namespace Foundation.Security.Controllers.WebAPI
 
                 _securityDb.SecurityUserEvents.Add(userEvent);
 
-                await _securityDb.SaveChangesAsync();
+                await _securityDb.SaveChangesAsync(cancellationToken);
 
                 await CreateAuditEventAsync(Auditor.AuditEngine.AuditType.ConfirmationGranted, $"Attempt to activate user with token was received and accepted.  User activated is {user.accountName} with guid of {user.objectGuid}.  Token provided is {token}", true);
 

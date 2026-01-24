@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Foundation.Security.Controllers.WebAPI
@@ -15,9 +16,9 @@ namespace Foundation.Security.Controllers.WebAPI
 
         [Route("api/SecurityOrganizations/ListData")]
         [HttpGet]
-        public async Task<IActionResult> GetListData()
+        public async Task<IActionResult> GetListData(CancellationToken cancellationToken = default)
         {
-            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED) == false)
+            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
             {
                 return Unauthorized();
             }
@@ -35,7 +36,7 @@ namespace Foundation.Security.Controllers.WebAPI
                                                     id = o.id,
                                                     name = t.name + " - " + o.name,
                                                 })
-                                          .ToListAsync();
+                                          .ToListAsync(cancellationToken);
 
             return Ok(output);
         }

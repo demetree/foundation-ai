@@ -2,6 +2,7 @@ using System;
 using System.Data;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -29,18 +30,12 @@ namespace Foundation.Security.Controllers.WebAPI
         [HttpPut]
         [HttpPost]
         [Route("api/SecurityUserSecurityRole/{id}")]
-        public async Task<IActionResult> PutSecurityUserSecurityRole(int id, Database.SecurityUserSecurityRole.SecurityUserSecurityRoleDTO securityUserSecurityRoleDTO)
+        public async Task<IActionResult> PutSecurityUserSecurityRole(int id, Database.SecurityUserSecurityRole.SecurityUserSecurityRoleDTO securityUserSecurityRoleDTO, CancellationToken cancellationToken = default)
         {
 
             StartAuditEventClock();
 
-            if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED) == false)
-            {
-                return Unauthorized();
-            }
-
-
-            if (await IsEntityDataTokenValidAsync(TokenLogic.EntityDataTokenTrustLevel.Write) == false)
+            if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
             {
                 return Unauthorized();
             }
@@ -51,17 +46,17 @@ namespace Foundation.Security.Controllers.WebAPI
                 return BadRequest();
             }
 
-            SecurityUser securityUser = await GetSecurityUserAsync();
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
-            bool userIsWriter = await UserCanWriteAsync(securityUser, 0);
-            bool userIsAdmin = await UserCanAdministerAsync(securityUser);
+            bool userIsWriter = await UserCanWriteAsync(securityUser, 0, cancellationToken);
+            bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
             IQueryable<Database.SecurityUserSecurityRole> query = (from x in _context.SecurityUserSecurityRoles
                                                                    where
                                                                    (x.id == id)
                                                                    select x);
 
 
-            Database.SecurityUserSecurityRole existing = await query.FirstOrDefaultAsync();
+            Database.SecurityUserSecurityRole existing = await query.FirstOrDefaultAsync(cancellationToken);
 
             if (existing == null)
             {
@@ -97,7 +92,7 @@ namespace Foundation.Security.Controllers.WebAPI
 
             try
             {
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(cancellationToken);
 
                 /* start of custom bit */
                 //
@@ -137,23 +132,17 @@ namespace Foundation.Security.Controllers.WebAPI
         [HttpPost]
         [Route("api/SecurityUserSecurityRole", Name = "SecurityUserSecurityRole")]
         [Route("api/Surface/SecurityUserSecurityRole")]
-        public async Task<IActionResult> PostSecurityUserSecurityRole([FromBody ]Database.SecurityUserSecurityRole.SecurityUserSecurityRoleDTO securityUserSecurityRoleDTO)
+        public async Task<IActionResult> PostSecurityUserSecurityRole([FromBody ]Database.SecurityUserSecurityRole.SecurityUserSecurityRoleDTO securityUserSecurityRoleDTO, CancellationToken cancellationToken = default)
         {
             StartAuditEventClock();
 
-            if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED) == false)
+            if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
             {
                 return Unauthorized();
             }
 
 
-            if (await IsEntityDataTokenValidAsync(TokenLogic.EntityDataTokenTrustLevel.Write) == false)
-            {
-                return Unauthorized();
-            }
-
-
-            SecurityUser securityUser = await GetSecurityUserAsync();
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
             //
             // Create a new SecurityUserSecurityRole object using the data from the DTO
@@ -168,7 +157,7 @@ namespace Foundation.Security.Controllers.WebAPI
                 }
 
                 _context.SecurityUserSecurityRoles.Add(securityUserSecurityRole);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(cancellationToken);
 
                 /* start of custom bit */
                 //
@@ -203,21 +192,15 @@ namespace Foundation.Security.Controllers.WebAPI
         [HttpDelete]
         [Route("api/SecurityUserSecurityRole/{id}")]
         [Route("api/SecurityUserSecurityRole")]
-        public async Task<IActionResult> DeleteSecurityUserSecurityRole(int id)
+        public async Task<IActionResult> DeleteSecurityUserSecurityRole(int id, CancellationToken cancellationToken = default)
         {
             StartAuditEventClock();
 
-            if (await DoesUserHaveAdminPrivilegeSecurityCheckAsync() == false)
+            if (await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
             {
                 return Unauthorized();
             }
-
-            if (await IsEntityDataTokenValidAsync(TokenLogic.EntityDataTokenTrustLevel.Write) == false)
-            {
-                return Unauthorized();
-            }
-
-            SecurityUser securityUser = await GetSecurityUserAsync();
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
             IQueryable<Database.SecurityUserSecurityRole> query = (from x in _context.SecurityUserSecurityRoles
                                                                    where
@@ -225,7 +208,7 @@ namespace Foundation.Security.Controllers.WebAPI
                                                                    select x);
 
 
-            Database.SecurityUserSecurityRole securityUserSecurityRole = await query.FirstOrDefaultAsync();
+            Database.SecurityUserSecurityRole securityUserSecurityRole = await query.FirstOrDefaultAsync(cancellationToken);
 
             if (securityUserSecurityRole == null)
             {
@@ -238,7 +221,7 @@ namespace Foundation.Security.Controllers.WebAPI
             try
             {
                 securityUserSecurityRole.deleted = true;
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(cancellationToken);
 
                 /* start of custom bit */
                 //

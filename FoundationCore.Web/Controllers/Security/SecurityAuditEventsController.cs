@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 
@@ -53,21 +54,17 @@ namespace Foundation.Security.Controllers.WebAPI
                                                string resource = null,
                                                int pageSize = DEFAULT_ALL_DATA_LIST_PAGE_SIZE,
                                                int pageNumber = 1,
-                                               bool includeRelations = true)
+                                               bool includeRelations = true,
+                                               CancellationToken cancellationToken = default)
         {
             StartAuditEventClock();
 
-            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED) == false)
+            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
             {
                 return Unauthorized();
             }
 
-            if (await IsEntityDataTokenValidAsync(TokenLogic.EntityDataTokenTrustLevel.Read) == false)
-            {
-                return Unauthorized();
-            }
-
-            bool userIsAdmin = await UserCanAdministerAsync();
+            bool userIsAdmin = await UserCanAdministerAsync(cancellationToken);
 
 
             //
@@ -282,7 +279,7 @@ namespace Foundation.Security.Controllers.WebAPI
 
             query = query.AsNoTracking();
 
-            var materialized = await query.ToListAsync();
+            var materialized = await query.ToListAsync(cancellationToken);
 
             if (includeRelations == true)
             {

@@ -7,6 +7,7 @@ using System;
 using System.Net;
 using System.Net.Mail;
 using System.Security.Cryptography;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
 using SendGrid.Helpers.Mail;
@@ -45,7 +46,7 @@ namespace Foundation.Security.Controllers.WebAPI
         [Route("api/User/SendPasswordResetEmail")]
         [HttpPost]
         [AllowAnonymous]
-        public async Task<IActionResult> SendPasswordResetEmail([FromBody] SendResetEmailRequest request)
+        public async Task<IActionResult> SendPasswordResetEmail([FromBody] SendResetEmailRequest request, CancellationToken cancellationToken = default)
         {
             if (request == null || string.IsNullOrWhiteSpace(request.AccountName))
             {
@@ -62,7 +63,7 @@ namespace Foundation.Security.Controllers.WebAPI
                                       su.active == true &&
                                       su.deleted == false
                                       select su)
-                                      .FirstOrDefaultAsync();
+                                      .FirstOrDefaultAsync(cancellationToken);
 
             if (securityUser == null)
             {
@@ -131,7 +132,7 @@ namespace Foundation.Security.Controllers.WebAPI
                 };
 
                 _securityDb.SecurityUserEvents.Add(emailSentEvent);
-                await _securityDb.SaveChangesAsync();
+                await _securityDb.SaveChangesAsync(cancellationToken);
 
                 //
                 // Add a regular audit event
@@ -250,7 +251,7 @@ namespace Foundation.Security.Controllers.WebAPI
         [Route("api/User/SetPassword")]
         [HttpPost]
         [AllowAnonymous]
-        public async Task<IActionResult> SetSecurityUserPassword([FromBody] SetPasswordRequest request)
+        public async Task<IActionResult> SetSecurityUserPassword([FromBody] SetPasswordRequest request, CancellationToken cancellationToken = default)
         {
             if (request == null || 
                 string.IsNullOrWhiteSpace(request.Token) || 
@@ -292,7 +293,7 @@ namespace Foundation.Security.Controllers.WebAPI
                 var tokenEntry = await (from suprt in _securityDb.SecurityUserPasswordResetTokens
                                         where suprt.token == token
                                         select suprt)
-                                        .FirstOrDefaultAsync();
+                                        .FirstOrDefaultAsync(cancellationToken);
 
                 if (tokenEntry == null)
                 {
@@ -331,7 +332,7 @@ namespace Foundation.Security.Controllers.WebAPI
                                           su.active == true &&
                                           su.deleted == false
                                           select su)
-                                          .FirstOrDefaultAsync();
+                                          .FirstOrDefaultAsync(cancellationToken);
 
 
                 if (securityUser == null)
@@ -376,7 +377,7 @@ namespace Foundation.Security.Controllers.WebAPI
 
                 _securityDb.SecurityUserEvents.Add(passwordResetEvent);
                 
-                await _securityDb.SaveChangesAsync();
+                await _securityDb.SaveChangesAsync(cancellationToken);
 
                 //
                 // Also log as a system update event
@@ -405,7 +406,7 @@ namespace Foundation.Security.Controllers.WebAPI
         [Route("api/User/IsTokenInvalid")]
         [HttpPost]
         [AllowAnonymous]
-        public async Task<IActionResult> IsTokenInvalid([FromBody] TokenCheckRequest request)
+        public async Task<IActionResult> IsTokenInvalid([FromBody] TokenCheckRequest request, CancellationToken cancellationToken = default)
         {
             if (request == null || string.IsNullOrWhiteSpace(request.Token))
             {
@@ -448,7 +449,7 @@ namespace Foundation.Security.Controllers.WebAPI
                 var tokenEntry = await (from suprt in _securityDb.SecurityUserPasswordResetTokens
                                         where suprt.token == token
                                         select suprt)
-                                        .FirstOrDefaultAsync();
+                                        .FirstOrDefaultAsync(cancellationToken);
                     
                 if (tokenEntry == null)
                 {

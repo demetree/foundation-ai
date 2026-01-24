@@ -1,9 +1,11 @@
 using Foundation.Security;
+using Foundation.Security.Database;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Data;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Foundation.Auditor.Controllers.WebAPI
@@ -39,7 +41,8 @@ namespace Foundation.Auditor.Controllers.WebAPI
             string exceptionText = null,
             int? pageSize = null,
             int? pageNumber = null,
-            bool includeRelations = true)
+            bool includeRelations = true,
+            CancellationToken cancellationToken = default)
         {
             StartAuditEventClock();
 
@@ -48,13 +51,10 @@ namespace Foundation.Auditor.Controllers.WebAPI
                 return Unauthorized();
             }
 
-            if (await IsEntityDataTokenValidAsync(TokenLogic.EntityDataTokenTrustLevel.Read) == false)
-            {
-                return Unauthorized();
-            }
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
-            bool userIsWriter = await UserCanWriteAsync();
-            bool userIsAdmin = await UserCanAdministerAsync();
+            bool userIsWriter = await UserCanWriteAsync(securityUser, 0, cancellationToken);
+            bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 
             if (pageNumber.HasValue == true &&
                 pageNumber < 1)
@@ -207,7 +207,7 @@ namespace Foundation.Auditor.Controllers.WebAPI
             }
             query = query.AsNoTracking();
 
-            var materialized = await query.ToListAsync();
+            var materialized = await query.ToListAsync(cancellationToken);
 
 
             // Convert all the date properties to be of kind UTC.

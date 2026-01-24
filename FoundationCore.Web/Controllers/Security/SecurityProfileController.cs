@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Foundation.Security.Controllers.WebAPI
@@ -23,30 +24,26 @@ namespace Foundation.Security.Controllers.WebAPI
 
         [HttpGet]
         [Route("api/SecurityProfile")]
-        public async Task<IActionResult> GetSecurityProfile()
+        public async Task<IActionResult> GetSecurityProfile(CancellationToken cancellationToken = default)
         {
             //
             // This is a utility method that is called on each page load, usually more than once.  Auditing this read doesn't add value, and clutters the auditEvent table.
             //
-            SecurityFramework.SecurityProfile profile = await GetCurrentUserSecurityProfileFromSecurityFrameworkAsync();
+            SecurityFramework.SecurityProfile profile = await GetCurrentUserSecurityProfileFromSecurityFrameworkAsync(cancellationToken);
             return Ok(profile);
         }
 
 
         [HttpGet]
         [Route("api/SecurityProfiles")]
-        public async Task<IActionResult> GetSecurityProfiles()
+        public async Task<IActionResult> GetSecurityProfiles(CancellationToken cancellationToken = default)
         {
             StartAuditEventClock();
 
-            if (await IsEntityDataTokenValidAsync(TokenLogic.EntityDataTokenTrustLevel.Read) == false)
-            {
-                return Unauthorized();
-            }
             //
             // This returns a list.  - for now, it will just contain the current user.  Possibly can extend this to show all users to people who can read the security module.
             //
-            SecurityFramework.SecurityProfile profile = await GetCurrentUserSecurityProfileFromSecurityFrameworkAsync();
+            SecurityFramework.SecurityProfile profile = await GetCurrentUserSecurityProfileFromSecurityFrameworkAsync(cancellationToken);
 
             List<SecurityFramework.SecurityProfile> output = new List<SecurityFramework.SecurityProfile>();
             output.Add(profile);
@@ -58,20 +55,15 @@ namespace Foundation.Security.Controllers.WebAPI
 
         [HttpGet]
         [Route("api/SecurityProfile/{userId:int}")]
-        public async Task<IActionResult> GetSecurityProfile(int userId)
+        public async Task<IActionResult> GetSecurityProfile(int userId, CancellationToken cancellationToken = default)
         {
             StartAuditEventClock();
-
-            if (await IsEntityDataTokenValidAsync(TokenLogic.EntityDataTokenTrustLevel.Read) == false)
-            {
-                return Unauthorized();
-            }
 
             //
             // This returns a list.  - for now, it will just contain the current user.  Possibly can extend this to show all users to people who can read the security module.
             //
 
-            SecurityFramework.SecurityProfile profile = await GetCurrentUserSecurityProfileFromSecurityFrameworkAsync();
+            SecurityFramework.SecurityProfile profile = await GetCurrentUserSecurityProfileFromSecurityFrameworkAsync(cancellationToken);
 
             await CreateAuditEventAsync(Auditor.AuditEngine.AuditType.ReadEntity, "Security Profile was read");
 
@@ -82,7 +74,7 @@ namespace Foundation.Security.Controllers.WebAPI
 
         [HttpGet]
         [Route("api/SecurityProfile/ListDataForUsersWithModulePermission")]
-        public async Task<IActionResult> GetListDataForUsersWithModulePermission(string moduleName, string privilegeName, int? active = 1)
+        public async Task<IActionResult> GetListDataForUsersWithModulePermission(string moduleName, string privilegeName, int? active = 1, CancellationToken cancellationToken = default)
         {
             //
             // Get a list of the users that have the specified privilege to the specified  module
@@ -97,7 +89,7 @@ namespace Foundation.Security.Controllers.WebAPI
                 throw new Exception("Invalid privilege name.");
             }
 
-            SecurityFramework.SecurityProfile currentUserProfile = await GetCurrentUserSecurityProfileFromSecurityFrameworkAsync();
+            SecurityFramework.SecurityProfile currentUserProfile = await GetCurrentUserSecurityProfileFromSecurityFrameworkAsync(cancellationToken);
 
             bool userCanQueryForListOfOtherUsersWithPrivilege = false;
 

@@ -64,11 +64,11 @@ namespace Foundation.Controllers.WebAPI
 
         [HttpPost]
         [Route("api/UserFilters/SaveUserFilters")]
-        public async Task<IActionResult> SaveUserFilters(dynamic settings)
+        public async Task<IActionResult> SaveUserFilters(dynamic settings, CancellationToken cancellationToken = default)
         {
             try
             {
-                await Foundation.Security.UserSettings.SetObjectSettingAsync(USER_FILTERS, settings, await GetSecurityUserAsync());
+                await Foundation.Security.UserSettings.SetObjectSettingAsync(USER_FILTERS, settings, await GetSecurityUserAsync(cancellationToken), cancellationToken);
 
                 return Ok(new StringContent("{ \"Saved\": 1 }", System.Text.Encoding.UTF8, "application/JSON"));
             }
@@ -81,17 +81,17 @@ namespace Foundation.Controllers.WebAPI
 
         [HttpPost]
         [Route("api/UserFilters/ClearUserFilters")]
-        public async Task<IActionResult> ClearUserFilters()
+        public async Task<IActionResult> ClearUserFilters(CancellationToken cancellationToken = default)
         {
             try
             {
-                SecurityUser securityUser = await GetSecurityUserAsync();
+                SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
                 // Write null to the setting to clear it
-                await Foundation.Security.UserSettings.SetObjectSettingAsync(USER_FILTERS, null, securityUser);
+                await Foundation.Security.UserSettings.SetObjectSettingAsync(USER_FILTERS, null, securityUser, cancellationToken);
 
                 // also blow away the last page
-                await Foundation.Security.UserSettings.SetStringSettingAsync(USER_LAST_PAGE, "", securityUser);
+                await Foundation.Security.UserSettings.SetStringSettingAsync(USER_LAST_PAGE, "", securityUser, cancellationToken);
 
                 return Ok(new StringContent("{ \"Saved\": 1 }", System.Text.Encoding.UTF8, "application/JSON"));
             }
@@ -105,11 +105,11 @@ namespace Foundation.Controllers.WebAPI
 
         [HttpGet]
         [Route("api/UserFilters/GetUserLastPage")]
-        public async Task<IActionResult> GetUserLastPage()
+        public async Task<IActionResult> GetUserLastPage(CancellationToken cancellationToken = default)
         {
             try
             {
-                string page = await Foundation.Security.UserSettings.GetStringSettingAsync(USER_LAST_PAGE, await GetSecurityUserAsync());
+                string page = await Foundation.Security.UserSettings.GetStringSettingAsync(USER_LAST_PAGE, await GetSecurityUserAsync(cancellationToken), cancellationToken);
 
                 if (page != null)
                 {
@@ -128,11 +128,11 @@ namespace Foundation.Controllers.WebAPI
 
         [HttpPost]
         [Route("api/UserFilters/SaveUserLastPage")]
-        public async Task<IActionResult> SaveUserLastPageAsync(string page)
+        public async Task<IActionResult> SaveUserLastPageAsync(string page, CancellationToken cancellationToken = default)
         {
             try
             {
-                await Foundation.Security.UserSettings.SetStringSettingAsync(USER_LAST_PAGE, page, GetSecurityUser());
+                await Foundation.Security.UserSettings.SetStringSettingAsync(USER_LAST_PAGE, page, GetSecurityUser(), cancellationToken);
 
                 return Ok(new StringContent("{ \"Saved\": 1 }", System.Text.Encoding.UTF8, "application/JSON"));
             }

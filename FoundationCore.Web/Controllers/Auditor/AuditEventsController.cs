@@ -1,11 +1,13 @@
 ﻿using Foundation.Auditor.Database;
 using Foundation.Security;
+using Foundation.Security.Database;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Foundation.Auditor.Controllers.WebAPI
@@ -44,7 +46,8 @@ namespace Foundation.Auditor.Controllers.WebAPI
                                                 string message = null,
                                                 int? pageSize = null,
                                                 int? pageNumber = null,
-                                                bool includeRelations = true)
+                                                bool includeRelations = true,
+                                                CancellationToken cancellationToken = default)
         {
             StartAuditEventClock();
 
@@ -63,7 +66,9 @@ namespace Foundation.Auditor.Controllers.WebAPI
                 AuditEngine.FlushMemoryQueueToDatabase();
             }
 
-            bool userIsAdmin = await UserCanAdministerAsync();
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+            bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 
             if (pageNumber.HasValue == true &&
                 pageNumber < 1)
@@ -317,23 +322,23 @@ namespace Foundation.Auditor.Controllers.WebAPI
 
             query = query.AsNoTracking();
 
-            var materialized = await query.ToListAsync();
+            var materialized = await query.ToListAsync(cancellationToken);
 
             if (includeRelations == true)
             {
                 //
                 // Rebuild the data that the includes didn't get because the performance was terrible when using them
                 //
-                Dictionary<int, AuditAccessType> auditAccessTypes = await (from x in _context.AuditAccessTypes select x).AsNoTracking().ToDictionaryAsync(x => x.id, x => x);
-                Dictionary<int, AuditModule> auditModules = await (from x in _context.AuditModules select x).AsNoTracking().ToDictionaryAsync(x => x.id, x => x);
-                Dictionary<int, AuditModuleEntity> auditModuleEntities = await (from x in _context.AuditModuleEntities select x).AsNoTracking().ToDictionaryAsync(x => x.id, x => x);
-                Dictionary<int, AuditResource> auditResources = await (from x in _context.AuditResources select x).AsNoTracking().ToDictionaryAsync(x => x.id, x => x);
-                Dictionary<int, AuditUser> auditUsers = await (from x in _context.AuditUsers select x).AsNoTracking().ToDictionaryAsync(x => x.id, x => x);
-                Dictionary<int, AuditSession> auditSessions = await (from x in _context.AuditSessions select x).AsNoTracking().ToDictionaryAsync(x => x.id, x => x);
-                Dictionary<int, AuditSource> auditSources = await (from x in _context.AuditSources select x).AsNoTracking().ToDictionaryAsync(x => x.id, x => x);
-                Dictionary<int, AuditType> auditTypes = await (from x in _context.AuditTypes select x).AsNoTracking().ToDictionaryAsync(x => x.id, x => x);
-                Dictionary<int, AuditHostSystem> auditHostSystems = await (from x in _context.AuditHostSystems select x).AsNoTracking().ToDictionaryAsync(x => x.id, x => x);
-                Dictionary<int, AuditUserAgent> auditUserAgents = await (from x in _context.AuditUserAgents select x).AsNoTracking().ToDictionaryAsync(x => x.id, x => x);
+                Dictionary<int, AuditAccessType> auditAccessTypes = await (from x in _context.AuditAccessTypes select x).AsNoTracking().ToDictionaryAsync(x => x.id, x => x, cancellationToken);
+                Dictionary<int, AuditModule> auditModules = await (from x in _context.AuditModules select x).AsNoTracking().ToDictionaryAsync(x => x.id, x => x, cancellationToken);
+                Dictionary<int, AuditModuleEntity> auditModuleEntities = await (from x in _context.AuditModuleEntities select x).AsNoTracking().ToDictionaryAsync(x => x.id, x => x, cancellationToken);
+                Dictionary<int, AuditResource> auditResources = await (from x in _context.AuditResources select x).AsNoTracking().ToDictionaryAsync(x => x.id, x => x, cancellationToken);
+                Dictionary<int, AuditUser> auditUsers = await (from x in _context.AuditUsers select x).AsNoTracking().ToDictionaryAsync(x => x.id, x => x, cancellationToken);
+                Dictionary<int, AuditSession> auditSessions = await (from x in _context.AuditSessions select x).AsNoTracking().ToDictionaryAsync(x => x.id, x => x, cancellationToken);
+                Dictionary<int, AuditSource> auditSources = await (from x in _context.AuditSources select x).AsNoTracking().ToDictionaryAsync(x => x.id, x => x, cancellationToken);
+                Dictionary<int, AuditType> auditTypes = await (from x in _context.AuditTypes select x).AsNoTracking().ToDictionaryAsync(x => x.id, x => x, cancellationToken);
+                Dictionary<int, AuditHostSystem> auditHostSystems = await (from x in _context.AuditHostSystems select x).AsNoTracking().ToDictionaryAsync(x => x.id, x => x, cancellationToken);
+                Dictionary<int, AuditUserAgent> auditUserAgents = await (from x in _context.AuditUserAgents select x).AsNoTracking().ToDictionaryAsync(x => x.id, x => x, cancellationToken);
 
                 foreach (AuditEvent ae in materialized)
                 {

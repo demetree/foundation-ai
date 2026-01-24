@@ -1,14 +1,15 @@
+using Foundation.Auditor;
+using Foundation.Controllers;
+using Foundation.Security.Database;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Foundation.Auditor;
-using Foundation.Controllers;
-using Foundation.Security.Database;
 
 
 namespace Foundation.Security.Controllers.WebAPI
@@ -60,23 +61,21 @@ namespace Foundation.Security.Controllers.WebAPI
             int? securityTeamId = null,
             int? pageSize = null,
             int? pageNumber = null,
-            bool includeRelations = true)
+            bool includeRelations = true,
+            CancellationToken cancellationToken = default)
         {
             StartAuditEventClock();
 
-            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED) == false)
-            {
-                return Unauthorized();
-            }
-
-            if (await IsEntityDataTokenValidAsync(TokenLogic.EntityDataTokenTrustLevel.Read) == false)
+            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
             {
                 return Unauthorized();
             }
 
 
-            bool userIsWriter = await UserCanWriteAsync();
-            bool userIsAdmin = await UserCanAdministerAsync();
+            SecurityUser user = await GetSecurityUserAsync(cancellationToken);
+
+            bool userIsWriter = await UserCanWriteAsync(user, 0, cancellationToken);
+            bool userIsAdmin = await UserCanAdministerAsync(user, cancellationToken);
 
             if (pageNumber.HasValue == true &&
                 pageNumber < 1)
@@ -289,7 +288,7 @@ namespace Foundation.Security.Controllers.WebAPI
 
             query = query.AsNoTracking();
 
-            var materialized = await query.ToListAsync();
+            var materialized = await query.ToListAsync(cancellationToken);
 
             /* this is the start of the custom bit */
 
@@ -349,23 +348,20 @@ namespace Foundation.Security.Controllers.WebAPI
         [HttpGet]
         [Route("api/SecurityUser/{id}")]
         [Route("api/SecurityUser")]
-        public async Task<IActionResult> GetSecurityUser(int id, bool includeRelations = true)
+        public async Task<IActionResult> GetSecurityUser(int id, bool includeRelations = true, CancellationToken cancellationToken = default)
         {
             StartAuditEventClock();
 
-            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED) == false)
-            {
-                return Unauthorized();
-            }
-
-            if (await IsEntityDataTokenValidAsync(TokenLogic.EntityDataTokenTrustLevel.Read) == false)
+            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
             {
                 return Unauthorized();
             }
 
 
-            bool userIsWriter = await UserCanWriteAsync();
-            bool userIsAdmin = await UserCanAdministerAsync();
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+            bool userIsWriter = await UserCanWriteAsync(securityUser, 0, cancellationToken);
+            bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 
             try
             {
@@ -385,7 +381,7 @@ namespace Foundation.Security.Controllers.WebAPI
                     query = query.Include(x => x.securityTeam);
                 }
 
-                SecurityUser materialized = await query.FirstOrDefaultAsync();
+                SecurityUser materialized = await query.FirstOrDefaultAsync(cancellationToken);
 
                 if (materialized != null)
                 {
@@ -467,11 +463,11 @@ namespace Foundation.Security.Controllers.WebAPI
         [HttpPost]
         [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
         [Route("api/SecurityUser/{id}")]
-        public async Task<IActionResult> PutSecurityUser(int id, [FromBody] Database.SecurityUser.SecurityUserDTO securityUserDTO)
+        public async Task<IActionResult> PutSecurityUser(int id, [FromBody] Database.SecurityUser.SecurityUserDTO securityUserDTO, CancellationToken cancellationToken = default)
         {
             StartAuditEventClock();
 
-            if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED) == false)
+            if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
             {
                 return Unauthorized();
             }
@@ -481,10 +477,13 @@ namespace Foundation.Security.Controllers.WebAPI
                 return BadRequest();
             }
 
-            bool userIsWriter = await UserCanWriteAsync();
-            bool userIsAdmin = await UserCanAdministerAsync();
 
-            SecurityUser existing = await (from x in _context.SecurityUsers where x.id == id select x).FirstOrDefaultAsync();
+            SecurityUser user = await GetSecurityUserAsync(cancellationToken);
+
+            bool userIsWriter = await UserCanWriteAsync(user, 0, cancellationToken);
+            bool userIsAdmin = await UserCanAdministerAsync(user, cancellationToken);
+
+            SecurityUser existing = await (from x in _context.SecurityUsers where x.id == id select x).FirstOrDefaultAsync(cancellationToken);
 
 
             //
@@ -498,6 +497,20 @@ namespace Foundation.Security.Controllers.WebAPI
                 await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for Security.User PUT", id.ToString(), new Exception("No Security.User entity could be find with the primary key provided."));
                 return NotFound();
             }
+
+            //
+            // Validate the object guid.  If it comes in as empty Guid in the DTO, then set it to the actual value from the existing record.  If the DTO has a value then it must match the existing value.
+            // 
+            if (securityUserDTO.objectGuid == Guid.Empty)
+            {
+                securityUserDTO.objectGuid = existing.objectGuid;
+            }
+            else if (securityUserDTO.objectGuid != existing.objectGuid)
+            {
+                await CreateAuditEventAsync(AuditEngine.AuditType.Error, $"Attempt was made to change object guid on a SecurityUser record.  This is not allowed.  The User is " + user.accountName, existing.id.ToString());
+                return Problem("Invalid Operation.");
+            }
+
 
             SecurityUser cloneOfExisting = (SecurityUser)_context.Entry(existing).GetDatabaseValues().ToObject();
 
@@ -679,7 +692,7 @@ namespace Foundation.Security.Controllers.WebAPI
 
             try
             {
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(cancellationToken);
 
                 //
                 // More custom here - nullify the image field so that it doesn't get serialized in the AuditEventEntityState table because large images exceed the serializer max size, and it's not absolutely necessary to save the images.
@@ -719,13 +732,13 @@ namespace Foundation.Security.Controllers.WebAPI
                 //
                 // If user has any values in any of the tenant, organization, department or team fields, make sure that there are matching counterparts in the associated user mapping tables
                 //
-                await CreateOrUpdateUserDataVisibilityTablesAsync(securityUser);
+                await CreateOrUpdateUserDataVisibilityTablesAsync(securityUser, cancellationToken);
 
 
                 //
                 // Because we removed some data for the serializing, load the record again and clobber the password for the return object
                 //
-                securityUserToReturn = await (from x in _context.SecurityUsers select x).FirstOrDefaultAsync();
+                securityUserToReturn = await (from x in _context.SecurityUsers select x).FirstOrDefaultAsync(cancellationToken);
                 securityUserToReturn.password = null;
 
 
@@ -847,7 +860,7 @@ namespace Foundation.Security.Controllers.WebAPI
             return;
         }
 
-        private async Task<bool> CreateOrUpdateUserDataVisibilityTablesAsync(SecurityUser securityUser)
+        private async Task<bool> CreateOrUpdateUserDataVisibilityTablesAsync(SecurityUser securityUser, CancellationToken cancellationToken = default)
         {
             if (securityUser.securityTenantId.HasValue == true)
             {
@@ -855,7 +868,7 @@ namespace Foundation.Security.Controllers.WebAPI
                                                 where
                                                 x.securityUserId == securityUser.id &&
                                                 x.securityTenantId == securityUser.securityTenantId.Value
-                                                select x).FirstOrDefaultAsync();
+                                                select x).FirstOrDefaultAsync(cancellationToken);
 
                 if (stu == null)
                 {
@@ -868,7 +881,7 @@ namespace Foundation.Security.Controllers.WebAPI
                     stu.active = true;
                     stu.deleted = false;
                     _context.SecurityTenantUsers.Add(stu);
-                    await _context.SaveChangesAsync();
+                    await _context.SaveChangesAsync(cancellationToken);
                 }
                 else
                 {
@@ -877,7 +890,7 @@ namespace Foundation.Security.Controllers.WebAPI
                         stu.active = true;
                         stu.deleted = false;
 
-                        await _context.SaveChangesAsync();
+                        await _context.SaveChangesAsync(cancellationToken);
                     }
                 }
             }
@@ -889,7 +902,7 @@ namespace Foundation.Security.Controllers.WebAPI
                                                       where
                                                       x.securityUserId == securityUser.id &&
                                                       x.securityOrganizationId == securityUser.securityOrganizationId.Value
-                                                      select x).FirstOrDefaultAsync();
+                                                      select x).FirstOrDefaultAsync(cancellationToken);
 
                 if (sou == null)
                 {
@@ -908,7 +921,7 @@ namespace Foundation.Security.Controllers.WebAPI
                     sou.active = true;
                     sou.deleted = false;
                     _context.SecurityOrganizationUsers.Add(sou);
-                    await _context.SaveChangesAsync();
+                    await _context.SaveChangesAsync(cancellationToken);
                 }
                 else
                 {
@@ -917,7 +930,7 @@ namespace Foundation.Security.Controllers.WebAPI
                         sou.active = true;
                         sou.deleted = false;
 
-                        await _context.SaveChangesAsync();
+                        await _context.SaveChangesAsync(cancellationToken);
                     }
                 }
             }
@@ -929,7 +942,7 @@ namespace Foundation.Security.Controllers.WebAPI
                                                     where
                                                     x.securityUserId == securityUser.id &&
                                                     x.securityDepartmentId == securityUser.securityDepartmentId.Value
-                                                    select x).FirstOrDefaultAsync();
+                                                    select x).FirstOrDefaultAsync(cancellationToken);
 
                 if (sdu == null)
                 {
@@ -949,7 +962,7 @@ namespace Foundation.Security.Controllers.WebAPI
                     sdu.active = true;
                     sdu.deleted = false;
                     _context.SecurityDepartmentUsers.Add(sdu);
-                    await _context.SaveChangesAsync();
+                    await _context.SaveChangesAsync(cancellationToken);
                 }
                 else
                 {
@@ -958,7 +971,7 @@ namespace Foundation.Security.Controllers.WebAPI
                         sdu.active = true;
                         sdu.deleted = false;
 
-                        await _context.SaveChangesAsync();
+                        await _context.SaveChangesAsync(cancellationToken);
                     }
                 }
             }
@@ -970,7 +983,7 @@ namespace Foundation.Security.Controllers.WebAPI
                                               x.securityUserId == securityUser.id &&
                                               x.securityTeamId == securityUser.securityTeamId.Value
                                               select x)
-                                        .FirstOrDefaultAsync();
+                                        .FirstOrDefaultAsync(cancellationToken);
 
                 if (stu == null)
                 {
@@ -989,7 +1002,7 @@ namespace Foundation.Security.Controllers.WebAPI
                     stu.active = true;
                     stu.deleted = false;
                     _context.SecurityTeamUsers.Add(stu);
-                    await _context.SaveChangesAsync();
+                    await _context.SaveChangesAsync(cancellationToken);
                 }
                 else
                 {
@@ -998,7 +1011,7 @@ namespace Foundation.Security.Controllers.WebAPI
                         stu.active = true;
                         stu.deleted = false;
 
-                        await _context.SaveChangesAsync();
+                        await _context.SaveChangesAsync(cancellationToken);
                     }
                 }
             }
@@ -1173,20 +1186,15 @@ namespace Foundation.Security.Controllers.WebAPI
         [HttpPost]
         [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
         [Route("api/SecurityUser", Name = "SecurityUser")]
-        public async Task<IActionResult> PostSecurityUser([FromBody] Database.SecurityUser.SecurityUserDTO securityUserDTO)
+        public async Task<IActionResult> PostSecurityUser([FromBody] Database.SecurityUser.SecurityUserDTO securityUserDTO, CancellationToken cancellationToken = default)
         {
             StartAuditEventClock();
 
-            if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED) == false)
+            if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
             {
                 return Unauthorized();
             }
 
-
-            if (await IsEntityDataTokenValidAsync(TokenLogic.EntityDataTokenTrustLevel.Write) == false)
-            {
-                return Unauthorized();
-            }
 
             //
             // Create a new SecurityUser object using the data from the DTO
@@ -1348,14 +1356,14 @@ namespace Foundation.Security.Controllers.WebAPI
                 //
                 // End of data visibility checking custom bit.
                 //
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(cancellationToken);
 
                 //
                 // Custom bit here
                 //
                 // If user has any values in any of the tenant, organization, department or team fields, make sure that there are matching counterparts in the associated user mapping tables
                 //
-                await CreateOrUpdateUserDataVisibilityTablesAsync(securityUser);
+                await CreateOrUpdateUserDataVisibilityTablesAsync(securityUser, cancellationToken);
 
                 //
                 // Confirm that the reports to hierarchy makes sense
@@ -1377,7 +1385,7 @@ namespace Foundation.Security.Controllers.WebAPI
                 //
                 // Because we removed some data for the serializing, load the record again and clobber the password for the return object
                 //
-                securityUserToReturn = await (from x in _context.SecurityUsers select x).FirstOrDefaultAsync();
+                securityUserToReturn = await (from x in _context.SecurityUsers select x).FirstOrDefaultAsync(cancellationToken);
                 securityUserToReturn.password = null;
 
 
@@ -1416,7 +1424,7 @@ namespace Foundation.Security.Controllers.WebAPI
         [Route("api/SecurityUser")]
         [Route("api/Surface/SecurityUser/{id}")]
         [Route("api/Surface/SecurityUser")]
-        public async Task<IActionResult> DeleteSecurityUser(int id)
+        public async Task<IActionResult> DeleteSecurityUser(int id, CancellationToken cancellationToken = default)
         {
             StartAuditEventClock();
 
@@ -1450,7 +1458,7 @@ namespace Foundation.Security.Controllers.WebAPI
             try
             {
                 securityUserObject.deleted = true;
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(cancellationToken);
 
                 await CreateAuditEventAsync(AuditEngine.AuditType.DeleteEntity,
                     "Security.SecurityUser entity successfully deleted.",
@@ -1520,19 +1528,20 @@ namespace Foundation.Security.Controllers.WebAPI
             int? deleted = null,
             int? pageSize = null,
             int? pageNumber = null,
-            string anyStringContains = null)
+            string anyStringContains = null,
+            CancellationToken cancellationToken = default)
         {
-            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED) == false)
+            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
             {
                 return Unauthorized();
             }
 
-            SecurityUser securityUser = await GetSecurityUserAsync();
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
-            bool userIsAdmin = await UserCanAdministerAsync(securityUser);
-            bool userIsWriter = await UserCanWriteAsync(securityUser, 0);
+            bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+            bool userIsWriter = await UserCanWriteAsync(securityUser, 0, cancellationToken);
 
-            bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser);
+            bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
 
             if (pageNumber.HasValue == true &&
                 pageNumber < 1)

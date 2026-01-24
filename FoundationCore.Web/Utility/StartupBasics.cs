@@ -21,6 +21,11 @@ namespace Foundation.Web.Utility
         public static void AddSecurityWebAPIControllers(List<Type> controllers)
         {
             //
+            // Custom for Foundation Admin user listing custom actions
+            //
+            controllers.Add(typeof(AdminUserActionsController));             // Admin-only user management actions
+
+            //
             // These are the Data Controllers for the security module
             //
             controllers.Add(typeof(EntityDataTokensController));
