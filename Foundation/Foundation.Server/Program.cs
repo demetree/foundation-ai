@@ -148,6 +148,8 @@ namespace Foundation.Server
                 // Add the Foundation controllers.
                 //
                 Foundation.Web.Utility.StartupBasics.AddFoundationEssentialWebAPIControllers(controllers);          // For common foundation user related services and such
+                Foundation.Web.Utility.StartupBasics.AddSystemHealthController(controllers);                        // To allow cross system monitoring
+                Foundation.Web.Utility.StartupBasics.AddMonitoredApplicationsController(controllers);               // To make this system monitorable
                 Foundation.Web.Utility.StartupBasics.AddSecurityWebAPIControllers(controllers);                     // Security module
                 Foundation.Web.Utility.StartupBasics.AddAuditorWebAPIControllers(controllers);                      // Auditor module
 
@@ -222,6 +224,11 @@ namespace Foundation.Server
                         //AppContext.BaseDirectory,
                         Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) ?? AppContext.BaseDirectory,
                         sp.GetService<ILogger<Foundation.LogViewer.LogFileService>>()));
+
+                //
+                // Monitored Application Service (for multi-app health monitoring)
+                //
+                builder.Services.AddSingleton<Foundation.Services.IMonitoredApplicationService, Foundation.Services.MonitoredApplicationService>();
 
                 //
                 // Configurations

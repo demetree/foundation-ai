@@ -1,0 +1,288 @@
+<!-- System Health Dashboard - Multi-Application Monitoring -->
+<div class="system-health-container">
+
+  <!-- Premium Header -->
+  <div class="card premium-header shadow-lg border-0">
+    <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3 border-0 bg-transparent">
+      <div class="header-left">
+        <h3 class="page-title mb-0 fw-bold text-white">
+          <i class="fas fa-heartbeat me-2"></i>System Health
+        </h3>
+        <small class="text-white-50">Real-time operational diagnostics</small>
+      </div>
+      <div class="header-stats d-flex align-items-center gap-2">
+        <!-- Overall status indicator -->
+        <span class="badge badge-glass" [class.badge-success]="getOverallStatus() === 'healthy'"
+          [class.badge-warning]="getOverallStatus() === 'warning'"
+          [class.badge-danger]="getOverallStatus() === 'critical' || getOverallStatus() === 'unavailable'">
+          <i class="fas" [ngClass]="getStatusIcon(getOverallStatus())"></i>
+          {{ getOverallStatus() | titlecase }}
+        </span>
+
+        <!-- Last updated -->
+        <span class="badge badge-glass" *ngIf="lastUpdated">
+          <i class="fas fa-clock me-1"></i>{{ lastUpdated | date:'HH:mm:ss' }}
+        </span>
+
+        <!-- Auto-refresh toggle -->
+        <div class="btn-group" ngbDropdown>
+          <button class="btn btn-sm" [class.btn-success]="autoRefreshEnabled"
+            [class.btn-outline-light]="!autoRefreshEnabled" (click)="toggleAutoRefresh()"
+            [title]="autoRefreshEnabled ? 'Auto-refresh ON' : 'Enable auto-refresh'">
+            <i class="fas fa-sync-alt" [class.fa-spin]="autoRefreshEnabled"></i>
+            <span class="ms-1" *ngIf="autoRefreshEnabled">{{ autoRefreshCountdown }}s</span>
+          </button>
+          <button type="button" class="btn btn-sm dropdown-toggle dropdown-toggle-split"
+            [class.btn-success]="autoRefreshEnabled" [class.btn-outline-light]="!autoRefreshEnabled" ngbDropdownToggle>
+          </button>
+          <div ngbDropdownMenu>
+            <button ngbDropdownItem (click)="setAutoRefreshInterval(10)" [class.active]="autoRefreshInterval === 10">
+              10 seconds
+            </button>
+            <button ngbDropdownItem (click)="setAutoRefreshInterval(30)" [class.active]="autoRefreshInterval === 30">
+              30 seconds
+            </button>
+            <button ngbDropdownItem (click)="setAutoRefreshInterval(60)" [class.active]="autoRefreshInterval === 60">
+              1 minute
+            </button>
+          </div>
+        </div>
+
+        <button class="btn btn-sm btn-outline-light" (click)="refresh()" title="Refresh" [disabled]="loading">
+          <i class="fas fa-refresh" [class.fa-spin]="loading"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Application Tabs -->
+  <div class="app-tabs-container mt-3" *ngIf="applications.length > 0">
+    <ul ngbNav #nav="ngbNav" [(activeId)]="selectedAppIndex" class="nav-tabs app-tabs">
+      <li *ngFor="let app of applications; let i = index" [ngbNavItem]="i">
+        <button ngbNavLink (click)="selectApplication(i)" class="app-tab-btn">
+          <i class="fas me-2" [ngClass]="getAppStatusIcon(app)" [class]="getAppStatusClass(app)"></i>
+          <span>{{ app.name }}</span>
+          <span class="badge ms-2" [class.bg-success]="app.isAvailable" [class.bg-danger]="!app.isAvailable">
+            {{ app.isAvailable ? 'Online' : 'Offline' }}
+          </span>
+        </button>
+        <ng-template ngbNavContent>
+          <!-- Content rendered below -->
+        </ng-template>
+      </li>
+    </ul>
+  </div>
+
+
+  <!-- Loading Spinner -->
+  <div *ngIf="loading && applications.length === 0" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-2 text-muted">Loading system health data...</p>
+  </div>
+
+
+  <!-- Error State -->
+  <div *ngIf="error" class="alert alert-danger mt-4">
+    <i class="fas fa-exclamation-triangle me-2"></i>{{ error }}
+  </div>
+
+
+  <!-- Application Unavailable State -->
+  <div *ngIf="!loading && applications.length > 0 && !applications[selectedAppIndex]?.isAvailable"
+    class="alert alert-warning mt-4">
+    <i class="fas fa-plug me-2"></i>
+    <strong>{{ applications[selectedAppIndex]?.name }}</strong> is currently unavailable.
+    <span *ngIf="applications[selectedAppIndex]?.error" class="ms-2 text-muted">
+      ({{ applications[selectedAppIndex]?.error }})
+    </span>
+  </div>
+
+
+  <!-- Main Content -->
+  <div *ngIf="healthStatus && applications[selectedAppIndex]?.isAvailable" class="row g-4 mt-2">
+
+    <!-- Application Status Card -->
+    <div class="col-md-6 col-lg-4">
+      <div class="card health-card h-100 border-0 shadow-sm">
+        <div class="card-header bg-transparent border-0 d-flex align-items-center">
+          <div class="stat-circle bg-primary-soft me-3">
+            <i class="fas fa-server fa-lg text-primary"></i>
+          </div>
+          <div>
+            <h5 class="mb-0">Application</h5>
+            <small class="text-muted">{{ healthStatus.application?.process?.name }}</small>
+          </div>
+          <span class="ms-auto badge" [ngClass]="getStatusClass(healthStatus.application?.status || '')">
+            <i class="fas" [ngClass]="getStatusIcon(healthStatus.application?.status || '')"></i>
+            {{ healthStatus.application?.status }}
+          </span>
+        </div>
+        <div class="card-body">
+          <div class="metric-row">
+            <span class="metric-label"><i class="fas fa-clock me-2"></i>Uptime</span>
+            <span class="metric-value">{{ healthStatus.application?.uptime?.display }}</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label"><i class="fas fa-microchip me-2"></i>Process ID</span>
+            <span class="metric-value">{{ healthStatus.application?.process?.id }}</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label"><i class="fas fa-code-branch me-2"></i>.NET Version</span>
+            <span class="metric-value">{{ healthStatus.application?.environment?.dotNetVersion }}</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label"><i class="fas fa-desktop me-2"></i>Machine</span>
+            <span class="metric-value">{{ healthStatus.application?.environment?.machineName }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Memory Card -->
+    <div class="col-md-6 col-lg-4">
+      <div class="card health-card h-100 border-0 shadow-sm">
+        <div class="card-header bg-transparent border-0 d-flex align-items-center">
+          <div class="stat-circle bg-info-soft me-3">
+            <i class="fas fa-memory fa-lg text-info"></i>
+          </div>
+          <div>
+            <h5 class="mb-0">Memory</h5>
+            <small class="text-muted">Process memory usage</small>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="metric-row">
+            <span class="metric-label"><i class="fas fa-chart-pie me-2"></i>Working Set</span>
+            <span class="metric-value fw-bold">{{ formatBytes(healthStatus.application?.memory?.workingSetMB || 0)
+              }}</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label"><i class="fas fa-layer-group me-2"></i>GC Heap</span>
+            <span class="metric-value">{{ formatBytes(healthStatus.application?.memory?.gcHeapMB || 0) }}</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label"><i class="fas fa-recycle me-2"></i>GC Gen0</span>
+            <span class="metric-value">{{ healthStatus.application?.memory?.gen0Collections }}</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label"><i class="fas fa-recycle me-2"></i>GC Gen1/Gen2</span>
+            <span class="metric-value">{{ healthStatus.application?.memory?.gen1Collections }} / {{
+              healthStatus.application?.memory?.gen2Collections }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Thread Pool Card -->
+    <div class="col-md-6 col-lg-4">
+      <div class="card health-card h-100 border-0 shadow-sm">
+        <div class="card-header bg-transparent border-0 d-flex align-items-center">
+          <div class="stat-circle bg-warning-soft me-3">
+            <i class="fas fa-stream fa-lg text-warning"></i>
+          </div>
+          <div>
+            <h5 class="mb-0">Thread Pool</h5>
+            <small class="text-muted">Worker thread status</small>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="metric-row">
+            <span class="metric-label"><i class="fas fa-bolt me-2"></i>Workers In Use</span>
+            <span class="metric-value fw-bold">{{ healthStatus.threadPool?.workerThreads?.inUse }}</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label"><i class="fas fa-check me-2"></i>Workers Available</span>
+            <span class="metric-value">{{ healthStatus.threadPool?.workerThreads?.available }}</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label"><i class="fas fa-bolt me-2"></i>IO In Use</span>
+            <span class="metric-value">{{ healthStatus.threadPool?.completionPortThreads?.inUse }}</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label"><i class="fas fa-check me-2"></i>IO Available</span>
+            <span class="metric-value">{{ healthStatus.threadPool?.completionPortThreads?.available }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Database Card -->
+    <div class="col-md-6 col-lg-4">
+      <div class="card health-card h-100 border-0 shadow-sm">
+        <div class="card-header bg-transparent border-0 d-flex align-items-center">
+          <div class="stat-circle bg-success-soft me-3">
+            <i class="fas fa-database fa-lg text-success"></i>
+          </div>
+          <div>
+            <h5 class="mb-0">Database</h5>
+            <small class="text-muted">{{ healthStatus.database?.provider }}</small>
+          </div>
+          <span class="ms-auto badge" [ngClass]="getStatusClass(healthStatus.database?.status || '')">
+            <i class="fas" [ngClass]="getStatusIcon(healthStatus.database?.status || '')"></i>
+            {{ healthStatus.database?.status }}
+          </span>
+        </div>
+        <div class="card-body">
+          <div class="metric-row">
+            <span class="metric-label"><i class="fas fa-plug me-2"></i>Server</span>
+            <span class="metric-value">{{ healthStatus.database?.server }}</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label"><i class="fas fa-cog me-2"></i>Provider</span>
+            <span class="metric-value">{{ healthStatus.database?.provider }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Disk Space Card(s) -->
+    <div class="col-md-6 col-lg-8">
+      <div class="card health-card h-100 border-0 shadow-sm">
+        <div class="card-header bg-transparent border-0 d-flex align-items-center">
+          <div class="stat-circle bg-secondary-soft me-3">
+            <i class="fas fa-hdd fa-lg text-secondary"></i>
+          </div>
+          <div>
+            <h5 class="mb-0">Disk Space</h5>
+            <small class="text-muted">{{ healthStatus.disk?.applicationPath }}</small>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-6" *ngFor="let drive of healthStatus.disk?.drives">
+              <div class="drive-card p-3 rounded" [class.app-drive]="drive.isApplicationDrive">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="fw-bold">
+                    <i class="fas fa-hdd me-2"></i>{{ drive.name }}
+                    <span *ngIf="drive.label" class="text-muted">({{ drive.label }})</span>
+                    <span *ngIf="drive.isApplicationDrive" class="badge bg-primary ms-2">App</span>
+                  </span>
+                  <span class="badge" [ngClass]="getStatusClass(drive.status)">
+                    {{ drive.status }}
+                  </span>
+                </div>
+                <div class="progress mb-2" style="height: 8px;">
+                  <div class="progress-bar" [ngClass]="getDriveStatusClass(drive)" [style.width.%]="drive.usedPercent"
+                    role="progressbar">
+                  </div>
+                </div>
+                <div class="d-flex justify-content-between small text-muted">
+                  <span>{{ drive.usedGB }} GB used</span>
+                  <span>{{ drive.freeGB }} GB free of {{ drive.totalGB }} GB</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

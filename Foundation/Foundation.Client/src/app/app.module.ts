@@ -353,6 +353,12 @@ import { LogViewerService } from './services/log-viewer.service';
 import { AuditEventCustomListingComponent } from './components/audit-event-custom/audit-event-custom-listing/audit-event-custom-listing.component';
 
 //
+// System Health Component
+//
+import { SystemHealthComponent } from './components/system-health/system-health.component';
+import { SystemHealthService } from './services/system-health.service';
+
+//
 // Custom screens
 //
 import { UserCustomListingComponent } from './components/user-custom/user-custom-listing/user-custom-listing.component';
@@ -604,6 +610,11 @@ import { UserCustomAddEditComponent } from './components/user-custom/user-custom
     // Custom Audit Event Listing
     //
     AuditEventCustomListingComponent,
+
+    //
+    // System Health Component
+    //
+    SystemHealthComponent,
 
     //
     // Custom components

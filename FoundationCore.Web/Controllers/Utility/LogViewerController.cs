@@ -8,15 +8,11 @@ using DocumentFormat.OpenXml.Office2010.Excel;
 using Foundation.Auditor;
 using Foundation.LogViewer;
 using Foundation.Security;
-using Foundation.Security.Database;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 
 namespace Foundation.Controllers.WebAPI
 {

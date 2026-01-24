@@ -1,0 +1,218 @@
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, Subject, timer } from 'rxjs';
+import { switchMap, takeUntil, shareReplay } from 'rxjs/operators';
+import { AuthService } from './auth.service';
+
+//
+// System Health Service
+//
+// Angular service for retrieving system health metrics from the backend.
+// Supports auto-refresh capability.
+//
+
+export interface SystemHealthStatus {
+    timestamp: Date;
+    application: ApplicationMetrics;
+    database: DatabaseStatus;
+    disk: DiskMetrics;
+    threadPool: ThreadPoolMetrics;
+}
+
+export interface ApplicationMetrics {
+    status: string;
+    uptime: {
+        totalSeconds: number;
+        days: number;
+        hours: number;
+        minutes: number;
+        display: string;
+    };
+    memory: {
+        workingSetMB: number;
+        privateMemoryMB: number;
+        gcHeapMB: number;
+        gen0Collections: number;
+        gen1Collections: number;
+        gen2Collections: number;
+    };
+    process: {
+        id: number;
+        name: string;
+        startTime: Date;
+        threadCount: number;
+        handleCount: number;
+    };
+    environment: {
+        machineName: string;
+        osVersion: string;
+        processorCount: number;
+        is64Bit: boolean;
+        dotNetVersion: string;
+    };
+}
+
+export interface DatabaseStatus {
+    status: string;
+    isConnected: boolean;
+    provider: string;
+    server: string;
+}
+
+export interface DiskMetrics {
+    drives: DriveInfo[];
+    applicationPath: string;
+}
+
+export interface DriveInfo {
+    name: string;
+    label: string;
+    totalGB: number;
+    freeGB: number;
+    usedGB: number;
+    freePercent: number;
+    usedPercent: number;
+    status: 'Healthy' | 'Warning' | 'Critical';
+    isApplicationDrive: boolean;
+}
+
+export interface ThreadPoolMetrics {
+    workerThreads: {
+        available: number;
+        max: number;
+        min: number;
+        inUse: number;
+    };
+    completionPortThreads: {
+        available: number;
+        max: number;
+        min: number;
+        inUse: number;
+    };
+}
+
+@Injectable({
+    providedIn: 'root'
+})
+export class SystemHealthService {
+    private readonly baseUrl = '/api/SystemHealth';
+
+    constructor(
+        private http: HttpClient,
+        private authService: AuthService
+    ) { }
+
+    /**
+     * Get complete system health status
+     */
+    getStatus(): Observable<SystemHealthStatus> {
+        return this.http.get<SystemHealthStatus>(
+            `${this.baseUrl}/status`,
+            { headers: this.authService.GetAuthenticationHeaders() }
+        );
+    }
+
+    /**
+     * Get application metrics only
+     */
+    getApplication(): Observable<ApplicationMetrics> {
+        return this.http.get<ApplicationMetrics>(
+            `${this.baseUrl}/application`,
+            { headers: this.authService.GetAuthenticationHeaders() }
+        );
+    }
+
+    /**
+     * Get database status only
+     */
+    getDatabase(): Observable<DatabaseStatus> {
+        return this.http.get<DatabaseStatus>(
+            `${this.baseUrl}/database`,
+            { headers: this.authService.GetAuthenticationHeaders() }
+        );
+    }
+
+    /**
+     * Get disk metrics only
+     */
+    getDisk(): Observable<DiskMetrics> {
+        return this.http.get<DiskMetrics>(
+            `${this.baseUrl}/disk`,
+            { headers: this.authService.GetAuthenticationHeaders() }
+        );
+    }
+
+    /**
+     * Create an auto-refreshing Observable for system health status
+     */
+    getStatusWithAutoRefresh(intervalMs: number, stopSignal: Subject<void>): Observable<SystemHealthStatus> {
+        return timer(0, intervalMs).pipe(
+            takeUntil(stopSignal),
+            switchMap(() => this.getStatus())
+        );
+    }
+}
+
+
+//
+// Monitored Applications Types and Service Extension
+//
+
+export interface MonitoredApplicationConfig {
+    name: string;
+    url: string;
+    isSelf: boolean;
+}
+
+export interface MonitoredApplicationStatus {
+    name: string;
+    url: string;
+    isSelf: boolean;
+    isAvailable: boolean;
+    status: string;
+    error?: string;
+    checkedAt: Date;
+    healthData?: SystemHealthStatus;
+}
+
+@Injectable({
+    providedIn: 'root'
+})
+export class MonitoredApplicationsService {
+    private readonly baseUrl = '/api/MonitoredApplications';
+
+    constructor(
+        private http: HttpClient,
+        private authService: AuthService
+    ) { }
+
+    /**
+     * Get list of configured monitored applications
+     */
+    getApplications(): Observable<MonitoredApplicationConfig[]> {
+        return this.http.get<MonitoredApplicationConfig[]>(
+            this.baseUrl,
+            { headers: this.authService.GetAuthenticationHeaders() }
+        );
+    }
+
+    /**
+     * Get health status for all configured applications
+     */
+    getAllStatus(): Observable<MonitoredApplicationStatus[]> {
+        return this.http.get<MonitoredApplicationStatus[]>(
+            `${this.baseUrl}/status`,
+            { headers: this.authService.GetAuthenticationHeaders() }
+        );
+    }
+
+    /**
+     * Get health status for a specific application
+     */
+    getApplicationStatus(appName: string): Observable<MonitoredApplicationStatus> {
+        return this.http.get<MonitoredApplicationStatus>(
+            `${this.baseUrl}/${encodeURIComponent(appName)}/status`,
+            { headers: this.authService.GetAuthenticationHeaders() }
+        );
+    }
+}

@@ -63,6 +63,30 @@ namespace Foundation.Web.Utility
             controllers.Add(typeof(SystemSettingsController));
         }
 
+        /// <summary>
+        /// 
+        /// This adds the foundation system health controller
+        /// 
+        /// </summary>
+        /// <param name="controllers"></param>
+        public static void AddSystemHealthController(List<Type> controllers)
+        {
+            controllers.Add(typeof(Foundation.Controllers.WebAPI.SystemHealthController));  // System Health end poitns
+        }
+
+
+        /// <summary>
+        /// 
+        /// This adds the foundation system health controller
+        /// 
+        /// </summary>
+        /// <param name="controllers"></param>
+        public static void AddMonitoredApplicationsController(List<Type> controllers)
+        {
+            controllers.Add(typeof(Foundation.Controllers.WebAPI.MonitoredApplicationsController));  // System Health end poitns
+        }
+
+
         public static void AddAuditorWebAPIControllers(List<Type> controllers)
         {
             //
