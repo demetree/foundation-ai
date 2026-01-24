@@ -30,7 +30,7 @@ namespace Foundation.Auditor.Controllers.WebAPI
                                                 string userAgent = null,
                                                 DateTime? startTime = null,
                                                 DateTime? stopTime = null,
-                                                int? completedSuccessfully = null,
+                                                bool? completedSuccessfully = null,
                                                 int? auditUserId = null,
                                                 int? auditSessionId = null,
                                                 int? auditTypeId = null,
@@ -257,7 +257,7 @@ namespace Foundation.Auditor.Controllers.WebAPI
             }
             if (completedSuccessfully.HasValue == true)
             {
-                query = query.Where(ae => ae.completedSuccessfully == false);
+                query = query.Where(ae => ae.completedSuccessfully == completedSuccessfully.Value);
             }
             if (auditUserId.HasValue == true)
             {

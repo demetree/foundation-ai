@@ -10,7 +10,7 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { MatExpansionModule } from '@angular/material/expansion';
 
 
-import { NgbModalModule, NgbNavModule, NgbTooltipModule, NgbPopoverModule, NgbAccordionModule, NgbDropdownModule, NgbCarouselModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModalModule, NgbNavModule, NgbTooltipModule, NgbPopoverModule, NgbAccordionModule, NgbDropdownModule, NgbCarouselModule, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { OAuthModule, OAuthStorage } from 'angular-oauth2-oidc';
@@ -281,6 +281,7 @@ import { AuditEventListingComponent } from './auditor-data-components/audit-even
 import { AuditEventAddEditComponent } from './auditor-data-components/audit-event/audit-event-add-edit/audit-event-add-edit.component';
 import { AuditEventDetailComponent } from './auditor-data-components/audit-event/audit-event-detail/audit-event-detail.component';
 import { AuditEventTableComponent } from './auditor-data-components/audit-event/audit-event-table/audit-event-table.component';
+import { AuditEventCustomListingComponent } from './components/audit-event-custom/audit-event-custom-listing/audit-event-custom-listing.component';
 import { AuditEventEntityStateListingComponent } from './auditor-data-components/audit-event-entity-state/audit-event-entity-state-listing/audit-event-entity-state-listing.component';
 import { AuditEventEntityStateAddEditComponent } from './auditor-data-components/audit-event-entity-state/audit-event-entity-state-add-edit/audit-event-entity-state-add-edit.component';
 import { AuditEventEntityStateDetailComponent } from './auditor-data-components/audit-event-entity-state/audit-event-entity-state-detail/audit-event-entity-state-detail.component';
@@ -518,6 +519,7 @@ import { UserCustomAddEditComponent } from './components/user-custom/user-custom
     AuditAccessTypeDetailComponent,
     AuditAccessTypeTableComponent,
     AuditEventListingComponent,
+    AuditEventCustomListingComponent,
     AuditEventAddEditComponent,
     AuditEventDetailComponent,
     AuditEventTableComponent,
@@ -645,6 +647,7 @@ import { UserCustomAddEditComponent } from './components/user-custom/user-custom
     NgSelectModule,
     NgChartsModule,
     NgbAccordionModule,
+    NgbDatepickerModule,
   ],
   exports: [SpinnerDirective],
   providers: [

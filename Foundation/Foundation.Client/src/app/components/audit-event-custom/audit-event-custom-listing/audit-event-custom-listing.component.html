@@ -1,0 +1,297 @@
+<div class="page-container">
+
+    <!-- Premium Header -->
+    <div class="card mb-4 header-card premium-header shadow-lg border-0">
+        <div
+            class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3 border-0 bg-transparent">
+            <div class="header-left">
+                <h3 class="page-title mb-0 fw-bold text-white">
+                    <i class="fa-solid fa-clipboard-list me-2"></i>Audit Events
+                </h3>
+                <small class="text-white-50">System activity log and monitoring</small>
+            </div>
+            <div class="header-stats" *ngIf="!(isLoading$ | async)">
+                <span class="badge badge-glass me-2">
+                    <i class="fa-solid fa-database me-1"></i>{{ (auditEvents$ | async)?.length || 0 }} events
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Panel -->
+    <div class="card mb-4 shadow-sm border-0 filter-card">
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+
+                <!-- Time Preset -->
+                <div class="col-md-2">
+                    <label class="form-label small text-muted">Time Range</label>
+                    <select class="form-select" [(ngModel)]="selectedTimePreset" (change)="onTimePresetChange()">
+                        <option *ngFor="let preset of timePresets" [value]="preset.value">{{ preset.label }}</option>
+                    </select>
+                </div>
+
+                <!-- Custom Date Range (shown when 'custom' selected) -->
+                <ng-container *ngIf="selectedTimePreset === 'custom'">
+                    <div class="col-md-2">
+                        <label class="form-label small text-muted">Start Date</label>
+                        <div class="input-group">
+                            <input class="form-control" placeholder="yyyy-mm-dd" name="startDate"
+                                [(ngModel)]="startDate" ngbDatepicker #dpStart="ngbDatepicker">
+                            <button class="btn btn-outline-secondary" (click)="dpStart.toggle()" type="button">
+                                <i class="fa-solid fa-calendar"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small text-muted">End Date</label>
+                        <div class="input-group">
+                            <input class="form-control" placeholder="yyyy-mm-dd" name="endDate" [(ngModel)]="endDate"
+                                ngbDatepicker #dpEnd="ngbDatepicker">
+                            <button class="btn btn-outline-secondary" (click)="dpEnd.toggle()" type="button">
+                                <i class="fa-solid fa-calendar"></i>
+                            </button>
+                        </div>
+                    </div>
+                </ng-container>
+
+                <!-- Status Filter -->
+                <div class="col-md-2">
+                    <label class="form-label small text-muted">Status</label>
+                    <select class="form-select" [(ngModel)]="statusFilter" (change)="applyFilters()">
+                        <option value="all">All</option>
+                        <option value="success">Success Only</option>
+                        <option value="failure">Failures Only</option>
+                    </select>
+                </div>
+
+                <!-- Type Filter -->
+                <div class="col-md-2">
+                    <label class="form-label small text-muted">Type</label>
+                    <select class="form-select" [(ngModel)]="typeFilter" (change)="applyFilters()">
+                        <option [ngValue]="null">All Types</option>
+                        <option *ngFor="let type of auditTypes$ | async" [ngValue]="type.id">{{ type.name }}</option>
+                    </select>
+                </div>
+
+                <!-- User Filter -->
+                <div class="col-md-2">
+                    <label class="form-label small text-muted">User</label>
+                    <input type="text" class="form-control" placeholder="Filter by user..." [(ngModel)]="userFilter"
+                        (keyup.enter)="applyFilters()">
+                </div>
+
+                <!-- Search -->
+                <div class="col-md-2">
+                    <label class="form-label small text-muted">Search</label>
+                    <input type="text" class="form-control" placeholder="Search all..." [(ngModel)]="searchText"
+                        (keyup.enter)="applyFilters()">
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="col-md-2">
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary flex-grow-1" (click)="applyFilters()">
+                            <i class="fa-solid fa-search me-1"></i>Search
+                        </button>
+                        <button class="btn btn-outline-secondary" (click)="clearFilters()" ngbTooltip="Clear Filters">
+                            <i class="fa-solid fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading$ | async" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="text-muted mt-3">Loading audit events...</p>
+    </div>
+
+    <!-- Data Table -->
+    <div class="card shadow-sm border-0" *ngIf="!(isLoading$ | async)">
+        <div class="card-body p-0">
+
+            <!-- Empty State -->
+            <div *ngIf="(auditEvents$ | async)?.length === 0" class="text-center py-5">
+                <i class="fa-solid fa-clipboard-question fa-4x text-muted opacity-50 mb-3"></i>
+                <h5 class="text-muted">No Audit Events Found</h5>
+                <p class="text-muted">Try adjusting your filters or selecting a different time range.</p>
+            </div>
+
+            <!-- Events Table -->
+            <div class="table-responsive" *ngIf="(auditEvents$ | async)?.length">
+                <table class="table table-hover audit-table mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;"></th>
+                            <th style="width: 100px;">Time</th>
+                            <th style="width: 80px;" class="text-center">Status</th>
+                            <th style="width: 150px;">User</th>
+                            <th>Message</th>
+                            <th style="width: 120px;">Type</th>
+                            <th style="width: 100px;">Access</th>
+                            <th style="width: 120px;">Module</th>
+                            <th style="width: 80px;">Duration</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <ng-container *ngFor="let event of pagedEvents; trackBy: trackByEventId">
+                            <!-- Main Row -->
+                            <tr class="event-row" [class.expanded]="isExpanded(event)"
+                                [class.failure-row]="!event.completedSuccessfully">
+                                <td>
+                                    <button class="btn btn-sm btn-link expand-btn" (click)="toggleExpand(event)">
+                                        <i class="fa-solid" [class.fa-chevron-right]="!isExpanded(event)"
+                                            [class.fa-chevron-down]="isExpanded(event)"></i>
+                                    </button>
+                                </td>
+                                <td>
+                                    <span [ngbTooltip]="formatFullDateTime(event.startTime)" container="body">
+                                        {{ formatRelativeTime(event.startTime) }}
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge" [class.bg-success]="event.completedSuccessfully"
+                                        [class.bg-danger]="!event.completedSuccessfully">
+                                        <i class="fa-solid" [class.fa-check]="event.completedSuccessfully"
+                                            [class.fa-times]="!event.completedSuccessfully"></i>
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="user-name">{{ event.auditUser?.name || '—' }}</span>
+                                </td>
+                                <td [ngbTooltip]="event.message" container="body">
+                                    {{ truncateMessage(event.message) }}
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark">{{ event.auditType?.name || '—' }}</span>
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ event.auditAccessType?.name || '—' }}</small>
+                                </td>
+                                <td>
+                                    <small>{{ event.auditModule?.name || '—' }}</small>
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ formatDuration(event.startTime, event.stopTime)
+                                        }}</small>
+                                </td>
+                            </tr>
+
+                            <!-- Expanded Detail Row -->
+                            <tr *ngIf="isExpanded(event)" class="detail-row">
+                                <td colspan="9">
+                                    <div class="detail-content">
+                                        <div class="row g-3">
+                                            <div class="col-md-3">
+                                                <div class="detail-item">
+                                                    <span class="detail-label">Session</span>
+                                                    <span class="detail-value">{{ event.auditSession?.name || '—'
+                                                        }}</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="detail-item">
+                                                    <span class="detail-label">Source</span>
+                                                    <span class="detail-value">{{ event.auditSource?.name || '—'
+                                                        }}</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="detail-item">
+                                                    <span class="detail-label">User Agent</span>
+                                                    <span class="detail-value">{{ event.auditUserAgent?.name || '—'
+                                                        }}</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="detail-item">
+                                                    <span class="detail-label">Host System</span>
+                                                    <span class="detail-value">{{ event.auditHostSystem?.name || '—'
+                                                        }}</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="detail-item">
+                                                    <span class="detail-label">Entity</span>
+                                                    <span class="detail-value">{{ event.auditModuleEntity?.name || '—'
+                                                        }}</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="detail-item">
+                                                    <span class="detail-label">Resource</span>
+                                                    <span class="detail-value">{{ event.auditResource?.name || '—'
+                                                        }}</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="detail-item">
+                                                    <span class="detail-label">Primary Key</span>
+                                                    <span class="detail-value">{{ event.primaryKey || '—' }}</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="detail-item">
+                                                    <span class="detail-label">Event ID</span>
+                                                    <span class="detail-value">#{{ event.id }}</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-12" *ngIf="event.message">
+                                                <div class="detail-item">
+                                                    <span class="detail-label">Full Message</span>
+                                                    <span class="detail-value message-full">{{ event.message }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </ng-container>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="card-footer bg-white border-0 d-flex justify-content-between align-items-center"
+                *ngIf="totalPages > 1">
+                <div class="text-muted small">
+                    Showing {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, (auditEvents$ |
+                    async)?.length || 0) }}
+                    of {{ (auditEvents$ | async)?.length || 0 }} events
+                </div>
+                <nav>
+                    <ul class="pagination pagination-sm mb-0">
+                        <li class="page-item" [class.disabled]="currentPage === 1">
+                            <button class="page-link" (click)="goToPage(1)">
+                                <i class="fa-solid fa-angles-left"></i>
+                            </button>
+                        </li>
+                        <li class="page-item" [class.disabled]="currentPage === 1">
+                            <button class="page-link" (click)="goToPage(currentPage - 1)">
+                                <i class="fa-solid fa-angle-left"></i>
+                            </button>
+                        </li>
+                        <li class="page-item active">
+                            <span class="page-link">{{ currentPage }} / {{ totalPages }}</span>
+                        </li>
+                        <li class="page-item" [class.disabled]="currentPage === totalPages">
+                            <button class="page-link" (click)="goToPage(currentPage + 1)">
+                                <i class="fa-solid fa-angle-right"></i>
+                            </button>
+                        </li>
+                        <li class="page-item" [class.disabled]="currentPage === totalPages">
+                            <button class="page-link" (click)="goToPage(totalPages)">
+                                <i class="fa-solid fa-angles-right"></i>
+                            </button>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>

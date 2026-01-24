@@ -24,6 +24,7 @@ import { ModuleCustomListingComponent } from './components/module-custom/module-
 import { ModuleCustomDetailComponent } from './components/module-custom/module-custom-detail/module-custom-detail.component';
 import { TenantCustomListingComponent } from './components/tenant-custom/tenant-custom-listing/tenant-custom-listing.component';
 import { TenantCustomDetailComponent } from './components/tenant-custom/tenant-custom-detail/tenant-custom-detail.component';
+import { AuditEventCustomListingComponent } from './components/audit-event-custom/audit-event-custom-listing/audit-event-custom-listing.component';
 
 
 //
@@ -174,6 +175,7 @@ const routes: Routes = [
   { path: 'module/:id', component: ModuleCustomDetailComponent, canActivate: [AuthGuard], title: 'Module Detail' },
   { path: 'tenants', component: TenantCustomListingComponent, canActivate: [AuthGuard], title: 'Tenants' },
   { path: 'tenant/:id', component: TenantCustomDetailComponent, canActivate: [AuthGuard], title: 'Tenant Detail' },
+  { path: 'auditevents', component: AuditEventCustomListingComponent, canActivate: [AuthGuard], title: 'Audit Events' },
 
 
   //
