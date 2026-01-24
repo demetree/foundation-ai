@@ -77,8 +77,21 @@
   <div class="card selector-card">
     <div class="card-body">
       <div class="row g-3">
+        <!-- Application selector (for remote log viewing) -->
+        <div class="col-md-2" *ngIf="applications.length > 1">
+          <label class="form-label">
+            <i class="fas fa-server me-1"></i>Application
+          </label>
+          <select class="form-select" [(ngModel)]="selectedApp" (change)="onAppChange()"
+            [disabled]="loadingApps">
+            <option *ngFor="let app of applications" [value]="app.name">
+              {{ app.name }}{{ app.isSelf ? ' (local)' : '' }}
+            </option>
+          </select>
+        </div>
+
         <!-- Folder selector -->
-        <div class="col-md-3">
+        <div [class.col-md-3]="applications.length <= 1" [class.col-md-2]="applications.length > 1">
           <label class="form-label">
             <i class="fas fa-folder me-1"></i>Log Folder
           </label>

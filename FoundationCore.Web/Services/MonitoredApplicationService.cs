@@ -61,6 +61,16 @@ namespace Foundation.Services
         /// Get health status for all configured applications
         /// </summary>
         Task<List<MonitoredApplicationStatus>> GetAllApplicationStatusesAsync();
+
+        /// <summary>
+        /// Get a specific application config by name
+        /// </summary>
+        MonitoredApplicationConfig GetApplicationByName(string appName);
+
+        /// <summary>
+        /// Make an authenticated HTTP GET request to a remote application
+        /// </summary>
+        Task<HttpResponseMessage> MakeAuthenticatedRequestAsync(string appName, string relativePath, string authToken);
     }
 
 
@@ -192,6 +202,42 @@ namespace Foundation.Services
             }
 
             return result;
+        }
+
+
+        public MonitoredApplicationConfig GetApplicationByName(string appName)
+        {
+            return _applications.FirstOrDefault(a =>
+                a.Name.Equals(appName, StringComparison.OrdinalIgnoreCase));
+        }
+
+
+        public async Task<HttpResponseMessage> MakeAuthenticatedRequestAsync(
+            string appName, string relativePath, string authToken)
+        {
+            var app = GetApplicationByName(appName);
+            if (app == null)
+            {
+                throw new ArgumentException($"Application '{appName}' is not configured");
+            }
+
+            var client = _httpClientFactory.CreateClient("MonitoredApps");
+            client.Timeout = DefaultTimeout;
+
+            var url = $"{app.Url.TrimEnd('/')}/{relativePath.TrimStart('/')}";
+            _logger.LogDebug("Making authenticated request to {Url}", url);
+
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+
+            //
+            // Forward the user's JWT token for authentication
+            //
+            if (!string.IsNullOrEmpty(authToken))
+            {
+                request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", authToken);
+            }
+
+            return await client.SendAsync(request);
         }
     }
 }

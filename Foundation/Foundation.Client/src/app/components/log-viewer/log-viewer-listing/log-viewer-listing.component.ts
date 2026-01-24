@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { LogViewerService, LogFolder, LogFileInfo, LogEntry } from '../../../services/log-viewer.service';
+import { LogViewerService, LogFolder, LogFileInfo, LogEntry, RemoteApplication } from '../../../services/log-viewer.service';
 import { Subject, interval, Subscription } from 'rxjs';
 import { takeUntil, switchMap } from 'rxjs/operators';
 
@@ -10,6 +10,13 @@ import { takeUntil, switchMap } from 'rxjs/operators';
 })
 export class LogViewerListingComponent implements OnInit, OnDestroy {
     private destroy$ = new Subject<void>();
+
+    //
+    // Remote application support
+    //
+    applications: RemoteApplication[] = [];
+    selectedApp: string = '';  // Empty = local, otherwise app name
+    loadingApps: boolean = false;
 
     // Data
     folders: LogFolder[] = [];
@@ -56,7 +63,7 @@ export class LogViewerListingComponent implements OnInit, OnDestroy {
 
 
     ngOnInit(): void {
-        this.loadFolders();
+        this.loadApplications();
     }
 
 
@@ -67,9 +74,61 @@ export class LogViewerListingComponent implements OnInit, OnDestroy {
     }
 
 
+    //
+    // Application selection
+    //
+    private loadApplications(): void {
+        this.loadingApps = true;
+        this.logViewerService.getRemoteApplications()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (apps) => {
+                    this.applications = apps;
+                    this.loadingApps = false;
+
+                    // Find local app (isSelf=true) and select it by default
+                    const localApp = apps.find(a => a.isSelf);
+                    if (localApp) {
+                        this.selectedApp = localApp.name;
+                    } else if (apps.length > 0) {
+                        this.selectedApp = apps[0].name;
+                    }
+
+                    this.loadFolders();
+                },
+                error: (error) => {
+                    console.error('Error loading applications:', error);
+                    this.loadingApps = false;
+                    // Fallback to local-only mode
+                    this.loadFolders();
+                }
+            });
+    }
+
+
+    onAppChange(): void {
+        this.folders = [];
+        this.files = [];
+        this.entries = [];
+        this.selectedFolder = '';
+        this.selectedFile = '';
+        this.loadFolders();
+    }
+
+
     private loadFolders(): void {
         this.loadingFolders = true;
-        this.logViewerService.getFolders()
+
+        //
+        // Use remote or local endpoint based on selected app
+        //
+        const isLocalApp = this.applications.find(a => a.name === this.selectedApp)?.isSelf ?? true;
+
+        const folderObservable = isLocalApp || !this.selectedApp
+            ? this.logViewerService.getFolders()
+            : this.logViewerService.getRemoteFolders(this.selectedApp);
+
+        folderObservable
             .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: (folders) => {
@@ -101,7 +160,16 @@ export class LogViewerListingComponent implements OnInit, OnDestroy {
         this.selectedFile = '';
         this.entries = [];
 
-        this.logViewerService.getFiles(this.selectedFolder)
+        //
+        // Use remote or local endpoint based on selected app
+        //
+        const isLocalApp = this.applications.find(a => a.name === this.selectedApp)?.isSelf ?? true;
+
+        const filesObservable = isLocalApp || !this.selectedApp
+            ? this.logViewerService.getFiles(this.selectedFolder)
+            : this.logViewerService.getRemoteFiles(this.selectedApp, this.selectedFolder);
+
+        filesObservable
             .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: (files) => {
@@ -138,14 +206,31 @@ export class LogViewerListingComponent implements OnInit, OnDestroy {
         this.loadingEntries = true;
         const skip = (this.currentPage - 1) * this.pageSize;
 
-        this.logViewerService.getEntries(
-            this.selectedFolder,
-            this.selectedFile,
-            skip,
-            this.pageSize,
-            this.levelFilter,
-            this.searchText
-        )
+        //
+        // Use remote or local endpoint based on selected app
+        //
+        const isLocalApp = this.applications.find(a => a.name === this.selectedApp)?.isSelf ?? true;
+
+        const entriesObservable = isLocalApp || !this.selectedApp
+            ? this.logViewerService.getEntries(
+                this.selectedFolder,
+                this.selectedFile,
+                skip,
+                this.pageSize,
+                this.levelFilter,
+                this.searchText
+            )
+            : this.logViewerService.getRemoteEntries(
+                this.selectedApp,
+                this.selectedFolder,
+                this.selectedFile,
+                skip,
+                this.pageSize,
+                this.levelFilter,
+                this.searchText
+            );
+
+        entriesObservable
             .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: (response) => {

@@ -145,4 +145,97 @@ export class LogViewerService {
             }
         );
     }
+
+
+    //
+    // ============================================================================
+    // Remote Application Log Viewing
+    // ============================================================================
+    //
+
+    /**
+     * Get list of remote applications that support log viewing
+     */
+    getRemoteApplications(): Observable<RemoteApplication[]> {
+        return this.http.get<RemoteApplication[]>(
+            `${this.baseUrl}/applications`,
+            { headers: this.authService.GetAuthenticationHeaders() }
+        );
+    }
+
+    /**
+     * Get log folders from a remote application
+     */
+    getRemoteFolders(appName: string): Observable<LogFolder[]> {
+        return this.http.get<LogFolder[]>(
+            `${this.baseUrl}/remote/${encodeURIComponent(appName)}/folders`,
+            { headers: this.authService.GetAuthenticationHeaders() }
+        );
+    }
+
+    /**
+     * Get log files from a remote application's folder
+     */
+    getRemoteFiles(appName: string, folderName: string): Observable<LogFileInfo[]> {
+        return this.http.get<LogFileInfo[]>(
+            `${this.baseUrl}/remote/${encodeURIComponent(appName)}/files/${encodeURIComponent(folderName)}`,
+            { headers: this.authService.GetAuthenticationHeaders() }
+        );
+    }
+
+    /**
+     * Get log entries from a remote application's file
+     */
+    getRemoteEntries(
+        appName: string,
+        folderName: string,
+        fileName: string,
+        skip: number = 0,
+        take: number = 100,
+        level?: string,
+        search?: string
+    ): Observable<LogEntriesResponse> {
+        let params = new HttpParams()
+            .set('skip', skip.toString())
+            .set('take', take.toString());
+
+        if (level && level !== 'All') {
+            params = params.set('level', level);
+        }
+        if (search) {
+            params = params.set('search', search);
+        }
+
+        return this.http.get<LogEntriesResponse>(
+            `${this.baseUrl}/remote/${encodeURIComponent(appName)}/entries/${encodeURIComponent(folderName)}/${encodeURIComponent(fileName)}`,
+            { params, headers: this.authService.GetAuthenticationHeaders() }
+        );
+    }
+
+    /**
+     * Get recent log entries from a remote application's file (live tail)
+     */
+    tailRemote(
+        appName: string,
+        folderName: string,
+        fileName: string,
+        count: number = 50
+    ): Observable<{ entries: LogEntry[]; totalCount: number }> {
+        let params = new HttpParams().set('lines', count.toString());
+
+        return this.http.get<{ entries: LogEntry[]; totalCount: number }>(
+            `${this.baseUrl}/remote/${encodeURIComponent(appName)}/tail/${encodeURIComponent(folderName)}/${encodeURIComponent(fileName)}`,
+            { params, headers: this.authService.GetAuthenticationHeaders() }
+        );
+    }
+}
+
+
+//
+// Remote Application Interface
+//
+export interface RemoteApplication {
+    name: string;
+    url: string;
+    isSelf: boolean;
 }

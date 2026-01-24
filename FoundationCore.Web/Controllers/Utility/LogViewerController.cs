@@ -3,16 +3,19 @@
 //
 // API endpoints for reading and viewing system log files.
 // Supports multiple configured log folder locations.
+// Also provides proxy endpoints for accessing logs on remote Foundation applications.
 //
 using DocumentFormat.OpenXml.Office2010.Excel;
 using Foundation.Auditor;
 using Foundation.LogViewer;
 using Foundation.Security;
+using Foundation.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Foundation.Controllers.WebAPI
 {
@@ -29,15 +32,18 @@ namespace Foundation.Controllers.WebAPI
     {
         private readonly ILogFileService _logFileService;
         private readonly ILogger<LogViewerController> _logger;
+        private readonly IMonitoredApplicationService _monitoredAppService;
 
 
         public LogViewerController(
             ILogFileService logFileService,
-            ILogger<LogViewerController> logger)
+            ILogger<LogViewerController> logger,
+            IMonitoredApplicationService monitoredAppService = null)
             : base("Auditor", "LogViewer")              // Note that Log file access control is done through the Auditor Module.  Users must be Auditor Admins to use this interface
         {
             _logFileService = logFileService;
             _logger = logger;
+            _monitoredAppService = monitoredAppService;
         }
 
 
@@ -360,6 +366,142 @@ namespace Foundation.Controllers.WebAPI
             {
                 _logger.LogError(ex, $"Error downloading all log files from: {folderName}");
                 return Problem("Failed to download log files");
+            }
+        }
+
+
+        //
+        // ============================================================================
+        // Remote Log Viewer Proxy Endpoints
+        // ============================================================================
+        // These endpoints forward requests to remote Foundation applications,
+        // passing along the user's JWT token for authentication.
+        //
+
+        //
+        // GET: api/LogViewer/applications
+        //
+        // Returns list of monitored applications that have log viewer capability
+        //
+        [HttpGet("applications")]
+        public IActionResult GetRemoteApplications()
+        {
+            try
+            {
+                if (_monitoredAppService == null)
+                {
+                    return Ok(new object[] { });
+                }
+
+                var apps = _monitoredAppService.GetConfiguredApplications()
+                    .Select(a => new { a.Name, a.Url, a.IsSelf })
+                    .ToList();
+
+                return Ok(apps);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting remote applications");
+                return Problem("Failed to retrieve remote applications");
+            }
+        }
+
+
+        //
+        // GET: api/LogViewer/remote/{appName}/folders
+        //
+        // Returns log folders from a remote application
+        //
+        [HttpGet("remote/{appName}/folders")]
+        public async Task<IActionResult> GetRemoteFolders(string appName)
+        {
+            return await ProxyRemoteRequest(appName, "api/LogViewer/folders");
+        }
+
+
+        //
+        // GET: api/LogViewer/remote/{appName}/files/{folderName}
+        //
+        // Returns log files from a remote application's folder
+        //
+        [HttpGet("remote/{appName}/files/{folderName}")]
+        public async Task<IActionResult> GetRemoteFiles(string appName, string folderName)
+        {
+            return await ProxyRemoteRequest(appName, $"api/LogViewer/files/{Uri.EscapeDataString(folderName)}");
+        }
+
+
+        //
+        // GET: api/LogViewer/remote/{appName}/entries/{folderName}/{fileName}
+        //
+        // Returns log entries from a remote application's log file
+        //
+        [HttpGet("remote/{appName}/entries/{folderName}/{fileName}")]
+        public async Task<IActionResult> GetRemoteEntries(string appName, string folderName, string fileName)
+        {
+            return await ProxyRemoteRequest(appName, $"api/LogViewer/entries/{Uri.EscapeDataString(folderName)}/{Uri.EscapeDataString(fileName)}");
+        }
+
+
+        //
+        // GET: api/LogViewer/remote/{appName}/tail/{folderName}/{fileName}
+        //
+        // Returns latest log entries from a remote application's log file
+        //
+        [HttpGet("remote/{appName}/tail/{folderName}/{fileName}")]
+        public async Task<IActionResult> GetRemoteTail(string appName, string folderName, string fileName, [FromQuery] int lines = 100)
+        {
+            return await ProxyRemoteRequest(appName, $"api/LogViewer/tail/{Uri.EscapeDataString(folderName)}/{Uri.EscapeDataString(fileName)}?lines={lines}");
+        }
+
+
+        //
+        // Helper method to proxy requests to a remote application
+        //
+        private async Task<IActionResult> ProxyRemoteRequest(string appName, string relativePath)
+        {
+            try
+            {
+                if (_monitoredAppService == null)
+                {
+                    return Problem("Remote log viewing is not configured");
+                }
+
+                //
+                // Extract the user's JWT token from the incoming request
+                //
+                var authHeader = HttpContext.Request.Headers["Authorization"].FirstOrDefault();
+                string authToken = null;
+
+                if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                {
+                    authToken = authHeader.Substring("Bearer ".Length).Trim();
+                }
+
+                //
+                // Forward the request to the remote application
+                //
+                var response = await _monitoredAppService.MakeAuthenticatedRequestAsync(appName, relativePath, authToken);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    return Content(content, "application/json");
+                }
+                else
+                {
+                    _logger.LogWarning("Remote request to {AppName} returned {StatusCode}", appName, response.StatusCode);
+                    return StatusCode((int)response.StatusCode, new { error = response.ReasonPhrase });
+                }
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error proxying request to {AppName}", appName);
+                return Problem($"Failed to retrieve logs from {appName}");
             }
         }
     }
