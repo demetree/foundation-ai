@@ -20,7 +20,7 @@
     <!-- Organizations List -->
     <div *ngIf="!(isLoading$ | async)">
         <!-- Empty State -->
-        <div *ngIf="(organizations$ | async)?.length === 0" class="text-center py-5">
+        <div *ngIf="(organizationHierarchy$ | async)?.length === 0" class="text-center py-5">
             <i class="fa-solid fa-building fa-3x text-muted opacity-50 mb-3"></i>
             <h5 class="text-muted">No Organizations</h5>
             <p class="text-muted">This tenant has no organizations yet.</p>
@@ -29,38 +29,141 @@
             </button>
         </div>
 
-        <!-- Organizations Table -->
-        <div class="table-responsive" *ngIf="(organizations$ | async)?.length">
-            <table class="table table-hover org-table">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Description</th>
-                        <th class="text-center">Status</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let org of organizations$ | async" class="org-row"
-                        [class.selected]="selectedOrganization?.id === org.id" (click)="openOrganization(org)">
-                        <td>
-                            <div class="org-name">
-                                <i class="fa-solid fa-building me-2 text-primary"></i>
-                                {{ org.name }}
+        <!-- Accordion Hierarchy -->
+        <div class="org-hierarchy" *ngIf="(organizationHierarchy$ | async)?.length">
+            <div *ngFor="let orgItem of organizationHierarchy$ | async" class="org-accordion">
+
+                <!-- Organization Row -->
+                <div class="hierarchy-row org-row" [class.expanded]="orgItem.isExpanded">
+                    <div class="expand-toggle" (click)="toggleOrganization(orgItem, $event)">
+                        <i class="fa-solid" [class.fa-chevron-right]="!orgItem.isExpanded"
+                            [class.fa-chevron-down]="orgItem.isExpanded"></i>
+                    </div>
+                    <div class="hierarchy-icon org-icon">
+                        <i class="fa-solid fa-building"></i>
+                    </div>
+                    <div class="hierarchy-content" (click)="openOrganization(orgItem.organization, $event)">
+                        <div class="hierarchy-name">{{ orgItem.organization.name }}</div>
+                        <div class="hierarchy-desc">{{ orgItem.organization.description || 'No description' }}</div>
+                    </div>
+                    <div class="hierarchy-badge">
+                        <span class="badge" [class.bg-success]="orgItem.organization.active"
+                            [class.bg-secondary]="!orgItem.organization.active">
+                            {{ orgItem.organization.active ? 'Active' : 'Inactive' }}
+                        </span>
+                    </div>
+                    <div class="hierarchy-actions">
+                        <button class="btn btn-sm btn-outline-primary"
+                            (click)="addDepartment(orgItem.organization, $event)" ngbTooltip="Add Department">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary"
+                            (click)="openOrganization(orgItem.organization, $event)" ngbTooltip="View Details">
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Departments (Expanded) -->
+                <div class="hierarchy-children" *ngIf="orgItem.isExpanded">
+
+                    <!-- Loading Departments -->
+                    <div *ngIf="orgItem.isLoadingDepartments" class="hierarchy-loading">
+                        <div class="spinner-border spinner-border-sm text-primary"></div>
+                        <span class="ms-2 text-muted">Loading departments...</span>
+                    </div>
+
+                    <!-- No Departments -->
+                    <div *ngIf="!orgItem.isLoadingDepartments && orgItem.departments.length === 0"
+                        class="hierarchy-empty">
+                        <i class="fa-solid fa-sitemap text-muted me-2"></i>
+                        <span class="text-muted">No departments</span>
+                        <button class="btn btn-sm btn-link" (click)="addDepartment(orgItem.organization, $event)">Create
+                            one</button>
+                    </div>
+
+                    <!-- Department Rows -->
+                    <div *ngFor="let deptItem of orgItem.departments" class="dept-accordion">
+
+                        <!-- Department Row -->
+                        <div class="hierarchy-row dept-row" [class.expanded]="deptItem.isExpanded">
+                            <div class="expand-toggle" (click)="toggleDepartment(deptItem, $event)">
+                                <i class="fa-solid" [class.fa-chevron-right]="!deptItem.isExpanded"
+                                    [class.fa-chevron-down]="deptItem.isExpanded"></i>
                             </div>
-                        </td>
-                        <td class="text-muted">{{ org.description || '—' }}</td>
-                        <td class="text-center">
-                            <span class="badge" [class.bg-success]="org.active" [class.bg-secondary]="!org.active">
-                                {{ org.active ? 'Active' : 'Inactive' }}
-                            </span>
-                        </td>
-                        <td class="text-end">
-                            <i class="fa-solid fa-chevron-right text-muted"></i>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                            <div class="hierarchy-icon dept-icon">
+                                <i class="fa-solid fa-users-rectangle"></i>
+                            </div>
+                            <div class="hierarchy-content"
+                                (click)="openDepartment(deptItem.department, orgItem.organization, $event)">
+                                <div class="hierarchy-name">{{ deptItem.department.name }}</div>
+                                <div class="hierarchy-desc">{{ deptItem.department.description || 'No description' }}
+                                </div>
+                            </div>
+                            <div class="hierarchy-badge">
+                                <span class="badge" [class.bg-success]="deptItem.department.active"
+                                    [class.bg-secondary]="!deptItem.department.active">
+                                    {{ deptItem.department.active ? 'Active' : 'Inactive' }}
+                                </span>
+                            </div>
+                            <div class="hierarchy-actions">
+                                <button class="btn btn-sm btn-outline-primary"
+                                    (click)="addTeam(deptItem.department, $event)" ngbTooltip="Add Team">
+                                    <i class="fa-solid fa-plus"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary"
+                                    (click)="openDepartment(deptItem.department, orgItem.organization, $event)"
+                                    ngbTooltip="View Details">
+                                    <i class="fa-solid fa-arrow-right"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Teams (Expanded) -->
+                        <div class="hierarchy-children" *ngIf="deptItem.isExpanded">
+
+                            <!-- Loading Teams -->
+                            <div *ngIf="deptItem.isLoadingTeams" class="hierarchy-loading">
+                                <div class="spinner-border spinner-border-sm text-primary"></div>
+                                <span class="ms-2 text-muted">Loading teams...</span>
+                            </div>
+
+                            <!-- No Teams -->
+                            <div *ngIf="!deptItem.isLoadingTeams && deptItem.teams.length === 0"
+                                class="hierarchy-empty">
+                                <i class="fa-solid fa-people-group text-muted me-2"></i>
+                                <span class="text-muted">No teams</span>
+                                <button class="btn btn-sm btn-link"
+                                    (click)="addTeam(deptItem.department, $event)">Create one</button>
+                            </div>
+
+                            <!-- Team Rows -->
+                            <div *ngFor="let team of deptItem.teams" class="hierarchy-row team-row"
+                                (click)="openTeam(team, deptItem.department, orgItem.organization, $event)">
+                                <div class="expand-toggle placeholder"></div>
+                                <div class="hierarchy-icon team-icon">
+                                    <i class="fa-solid fa-people-group"></i>
+                                </div>
+                                <div class="hierarchy-content">
+                                    <div class="hierarchy-name">{{ team.name }}</div>
+                                    <div class="hierarchy-desc">{{ team.description || 'No description' }}</div>
+                                </div>
+                                <div class="hierarchy-badge">
+                                    <span class="badge" [class.bg-success]="team.active"
+                                        [class.bg-secondary]="!team.active">
+                                        {{ team.active ? 'Active' : 'Inactive' }}
+                                    </span>
+                                </div>
+                                <div class="hierarchy-actions">
+                                    <button class="btn btn-sm btn-outline-secondary" ngbTooltip="View Details">
+                                        <i class="fa-solid fa-arrow-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -70,4 +173,18 @@
 
     <!-- Organization Add/Edit Component -->
     <app-organization-add-edit #orgAddEdit (saved)="onOrganizationSaved($event)"></app-organization-add-edit>
+
+    <!-- Department Detail Panel -->
+    <app-department-detail-panel #deptPanel (closed)="onDepartmentClosed()" (changed)="onDepartmentChanged()">
+    </app-department-detail-panel>
+
+    <!-- Department Add/Edit Component -->
+    <app-department-add-edit #deptAddEdit (saved)="onDepartmentSaved($event)"></app-department-add-edit>
+
+    <!-- Team Detail Panel -->
+    <app-team-detail-panel #teamPanel (closed)="onTeamClosed()" (changed)="onTeamChanged()">
+    </app-team-detail-panel>
+
+    <!-- Team Add/Edit Component -->
+    <app-team-add-edit #teamAddEdit (saved)="onTeamSaved($event)"></app-team-add-edit>
 </div>

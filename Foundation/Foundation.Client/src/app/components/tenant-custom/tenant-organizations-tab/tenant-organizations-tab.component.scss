@@ -1,48 +1,251 @@
+//
+// Tenant Organizations Tab - Accordion Hierarchy Styles
+//
+
 .organizations-tab {
     padding: 1.5rem;
 }
 
-.org-table {
-    margin-bottom: 0;
+//
+// Hierarchy Accordion Structure
+//
+.org-hierarchy {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 0.5rem;
+}
 
-    thead th {
-        font-weight: 600;
-        color: #495057;
-        border-bottom: 2px solid #dee2e6;
-        padding: 0.75rem 1rem;
-        font-size: 0.875rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
+.org-accordion {
+    margin-bottom: 0.25rem;
 
-    tbody tr {
-        cursor: pointer;
-        transition: all 0.2s ease;
-
-        &:hover {
-            background-color: rgba(13, 110, 253, 0.05);
-        }
-
-        &.selected {
-            background-color: rgba(13, 110, 253, 0.1);
-        }
-
-        td {
-            padding: 1rem;
-            vertical-align: middle;
-        }
+    &:last-child {
+        margin-bottom: 0;
     }
 }
 
-.org-name {
-    font-weight: 500;
-    color: #212529;
+.dept-accordion {
+    margin-bottom: 0.125rem;
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+}
+
+//
+// Hierarchy Rows
+//
+.hierarchy-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: white;
+
+    &:hover {
+        background: #f8f9fa;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    &.expanded {
+        background: white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
 }
 
 .org-row {
-    border-bottom: 1px solid #f0f0f0;
+    border-left: 4px solid transparent;
 
-    &:last-child {
-        border-bottom: none;
+    &:hover,
+    &.expanded {
+        border-left-color: #667eea;
+    }
+}
+
+.dept-row {
+    border-left: 4px solid transparent;
+
+    &:hover,
+    &.expanded {
+        border-left-color: #f093fb;
+    }
+}
+
+.team-row {
+    border-left: 4px solid transparent;
+
+    &:hover {
+        border-left-color: #4facfe;
+    }
+}
+
+//
+// Expand Toggle
+//
+.expand-toggle {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: #6c757d;
+    transition: transform 0.2s ease;
+
+    &.placeholder {
+        visibility: hidden;
+    }
+
+    &:hover {
+        color: #212529;
+    }
+}
+
+//
+// Hierarchy Icons
+//
+.hierarchy-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: white;
+    font-size: 0.9rem;
+}
+
+.org-icon {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.dept-icon {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.team-icon {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+//
+// Hierarchy Content
+//
+.hierarchy-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.hierarchy-name {
+    font-weight: 600;
+    color: #212529;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.hierarchy-desc {
+    font-size: 0.8rem;
+    color: #6c757d;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+//
+// Hierarchy Badge and Actions
+//
+.hierarchy-badge {
+    flex-shrink: 0;
+}
+
+.hierarchy-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+
+    .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+}
+
+.hierarchy-row:hover .hierarchy-actions {
+    opacity: 1;
+}
+
+//
+// Children Container (Indented)
+//
+.hierarchy-children {
+    margin-left: 2.5rem;
+    padding-left: 1rem;
+    border-left: 2px dashed #dee2e6;
+    margin-top: 0.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.hierarchy-loading,
+.hierarchy-empty {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+}
+
+.hierarchy-empty {
+    color: #6c757d;
+
+    .btn-link {
+        padding: 0 0.25rem;
+        font-size: 0.875rem;
+    }
+}
+
+//
+// Responsive
+//
+@media (max-width: 768px) {
+    .hierarchy-row {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .hierarchy-content {
+        flex: 1 1 100%;
+        order: 1;
+    }
+
+    .hierarchy-actions {
+        opacity: 1;
+        order: 2;
+    }
+
+    .hierarchy-children {
+        margin-left: 1.5rem;
+    }
+}
+
+//
+// Animation
+//
+.hierarchy-children {
+    animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
