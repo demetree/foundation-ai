@@ -10,10 +10,40 @@
                 </h3>
                 <small class="text-white-50">System activity log and monitoring</small>
             </div>
-            <div class="header-stats" *ngIf="!(isLoading$ | async)">
-                <span class="badge badge-glass me-2">
+            <div class="header-stats d-flex align-items-center gap-2" *ngIf="!(isLoading$ | async)">
+                <span class="badge badge-glass" *ngIf="failureCount > 0" ngbTooltip="Failed events in current view">
+                    <i class="fa-solid fa-exclamation-triangle me-1"></i>{{ failureCount }} failures
+                </span>
+                <span class="badge badge-glass">
                     <i class="fa-solid fa-database me-1"></i>{{ (auditEvents$ | async)?.length || 0 }} events
                 </span>
+
+                <!-- Auto-refresh toggle -->
+                <div class="btn-group" ngbDropdown>
+                    <button class="btn btn-sm" [class.btn-success]="autoRefreshEnabled"
+                        [class.btn-outline-light]="!autoRefreshEnabled" (click)="toggleAutoRefresh()"
+                        [ngbTooltip]="autoRefreshEnabled ? 'Auto-refresh ON (click to disable)' : 'Enable auto-refresh'">
+                        <i class="fa-solid fa-sync-alt" [class.fa-spin]="autoRefreshEnabled"></i>
+                        <span class="ms-1" *ngIf="autoRefreshEnabled">{{ nextRefreshIn }}s</span>
+                    </button>
+                    <button type="button" class="btn btn-sm dropdown-toggle dropdown-toggle-split"
+                        [class.btn-success]="autoRefreshEnabled" [class.btn-outline-light]="!autoRefreshEnabled"
+                        ngbDropdownToggle>
+                    </button>
+                    <div ngbDropdownMenu>
+                        <button *ngFor="let opt of autoRefreshOptions" ngbDropdownItem
+                            [class.active]="autoRefreshInterval === opt" (click)="setAutoRefreshInterval(opt)">
+                            {{ formatAutoRefreshInterval(opt) }}
+                        </button>
+                    </div>
+                </div>
+
+                <button class="btn btn-sm btn-outline-light" (click)="applyFilters()" ngbTooltip="Refresh">
+                    <i class="fa-solid fa-refresh"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-light" (click)="exportToCsv()" ngbTooltip="Export to CSV">
+                    <i class="fa-solid fa-download"></i>
+                </button>
             </div>
         </div>
     </div>
@@ -128,13 +158,23 @@
                     <thead>
                         <tr>
                             <th style="width: 40px;"></th>
-                            <th style="width: 100px;">Time</th>
-                            <th style="width: 80px;" class="text-center">Status</th>
-                            <th style="width: 150px;">User</th>
+                            <th style="width: 100px;" class="sortable" (click)="sortBy('startTime')">
+                                Time <i class="fa-solid" [ngClass]="getSortIcon('startTime')"></i>
+                            </th>
+                            <th style="width: 80px;" class="text-center sortable" (click)="sortBy('status')">
+                                Status <i class="fa-solid" [ngClass]="getSortIcon('status')"></i>
+                            </th>
+                            <th style="width: 150px;" class="sortable" (click)="sortBy('user')">
+                                User <i class="fa-solid" [ngClass]="getSortIcon('user')"></i>
+                            </th>
                             <th>Message</th>
-                            <th style="width: 120px;">Type</th>
+                            <th style="width: 120px;" class="sortable" (click)="sortBy('type')">
+                                Type <i class="fa-solid" [ngClass]="getSortIcon('type')"></i>
+                            </th>
                             <th style="width: 100px;">Access</th>
-                            <th style="width: 120px;">Module</th>
+                            <th style="width: 120px;" class="sortable" (click)="sortBy('module')">
+                                Module <i class="fa-solid" [ngClass]="getSortIcon('module')"></i>
+                            </th>
                             <th style="width: 80px;">Duration</th>
                         </tr>
                     </thead>
@@ -245,6 +285,31 @@
                                                 <div class="detail-item">
                                                     <span class="detail-label">Full Message</span>
                                                     <span class="detail-value message-full">{{ event.message }}</span>
+                                                </div>
+                                            </div>
+                                            <!-- Error Messages Section for Failed Events -->
+                                            <div class="col-12" *ngIf="!event.completedSuccessfully">
+                                                <div class="detail-item error-messages-section">
+                                                    <span class="detail-label text-danger">
+                                                        <i class="fa-solid fa-exclamation-circle me-1"></i>Error
+                                                        Messages
+                                                    </span>
+                                                    <div class="error-messages-content mt-2">
+                                                        <div *ngIf="isLoadingErrorMessages(event)" class="text-muted">
+                                                            <i class="fa-solid fa-spinner fa-spin me-1"></i>Loading
+                                                            error details...
+                                                        </div>
+                                                        <div *ngIf="!isLoadingErrorMessages(event) && getErrorMessages(event).length === 0"
+                                                            class="text-muted">
+                                                            No additional error details available.
+                                                        </div>
+                                                        <div *ngFor="let errorMsg of getErrorMessages(event)"
+                                                            class="error-message-item">
+                                                            <i class="fa-solid fa-times-circle text-danger me-2"></i>
+                                                            <span class="error-message-text">{{ errorMsg.errorMessage
+                                                                }}</span>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>

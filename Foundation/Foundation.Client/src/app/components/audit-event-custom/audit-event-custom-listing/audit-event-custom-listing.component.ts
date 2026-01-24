@@ -1,12 +1,32 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { BehaviorSubject, Subject, interval, Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { NgbDateStruct, NgbCalendar } from '@ng-bootstrap/ng-bootstrap';
 
 import { AuditEventService, AuditEventData, AuditEventQueryParameters } from '../../../auditor-data-services/audit-event.service';
+import { AuditEventErrorMessageService, AuditEventErrorMessageData } from '../../../auditor-data-services/audit-event-error-message.service';
 import { AuditTypeService, AuditTypeData } from '../../../auditor-data-services/audit-type.service';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { AuthService } from '../../../services/auth.service';
+import { UserPreferencesService } from '../../../services/user-preferences.service';
+
+//
+// Preferences key for this component
+//
+const PREFS_KEY = 'auditEventsFilters';
+
+//
+// Filter preferences interface
+//
+interface AuditEventFilterPreferences {
+    selectedTimePreset: string;
+    statusFilter: 'all' | 'success' | 'failure';
+    typeFilter: number | null;
+    userFilter: string;
+    searchText: string;
+    autoRefreshEnabled: boolean;
+    autoRefreshInterval: number;
+}
 
 //
 // Time preset options
@@ -57,9 +77,36 @@ export class AuditEventCustomListingComponent implements OnInit, OnDestroy {
     expandedEventIds: Set<number | bigint> = new Set();
 
     //
+    // Error messages cache (by event id)
+    //
+    errorMessagesCache: Map<number | bigint, AuditEventErrorMessageData[]> = new Map();
+    loadingErrorMessages: Set<number | bigint> = new Set();
+
+    //
     // Make Math available in template
     //
     Math = Math;
+
+    //
+    // Failure count for header badge
+    //
+    failureCount: number = 0;
+
+    //
+    // Sorting
+    //
+    sortColumn: string = 'startTime';
+    sortDirection: 'asc' | 'desc' = 'desc';
+
+    //
+    // Auto-refresh
+    //
+    autoRefreshEnabled: boolean = false;
+    autoRefreshInterval: number = 30; // seconds
+    autoRefreshOptions: number[] = [10, 30, 60, 120, 300];
+    private autoRefreshSubscription: Subscription | null = null;
+    nextRefreshIn: number = 0;
+    private countdownSubscription: Subscription | null = null;
 
     //
     // Time presets
@@ -75,20 +122,23 @@ export class AuditEventCustomListingComponent implements OnInit, OnDestroy {
 
     constructor(
         private auditEventService: AuditEventService,
+        private auditEventErrorMessageService: AuditEventErrorMessageService,
         private auditTypeService: AuditTypeService,
         private alertService: AlertService,
         private authService: AuthService,
+        private userPreferencesService: UserPreferencesService,
         private calendar: NgbCalendar
     ) { }
 
     ngOnInit(): void {
         this.loadAuditTypes();
-        this.applyFilters();
+        this.loadSavedFilters();
     }
 
     ngOnDestroy(): void {
         this.destroy$.next();
         this.destroy$.complete();
+        this.stopAutoRefresh();
     }
 
     //
@@ -108,6 +158,56 @@ export class AuditEventCustomListingComponent implements OnInit, OnDestroy {
     }
 
     //
+    // Load saved filter preferences
+    //
+    private async loadSavedFilters(): Promise<void> {
+        const defaults: AuditEventFilterPreferences = {
+            selectedTimePreset: 'last24hours',
+            statusFilter: 'all',
+            typeFilter: null,
+            userFilter: '',
+            searchText: '',
+            autoRefreshEnabled: false,
+            autoRefreshInterval: 30
+        };
+
+        const prefs = await this.userPreferencesService.getPreference<AuditEventFilterPreferences>(PREFS_KEY, defaults);
+
+        this.selectedTimePreset = prefs.selectedTimePreset;
+        this.statusFilter = prefs.statusFilter;
+        this.typeFilter = prefs.typeFilter;
+        this.userFilter = prefs.userFilter;
+        this.searchText = prefs.searchText;
+        this.autoRefreshEnabled = prefs.autoRefreshEnabled;
+        this.autoRefreshInterval = prefs.autoRefreshInterval;
+
+        // Apply the loaded filters
+        this.applyFilters();
+
+        // Start auto-refresh if it was enabled
+        if (this.autoRefreshEnabled) {
+            this.startAutoRefresh();
+        }
+    }
+
+    //
+    // Save current filter preferences
+    //
+    private async saveFilterPreferences(): Promise<void> {
+        const prefs: AuditEventFilterPreferences = {
+            selectedTimePreset: this.selectedTimePreset,
+            statusFilter: this.statusFilter,
+            typeFilter: this.typeFilter,
+            userFilter: this.userFilter,
+            searchText: this.searchText,
+            autoRefreshEnabled: this.autoRefreshEnabled,
+            autoRefreshInterval: this.autoRefreshInterval
+        };
+
+        await this.userPreferencesService.setPreference(PREFS_KEY, prefs);
+    }
+
+    //
     // Apply filters and load data
     //
     applyFilters(): void {
@@ -121,16 +221,25 @@ export class AuditEventCustomListingComponent implements OnInit, OnDestroy {
             takeUntil(this.destroy$)
         ).subscribe({
             next: (events) => {
-                this.auditEvents$.next(events);
+                // Calculate failure count
+                this.failureCount = events.filter(e => !e.completedSuccessfully).length;
+
+                // Apply initial sort
+                const sortedEvents = this.sortEvents(events);
+                this.auditEvents$.next(sortedEvents);
                 this.totalCount$.next(events.length);
                 this.isLoading$.next(false);
             },
             error: (err) => {
                 this.alertService.showMessage('Error loading audit events', err.message || 'Unknown error', MessageSeverity.error);
                 this.auditEvents$.next([]);
+                this.failureCount = 0;
                 this.isLoading$.next(false);
             }
         });
+
+        // Save preferences after applying filters
+        this.saveFilterPreferences();
     }
 
     //
@@ -236,6 +345,10 @@ export class AuditEventCustomListingComponent implements OnInit, OnDestroy {
             this.expandedEventIds.delete(event.id);
         } else {
             this.expandedEventIds.add(event.id);
+            // Auto-load error messages for failed events
+            if (!event.completedSuccessfully && !this.errorMessagesCache.has(event.id)) {
+                this.loadErrorMessages(event);
+            }
         }
     }
 
@@ -314,5 +427,208 @@ export class AuditEventCustomListingComponent implements OnInit, OnDestroy {
     //
     trackByEventId(index: number, event: AuditEventData): number | bigint {
         return event.id;
+    }
+
+    //
+    // Sorting
+    //
+    sortBy(column: string): void {
+        if (this.sortColumn === column) {
+            this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            this.sortColumn = column;
+            this.sortDirection = 'desc';
+        }
+
+        const sortedEvents = this.sortEvents(this.auditEvents$.value);
+        this.auditEvents$.next(sortedEvents);
+    }
+
+    private sortEvents(events: AuditEventData[]): AuditEventData[] {
+        return [...events].sort((a, b) => {
+            let aVal: any;
+            let bVal: any;
+
+            switch (this.sortColumn) {
+                case 'startTime':
+                    aVal = new Date(a.startTime).getTime();
+                    bVal = new Date(b.startTime).getTime();
+                    break;
+                case 'user':
+                    aVal = a.auditUser?.name?.toLowerCase() || '';
+                    bVal = b.auditUser?.name?.toLowerCase() || '';
+                    break;
+                case 'type':
+                    aVal = a.auditType?.name?.toLowerCase() || '';
+                    bVal = b.auditType?.name?.toLowerCase() || '';
+                    break;
+                case 'status':
+                    aVal = a.completedSuccessfully ? 1 : 0;
+                    bVal = b.completedSuccessfully ? 1 : 0;
+                    break;
+                case 'module':
+                    aVal = a.auditModule?.name?.toLowerCase() || '';
+                    bVal = b.auditModule?.name?.toLowerCase() || '';
+                    break;
+                default:
+                    aVal = (a as any)[this.sortColumn];
+                    bVal = (b as any)[this.sortColumn];
+            }
+
+            if (aVal < bVal) return this.sortDirection === 'asc' ? -1 : 1;
+            if (aVal > bVal) return this.sortDirection === 'asc' ? 1 : -1;
+            return 0;
+        });
+    }
+
+    getSortIcon(column: string): string {
+        if (this.sortColumn !== column) return 'fa-sort';
+        return this.sortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down';
+    }
+
+    //
+    // Error message loading for failed events
+    //
+    loadErrorMessages(event: AuditEventData): void {
+        if (this.loadingErrorMessages.has(event.id)) return;
+
+        this.loadingErrorMessages.add(event.id);
+
+        this.auditEventErrorMessageService.GetAuditEventErrorMessageList({
+            auditEventId: event.id
+        }).pipe(
+            takeUntil(this.destroy$)
+        ).subscribe({
+            next: (messages) => {
+                this.errorMessagesCache.set(event.id, messages);
+                this.loadingErrorMessages.delete(event.id);
+            },
+            error: (err) => {
+                console.error('Failed to load error messages', err);
+                this.errorMessagesCache.set(event.id, []);
+                this.loadingErrorMessages.delete(event.id);
+            }
+        });
+    }
+
+    getErrorMessages(event: AuditEventData): AuditEventErrorMessageData[] {
+        return this.errorMessagesCache.get(event.id) || [];
+    }
+
+    isLoadingErrorMessages(event: AuditEventData): boolean {
+        return this.loadingErrorMessages.has(event.id);
+    }
+
+    //
+    // Auto-refresh functionality
+    //
+    toggleAutoRefresh(): void {
+        this.autoRefreshEnabled = !this.autoRefreshEnabled;
+
+        if (this.autoRefreshEnabled) {
+            this.startAutoRefresh();
+        } else {
+            this.stopAutoRefresh();
+        }
+
+        this.saveFilterPreferences();
+    }
+
+    setAutoRefreshInterval(seconds: number): void {
+        this.autoRefreshInterval = seconds;
+
+        if (this.autoRefreshEnabled) {
+            this.stopAutoRefresh();
+            this.startAutoRefresh();
+        }
+
+        this.saveFilterPreferences();
+    }
+
+    private startAutoRefresh(): void {
+        this.stopAutoRefresh();
+
+        this.nextRefreshIn = this.autoRefreshInterval;
+
+        // Countdown timer (every second)
+        this.countdownSubscription = interval(1000).subscribe(() => {
+            this.nextRefreshIn--;
+            if (this.nextRefreshIn <= 0) {
+                this.nextRefreshIn = this.autoRefreshInterval;
+            }
+        });
+
+        // Actual refresh
+        this.autoRefreshSubscription = interval(this.autoRefreshInterval * 1000).subscribe(() => {
+            this.applyFilters();
+            this.nextRefreshIn = this.autoRefreshInterval;
+        });
+    }
+
+    private stopAutoRefresh(): void {
+        if (this.autoRefreshSubscription) {
+            this.autoRefreshSubscription.unsubscribe();
+            this.autoRefreshSubscription = null;
+        }
+        if (this.countdownSubscription) {
+            this.countdownSubscription.unsubscribe();
+            this.countdownSubscription = null;
+        }
+        this.nextRefreshIn = 0;
+    }
+
+    formatAutoRefreshInterval(seconds: number): string {
+        if (seconds < 60) return `${seconds}s`;
+        return `${seconds / 60}m`;
+    }
+
+    //
+    // Export to CSV
+    //
+    exportToCsv(): void {
+        const events = this.auditEvents$.value;
+        if (events.length === 0) {
+            this.alertService.showMessage('Export', 'No events to export', MessageSeverity.info);
+            return;
+        }
+
+        const headers = [
+            'ID', 'Time', 'Status', 'User', 'Type', 'Access', 'Module',
+            'Message', 'Duration (ms)', 'Session', 'Source', 'Resource', 'Primary Key'
+        ];
+
+        const rows = events.map(e => [
+            e.id,
+            e.startTime ? new Date(e.startTime).toISOString() : '',
+            e.completedSuccessfully ? 'Success' : 'Failure',
+            e.auditUser?.name || '',
+            e.auditType?.name || '',
+            e.auditAccessType?.name || '',
+            e.auditModule?.name || '',
+            (e.message || '').replace(/"/g, '""'),
+            e.startTime && e.stopTime ? new Date(e.stopTime).getTime() - new Date(e.startTime).getTime() : '',
+            e.auditSession?.name || '',
+            e.auditSource?.name || '',
+            e.auditResource?.name || '',
+            e.primaryKey || ''
+        ]);
+
+        const csvContent = [
+            headers.join(','),
+            ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', `audit-events-${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        this.alertService.showMessage('Export', `Exported ${events.length} events to CSV`, MessageSeverity.success);
     }
 }
