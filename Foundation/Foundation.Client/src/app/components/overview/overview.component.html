@@ -7,7 +7,9 @@
 
       <!-- Admin Icon/Avatar -->
       <div class="avatar-wrapper">
-        <div class="avatar-initials rounded-circle text-white d-flex align-items-center justify-content-center border border-white border-2 shadow-sm" style="width: 80px; height: 80px;">
+        <div
+          class="avatar-initials rounded-circle text-white d-flex align-items-center justify-content-center border border-white border-2 shadow-sm"
+          style="width: 80px; height: 80px;">
           <i class="fa-solid fa-shield-halved fa-2x"></i>
         </div>
       </div>
@@ -15,7 +17,8 @@
       <!-- Greeting & Title -->
       <div class="flex-grow-1">
         <div class="d-flex align-items-center gap-3 mb-1">
-          <h2 class="mb-0 text-white fw-bold">{{ userGreeting }}<span *ngIf="currentUser">, {{ currentUser.userName }}</span>!</h2>
+          <h2 class="mb-0 text-white fw-bold">{{ userGreeting }}<span *ngIf="currentUser">, {{ currentUser.userName
+              }}</span>!</h2>
         </div>
         <p class="text-white-50 mb-0">
           <i class="fa-solid fa-calendar-day me-2"></i>
@@ -34,7 +37,8 @@
           <div class="stat-label text-white-50">Active Users</div>
         </div>
         <div class="stat-item text-center">
-          <div class="stat-value text-white" [class.text-warning]="healthSummary.errorsToday > 0">{{ healthSummary.errorsToday }}</div>
+          <div class="stat-value text-white" [class.text-warning]="healthSummary.errorsToday > 0">{{
+            healthSummary.errorsToday }}</div>
           <div class="stat-label text-white-50">System Errors</div>
         </div>
       </div>
@@ -55,9 +59,10 @@
   <!-- Main Content -->
   <div *ngIf="!loading" class="row g-4">
 
-    <!-- KPI Cards -->
+    <!-- KPI Cards Row 1 -->
     <div class="col-md-3">
-      <div class="card premium-card h-100 border-0 shadow-sm hover-lift" (click)="navigateToUsers()" style="cursor: pointer;">
+      <div class="card premium-card h-100 border-0 shadow-sm hover-lift" (click)="navigateToUsers()"
+        style="cursor: pointer;">
         <div class="card-body d-flex align-items-center">
           <div class="stat-circle bg-primary-soft me-3">
             <i class="fa-solid fa-users fa-2x text-primary"></i>
@@ -71,58 +76,130 @@
     </div>
 
     <div class="col-md-3">
-        <div class="card premium-card h-100 border-0 shadow-sm hover-lift" (click)="navigateToLogins()" style="cursor: pointer;">
-          <div class="card-body d-flex align-items-center">
-            <div class="stat-circle bg-warning-soft me-3">
-              <i class="fa-solid fa-triangle-exclamation fa-2x text-warning"></i>
-            </div>
-            <div>
-              <h3 class="mb-0 fw-bold text-dark" [class.text-danger]="healthSummary.failedLoginsToday > 5">{{ healthSummary.failedLoginsToday }}</h3>
-              <div class="text-muted small">Failed Logins Today</div>
-            </div>
+      <div class="card premium-card h-100 border-0 shadow-sm hover-lift" (click)="navigateToLogins()"
+        style="cursor: pointer;">
+        <div class="card-body d-flex align-items-center">
+          <div class="stat-circle bg-warning-soft me-3">
+            <i class="fa-solid fa-triangle-exclamation fa-2x text-warning"></i>
+          </div>
+          <div>
+            <h3 class="mb-0 fw-bold text-dark" [class.text-danger]="healthSummary.failedLoginsToday > 5">{{
+              healthSummary.failedLoginsToday }}</h3>
+            <div class="text-muted small">Failed Logins Today</div>
           </div>
         </div>
       </div>
+    </div>
 
-      <div class="col-md-3">
-        <div class="card premium-card h-100 border-0 shadow-sm hover-lift" (click)="navigateToAudit()" style="cursor: pointer;">
-          <div class="card-body d-flex align-items-center">
-            <div class="stat-circle bg-danger-soft me-3">
-              <i class="fa-solid fa-bug fa-2x text-danger"></i>
-            </div>
-            <div>
-              <h3 class="mb-0 fw-bold text-dark" [class.text-danger]="healthSummary.errorsToday > 0">{{ healthSummary.errorsToday }}</h3>
-              <div class="text-muted small">Audit Errors Today</div>
-            </div>
+    <div class="col-md-3">
+      <div class="card premium-card h-100 border-0 shadow-sm hover-lift" (click)="navigateToAudit()"
+        style="cursor: pointer;">
+        <div class="card-body d-flex align-items-center">
+          <div class="stat-circle bg-danger-soft me-3">
+            <i class="fa-solid fa-clock fa-2x text-danger"></i>
+          </div>
+          <div>
+            <h3 class="mb-0 fw-bold" [class.text-danger]="healthSummary.failedEventsLastHour > 0">{{
+              healthSummary.failedEventsLastHour }}</h3>
+            <div class="text-muted small">Failed Events (1h)</div>
           </div>
         </div>
       </div>
+    </div>
 
-      <div class="col-md-3">
-        <div class="card premium-card h-100 border-0 shadow-sm">
-          <div class="card-body d-flex align-items-center">
-            <div class="stat-circle bg-success-soft me-3">
-              <i class="fa-solid fa-server fa-2x text-success"></i>
+    <div class="col-md-3">
+      <div class="card premium-card h-100 border-0 shadow-sm hover-lift">
+        <div class="card-body d-flex align-items-center">
+          <div class="stat-circle bg-info-soft me-3">
+            <i class="fa-solid fa-user-check fa-2x text-info"></i>
+          </div>
+          <div>
+            <h3 class="mb-0 fw-bold text-info">{{ healthSummary.activeUsersToday }}</h3>
+            <div class="text-muted small">Active Users Today</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI Cards Row 2 -->
+    <div class="col-md-3">
+      <div class="card premium-card h-100 border-0 shadow-sm hover-lift" (click)="navigateToAudit()"
+        style="cursor: pointer;">
+        <div class="card-body d-flex align-items-center">
+          <div class="stat-circle bg-purple-soft me-3">
+            <i class="fa-solid fa-clipboard-list fa-2x text-purple"></i>
+          </div>
+          <div>
+            <h3 class="mb-0 fw-bold text-dark">{{ healthSummary.totalEventsToday }}</h3>
+            <div class="text-muted small">Total Events Today</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card premium-card h-100 border-0 shadow-sm hover-lift" (click)="navigateToAudit()"
+        style="cursor: pointer;">
+        <div class="card-body d-flex align-items-center">
+          <div class="stat-circle bg-danger-soft me-3">
+            <i class="fa-solid fa-bug fa-2x text-danger"></i>
+          </div>
+          <div>
+            <h3 class="mb-0 fw-bold text-dark" [class.text-danger]="healthSummary.errorsToday > 0">{{
+              healthSummary.errorsToday }}</h3>
+            <div class="text-muted small">Audit Errors Today</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card premium-card h-100 border-0 shadow-sm">
+        <div class="card-body d-flex align-items-center">
+          <div class="stat-circle bg-success-soft me-3">
+            <i class="fa-solid fa-server fa-2x text-success"></i>
+          </div>
+          <div>
+            <h3 class="mb-0 fw-bold text-success">Online</h3>
+            <div class="text-muted small">System Status</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Most Active Modules Card -->
+    <div class="col-md-3">
+      <div class="card premium-card h-100 border-0 shadow-sm">
+        <div class="card-body">
+          <h6 class="text-muted small text-uppercase mb-3">
+            <i class="fa-solid fa-cubes me-1"></i>Most Active Modules
+          </h6>
+          <div *ngIf="mostActiveModules.length === 0" class="text-muted text-center py-2">
+            <small>No activity today</small>
+          </div>
+          <div *ngFor="let module of mostActiveModules" class="mb-2">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="small fw-medium text-truncate" style="max-width: 120px;">{{ module.name }}</span>
+              <span class="badge bg-primary-soft text-primary">{{ module.count }}</span>
             </div>
-            <div>
-              <h3 class="mb-0 fw-bold text-success">Online</h3>
-              <div class="text-muted small">System Status</div>
+            <div class="progress" style="height: 4px;">
+              <div class="progress-bar bg-primary" [style.width.%]="module.percentage"></div>
             </div>
           </div>
         </div>
       </div>
+    </div>
 
     <!-- Login Activity Chart -->
     <div class="col-lg-8">
       <div class="card premium-card h-100 border-0 shadow-sm">
         <div class="card-header bg-white border-0 pt-4 px-4">
-          <h5 class="mb-0 fw-bold"><i class="fa-solid fa-chart-line text-primary me-2"></i>Login Traffic (Last 7 Days)</h5>
+          <h5 class="mb-0 fw-bold"><i class="fa-solid fa-chart-line text-primary me-2"></i>Login Traffic (Last 7 Days)
+          </h5>
         </div>
         <div class="card-body px-4 pb-4">
           <div style="height: 300px; width: 100%;">
-            <canvas baseChart
-              [data]="loginActivityChartData"
-              [options]="loginActivityChartOptions"
+            <canvas baseChart [data]="loginActivityChartData" [options]="loginActivityChartOptions"
               [type]="loginActivityChartType">
             </canvas>
           </div>
@@ -140,8 +217,7 @@
           <div class="list-group list-group-flush">
             <div *ngFor="let item of recentActivity" class="list-group-item border-0 py-3 px-4 hover-lift">
               <div class="d-flex w-100 justify-content-between align-items-center mb-1">
-                <span class="badge rounded-pill" 
-                      [ngClass]="{
+                <span class="badge rounded-pill" [ngClass]="{
                         'bg-success': item.status === 'success',
                         'bg-warning': item.status === 'warning',
                         'bg-danger': item.status === 'danger'
@@ -156,13 +232,14 @@
               </small>
             </div>
             <div *ngIf="recentActivity.length === 0" class="text-center py-4 text-muted">
-                <i class="fa-solid fa-check-circle fa-2x mb-2 text-success opacity-50"></i>
-                <p>No recent alerts or activity.</p>
+              <i class="fa-solid fa-check-circle fa-2x mb-2 text-success opacity-50"></i>
+              <p>No recent alerts or activity.</p>
             </div>
           </div>
         </div>
         <div class="card-footer bg-white border-0 text-center py-3">
-            <button class="btn btn-sm btn-outline-primary rounded-pill" (click)="navigateToAudit()">View Full Audit Log</button>
+          <button class="btn btn-sm btn-outline-primary rounded-pill" (click)="navigateToAudit()">View Full Audit
+            Log</button>
         </div>
       </div>
     </div>

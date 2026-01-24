@@ -47,6 +47,10 @@ interface SystemHealthSummary {
   lockedOutUsers: number;
   failedLoginsToday: number;
   errorsToday: number;
+  // New extended metrics
+  failedEventsLastHour: number;
+  activeUsersToday: number;
+  totalEventsToday: number;
 }
 
 interface RecentActivityItem {
@@ -90,12 +94,20 @@ export class OverviewComponent implements OnInit, OnDestroy, AfterViewInit {
     activeUsers: 0,
     lockedOutUsers: 0,
     failedLoginsToday: 0,
-    errorsToday: 0
+    errorsToday: 0,
+    failedEventsLastHour: 0,
+    activeUsersToday: 0,
+    totalEventsToday: 0
   };
 
   public recentActivity: RecentActivityItem[] = [];
   public recentLoginAttempts: LoginAttemptData[] = [];
   public recentAuditEvents: AuditEventData[] = [];
+
+  //
+  // Most Active Modules
+  //
+  public mostActiveModules: { name: string; count: number; percentage: number }[] = [];
 
   //
   // Chart Data - Login Activity
@@ -211,6 +223,7 @@ export class OverviewComponent implements OnInit, OnDestroy, AfterViewInit {
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
     const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59).toISOString();
     const sevenDaysAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7).toISOString();
+    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000).toISOString();
 
     //
     // Queries
@@ -293,6 +306,40 @@ export class OverviewComponent implements OnInit, OnDestroy, AfterViewInit {
     const auditEvents = todaysAuditEvents as AuditEventData[];
     // Filter for errors: completedSuccessfully == false
     this.healthSummary.errorsToday = auditEvents.filter(e => e.completedSuccessfully === false).length;
+    this.healthSummary.totalEventsToday = auditEvents.length;
+
+    //
+    // Failed events in last hour
+    //
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    this.healthSummary.failedEventsLastHour = auditEvents.filter(e =>
+      !e.completedSuccessfully && new Date(e.startTime) >= oneHourAgo
+    ).length;
+
+    //
+    // Active users today (unique users with audit events)
+    //
+    const uniqueUserIds = new Set(auditEvents.map(e => e.auditUserId));
+    this.healthSummary.activeUsersToday = uniqueUserIds.size;
+
+    //
+    // Most active modules
+    //
+    const moduleCounts: Record<string, number> = {};
+    auditEvents.forEach(e => {
+      const moduleName = e.auditModule?.name || 'Unknown';
+      moduleCounts[moduleName] = (moduleCounts[moduleName] || 0) + 1;
+    });
+
+    const totalEvents = auditEvents.length || 1; // Avoid divide by zero
+    this.mostActiveModules = Object.entries(moduleCounts)
+      .map(([name, count]) => ({
+        name,
+        count,
+        percentage: Math.round((count / totalEvents) * 100)
+      }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
 
     //
     // Build Recent Activity Feed (Merge Logins and Audits)

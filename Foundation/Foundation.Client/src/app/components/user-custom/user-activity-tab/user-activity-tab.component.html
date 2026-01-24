@@ -1,8 +1,125 @@
 <div class="activity-container" *ngIf="user">
+
+    <!-- Activity Summary Stats -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card stat-card-primary">
+                <div class="stat-icon">
+                    <i class="fa-solid fa-clipboard-list"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ auditEventStats.total }}</div>
+                    <div class="stat-label">Total Actions</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card stat-card-success">
+                <div class="stat-icon">
+                    <i class="fa-solid fa-check-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ auditEventStats.successful }}</div>
+                    <div class="stat-label">Successful</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card stat-card-danger">
+                <div class="stat-icon">
+                    <i class="fa-solid fa-exclamation-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ auditEventStats.failed }}</div>
+                    <div class="stat-label">Failed</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card stat-card-info">
+                <div class="stat-icon">
+                    <i class="fa-solid fa-clock"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value" *ngIf="auditEventStats.lastActivity">
+                        {{ formatRelativeTime(auditEventStats.lastActivity.toISOString()) }}
+                    </div>
+                    <div class="stat-value" *ngIf="!auditEventStats.lastActivity">—</div>
+                    <div class="stat-label">Last Activity</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="row g-4">
 
-        <!-- Login Attempts Section -->
+        <!-- Audit Events Timeline -->
         <div class="col-12">
+            <div class="section-card">
+                <h6 class="section-title mb-3">
+                    <i class="fa-solid fa-timeline me-2 text-primary"></i>Audit Event Timeline
+                    <span class="badge bg-primary ms-2" *ngIf="auditEvents.length > 0">{{ auditEvents.length }}</span>
+                </h6>
+
+                <!-- Loading -->
+                <div *ngIf="loadingAuditEvents" class="text-center py-4">
+                    <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                    <span class="ms-2 text-muted">Loading audit events...</span>
+                </div>
+
+                <!-- Empty State -->
+                <div *ngIf="!loadingAuditEvents && auditEvents.length === 0" class="text-center py-4">
+                    <i class="fa-solid fa-clipboard-list fa-2x text-muted opacity-50 mb-2"></i>
+                    <p class="text-muted mb-0">No audit events recorded for this user</p>
+                </div>
+
+                <!-- Timeline View -->
+                <div class="timeline-container" *ngIf="!loadingAuditEvents && auditEvents.length > 0">
+                    <div class="timeline">
+                        <div class="timeline-item" *ngFor="let event of auditEvents">
+                            <div class="timeline-marker" [class.marker-success]="event.completedSuccessfully"
+                                [class.marker-danger]="!event.completedSuccessfully">
+                                <i class="fa-solid" [ngClass]="getEventIcon(event)"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <div class="timeline-header">
+                                    <span class="timeline-time" [ngbTooltip]="formatDate(event.startTime)">
+                                        {{ formatRelativeTime(event.startTime) }}
+                                    </span>
+                                    <span class="badge" [class.bg-success]="event.completedSuccessfully"
+                                        [class.bg-danger]="!event.completedSuccessfully">
+                                        {{ event.completedSuccessfully ? 'Success' : 'Failed' }}
+                                    </span>
+                                </div>
+                                <div class="timeline-body">
+                                    <div class="event-type">
+                                        <strong>{{ event.auditType?.name || 'Unknown Action' }}</strong>
+                                        <span class="text-muted ms-2" *ngIf="event.auditModule?.name">
+                                            in {{ event.auditModule?.name }}
+                                        </span>
+                                    </div>
+                                    <div class="event-message text-muted small" *ngIf="event.message">
+                                        {{ event.message.length > 100 ? event.message.substring(0, 100) + '...' :
+                                        event.message }}
+                                    </div>
+                                    <div class="event-meta mt-1" *ngIf="event.auditResource?.name || event.primaryKey">
+                                        <span class="badge bg-light text-dark me-1" *ngIf="event.auditResource?.name">
+                                            <i class="fa-solid fa-cube me-1"></i>{{ event.auditResource?.name }}
+                                        </span>
+                                        <span class="badge bg-light text-dark" *ngIf="event.primaryKey">
+                                            ID: {{ event.primaryKey }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login Attempts Section -->
+        <div class="col-md-6">
             <div class="section-card">
                 <h6 class="section-title mb-3">
                     <i class="fa-solid fa-right-to-bracket me-2 text-primary"></i>Recent Login Attempts
@@ -22,13 +139,12 @@
 
                 <!-- Login Attempts Table -->
                 <div class="table-responsive" *ngIf="!loadingAttempts && loginAttempts.length > 0">
-                    <table class="table table-hover align-middle mb-0">
+                    <table class="table table-hover align-middle mb-0 table-sm">
                         <thead class="table-light">
                             <tr>
                                 <th>Time</th>
                                 <th>Result</th>
                                 <th>IP Address</th>
-                                <th>Source</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -42,7 +158,6 @@
                                     </span>
                                 </td>
                                 <td>{{ attempt.ipAddress ?? '—' }}</td>
-                                <td>{{ attempt.userAgent ?? '—' }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -51,10 +166,10 @@
         </div>
 
         <!-- User Events Section -->
-        <div class="col-12">
+        <div class="col-md-6">
             <div class="section-card">
                 <h6 class="section-title mb-3">
-                    <i class="fa-solid fa-timeline me-2 text-primary"></i>Security Events
+                    <i class="fa-solid fa-shield-halved me-2 text-primary"></i>Security Events
                 </h6>
 
                 <!-- Loading -->
@@ -71,7 +186,7 @@
 
                 <!-- Events Table -->
                 <div class="table-responsive" *ngIf="!loadingEvents && events.length > 0">
-                    <table class="table table-hover align-middle mb-0">
+                    <table class="table table-hover align-middle mb-0 table-sm">
                         <thead class="table-light">
                             <tr>
                                 <th>Time</th>
@@ -88,7 +203,7 @@
                                     <span class="badge bg-secondary">{{ event.securityUserEventType?.name ?? 'Unknown'
                                         }}</span>
                                 </td>
-                                <td class="text-truncate" style="max-width: 300px;">
+                                <td class="text-truncate" style="max-width: 200px;">
                                     {{ event.comments ?? '—' }}
                                 </td>
                             </tr>

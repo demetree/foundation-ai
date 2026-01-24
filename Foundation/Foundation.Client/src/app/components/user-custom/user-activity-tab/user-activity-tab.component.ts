@@ -1,13 +1,14 @@
 //
 // User Activity Tab Component
 //
-// Displays user's login attempts and security events timeline.
+// Displays user's login attempts, security events, and audit event timeline.
 //
 
 import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { SecurityUserData } from '../../../security-data-services/security-user.service';
 import { SecurityUserEventService, SecurityUserEventQueryParameters, SecurityUserEventData } from '../../../security-data-services/security-user-event.service';
 import { LoginAttemptService, LoginAttemptQueryParameters, LoginAttemptData } from '../../../security-data-services/login-attempt.service';
+import { AuditEventService, AuditEventData } from '../../../auditor-data-services/audit-event.service';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 
 @Component({
@@ -31,10 +32,27 @@ export class UserActivityTabComponent implements OnInit, OnChanges {
     public events: SecurityUserEventData[] = [];
     public loadingEvents: boolean = false;
 
+    //
+    // Audit events
+    //
+    public auditEvents: AuditEventData[] = [];
+    public loadingAuditEvents: boolean = false;
+
+    //
+    // Audit event stats
+    //
+    public auditEventStats = {
+        total: 0,
+        successful: 0,
+        failed: 0,
+        lastActivity: null as Date | null
+    };
+
 
     constructor(
         private loginAttemptService: LoginAttemptService,
         private securityUserEventService: SecurityUserEventService,
+        private auditEventService: AuditEventService,
         private alertService: AlertService
     ) { }
 
@@ -55,6 +73,7 @@ export class UserActivityTabComponent implements OnInit, OnChanges {
         if (!this.user) return;
         this.loadLoginAttempts();
         this.loadEvents();
+        this.loadAuditEvents();
     }
 
 
@@ -117,6 +136,47 @@ export class UserActivityTabComponent implements OnInit, OnChanges {
     }
 
 
+    private loadAuditEvents(): void {
+        if (!this.user) return;
+
+        this.loadingAuditEvents = true;
+
+        // Query audit events filtering by audit user name matching the security user's account name
+        const params: any = {
+            userName: this.user.accountName,
+            deleted: false,
+            includeRelations: true,
+            pageSize: 50
+        };
+
+        this.auditEventService.GetAuditEventList(params).subscribe({
+            next: (data) => {
+                // Sort by startTime descending (most recent first)
+                this.auditEvents = (data ?? []).sort((a, b) => {
+                    const aTime = new Date(a.startTime).getTime();
+                    const bTime = new Date(b.startTime).getTime();
+                    return bTime - aTime;
+                }).slice(0, 30);
+
+                // Calculate stats
+                this.auditEventStats = {
+                    total: data?.length ?? 0,
+                    successful: (data ?? []).filter(e => e.completedSuccessfully).length,
+                    failed: (data ?? []).filter(e => !e.completedSuccessfully).length,
+                    lastActivity: this.auditEvents.length > 0 ? new Date(this.auditEvents[0].startTime) : null
+                };
+
+                this.loadingAuditEvents = false;
+            },
+            error: () => {
+                this.auditEvents = [];
+                this.auditEventStats = { total: 0, successful: 0, failed: 0, lastActivity: null };
+                this.loadingAuditEvents = false;
+            }
+        });
+    }
+
+
     //
     // Display helpers
     //
@@ -142,5 +202,19 @@ export class UserActivityTabComponent implements OnInit, OnChanges {
         if (diffDays < 7) return `${diffDays}d ago`;
 
         return date.toLocaleDateString();
+    }
+
+
+    public getEventIcon(event: AuditEventData): string {
+        const typeName = event.auditType?.name?.toLowerCase() ?? '';
+
+        if (typeName.includes('create') || typeName.includes('add')) return 'fa-plus-circle text-success';
+        if (typeName.includes('update') || typeName.includes('edit') || typeName.includes('modify')) return 'fa-pen-to-square text-primary';
+        if (typeName.includes('delete') || typeName.includes('remove')) return 'fa-trash-alt text-danger';
+        if (typeName.includes('login') || typeName.includes('auth')) return 'fa-right-to-bracket text-info';
+        if (typeName.includes('view') || typeName.includes('read') || typeName.includes('get')) return 'fa-eye text-secondary';
+        if (typeName.includes('export') || typeName.includes('download')) return 'fa-download text-warning';
+
+        return 'fa-circle-dot text-muted';
     }
 }
