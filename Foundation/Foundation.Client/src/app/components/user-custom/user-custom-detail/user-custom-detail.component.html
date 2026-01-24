@@ -12,8 +12,11 @@
                 </button>
 
                 <!-- User Avatar & Name -->
-                <div class="avatar-circle-lg me-3" *ngIf="user" [class.inactive]="user.active !== true">
-                    {{ getUserInitials() }}
+                <div class="avatar-circle-lg me-3 clickable" *ngIf="user" [class.inactive]="user.active !== true"
+                    (click)="openImageUpload()"
+                    [ngbTooltip]="userIsSecurityUserWriter() ? 'Click to change photo' : null">
+                    <img *ngIf="hasUserImage()" [src]="getUserImageUrl()" class="avatar-img" alt="User photo">
+                    <span *ngIf="!hasUserImage()">{{ getUserInitials() }}</span>
                 </div>
                 <div class="text-white" *ngIf="user">
                     <h3 class="page-title mb-0 fw-bold text-shadow">{{ getUserDisplayName() }}</h3>

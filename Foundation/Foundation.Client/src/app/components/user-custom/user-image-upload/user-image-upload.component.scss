@@ -1,0 +1,72 @@
+//
+// User Image Upload Styles
+//
+
+.premium-header {
+    background: linear-gradient(135deg, #1565c0 0%, #42a5f5 100%);
+    border: none;
+}
+
+.user-info {
+    padding: 0.75rem 1rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.drop-zone {
+    border: 2px dashed #dee2e6;
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: #f8f9fa;
+    min-height: 250px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+        border-color: #adb5bd;
+        background-color: #f0f0f0;
+    }
+
+    &.drag-over {
+        border-color: #0d6efd;
+        background-color: #e8f4fd;
+    }
+
+    &.has-preview {
+        padding: 1rem;
+        background-color: white;
+    }
+}
+
+.placeholder {
+    color: #6c757d;
+}
+
+.preview-container {
+    position: relative;
+    max-width: 100%;
+
+    .preview-image {
+        max-width: 100%;
+        max-height: 300px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .clear-btn {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}

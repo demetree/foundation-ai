@@ -18,6 +18,15 @@ namespace Foundation.Security.Controllers.WebAPI
     {
         private const int MAXIMUM_IMAGEFILE_SIZE = 2000000;       // 2,000,000 bytes - about 2 MB
 
+
+        /// <summary>
+        /// Request model for user image upload
+        /// </summary>
+        public class UserImageUploadRequest
+        {
+            public string ImageData { get; set; }
+        }
+
         //
         // This overridden version nulls out the passwords, and removes the password field as a filter param.
         //
@@ -1437,6 +1446,7 @@ namespace Foundation.Security.Controllers.WebAPI
         }
 
 
+
         //
         // Fixes the name clash for the term securityUser
         //
@@ -1515,6 +1525,103 @@ namespace Foundation.Security.Controllers.WebAPI
 
             return Ok();
         }
+
+
+        /// <summary>
+        /// 
+        /// Upload a profile image for a user.
+        /// Accepts base64-encoded image data.
+        /// 
+        /// </summary>
+        [HttpPut("api/SecurityUsers/{id}/image")]
+        public async Task<IActionResult> PutUserImage(int id, [FromBody] UserImageUploadRequest request, CancellationToken cancellationToken = default)
+        {
+            StartAuditEventClock();
+
+            if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Unauthorized();
+            }
+
+            var user = await _context.SecurityUsers.FindAsync(new object[] { id }, cancellationToken);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            try
+            {
+                //
+                // Decode base64 image data
+                //
+                if (string.IsNullOrWhiteSpace(request.ImageData))
+                {
+                    return BadRequest("Image data is required");
+                }
+
+                //
+                // Remove data URL prefix if present (e.g., "data:image/png;base64,")
+                //
+                string base64Data = request.ImageData;
+                if (base64Data.Contains(","))
+                {
+                    base64Data = base64Data.Split(',')[1];
+                }
+
+                byte[] imageBytes = Convert.FromBase64String(base64Data);
+
+                //
+                // Validate image size (max 5MB)
+                //
+                const int maxSizeBytes = 5 * 1024 * 1024;
+                if (imageBytes.Length > maxSizeBytes)
+                {
+                    return BadRequest("Image size exceeds 5MB limit");
+                }
+
+                user.image = imageBytes;
+                await _context.SaveChangesAsync(cancellationToken);
+
+                await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, $"User image updated for: {user.accountName}");
+
+                return Ok(new { message = "Image uploaded successfully", imageSize = imageBytes.Length });
+            }
+            catch (FormatException)
+            {
+                return BadRequest("Invalid base64 image data");
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// Delete a user's profile image.
+        /// 
+        /// </summary>
+        [HttpDelete("api/SecurityUsers/{id}/image")]
+        public async Task<IActionResult> DeleteUserImage(int id, CancellationToken cancellationToken = default)
+        {
+            StartAuditEventClock();
+
+            if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Unauthorized();
+            }
+
+            var user = await _context.SecurityUsers.FindAsync(new object[] { id }, cancellationToken);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            user.image = null;
+            await _context.SaveChangesAsync(cancellationToken);
+
+            await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, $"User image removed for: {user.accountName}");
+
+            return Ok(new { message = "Image removed successfully" });
+        }
+
 
         /* adds in support for new routes.  Otherwise same as auto generated */
         [Route("api/SecurityUsers/ListData")]

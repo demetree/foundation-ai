@@ -15,9 +15,7 @@ using Microsoft.IdentityModel.Logging;
 using Microsoft.OpenApi;
 using static Foundation.StartupBasics;
 using static Foundation.Configuration;
-using Foundation.Auditor.Controllers.WebAPI;
 using Foundation.Security.Configuration;
-using Foundation.Security.Controllers.WebAPI;
 using Foundation.Security.OIDC;
 using Foundation.Extensions;
 using Foundation.Security.Database;
@@ -31,9 +29,7 @@ namespace Foundation.Server
     {
         public const int ONE_GIGABYTE_IN_BYTES = 1073741824;
 
-
         public const string UNKNOWN = "Unknown";
-
     }
 
     public class Program
@@ -151,9 +147,10 @@ namespace Foundation.Server
                 // 
                 // Add the Foundation controllers.
                 //
-                Foundation.Web.Utility.StartupBasics.AddFoundationEssentialWebAPIControllers(controllers);
-                Foundation.Web.Utility.StartupBasics.AddSecurityWebAPIControllers(controllers);
-                Foundation.Web.Utility.StartupBasics.AddAuditorWebAPIControllers(controllers);
+                Foundation.Web.Utility.StartupBasics.AddFoundationEssentialWebAPIControllers(controllers);          // For common foundation user related services and such
+                Foundation.Web.Utility.StartupBasics.AddSecurityWebAPIControllers(controllers);                     // Security module
+                Foundation.Web.Utility.StartupBasics.AddAuditorWebAPIControllers(controllers);                      // Auditor module
+
 
                 logger.LogInformation("Controllers have been configured.");
 

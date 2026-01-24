@@ -99,6 +99,8 @@ namespace Foundation.LogViewer
             int take,
             string levelFilter,
             string searchText);
+        string GetLogFilePath(string folderName, string fileName);
+        string GetLogFolderPath(string folderName);
     }
 
 
@@ -476,6 +478,60 @@ namespace Foundation.LogViewer
             if (bytes < 1024 * 1024)
                 return $"{bytes / 1024.0:F1} KB";
             return $"{bytes / (1024.0 * 1024.0):F1} MB";
+        }
+
+
+        /// <summary>
+        /// Get the full file path for a specific log file (for download)
+        /// </summary>
+        public string GetLogFilePath(string folderName, string fileName)
+        {
+            var folder = FindFolder(folderName);
+            if (folder == null)
+            {
+                return null;
+            }
+
+            string folderPath = GetFullPath(folder.Path);
+            string filePath = Path.Combine(folderPath, fileName);
+
+            //
+            // Security check: ensure the file is within the folder
+            //
+            if (!filePath.StartsWith(folderPath, StringComparison.OrdinalIgnoreCase))
+            {
+                _logger?.LogWarning($"Attempted path traversal for file: {fileName}");
+                return null;
+            }
+
+            if (!File.Exists(filePath))
+            {
+                return null;
+            }
+
+            return filePath;
+        }
+
+
+        /// <summary>
+        /// Get the full folder path (for zip download)
+        /// </summary>
+        public string GetLogFolderPath(string folderName)
+        {
+            var folder = FindFolder(folderName);
+            if (folder == null)
+            {
+                return null;
+            }
+
+            string folderPath = GetFullPath(folder.Path);
+
+            if (!Directory.Exists(folderPath))
+            {
+                return null;
+            }
+
+            return folderPath;
         }
     }
 }

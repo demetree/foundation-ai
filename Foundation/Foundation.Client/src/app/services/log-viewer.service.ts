@@ -119,4 +119,30 @@ export class LogViewerService {
             { params, headers: this.authService.GetAuthenticationHeaders() }
         );
     }
+
+    /**
+     * Download a single log file (returns blob for saving)
+     */
+    downloadFile(folderName: string, fileName: string): Observable<Blob> {
+        return this.http.get(
+            `${this.baseUrl}/download/${encodeURIComponent(folderName)}/${encodeURIComponent(fileName)}`,
+            {
+                headers: this.authService.GetAuthenticationHeaders(),
+                responseType: 'blob'
+            }
+        );
+    }
+
+    /**
+     * Download all log files in a folder as ZIP (returns blob for saving)
+     */
+    downloadAllFiles(folderName: string): Observable<Blob> {
+        return this.http.get(
+            `${this.baseUrl}/download-all/${encodeURIComponent(folderName)}`,
+            {
+                headers: this.authService.GetAuthenticationHeaders(),
+                responseType: 'blob'
+            }
+        );
+    }
 }

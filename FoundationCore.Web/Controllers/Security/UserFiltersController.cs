@@ -10,7 +10,7 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Foundation.Controllers.WebAPI
+namespace Foundation.Security.Controllers.WebAPI
 {
     [Authorize]
     public class UserFiltersController : SecureWebAPIController

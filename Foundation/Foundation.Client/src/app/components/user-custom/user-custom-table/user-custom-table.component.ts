@@ -280,6 +280,21 @@ export class UserCustomTableComponent implements OnInit, AfterViewInit, OnChange
     }
 
 
+    public hasUserImage(user: SecurityUserData): boolean {
+        return user.image != null && user.image.length > 0;
+    }
+
+
+    public getUserImageUrl(user: SecurityUserData): string {
+        if (!this.hasUserImage(user)) {
+            return '';
+        }
+        // The image is returned as base64 from the API
+        // Assume PNG if no MIME type is stored
+        return 'data:image/png;base64,' + user.image;
+    }
+
+
     public formatRelativeTime(dateString: string | null): string {
         if (dateString == null) {
             return 'Never';

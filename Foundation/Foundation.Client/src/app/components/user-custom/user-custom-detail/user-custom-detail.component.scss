@@ -57,9 +57,28 @@
     font-weight: 700;
     font-size: 1.25rem;
     flex-shrink: 0;
+    overflow: hidden;
+    position: relative;
+
+    &.clickable {
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover {
+            transform: scale(1.05);
+            border-color: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+    }
 
     &.inactive {
         opacity: 0.6;
+    }
+
+    .avatar-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
     }
 }
 

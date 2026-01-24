@@ -53,6 +53,21 @@
         <button class="btn btn-sm btn-outline-light" (click)="refresh()" title="Refresh" [disabled]="loadingEntries">
           <i class="fas fa-refresh" [class.fa-spin]="loadingEntries"></i>
         </button>
+
+        <!-- Download dropdown -->
+        <div class="btn-group" ngbDropdown *ngIf="selectedFile">
+          <button class="btn btn-sm btn-outline-light" ngbDropdownToggle title="Download logs">
+            <i class="fas fa-download"></i>
+          </button>
+          <div ngbDropdownMenu>
+            <button ngbDropdownItem (click)="downloadCurrentFile()">
+              <i class="fas fa-file-download me-2"></i>Download Current File
+            </button>
+            <button ngbDropdownItem (click)="downloadAllFiles()">
+              <i class="fas fa-file-archive me-2"></i>Download All (ZIP)
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>

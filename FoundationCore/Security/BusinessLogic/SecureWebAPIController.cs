@@ -134,11 +134,22 @@ namespace Foundation.Security
         {
             try
             {
-                if (HttpContext.User != null && HttpContext.User.Identity.IsAuthenticated == true)
+                if (HttpContext.User != null && HttpContext.User.Identity != null && HttpContext.User.Identity.IsAuthenticated == true)
                 {
-                    string userName = HttpContext.User.Identity.Name;
+                    //
+                    // Get the user guid from the sub claim
+                    //
+                    string userObjectGuidString = (from x in HttpContext.User.Claims where x.Type == "sub" select x.Value).FirstOrDefault();
 
-                    return SecurityLogic.GetUserRecord(userName);
+                    if (userObjectGuidString != null)
+                    {
+                        if (Guid.TryParse(userObjectGuidString, out Guid userObjectGuid) == true)
+                        {
+                            return SecurityLogic.GetUserRecord(userObjectGuid);
+                        }
+                    }
+
+                    return null;
                 }
                 else
                 {

@@ -65,7 +65,10 @@
                         <td>
                             <div class="d-flex align-items-center">
                                 <div class="avatar-circle me-3" [class.inactive]="user.active !== true">
-                                    {{ getUserInitials(user) }}
+                                    <ng-container *ngIf="hasUserImage(user); else userInitials">
+                                        <img [src]="getUserImageUrl(user)" alt="User avatar" class="avatar-img">
+                                    </ng-container>
+                                    <ng-template #userInitials>{{ getUserInitials(user) }}</ng-template>
                                 </div>
                                 <div>
                                     <div class="fw-semibold">{{ getUserDisplayName(user) }}</div>
@@ -159,7 +162,10 @@
                 <div class="d-flex align-items-center justify-content-between">
                     <div class="d-flex align-items-center">
                         <div class="avatar-circle me-3" [class.inactive]="user.active !== true">
-                            {{ getUserInitials(user) }}
+                            <ng-container *ngIf="hasUserImage(user); else mobileUserInitials">
+                                <img [src]="getUserImageUrl(user)" alt="User avatar" class="avatar-img">
+                            </ng-container>
+                            <ng-template #mobileUserInitials>{{ getUserInitials(user) }}</ng-template>
                         </div>
                         <div>
                             <div class="fw-semibold">{{ getUserDisplayName(user) }}</div>

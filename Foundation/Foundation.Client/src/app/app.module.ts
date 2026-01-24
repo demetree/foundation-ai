@@ -281,7 +281,6 @@ import { AuditEventListingComponent } from './auditor-data-components/audit-even
 import { AuditEventAddEditComponent } from './auditor-data-components/audit-event/audit-event-add-edit/audit-event-add-edit.component';
 import { AuditEventDetailComponent } from './auditor-data-components/audit-event/audit-event-detail/audit-event-detail.component';
 import { AuditEventTableComponent } from './auditor-data-components/audit-event/audit-event-table/audit-event-table.component';
-import { AuditEventCustomListingComponent } from './components/audit-event-custom/audit-event-custom-listing/audit-event-custom-listing.component';
 import { AuditEventEntityStateListingComponent } from './auditor-data-components/audit-event-entity-state/audit-event-entity-state-listing/audit-event-entity-state-listing.component';
 import { AuditEventEntityStateAddEditComponent } from './auditor-data-components/audit-event-entity-state/audit-event-entity-state-add-edit/audit-event-entity-state-add-edit.component';
 import { AuditEventEntityStateDetailComponent } from './auditor-data-components/audit-event-entity-state/audit-event-entity-state-detail/audit-event-entity-state-detail.component';
@@ -349,6 +348,11 @@ import { LogViewerListingComponent } from './components/log-viewer/log-viewer-li
 import { LogViewerService } from './services/log-viewer.service';
 
 //
+// Custom Audit Event Listing
+//
+import { AuditEventCustomListingComponent } from './components/audit-event-custom/audit-event-custom-listing/audit-event-custom-listing.component';
+
+//
 // Custom screens
 //
 import { UserCustomListingComponent } from './components/user-custom/user-custom-listing/user-custom-listing.component';
@@ -357,6 +361,9 @@ import { UserCustomDetailComponent } from './components/user-custom/user-custom-
 import { UserOverviewTabComponent } from './components/user-custom/user-overview-tab/user-overview-tab.component';
 import { UserRolesTabComponent } from './components/user-custom/user-roles-tab/user-roles-tab.component';
 import { UserActivityTabComponent } from './components/user-custom/user-activity-tab/user-activity-tab.component';
+import { UserRoleManagerComponent } from './components/user-custom/user-role-manager/user-role-manager.component';
+import { UserGroupManagerComponent } from './components/user-custom/user-group-manager/user-group-manager.component';
+import { UserImageUploadComponent } from './components/user-custom/user-image-upload/user-image-upload.component';
 import { ModuleCustomListingComponent } from './components/module-custom/module-custom-listing/module-custom-listing.component';
 import { ModuleCustomTableComponent } from './components/module-custom/module-custom-table/module-custom-table.component';
 import { ModuleCustomDetailComponent } from './components/module-custom/module-custom-detail/module-custom-detail.component';
@@ -525,7 +532,6 @@ import { UserCustomAddEditComponent } from './components/user-custom/user-custom
     AuditAccessTypeDetailComponent,
     AuditAccessTypeTableComponent,
     AuditEventListingComponent,
-    AuditEventCustomListingComponent,
     AuditEventAddEditComponent,
     AuditEventDetailComponent,
     AuditEventTableComponent,
@@ -595,6 +601,11 @@ import { UserCustomAddEditComponent } from './components/user-custom/user-custom
     LogViewerListingComponent,
 
     //
+    // Custom Audit Event Listing
+    //
+    AuditEventCustomListingComponent,
+
+    //
     // Custom components
     //
     ResetPasswordComponent,
@@ -607,6 +618,9 @@ import { UserCustomAddEditComponent } from './components/user-custom/user-custom
     UserOverviewTabComponent,
     UserRolesTabComponent,
     UserActivityTabComponent,
+    UserRoleManagerComponent,
+    UserGroupManagerComponent,
+    UserImageUploadComponent,
     ModuleCustomListingComponent,
     ModuleCustomTableComponent,
     ModuleCustomDetailComponent,

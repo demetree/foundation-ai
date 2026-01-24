@@ -12,6 +12,7 @@ namespace Foundation.Web.Utility
         {
             controllers.Add(typeof(AuthorizationController));           // Need this to authenticate
             controllers.Add(typeof(UserSettingsController));            // Foundation security user settings
+            controllers.Add(typeof(UserFiltersController));             // Foundation security user filters
             controllers.Add(typeof(ResetPasswordController));
             controllers.Add(typeof(NewUserController));
 
@@ -19,8 +20,8 @@ namespace Foundation.Web.Utility
             // Utility Controllers
             //
             controllers.Add(typeof(Foundation.Controllers.WebAPI.LogViewerController));  // Log file viewer
-
         }
+
 
 
         public static void AddSecurityWebAPIControllers(List<Type> controllers)
@@ -64,6 +65,11 @@ namespace Foundation.Web.Utility
 
         public static void AddAuditorWebAPIControllers(List<Type> controllers)
         {
+            //
+            // This is the Log file viewing controller.  It depends on Auditor security
+            //
+            controllers.Add(typeof(Foundation.Controllers.WebAPI.LogViewerController));  // Log file viewer
+
             //
             // These are the Data Controllers for the auditor module
             //

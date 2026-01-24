@@ -16,6 +16,8 @@ import { AuthService } from '../../../services/auth.service';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { NavigationService } from '../../../utility-services/navigation.service';
 import { UserCustomAddEditComponent } from '../user-custom-add-edit/user-custom-add-edit.component';
+import { UserImageUploadComponent } from '../user-image-upload/user-image-upload.component';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 export type UserStatusType = 'active' | 'cooling-down' | 'locked' | 'inactive' | 'no-login';
 
@@ -62,7 +64,8 @@ export class UserCustomDetailComponent implements OnInit, OnDestroy {
         private router: Router,
         private location: Location,
         private alertService: AlertService,
-        private navigationService: NavigationService
+        private navigationService: NavigationService,
+        private modalService: NgbModal
     ) { }
 
 
@@ -335,5 +338,41 @@ export class UserCustomDetailComponent implements OnInit, OnDestroy {
     public onUserChanged(updatedUser: SecurityUserData): void {
         this.user = updatedUser;
         this.alertService.showMessage('Success', 'User updated successfully', MessageSeverity.success);
+    }
+
+
+    //
+    // Image helpers
+    //
+    public hasUserImage(): boolean {
+        return this.user?.image != null && this.user.image.length > 0;
+    }
+
+
+    public getUserImageUrl(): string {
+        if (this.user?.image) {
+            return 'data:image/png;base64,' + this.user.image;
+        }
+        return '';
+    }
+
+
+    public openImageUpload(): void {
+        if (!this.user || !this.userIsSecurityUserWriter()) return;
+
+        const modalRef = this.modalService.open(UserImageUploadComponent, {
+            size: 'md',
+            centered: true
+        });
+        modalRef.componentInstance.user = this.user;
+
+        modalRef.result.then(
+            (result) => {
+                if (result === true) {
+                    this.loadData();
+                }
+            },
+            () => { }
+        );
     }
 }

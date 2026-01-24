@@ -1,0 +1,96 @@
+<!-- User Role Manager Modal -->
+<!-- Allows toggling role assignments for a user -->
+
+<div class="modal-header premium-header">
+  <h5 class="modal-title text-white">
+    <i class="fa-solid fa-shield-halved me-2"></i>Manage Roles
+  </h5>
+  <button type="button" class="btn-close btn-close-white" (click)="cancel()"></button>
+</div>
+
+<div class="modal-body">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-3 text-muted">Loading available roles...</p>
+  </div>
+
+  <!-- Content -->
+  <ng-container *ngIf="!loading">
+    <!-- User Info -->
+    <div class="user-info mb-3" *ngIf="user">
+      <span class="text-muted">Assigning roles to:</span>
+      <strong class="ms-2">{{ user.firstName }} {{ user.lastName }}</strong>
+      <span class="text-muted ms-2">({{ user.accountName }})</span>
+    </div>
+
+    <!-- Search -->
+    <div class="search-box mb-3">
+      <div class="input-group">
+        <span class="input-group-text">
+          <i class="fa-solid fa-search"></i>
+        </span>
+        <input type="text" class="form-control" placeholder="Search roles..."
+          [(ngModel)]="searchText" (ngModelChange)="applyFilter()">
+        <button class="btn btn-outline-secondary" type="button" *ngIf="searchText" (click)="searchText = ''; applyFilter()">
+          <i class="fa-solid fa-times"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Selection Summary -->
+    <div class="selection-summary mb-3 d-flex justify-content-between align-items-center">
+      <span class="text-muted">
+        {{ getSelectedCount() }} of {{ allRoles.length }} roles selected
+      </span>
+      <span *ngIf="hasChanges()" class="badge bg-warning text-dark">
+        {{ getChangeCount() }} pending changes
+      </span>
+    </div>
+
+    <!-- Role List -->
+    <div class="role-list">
+      <div *ngIf="filteredRoles.length === 0" class="text-center py-4 text-muted">
+        <i class="fa-solid fa-search fa-2x mb-2 opacity-50"></i>
+        <p>No roles match your search</p>
+      </div>
+
+      <div *ngFor="let item of filteredRoles" class="role-item" 
+        [class.selected]="item.selected"
+        [class.changed]="item.selected !== item.originallySelected">
+        
+        <div class="form-check">
+          <input type="checkbox" class="form-check-input" 
+            [id]="'role-' + item.role.id"
+            [(ngModel)]="item.selected">
+          <label class="form-check-label" [for]="'role-' + item.role.id">
+            <span class="role-name">{{ item.role.name }}</span>
+            <span class="role-description" *ngIf="item.role.description">{{ item.role.description }}</span>
+          </label>
+        </div>
+
+        <div class="change-indicator" *ngIf="item.selected !== item.originallySelected">
+          <span *ngIf="item.selected && !item.originallySelected" class="badge bg-success">Adding</span>
+          <span *ngIf="!item.selected && item.originallySelected" class="badge bg-danger">Removing</span>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>
+
+<div class="modal-footer">
+  <button type="button" class="btn btn-outline-secondary" (click)="cancel()" [disabled]="saving">
+    Cancel
+  </button>
+  <button type="button" class="btn btn-primary" (click)="save()" 
+    [disabled]="saving || !hasChanges()">
+    <span *ngIf="saving">
+      <span class="spinner-border spinner-border-sm me-1"></span>Saving...
+    </span>
+    <span *ngIf="!saving">
+      <i class="fa-solid fa-check me-1"></i>Save Changes
+    </span>
+  </button>
+</div>

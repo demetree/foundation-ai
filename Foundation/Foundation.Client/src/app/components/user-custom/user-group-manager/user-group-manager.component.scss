@@ -1,0 +1,97 @@
+//
+// User Group Manager Styles
+//
+
+.premium-header {
+    background: linear-gradient(135deg, #00695c 0%, #26a69a 100%);
+    border: none;
+}
+
+.user-info {
+    padding: 0.75rem 1rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.search-box {
+    .input-group-text {
+        background-color: white;
+        border-right: none;
+    }
+
+    .form-control {
+        border-left: none;
+
+        &:focus {
+            box-shadow: none;
+            border-color: #ced4da;
+        }
+    }
+}
+
+.selection-summary {
+    font-size: 0.875rem;
+}
+
+.group-list {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+}
+
+.group-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.15s ease;
+
+    &:last-child {
+        border-bottom: none;
+    }
+
+    &:hover {
+        background-color: #f8f9fa;
+    }
+
+    &.selected {
+        background-color: #e8f5e9;
+    }
+
+    &.changed {
+        background-color: #fff8e1;
+    }
+
+    &.selected.changed {
+        background-color: #e8f5e9;
+    }
+
+    .form-check {
+        flex: 1;
+        margin-bottom: 0;
+    }
+
+    .form-check-label {
+        display: flex;
+        flex-direction: column;
+        cursor: pointer;
+    }
+
+    .group-name {
+        font-weight: 500;
+        color: #212529;
+    }
+
+    .group-description {
+        font-size: 0.8125rem;
+        color: #6c757d;
+        margin-top: 0.125rem;
+    }
+
+    .change-indicator {
+        margin-left: 0.5rem;
+        flex-shrink: 0;
+    }
+}

@@ -355,4 +355,56 @@ export class LogViewerListingComponent implements OnInit, OnDestroy {
         const file = this.files.find(f => f.fileName === this.selectedFile);
         return file?.errorCount || 0;
     }
+
+
+    //
+    // Download Methods
+    //
+    downloadCurrentFile(): void {
+        if (!this.selectedFolder || !this.selectedFile) {
+            return;
+        }
+
+        this.logViewerService.downloadFile(this.selectedFolder, this.selectedFile).subscribe({
+            next: (blob) => {
+                this.saveBlobAsFile(blob, this.selectedFile);
+            },
+            error: (error) => {
+                console.error('Failed to download file:', error);
+            }
+        });
+    }
+
+
+    downloadAllFiles(): void {
+        if (!this.selectedFolder) {
+            return;
+        }
+
+        //
+        // Generate a meaningful filename
+        //
+        const sanitizedFolderName = this.selectedFolder.replace(/\s/g, '_').replace(/[()]/g, '');
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+        const zipFileName = `logs_${sanitizedFolderName}_${timestamp}.zip`;
+
+        this.logViewerService.downloadAllFiles(this.selectedFolder).subscribe({
+            next: (blob) => {
+                this.saveBlobAsFile(blob, zipFileName);
+            },
+            error: (error) => {
+                console.error('Failed to download all files:', error);
+            }
+        });
+    }
+
+
+    private saveBlobAsFile(blob: Blob, fileName: string): void {
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = fileName;
+        anchor.click();
+        URL.revokeObjectURL(url);
+    }
 }

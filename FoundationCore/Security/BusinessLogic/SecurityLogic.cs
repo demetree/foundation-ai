@@ -3472,6 +3472,74 @@ This setting makes sure that the user profile - a COM object - loads when needed
         }
 
 
+        public static SecurityUser GetUserRecord(Guid userObjectGuid)
+        {
+            //
+            // This gets the user record for the provided account name, whether or not the user record is or is not indicated to be an AD account
+            //
+            MemoryCacheManager mcm = new MemoryCacheManager();
+
+
+            string cacheKey = "SL_GUR_" + userObjectGuid.ToString();
+
+            if (mcm.IsSet(cacheKey) == true)
+            {
+                return mcm.Get<SecurityUser>(cacheKey);
+            }
+            else
+            {
+                using (SecurityContext db = new SecurityContext())
+                {
+                    SecurityUser securityUser = null;
+
+                    bool multiTenancyModeOn = Foundation.Configuration.GetMultiTenancyMode();
+                    bool dataVisibilityModeOn = Foundation.Configuration.GetDataVisibilityMode();
+
+
+                    if (multiTenancyModeOn == true && dataVisibilityModeOn == true)
+                    {
+                        securityUser = (from users in db.SecurityUsers
+                                        where users.objectGuid == userObjectGuid
+                                        select users)
+                                        .Include("securityTenant")
+                                        .Include("securityOrganization")
+                                        .Include("securityDepartment")
+                                        .Include("securityTeam")
+                                        .AsNoTracking()
+                                        .FirstOrDefault();
+                    }
+                    else if (multiTenancyModeOn == true)
+                    {
+                        securityUser = (from users in db.SecurityUsers
+                                        where users.objectGuid == userObjectGuid
+                                        select users)
+                                        .Include("securityTenant")
+                                        .AsNoTracking()
+                                        .FirstOrDefault();
+                    }
+                    else
+                    {
+                        securityUser = (from users in db.SecurityUsers
+                                        where users.objectGuid == userObjectGuid
+                                        select users)
+                                        .AsNoTracking()
+                                        .FirstOrDefault();
+                    }
+
+
+                    if (securityUser != null)
+                    {
+                        // take out the password when returning a user object.
+                        securityUser.password = null;
+                    }
+
+                    mcm.Set(cacheKey, securityUser, CACHE_TIME_MINUTES);          // cache the user permissions for 0.1 minutes (cache gets cleared on security updates through the web api)
+
+                    return securityUser;
+                }
+            }
+        }
+
         public static void ClearSecurityCaches()
         {
             MemoryCacheManager mcm = new MemoryCacheManager();
