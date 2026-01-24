@@ -43,17 +43,19 @@
     background: linear-gradient(135deg, #6ea8fe 0%, #5bc0de 100%);
     color: #0b1320;
   }
+
   /* Dropdown container positioning */
   .ms-2.position-relative {
     position: relative !important;
   }
+
   /* Dropdown menu positioning and styling */
   .header-profile-menu {
     border-radius: 12px;
     overflow: hidden;
     z-index: 1060 !important;
     min-width: 220px;
-    border: 1px solid rgba(0,0,0,0.15);
+    border: 1px solid rgba(0, 0, 0, 0.15);
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.175) !important;
     position: absolute !important;
     top: 100% !important;
@@ -62,6 +64,7 @@
     transform: none !important;
     margin-top: 2px;
   }
+
   /* Animate a child wrapper so we don't fight the placement transform */
   .header-profile-menu .menu-anim {
     opacity: 0;
@@ -73,6 +76,7 @@
     opacity: 1;
     transform: translateY(0) scale(1);
   }
+
   /* Ensure dropdown items are properly styled */
   .header-profile-menu .dropdown-item {
     padding: 0.5rem 1rem;
@@ -83,6 +87,7 @@
   .header-profile-menu .dropdown-item:hover {
     background-color: #f8f9fa;
   }
+
   /* Mobile accordion link colors */
   .text-grey {
     color: #000 !important;
@@ -105,4 +110,128 @@
   width: 100%;
   z-index: 1050;
   border-top: 1px solid #444;
+  background-color: #212529;
+  max-height: calc(100vh - 56px);
+  overflow-y: auto;
+
+  //
+  // Main navigation links
+  //
+  .mobile-nav-main {
+    .nav-item {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+
+    .nav-link {
+      padding: 0.75rem 0.5rem;
+      font-weight: 500;
+      transition: background-color 0.15s ease;
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.08);
+      }
+
+      i {
+        width: 24px;
+        text-align: center;
+      }
+    }
+  }
+
+  //
+  // Administration accordion
+  //
+  .custom-accordion {
+    background-color: transparent !important;
+
+    .accordion-item {
+      background-color: transparent !important;
+      border: none !important;
+    }
+
+    .custom-accordion-header {
+      background-color: transparent !important;
+    }
+
+    .accordion-button,
+    button.accordion-button {
+      background-color: transparent !important;
+      background-image: none !important;
+      color: #fff !important;
+      padding: 0.75rem 0.5rem;
+      box-shadow: none !important;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+
+      &::after {
+        display: none !important;
+      }
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.08) !important;
+      }
+
+      &:focus {
+        box-shadow: none !important;
+      }
+
+      .expand-icon {
+        margin-left: auto;
+        font-size: 0.75rem;
+        transition: transform 0.2s ease;
+      }
+
+      &:not(.collapsed) .expand-icon {
+        transform: rotate(180deg);
+      }
+    }
+
+    .accordion-collapse {
+      background-color: transparent !important;
+    }
+
+    .accordion-body {
+      background-color: transparent !important;
+      padding: 0 !important;
+    }
+
+    .custom-accordion-content {
+      background-color: rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      padding: 0.5rem 0;
+
+      .nav-link {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.7) !important;
+
+        &:hover {
+          background-color: rgba(255, 255, 255, 0.05);
+          color: #fff !important;
+        }
+
+        i {
+          width: 24px;
+          text-align: center;
+          opacity: 0.7;
+        }
+      }
+    }
+  }
+
+  //
+  // User section at bottom
+  //
+  .mobile-user-section {
+    .avatar {
+      width: 36px;
+      height: 36px;
+      font-size: 0.9rem;
+    }
+  }
 }

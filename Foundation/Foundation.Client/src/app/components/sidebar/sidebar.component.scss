@@ -4,9 +4,12 @@ $sidebar-expanded-w: 240px;
 $header-height: 56px;
 
 /* vertical rhythm */
-$nav-pad-y: 12px; /* padding above/below the list */
-$item-h: 40px; /* fixed row height */
-$nav-gap: 4px; /* gap between rows */
+$nav-pad-y: 12px;
+/* padding above/below the list */
+$item-h: 40px;
+/* fixed row height */
+$nav-gap: 4px;
+/* gap between rows */
 $toggle-size: 32px;
 $toggle-half: calc($toggle-size / 2);
 
@@ -39,9 +42,11 @@ $toggle-half: calc($toggle-size / 2);
 
     i {
       font-size: 20px;
-      width: 24px; /* keeps labels aligned */
+      width: 24px;
+      /* keeps labels aligned */
       text-align: center;
-      display: inline-block; /* ensures consistent centering */
+      display: inline-block;
+      /* ensures consistent centering */
     }
 
     .label {
@@ -67,11 +72,13 @@ $toggle-half: calc($toggle-size / 2);
     color: #fff !important;
     border-radius: 0;
   }
+
   /* Toggle: fully hidden off-canvas by default; appears only when hovering the sidebar */
   .toggle-btn {
     position: absolute;
     top: calc(#{$nav-pad-y} + #{$item-h} + (#{$nav-gap} / 2) - (#{$toggle-size} / 2));
-    left: 100%; /* completely off the rail */
+    left: 100%;
+    /* completely off the rail */
     width: $toggle-size;
     height: $toggle-size;
     border: 0;
@@ -87,25 +94,29 @@ $toggle-half: calc($toggle-size / 2);
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
-    transition: left .2s ease, opacity .2s ease, visibility 0s linear .2s, /* delay visibility toggle so fade-out completes */
-    background .2s ease, transform .2s ease;
+    transition: left .2s ease, opacity .2s ease, visibility 0s linear .2s,
+      /* delay visibility toggle so fade-out completes */
+      background .2s ease, transform .2s ease;
 
     &:hover {
-      background: rgba(0,0,0,1);
+      background: rgba(0, 0, 0, 1);
     }
 
     &:active {
       transform: scale(.96);
     }
   }
+
   /* Show the toggle ONLY when hovering the sidebar */
   &:hover .toggle-btn {
-    left: calc(100% - #{$toggle-half}); /* half-in, aligned to edge */
+    left: calc(100% - #{$toggle-half});
+    /* half-in, aligned to edge */
     opacity: 1;
     visibility: visible;
     pointer-events: auto;
-    transition: left .2s ease, opacity .2s ease, visibility 0s, /* immediate visibility on hover */
-    background .2s ease, transform .2s ease;
+    transition: left .2s ease, opacity .2s ease, visibility 0s,
+      /* immediate visibility on hover */
+      background .2s ease, transform .2s ease;
   }
 
   &.collapsed {
@@ -122,7 +133,7 @@ $toggle-half: calc($toggle-size / 2);
 
   &.expanded {
     width: $sidebar-expanded-w;
-    box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
 
     .nav-link {
       justify-content: flex-start;
@@ -135,6 +146,7 @@ $toggle-half: calc($toggle-size / 2);
       pointer-events: auto;
     }
   }
+
   /* Accordion styling (dark theme, bold headers, no chevron, indented submenu) */
   .custom-accordion {
     background-color: #343a40 !important;
@@ -143,9 +155,11 @@ $toggle-half: calc($toggle-size / 2);
 
     .custom-accordion-header {
       background-color: #343a40 !important;
-      color: #e6e6e6 !important; /* a touch dimmer than pure white */
+      color: #e6e6e6 !important;
+      /* a touch dimmer than pure white */
       border: none;
-      font-weight: 600; /* slightly bold */
+      font-weight: 600;
+      /* slightly bold */
     }
 
     .accordion-button {
@@ -153,8 +167,10 @@ $toggle-half: calc($toggle-size / 2);
       color: #f1f1f1 !important;
       border: none;
       box-shadow: none;
-      padding: 0 12px; /* align with row padding */
-      min-height: $item-h; /* match row height */
+      padding: 0 12px;
+      /* align with row padding */
+      min-height: $item-h;
+      /* match row height */
       text-align: left;
       width: 100%;
       font-weight: 700;
@@ -166,6 +182,7 @@ $toggle-half: calc($toggle-size / 2);
         display: inline-block;
       }
     }
+
     /* remove default arrow/chevron entirely */
     .accordion-button::after {
       display: none !important;
@@ -174,13 +191,16 @@ $toggle-half: calc($toggle-size / 2);
 
     .accordion-button:hover,
     .accordion-button:focus {
-      background-color: #292f34 !important; /* a notch darker */
+      background-color: #292f34 !important;
+      /* a notch darker */
       color: #ffffff !important;
-      box-shadow: 0 0 0 2px rgba(255,255,255,0.05) inset; /* subtle focus ring */
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.05) inset;
+      /* subtle focus ring */
     }
 
     .accordion-button:not(.collapsed) {
-      background-color: #1e2226 !important; /* darkest tone for active */
+      background-color: #1e2226 !important;
+      /* darkest tone for active */
       color: #ffffff !important;
     }
 
@@ -196,7 +216,8 @@ $toggle-half: calc($toggle-size / 2);
     .custom-accordion-content {
       background-color: #343a40 !important;
       color: #e0e0e0 !important;
-      padding: 0.25rem 0 0.25rem 0; /* subtle nudge to the right */
+      padding: 0.25rem 0 0.25rem 0;
+      /* subtle nudge to the right */
       margin-left: 0.25rem;
       font-weight: 700;
       // border-left: 2px solid rgba(255,255,255,0.08); /* optional vertical cue */
@@ -211,7 +232,7 @@ $toggle-half: calc($toggle-size / 2);
 
     .custom-accordion-content .nav-link:hover,
     .custom-accordion-content .nav-link.active {
-      background-color: rgba(255,255,255,0.08);
+      background-color: rgba(255, 255, 255, 0.08);
       color: #ffffff !important;
       border-radius: 6px;
     }
@@ -222,7 +243,7 @@ $toggle-half: calc($toggle-size / 2);
 .sidebar-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,.2);
+  background: rgba(0, 0, 0, .2);
   z-index: 1025;
   backdrop-filter: blur(.5px);
 }
@@ -252,4 +273,49 @@ $toggle-half: calc($toggle-size / 2);
 .sidebar-tip.bs-tooltip-end .tooltip-arrow::before,
 .sidebar-tip.bs-tooltip-auto[data-popper-placement^="right"] .tooltip-arrow::before {
   border-right-color: #000;
+}
+
+//
+// Administration Submenu Dropdown
+//
+.admin-submenu {
+  background-color: #2a2f35;
+  border: 1px solid #3d444d;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  min-width: 200px;
+  padding: 0.5rem 0;
+
+  .dropdown-item {
+    color: #e0e0e0;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    transition: all 0.15s ease;
+
+    i {
+      width: 20px;
+      text-align: center;
+      opacity: 0.7;
+    }
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.08);
+      color: #fff;
+    }
+
+    &.active {
+      background-color: rgba(13, 110, 253, 0.15);
+      color: #fff;
+    }
+  }
+
+  .dropdown-divider {
+    border-color: rgba(255, 255, 255, 0.1);
+    margin: 0.25rem 0;
+  }
+}
+
+.expand-indicator {
+  font-size: 0.75rem;
+  opacity: 0.6;
 }
