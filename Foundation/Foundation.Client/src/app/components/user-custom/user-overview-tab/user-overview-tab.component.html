@@ -1,6 +1,70 @@
 <div class="overview-container" *ngIf="user">
     <div class="row g-4">
 
+        <!-- Organization Hierarchy Card (Full Width) -->
+        <div class="col-12"
+            *ngIf="user.securityTenant || user.securityOrganization || user.securityDepartment || user.securityTeam">
+            <div class="info-card organization-card">
+                <h6 class="card-subtitle mb-3">
+                    <i class="fa-solid fa-sitemap me-2 text-primary"></i>Organization
+                </h6>
+                <div class="org-hierarchy">
+                    <!-- Tenant -->
+                    <div class="org-level" *ngIf="user.securityTenant">
+                        <div class="org-icon tenant-icon">
+                            <i class="fa-solid fa-building"></i>
+                        </div>
+                        <div class="org-details">
+                            <span class="org-type">Tenant</span>
+                            <span class="org-name">{{ user.securityTenant.name }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Connector -->
+                    <div class="org-connector" *ngIf="user.securityTenant && user.securityOrganization"></div>
+
+                    <!-- Organization -->
+                    <div class="org-level" *ngIf="user.securityOrganization">
+                        <div class="org-icon org-icon">
+                            <i class="fa-solid fa-city"></i>
+                        </div>
+                        <div class="org-details">
+                            <span class="org-type">Organization</span>
+                            <span class="org-name">{{ user.securityOrganization.name }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Connector -->
+                    <div class="org-connector" *ngIf="user.securityOrganization && user.securityDepartment"></div>
+
+                    <!-- Department -->
+                    <div class="org-level" *ngIf="user.securityDepartment">
+                        <div class="org-icon dept-icon">
+                            <i class="fa-solid fa-users-rectangle"></i>
+                        </div>
+                        <div class="org-details">
+                            <span class="org-type">Department</span>
+                            <span class="org-name">{{ user.securityDepartment.name }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Connector -->
+                    <div class="org-connector" *ngIf="user.securityDepartment && user.securityTeam"></div>
+
+                    <!-- Team -->
+                    <div class="org-level" *ngIf="user.securityTeam">
+                        <div class="org-icon team-icon">
+                            <i class="fa-solid fa-people-group"></i>
+                        </div>
+                        <div class="org-details">
+                            <span class="org-type">Team</span>
+                            <span class="org-name">{{ user.securityTeam.name }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Contact Information Card -->
         <div class="col-md-6">
             <div class="info-card h-100">
