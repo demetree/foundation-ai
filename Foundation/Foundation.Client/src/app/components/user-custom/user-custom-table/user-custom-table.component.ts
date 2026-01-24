@@ -13,6 +13,7 @@ import { SecurityUserService, SecurityUserData, SecurityUserQueryParameters, Sec
 import { AuthService } from '../../../services/auth.service';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { ConfirmationService } from '../../../services/confirmation-service';
+import { InputDialogService } from '../../../services/input-dialog.service';
 import { AdminUserActionsService } from '../admin-user-actions.service';
 
 //
@@ -64,6 +65,7 @@ export class UserCustomTableComponent implements OnInit, AfterViewInit, OnChange
         private authService: AuthService,
         private alertService: AlertService,
         private confirmationService: ConfirmationService,
+        private inputDialogService: InputDialogService,
         private adminUserActionsService: AdminUserActionsService
     ) { }
 
@@ -451,20 +453,14 @@ export class UserCustomTableComponent implements OnInit, AfterViewInit, OnChange
         event.stopPropagation();
 
         //
-        // Prompt for new password
+        // Prompt for new password using styled dialog
         //
-        const password = prompt('Enter temporary password (min 8 chars, uppercase, lowercase, digit, special):');
-
-        if (password == null || password.trim() === '') {
-            return;
-        }
-
-        const confirmed = await this.confirmationService.confirm(
+        const password = await this.inputDialogService.promptPassword(
             'Set Temporary Password',
-            `Set a temporary password for ${user.accountName}? The user will be required to change it on next login.`
+            `Enter a temporary password for ${user.accountName}. The user will be required to change it on next login.`
         );
 
-        if (confirmed !== true) {
+        if (password == null || password.trim() === '') {
             return;
         }
 

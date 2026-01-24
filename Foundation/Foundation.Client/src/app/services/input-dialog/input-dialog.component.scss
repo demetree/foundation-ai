@@ -1,0 +1,77 @@
+//
+// Input Dialog Component Styles
+//
+
+.input-dialog-message {
+    color: var(--text-secondary, #6c757d);
+    margin-bottom: 1rem;
+}
+
+.input-dialog-field {
+    margin-bottom: 0.5rem;
+
+    .form-label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control {
+        &:focus {
+            border-color: var(--primary, #0d6efd);
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+    }
+
+    .password-toggle {
+        border-left: none;
+
+        &:hover {
+            background-color: var(--bg-hover, #e9ecef);
+        }
+
+        i {
+            font-size: 1rem;
+        }
+    }
+}
+
+.invalid-feedback {
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+//
+// Dark mode support
+//
+:host-context(.dark-mode) {
+    .input-dialog-message {
+        color: var(--text-secondary-dark, #adb5bd);
+    }
+
+    .input-dialog-field {
+        .form-control {
+            background-color: var(--bg-dark-input, #2d3748);
+            border-color: var(--border-dark, #4a5568);
+            color: var(--text-dark, #e2e8f0);
+
+            &:focus {
+                border-color: var(--primary-dark, #4299e1);
+                box-shadow: 0 0 0 0.2rem rgba(66, 153, 225, 0.25);
+            }
+
+            &::placeholder {
+                color: var(--text-muted-dark, #718096);
+            }
+        }
+
+        .password-toggle {
+            background-color: var(--bg-dark-input, #2d3748);
+            border-color: var(--border-dark, #4a5568);
+            color: var(--text-dark, #e2e8f0);
+
+            &:hover {
+                background-color: var(--bg-dark-hover, #3d4a5c);
+            }
+        }
+    }
+}

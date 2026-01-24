@@ -80,6 +80,9 @@ import { NavigationService } from './utility-services/navigation.service';
 // Custom confirmation dialog
 //
 import { ConfirmationService } from './services/confirmation-service';
+import { ConfirmationDialogComponent } from './services/confirmation-dialog/confirmation-dialog.component';
+import { InputDialogService } from './services/input-dialog.service';
+import { InputDialogComponent } from './services/input-dialog/input-dialog.component';
 
 //
 // Data support services
@@ -585,6 +588,8 @@ import { UserCustomAddEditComponent } from './components/user-custom/user-custom
     //
     ResetPasswordComponent,
     NewUserComponent,
+    ConfirmationDialogComponent,
+    InputDialogComponent,
     UserCustomListingComponent,
     UserCustomTableComponent,
     UserCustomDetailComponent,
@@ -658,6 +663,7 @@ import { UserCustomAddEditComponent } from './components/user-custom/user-custom
     NavigationService,
     CurrentUserService,
     ConfirmationService,
+    InputDialogService,
 
     //
     // Beginning of provider declarations for Security Data Services

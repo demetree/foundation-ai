@@ -738,7 +738,7 @@ namespace Foundation.Security.Controllers.WebAPI
                 //
                 // Because we removed some data for the serializing, load the record again and clobber the password for the return object
                 //
-                securityUserToReturn = await (from x in _context.SecurityUsers select x).FirstOrDefaultAsync(cancellationToken);
+                securityUserToReturn = await (from x in _context.SecurityUsers where x.id == id select x).FirstOrDefaultAsync(cancellationToken);
                 securityUserToReturn.password = null;
 
 
@@ -1385,7 +1385,7 @@ namespace Foundation.Security.Controllers.WebAPI
                 //
                 // Because we removed some data for the serializing, load the record again and clobber the password for the return object
                 //
-                securityUserToReturn = await (from x in _context.SecurityUsers select x).FirstOrDefaultAsync(cancellationToken);
+                securityUserToReturn = await (from x in _context.SecurityUsers where x.id == securityUser.id select x).FirstOrDefaultAsync(cancellationToken);
                 securityUserToReturn.password = null;
 
 
