@@ -56,6 +56,26 @@ namespace Scheduler.Server.Services
                 });
 
                 //
+                // Count currently active events (in progress right now)
+                //
+                var now = DateTime.UtcNow;
+                var activeEvents = await context.ScheduledEvents
+                    .Where(e => e.startDateTime <= now && e.endDateTime >= now)
+                    .CountAsync()
+                    .ConfigureAwait(false);
+
+                metrics.Add(new ApplicationMetric
+                {
+                    Name = "Active Events",
+                    Value = activeEvents.ToString("N0"),
+                    State = MetricState.Healthy,
+                    DataType = MetricDataType.Number,
+                    Category = "Events",
+                    Description = "Events currently in progress",
+                    Icon = "fa-play-circle"
+                });
+
+                //
                 // Count resources
                 //
                 var resourceCount = await context.Resources

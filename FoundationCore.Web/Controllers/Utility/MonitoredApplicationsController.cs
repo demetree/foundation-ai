@@ -103,5 +103,31 @@ namespace Foundation.Controllers.WebAPI
                 return Problem($"Failed to retrieve status for application '{name}'");
             }
         }
+
+
+        //
+        // GET: api/MonitoredApplications/metrics
+        //
+        // Returns aggregated application metrics from all monitored applications
+        //
+        [HttpGet("metrics")]
+        public async Task<IActionResult> GetAllApplicationMetrics()
+        {
+            try
+            {
+                //
+                // Get current user's objectGuid for authenticated metrics calls
+                //
+                string userObjectGuid = User.FindFirst("sub")?.Value;
+
+                var metrics = await _monitoredAppService.GetAllApplicationMetricsAsync(userObjectGuid);
+                return Ok(metrics);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting application metrics");
+                return Problem("Failed to retrieve application metrics");
+            }
+        }
     }
 }

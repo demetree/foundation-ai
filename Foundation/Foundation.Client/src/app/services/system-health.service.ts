@@ -294,11 +294,11 @@ export class SystemHealthService {
     }
 
     /**
-     * Get application-specific business metrics
+     * Get application-specific business metrics (aggregated from all monitored apps)
      */
     getApplicationMetrics(): Observable<ApplicationMetricsResponse> {
         return this.http.get<ApplicationMetricsResponse>(
-            `${this.baseUrl}/metrics`,
+            '/api/MonitoredApplications/metrics',
             { headers: this.authService.GetAuthenticationHeaders() }
         );
     }

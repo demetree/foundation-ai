@@ -7,7 +7,7 @@ import { takeUntil } from 'rxjs/operators';
 
 import { AuthService } from '../../../services/auth.service';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
-import { SecurityUserService, SecurityUserData, SecurityUserSubmitData } from '../../../security-data-services/security-user.service';
+import { SecurityUserService, SecurityUserData, SecurityUserSubmitData, AdminCreateUserRequest } from '../../../security-data-services/security-user.service';
 import { SecurityUserTitleService, SecurityUserTitleData } from '../../../security-data-services/security-user-title.service';
 import { SecurityTenantService, SecurityTenantData } from '../../../security-data-services/security-tenant.service';
 import { SecurityOrganizationService, SecurityOrganizationData } from '../../../security-data-services/security-organization.service';
@@ -364,20 +364,39 @@ export class UserCustomAddEditComponent implements OnInit, OnDestroy {
             deleted: formValues.deleted
         };
 
-        // Include password for new users
-        if (!this.isEditMode && formValues.password) {
-            submitData.password = formValues.password;
-        }
-
         if (this.isEditMode) {
             this.updateUser(submitData);
         } else {
-            this.addUser(submitData);
+            // Use AdminCreateUser endpoint for new users - handles password securely
+            const createRequest: AdminCreateUserRequest = {
+                accountName: formValues.accountName,
+                password: formValues.password,
+                firstName: formValues.firstName || null,
+                middleName: formValues.middleName || null,
+                lastName: formValues.lastName || null,
+                emailAddress: formValues.emailAddress || null,
+                cellPhoneNumber: formValues.cellPhoneNumber || null,
+                phoneNumber: formValues.phoneNumber || null,
+                phoneExtension: formValues.phoneExtension || null,
+                description: formValues.description || null,
+                securityUserTitleId: formValues.securityUserTitleId ?? null,
+                reportsToSecurityUserId: formValues.reportsToSecurityUserId ?? null,
+                securityTenantId: formValues.securityTenantId ?? null,
+                securityOrganizationId: formValues.securityOrganizationId ?? null,
+                securityDepartmentId: formValues.securityDepartmentId ?? null,
+                securityTeamId: formValues.securityTeamId ?? null,
+                readPermissionLevel: formValues.readPermissionLevel ?? 0,
+                writePermissionLevel: formValues.writePermissionLevel ?? 0,
+                mustChangePassword: formValues.mustChangePassword,
+                twoFactorSendByEmail: formValues.twoFactorSendByEmail ?? false,
+                twoFactorSendBySMS: formValues.twoFactorSendBySMS ?? false
+            };
+            this.addUser(createRequest);
         }
     }
 
-    private addUser(submitData: SecurityUserSubmitData): void {
-        this.securityUserService.PostSecurityUser(submitData).subscribe({
+    private addUser(request: AdminCreateUserRequest): void {
+        this.securityUserService.AdminCreateUser(request).subscribe({
             next: (newUser: SecurityUserData) => {
                 this.alertService.showMessage('Success', 'User created successfully', MessageSeverity.success);
                 this.userChanged.next(newUser);

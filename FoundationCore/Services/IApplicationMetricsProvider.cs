@@ -5,6 +5,7 @@
 // that are displayed in the System Health dashboard.
 //
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Foundation.Services
@@ -35,36 +36,45 @@ namespace Foundation.Services
         /// <summary>
         /// Display name of the metric (e.g., "Active Jobs")
         /// </summary>
+        [JsonPropertyName("name")]
         public string Name { get; set; }
 
         /// <summary>
         /// Current value as a string (e.g., "42", "85%", "Running")
         /// </summary>
+        [JsonPropertyName("value")]
         public string Value { get; set; }
 
         /// <summary>
         /// Health state of this metric
         /// </summary>
+        [JsonPropertyName("state")]
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public MetricState State { get; set; } = MetricState.Healthy;
 
         /// <summary>
         /// Data type for rendering (affects UI visualization)
         /// </summary>
+        [JsonPropertyName("dataType")]
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public MetricDataType DataType { get; set; } = MetricDataType.Number;
 
         /// <summary>
         /// Optional category for grouping related metrics
         /// </summary>
+        [JsonPropertyName("category")]
         public string Category { get; set; }
 
         /// <summary>
         /// Optional description for tooltip
         /// </summary>
+        [JsonPropertyName("description")]
         public string Description { get; set; }
 
         /// <summary>
         /// Optional icon name hint for UI
         /// </summary>
+        [JsonPropertyName("icon")]
         public string Icon { get; set; }
     }
 
@@ -121,11 +131,13 @@ namespace Foundation.Services
         /// <summary>
         /// Metrics grouped by application
         /// </summary>
+        [JsonPropertyName("applications")]
         public List<ApplicationMetricsGroup> Applications { get; set; } = new List<ApplicationMetricsGroup>();
 
         /// <summary>
         /// Error message if retrieval failed
         /// </summary>
+        [JsonPropertyName("errorMessage")]
         public string ErrorMessage { get; set; }
     }
 
@@ -138,11 +150,13 @@ namespace Foundation.Services
         /// <summary>
         /// Application name
         /// </summary>
+        [JsonPropertyName("applicationName")]
         public string ApplicationName { get; set; }
 
         /// <summary>
         /// List of metrics for this application
         /// </summary>
+        [JsonPropertyName("metrics")]
         public List<ApplicationMetric> Metrics { get; set; } = new List<ApplicationMetric>();
     }
 }

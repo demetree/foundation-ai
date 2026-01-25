@@ -103,6 +103,12 @@ namespace Foundation.Services
         /// <param name="relativePath">Relative path for the API endpoint</param>
         /// <param name="userObjectGuid">Object GUID of the current user (from sub claim)</param>
         Task<HttpResponseMessage> MakeAuthenticatedRequestAsync(string appName, string relativePath, string userObjectGuid);
+
+        /// <summary>
+        /// Get aggregated application metrics from all monitored applications
+        /// </summary>
+        /// <param name="userObjectGuid">Object GUID of current user for authentication</param>
+        Task<ApplicationMetricsResponse> GetAllApplicationMetricsAsync(string userObjectGuid);
     }
 
 
@@ -335,6 +341,51 @@ namespace Foundation.Services
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
             return await client.SendAsync(request);
+        }
+
+
+        /// <summary>
+        /// Fetches and aggregates application metrics from all monitored applications
+        /// </summary>
+        public async Task<ApplicationMetricsResponse> GetAllApplicationMetricsAsync(string userObjectGuid)
+        {
+            var response = new ApplicationMetricsResponse();
+
+            foreach (var app in _applications)
+            {
+                try
+                {
+                    var httpResponse = await MakeAuthenticatedRequestAsync(app.Name, "api/SystemHealth/metrics", userObjectGuid);
+
+                    if (httpResponse.IsSuccessStatusCode)
+                    {
+                        var json = await httpResponse.Content.ReadAsStringAsync();
+                        var jsonOptions = new JsonSerializerOptions
+                        {
+                            PropertyNameCaseInsensitive = true
+                        };
+                        jsonOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+                        
+                        var appMetrics = JsonSerializer.Deserialize<ApplicationMetricsResponse>(json, jsonOptions);
+
+                        if (appMetrics?.Applications != null)
+                        {
+                            response.Applications.AddRange(appMetrics.Applications);
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Failed to get metrics from {AppName}: {StatusCode}", 
+                            app.Name, httpResponse.StatusCode);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Error fetching metrics from {AppName}", app.Name);
+                }
+            }
+
+            return response;
         }
 
 
