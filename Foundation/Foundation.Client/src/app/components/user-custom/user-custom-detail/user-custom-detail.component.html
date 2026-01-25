@@ -112,6 +112,16 @@
                     </ng-template>
                 </li>
 
+                <!-- Sessions Tab -->
+                <li [ngbNavItem]="'sessions'">
+                    <button ngbNavLink>
+                        <i class="fa-solid fa-right-to-bracket me-2"></i>Sessions
+                    </button>
+                    <ng-template ngbNavContent>
+                        <app-user-sessions-tab [user]="user"></app-user-sessions-tab>
+                    </ng-template>
+                </li>
+
             </ul>
             <div [ngbNavOutlet]="nav" class="tab-content-area"></div>
         </div>
