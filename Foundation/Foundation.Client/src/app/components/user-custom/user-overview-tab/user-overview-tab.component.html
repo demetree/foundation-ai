@@ -150,6 +150,16 @@
                             {{ user.failedLoginCount }}
                         </span>
                     </div>
+
+                    <!-- Permission Levels -->
+                    <div class="info-item">
+                        <span class="info-label">Read Permission</span>
+                        <span class="info-value">{{ user.readPermissionLevel }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Write Permission</span>
+                        <span class="info-value">{{ user.writePermissionLevel }}</span>
+                    </div>
                 </div>
             </div>
         </div>

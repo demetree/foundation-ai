@@ -112,16 +112,20 @@ CREATE TABLE "Security"."SecurityTenant"
 
 );
 -- Index on the SecurityTenant table's name field.
-CREATE INDEX "I_SecurityTenant_name" ON "Security"."SecurityTenant" ("name");
+CREATE INDEX "I_SecurityTenant_name" ON "Security"."SecurityTenant" ("name")
+;
 
 -- Index on the SecurityTenant table's active field.
-CREATE INDEX "I_SecurityTenant_active" ON "Security"."SecurityTenant" ("active");
+CREATE INDEX "I_SecurityTenant_active" ON "Security"."SecurityTenant" ("active")
+;
 
 -- Index on the SecurityTenant table's deleted field.
-CREATE INDEX "I_SecurityTenant_deleted" ON "Security"."SecurityTenant" ("deleted");
+CREATE INDEX "I_SecurityTenant_deleted" ON "Security"."SecurityTenant" ("deleted")
+;
 
 -- Index on the SecurityTenant table's id,active,deleted fields.
-CREATE INDEX "I_SecurityTenant_id_active_deleted" ON "Security"."SecurityTenant" ("id", "active", "deleted");
+CREATE INDEX "I_SecurityTenant_id_active_deleted" ON "Security"."SecurityTenant" ("id", "active", "deleted")
+;
 
 
 CREATE TABLE "Security"."SecurityOrganization"
@@ -133,23 +137,28 @@ CREATE TABLE "Security"."SecurityOrganization"
 	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
 	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
 	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
-	CONSTRAINT "FK_SecurityOrganization_SecurityTenant_securityTenantId" FOREIGN KEY ("securityTenantId") REFERENCES "Security"."SecurityTenant"("id"),		-- Foreign key to the SecurityTenant table.
+	CONSTRAINT "securityTenantId" FOREIGN KEY ("securityTenantId") REFERENCES "Security"."SecurityTenant"("id"),		-- Foreign key to the SecurityTenant table.
 	CONSTRAINT "UC_SecurityOrganization_securityTenantId_name" UNIQUE ( "securityTenantId", "name") 		-- Uniqueness enforced on the SecurityOrganization table's securityTenantId and name fields.
 );
 -- Index on the SecurityOrganization table's securityTenantId field.
-CREATE INDEX "I_SecurityOrganization_securityTenantId" ON "Security"."SecurityOrganization" ("securityTenantId");
+CREATE INDEX "I_SecurityOrganization_securityTenantId" ON "Security"."SecurityOrganization" ("securityTenantId")
+;
 
 -- Index on the SecurityOrganization table's name field.
-CREATE INDEX "I_SecurityOrganization_name" ON "Security"."SecurityOrganization" ("name");
+CREATE INDEX "I_SecurityOrganization_name" ON "Security"."SecurityOrganization" ("name")
+;
 
 -- Index on the SecurityOrganization table's active field.
-CREATE INDEX "I_SecurityOrganization_active" ON "Security"."SecurityOrganization" ("active");
+CREATE INDEX "I_SecurityOrganization_active" ON "Security"."SecurityOrganization" ("active")
+;
 
 -- Index on the SecurityOrganization table's deleted field.
-CREATE INDEX "I_SecurityOrganization_deleted" ON "Security"."SecurityOrganization" ("deleted");
+CREATE INDEX "I_SecurityOrganization_deleted" ON "Security"."SecurityOrganization" ("deleted")
+;
 
 -- Index on the SecurityOrganization table's id,active,deleted fields.
-CREATE INDEX "I_SecurityOrganization_id_active_deleted" ON "Security"."SecurityOrganization" ("id", "active", "deleted");
+CREATE INDEX "I_SecurityOrganization_id_active_deleted" ON "Security"."SecurityOrganization" ("id", "active", "deleted")
+;
 
 
 CREATE TABLE "Security"."SecurityDepartment"
@@ -161,23 +170,28 @@ CREATE TABLE "Security"."SecurityDepartment"
 	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
 	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
 	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
-	CONSTRAINT "FK_SecurityDepartment_SecurityOrganization_securityOrganizationId" FOREIGN KEY ("securityOrganizationId") REFERENCES "Security"."SecurityOrganization"("id"),		-- Foreign key to the SecurityOrganization table.
+	CONSTRAINT "securityOrganizationId" FOREIGN KEY ("securityOrganizationId") REFERENCES "Security"."SecurityOrganization"("id"),		-- Foreign key to the SecurityOrganization table.
 	CONSTRAINT "UC_SecurityDepartment_securityOrganizationId_name" UNIQUE ( "securityOrganizationId", "name") 		-- Uniqueness enforced on the SecurityDepartment table's securityOrganizationId and name fields.
 );
 -- Index on the SecurityDepartment table's securityOrganizationId field.
-CREATE INDEX "I_SecurityDepartment_securityOrganizationId" ON "Security"."SecurityDepartment" ("securityOrganizationId");
+CREATE INDEX "I_SecurityDepartment_securityOrganizationId" ON "Security"."SecurityDepartment" ("securityOrganizationId")
+;
 
 -- Index on the SecurityDepartment table's name field.
-CREATE INDEX "I_SecurityDepartment_name" ON "Security"."SecurityDepartment" ("name");
+CREATE INDEX "I_SecurityDepartment_name" ON "Security"."SecurityDepartment" ("name")
+;
 
 -- Index on the SecurityDepartment table's active field.
-CREATE INDEX "I_SecurityDepartment_active" ON "Security"."SecurityDepartment" ("active");
+CREATE INDEX "I_SecurityDepartment_active" ON "Security"."SecurityDepartment" ("active")
+;
 
 -- Index on the SecurityDepartment table's deleted field.
-CREATE INDEX "I_SecurityDepartment_deleted" ON "Security"."SecurityDepartment" ("deleted");
+CREATE INDEX "I_SecurityDepartment_deleted" ON "Security"."SecurityDepartment" ("deleted")
+;
 
 -- Index on the SecurityDepartment table's id,active,deleted fields.
-CREATE INDEX "I_SecurityDepartment_id_active_deleted" ON "Security"."SecurityDepartment" ("id", "active", "deleted");
+CREATE INDEX "I_SecurityDepartment_id_active_deleted" ON "Security"."SecurityDepartment" ("id", "active", "deleted")
+;
 
 
 CREATE TABLE "Security"."SecurityTeam"
@@ -189,23 +203,28 @@ CREATE TABLE "Security"."SecurityTeam"
 	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
 	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
 	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
-	CONSTRAINT "FK_SecurityTeam_SecurityDepartment_securityDepartmentId" FOREIGN KEY ("securityDepartmentId") REFERENCES "Security"."SecurityDepartment"("id"),		-- Foreign key to the SecurityDepartment table.
+	CONSTRAINT "securityDepartmentId" FOREIGN KEY ("securityDepartmentId") REFERENCES "Security"."SecurityDepartment"("id"),		-- Foreign key to the SecurityDepartment table.
 	CONSTRAINT "UC_SecurityTeam_securityDepartmentId_name" UNIQUE ( "securityDepartmentId", "name") 		-- Uniqueness enforced on the SecurityTeam table's securityDepartmentId and name fields.
 );
 -- Index on the SecurityTeam table's securityDepartmentId field.
-CREATE INDEX "I_SecurityTeam_securityDepartmentId" ON "Security"."SecurityTeam" ("securityDepartmentId");
+CREATE INDEX "I_SecurityTeam_securityDepartmentId" ON "Security"."SecurityTeam" ("securityDepartmentId")
+;
 
 -- Index on the SecurityTeam table's name field.
-CREATE INDEX "I_SecurityTeam_name" ON "Security"."SecurityTeam" ("name");
+CREATE INDEX "I_SecurityTeam_name" ON "Security"."SecurityTeam" ("name")
+;
 
 -- Index on the SecurityTeam table's active field.
-CREATE INDEX "I_SecurityTeam_active" ON "Security"."SecurityTeam" ("active");
+CREATE INDEX "I_SecurityTeam_active" ON "Security"."SecurityTeam" ("active")
+;
 
 -- Index on the SecurityTeam table's deleted field.
-CREATE INDEX "I_SecurityTeam_deleted" ON "Security"."SecurityTeam" ("deleted");
+CREATE INDEX "I_SecurityTeam_deleted" ON "Security"."SecurityTeam" ("deleted")
+;
 
 -- Index on the SecurityTeam table's id,active,deleted fields.
-CREATE INDEX "I_SecurityTeam_id_active_deleted" ON "Security"."SecurityTeam" ("id", "active", "deleted");
+CREATE INDEX "I_SecurityTeam_id_active_deleted" ON "Security"."SecurityTeam" ("id", "active", "deleted")
+;
 
 
 CREATE TABLE "Security"."SecurityUserTitle"
@@ -219,16 +238,20 @@ CREATE TABLE "Security"."SecurityUserTitle"
 
 );
 -- Index on the SecurityUserTitle table's name field.
-CREATE INDEX "I_SecurityUserTitle_name" ON "Security"."SecurityUserTitle" ("name");
+CREATE INDEX "I_SecurityUserTitle_name" ON "Security"."SecurityUserTitle" ("name")
+;
 
 -- Index on the SecurityUserTitle table's active field.
-CREATE INDEX "I_SecurityUserTitle_active" ON "Security"."SecurityUserTitle" ("active");
+CREATE INDEX "I_SecurityUserTitle_active" ON "Security"."SecurityUserTitle" ("active")
+;
 
 -- Index on the SecurityUserTitle table's deleted field.
-CREATE INDEX "I_SecurityUserTitle_deleted" ON "Security"."SecurityUserTitle" ("deleted");
+CREATE INDEX "I_SecurityUserTitle_deleted" ON "Security"."SecurityUserTitle" ("deleted")
+;
 
 -- Index on the SecurityUserTitle table's id,active,deleted fields.
-CREATE INDEX "I_SecurityUserTitle_id_active_deleted" ON "Security"."SecurityUserTitle" ("id", "active", "deleted");
+CREATE INDEX "I_SecurityUserTitle_id_active_deleted" ON "Security"."SecurityUserTitle" ("id", "active", "deleted")
+;
 
 
 CREATE TABLE "Security"."SecurityUser"
@@ -272,56 +295,72 @@ CREATE TABLE "Security"."SecurityUser"
 	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
 	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
 	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
-	CONSTRAINT "FK_SecurityUser_SecurityUserTitle_securityUserTitleId" FOREIGN KEY ("securityUserTitleId") REFERENCES "Security"."SecurityUserTitle"("id"),		-- Foreign key to the SecurityUserTitle table.
-	CONSTRAINT "FK_SecurityUser_SecurityUser_reportsToSecurityUserId" FOREIGN KEY ("reportsToSecurityUserId") REFERENCES "Security"."SecurityUser"("id"),		-- Foreign key to the SecurityUser table.
-	CONSTRAINT "FK_SecurityUser_SecurityTenant_securityTenantId" FOREIGN KEY ("securityTenantId") REFERENCES "Security"."SecurityTenant"("id"),		-- Foreign key to the SecurityTenant table.
-	CONSTRAINT "FK_SecurityUser_SecurityOrganization_securityOrganizationId" FOREIGN KEY ("securityOrganizationId") REFERENCES "Security"."SecurityOrganization"("id"),		-- Foreign key to the SecurityOrganization table.
-	CONSTRAINT "FK_SecurityUser_SecurityDepartment_securityDepartmentId" FOREIGN KEY ("securityDepartmentId") REFERENCES "Security"."SecurityDepartment"("id"),		-- Foreign key to the SecurityDepartment table.
-	CONSTRAINT "FK_SecurityUser_SecurityTeam_securityTeamId" FOREIGN KEY ("securityTeamId") REFERENCES "Security"."SecurityTeam"("id")		-- Foreign key to the SecurityTeam table.
+	CONSTRAINT "securityUserTitleId" FOREIGN KEY ("securityUserTitleId") REFERENCES "Security"."SecurityUserTitle"("id"),		-- Foreign key to the SecurityUserTitle table.
+	CONSTRAINT "reportsToSecurityUserId" FOREIGN KEY ("reportsToSecurityUserId") REFERENCES "Security"."SecurityUser"("id"),		-- Foreign key to the SecurityUser table.
+	CONSTRAINT "securityTenantId" FOREIGN KEY ("securityTenantId") REFERENCES "Security"."SecurityTenant"("id"),		-- Foreign key to the SecurityTenant table.
+	CONSTRAINT "securityOrganizationId" FOREIGN KEY ("securityOrganizationId") REFERENCES "Security"."SecurityOrganization"("id"),		-- Foreign key to the SecurityOrganization table.
+	CONSTRAINT "securityDepartmentId" FOREIGN KEY ("securityDepartmentId") REFERENCES "Security"."SecurityDepartment"("id"),		-- Foreign key to the SecurityDepartment table.
+	CONSTRAINT "securityTeamId" FOREIGN KEY ("securityTeamId") REFERENCES "Security"."SecurityTeam"("id")		-- Foreign key to the SecurityTeam table.
 );
 -- Index on the SecurityUser table's accountName field.
-CREATE INDEX "I_SecurityUser_accountName" ON "Security"."SecurityUser" ("accountName");
+CREATE INDEX "I_SecurityUser_accountName" ON "Security"."SecurityUser" ("accountName")
+;
 
 -- Index on the SecurityUser table's securityUserTitleId field.
-CREATE INDEX "I_SecurityUser_securityUserTitleId" ON "Security"."SecurityUser" ("securityUserTitleId");
+CREATE INDEX "I_SecurityUser_securityUserTitleId" ON "Security"."SecurityUser" ("securityUserTitleId")
+;
 
 -- Index on the SecurityUser table's reportsToSecurityUserId field.
-CREATE INDEX "I_SecurityUser_reportsToSecurityUserId" ON "Security"."SecurityUser" ("reportsToSecurityUserId");
+CREATE INDEX "I_SecurityUser_reportsToSecurityUserId" ON "Security"."SecurityUser" ("reportsToSecurityUserId")
+;
 
 -- Index on the SecurityUser table's alternateIdentifier field.
-CREATE INDEX "I_SecurityUser_alternateIdentifier" ON "Security"."SecurityUser" ("alternateIdentifier");
+CREATE INDEX "I_SecurityUser_alternateIdentifier" ON "Security"."SecurityUser" ("alternateIdentifier")
+;
 
 -- Index on the SecurityUser table's securityTenantId field.
-CREATE INDEX "I_SecurityUser_securityTenantId" ON "Security"."SecurityUser" ("securityTenantId");
+CREATE INDEX "I_SecurityUser_securityTenantId" ON "Security"."SecurityUser" ("securityTenantId")
+;
 
 -- Index on the SecurityUser table's securityOrganizationId field.
-CREATE INDEX "I_SecurityUser_securityOrganizationId" ON "Security"."SecurityUser" ("securityOrganizationId");
+CREATE INDEX "I_SecurityUser_securityOrganizationId" ON "Security"."SecurityUser" ("securityOrganizationId")
+;
 
 -- Index on the SecurityUser table's securityDepartmentId field.
-CREATE INDEX "I_SecurityUser_securityDepartmentId" ON "Security"."SecurityUser" ("securityDepartmentId");
+CREATE INDEX "I_SecurityUser_securityDepartmentId" ON "Security"."SecurityUser" ("securityDepartmentId")
+;
 
 -- Index on the SecurityUser table's securityTeamId field.
-CREATE INDEX "I_SecurityUser_securityTeamId" ON "Security"."SecurityUser" ("securityTeamId");
+CREATE INDEX "I_SecurityUser_securityTeamId" ON "Security"."SecurityUser" ("securityTeamId")
+;
 
 -- Index on the SecurityUser table's authenticationToken field.
-CREATE INDEX "I_SecurityUser_authenticationToken" ON "Security"."SecurityUser" ("authenticationToken");
+CREATE INDEX "I_SecurityUser_authenticationToken" ON "Security"."SecurityUser" ("authenticationToken")
+;
 
 -- Index on the SecurityUser table's objectGuid field.
-CREATE INDEX "I_SecurityUser_objectGuid" ON "Security"."SecurityUser" ("objectGuid");
+CREATE INDEX "I_SecurityUser_objectGuid" ON "Security"."SecurityUser" ("objectGuid")
+;
 
 -- Index on the SecurityUser table's active field.
-CREATE INDEX "I_SecurityUser_active" ON "Security"."SecurityUser" ("active");
+CREATE INDEX "I_SecurityUser_active" ON "Security"."SecurityUser" ("active")
+;
 
 -- Index on the SecurityUser table's deleted field.
-CREATE INDEX "I_SecurityUser_deleted" ON "Security"."SecurityUser" ("deleted");
+CREATE INDEX "I_SecurityUser_deleted" ON "Security"."SecurityUser" ("deleted")
+;
 
 -- Index on the SecurityUser table's accountName,activeDirectoryAccount,active,deleted fields.
-CREATE INDEX "I_SecurityUser_accountName_activeDirectoryAccount_active_delete" ON "Security"."SecurityUser" ("accountName", "activeDirectoryAccount", "active", "deleted");
+CREATE INDEX "I_SecurityUser_accountName_activeDirectoryAccount_active_delete" ON "Security"."SecurityUser" ("accountName", "activeDirectoryAccount", "active", "deleted")
+;
 
 -- Index on the SecurityUser table's id,active,deleted fields.
-CREATE INDEX "I_SecurityUser_id_active_deleted" ON "Security"."SecurityUser" ("id", "active", "deleted");
+CREATE INDEX "I_SecurityUser_id_active_deleted" ON "Security"."SecurityUser" ("id", "active", "deleted")
+;
 
-INSERT INTO "Security"."SecurityUser" ( "accountName", "activeDirectoryAccount", "canLogin", "mustChangePassword", "firstName", "lastName", "password", "description", "readPermissionLevel", "writePermissionLevel", "objectGuid" ) VALUES  ( 'Admin', false, true, true, 'Admin', 'User', '$HASH$V1000$10000$7lx52j0Z5CjBUyu8L84pOmsOo+jNH/pVZ1VlI4EBjAftRag+', 'Refer to generator for default password.', 255, 255, '3b1cabc6-472c-4cef-b831-b4b2052e4c10' );
+INSERT INTO "Security"."SecurityUser" ( "accountName", "activeDirectoryAccount", "canLogin", "mustChangePassword", "firstName", "lastName", "password", "description", "readPermissionLevel", "writePermissionLevel", "objectGuid" ) VALUES  ( 'Admin', false, true, true, 'Admin', 'User', '$HASH$V1000$10000$7lx52j0Z5CjBUyu8L84pOmsOo+jNH/pVZ1VlI4EBjAftRag+', 'Refer to generator for default password.', 255, 255, '4099226f-cc2f-46d2-9725-29de861c4fa9' );
+
+INSERT INTO "Security"."SecurityUser" ( "accountName", "activeDirectoryAccount", "canLogin", "mustChangePassword", "firstName", "lastName", "password", "readPermissionLevel", "writePermissionLevel", "objectGuid" ) VALUES  ( 'Service', false, true, false, 'Service', 'Account', '$HASH$V1000$10000$WeuGAJrhrIJWnWZIdyAQKvBEiFM0iMLiS+NJW8ws0YjSCbPq', 255, 255, 'd80632a7-b1ff-47cb-9ecd-87f4a4a22763' );
 
 
 CREATE TABLE "Security"."SecurityTenantUser"
@@ -332,24 +371,29 @@ CREATE TABLE "Security"."SecurityTenantUser"
 	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
 	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
 	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
-	CONSTRAINT "FK_SecurityTenantUser_SecurityTenant_securityTenantId" FOREIGN KEY ("securityTenantId") REFERENCES "Security"."SecurityTenant"("id"),		-- Foreign key to the SecurityTenant table.
-	CONSTRAINT "FK_SecurityTenantUser_SecurityUser_securityUserId" FOREIGN KEY ("securityUserId") REFERENCES "Security"."SecurityUser"("id"),		-- Foreign key to the SecurityUser table.
+	CONSTRAINT "securityTenantId" FOREIGN KEY ("securityTenantId") REFERENCES "Security"."SecurityTenant"("id"),		-- Foreign key to the SecurityTenant table.
+	CONSTRAINT "securityUserId" FOREIGN KEY ("securityUserId") REFERENCES "Security"."SecurityUser"("id"),		-- Foreign key to the SecurityUser table.
 	CONSTRAINT "UC_SecurityTenantUser_securityTenantId_securityUserId" UNIQUE ( "securityTenantId", "securityUserId") 		-- Uniqueness enforced on the SecurityTenantUser table's securityTenantId and securityUserId fields.
 );
 -- Index on the SecurityTenantUser table's securityTenantId field.
-CREATE INDEX "I_SecurityTenantUser_securityTenantId" ON "Security"."SecurityTenantUser" ("securityTenantId");
+CREATE INDEX "I_SecurityTenantUser_securityTenantId" ON "Security"."SecurityTenantUser" ("securityTenantId")
+;
 
 -- Index on the SecurityTenantUser table's securityUserId field.
-CREATE INDEX "I_SecurityTenantUser_securityUserId" ON "Security"."SecurityTenantUser" ("securityUserId");
+CREATE INDEX "I_SecurityTenantUser_securityUserId" ON "Security"."SecurityTenantUser" ("securityUserId")
+;
 
 -- Index on the SecurityTenantUser table's active field.
-CREATE INDEX "I_SecurityTenantUser_active" ON "Security"."SecurityTenantUser" ("active");
+CREATE INDEX "I_SecurityTenantUser_active" ON "Security"."SecurityTenantUser" ("active")
+;
 
 -- Index on the SecurityTenantUser table's deleted field.
-CREATE INDEX "I_SecurityTenantUser_deleted" ON "Security"."SecurityTenantUser" ("deleted");
+CREATE INDEX "I_SecurityTenantUser_deleted" ON "Security"."SecurityTenantUser" ("deleted")
+;
 
 -- Index on the SecurityTenantUser table's id,active,deleted fields.
-CREATE INDEX "I_SecurityTenantUser_id_active_deleted" ON "Security"."SecurityTenantUser" ("id", "active", "deleted");
+CREATE INDEX "I_SecurityTenantUser_id_active_deleted" ON "Security"."SecurityTenantUser" ("id", "active", "deleted")
+;
 
 
 CREATE TABLE "Security"."SecurityOrganizationUser"
@@ -364,36 +408,45 @@ CREATE TABLE "Security"."SecurityOrganizationUser"
 	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
 	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
 	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
-	CONSTRAINT "FK_SecurityOrganizationUser_SecurityOrganization_securityOrganizationId" FOREIGN KEY ("securityOrganizationId") REFERENCES "Security"."SecurityOrganization"("id"),		-- Foreign key to the SecurityOrganization table.
-	CONSTRAINT "FK_SecurityOrganizationUser_SecurityUser_securityUserId" FOREIGN KEY ("securityUserId") REFERENCES "Security"."SecurityUser"("id"),		-- Foreign key to the SecurityUser table.
+	CONSTRAINT "securityOrganizationId" FOREIGN KEY ("securityOrganizationId") REFERENCES "Security"."SecurityOrganization"("id"),		-- Foreign key to the SecurityOrganization table.
+	CONSTRAINT "securityUserId" FOREIGN KEY ("securityUserId") REFERENCES "Security"."SecurityUser"("id"),		-- Foreign key to the SecurityUser table.
 	CONSTRAINT "UC_SecurityOrganizationUser_securityOrganizationId_securityUserId" UNIQUE ( "securityOrganizationId", "securityUserId") 		-- Uniqueness enforced on the SecurityOrganizationUser table's securityOrganizationId and securityUserId fields.
 );
 -- Index on the SecurityOrganizationUser table's securityOrganizationId field.
-CREATE INDEX "I_SecurityOrganizationUser_securityOrganizationId" ON "Security"."SecurityOrganizationUser" ("securityOrganizationId");
+CREATE INDEX "I_SecurityOrganizationUser_securityOrganizationId" ON "Security"."SecurityOrganizationUser" ("securityOrganizationId")
+;
 
 -- Index on the SecurityOrganizationUser table's securityUserId field.
-CREATE INDEX "I_SecurityOrganizationUser_securityUserId" ON "Security"."SecurityOrganizationUser" ("securityUserId");
+CREATE INDEX "I_SecurityOrganizationUser_securityUserId" ON "Security"."SecurityOrganizationUser" ("securityUserId")
+;
 
 -- Index on the SecurityOrganizationUser table's canRead field.
-CREATE INDEX "I_SecurityOrganizationUser_canRead" ON "Security"."SecurityOrganizationUser" ("canRead");
+CREATE INDEX "I_SecurityOrganizationUser_canRead" ON "Security"."SecurityOrganizationUser" ("canRead")
+;
 
 -- Index on the SecurityOrganizationUser table's canWrite field.
-CREATE INDEX "I_SecurityOrganizationUser_canWrite" ON "Security"."SecurityOrganizationUser" ("canWrite");
+CREATE INDEX "I_SecurityOrganizationUser_canWrite" ON "Security"."SecurityOrganizationUser" ("canWrite")
+;
 
 -- Index on the SecurityOrganizationUser table's canChangeHierarchy field.
-CREATE INDEX "I_SecurityOrganizationUser_canChangeHierarchy" ON "Security"."SecurityOrganizationUser" ("canChangeHierarchy");
+CREATE INDEX "I_SecurityOrganizationUser_canChangeHierarchy" ON "Security"."SecurityOrganizationUser" ("canChangeHierarchy")
+;
 
 -- Index on the SecurityOrganizationUser table's canChangeOwner field.
-CREATE INDEX "I_SecurityOrganizationUser_canChangeOwner" ON "Security"."SecurityOrganizationUser" ("canChangeOwner");
+CREATE INDEX "I_SecurityOrganizationUser_canChangeOwner" ON "Security"."SecurityOrganizationUser" ("canChangeOwner")
+;
 
 -- Index on the SecurityOrganizationUser table's active field.
-CREATE INDEX "I_SecurityOrganizationUser_active" ON "Security"."SecurityOrganizationUser" ("active");
+CREATE INDEX "I_SecurityOrganizationUser_active" ON "Security"."SecurityOrganizationUser" ("active")
+;
 
 -- Index on the SecurityOrganizationUser table's deleted field.
-CREATE INDEX "I_SecurityOrganizationUser_deleted" ON "Security"."SecurityOrganizationUser" ("deleted");
+CREATE INDEX "I_SecurityOrganizationUser_deleted" ON "Security"."SecurityOrganizationUser" ("deleted")
+;
 
 -- Index on the SecurityOrganizationUser table's id,active,deleted fields.
-CREATE INDEX "I_SecurityOrganizationUser_id_active_deleted" ON "Security"."SecurityOrganizationUser" ("id", "active", "deleted");
+CREATE INDEX "I_SecurityOrganizationUser_id_active_deleted" ON "Security"."SecurityOrganizationUser" ("id", "active", "deleted")
+;
 
 
 CREATE TABLE "Security"."SecurityDepartmentUser"
@@ -408,36 +461,45 @@ CREATE TABLE "Security"."SecurityDepartmentUser"
 	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
 	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
 	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
-	CONSTRAINT "FK_SecurityDepartmentUser_SecurityDepartment_securityDepartmentId" FOREIGN KEY ("securityDepartmentId") REFERENCES "Security"."SecurityDepartment"("id"),		-- Foreign key to the SecurityDepartment table.
-	CONSTRAINT "FK_SecurityDepartmentUser_SecurityUser_securityUserId" FOREIGN KEY ("securityUserId") REFERENCES "Security"."SecurityUser"("id"),		-- Foreign key to the SecurityUser table.
+	CONSTRAINT "securityDepartmentId" FOREIGN KEY ("securityDepartmentId") REFERENCES "Security"."SecurityDepartment"("id"),		-- Foreign key to the SecurityDepartment table.
+	CONSTRAINT "securityUserId" FOREIGN KEY ("securityUserId") REFERENCES "Security"."SecurityUser"("id"),		-- Foreign key to the SecurityUser table.
 	CONSTRAINT "UC_SecurityDepartmentUser_securityDepartmentId_securityUserId" UNIQUE ( "securityDepartmentId", "securityUserId") 		-- Uniqueness enforced on the SecurityDepartmentUser table's securityDepartmentId and securityUserId fields.
 );
 -- Index on the SecurityDepartmentUser table's securityDepartmentId field.
-CREATE INDEX "I_SecurityDepartmentUser_securityDepartmentId" ON "Security"."SecurityDepartmentUser" ("securityDepartmentId");
+CREATE INDEX "I_SecurityDepartmentUser_securityDepartmentId" ON "Security"."SecurityDepartmentUser" ("securityDepartmentId")
+;
 
 -- Index on the SecurityDepartmentUser table's securityUserId field.
-CREATE INDEX "I_SecurityDepartmentUser_securityUserId" ON "Security"."SecurityDepartmentUser" ("securityUserId");
+CREATE INDEX "I_SecurityDepartmentUser_securityUserId" ON "Security"."SecurityDepartmentUser" ("securityUserId")
+;
 
 -- Index on the SecurityDepartmentUser table's canRead field.
-CREATE INDEX "I_SecurityDepartmentUser_canRead" ON "Security"."SecurityDepartmentUser" ("canRead");
+CREATE INDEX "I_SecurityDepartmentUser_canRead" ON "Security"."SecurityDepartmentUser" ("canRead")
+;
 
 -- Index on the SecurityDepartmentUser table's canWrite field.
-CREATE INDEX "I_SecurityDepartmentUser_canWrite" ON "Security"."SecurityDepartmentUser" ("canWrite");
+CREATE INDEX "I_SecurityDepartmentUser_canWrite" ON "Security"."SecurityDepartmentUser" ("canWrite")
+;
 
 -- Index on the SecurityDepartmentUser table's canChangeHierarchy field.
-CREATE INDEX "I_SecurityDepartmentUser_canChangeHierarchy" ON "Security"."SecurityDepartmentUser" ("canChangeHierarchy");
+CREATE INDEX "I_SecurityDepartmentUser_canChangeHierarchy" ON "Security"."SecurityDepartmentUser" ("canChangeHierarchy")
+;
 
 -- Index on the SecurityDepartmentUser table's canChangeOwner field.
-CREATE INDEX "I_SecurityDepartmentUser_canChangeOwner" ON "Security"."SecurityDepartmentUser" ("canChangeOwner");
+CREATE INDEX "I_SecurityDepartmentUser_canChangeOwner" ON "Security"."SecurityDepartmentUser" ("canChangeOwner")
+;
 
 -- Index on the SecurityDepartmentUser table's active field.
-CREATE INDEX "I_SecurityDepartmentUser_active" ON "Security"."SecurityDepartmentUser" ("active");
+CREATE INDEX "I_SecurityDepartmentUser_active" ON "Security"."SecurityDepartmentUser" ("active")
+;
 
 -- Index on the SecurityDepartmentUser table's deleted field.
-CREATE INDEX "I_SecurityDepartmentUser_deleted" ON "Security"."SecurityDepartmentUser" ("deleted");
+CREATE INDEX "I_SecurityDepartmentUser_deleted" ON "Security"."SecurityDepartmentUser" ("deleted")
+;
 
 -- Index on the SecurityDepartmentUser table's id,active,deleted fields.
-CREATE INDEX "I_SecurityDepartmentUser_id_active_deleted" ON "Security"."SecurityDepartmentUser" ("id", "active", "deleted");
+CREATE INDEX "I_SecurityDepartmentUser_id_active_deleted" ON "Security"."SecurityDepartmentUser" ("id", "active", "deleted")
+;
 
 
 CREATE TABLE "Security"."SecurityTeamUser"
@@ -452,36 +514,45 @@ CREATE TABLE "Security"."SecurityTeamUser"
 	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
 	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
 	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
-	CONSTRAINT "FK_SecurityTeamUser_SecurityTeam_securityTeamId" FOREIGN KEY ("securityTeamId") REFERENCES "Security"."SecurityTeam"("id"),		-- Foreign key to the SecurityTeam table.
-	CONSTRAINT "FK_SecurityTeamUser_SecurityUser_securityUserId" FOREIGN KEY ("securityUserId") REFERENCES "Security"."SecurityUser"("id"),		-- Foreign key to the SecurityUser table.
+	CONSTRAINT "securityTeamId" FOREIGN KEY ("securityTeamId") REFERENCES "Security"."SecurityTeam"("id"),		-- Foreign key to the SecurityTeam table.
+	CONSTRAINT "securityUserId" FOREIGN KEY ("securityUserId") REFERENCES "Security"."SecurityUser"("id"),		-- Foreign key to the SecurityUser table.
 	CONSTRAINT "UC_SecurityTeamUser_securityTeamId_securityUserId" UNIQUE ( "securityTeamId", "securityUserId") 		-- Uniqueness enforced on the SecurityTeamUser table's securityTeamId and securityUserId fields.
 );
 -- Index on the SecurityTeamUser table's securityTeamId field.
-CREATE INDEX "I_SecurityTeamUser_securityTeamId" ON "Security"."SecurityTeamUser" ("securityTeamId");
+CREATE INDEX "I_SecurityTeamUser_securityTeamId" ON "Security"."SecurityTeamUser" ("securityTeamId")
+;
 
 -- Index on the SecurityTeamUser table's securityUserId field.
-CREATE INDEX "I_SecurityTeamUser_securityUserId" ON "Security"."SecurityTeamUser" ("securityUserId");
+CREATE INDEX "I_SecurityTeamUser_securityUserId" ON "Security"."SecurityTeamUser" ("securityUserId")
+;
 
 -- Index on the SecurityTeamUser table's canRead field.
-CREATE INDEX "I_SecurityTeamUser_canRead" ON "Security"."SecurityTeamUser" ("canRead");
+CREATE INDEX "I_SecurityTeamUser_canRead" ON "Security"."SecurityTeamUser" ("canRead")
+;
 
 -- Index on the SecurityTeamUser table's canWrite field.
-CREATE INDEX "I_SecurityTeamUser_canWrite" ON "Security"."SecurityTeamUser" ("canWrite");
+CREATE INDEX "I_SecurityTeamUser_canWrite" ON "Security"."SecurityTeamUser" ("canWrite")
+;
 
 -- Index on the SecurityTeamUser table's canChangeHierarchy field.
-CREATE INDEX "I_SecurityTeamUser_canChangeHierarchy" ON "Security"."SecurityTeamUser" ("canChangeHierarchy");
+CREATE INDEX "I_SecurityTeamUser_canChangeHierarchy" ON "Security"."SecurityTeamUser" ("canChangeHierarchy")
+;
 
 -- Index on the SecurityTeamUser table's canChangeOwner field.
-CREATE INDEX "I_SecurityTeamUser_canChangeOwner" ON "Security"."SecurityTeamUser" ("canChangeOwner");
+CREATE INDEX "I_SecurityTeamUser_canChangeOwner" ON "Security"."SecurityTeamUser" ("canChangeOwner")
+;
 
 -- Index on the SecurityTeamUser table's active field.
-CREATE INDEX "I_SecurityTeamUser_active" ON "Security"."SecurityTeamUser" ("active");
+CREATE INDEX "I_SecurityTeamUser_active" ON "Security"."SecurityTeamUser" ("active")
+;
 
 -- Index on the SecurityTeamUser table's deleted field.
-CREATE INDEX "I_SecurityTeamUser_deleted" ON "Security"."SecurityTeamUser" ("deleted");
+CREATE INDEX "I_SecurityTeamUser_deleted" ON "Security"."SecurityTeamUser" ("deleted")
+;
 
 -- Index on the SecurityTeamUser table's id,active,deleted fields.
-CREATE INDEX "I_SecurityTeamUser_id_active_deleted" ON "Security"."SecurityTeamUser" ("id", "active", "deleted");
+CREATE INDEX "I_SecurityTeamUser_id_active_deleted" ON "Security"."SecurityTeamUser" ("id", "active", "deleted")
+;
 
 
 CREATE TABLE "Security"."SecurityUserEventType"
@@ -491,7 +562,8 @@ CREATE TABLE "Security"."SecurityUserEventType"
 	"description" VARCHAR(500) NULL
 );
 -- Index on the SecurityUserEventType table's name field.
-CREATE INDEX "I_SecurityUserEventType_name" ON "Security"."SecurityUserEventType" ("name");
+CREATE INDEX "I_SecurityUserEventType_name" ON "Security"."SecurityUserEventType" ("name")
+;
 
 INSERT INTO "Security"."SecurityUserEventType" ( "name", "description" ) VALUES  ( 'LoginSuccess', 'Login Success' );
 
@@ -515,6 +587,12 @@ INSERT INTO "Security"."SecurityUserEventType" ( "name", "description" ) VALUES 
 
 INSERT INTO "Security"."SecurityUserEventType" ( "name", "description" ) VALUES  ( 'SystemInitiatedPasswordResetCompleted', 'SystemInitiatedPasswordResetCompleted' );
 
+INSERT INTO "Security"."SecurityUserEventType" ( "name", "description" ) VALUES  ( 'AdminInitiatedPasswordSet', 'Admin Initiated Password Set' );
+
+INSERT INTO "Security"."SecurityUserEventType" ( "name", "description" ) VALUES  ( 'AdminActionLockAccount', 'Admin Action Lock Account' );
+
+INSERT INTO "Security"."SecurityUserEventType" ( "name", "description" ) VALUES  ( 'AccountUnlocked', 'Account Unlocked' );
+
 
 CREATE TABLE "Security"."SecurityUserEvent"
 (
@@ -525,26 +603,32 @@ CREATE TABLE "Security"."SecurityUserEvent"
 	"comments" VARCHAR(1000) NULL,
 	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
 	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
-	CONSTRAINT "FK_SecurityUserEvent_SecurityUser_securityUserId" FOREIGN KEY ("securityUserId") REFERENCES "Security"."SecurityUser"("id"),		-- Foreign key to the SecurityUser table.
-	CONSTRAINT "FK_SecurityUserEvent_SecurityUserEventType_securityUserEventTypeId" FOREIGN KEY ("securityUserEventTypeId") REFERENCES "Security"."SecurityUserEventType"("id")		-- Foreign key to the SecurityUserEventType table.
+	CONSTRAINT "securityUserId" FOREIGN KEY ("securityUserId") REFERENCES "Security"."SecurityUser"("id"),		-- Foreign key to the SecurityUser table.
+	CONSTRAINT "securityUserEventTypeId" FOREIGN KEY ("securityUserEventTypeId") REFERENCES "Security"."SecurityUserEventType"("id")		-- Foreign key to the SecurityUserEventType table.
 );
 -- Index on the SecurityUserEvent table's securityUserId field.
-CREATE INDEX "I_SecurityUserEvent_securityUserId" ON "Security"."SecurityUserEvent" ("securityUserId");
+CREATE INDEX "I_SecurityUserEvent_securityUserId" ON "Security"."SecurityUserEvent" ("securityUserId")
+;
 
 -- Index on the SecurityUserEvent table's securityUserEventTypeId field.
-CREATE INDEX "I_SecurityUserEvent_securityUserEventTypeId" ON "Security"."SecurityUserEvent" ("securityUserEventTypeId");
+CREATE INDEX "I_SecurityUserEvent_securityUserEventTypeId" ON "Security"."SecurityUserEvent" ("securityUserEventTypeId")
+;
 
 -- Index on the SecurityUserEvent table's timeStamp field.
-CREATE INDEX "I_SecurityUserEvent_timeStamp" ON "Security"."SecurityUserEvent" ("timeStamp");
+CREATE INDEX "I_SecurityUserEvent_timeStamp" ON "Security"."SecurityUserEvent" ("timeStamp")
+;
 
 -- Index on the SecurityUserEvent table's active field.
-CREATE INDEX "I_SecurityUserEvent_active" ON "Security"."SecurityUserEvent" ("active");
+CREATE INDEX "I_SecurityUserEvent_active" ON "Security"."SecurityUserEvent" ("active")
+;
 
 -- Index on the SecurityUserEvent table's deleted field.
-CREATE INDEX "I_SecurityUserEvent_deleted" ON "Security"."SecurityUserEvent" ("deleted");
+CREATE INDEX "I_SecurityUserEvent_deleted" ON "Security"."SecurityUserEvent" ("deleted")
+;
 
 -- Index on the SecurityUserEvent table's id,active,deleted fields.
-CREATE INDEX "I_SecurityUserEvent_id_active_deleted" ON "Security"."SecurityUserEvent" ("id", "active", "deleted");
+CREATE INDEX "I_SecurityUserEvent_id_active_deleted" ON "Security"."SecurityUserEvent" ("id", "active", "deleted")
+;
 
 
 CREATE TABLE "Security"."SecurityUserPasswordResetToken"
@@ -559,34 +643,43 @@ CREATE TABLE "Security"."SecurityUserPasswordResetToken"
 	"comments" VARCHAR(1000) NULL,
 	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
 	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
-	CONSTRAINT "FK_SecurityUserPasswordResetToken_SecurityUser_securityUserId" FOREIGN KEY ("securityUserId") REFERENCES "Security"."SecurityUser"("id")		-- Foreign key to the SecurityUser table.
+	CONSTRAINT "securityUserId" FOREIGN KEY ("securityUserId") REFERENCES "Security"."SecurityUser"("id")		-- Foreign key to the SecurityUser table.
 );
 -- Index on the SecurityUserPasswordResetToken table's securityUserId field.
-CREATE INDEX "I_SecurityUserPasswordResetToken_securityUserId" ON "Security"."SecurityUserPasswordResetToken" ("securityUserId");
+CREATE INDEX "I_SecurityUserPasswordResetToken_securityUserId" ON "Security"."SecurityUserPasswordResetToken" ("securityUserId")
+;
 
 -- Index on the SecurityUserPasswordResetToken table's token field.
-CREATE INDEX "I_SecurityUserPasswordResetToken_token" ON "Security"."SecurityUserPasswordResetToken" ("token");
+CREATE INDEX "I_SecurityUserPasswordResetToken_token" ON "Security"."SecurityUserPasswordResetToken" ("token")
+;
 
 -- Index on the SecurityUserPasswordResetToken table's timeStamp field.
-CREATE INDEX "I_SecurityUserPasswordResetToken_timeStamp" ON "Security"."SecurityUserPasswordResetToken" ("timeStamp");
+CREATE INDEX "I_SecurityUserPasswordResetToken_timeStamp" ON "Security"."SecurityUserPasswordResetToken" ("timeStamp")
+;
 
 -- Index on the SecurityUserPasswordResetToken table's expiry field.
-CREATE INDEX "I_SecurityUserPasswordResetToken_expiry" ON "Security"."SecurityUserPasswordResetToken" ("expiry");
+CREATE INDEX "I_SecurityUserPasswordResetToken_expiry" ON "Security"."SecurityUserPasswordResetToken" ("expiry")
+;
 
 -- Index on the SecurityUserPasswordResetToken table's systemInitiated field.
-CREATE INDEX "I_SecurityUserPasswordResetToken_systemInitiated" ON "Security"."SecurityUserPasswordResetToken" ("systemInitiated");
+CREATE INDEX "I_SecurityUserPasswordResetToken_systemInitiated" ON "Security"."SecurityUserPasswordResetToken" ("systemInitiated")
+;
 
 -- Index on the SecurityUserPasswordResetToken table's completed field.
-CREATE INDEX "I_SecurityUserPasswordResetToken_completed" ON "Security"."SecurityUserPasswordResetToken" ("completed");
+CREATE INDEX "I_SecurityUserPasswordResetToken_completed" ON "Security"."SecurityUserPasswordResetToken" ("completed")
+;
 
 -- Index on the SecurityUserPasswordResetToken table's active field.
-CREATE INDEX "I_SecurityUserPasswordResetToken_active" ON "Security"."SecurityUserPasswordResetToken" ("active");
+CREATE INDEX "I_SecurityUserPasswordResetToken_active" ON "Security"."SecurityUserPasswordResetToken" ("active")
+;
 
 -- Index on the SecurityUserPasswordResetToken table's deleted field.
-CREATE INDEX "I_SecurityUserPasswordResetToken_deleted" ON "Security"."SecurityUserPasswordResetToken" ("deleted");
+CREATE INDEX "I_SecurityUserPasswordResetToken_deleted" ON "Security"."SecurityUserPasswordResetToken" ("deleted")
+;
 
 -- Index on the SecurityUserPasswordResetToken table's id,active,deleted fields.
-CREATE INDEX "I_SecurityUserPasswordResetToken_id_active_deleted" ON "Security"."SecurityUserPasswordResetToken" ("id", "active", "deleted");
+CREATE INDEX "I_SecurityUserPasswordResetToken_id_active_deleted" ON "Security"."SecurityUserPasswordResetToken" ("id", "active", "deleted")
+;
 
 
 CREATE TABLE "Security"."SecurityGroup"
@@ -599,16 +692,20 @@ CREATE TABLE "Security"."SecurityGroup"
 
 );
 -- Index on the SecurityGroup table's name field.
-CREATE INDEX "I_SecurityGroup_name" ON "Security"."SecurityGroup" ("name");
+CREATE INDEX "I_SecurityGroup_name" ON "Security"."SecurityGroup" ("name")
+;
 
 -- Index on the SecurityGroup table's active field.
-CREATE INDEX "I_SecurityGroup_active" ON "Security"."SecurityGroup" ("active");
+CREATE INDEX "I_SecurityGroup_active" ON "Security"."SecurityGroup" ("active")
+;
 
 -- Index on the SecurityGroup table's deleted field.
-CREATE INDEX "I_SecurityGroup_deleted" ON "Security"."SecurityGroup" ("deleted");
+CREATE INDEX "I_SecurityGroup_deleted" ON "Security"."SecurityGroup" ("deleted")
+;
 
 -- Index on the SecurityGroup table's id,active,deleted fields.
-CREATE INDEX "I_SecurityGroup_id_active_deleted" ON "Security"."SecurityGroup" ("id", "active", "deleted");
+CREATE INDEX "I_SecurityGroup_id_active_deleted" ON "Security"."SecurityGroup" ("id", "active", "deleted")
+;
 
 
 CREATE TABLE "Security"."SecurityUserSecurityGroup"
@@ -619,24 +716,29 @@ CREATE TABLE "Security"."SecurityUserSecurityGroup"
 	"comments" VARCHAR(1000) NULL,
 	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
 	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
-	CONSTRAINT "FK_SecurityUserSecurityGroup_SecurityUser_securityUserId" FOREIGN KEY ("securityUserId") REFERENCES "Security"."SecurityUser"("id"),		-- Foreign key to the SecurityUser table.
-	CONSTRAINT "FK_SecurityUserSecurityGroup_SecurityGroup_securityGroupId" FOREIGN KEY ("securityGroupId") REFERENCES "Security"."SecurityGroup"("id"),		-- Foreign key to the SecurityGroup table.
+	CONSTRAINT "securityUserId" FOREIGN KEY ("securityUserId") REFERENCES "Security"."SecurityUser"("id"),		-- Foreign key to the SecurityUser table.
+	CONSTRAINT "securityGroupId" FOREIGN KEY ("securityGroupId") REFERENCES "Security"."SecurityGroup"("id"),		-- Foreign key to the SecurityGroup table.
 	CONSTRAINT "UC_SecurityUserSecurityGroup_securityUserId_securityGroupId" UNIQUE ( "securityUserId", "securityGroupId") 		-- Uniqueness enforced on the SecurityUserSecurityGroup table's securityUserId and securityGroupId fields.
 );
 -- Index on the SecurityUserSecurityGroup table's securityUserId field.
-CREATE INDEX "I_SecurityUserSecurityGroup_securityUserId" ON "Security"."SecurityUserSecurityGroup" ("securityUserId");
+CREATE INDEX "I_SecurityUserSecurityGroup_securityUserId" ON "Security"."SecurityUserSecurityGroup" ("securityUserId")
+;
 
 -- Index on the SecurityUserSecurityGroup table's securityGroupId field.
-CREATE INDEX "I_SecurityUserSecurityGroup_securityGroupId" ON "Security"."SecurityUserSecurityGroup" ("securityGroupId");
+CREATE INDEX "I_SecurityUserSecurityGroup_securityGroupId" ON "Security"."SecurityUserSecurityGroup" ("securityGroupId")
+;
 
 -- Index on the SecurityUserSecurityGroup table's active field.
-CREATE INDEX "I_SecurityUserSecurityGroup_active" ON "Security"."SecurityUserSecurityGroup" ("active");
+CREATE INDEX "I_SecurityUserSecurityGroup_active" ON "Security"."SecurityUserSecurityGroup" ("active")
+;
 
 -- Index on the SecurityUserSecurityGroup table's deleted field.
-CREATE INDEX "I_SecurityUserSecurityGroup_deleted" ON "Security"."SecurityUserSecurityGroup" ("deleted");
+CREATE INDEX "I_SecurityUserSecurityGroup_deleted" ON "Security"."SecurityUserSecurityGroup" ("deleted")
+;
 
 -- Index on the SecurityUserSecurityGroup table's id,active,deleted fields.
-CREATE INDEX "I_SecurityUserSecurityGroup_id_active_deleted" ON "Security"."SecurityUserSecurityGroup" ("id", "active", "deleted");
+CREATE INDEX "I_SecurityUserSecurityGroup_id_active_deleted" ON "Security"."SecurityUserSecurityGroup" ("id", "active", "deleted")
+;
 
 
 CREATE TABLE "Security"."Privilege"
@@ -646,7 +748,8 @@ CREATE TABLE "Security"."Privilege"
 	"description" VARCHAR(500) NULL
 );
 -- Index on the Privilege table's name field.
-CREATE INDEX "I_Privilege_name" ON "Security"."Privilege" ("name");
+CREATE INDEX "I_Privilege_name" ON "Security"."Privilege" ("name")
+;
 
 INSERT INTO "Security"."Privilege" ( "name", "description" ) VALUES  ( 'No Access', 'No Access' );
 
@@ -670,22 +773,27 @@ CREATE TABLE "Security"."SecurityRole"
 	"comments" VARCHAR(1000) NULL,
 	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
 	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
-	CONSTRAINT "FK_SecurityRole_Privilege_privilegeId" FOREIGN KEY ("privilegeId") REFERENCES "Security"."Privilege"("id")		-- Foreign key to the Privilege table.
+	CONSTRAINT "privilegeId" FOREIGN KEY ("privilegeId") REFERENCES "Security"."Privilege"("id")		-- Foreign key to the Privilege table.
 );
 -- Index on the SecurityRole table's privilegeId field.
-CREATE INDEX "I_SecurityRole_privilegeId" ON "Security"."SecurityRole" ("privilegeId");
+CREATE INDEX "I_SecurityRole_privilegeId" ON "Security"."SecurityRole" ("privilegeId")
+;
 
 -- Index on the SecurityRole table's name field.
-CREATE INDEX "I_SecurityRole_name" ON "Security"."SecurityRole" ("name");
+CREATE INDEX "I_SecurityRole_name" ON "Security"."SecurityRole" ("name")
+;
 
 -- Index on the SecurityRole table's active field.
-CREATE INDEX "I_SecurityRole_active" ON "Security"."SecurityRole" ("active");
+CREATE INDEX "I_SecurityRole_active" ON "Security"."SecurityRole" ("active")
+;
 
 -- Index on the SecurityRole table's deleted field.
-CREATE INDEX "I_SecurityRole_deleted" ON "Security"."SecurityRole" ("deleted");
+CREATE INDEX "I_SecurityRole_deleted" ON "Security"."SecurityRole" ("deleted")
+;
 
 -- Index on the SecurityRole table's id,active,deleted fields.
-CREATE INDEX "I_SecurityRole_id_active_deleted" ON "Security"."SecurityRole" ("id", "active", "deleted");
+CREATE INDEX "I_SecurityRole_id_active_deleted" ON "Security"."SecurityRole" ("id", "active", "deleted")
+;
 
 
 CREATE TABLE "Security"."SecurityUserSecurityRole"
@@ -696,30 +804,37 @@ CREATE TABLE "Security"."SecurityUserSecurityRole"
 	"comments" VARCHAR(1000) NULL,
 	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
 	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
-	CONSTRAINT "FK_SecurityUserSecurityRole_SecurityUser_securityUserId" FOREIGN KEY ("securityUserId") REFERENCES "Security"."SecurityUser"("id"),		-- Foreign key to the SecurityUser table.
-	CONSTRAINT "FK_SecurityUserSecurityRole_SecurityRole_securityRoleId" FOREIGN KEY ("securityRoleId") REFERENCES "Security"."SecurityRole"("id"),		-- Foreign key to the SecurityRole table.
+	CONSTRAINT "securityUserId" FOREIGN KEY ("securityUserId") REFERENCES "Security"."SecurityUser"("id"),		-- Foreign key to the SecurityUser table.
+	CONSTRAINT "securityRoleId" FOREIGN KEY ("securityRoleId") REFERENCES "Security"."SecurityRole"("id"),		-- Foreign key to the SecurityRole table.
 	CONSTRAINT "UC_SecurityUserSecurityRole_securityUserId_securityRoleId" UNIQUE ( "securityUserId", "securityRoleId") 		-- Uniqueness enforced on the SecurityUserSecurityRole table's securityUserId and securityRoleId fields.
 );
 -- Index on the SecurityUserSecurityRole table's securityUserId field.
-CREATE INDEX "I_SecurityUserSecurityRole_securityUserId" ON "Security"."SecurityUserSecurityRole" ("securityUserId");
+CREATE INDEX "I_SecurityUserSecurityRole_securityUserId" ON "Security"."SecurityUserSecurityRole" ("securityUserId")
+;
 
 -- Index on the SecurityUserSecurityRole table's securityRoleId field.
-CREATE INDEX "I_SecurityUserSecurityRole_securityRoleId" ON "Security"."SecurityUserSecurityRole" ("securityRoleId");
+CREATE INDEX "I_SecurityUserSecurityRole_securityRoleId" ON "Security"."SecurityUserSecurityRole" ("securityRoleId")
+;
 
 -- Index on the SecurityUserSecurityRole table's active field.
-CREATE INDEX "I_SecurityUserSecurityRole_active" ON "Security"."SecurityUserSecurityRole" ("active");
+CREATE INDEX "I_SecurityUserSecurityRole_active" ON "Security"."SecurityUserSecurityRole" ("active")
+;
 
 -- Index on the SecurityUserSecurityRole table's deleted field.
-CREATE INDEX "I_SecurityUserSecurityRole_deleted" ON "Security"."SecurityUserSecurityRole" ("deleted");
+CREATE INDEX "I_SecurityUserSecurityRole_deleted" ON "Security"."SecurityUserSecurityRole" ("deleted")
+;
 
 -- Index on the SecurityUserSecurityRole table's id,active,deleted fields.
-CREATE INDEX "I_SecurityUserSecurityRole_id_active_deleted" ON "Security"."SecurityUserSecurityRole" ("id", "active", "deleted");
+CREATE INDEX "I_SecurityUserSecurityRole_id_active_deleted" ON "Security"."SecurityUserSecurityRole" ("id", "active", "deleted")
+;
 
 -- Index on the SecurityUserSecurityRole table's securityUserId,active,deleted fields.
-CREATE INDEX "I_SecurityUserSecurityRole_securityUserId_active_deleted" ON "Security"."SecurityUserSecurityRole" ("securityUserId", "active", "deleted");
+CREATE INDEX "I_SecurityUserSecurityRole_securityUserId_active_deleted" ON "Security"."SecurityUserSecurityRole" ("securityUserId", "active", "deleted")
+;
 
 -- Index on the SecurityUserSecurityRole table's securityRoleId,active,deleted fields.
-CREATE INDEX "I_SecurityUserSecurityRole_securityRoleId_active_deleted" ON "Security"."SecurityUserSecurityRole" ("securityRoleId", "active", "deleted");
+CREATE INDEX "I_SecurityUserSecurityRole_securityRoleId_active_deleted" ON "Security"."SecurityUserSecurityRole" ("securityRoleId", "active", "deleted")
+;
 
 
 CREATE TABLE "Security"."SecurityGroupSecurityRole"
@@ -730,30 +845,37 @@ CREATE TABLE "Security"."SecurityGroupSecurityRole"
 	"comments" VARCHAR(1000) NULL,
 	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
 	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
-	CONSTRAINT "FK_SecurityGroupSecurityRole_SecurityGroup_securityGroupId" FOREIGN KEY ("securityGroupId") REFERENCES "Security"."SecurityGroup"("id"),		-- Foreign key to the SecurityGroup table.
-	CONSTRAINT "FK_SecurityGroupSecurityRole_SecurityRole_securityRoleId" FOREIGN KEY ("securityRoleId") REFERENCES "Security"."SecurityRole"("id"),		-- Foreign key to the SecurityRole table.
+	CONSTRAINT "securityGroupId" FOREIGN KEY ("securityGroupId") REFERENCES "Security"."SecurityGroup"("id"),		-- Foreign key to the SecurityGroup table.
+	CONSTRAINT "securityRoleId" FOREIGN KEY ("securityRoleId") REFERENCES "Security"."SecurityRole"("id"),		-- Foreign key to the SecurityRole table.
 	CONSTRAINT "UC_SecurityGroupSecurityRole_securityGroupId_securityRoleId" UNIQUE ( "securityGroupId", "securityRoleId") 		-- Uniqueness enforced on the SecurityGroupSecurityRole table's securityGroupId and securityRoleId fields.
 );
 -- Index on the SecurityGroupSecurityRole table's securityGroupId field.
-CREATE INDEX "I_SecurityGroupSecurityRole_securityGroupId" ON "Security"."SecurityGroupSecurityRole" ("securityGroupId");
+CREATE INDEX "I_SecurityGroupSecurityRole_securityGroupId" ON "Security"."SecurityGroupSecurityRole" ("securityGroupId")
+;
 
 -- Index on the SecurityGroupSecurityRole table's securityRoleId field.
-CREATE INDEX "I_SecurityGroupSecurityRole_securityRoleId" ON "Security"."SecurityGroupSecurityRole" ("securityRoleId");
+CREATE INDEX "I_SecurityGroupSecurityRole_securityRoleId" ON "Security"."SecurityGroupSecurityRole" ("securityRoleId")
+;
 
 -- Index on the SecurityGroupSecurityRole table's active field.
-CREATE INDEX "I_SecurityGroupSecurityRole_active" ON "Security"."SecurityGroupSecurityRole" ("active");
+CREATE INDEX "I_SecurityGroupSecurityRole_active" ON "Security"."SecurityGroupSecurityRole" ("active")
+;
 
 -- Index on the SecurityGroupSecurityRole table's deleted field.
-CREATE INDEX "I_SecurityGroupSecurityRole_deleted" ON "Security"."SecurityGroupSecurityRole" ("deleted");
+CREATE INDEX "I_SecurityGroupSecurityRole_deleted" ON "Security"."SecurityGroupSecurityRole" ("deleted")
+;
 
 -- Index on the SecurityGroupSecurityRole table's id,active,deleted fields.
-CREATE INDEX "I_SecurityGroupSecurityRole_id_active_deleted" ON "Security"."SecurityGroupSecurityRole" ("id", "active", "deleted");
+CREATE INDEX "I_SecurityGroupSecurityRole_id_active_deleted" ON "Security"."SecurityGroupSecurityRole" ("id", "active", "deleted")
+;
 
 -- Index on the SecurityGroupSecurityRole table's securityGroupId,active,deleted fields.
-CREATE INDEX "I_SecurityGroupSecurityRole_securityGroupId_active_deleted" ON "Security"."SecurityGroupSecurityRole" ("securityGroupId", "active", "deleted");
+CREATE INDEX "I_SecurityGroupSecurityRole_securityGroupId_active_deleted" ON "Security"."SecurityGroupSecurityRole" ("securityGroupId", "active", "deleted")
+;
 
 -- Index on the SecurityGroupSecurityRole table's securityRoleId,active,deleted fields.
-CREATE INDEX "I_SecurityGroupSecurityRole_securityRoleId_active_deleted" ON "Security"."SecurityGroupSecurityRole" ("securityRoleId", "active", "deleted");
+CREATE INDEX "I_SecurityGroupSecurityRole_securityRoleId_active_deleted" ON "Security"."SecurityGroupSecurityRole" ("securityRoleId", "active", "deleted")
+;
 
 
 CREATE TABLE "Security"."Module"
@@ -766,16 +888,20 @@ CREATE TABLE "Security"."Module"
 
 );
 -- Index on the Module table's name field.
-CREATE INDEX "I_Module_name" ON "Security"."Module" ("name");
+CREATE INDEX "I_Module_name" ON "Security"."Module" ("name")
+;
 
 -- Index on the Module table's active field.
-CREATE INDEX "I_Module_active" ON "Security"."Module" ("active");
+CREATE INDEX "I_Module_active" ON "Security"."Module" ("active")
+;
 
 -- Index on the Module table's deleted field.
-CREATE INDEX "I_Module_deleted" ON "Security"."Module" ("deleted");
+CREATE INDEX "I_Module_deleted" ON "Security"."Module" ("deleted")
+;
 
 -- Index on the Module table's id,active,deleted fields.
-CREATE INDEX "I_Module_id_active_deleted" ON "Security"."Module" ("id", "active", "deleted");
+CREATE INDEX "I_Module_id_active_deleted" ON "Security"."Module" ("id", "active", "deleted")
+;
 
 
 CREATE TABLE "Security"."ModuleSecurityRole"
@@ -786,27 +912,33 @@ CREATE TABLE "Security"."ModuleSecurityRole"
 	"comments" VARCHAR(1000) NULL,
 	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
 	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
-	CONSTRAINT "FK_ModuleSecurityRole_Module_moduleId" FOREIGN KEY ("moduleId") REFERENCES "Security"."Module"("id"),		-- Foreign key to the Module table.
-	CONSTRAINT "FK_ModuleSecurityRole_SecurityRole_securityRoleId" FOREIGN KEY ("securityRoleId") REFERENCES "Security"."SecurityRole"("id"),		-- Foreign key to the SecurityRole table.
+	CONSTRAINT "moduleId" FOREIGN KEY ("moduleId") REFERENCES "Security"."Module"("id"),		-- Foreign key to the Module table.
+	CONSTRAINT "securityRoleId" FOREIGN KEY ("securityRoleId") REFERENCES "Security"."SecurityRole"("id"),		-- Foreign key to the SecurityRole table.
 	CONSTRAINT "UC_ModuleSecurityRole_moduleId_securityRoleId" UNIQUE ( "moduleId", "securityRoleId") 		-- Uniqueness enforced on the ModuleSecurityRole table's moduleId and securityRoleId fields.
 );
 -- Index on the ModuleSecurityRole table's moduleId field.
-CREATE INDEX "I_ModuleSecurityRole_moduleId" ON "Security"."ModuleSecurityRole" ("moduleId");
+CREATE INDEX "I_ModuleSecurityRole_moduleId" ON "Security"."ModuleSecurityRole" ("moduleId")
+;
 
 -- Index on the ModuleSecurityRole table's securityRoleId field.
-CREATE INDEX "I_ModuleSecurityRole_securityRoleId" ON "Security"."ModuleSecurityRole" ("securityRoleId");
+CREATE INDEX "I_ModuleSecurityRole_securityRoleId" ON "Security"."ModuleSecurityRole" ("securityRoleId")
+;
 
 -- Index on the ModuleSecurityRole table's active field.
-CREATE INDEX "I_ModuleSecurityRole_active" ON "Security"."ModuleSecurityRole" ("active");
+CREATE INDEX "I_ModuleSecurityRole_active" ON "Security"."ModuleSecurityRole" ("active")
+;
 
 -- Index on the ModuleSecurityRole table's deleted field.
-CREATE INDEX "I_ModuleSecurityRole_deleted" ON "Security"."ModuleSecurityRole" ("deleted");
+CREATE INDEX "I_ModuleSecurityRole_deleted" ON "Security"."ModuleSecurityRole" ("deleted")
+;
 
 -- Index on the ModuleSecurityRole table's id,active,deleted fields.
-CREATE INDEX "I_ModuleSecurityRole_id_active_deleted" ON "Security"."ModuleSecurityRole" ("id", "active", "deleted");
+CREATE INDEX "I_ModuleSecurityRole_id_active_deleted" ON "Security"."ModuleSecurityRole" ("id", "active", "deleted")
+;
 
 -- Index on the ModuleSecurityRole table's securityRoleId,active,deleted fields.
-CREATE INDEX "I_ModuleSecurityRole_securityRoleId_active_deleted" ON "Security"."ModuleSecurityRole" ("securityRoleId", "active", "deleted");
+CREATE INDEX "I_ModuleSecurityRole_securityRoleId_active_deleted" ON "Security"."ModuleSecurityRole" ("securityRoleId", "active", "deleted")
+;
 
 
 CREATE TABLE "Security"."SystemSetting"
@@ -820,16 +952,20 @@ CREATE TABLE "Security"."SystemSetting"
 
 );
 -- Index on the SystemSetting table's name field.
-CREATE INDEX "I_SystemSetting_name" ON "Security"."SystemSetting" ("name");
+CREATE INDEX "I_SystemSetting_name" ON "Security"."SystemSetting" ("name")
+;
 
 -- Index on the SystemSetting table's active field.
-CREATE INDEX "I_SystemSetting_active" ON "Security"."SystemSetting" ("active");
+CREATE INDEX "I_SystemSetting_active" ON "Security"."SystemSetting" ("active")
+;
 
 -- Index on the SystemSetting table's deleted field.
-CREATE INDEX "I_SystemSetting_deleted" ON "Security"."SystemSetting" ("deleted");
+CREATE INDEX "I_SystemSetting_deleted" ON "Security"."SystemSetting" ("deleted")
+;
 
 -- Index on the SystemSetting table's id,active,deleted fields.
-CREATE INDEX "I_SystemSetting_id_active_deleted" ON "Security"."SystemSetting" ("id", "active", "deleted");
+CREATE INDEX "I_SystemSetting_id_active_deleted" ON "Security"."SystemSetting" ("id", "active", "deleted")
+;
 
 
 CREATE TABLE "Security"."LoginAttempt"
@@ -848,13 +984,16 @@ CREATE TABLE "Security"."LoginAttempt"
 
 );
 -- Index on the LoginAttempt table's active field.
-CREATE INDEX "I_LoginAttempt_active" ON "Security"."LoginAttempt" ("active");
+CREATE INDEX "I_LoginAttempt_active" ON "Security"."LoginAttempt" ("active")
+;
 
 -- Index on the LoginAttempt table's deleted field.
-CREATE INDEX "I_LoginAttempt_deleted" ON "Security"."LoginAttempt" ("deleted");
+CREATE INDEX "I_LoginAttempt_deleted" ON "Security"."LoginAttempt" ("deleted")
+;
 
 -- Index on the LoginAttempt table's id,active,deleted fields.
-CREATE INDEX "I_loginAttempt_id_active_deleted" ON "Security"."LoginAttempt" ("id", "active", "deleted");
+CREATE INDEX "I_loginAttempt_id_active_deleted" ON "Security"."LoginAttempt" ("id", "active", "deleted")
+;
 
 
 CREATE TABLE "Security"."EntityDataToken"
@@ -870,32 +1009,40 @@ CREATE TABLE "Security"."EntityDataToken"
 	"comments" VARCHAR(1000) NULL,
 	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
 	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
-	CONSTRAINT "FK_EntityDataToken_SecurityUser_securityUserId" FOREIGN KEY ("securityUserId") REFERENCES "Security"."SecurityUser"("id"),		-- Foreign key to the SecurityUser table.
-	CONSTRAINT "FK_EntityDataToken_Module_moduleId" FOREIGN KEY ("moduleId") REFERENCES "Security"."Module"("id")		-- Foreign key to the Module table.
+	CONSTRAINT "securityUserId" FOREIGN KEY ("securityUserId") REFERENCES "Security"."SecurityUser"("id"),		-- Foreign key to the SecurityUser table.
+	CONSTRAINT "moduleId" FOREIGN KEY ("moduleId") REFERENCES "Security"."Module"("id")		-- Foreign key to the Module table.
 );
 -- Index on the EntityDataToken table's securityUserId field.
-CREATE INDEX "I_EntityDataToken_securityUserId" ON "Security"."EntityDataToken" ("securityUserId");
+CREATE INDEX "I_EntityDataToken_securityUserId" ON "Security"."EntityDataToken" ("securityUserId")
+;
 
 -- Index on the EntityDataToken table's moduleId field.
-CREATE INDEX "I_EntityDataToken_moduleId" ON "Security"."EntityDataToken" ("moduleId");
+CREATE INDEX "I_EntityDataToken_moduleId" ON "Security"."EntityDataToken" ("moduleId")
+;
 
 -- Index on the EntityDataToken table's active field.
-CREATE INDEX "I_EntityDataToken_active" ON "Security"."EntityDataToken" ("active");
+CREATE INDEX "I_EntityDataToken_active" ON "Security"."EntityDataToken" ("active")
+;
 
 -- Index on the EntityDataToken table's deleted field.
-CREATE INDEX "I_EntityDataToken_deleted" ON "Security"."EntityDataToken" ("deleted");
+CREATE INDEX "I_EntityDataToken_deleted" ON "Security"."EntityDataToken" ("deleted")
+;
 
 -- Index on the EntityDataToken table's token field.
-CREATE INDEX "I_EntityDataToken_token" ON "Security"."EntityDataToken" ("token");
+CREATE INDEX "I_EntityDataToken_token" ON "Security"."EntityDataToken" ("token")
+;
 
 -- Index on the EntityDataToken table's securityUserId,moduleId,sessionId fields.
-CREATE INDEX "I_EntityDataToken_securityUserId_moduleId_sessionId" ON "Security"."EntityDataToken" ("securityUserId", "moduleId", "sessionId");
+CREATE INDEX "I_EntityDataToken_securityUserId_moduleId_sessionId" ON "Security"."EntityDataToken" ("securityUserId", "moduleId", "sessionId")
+;
 
 -- Index on the EntityDataToken table's securityUserId,moduleId,token,sessionId fields.
-CREATE INDEX "I_EntityDataToken_securityUserId_moduleId_token_sessionId" ON "Security"."EntityDataToken" ("securityUserId", "moduleId", "token", "sessionId");
+CREATE INDEX "I_EntityDataToken_securityUserId_moduleId_token_sessionId" ON "Security"."EntityDataToken" ("securityUserId", "moduleId", "token", "sessionId")
+;
 
 -- Index on the EntityDataToken table's id,active,deleted fields.
-CREATE INDEX "I_EntityDataToken_id_active_deleted" ON "Security"."EntityDataToken" ("id", "active", "deleted");
+CREATE INDEX "I_EntityDataToken_id_active_deleted" ON "Security"."EntityDataToken" ("id", "active", "deleted")
+;
 
 
 CREATE TABLE "Security"."EntityDataTokenEventType"
@@ -905,7 +1052,8 @@ CREATE TABLE "Security"."EntityDataTokenEventType"
 	"description" VARCHAR(500) NULL
 );
 -- Index on the EntityDataTokenEventType table's name field.
-CREATE INDEX "I_EntityDataTokenEventType_name" ON "Security"."EntityDataTokenEventType" ("name");
+CREATE INDEX "I_EntityDataTokenEventType_name" ON "Security"."EntityDataTokenEventType" ("name")
+;
 
 INSERT INTO "Security"."EntityDataTokenEventType" ( "name", "description" ) VALUES  ( 'ReadFromEntity', 'Read From Entity' );
 
@@ -927,23 +1075,28 @@ CREATE TABLE "Security"."EntityDataTokenEvent"
 	"comments" VARCHAR(1000) NULL,
 	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
 	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
-	CONSTRAINT "FK_EntityDataTokenEvent_EntityDataToken_entityDataTokenId" FOREIGN KEY ("entityDataTokenId") REFERENCES "Security"."EntityDataToken"("id"),		-- Foreign key to the EntityDataToken table.
-	CONSTRAINT "FK_EntityDataTokenEvent_EntityDataTokenEventType_entityDataTokenEventTypeId" FOREIGN KEY ("entityDataTokenEventTypeId") REFERENCES "Security"."EntityDataTokenEventType"("id")		-- Foreign key to the EntityDataTokenEventType table.
+	CONSTRAINT "entityDataTokenId" FOREIGN KEY ("entityDataTokenId") REFERENCES "Security"."EntityDataToken"("id"),		-- Foreign key to the EntityDataToken table.
+	CONSTRAINT "entityDataTokenEventTypeId" FOREIGN KEY ("entityDataTokenEventTypeId") REFERENCES "Security"."EntityDataTokenEventType"("id")		-- Foreign key to the EntityDataTokenEventType table.
 );
 -- Index on the EntityDataTokenEvent table's entityDataTokenId field.
-CREATE INDEX "I_EntityDataTokenEvent_entityDataTokenId" ON "Security"."EntityDataTokenEvent" ("entityDataTokenId");
+CREATE INDEX "I_EntityDataTokenEvent_entityDataTokenId" ON "Security"."EntityDataTokenEvent" ("entityDataTokenId")
+;
 
 -- Index on the EntityDataTokenEvent table's entityDataTokenEventTypeId field.
-CREATE INDEX "I_EntityDataTokenEvent_entityDataTokenEventTypeId" ON "Security"."EntityDataTokenEvent" ("entityDataTokenEventTypeId");
+CREATE INDEX "I_EntityDataTokenEvent_entityDataTokenEventTypeId" ON "Security"."EntityDataTokenEvent" ("entityDataTokenEventTypeId")
+;
 
 -- Index on the EntityDataTokenEvent table's active field.
-CREATE INDEX "I_EntityDataTokenEvent_active" ON "Security"."EntityDataTokenEvent" ("active");
+CREATE INDEX "I_EntityDataTokenEvent_active" ON "Security"."EntityDataTokenEvent" ("active")
+;
 
 -- Index on the EntityDataTokenEvent table's deleted field.
-CREATE INDEX "I_EntityDataTokenEvent_deleted" ON "Security"."EntityDataTokenEvent" ("deleted");
+CREATE INDEX "I_EntityDataTokenEvent_deleted" ON "Security"."EntityDataTokenEvent" ("deleted")
+;
 
 -- Index on the EntityDataTokenEvent table's id,active,deleted fields.
-CREATE INDEX "I_EntityDataTokenEvent_id_active_deleted" ON "Security"."EntityDataTokenEvent" ("id", "active", "deleted");
+CREATE INDEX "I_EntityDataTokenEvent_id_active_deleted" ON "Security"."EntityDataTokenEvent" ("id", "active", "deleted")
+;
 
 
 CREATE TABLE "Security"."OAUTHToken"
@@ -957,18 +1110,23 @@ CREATE TABLE "Security"."OAUTHToken"
 
 );
 -- Index on the OAUTHToken table's token field.
-CREATE INDEX "I_OAUTHToken_token" ON "Security"."OAUTHToken" ("token");
+CREATE INDEX "I_OAUTHToken_token" ON "Security"."OAUTHToken" ("token")
+;
 
 -- Index on the OAUTHToken table's expiryDateTime field.
-CREATE INDEX "I_OAUTHToken_expiryDateTime" ON "Security"."OAUTHToken" ("expiryDateTime");
+CREATE INDEX "I_OAUTHToken_expiryDateTime" ON "Security"."OAUTHToken" ("expiryDateTime")
+;
 
 -- Index on the OAUTHToken table's active field.
-CREATE INDEX "I_OAUTHToken_active" ON "Security"."OAUTHToken" ("active");
+CREATE INDEX "I_OAUTHToken_active" ON "Security"."OAUTHToken" ("active")
+;
 
 -- Index on the OAUTHToken table's deleted field.
-CREATE INDEX "I_OAUTHToken_deleted" ON "Security"."OAUTHToken" ("deleted");
+CREATE INDEX "I_OAUTHToken_deleted" ON "Security"."OAUTHToken" ("deleted")
+;
 
 -- Index on the OAUTHToken table's id,active,deleted fields.
-CREATE INDEX "I_OauthToken_id_active_deleted" ON "Security"."OAUTHToken" ("id", "active", "deleted");
+CREATE INDEX "I_OauthToken_id_active_deleted" ON "Security"."OAUTHToken" ("id", "active", "deleted")
+;
 
 

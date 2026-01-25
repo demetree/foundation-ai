@@ -105,6 +105,11 @@ namespace Foundation.Security.Controllers.WebAPI
                     return GetForbidResult("The user cannot login.");
                 }
 
+                if (securityUser.canLogin == false)
+                {
+                    return GetForbidResult("The user account is not permitted to login.");
+                }
+
                 //
                 // Get the user's roles to add to as claims
                 //
@@ -149,6 +154,11 @@ namespace Foundation.Security.Controllers.WebAPI
                     if (securityUser.active == false || securityUser.deleted == true)
                     {
                         return GetForbidResult("The specified user account is disabled.");
+                    }
+
+                    if (securityUser.canLogin == false)
+                    {
+                        return GetForbidResult("The user account is not permitted to login.");
                     }
 
                     var scopes = request.GetScopes();
@@ -220,6 +230,11 @@ namespace Foundation.Security.Controllers.WebAPI
                 if (securityUser.active == false || securityUser.deleted == true)
                 {
                     return GetForbidResult("The specified user account is disabled.");
+                }
+
+                if (securityUser.canLogin == false)
+                {
+                    return GetForbidResult("The user account is not permitted to login.");
                 }
 
 

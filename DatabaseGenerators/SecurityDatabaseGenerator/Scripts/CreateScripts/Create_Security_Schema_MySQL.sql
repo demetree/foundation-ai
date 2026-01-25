@@ -303,7 +303,9 @@ CREATE INDEX `I_SecurityUser_accountName_activeDirectoryAccount_active_deleted` 
 -- Index on the SecurityUser table's id,active,deleted fields.
 CREATE INDEX `I_SecurityUser_id_active_deleted` ON `SecurityUser` (`id`, `active`, `deleted`);
 
-INSERT INTO `SecurityUser` ( `accountName`, `activeDirectoryAccount`, `canLogin`, `mustChangePassword`, `firstName`, `lastName`, `password`, `description`, `readPermissionLevel`, `writePermissionLevel`, `objectGuid` ) VALUES  ( 'Admin', 0, 1, 1, 'Admin', 'User', '$HASH$V1000$10000$7lx52j0Z5CjBUyu8L84pOmsOo+jNH/pVZ1VlI4EBjAftRag+', 'Refer to generator for default password.', 255, 255, '3b1cabc6-472c-4cef-b831-b4b2052e4c10' );
+INSERT INTO `SecurityUser` ( `accountName`, `activeDirectoryAccount`, `canLogin`, `mustChangePassword`, `firstName`, `lastName`, `password`, `description`, `readPermissionLevel`, `writePermissionLevel`, `objectGuid` ) VALUES  ( 'Admin', 0, 1, 1, 'Admin', 'User', '$HASH$V1000$10000$7lx52j0Z5CjBUyu8L84pOmsOo+jNH/pVZ1VlI4EBjAftRag+', 'Refer to generator for default password.', 255, 255, '4099226f-cc2f-46d2-9725-29de861c4fa9' );
+
+INSERT INTO `SecurityUser` ( `accountName`, `activeDirectoryAccount`, `canLogin`, `mustChangePassword`, `firstName`, `lastName`, `password`, `readPermissionLevel`, `writePermissionLevel`, `objectGuid` ) VALUES  ( 'Service', 0, 1, 0, 'Service', 'Account', '$HASH$V1000$10000$WeuGAJrhrIJWnWZIdyAQKvBEiFM0iMLiS+NJW8ws0YjSCbPq', 255, 255, 'd80632a7-b1ff-47cb-9ecd-87f4a4a22763' );
 
 
 CREATE TABLE `SecurityTenantUser`(
@@ -491,6 +493,12 @@ INSERT INTO `SecurityUserEventType` ( `name`, `description` ) VALUES  ( 'UserIni
 INSERT INTO `SecurityUserEventType` ( `name`, `description` ) VALUES  ( 'SystemInitiatedPasswordResetRequest', 'SystemInitiatedPasswordResetRequest' );
 
 INSERT INTO `SecurityUserEventType` ( `name`, `description` ) VALUES  ( 'SystemInitiatedPasswordResetCompleted', 'SystemInitiatedPasswordResetCompleted' );
+
+INSERT INTO `SecurityUserEventType` ( `name`, `description` ) VALUES  ( 'AdminInitiatedPasswordSet', 'Admin Initiated Password Set' );
+
+INSERT INTO `SecurityUserEventType` ( `name`, `description` ) VALUES  ( 'AdminActionLockAccount', 'Admin Action Lock Account' );
+
+INSERT INTO `SecurityUserEventType` ( `name`, `description` ) VALUES  ( 'AccountUnlocked', 'Account Unlocked' );
 
 
 CREATE TABLE `SecurityUserEvent`(

@@ -50,7 +50,8 @@ CREATE TABLE "Security"."OpenIddictApplications"
 	"Settings" TEXT NULL
 );
 -- Index on the OpenIddictApplications table's ClientId field.
-CREATE INDEX "I_OpenIddictApplications_ClientId" ON "Security"."OpenIddictApplications" ("ClientId");
+CREATE INDEX "I_OpenIddictApplications_ClientId" ON "Security"."OpenIddictApplications" ("ClientId")
+;
 
 
 CREATE TABLE "Security"."OpenIddictScopes"
@@ -66,7 +67,8 @@ CREATE TABLE "Security"."OpenIddictScopes"
 	"Resources" TEXT NULL
 );
 -- Index on the OpenIddictScopes table's Name field.
-CREATE INDEX "I_OpenIddictScopes_Name" ON "Security"."OpenIddictScopes" ("Name");
+CREATE INDEX "I_OpenIddictScopes_Name" ON "Security"."OpenIddictScopes" ("Name")
+;
 
 
 CREATE TABLE "Security"."OpenIddictAuthorizations"
@@ -80,10 +82,11 @@ CREATE TABLE "Security"."OpenIddictAuthorizations"
 	"Status" VARCHAR(50) NULL,
 	"Subject" VARCHAR(500) NULL,
 	"Type" VARCHAR(50) NULL,
-	CONSTRAINT "FK_OpenIddictAuthorizations_OpenIddictApplications_ApplicationId" FOREIGN KEY ("ApplicationId") REFERENCES "dbo"."OpenIddictApplications"("Id")		-- Foreign key to the OpenIddictApplications table.
+	CONSTRAINT "ApplicationId" FOREIGN KEY ("ApplicationId") REFERENCES "dbo"."OpenIddictApplications"("Id")		-- Foreign key to the OpenIddictApplications table.
 );
 -- Index on the OpenIddictAuthorizations table's ApplicationId,Status,Subject,Type fields.
-CREATE INDEX "I_OpenIddictAuthorizations_ApplicationId_Status_Subject_Type" ON "Security"."OpenIddictAuthorizations" ("ApplicationId", "Status", "Subject", "Type");
+CREATE INDEX "I_OpenIddictAuthorizations_ApplicationId_Status_Subject_Type" ON "Security"."OpenIddictAuthorizations" ("ApplicationId", "Status", "Subject", "Type")
+;
 
 
 CREATE TABLE "Security"."OpenIddictTokens"
@@ -101,16 +104,19 @@ CREATE TABLE "Security"."OpenIddictTokens"
 	"Status" VARCHAR(50) NULL,
 	"Subject" VARCHAR(500) NULL,
 	"Type" VARCHAR(50) NULL,
-	CONSTRAINT "FK_OpenIddictTokens_OpenIddictApplications_ApplicationId" FOREIGN KEY ("ApplicationId") REFERENCES "dbo"."OpenIddictApplications"("Id"),		-- Foreign key to the OpenIddictApplications table.
-	CONSTRAINT "FK_OpenIddictTokens_OpenIddictAuthorizations_AuthorizationId" FOREIGN KEY ("AuthorizationId") REFERENCES "dbo"."OpenIddictAuthorizations"("Id")		-- Foreign key to the OpenIddictAuthorizations table.
+	CONSTRAINT "ApplicationId" FOREIGN KEY ("ApplicationId") REFERENCES "dbo"."OpenIddictApplications"("Id"),		-- Foreign key to the OpenIddictApplications table.
+	CONSTRAINT "AuthorizationId" FOREIGN KEY ("AuthorizationId") REFERENCES "dbo"."OpenIddictAuthorizations"("Id")		-- Foreign key to the OpenIddictAuthorizations table.
 );
 -- Index on the OpenIddictTokens table's AuthorizationId field.
-CREATE INDEX "I_OpenIddictTokens_AuthorizationId" ON "Security"."OpenIddictTokens" ("AuthorizationId");
+CREATE INDEX "I_OpenIddictTokens_AuthorizationId" ON "Security"."OpenIddictTokens" ("AuthorizationId")
+;
 
 -- Index on the OpenIddictTokens table's ReferenceId field.
-CREATE INDEX "I_OpenIddictTokens_ReferenceId" ON "Security"."OpenIddictTokens" ("ReferenceId");
+CREATE INDEX "I_OpenIddictTokens_ReferenceId" ON "Security"."OpenIddictTokens" ("ReferenceId")
+;
 
 -- Index on the OpenIddictTokens table's ApplicationId,Status,Subject,Type fields.
-CREATE INDEX "I_OpenIddictTokens_ApplicationId_Status_Subject_Type" ON "Security"."OpenIddictTokens" ("ApplicationId", "Status", "Subject", "Type");
+CREATE INDEX "I_OpenIddictTokens_ApplicationId_Status_Subject_Type" ON "Security"."OpenIddictTokens" ("ApplicationId", "Status", "Subject", "Type")
+;
 
 

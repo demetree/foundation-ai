@@ -36,7 +36,8 @@ CREATE TABLE "OpenIddictApplications"
 	"Settings" TEXT NULL COLLATE NOCASE
 );
 -- Index on the OpenIddictApplications table's ClientId field.
-CREATE INDEX "I_OpenIddictApplications_ClientId" ON "OpenIddictApplications" ("ClientId");
+CREATE INDEX "I_OpenIddictApplications_ClientId" ON "OpenIddictApplications" ("ClientId")
+;
 
 
 CREATE TABLE "OpenIddictScopes"
@@ -52,7 +53,8 @@ CREATE TABLE "OpenIddictScopes"
 	"Resources" TEXT NULL COLLATE NOCASE
 );
 -- Index on the OpenIddictScopes table's Name field.
-CREATE INDEX "I_OpenIddictScopes_Name" ON "OpenIddictScopes" ("Name");
+CREATE INDEX "I_OpenIddictScopes_Name" ON "OpenIddictScopes" ("Name")
+;
 
 
 CREATE TABLE "OpenIddictAuthorizations"
@@ -69,7 +71,8 @@ CREATE TABLE "OpenIddictAuthorizations"
 	FOREIGN KEY ("ApplicationId") REFERENCES "OpenIddictApplications"("Id")		-- Foreign key to the OpenIddictApplications table.
 );
 -- Index on the OpenIddictAuthorizations table's ApplicationId,Status,Subject,Type fields.
-CREATE INDEX "I_OpenIddictAuthorizations_ApplicationId_Status_Subject_Type" ON "OpenIddictAuthorizations" ("ApplicationId", "Status", "Subject", "Type");
+CREATE INDEX "I_OpenIddictAuthorizations_ApplicationId_Status_Subject_Type" ON "OpenIddictAuthorizations" ("ApplicationId", "Status", "Subject", "Type")
+;
 
 
 CREATE TABLE "OpenIddictTokens"
@@ -91,12 +94,15 @@ CREATE TABLE "OpenIddictTokens"
 	FOREIGN KEY ("AuthorizationId") REFERENCES "OpenIddictAuthorizations"("Id")		-- Foreign key to the OpenIddictAuthorizations table.
 );
 -- Index on the OpenIddictTokens table's AuthorizationId field.
-CREATE INDEX "I_OpenIddictTokens_AuthorizationId" ON "OpenIddictTokens" ("AuthorizationId");
+CREATE INDEX "I_OpenIddictTokens_AuthorizationId" ON "OpenIddictTokens" ("AuthorizationId")
+;
 
 -- Index on the OpenIddictTokens table's ReferenceId field.
-CREATE INDEX "I_OpenIddictTokens_ReferenceId" ON "OpenIddictTokens" ("ReferenceId");
+CREATE INDEX "I_OpenIddictTokens_ReferenceId" ON "OpenIddictTokens" ("ReferenceId")
+;
 
 -- Index on the OpenIddictTokens table's ApplicationId,Status,Subject,Type fields.
-CREATE INDEX "I_OpenIddictTokens_ApplicationId_Status_Subject_Type" ON "OpenIddictTokens" ("ApplicationId", "Status", "Subject", "Type");
+CREATE INDEX "I_OpenIddictTokens_ApplicationId_Status_Subject_Type" ON "OpenIddictTokens" ("ApplicationId", "Status", "Subject", "Type")
+;
 
 

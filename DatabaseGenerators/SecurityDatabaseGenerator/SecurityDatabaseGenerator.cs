@@ -196,8 +196,22 @@ namespace Foundation.Security.Database
                                                                { "description", "Refer to generator for default password." },
                                                                { "readPermissionLevel", "255" },
                                                                { "writePermissionLevel", "255" },
-                                                               { "objectGuid", Guid.NewGuid().ToString() },
+                                                               { "objectGuid", "4099226f-cc2f-46d2-9725-29de861c4fa9" },
                                                             });
+
+
+            securityUserTable.AddData(new Dictionary<string, string> { { "accountName", "Service" },
+                                                               { "activeDirectoryAccount", "0" },
+                                                               { "canLogin", "1" },
+                                                               { "mustChangePassword", "0" },
+                                                               { "firstName", "Service" },
+                                                               { "lastName", "Account" },
+                                                               { "password", "$HASH$V1000$10000$WeuGAJrhrIJWnWZIdyAQKvBEiFM0iMLiS+NJW8ws0YjSCbPq" },    // The default password is the object guid ('d80632a7-b1ff-47cb-9ecd-87f4a4a22763-Service2026!^#');                                                               { "description", "Refer to generator for default password." },
+                                                               { "readPermissionLevel", "255" },
+                                                               { "writePermissionLevel", "255" },
+                                                               { "objectGuid", "d80632a7-b1ff-47cb-9ecd-87f4a4a22763" },
+                                                            });
+
 
 
 
