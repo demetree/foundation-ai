@@ -250,32 +250,48 @@ namespace Foundation.Telemetry
                     snapshot.statusJson = healthJson.GetRawText();
 
                     // Extract specific metrics from the status JSON
-                    if (healthJson.TryGetProperty("process", out var process))
+                    // ASP.NET Core serializes JSON with camelCase by default
+                    if (healthJson.TryGetProperty("application", out var application))
                     {
-                        if (process.TryGetProperty("uptimeSeconds", out var uptime))
-                            snapshot.uptimeSeconds = uptime.GetInt64();
-                        if (process.TryGetProperty("machineName", out var machine))
-                            snapshot.machineName = machine.GetString();
-                        if (process.TryGetProperty("dotNetVersion", out var dotnet))
-                            snapshot.dotNetVersion = dotnet.GetString();
+                        // Uptime is nested under application.uptime.totalSeconds
+                        if (application.TryGetProperty("uptime", out var uptime))
+                        {
+                            if (uptime.TryGetProperty("totalSeconds", out var totalSeconds))
+                                snapshot.uptimeSeconds = (long)totalSeconds.GetDouble();
+                        }
+
+                        // Memory is nested under application.memory
+                        if (application.TryGetProperty("memory", out var memory))
+                        {
+                            if (memory.TryGetProperty("workingSetMB", out var workingSet))
+                                snapshot.memoryWorkingSetMB = workingSet.GetDouble();
+                            if (memory.TryGetProperty("gcHeapMB", out var gcHeap))
+                                snapshot.memoryGcHeapMB = gcHeap.GetDouble();
+                        }
+
+                        // Environment info is nested under application.environment
+                        if (application.TryGetProperty("environment", out var environment))
+                        {
+                            if (environment.TryGetProperty("machineName", out var machine))
+                                snapshot.machineName = machine.GetString();
+                            if (environment.TryGetProperty("dotNetVersion", out var dotnet))
+                                snapshot.dotNetVersion = dotnet.GetString();
+                        }
                     }
 
-                    if (healthJson.TryGetProperty("memory", out var memory))
-                    {
-                        if (memory.TryGetProperty("workingSetMB", out var workingSet))
-                            snapshot.memoryWorkingSetMB = workingSet.GetDouble();
-                        if (memory.TryGetProperty("gcHeapMB", out var gcHeap))
-                            snapshot.memoryGcHeapMB = gcHeap.GetDouble();
-                    }
-
+                    // ThreadPool is at the root level
                     if (healthJson.TryGetProperty("threadPool", out var threadPool))
                     {
-                        if (threadPool.TryGetProperty("availableWorkerThreads", out var workers))
-                            snapshot.threadPoolWorkerThreads = workers.GetInt32();
-                        if (threadPool.TryGetProperty("availableCompletionPortThreads", out var completionPort))
-                            snapshot.threadPoolCompletionPortThreads = completionPort.GetInt32();
-                        if (threadPool.TryGetProperty("pendingWorkItemCount", out var pending))
-                            snapshot.threadPoolPendingWorkItems = pending.GetInt32();
+                        if (threadPool.TryGetProperty("workerThreads", out var workerThreads))
+                        {
+                            if (workerThreads.TryGetProperty("available", out var available))
+                                snapshot.threadPoolWorkerThreads = available.GetInt32();
+                        }
+                        if (threadPool.TryGetProperty("completionPortThreads", out var completionPortThreads))
+                        {
+                            if (completionPortThreads.TryGetProperty("available", out var available))
+                                snapshot.threadPoolCompletionPortThreads = available.GetInt32();
+                        }
                     }
                 }
                 catch (Exception ex)
