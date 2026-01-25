@@ -15,6 +15,7 @@ using Foundation.Security.Database;
 using Foundation.Security.OIDC;
 using Foundation.Security.OIDC.TokenValidators;
 using Foundation.Security.Services;
+using Foundation.Services;
 
 
 namespace Foundation.Security.Controllers.WebAPI
@@ -23,13 +24,14 @@ namespace Foundation.Security.Controllers.WebAPI
     {
         private readonly IServiceProvider _services;
         private readonly IUserService _userService;
+        private readonly ICredentialCacheService _credentialCache;
 
         private readonly TokenValidatorOptions _tokenValidatorOptions;
 
         public AuthorizationController(IServiceProvider services,
                                        IUserService userService,
-
-            IOptions<TokenValidatorOptions> tokenValidatorOptions)
+                                       ICredentialCacheService credentialCache,
+                                       IOptions<TokenValidatorOptions> tokenValidatorOptions)
         {
             if (tokenValidatorOptions == null)
             {
@@ -38,9 +40,8 @@ namespace Foundation.Security.Controllers.WebAPI
             }
 
             _services = services;
-
             _userService = userService;
-
+            _credentialCache = credentialCache ?? throw new ArgumentNullException(nameof(credentialCache));
             _tokenValidatorOptions = tokenValidatorOptions.Value;
         }
 
@@ -109,7 +110,14 @@ namespace Foundation.Security.Controllers.WebAPI
                 //
                 IEnumerable<string> userRoles = await _userService.GetUserRolesByUserNameAsync(securityUser.accountName);
 
-                ClaimsPrincipal principal = CreateClaimsPrincipal(securityUser, userRoles, request.GetScopes());
+                ClaimsPrincipal principal = CreateClaimsPrincipal(securityUser, userRoles, request.GetScopes(), request.ClientId);
+
+                //
+                // Cache the user's credentials for cross-app authentication
+                // This allows us to obtain tokens from remote servers when needed
+                // Key by objectGuid since that's what's in the sub claim for reliable identity resolution
+                //
+                _credentialCache.CacheCredentials(securityUser.objectGuid.ToString(), securityUser.accountName, password);
 
                 //
                 // This completes the sign in process
@@ -153,7 +161,7 @@ namespace Foundation.Security.Controllers.WebAPI
                     IEnumerable<string> userRoles = await _userService.GetUserRolesByObjectGuidAsync(userObjectGuid);
 
                     // Recreate the claims principal in case they changed since the refresh token was issued.
-                    ClaimsPrincipal principal = CreateClaimsPrincipal(securityUser, userRoles, scopes);
+                    ClaimsPrincipal principal = CreateClaimsPrincipal(securityUser, userRoles, scopes, request.ClientId);
 
                     //
                     // This completes the sign in process
@@ -219,7 +227,7 @@ namespace Foundation.Security.Controllers.WebAPI
                 IEnumerable<string> userRoles = await _userService.GetUserRolesByUserNameAsync(securityUser.accountName);
 
 
-                ClaimsPrincipal principal = CreateClaimsPrincipal(securityUser, userRoles, request.GetScopes());
+                ClaimsPrincipal principal = CreateClaimsPrincipal(securityUser, userRoles, request.GetScopes(), request.ClientId);
 
                 //
                 // This completes the sign in process
@@ -268,7 +276,7 @@ namespace Foundation.Security.Controllers.WebAPI
         }
 
 
-        private ClaimsPrincipal CreateClaimsPrincipal(SecurityUser user, IEnumerable<string> roles, IEnumerable<string> scopes)
+        private ClaimsPrincipal CreateClaimsPrincipal(SecurityUser user, IEnumerable<string> roles, IEnumerable<string> scopes, string clientId = null)
         {
             // Create a list of standard claims for the user
             var claims = new List<Claim>
@@ -333,6 +341,16 @@ namespace Foundation.Security.Controllers.WebAPI
 
             // Set additional claims-based configurations
             principal.SetScopes(scopes);
+
+            //
+            // Set the resources (audience) for the token
+            // This is required when audience validation is enabled via AddAudiences()
+            //
+            if (!string.IsNullOrEmpty(clientId))
+            {
+                principal.SetResources(clientId);
+            }
+
             principal.SetDestinations(GetDestinations);
 
             return principal;

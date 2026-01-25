@@ -4,6 +4,8 @@
 // Provides functionality to fetch health status from remote Foundation-based applications.
 // Handles HTTP calls with proper timeout and error handling.
 //
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
@@ -68,9 +70,13 @@ namespace Foundation.Services
         MonitoredApplicationConfig GetApplicationByName(string appName);
 
         /// <summary>
-        /// Make an authenticated HTTP GET request to a remote application
+        /// Make an authenticated HTTP GET request to a remote application.
+        /// Will obtain a fresh token from the target server using cached credentials.
         /// </summary>
-        Task<HttpResponseMessage> MakeAuthenticatedRequestAsync(string appName, string relativePath, string authToken);
+        /// <param name="appName">Name of the target application</param>
+        /// <param name="relativePath">Relative path for the API endpoint</param>
+        /// <param name="userObjectGuid">Object GUID of the current user (from sub claim)</param>
+        Task<HttpResponseMessage> MakeAuthenticatedRequestAsync(string appName, string relativePath, string userObjectGuid);
     }
 
 
@@ -79,19 +85,26 @@ namespace Foundation.Services
         private readonly IConfiguration _configuration;
         private readonly ILogger<MonitoredApplicationService> _logger;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly ICredentialCacheService _credentialCache;
+        private readonly IMemoryCache _tokenCache;
         private readonly List<MonitoredApplicationConfig> _applications;
 
         private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(10);
+        private static readonly TimeSpan TokenCacheDuration = TimeSpan.FromMinutes(30);
 
 
         public MonitoredApplicationService(
             IConfiguration configuration,
             ILogger<MonitoredApplicationService> logger,
-            IHttpClientFactory httpClientFactory)
+            IHttpClientFactory httpClientFactory,
+            ICredentialCacheService credentialCache,
+            IMemoryCache tokenCache)
         {
             _configuration = configuration;
             _logger = logger;
             _httpClientFactory = httpClientFactory;
+            _credentialCache = credentialCache;
+            _tokenCache = tokenCache;
 
             //
             // Load configured applications from appsettings
@@ -213,12 +226,27 @@ namespace Foundation.Services
 
 
         public async Task<HttpResponseMessage> MakeAuthenticatedRequestAsync(
-            string appName, string relativePath, string authToken)
+            string appName, string relativePath, string userObjectGuid)
         {
             var app = GetApplicationByName(appName);
+
             if (app == null)
             {
                 throw new ArgumentException($"Application '{appName}' is not configured");
+            }
+
+            //
+            // Get or obtain a token for the target application
+            //
+            string token = await GetTokenForRemoteAppAsync(app, userObjectGuid);
+            if (string.IsNullOrEmpty(token))
+            {
+                _logger.LogWarning("Unable to obtain token for {AppName} - user may need to re-login", appName);
+                // Return unauthorized response
+                return new HttpResponseMessage(System.Net.HttpStatusCode.Unauthorized)
+                {
+                    ReasonPhrase = "Unable to obtain token for remote application. Please re-login."
+                };
             }
 
             var client = _httpClientFactory.CreateClient("MonitoredApps");
@@ -228,16 +256,91 @@ namespace Foundation.Services
             _logger.LogDebug("Making authenticated request to {Url}", url);
 
             var request = new HttpRequestMessage(HttpMethod.Get, url);
-
-            //
-            // Forward the user's JWT token for authentication
-            //
-            if (!string.IsNullOrEmpty(authToken))
-            {
-                request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", authToken);
-            }
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
             return await client.SendAsync(request);
+        }
+
+
+        /// <summary>
+        /// Gets a token for the remote application, either from cache or by requesting a new one
+        /// </summary>
+        private async Task<string> GetTokenForRemoteAppAsync(MonitoredApplicationConfig app, string userObjectGuid)
+        {
+            string cacheKey = $"RemoteToken_{app.Name}_{userObjectGuid}";
+
+            //
+            // Check if we have a cached token for this app+user
+            //
+            if (_tokenCache.TryGetValue(cacheKey, out string cachedToken))
+            {
+                _logger.LogDebug("Using cached token for {AppName}", app.Name);
+                return cachedToken;
+            }
+
+            //
+            // Get the user's cached credentials
+            //
+            var credentials = _credentialCache.GetCachedCredentials(userObjectGuid);
+            if (credentials == null)
+            {
+                _logger.LogWarning("No cached credentials found for user {UserObjectGuid}", userObjectGuid);
+                return null;
+            }
+
+            //
+            // Request a token from the remote application's /connect/token endpoint
+            //
+            try
+            {
+                var client = _httpClientFactory.CreateClient("MonitoredApps");
+                client.Timeout = DefaultTimeout;
+
+                var tokenUrl = $"{app.Url.TrimEnd('/')}/connect/token";
+                _logger.LogDebug("Requesting token from {TokenUrl} for user {Username}", tokenUrl, credentials.Username);
+
+                var tokenRequest = new FormUrlEncodedContent(new[]
+                {
+                    new KeyValuePair<string, string>("grant_type", "password"),
+                    new KeyValuePair<string, string>("username", credentials.Username),
+                    new KeyValuePair<string, string>("password", credentials.Password),
+                    new KeyValuePair<string, string>("client_id", $"{app.Name.ToLowerInvariant()}_spa"),
+                    new KeyValuePair<string, string>("scope", "openid profile email roles")
+                });
+
+                var response = await client.PostAsync(tokenUrl, tokenRequest);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var tokenResponse = JsonSerializer.Deserialize<JsonElement>(content);
+
+                    if (tokenResponse.TryGetProperty("access_token", out var accessTokenElement))
+                    {
+                        var token = accessTokenElement.GetString();
+
+                        //
+                        // Cache the token
+                        //
+                        _tokenCache.Set(cacheKey, token, TokenCacheDuration);
+                        _logger.LogInformation("Obtained and cached token for {AppName}", app.Name);
+
+                        return token;
+                    }
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning("Failed to obtain token from {AppName}: {StatusCode} - {Error}", 
+                        app.Name, response.StatusCode, errorContent);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error obtaining token from {AppName}", app.Name);
+            }
+
+            return null;
         }
     }
 }

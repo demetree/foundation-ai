@@ -468,20 +468,23 @@ namespace Foundation.Controllers.WebAPI
                 }
 
                 //
-                // Extract the user's JWT token from the incoming request
+                // Get the current user's object GUID from the sub claim for cross-app authentication
                 //
-                var authHeader = HttpContext.Request.Headers["Authorization"].FirstOrDefault();
-                string authToken = null;
-
-                if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                string userObjectGuid = User.FindFirst("sub")?.Value;
+                if (string.IsNullOrEmpty(userObjectGuid))
                 {
-                    authToken = authHeader.Substring("Bearer ".Length).Trim();
+                    _logger.LogWarning("No sub claim available for proxying request to {AppName}", appName);
+                    return Unauthorized("User identity not available");
                 }
+
+                _logger.LogInformation("Proxying request to {AppName}/{Path} for user {UserObjectGuid}", 
+                    appName, relativePath, userObjectGuid);
 
                 //
                 // Forward the request to the remote application
+                // MonitoredAppService will obtain a fresh token for the target server using cached credentials
                 //
-                var response = await _monitoredAppService.MakeAuthenticatedRequestAsync(appName, relativePath, authToken);
+                var response = await _monitoredAppService.MakeAuthenticatedRequestAsync(appName, relativePath, userObjectGuid);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -490,8 +493,13 @@ namespace Foundation.Controllers.WebAPI
                 }
                 else
                 {
-                    _logger.LogWarning("Remote request to {AppName} returned {StatusCode}", appName, response.StatusCode);
-                    return StatusCode((int)response.StatusCode, new { error = response.ReasonPhrase });
+                    //
+                    // Log the full response body for debugging
+                    //
+                    var errorBody = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("Remote request to {AppName} returned {StatusCode}. Response: {Body}", 
+                        appName, response.StatusCode, errorBody);
+                    return StatusCode((int)response.StatusCode, new { error = response.ReasonPhrase, details = errorBody });
                 }
             }
             catch (ArgumentException ex)

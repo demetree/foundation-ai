@@ -531,7 +531,7 @@ namespace Foundation.Scheduler
                 }
                 catch (Exception ex)
                 {
-                    logger.LogCritical(ex, "An error occurred during creating Foundation client applications in OIDC database.");
+                    logger.LogCritical(ex, "An error occurred during creating Scheduler client applications in OIDC database.");
 
                     throw;
                 }
@@ -547,7 +547,21 @@ namespace Foundation.Scheduler
 
 
                 //
-                // Run Foundation
+                // Log database statistics for startup diagnostics
+                //
+                using (var securityContext = new SecurityContext())
+                using (var auditorContext = new AuditorContext())
+                using (var schedulerContext = new SchedulerContext())
+                {
+                    LogDatabaseStatistics(logger,
+                        ("Security", securityContext),
+                        ("Auditor", auditorContext),
+                        ("Scheduler", schedulerContext)
+                    );
+                }
+
+                //
+                // Run Scheduler
                 //
                 logger.LogSystem("About to run Scheduler web server.");
                 app.Run();

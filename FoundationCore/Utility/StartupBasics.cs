@@ -3,16 +3,19 @@ using Foundation.Security.Database;
 using Foundation.Security.OIDC;
 using Foundation.Security.OIDC.TokenValidators;
 using Foundation.Security.Services;
+using Foundation.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using OpenIddict.Validation.AspNetCore;
 using Quartz;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
@@ -64,6 +67,23 @@ namespace Foundation
             //
             builder.Services.AddScoped<IUserService, UserService>();
 
+            //
+            // Add credential caching service for cross-app authentication
+            //
+            builder.Services.AddSingleton<ICredentialCacheService, CredentialCacheService>();
+
+            //
+            // Configure LogViewer service for all Foundation apps
+            //
+            var logViewerConfig = new Foundation.LogViewer.LogViewerConfiguration();
+            builder.Configuration.GetSection("LogViewer").Bind(logViewerConfig);
+            builder.Services.AddSingleton(logViewerConfig);
+
+            builder.Services.AddSingleton<Foundation.LogViewer.ILogFileService>(sp =>
+                new Foundation.LogViewer.LogFileService(
+                    logViewerConfig,
+                    Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) ?? AppContext.BaseDirectory,
+                    sp.GetService<ILogger<Foundation.LogViewer.LogFileService>>()));
 
             //
             // Configure OpenIddict periodic pruning of orphaned authorizations/tokens from the database.
