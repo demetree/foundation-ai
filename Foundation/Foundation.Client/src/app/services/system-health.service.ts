@@ -135,6 +135,9 @@ export interface AuthenticatedUserSession {
     expiresAt: Date;
     isExpired: boolean;
     email?: string;
+    ipAddress?: string;
+    userAgent?: string;
+    loginMethod?: string;
 }
 
 

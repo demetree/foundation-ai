@@ -88,5 +88,20 @@ namespace Foundation.Services
         /// User's email address (if available)
         /// </summary>
         public string Email { get; set; }
+
+        /// <summary>
+        /// IP address from which the user logged in (if available)
+        /// </summary>
+        public string IpAddress { get; set; }
+
+        /// <summary>
+        /// User agent/browser info from login (if available)
+        /// </summary>
+        public string UserAgent { get; set; }
+
+        /// <summary>
+        /// Login method (e.g., "Local", "Microsoft", "Google")
+        /// </summary>
+        public string LoginMethod { get; set; }
     }
 }

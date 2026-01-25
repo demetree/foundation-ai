@@ -336,7 +336,13 @@
                 <span class="fw-bold small">
                   <i class="fas fa-user me-1 text-muted"></i>{{ session.displayName || session.username }}
                 </span>
-                <span class="badge bg-secondary small">{{ session.clientApplication || 'N/A' }}</span>
+                <span class="badge bg-secondary small" *ngIf="session.loginMethod">{{ session.loginMethod }}</span>
+              </div>
+              <div class="small text-muted">
+                <span *ngIf="session.ipAddress" title="IP Address"><i class="fas fa-network-wired me-1"></i>{{
+                  session.ipAddress }}</span>
+                <span *ngIf="session.userAgent" class="ms-2" title="Browser"><i class="fas fa-globe me-1"></i>{{
+                  session.userAgent }}</span>
               </div>
               <div class="small text-muted" *ngIf="session.email">{{ session.email }}</div>
             </div>
