@@ -373,6 +373,7 @@ import { UserCustomDetailComponent } from './components/user-custom/user-custom-
 import { UserOverviewTabComponent } from './components/user-custom/user-overview-tab/user-overview-tab.component';
 import { UserRolesTabComponent } from './components/user-custom/user-roles-tab/user-roles-tab.component';
 import { UserActivityTabComponent } from './components/user-custom/user-activity-tab/user-activity-tab.component';
+import { UserSessionsTabComponent } from './components/user-custom/user-sessions-tab/user-sessions-tab.component';
 import { UserRoleManagerComponent } from './components/user-custom/user-role-manager/user-role-manager.component';
 import { UserGroupManagerComponent } from './components/user-custom/user-group-manager/user-group-manager.component';
 import { UserImageUploadComponent } from './components/user-custom/user-image-upload/user-image-upload.component';
@@ -642,6 +643,7 @@ import { IntelligenceModalComponent } from './components/shared/intelligence-mod
     UserOverviewTabComponent,
     UserRolesTabComponent,
     UserActivityTabComponent,
+    UserSessionsTabComponent,
     UserRoleManagerComponent,
     UserGroupManagerComponent,
     UserImageUploadComponent,
