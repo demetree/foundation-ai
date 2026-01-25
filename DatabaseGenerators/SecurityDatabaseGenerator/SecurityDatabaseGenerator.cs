@@ -178,35 +178,42 @@ namespace Foundation.Security.Database
 
 
             //
-            // Add the admin user with all the possible access
+            // Add the admin user with all the possible access for Adminstrator UI purposes.
             //
-            /*
-            // -- Create the Admin account.  password is Admin
-            INSERT INTO[User] (accountName, activeDirectoryAccount, firstName, middleName, lastName, password, active, deleted, description, objectGuid)
- VALUES('Admin', 0, 'Admin', null, 'User', '$HASH$V1000$10000$7lx52j0Z5CjBUyu8L84pOmsOo+jNH/pVZ1VlI4EBjAftRag+', 1, 0, 'Password is Admin', '1')
- GO
-            */
+            // Password is to be changed after creation, or account locked.  default password is 'Admin'
+            //
+            // 
+            //
             securityUserTable.AddData(new Dictionary<string, string> { { "accountName", "Admin" },
                                                                { "activeDirectoryAccount", "0" },
                                                                { "canLogin", "1" },
                                                                { "mustChangePassword", "1" },
                                                                { "firstName", "Admin" },
-                                                               { "lastName", "User" },
+                                                               { "lastName", "Account" },
                                                                { "password", "$HASH$V1000$10000$7lx52j0Z5CjBUyu8L84pOmsOo+jNH/pVZ1VlI4EBjAftRag+" },    // The default password is 'Admin'
-                                                               { "description", "Refer to generator for default password." },
+                                                               { "description", "System Aministrator account.  Refer to generator for default password." },
                                                                { "readPermissionLevel", "255" },
                                                                { "writePermissionLevel", "255" },
                                                                { "objectGuid", "4099226f-cc2f-46d2-9725-29de861c4fa9" },
                                                             });
 
 
-            securityUserTable.AddData(new Dictionary<string, string> { { "accountName", "Service" },
+            // 
+            // Add in a system service account for system level job purposes
+            //
+            // Password is to be changed after creation, or account locked.
+            //
+            // Default password is d80632a7-b1ff-47cb-9ecd-87f4a4a22763-Service2026!^#
+            //
+            securityUserTable.AddData(new Dictionary<string, string> { { "accountName", "SystemService" },
                                                                { "activeDirectoryAccount", "0" },
-                                                               { "canLogin", "1" },
+                                                               { "canLogin", "1" },             // Needs this to get token
                                                                { "mustChangePassword", "0" },
-                                                               { "firstName", "Service" },
+                                                               { "firstName", "System" },
+                                                               { "middleName", "Service" },
                                                                { "lastName", "Account" },
-                                                               { "password", "$HASH$V1000$10000$WeuGAJrhrIJWnWZIdyAQKvBEiFM0iMLiS+NJW8ws0YjSCbPq" },    // The default password is the object guid ('d80632a7-b1ff-47cb-9ecd-87f4a4a22763-Service2026!^#');                                                               { "description", "Refer to generator for default password." },
+                                                               { "password", "$HASH$V1000$10000$WeuGAJrhrIJWnWZIdyAQKvBEiFM0iMLiS+NJW8ws0YjSCbPq" },    // The default password is the object guid ('d80632a7-b1ff-47cb-9ecd-87f4a4a22763-Service2026!^#');
+                                                               { "description", "System Service account for job/worker connection purposes.  Refer to generator for default password." },
                                                                { "readPermissionLevel", "255" },
                                                                { "writePermissionLevel", "255" },
                                                                { "objectGuid", "d80632a7-b1ff-47cb-9ecd-87f4a4a22763" },

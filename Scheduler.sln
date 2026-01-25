@@ -32,7 +32,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foundation.Web", "Foundatio
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{2A337194-9B49-45D1-AF1E-3EE7E96E3DDB}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Foundation Admin", "Foundation Admin", "{46CC22F7-E000-498C-AABE-DD80911BCAB5}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Admin", "Admin", "{46CC22F7-E000-498C-AABE-DD80911BCAB5}"
 EndProject
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "Foundation.Client", "Foundation\Foundation.Client\Foundation.Client.esproj", "{489C606B-81BD-CEEC-579B-839FEFB45559}"
 EndProject

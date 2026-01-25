@@ -437,9 +437,31 @@ namespace Foundation.Controllers.WebAPI
         // Returns log entries from a remote application's log file
         //
         [HttpGet("remote/{appName}/entries/{folderName}/{fileName}")]
-        public async Task<IActionResult> GetRemoteEntries(string appName, string folderName, string fileName)
+        public async Task<IActionResult> GetRemoteEntries(
+            string appName,
+            string folderName,
+            string fileName,
+            [FromQuery] int skip = 0,
+            [FromQuery] int take = 100,
+            [FromQuery] string level = null,
+            [FromQuery] string search = null)
         {
-            return await ProxyRemoteRequest(appName, $"api/LogViewer/entries/{Uri.EscapeDataString(folderName)}/{Uri.EscapeDataString(fileName)}");
+            //
+            // Build query string with all filter parameters
+            //
+            string queryString = $"?skip={skip}&take={take}";
+
+            if (string.IsNullOrEmpty(level) == false)
+            {
+                queryString += $"&level={Uri.EscapeDataString(level)}";
+            }
+
+            if (string.IsNullOrEmpty(search) == false)
+            {
+                queryString += $"&search={Uri.EscapeDataString(search)}";
+            }
+
+            return await ProxyRemoteRequest(appName, $"api/LogViewer/entries/{Uri.EscapeDataString(folderName)}/{Uri.EscapeDataString(fileName)}{queryString}");
         }
 
 

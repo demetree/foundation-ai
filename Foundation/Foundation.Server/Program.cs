@@ -41,12 +41,6 @@ namespace Foundation.Server
         private static async Task Main(string[] args)
         {
 
-            // 
-
-            string hashedNewPassword = SecurityLogic.SecurePasswordHasher.Hash("d80632a7-b1ff-47cb-9ecd-87f4a4a22763-Service2026!^#");
-
-            System.Diagnostics.Debug.WriteLine(hashedNewPassword);
-
             IConfigurationRoot config = GetConfiguration();
 
             Logger logger = SetupLogger(config);
