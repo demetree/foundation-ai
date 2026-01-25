@@ -111,21 +111,20 @@
                         (keyup.enter)="applyFilters()">
                 </div>
 
-                <!-- Search -->
-                <div class="col-md-2">
+                <!-- Search with integrated action buttons -->
+                <div class="col-md-4">
                     <label class="form-label small text-muted">Search</label>
-                    <input type="text" class="form-control" placeholder="Search all..." [(ngModel)]="searchText"
-                        (keyup.enter)="applyFilters()">
-                </div>
-
-                <!-- Action Buttons -->
-                <div class="col-md-2">
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-primary flex-grow-1" (click)="applyFilters()">
-                            <i class="fa-solid fa-search me-1"></i>Search
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Search all..." [(ngModel)]="searchText"
+                            (keyup.enter)="applyFilters()">
+                        <button class="btn btn-primary" (click)="applyFilters()" ngbTooltip="Search">
+                            <i class="fa-solid fa-search"></i>
                         </button>
-                        <button class="btn btn-outline-secondary" (click)="clearFilters()" ngbTooltip="Clear Filters">
-                            <i class="fa-solid fa-times"></i>
+                        <!-- Reset filters button - only visible when filters are active -->
+                        <button class="btn btn-outline-danger"
+                            *ngIf="statusFilter !== 'all' || typeFilter !== null || userFilter || searchText || selectedTimePreset !== '24h'"
+                            (click)="clearFilters()" ngbTooltip="Reset filters to defaults">
+                            <i class="fa-solid fa-undo"></i>
                         </button>
                     </div>
                 </div>
@@ -180,14 +179,15 @@
                     </thead>
                     <tbody>
                         <ng-container *ngFor="let event of pagedEvents; trackBy: trackByEventId">
-                            <!-- Main Row -->
+                            <!-- Main Row - click anywhere to expand -->
                             <tr class="event-row" [class.expanded]="isExpanded(event)"
-                                [class.failure-row]="!event.completedSuccessfully">
+                                [class.failure-row]="!event.completedSuccessfully" (click)="toggleExpand(event)"
+                                style="cursor: pointer;" title="Click to expand details">
                                 <td>
-                                    <button class="btn btn-sm btn-link expand-btn" (click)="toggleExpand(event)">
+                                    <span class="expand-icon">
                                         <i class="fa-solid" [class.fa-chevron-right]="!isExpanded(event)"
                                             [class.fa-chevron-down]="isExpanded(event)"></i>
-                                    </button>
+                                    </span>
                                 </td>
                                 <td>
                                     <span [ngbTooltip]="formatFullDateTime(event.startTime)" container="body">

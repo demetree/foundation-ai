@@ -82,8 +82,7 @@
           <label class="form-label">
             <i class="fas fa-server me-1"></i>Application
           </label>
-          <select class="form-select" [(ngModel)]="selectedApp" (change)="onAppChange()"
-            [disabled]="loadingApps">
+          <select class="form-select" [(ngModel)]="selectedApp" (change)="onAppChange()" [disabled]="loadingApps">
             <option *ngFor="let app of applications" [value]="app.name">
               {{ app.name }}{{ app.isSelf ? ' (local)' : '' }}
             </option>
@@ -129,7 +128,7 @@
           </select>
         </div>
 
-        <!-- Search -->
+        <!-- Search with integrated reset button -->
         <div class="col-md-3">
           <label class="form-label">
             <i class="fas fa-search me-1"></i>Search
@@ -137,17 +136,15 @@
           <div class="input-group">
             <input type="text" class="form-control" [(ngModel)]="searchText" placeholder="Search messages..."
               (keyup.enter)="applyFilters()">
-            <button class="btn btn-outline-secondary" type="button" (click)="applyFilters()">
+            <button class="btn btn-outline-secondary" type="button" (click)="applyFilters()" title="Search">
               <i class="fas fa-search"></i>
             </button>
+            <!-- Reset filters button - only visible when filters are active -->
+            <button class="btn btn-outline-danger" type="button" *ngIf="levelFilter !== 'All' || searchText"
+              (click)="clearFilters()" title="Reset filters to show all entries">
+              <i class="fas fa-undo"></i>
+            </button>
           </div>
-        </div>
-
-        <!-- Clear filters -->
-        <div class="col-md-1 d-flex align-items-end">
-          <button class="btn btn-outline-secondary w-100" (click)="clearFilters()" title="Clear filters">
-            <i class="fas fa-times"></i>
-          </button>
         </div>
       </div>
     </div>

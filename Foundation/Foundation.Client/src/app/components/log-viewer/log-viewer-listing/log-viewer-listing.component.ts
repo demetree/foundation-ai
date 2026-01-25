@@ -452,7 +452,11 @@ export class LogViewerListingComponent implements OnInit, OnDestroy {
 
         this.logViewerService.downloadFile(this.selectedFolder, this.selectedFile).subscribe({
             next: (blob) => {
-                this.saveBlobAsFile(blob, this.selectedFile);
+                //
+                // Prefix filename with app name for easy identification in downloads folder
+                //
+                const appPrefix = this.selectedApp ? this.selectedApp.replace(/\s/g, '_') + '_' : '';
+                this.saveBlobAsFile(blob, `${appPrefix}${this.selectedFile}`);
             },
             error: (error) => {
                 console.error('Failed to download file:', error);
@@ -467,11 +471,12 @@ export class LogViewerListingComponent implements OnInit, OnDestroy {
         }
 
         //
-        // Generate a meaningful filename
+        // Generate a meaningful filename with app name prefix for easy identification
         //
+        const appPrefix = this.selectedApp ? this.selectedApp.replace(/\s/g, '_') + '_' : '';
         const sanitizedFolderName = this.selectedFolder.replace(/\s/g, '_').replace(/[()]/g, '');
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-        const zipFileName = `logs_${sanitizedFolderName}_${timestamp}.zip`;
+        const zipFileName = `${appPrefix}logs_${sanitizedFolderName}_${timestamp}.zip`;
 
         this.logViewerService.downloadAllFiles(this.selectedFolder).subscribe({
             next: (blob) => {
