@@ -22,7 +22,9 @@
     <ProjectReference Include="..\CodeGenerationCore\CodeGenerationCore.csproj" />
     <ProjectReference Include="..\DatabaseGenerators\AuditorDatabaseGenerator\AuditorDatabaseGenerator.csproj" />
     <ProjectReference Include="..\DatabaseGenerators\SecurityDatabaseGenerator\SecurityDatabaseGenerator.csproj" />
+    <ProjectReference Include="..\DatabaseGenerators\TelemetryDatabaseGenerator\TelemetryDatabaseGenerator.csproj" />
     <ProjectReference Include="..\FoundationCore\Foundation.csproj" />
   </ItemGroup>
+
 
 </Project>

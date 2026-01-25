@@ -45,8 +45,5 @@
     <ProjectReference Include="..\DatabaseGenerators\SecurityDatabaseGenerator\SecurityDatabaseGenerator.csproj" />
     <ProjectReference Include="..\FoundationCommon\FoundationCommon.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Database\" />
-  </ItemGroup>
 
 </Project>

@@ -154,7 +154,18 @@ namespace Foundation.Tools
                                  angularModuleFile,
                                  angularRoutingFile
                              );
+
+                             // Telemetry
+                             Foundation.CodeGeneration.AngularAutomationUtility.IntegrateGeneratedCode(
+                                 Directory.GetCurrentDirectory(),
+                                 "Telemetry",
+                                 foundationOutputRoot,
+                                 angularAppRoot,
+                                 angularModuleFile,
+                                 angularRoutingFile
+                             );
                          }
+
                     }
                     else
                     {
