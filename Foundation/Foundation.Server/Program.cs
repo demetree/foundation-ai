@@ -218,6 +218,14 @@ namespace Foundation.Server
                 builder.Services.AddSingleton<Foundation.Services.IMonitoredApplicationService, Foundation.Services.MonitoredApplicationService>();
 
                 //
+                // Database Health Providers (for System Health dashboard)
+                //
+                builder.Services.AddSingleton<Foundation.Services.IDatabaseHealthProvider>(
+                    new Foundation.Services.DbContextHealthProvider<SecurityContext>("Security"));
+                builder.Services.AddSingleton<Foundation.Services.IDatabaseHealthProvider>(
+                    new Foundation.Services.DbContextHealthProvider<AuditorContext>("Auditor"));
+
+                //
                 // Configurations
                 //
                 builder.Services.Configure<AppSettings>(builder.Configuration);

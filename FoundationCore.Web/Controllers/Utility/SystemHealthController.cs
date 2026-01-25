@@ -6,6 +6,7 @@
 //
 using Foundation.Auditor;
 using Foundation.Security;
+using Foundation.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -16,6 +17,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Foundation.Controllers.WebAPI
 {
@@ -32,6 +34,7 @@ namespace Foundation.Controllers.WebAPI
     {
         private readonly ILogger<SystemHealthController> _logger;
         private readonly IConfiguration _configuration;
+        private readonly IEnumerable<IDatabaseHealthProvider> _databaseProviders;
         private static readonly DateTime _startTime = DateTime.UtcNow;
 
         //
@@ -45,11 +48,13 @@ namespace Foundation.Controllers.WebAPI
 
         public SystemHealthController(
             ILogger<SystemHealthController> logger,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            IEnumerable<IDatabaseHealthProvider> databaseProviders = null)
             : base("Auditor", "SystemHealth")
         {
             _logger = logger;
             _configuration = configuration;
+            _databaseProviders = databaseProviders ?? Array.Empty<IDatabaseHealthProvider>();
         }
 
 
@@ -61,7 +66,7 @@ namespace Foundation.Controllers.WebAPI
         // Responses are cached for 1 second to rate limit
         //
         [HttpGet("status")]
-        public IActionResult GetStatus()
+        public async Task<IActionResult> GetStatus()
         {
             try
             {
@@ -85,7 +90,7 @@ namespace Foundation.Controllers.WebAPI
                 {
                     Timestamp = DateTime.UtcNow,
                     Application = GetApplicationMetrics(process),
-                    Database = GetDatabaseStatus(),
+                    Database = await GetDatabaseStatusesAsync().ConfigureAwait(false),
                     Disk = GetDiskMetrics(),
                     ThreadPool = GetThreadPoolMetrics()
                 };
@@ -133,19 +138,57 @@ namespace Foundation.Controllers.WebAPI
         //
         // GET: api/SystemHealth/database
         //
-        // Returns database connection status
+        // Returns database connection status for all registered providers
         //
         [HttpGet("database")]
-        public IActionResult GetDatabase()
+        public async Task<IActionResult> GetDatabase()
         {
             try
             {
-                return Ok(GetDatabaseStatus());
+                return Ok(await GetDatabaseStatusesAsync().ConfigureAwait(false));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting database status");
                 return Problem("Failed to retrieve database status");
+            }
+        }
+
+
+        //
+        // GET: api/SystemHealth/database/tables?database=Security
+        //
+        // Returns table-level statistics for a specific database
+        // This is an expensive operation and should only be called on-demand
+        //
+        [HttpGet("database/tables")]
+        public async Task<IActionResult> GetDatabaseTables([FromQuery] string database)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(database))
+                {
+                    return BadRequest("Database name is required");
+                }
+
+                //
+                // Find the provider for the requested database
+                //
+                var provider = _databaseProviders.FirstOrDefault(p => 
+                    string.Equals(p.Name, database, StringComparison.OrdinalIgnoreCase));
+
+                if (provider == null)
+                {
+                    return NotFound($"Database '{database}' not found");
+                }
+
+                var statistics = await provider.GetTableStatisticsAsync().ConfigureAwait(false);
+                return Ok(statistics);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting table statistics for database {Database}", database);
+                return Problem($"Failed to retrieve table statistics for database '{database}'");
             }
         }
 
@@ -218,54 +261,55 @@ namespace Foundation.Controllers.WebAPI
         }
 
 
-        private object GetDatabaseStatus()
+        private async Task<object> GetDatabaseStatusesAsync()
         {
-            //
-            // Get connection string info (hide sensitive data)
-            //
-            var connectionString = _configuration.GetConnectionString("DefaultConnection");
-            var isConfigured = !string.IsNullOrEmpty(connectionString);
+            var databases = new List<DatabaseHealthInfo>();
 
-            string provider = "Unknown";
-            string serverInfo = "Not configured";
-
-            if (isConfigured)
+            //
+            // Query all registered database health providers
+            //
+            foreach (var provider in _databaseProviders)
             {
-                //
-                // Parse basic info from connection string without exposing credentials
-                //
                 try
                 {
-                    var parts = connectionString.Split(';')
-                        .Select(p => p.Trim())
-                        .Where(p => !string.IsNullOrEmpty(p))
-                        .Select(p => p.Split('='))
-                        .Where(p => p.Length == 2)
-                        .ToDictionary(p => p[0].Trim().ToLower(), p => p[1].Trim());
-
-                    if (parts.ContainsKey("server") || parts.ContainsKey("data source"))
-                    {
-                        serverInfo = parts.ContainsKey("server") ? parts["server"] : parts["data source"];
-                        provider = "SQL Server";
-                    }
-                    else if (parts.ContainsKey("host"))
-                    {
-                        serverInfo = parts["host"];
-                        provider = "PostgreSQL";
-                    }
+                    var health = await provider.GetHealthAsync().ConfigureAwait(false);
+                    databases.Add(health);
                 }
-                catch
+                catch (Exception ex)
                 {
-                    serverInfo = "Configured";
+                    //
+                    // If a provider fails, still include it with error status
+                    //
+                    databases.Add(new DatabaseHealthInfo
+                    {
+                        Name = provider.Name,
+                        Status = "Error",
+                        IsConnected = false,
+                        Provider = "Unknown",
+                        Server = "Unknown",
+                        ErrorMessage = ex.Message
+                    });
                 }
+            }
+
+            //
+            // If no providers registered, return a placeholder
+            //
+            if (databases.Count == 0)
+            {
+                databases.Add(new DatabaseHealthInfo
+                {
+                    Name = "Database",
+                    Status = "No providers registered",
+                    IsConnected = false,
+                    Provider = "Unknown",
+                    Server = "Not configured"
+                });
             }
 
             return new
             {
-                Status = isConfigured ? "Configured" : "Not Configured",
-                IsConnected = isConfigured,
-                Provider = provider,
-                Server = serverInfo
+                Databases = databases
             };
         }
 

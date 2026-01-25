@@ -53,10 +53,34 @@ export interface ApplicationMetrics {
 }
 
 export interface DatabaseStatus {
+    databases: DatabaseInfo[];
+}
+
+export interface DatabaseInfo {
+    name: string;
     status: string;
     isConnected: boolean;
     provider: string;
     server: string;
+    database?: string;
+    errorMessage?: string;
+}
+
+export interface TableStatisticsInfo {
+    databaseName: string;
+    provider: string;
+    tables: TableInfo[];
+    totalTables: number;
+    totalRows: number;
+    totalSizeMB: number;
+    sizeAvailable: boolean;
+    errorMessage?: string;
+}
+
+export interface TableInfo {
+    tableName: string;
+    rowCount: number;
+    sizeMB: number;
 }
 
 export interface DiskMetrics {
@@ -149,6 +173,19 @@ export class SystemHealthService {
         return timer(0, intervalMs).pipe(
             takeUntil(stopSignal),
             switchMap(() => this.getStatus())
+        );
+    }
+
+    /**
+     * Get table statistics for a specific database (on-demand, expensive operation)
+     */
+    getTableStatistics(databaseName: string): Observable<TableStatisticsInfo> {
+        return this.http.get<TableStatisticsInfo>(
+            `${this.baseUrl}/database/tables`,
+            {
+                headers: this.authService.GetAuthenticationHeaders(),
+                params: { database: databaseName }
+            }
         );
     }
 }

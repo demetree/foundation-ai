@@ -1,12 +1,11 @@
-﻿using Foundation.Controllers;
-using Foundation.Services;
+﻿using System;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Threading;
 using System.Threading.Tasks;
 using static Foundation.Services.TileManagementService;
+using Foundation.Services;
 
 namespace Foundation.Controllers.WebAPI
 {
@@ -68,7 +67,7 @@ namespace Foundation.Controllers.WebAPI
             if (tileResponse.ErrorStatusCode.HasValue)
             {
                 // Tell the client not to cache error tile responses 
-                Response.Headers.Add("Cache-Control", "no-cache");
+                Response.Headers.Append("Cache-Control", "no-cache");
 
                 return StatusCode(tileResponse.ErrorStatusCode.Value, tileResponse.ErrorMessage);
             }
@@ -107,7 +106,7 @@ namespace Foundation.Controllers.WebAPI
             TileResponse tileResponse = await _tileService.GetNonSatelliteTileAsync(z, x, y);
             if (tileResponse.ErrorStatusCode.HasValue)
             {
-                Response.Headers.Add("Cache-Control", "no-cache");
+                Response.Headers.Append("Cache-Control", "no-cache");
 
                 return StatusCode(tileResponse.ErrorStatusCode.Value, tileResponse.ErrorMessage);
             }
@@ -133,12 +132,12 @@ namespace Foundation.Controllers.WebAPI
         [RateLimit(RateLimitOption.FiftyPerSecond, Scope = RateLimitScope.PerUser)]
         [HttpGet("MapImages/Point")]
         public async Task<IActionResult> GetImageAtPoint(double latitude,
-                                                                  double longitude,
-                                                                  bool satellite = true,
-                                                                  int width = 800,
-                                                                  int height = 600,
-                                                                  int zoom = 10,
-                                                                  double opacity = 1)
+                                                         double longitude,
+                                                         bool satellite = true,
+                                                         int width = 800,
+                                                         int height = 600,
+                                                         int zoom = 10,
+                                                         double opacity = 1)
         {
             //
             // If authentication is required, ensure the user is authenticated
@@ -163,7 +162,7 @@ namespace Foundation.Controllers.WebAPI
             if (imageResponse.ErrorStatusCode.HasValue)
             {
                 // Tell the client not to cache error tile responses 
-                Response.Headers.Add("Cache-Control", "no-cache");
+                Response.Headers.Append("Cache-Control", "no-cache");
 
                 return StatusCode(imageResponse.ErrorStatusCode.Value, imageResponse.ErrorMessage);
             }
@@ -227,7 +226,7 @@ namespace Foundation.Controllers.WebAPI
             if (imageResponse.ErrorStatusCode.HasValue)
             {
                 // Tell the client not to cache error tile responses 
-                Response.Headers.Add("Cache-Control", "no-cache");
+                Response.Headers.Append("Cache-Control", "no-cache");
 
                 return StatusCode(imageResponse.ErrorStatusCode.Value, imageResponse.ErrorMessage);
             }
@@ -265,7 +264,7 @@ namespace Foundation.Controllers.WebAPI
             {
                 return Ok("Cache cleared successfully.");
             }
-            Response.Headers.Add("Cache-Control", "no-cache");
+            Response.Headers.Append("Cache-Control", "no-cache");
 
             return Problem("Failed to clear tile cache.");
         }
@@ -288,11 +287,11 @@ namespace Foundation.Controllers.WebAPI
             if (eTag != null && Request.Headers["If-None-Match"] == $"\"{eTag}\"")
             {
                 // 7 days (604800 seconds)
-                Response.Headers.Add("Cache-Control", "public, max-age=604800");
-                Response.Headers.Add("Expires", DateTime.UtcNow.AddSeconds(604800).ToString("R"));
+                Response.Headers.Append("Cache-Control", "public, max-age=604800");
+                Response.Headers.Append("Expires", DateTime.UtcNow.AddSeconds(604800).ToString("R"));
 
 
-                Response.Headers.Add("ETag", $"\"{eTag}\"");
+                Response.Headers.Append("ETag", $"\"{eTag}\"");
 
                 _logger.LogDebug($"Returning 304 Not Modified for tile with ETag {eTag}");
 
@@ -312,7 +311,7 @@ namespace Foundation.Controllers.WebAPI
 
                 if (compressionResult.Data == null)
                 {
-                    Response.Headers.Add("Cache-Control", "no-cache");
+                    Response.Headers.Append("Cache-Control", "no-cache");
 
                     return Problem("Compression failed.");
                 }
@@ -327,34 +326,34 @@ namespace Foundation.Controllers.WebAPI
                 if (string.IsNullOrEmpty(eTag) == false && allowClientSideCaching == true)
                 {
                     // 7 days (604800 seconds)
-                    Response.Headers.Add("Cache-Control", "public, max-age=604800");
-                    Response.Headers.Add("Expires", DateTime.UtcNow.AddSeconds(604800).ToString("R"));
+                    Response.Headers.Append("Cache-Control", "public, max-age=604800");
+                    Response.Headers.Append("Expires", DateTime.UtcNow.AddSeconds(604800).ToString("R"));
 
-                    Response.Headers.Add("ETag", $"\"{eTag}\"");
+                    Response.Headers.Append("ETag", $"\"{eTag}\"");
                 }
                 else
                 {
                     //
                     // We don't want the client to cache this particular response.
                     //
-                    Response.Headers.Add("Cache-Control", "no-cache");
+                    Response.Headers.Append("Cache-Control", "no-cache");
                 }
 
 
                 // Only put on the vary header if the tile service could be using compression
                 if (_tileService.CompressionEnabled == true)
                 {
-                    Response.Headers.Add("Vary", "Accept-Encoding");
+                    Response.Headers.Append("Vary", "Accept-Encoding");
                 }
 
-                Response.Headers.Add("Content-Length", compressionResult.ContentLength.ToString());
+                Response.Headers.Append("Content-Length", compressionResult.ContentLength.ToString());
 
                 //
                 // If we've compressed the data, put on its encoding.
                 //
                 if (!string.IsNullOrEmpty(compressionResult.ContentEncoding))
                 {
-                    Response.Headers.Add("Content-Encoding", compressionResult.ContentEncoding);
+                    Response.Headers.Append("Content-Encoding", compressionResult.ContentEncoding);
                 }
 
                 return File(compressionResult.Data, "image/png");
@@ -363,7 +362,7 @@ namespace Foundation.Controllers.WebAPI
             {
                 _logger.LogError($"Unexpected error in ReturnCompressedTile: {ex.Message}");
 
-                Response.Headers.Add("Cache-Control", "no-cache");
+                Response.Headers.Append("Cache-Control", "no-cache");
 
                 return Problem("Unexpected error while processing tile.");
             }

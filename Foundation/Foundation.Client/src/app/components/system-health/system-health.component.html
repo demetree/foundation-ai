@@ -212,7 +212,7 @@
     </div>
 
 
-    <!-- Database Card -->
+    <!-- Database Card - now shows multiple databases -->
     <div class="col-md-6 col-lg-4">
       <div class="card health-card h-100 border-0 shadow-sm">
         <div class="card-header bg-transparent border-0 d-flex align-items-center">
@@ -220,22 +220,41 @@
             <i class="fas fa-database fa-lg text-success"></i>
           </div>
           <div>
-            <h5 class="mb-0">Database</h5>
-            <small class="text-muted">{{ healthStatus.database?.provider }}</small>
+            <h5 class="mb-0">Databases</h5>
+            <small class="text-muted">{{ healthStatus.database?.databases?.length || 0 }} connection(s)</small>
           </div>
-          <span class="ms-auto badge" [ngClass]="getStatusClass(healthStatus.database?.status || '')">
-            <i class="fas" [ngClass]="getStatusIcon(healthStatus.database?.status || '')"></i>
-            {{ healthStatus.database?.status }}
-          </span>
         </div>
         <div class="card-body">
-          <div class="metric-row">
-            <span class="metric-label"><i class="fas fa-plug me-2"></i>Server</span>
-            <span class="metric-value">{{ healthStatus.database?.server }}</span>
+          <!-- Iterate over each database -->
+          <div *ngFor="let db of healthStatus.database?.databases; let last = last" class="database-item"
+            [class.mb-3]="!last" [class.border-bottom]="!last" [class.pb-3]="!last">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="fw-bold">{{ db.name }}</span>
+              <span class="badge" [ngClass]="db.isConnected ? 'bg-success' : 'bg-danger'">
+                <i class="fas" [ngClass]="db.isConnected ? 'fa-check' : 'fa-times'"></i>
+                {{ db.status }}
+              </span>
+            </div>
+            <div class="metric-row small">
+              <span class="metric-label text-muted"><i class="fas fa-server me-1"></i>{{ db.server }}</span>
+            </div>
+            <div class="metric-row small" *ngIf="db.database">
+              <span class="metric-label text-muted"><i class="fas fa-table me-1"></i>{{ db.database }}</span>
+            </div>
+            <div class="metric-row small">
+              <span class="metric-label text-muted"><i class="fas fa-cog me-1"></i>{{ db.provider }}</span>
+            </div>
+            <div class="metric-row small text-danger" *ngIf="db.errorMessage">
+              <i class="fas fa-exclamation-triangle me-1"></i>{{ db.errorMessage }}
+            </div>
+            <button *ngIf="db.isConnected" class="btn btn-sm btn-outline-secondary mt-2 w-100"
+              (click)="openTableModal(db.name)">
+              <i class="fas fa-table me-1"></i>View Tables
+            </button>
           </div>
-          <div class="metric-row">
-            <span class="metric-label"><i class="fas fa-cog me-2"></i>Provider</span>
-            <span class="metric-value">{{ healthStatus.database?.provider }}</span>
+          <!-- Empty state if no databases -->
+          <div *ngIf="!healthStatus.database?.databases?.length" class="text-muted text-center py-2">
+            <i class="fas fa-info-circle me-1"></i>No database providers registered
           </div>
         </div>
       </div>
@@ -286,3 +305,87 @@
 
   </div>
 </div>
+
+<!-- Table Statistics Modal -->
+<div class="modal fade" [class.show]="showTableModal" [style.display]="showTableModal ? 'block' : 'none'" tabindex="-1"
+  role="dialog" (click)="closeTableModal()">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document" (click)="$event.stopPropagation()">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="fas fa-table me-2"></i>Table Statistics - {{ selectedDatabaseName }}
+        </h5>
+        <button type="button" class="btn-close" (click)="closeTableModal()"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Loading state -->
+        <div *ngIf="tableStatsLoading" class="text-center py-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p class="mt-2 text-muted">Loading table statistics...</p>
+        </div>
+
+        <!-- Error state -->
+        <div *ngIf="!tableStatsLoading && tableStats?.errorMessage" class="alert alert-danger">
+          <i class="fas fa-exclamation-triangle me-2"></i>{{ tableStats?.errorMessage }}
+        </div>
+
+        <!-- Statistics summary -->
+        <div *ngIf="!tableStatsLoading && tableStats && !tableStats.errorMessage">
+          <div class="row mb-3">
+            <div class="col-4 text-center">
+              <div class="h4 mb-0">{{ tableStats.totalTables }}</div>
+              <small class="text-muted">Tables</small>
+            </div>
+            <div class="col-4 text-center">
+              <div class="h4 mb-0">{{ formatRowCount(tableStats.totalRows) }}</div>
+              <small class="text-muted">Total Rows</small>
+            </div>
+            <div class="col-4 text-center" *ngIf="tableStats.sizeAvailable">
+              <div class="h4 mb-0">{{ tableStats.totalSizeMB | number:'1.1-1' }} MB</div>
+              <small class="text-muted">Total Size</small>
+            </div>
+          </div>
+
+          <!-- Table list -->
+          <table class="table table-sm table-hover">
+            <thead>
+              <tr>
+                <th class="sortable" (click)="sortTables('tableName')">
+                  Table Name
+                  <i class="fas ms-1"
+                    [ngClass]="tableSortColumn === 'tableName' ? (tableSortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort'"></i>
+                </th>
+                <th class="sortable text-end" (click)="sortTables('rowCount')">
+                  Rows
+                  <i class="fas ms-1"
+                    [ngClass]="tableSortColumn === 'rowCount' ? (tableSortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort'"></i>
+                </th>
+                <th class="sortable text-end" *ngIf="tableStats.sizeAvailable" (click)="sortTables('sizeMB')">
+                  Size (MB)
+                  <i class="fas ms-1"
+                    [ngClass]="tableSortColumn === 'sizeMB' ? (tableSortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort'"></i>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let table of getSortedTables()">
+                <td><code>{{ table.tableName }}</code></td>
+                <td class="text-end">{{ table.rowCount | number }}</td>
+                <td class="text-end" *ngIf="tableStats.sizeAvailable">{{ table.sizeMB | number:'1.2-2' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <small class="text-muted me-auto">
+          <i class="fas fa-info-circle me-1"></i>Row counts are approximate
+        </small>
+        <button type="button" class="btn btn-secondary" (click)="closeTableModal()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop fade show" *ngIf="showTableModal" (click)="closeTableModal()"></div>

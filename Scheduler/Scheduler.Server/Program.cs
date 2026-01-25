@@ -381,6 +381,16 @@ namespace Foundation.Scheduler
                 builder.Services.AddSingleton<Foundation.Logger>(logger);
 
                 //
+                // Database Health Providers (for System Health dashboard)
+                //
+                builder.Services.AddSingleton<Foundation.Services.IDatabaseHealthProvider>(
+                    new Foundation.Services.DbContextHealthProvider<SecurityContext>("Security"));
+                builder.Services.AddSingleton<Foundation.Services.IDatabaseHealthProvider>(
+                    new Foundation.Services.DbContextHealthProvider<AuditorContext>("Auditor"));
+                builder.Services.AddSingleton<Foundation.Services.IDatabaseHealthProvider>(
+                    new Foundation.Services.DbContextHealthProvider<SchedulerContext>("Scheduler"));
+
+                //
                 // Configurations
                 //
                 builder.Services.Configure<AppSettings>(builder.Configuration);

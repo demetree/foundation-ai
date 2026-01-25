@@ -164,7 +164,7 @@ namespace Foundation.Services
                 Top = 2,
                 Bottom = 3,
             }
-           
+
             public LegendPosition legendPosition { get; set; }
 
             public List<string> colorGradients { get; set; }
@@ -525,7 +525,7 @@ namespace Foundation.Services
                 {
                     AddOverlayImagesToCompositeImage(imagesToOverlay, tileCount, TILE_SIZE, xMin, yMin, compositeImage, centerXPixel, centerYPixel);
                 }
-                
+
                 // Overlay GeoJSON if provided
                 if (geoJsonsToOverlay != null)
                 {
@@ -830,7 +830,7 @@ namespace Foundation.Services
             try
             {
 
-                foreach( GeoJsonWithInstructions overlay in geoJsonsToOverlay)
+                foreach (GeoJsonWithInstructions overlay in geoJsonsToOverlay)
                 {
                     JsonElement root = overlay.GeoJsonData.RootElement;
 
@@ -857,7 +857,7 @@ namespace Foundation.Services
                             DrawGeometry(geometry, ctx, overlay.color, overlay.lineWidth, xMin, yMin, tileSize, tileCount, properties);
                         });
                     }
-                    else if(root.GetProperty("type").GetString() == "GeometryCollection")
+                    else if (root.GetProperty("type").GetString() == "GeometryCollection")
                     {
                         foreach (var geometry in root.GetProperty("geometries").EnumerateArray())
                         {
@@ -877,13 +877,13 @@ namespace Foundation.Services
                     }
 
                 }
-                
+
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger?.LogWarning($"Failed to apply overlay {ex.Message}");
             }
-            
+
         }
 
         /// <summary>
@@ -968,11 +968,12 @@ namespace Foundation.Services
                             //  }
 
                             Font font;
-                            
+
                             int countOfDigits = Regex.Matches(label, @"\d").Count;
 
-                            switch (countOfDigits) {
-                                
+                            switch (countOfDigits)
+                            {
+
                                 case 1:
                                     {
                                         font = SystemFonts.CreateFont("Arial", 16, FontStyle.Bold);
@@ -991,35 +992,36 @@ namespace Foundation.Services
                                         break;
                                     }
 
-                                default: {
+                                default:
+                                    {
                                         font = SystemFonts.CreateFont("Arial", 12, FontStyle.Bold);
                                         break;
                                     }
 
                             }
-                            
+
                             var textSize = TextMeasurer.MeasureSize(label, new TextOptions(font));
 
                             // Construct a path for the pin shape
-                           
+
                             var pinShape = new EllipsePolygon(pt, 14);
 
-                            if(string.IsNullOrEmpty(pinColor) == false) // choose color provided by the geojson or use the default color
+                            if (string.IsNullOrEmpty(pinColor) == false) // choose color provided by the geojson or use the default color
                             {
                                 ctx.Fill(Color.ParseHex(pinColor), pinShape);
                             }
-                            else 
+                            else
                             {
                                 ctx.Fill(color, pinShape);
                             }
- 
+
                             ctx.Draw(Color.White, 4, pinShape);
-                            
-                            ctx.DrawText(label, font, Color.White, new PointF(pt.X -1 - textSize.Width/2, pt.Y - textSize.Height/2));
+
+                            ctx.DrawText(label, font, Color.White, new PointF(pt.X - 1 - textSize.Width / 2, pt.Y - textSize.Height / 2));
 
                             break;
                         }
-                        catch (Exception ex) 
+                        catch (Exception ex)
                         {
                             _logger?.LogWarning($"Failed to apply overlay {ex.Message}");
                             break;
@@ -1068,7 +1070,7 @@ namespace Foundation.Services
                             // duplicate points could cause "degenerate paths" (a path of length 0)
                             //
                             var uniquePoints = points.Distinct().ToArray();
-                           
+
                             //
                             // Even after de-dupe we need to make sure that the list of unique points do not overlap to closely 
                             // So go over two points at a time and plot them
@@ -1098,7 +1100,7 @@ namespace Foundation.Services
                             _logger?.LogWarning($"Failed to apply overlay {ex.Message}");
                             break;
                         }
-                       
+
                     }
 
                 case "MultiLineString":
@@ -1154,8 +1156,8 @@ namespace Foundation.Services
                             _logger?.LogWarning($"Failed to apply overlay {ex.Message}");
                             break;
                         }
-                        
-                    }      
+
+                    }
                 case "Polygon":
                     {
                         try
@@ -1239,7 +1241,7 @@ namespace Foundation.Services
                             _logger?.LogWarning($"Failed to apply overlay {ex.Message}");
                             break;
                         }
-                        
+
                     }
                 case "GeometryCollection":
                     foreach (var geom in geometry.GetProperty("geometries").EnumerateArray())
@@ -1344,7 +1346,7 @@ namespace Foundation.Services
                     }
                 }
             }
-            
+
 
 
             try
@@ -1563,7 +1565,7 @@ namespace Foundation.Services
                 {
                     AddOverlayGeoJsonToCompositeImage(geoJsonsToOverlay, tileCount, TILE_SIZE, xMin, yMin, compositeImage, centerXPixel, centerYPixel);
                 }
-                
+
                 // Draw debug markers if enabled
                 if (_drawDebugMarkersOnImages == true)
                 {
@@ -1727,9 +1729,6 @@ namespace Foundation.Services
 
                 SixLabors.ImageSharp.Size legendSize;
 
-                Rectangle rectangleColorGradient;
-
-
                 // 
                 // Predetermined Legend image dimensions in pixels
                 //
@@ -1739,7 +1738,7 @@ namespace Foundation.Services
 
                 int portraitGradientWidth = 30;
                 int portraitLegendWidth = 95;
-                
+
                 int horizontalTextPadding = 10;
                 int verticalTextPadding = 10;
 
@@ -2082,7 +2081,7 @@ namespace Foundation.Services
                                     // Draw
                                     legendImage.Mutate(ctx => ctx.DrawText(labels[i], font, Color.Black, new PointF(x, y)));
                                 }
-                                
+
 
                             }
                             else
@@ -2406,14 +2405,14 @@ namespace Foundation.Services
 
                                 List<string> altitudeLabels = new List<string>();
 
-                                float stepSize = (float)((colorAndGradientsWithPosition.targetValue - colorAndGradientsWithPosition.minTargetValue)/4);
+                                float stepSize = (float)((colorAndGradientsWithPosition.targetValue - colorAndGradientsWithPosition.minTargetValue) / 4);
 
-                                for (int i=0; i < 5; i++)
+                                for (int i = 0; i < 5; i++)
                                 {
                                     float value = (float)colorAndGradientsWithPosition.minTargetValue + (stepSize * i);
                                     altitudeLabels.Add($"{value.ToString("F2")}m");
                                 }
-                               
+
                                 string[] labels = altitudeLabels.ToArray();
 
                                 for (int i = 0; i < labels.Length; i++)
@@ -2772,7 +2771,7 @@ namespace Foundation.Services
             // Check the cache first, to see if we can serve this request from the memory cache and/or disk caches.
             //
             (bool flowControl, TileResponse value) = await AttemptToServeTileRequestFromCache(_satelliteTileMemoryCache, z, x, y, memoryCacheKey, cacheFileName, cacheFilePath, cacheFailureFilePath).ConfigureAwait(false);
-            
+
             //
             // Return the cached data if we have it.
             //
@@ -2999,7 +2998,7 @@ namespace Foundation.Services
                     return new TileResponse(null, null, 400, "Failed to fetch tile", false);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 if (_useNoTileImageOnError == true)
                 {
@@ -3190,7 +3189,7 @@ namespace Foundation.Services
             {
                 // Check cache again after semaphore
                 (flowControl, value) = await AttemptToServeTileRequestFromCache(_nonSatelliteTileMemoryCache, z, x, y, memoryCacheKey, cacheFileName, cacheFilePath, cacheFailureFilePath).ConfigureAwait(false);
-                
+
                 // Serve from cached value if we have it.
                 if (flowControl == false)
                 {
@@ -3225,7 +3224,7 @@ namespace Foundation.Services
                     if (z > MAX_ZOOM)
                     {
                         _logger?.LogWarning($"Zoom {z} too high for upscaling. Max zoom is {MAX_ZOOM}; returning unsupported.");
-                        
+
                         await File.WriteAllTextAsync(cacheFailureFilePath, "400").ConfigureAwait(false);
 
                         return new TileResponse(null, null, 400, "Zoom level unsupported", false);
@@ -3771,7 +3770,7 @@ namespace Foundation.Services
                     }
 
                     byte[] buffer = new byte[stream.Length];
-                    stream.Read(buffer, 0, buffer.Length);
+                    stream.ReadExactly(buffer);
 
                     return buffer;
                 }

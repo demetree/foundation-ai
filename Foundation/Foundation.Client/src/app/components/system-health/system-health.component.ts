@@ -14,7 +14,8 @@ import {
     SystemHealthStatus,
     DriveInfo,
     MonitoredApplicationsService,
-    MonitoredApplicationStatus
+    MonitoredApplicationStatus,
+    TableStatisticsInfo
 } from '../../services/system-health.service';
 
 
@@ -51,6 +52,16 @@ export class SystemHealthComponent implements OnInit, OnDestroy {
     applications: MonitoredApplicationStatus[] = [];
     selectedAppIndex = 0;
     healthStatus: SystemHealthStatus | null = null;
+
+    //
+    // Table statistics modal
+    //
+    showTableModal = false;
+    tableStatsLoading = false;
+    tableStats: TableStatisticsInfo | null = null;
+    selectedDatabaseName: string | null = null;
+    tableSortColumn: 'tableName' | 'rowCount' | 'sizeMB' = 'rowCount';
+    tableSortDirection: 'asc' | 'desc' = 'desc';
 
 
     constructor(
@@ -266,4 +277,90 @@ export class SystemHealthComponent implements OnInit, OnDestroy {
         }
         return `${mb.toFixed(0)} MB`;
     }
+
+
+    //
+    // Table statistics modal
+    //
+    openTableModal(databaseName: string): void {
+        this.selectedDatabaseName = databaseName;
+        this.showTableModal = true;
+        this.tableStats = null;
+        this.tableStatsLoading = true;
+
+        this.systemHealthService.getTableStatistics(databaseName)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (stats: TableStatisticsInfo) => {
+                    this.tableStats = stats;
+                    this.tableStatsLoading = false;
+                },
+                error: (err: Error) => {
+                    console.error('Failed to load table statistics:', err);
+                    this.tableStatsLoading = false;
+                    this.tableStats = {
+                        databaseName: databaseName,
+                        provider: 'Unknown',
+                        tables: [],
+                        totalTables: 0,
+                        totalRows: 0,
+                        totalSizeMB: 0,
+                        sizeAvailable: false,
+                        errorMessage: 'Failed to load table statistics'
+                    };
+                }
+            });
+    }
+
+
+    closeTableModal(): void {
+        this.showTableModal = false;
+        this.tableStats = null;
+        this.selectedDatabaseName = null;
+    }
+
+
+    sortTables(column: 'tableName' | 'rowCount' | 'sizeMB'): void {
+        if (this.tableSortColumn === column) {
+            this.tableSortDirection = this.tableSortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            this.tableSortColumn = column;
+            this.tableSortDirection = column === 'tableName' ? 'asc' : 'desc';
+        }
+    }
+
+
+    getSortedTables() {
+        if (!this.tableStats?.tables) return [];
+
+        return [...this.tableStats.tables].sort((a, b) => {
+            let comparison = 0;
+
+            switch (this.tableSortColumn) {
+                case 'tableName':
+                    comparison = a.tableName.localeCompare(b.tableName);
+                    break;
+                case 'rowCount':
+                    comparison = a.rowCount - b.rowCount;
+                    break;
+                case 'sizeMB':
+                    comparison = a.sizeMB - b.sizeMB;
+                    break;
+            }
+
+            return this.tableSortDirection === 'asc' ? comparison : -comparison;
+        });
+    }
+
+
+    formatRowCount(count: number): string {
+        if (count >= 1000000) {
+            return `${(count / 1000000).toFixed(1)}M`;
+        }
+        if (count >= 1000) {
+            return `${(count / 1000).toFixed(1)}K`;
+        }
+        return count.toLocaleString();
+    }
 }
+
