@@ -8,6 +8,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import {
     SystemHealthService,
@@ -20,6 +21,7 @@ import {
     ApplicationMetricsResponse,
     ApplicationMetricItem
 } from '../../services/system-health.service';
+import { SessionActionDialogComponent, SessionActionResult } from '../../services/session-action-dialog/session-action-dialog.component';
 
 
 @Component({
@@ -72,6 +74,7 @@ export class SystemHealthComponent implements OnInit, OnDestroy {
     authenticatedUsers: AuthenticatedUsersInfo | null = null;
     usersLoading = false;
     showUsersPanel = true;
+    revokingSessionId: number | null = null;
 
     //
     // Application Metrics panel
@@ -83,7 +86,8 @@ export class SystemHealthComponent implements OnInit, OnDestroy {
 
     constructor(
         private systemHealthService: SystemHealthService,
-        private monitoredAppsService: MonitoredApplicationsService
+        private monitoredAppsService: MonitoredApplicationsService,
+        private modalService: NgbModal
     ) { }
 
 
@@ -155,6 +159,78 @@ export class SystemHealthComponent implements OnInit, OnDestroy {
                     this.usersLoading = false;
                 }
             });
+    }
+
+
+    //
+    // Revoke a session (admin action) - uses enhanced confirmation dialog
+    //
+    revokeSession(session: any): void {
+        if (!session.sessionId) return;
+
+        const modalRef = this.modalService.open(SessionActionDialogComponent, {
+            centered: true,
+            size: 'lg'
+        });
+        modalRef.componentInstance.title = 'Revoke Session';
+        modalRef.componentInstance.username = session.displayName || session.username;
+        modalRef.componentInstance.showLockOption = true;
+
+        modalRef.result.then((result: SessionActionResult) => {
+            if (!result.confirmed) return;
+
+            this.revokingSessionId = session.sessionId;
+
+            if (result.action === 'revoke-and-lock') {
+                // Revoke and lock account
+                this.systemHealthService.revokeSessionAndLockAccount(session.sessionId, result.reason)
+                    .pipe(takeUntil(this.destroy$))
+                    .subscribe({
+                        next: (response) => {
+                            if (response.success) {
+                                // Remove the session from the list
+                                if (this.authenticatedUsers?.sessions) {
+                                    this.authenticatedUsers.sessions = this.authenticatedUsers.sessions.filter(
+                                        s => s.sessionId !== session.sessionId
+                                    );
+                                    this.authenticatedUsers.totalCount = this.authenticatedUsers.sessions.length;
+                                }
+                                alert(`Account for ${response.targetUsername} has been locked. ${response.revokedCount} session(s) revoked.`);
+                            }
+                            this.revokingSessionId = null;
+                        },
+                        error: (err: Error) => {
+                            console.error('Failed to revoke and lock:', err);
+                            this.revokingSessionId = null;
+                            alert('Failed to revoke and lock: ' + err.message);
+                        }
+                    });
+            } else {
+                // Standard revoke
+                this.systemHealthService.revokeSession(session.sessionId, result.reason)
+                    .pipe(takeUntil(this.destroy$))
+                    .subscribe({
+                        next: (response) => {
+                            if (response.success) {
+                                if (this.authenticatedUsers?.sessions) {
+                                    this.authenticatedUsers.sessions = this.authenticatedUsers.sessions.filter(
+                                        s => s.sessionId !== session.sessionId
+                                    );
+                                    this.authenticatedUsers.totalCount = this.authenticatedUsers.sessions.length;
+                                }
+                            }
+                            this.revokingSessionId = null;
+                        },
+                        error: (err: Error) => {
+                            console.error('Failed to revoke session:', err);
+                            this.revokingSessionId = null;
+                            alert('Failed to revoke session: ' + err.message);
+                        }
+                    });
+            }
+        }).catch(() => {
+            // Modal dismissed
+        });
     }
 
 

@@ -15,6 +15,7 @@ CREATE DATABASE "Security"
 CREATE SCHEMA "Security"
 
 /* These drop table commands are here in a commented state as a convenience for situations where you may want to modify the tables in a schema.  They are ordered correctly to be able to delete all tables if executed as a batch, or at least in this order.  Be very careful with these. */
+-- DROP TABLE "Security"."UserSession"
 -- DROP TABLE "Security"."OAUTHToken"
 -- DROP TABLE "Security"."EntityDataTokenEvent"
 -- DROP TABLE "Security"."EntityDataTokenEventType"
@@ -44,6 +45,7 @@ CREATE SCHEMA "Security"
 -- DROP TABLE "Security"."SecurityTenant"
 
 /* These disable table index commands are here in a commented state as a convenience for situations where you want to remove the indexes on a table for things like mass data loads, where indexes just slow things down.  The corresponding rebuild index commands are listed after the disable commands */
+-- ALTER INDEX ALL ON "UserSession" DISABLE
 -- ALTER INDEX ALL ON "OAUTHToken" DISABLE
 -- ALTER INDEX ALL ON "EntityDataTokenEvent" DISABLE
 -- ALTER INDEX ALL ON "EntityDataTokenEventType" DISABLE
@@ -73,6 +75,7 @@ CREATE SCHEMA "Security"
 -- ALTER INDEX ALL ON "SecurityTenant" DISABLE
 
 /* These rebuild table index commands are here in a commented state as a convenience for situations where you want to rebuild the indexes on a table after having removed them, or if you want to refresh them. */
+-- ALTER INDEX ALL ON "UserSession" REBUILD
 -- ALTER INDEX ALL ON "OAUTHToken" REBUILD
 -- ALTER INDEX ALL ON "EntityDataTokenEvent" REBUILD
 -- ALTER INDEX ALL ON "EntityDataTokenEventType" REBUILD
@@ -358,9 +361,9 @@ CREATE INDEX "I_SecurityUser_accountName_activeDirectoryAccount_active_delete" O
 CREATE INDEX "I_SecurityUser_id_active_deleted" ON "Security"."SecurityUser" ("id", "active", "deleted")
 ;
 
-INSERT INTO "Security"."SecurityUser" ( "accountName", "activeDirectoryAccount", "canLogin", "mustChangePassword", "firstName", "lastName", "password", "description", "readPermissionLevel", "writePermissionLevel", "objectGuid" ) VALUES  ( 'Admin', false, true, true, 'Admin', 'User', '$HASH$V1000$10000$7lx52j0Z5CjBUyu8L84pOmsOo+jNH/pVZ1VlI4EBjAftRag+', 'Refer to generator for default password.', 255, 255, '4099226f-cc2f-46d2-9725-29de861c4fa9' );
+INSERT INTO "Security"."SecurityUser" ( "accountName", "activeDirectoryAccount", "canLogin", "mustChangePassword", "firstName", "lastName", "password", "description", "readPermissionLevel", "writePermissionLevel", "objectGuid" ) VALUES  ( 'Admin', false, true, true, 'Admin', 'Account', '$HASH$V1000$10000$7lx52j0Z5CjBUyu8L84pOmsOo+jNH/pVZ1VlI4EBjAftRag+', 'System Aministrator account.  Refer to generator for default password.', 255, 255, '4099226f-cc2f-46d2-9725-29de861c4fa9' );
 
-INSERT INTO "Security"."SecurityUser" ( "accountName", "activeDirectoryAccount", "canLogin", "mustChangePassword", "firstName", "lastName", "password", "readPermissionLevel", "writePermissionLevel", "objectGuid" ) VALUES  ( 'Service', false, true, false, 'Service', 'Account', '$HASH$V1000$10000$WeuGAJrhrIJWnWZIdyAQKvBEiFM0iMLiS+NJW8ws0YjSCbPq', 255, 255, 'd80632a7-b1ff-47cb-9ecd-87f4a4a22763' );
+INSERT INTO "Security"."SecurityUser" ( "accountName", "activeDirectoryAccount", "canLogin", "mustChangePassword", "firstName", "middleName", "lastName", "password", "description", "readPermissionLevel", "writePermissionLevel", "objectGuid" ) VALUES  ( 'SystemService', false, true, false, 'System', 'Service', 'Account', '$HASH$V1000$10000$WeuGAJrhrIJWnWZIdyAQKvBEiFM0iMLiS+NJW8ws0YjSCbPq', 'System Service account for job/worker connection purposes.  Refer to generator for default password.', 255, 255, 'd80632a7-b1ff-47cb-9ecd-87f4a4a22763' );
 
 
 CREATE TABLE "Security"."SecurityTenantUser"
@@ -1127,6 +1130,71 @@ CREATE INDEX "I_OAUTHToken_deleted" ON "Security"."OAUTHToken" ("deleted")
 
 -- Index on the OAUTHToken table's id,active,deleted fields.
 CREATE INDEX "I_OauthToken_id_active_deleted" ON "Security"."OAUTHToken" ("id", "active", "deleted")
+;
+
+
+CREATE TABLE "Security"."UserSession"
+(
+	"id" SERIAL PRIMARY KEY NOT NULL,
+	"securityUserId" INT NOT NULL,		-- Link to the SecurityUser table.
+	"objectGuid" VARCHAR(50) NOT NULL,		-- User's objectGuid for reliable identity resolution
+	"tokenId" VARCHAR(250) NULL,		-- OpenIddict token ID for correlation
+	"sessionStart" TIMESTAMP NOT NULL,		-- When the token was issued
+	"expiresAt" TIMESTAMP NOT NULL,		-- When the token expires
+	"ipAddress" VARCHAR(50) NULL,		-- Client IP address at login
+	"userAgent" VARCHAR(500) NULL,		-- Browser/client user agent
+	"loginMethod" VARCHAR(50) NULL,		-- Login method: Password, Microsoft, Google, RefreshToken
+	"clientApplication" VARCHAR(100) NULL,		-- Client application name
+	"isRevoked" BOOLEAN NOT NULL DEFAULT false,		-- Whether session has been administratively revoked
+	"revokedAt" TIMESTAMP NULL,		-- When session was revoked
+	"revokedBy" VARCHAR(100) NULL,		-- Who revoked the session (admin username)
+	"revokedReason" VARCHAR(500) NULL,		-- Reason for revocation
+	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
+	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
+	CONSTRAINT "securityUserId" FOREIGN KEY ("securityUserId") REFERENCES "Security"."SecurityUser"("id")		-- Foreign key to the SecurityUser table.
+);
+-- Index on the UserSession table's securityUserId field.
+CREATE INDEX "I_UserSession_securityUserId" ON "Security"."UserSession" ("securityUserId")
+;
+
+-- Index on the UserSession table's objectGuid field.
+CREATE INDEX "I_UserSession_objectGuid" ON "Security"."UserSession" ("objectGuid")
+;
+
+-- Index on the UserSession table's tokenId field.
+CREATE INDEX "I_UserSession_tokenId" ON "Security"."UserSession" ("tokenId")
+;
+
+-- Index on the UserSession table's sessionStart field.
+CREATE INDEX "I_UserSession_sessionStart" ON "Security"."UserSession" ("sessionStart")
+;
+
+-- Index on the UserSession table's expiresAt field.
+CREATE INDEX "I_UserSession_expiresAt" ON "Security"."UserSession" ("expiresAt")
+;
+
+-- Index on the UserSession table's loginMethod field.
+CREATE INDEX "I_UserSession_loginMethod" ON "Security"."UserSession" ("loginMethod")
+;
+
+-- Index on the UserSession table's isRevoked field.
+CREATE INDEX "I_UserSession_isRevoked" ON "Security"."UserSession" ("isRevoked")
+;
+
+-- Index on the UserSession table's active field.
+CREATE INDEX "I_UserSession_active" ON "Security"."UserSession" ("active")
+;
+
+-- Index on the UserSession table's deleted field.
+CREATE INDEX "I_UserSession_deleted" ON "Security"."UserSession" ("deleted")
+;
+
+-- Index on the UserSession table's id,active,deleted fields.
+CREATE INDEX "I_UserSession_id_active_deleted" ON "Security"."UserSession" ("id", "active", "deleted")
+;
+
+-- Index on the UserSession table's securityUserId,isRevoked,active,deleted fields.
+CREATE INDEX "I_UserSession_securityUserId_isRevoked_active_deleted" ON "Security"."UserSession" ("securityUserId", "isRevoked", "active", "deleted")
 ;
 
 

@@ -30,6 +30,8 @@ namespace Foundation.Web.Utility
             // Custom for Foundation Admin user listing custom actions
             //
             controllers.Add(typeof(AdminUserActionsController));             // Admin-only user management actions
+            controllers.Add(typeof(SessionsController));                 // Session state management
+            controllers.Add(typeof(UserSessionsController));                 // Session state management
 
             //
             // These are the Data Controllers for the security module

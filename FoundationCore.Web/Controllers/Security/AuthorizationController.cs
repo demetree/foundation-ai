@@ -25,13 +25,15 @@ namespace Foundation.Security.Controllers.WebAPI
         private readonly IServiceProvider _services;
         private readonly IUserService _userService;
         private readonly ICredentialCacheService _credentialCache;
+        private readonly ISessionTrackingService _sessionTracking;
 
         private readonly TokenValidatorOptions _tokenValidatorOptions;
 
         public AuthorizationController(IServiceProvider services,
                                        IUserService userService,
                                        ICredentialCacheService credentialCache,
-                                       IOptions<TokenValidatorOptions> tokenValidatorOptions)
+                                       IOptions<TokenValidatorOptions> tokenValidatorOptions,
+                                       ISessionTrackingService sessionTracking = null)
         {
             if (tokenValidatorOptions == null)
             {
@@ -43,6 +45,7 @@ namespace Foundation.Security.Controllers.WebAPI
             _userService = userService;
             _credentialCache = credentialCache ?? throw new ArgumentNullException(nameof(credentialCache));
             _tokenValidatorOptions = tokenValidatorOptions.Value;
+            _sessionTracking = sessionTracking;
         }
 
 
@@ -125,6 +128,11 @@ namespace Foundation.Security.Controllers.WebAPI
                 _credentialCache.CacheCredentials(securityUser.objectGuid.ToString(), securityUser.accountName, password);
 
                 //
+                // Record session for compliance tracking
+                //
+                await RecordSessionAsync(securityUser, "Password", request.ClientId);
+
+                //
                 // This completes the sign in process
                 //
                 return SignIn(principal, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
@@ -172,6 +180,11 @@ namespace Foundation.Security.Controllers.WebAPI
 
                     // Recreate the claims principal in case they changed since the refresh token was issued.
                     ClaimsPrincipal principal = CreateClaimsPrincipal(securityUser, userRoles, scopes, request.ClientId);
+
+                    //
+                    // Record session for compliance tracking (refresh token)
+                    //
+                    await RecordSessionAsync(securityUser, "RefreshToken", request.ClientId);
 
                     //
                     // This completes the sign in process
@@ -245,6 +258,11 @@ namespace Foundation.Security.Controllers.WebAPI
                 ClaimsPrincipal principal = CreateClaimsPrincipal(securityUser, userRoles, request.GetScopes(), request.ClientId);
 
                 //
+                // Record session for compliance tracking (SSO provider)
+                //
+                await RecordSessionAsync(securityUser, provider ?? "SSO", request.ClientId);
+
+                //
                 // This completes the sign in process
                 // 
                 return SignIn(principal, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
@@ -270,6 +288,40 @@ namespace Foundation.Security.Controllers.WebAPI
 
             return ipAddress;
         }
+
+
+        /// <summary>
+        /// Records session metadata for compliance tracking
+        /// </summary>
+        private async Task RecordSessionAsync(SecurityUser user, string loginMethod, string clientApplication)
+        {
+            if (_sessionTracking == null)
+            {
+                return; // Session tracking not configured
+            }
+
+            try
+            {
+                var sessionInfo = new SessionInfo
+                {
+                    SecurityUserId = user.id,
+                    ObjectGuid = user.objectGuid,
+                    SessionStart = DateTime.UtcNow,
+                    ExpiresAt = DateTime.UtcNow.AddHours(1), // Will be updated when token is actually issued
+                    IpAddress = GetClientIP(),
+                    UserAgent = Request.Headers.UserAgent.ToString(),
+                    LoginMethod = loginMethod,
+                    ClientApplication = clientApplication
+                };
+
+                await _sessionTracking.RecordSessionAsync(sessionInfo);
+            }
+            catch
+            {
+                // Don't fail the login if session tracking fails
+            }
+        }
+
 
         private ForbidResult GetForbidResult(string errorDescription, string error = Errors.InvalidGrant, Dictionary<string, string> errorData = null)
         {

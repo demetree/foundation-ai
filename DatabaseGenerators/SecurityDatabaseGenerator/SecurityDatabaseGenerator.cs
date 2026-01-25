@@ -683,6 +683,42 @@ namespace Foundation.Security.Database
             oauthTokenIdActiveDeletedIndex.AddField("active");
             oauthTokenIdActiveDeletedIndex.AddField("deleted");
 
+
+            /*
+             * 
+             *  UserSession table for compliance-grade real-time session tracking.
+             *  Records session metadata at token issuance time for accurate audit trails.
+             *  Supports session revocation for healthcare/HIPAA compliance.
+             * 
+             */
+            Database.Table userSessionTable = database.AddTable("UserSession");
+            userSessionTable.SetMinimumPermissionLevels(0, 100);
+            userSessionTable.displayNameForTable = "User Session";
+            userSessionTable.AddIdField();
+            userSessionTable.AddForeignKeyField("securityUserId", securityUserTable, false);
+            userSessionTable.AddGuidField("objectGuid", false).AddScriptComments("User's objectGuid for reliable identity resolution").CreateIndex();
+            userSessionTable.AddString250Field("tokenId", true).AddScriptComments("OpenIddict token ID for correlation").CreateIndex();
+            userSessionTable.AddDateTimeField("sessionStart", false).AddScriptComments("When the token was issued").CreateIndex();
+            userSessionTable.AddDateTimeField("expiresAt", false).AddScriptComments("When the token expires").CreateIndex();
+            userSessionTable.AddString50Field("ipAddress", true).AddScriptComments("Client IP address at login");
+            userSessionTable.AddString500Field("userAgent", true).AddScriptComments("Browser/client user agent");
+            userSessionTable.AddString50Field("loginMethod", true).AddScriptComments("Login method: Password, Microsoft, Google, RefreshToken").CreateIndex();
+            userSessionTable.AddString100Field("clientApplication", true).AddScriptComments("Client application name");
+            userSessionTable.AddBoolField("isRevoked", false, false).AddScriptComments("Whether session has been administratively revoked").CreateIndex();
+            userSessionTable.AddDateTimeField("revokedAt", true).AddScriptComments("When session was revoked");
+            userSessionTable.AddString100Field("revokedBy", true).AddScriptComments("Who revoked the session (admin username)");
+            userSessionTable.AddString500Field("revokedReason", true).AddScriptComments("Reason for revocation");
+            userSessionTable.AddControlFields(false);
+            userSessionTable.AddSortSequence("sessionStart", true);
+
+            Database.Table.Index userSessionIdActiveDeletedIndex = userSessionTable.CreateIndex("I_UserSession_id_active_deleted");
+            userSessionIdActiveDeletedIndex.AddField("id");
+            userSessionIdActiveDeletedIndex.AddField("active");
+            userSessionIdActiveDeletedIndex.AddField("deleted");
+
+            // Index for active session lookups
+            userSessionTable.CreateIndexForFields(new List<string>() { "securityUserId", "isRevoked", "active", "deleted" });
+
         }
 
         /* I don't think that I need this table because each data table will have a tenant guid column.  The tenant a user belongs to will come right from the user record, so it can be constained directly

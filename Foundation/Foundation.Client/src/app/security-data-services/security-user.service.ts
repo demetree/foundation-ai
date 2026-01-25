@@ -30,6 +30,7 @@ import { SecurityUserPasswordResetTokenService, SecurityUserPasswordResetTokenDa
 import { SecurityUserSecurityGroupService, SecurityUserSecurityGroupData } from './security-user-security-group.service';
 import { SecurityUserSecurityRoleService, SecurityUserSecurityRoleData } from './security-user-security-role.service';
 import { EntityDataTokenService, EntityDataTokenData } from './entity-data-token.service';
+import { UserSessionService, UserSessionData } from './user-session.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -265,6 +266,11 @@ export class SecurityUserData {
     private _entityDataTokensSubject = new BehaviorSubject<EntityDataTokenData[] | null>(null);
 
                 
+    private _userSessions: UserSessionData[] | null = null;
+    private _userSessionsPromise: Promise<UserSessionData[]> | null  = null;
+    private _userSessionsSubject = new BehaviorSubject<UserSessionData[] | null>(null);
+
+                
 
     //
     // Public observables — use with | async in templates
@@ -443,6 +449,25 @@ export class SecurityUserData {
 
 
 
+    public UserSessions$ = this._userSessionsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._userSessions === null && this._userSessionsPromise === null) {
+            this.loadUserSessions(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public UserSessionsCount$ = UserSessionService.Instance.GetUserSessionsRowCount({securityUserId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
 
   //
   // Full reload — refreshes the entire object and clears all lazy caches 
@@ -516,6 +541,10 @@ export class SecurityUserData {
      this._entityDataTokens = null;
      this._entityDataTokensPromise = null;
      this._entityDataTokensSubject.next(null);
+
+     this._userSessions = null;
+     this._userSessionsPromise = null;
+     this._userSessionsSubject.next(null);
 
   }
 
@@ -1108,6 +1137,71 @@ export class SecurityUserData {
     }
 
 
+    /**
+     *
+     * Gets the UserSessions for this SecurityUser.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.securityUser.UserSessions.then(securityUsers => { ... })
+     *   or
+     *   await this.securityUser.securityUsers
+     *
+    */
+    public get UserSessions(): Promise<UserSessionData[]> {
+        if (this._userSessions !== null) {
+            return Promise.resolve(this._userSessions);
+        }
+
+        if (this._userSessionsPromise !== null) {
+            return this._userSessionsPromise;
+        }
+
+        // Start the load
+        this.loadUserSessions();
+
+        return this._userSessionsPromise!;
+    }
+
+
+
+    private loadUserSessions(): void {
+
+        this._userSessionsPromise = lastValueFrom(
+            SecurityUserService.Instance.GetUserSessionsForSecurityUser(this.id)
+        )
+        .then(UserSessions => {
+            this._userSessions = UserSessions ?? [];
+            this._userSessionsSubject.next(this._userSessions);
+            return this._userSessions;
+         })
+        .catch(err => {
+            this._userSessions = [];
+            this._userSessionsSubject.next(this._userSessions);
+            throw err;
+        })
+        .finally(() => {
+            this._userSessionsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached UserSession. Call after mutations to force refresh.
+     */
+    public ClearUserSessionsCache(): void {
+        this._userSessions = null;
+        this._userSessionsPromise = null;
+        this._userSessionsSubject.next(this._userSessions);      // Emit to observable
+    }
+
+    public get HasUserSessions(): Promise<boolean> {
+        return this.UserSessions.then(userSessions => userSessions.length > 0);
+    }
+
+
 
 
     /**
@@ -1152,6 +1246,7 @@ export class SecurityUserService extends SecureEndpointBase {
         private securityUserSecurityGroupService: SecurityUserSecurityGroupService,
         private securityUserSecurityRoleService: SecurityUserSecurityRoleService,
         private entityDataTokenService: EntityDataTokenService,
+        private userSessionService: UserSessionService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
 
@@ -1631,6 +1726,16 @@ export class SecurityUserService extends SecureEndpointBase {
     }
 
 
+    public GetUserSessionsForSecurityUser(securityUserId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<UserSessionData[]> {
+        return this.userSessionService.GetUserSessionList({
+            securityUserId: securityUserId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
  /**
    *
    * Revives a plain object from the server into a full SecurityUserData instance.
@@ -1705,6 +1810,10 @@ export class SecurityUserService extends SecureEndpointBase {
     (revived as any)._entityDataTokens = null;
     (revived as any)._entityDataTokensPromise = null;
     (revived as any)._entityDataTokensSubject = new BehaviorSubject<EntityDataTokenData[] | null>(null);
+
+    (revived as any)._userSessions = null;
+    (revived as any)._userSessionsPromise = null;
+    (revived as any)._userSessionsSubject = new BehaviorSubject<UserSessionData[] | null>(null);
 
 
     //
@@ -1872,6 +1981,22 @@ export class SecurityUserService extends SecureEndpointBase {
       );
 
     (revived as any).EntityDataTokensCount$ = EntityDataTokenService.Instance.GetEntityDataTokensRowCount({securityUserId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).UserSessions$ = (revived as any)._userSessionsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._userSessions === null && (revived as any)._userSessionsPromise === null) {
+                (revived as any).loadUserSessions();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).UserSessionsCount$ = UserSessionService.Instance.GetUserSessionsRowCount({securityUserId: (revived as any).id,
       active: true,
       deleted: false
     });

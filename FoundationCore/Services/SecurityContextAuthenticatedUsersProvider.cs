@@ -1,8 +1,8 @@
 //
 // Security Context Authenticated Users Provider
 //
-// Retrieves authenticated user sessions from OpenIddict token tables.
-// Enriches with LoginAttempt data for IP address and user agent info.
+// Retrieves authenticated user sessions from UserSession table (primary)
+// with fallback to OpenIddict tables if UserSession is empty (migration period).
 //
 using Foundation.Security.Database;
 using Microsoft.EntityFrameworkCore;
@@ -15,8 +15,8 @@ using System.Threading.Tasks;
 namespace Foundation.Services
 {
     /// <summary>
-    /// Provides authenticated user information from OpenIddict token stores,
-    /// enriched with login event data for IP and user agent info.
+    /// Provides authenticated user information from UserSession table,
+    /// with fallback to OpenIddict for backwards compatibility.
     /// </summary>
     public class SecurityContextAuthenticatedUsersProvider : IAuthenticatedUsersProvider
     {
@@ -38,42 +38,50 @@ namespace Foundation.Services
                 var now = DateTime.UtcNow;
 
                 //
-                // Query OpenIddictTokens joined with SecurityUsers and LoginAttempts
-                // Subject column contains the user's objectGuid as string
-                // OpenIddict tables are in dbo schema, Security tables in Security schema
-                // LoginAttempt is correlated by username and closest timeStamp to token creation
+                // Try UserSession table first (primary source after migration)
                 //
-                var sql = @"
+                var userSessionSql = @"
                     SELECT 
+                        s.id AS SessionId,
                         u.accountName AS Username,
                         COALESCE(NULLIF(TRIM(COALESCE(u.firstName, '') + ' ' + COALESCE(u.lastName, '')), ''), u.accountName) AS DisplayName,
                         u.emailAddress AS Email,
-                        t.CreationDate AS SessionStart,
-                        t.ExpirationDate AS ExpiresAt,
-                        a.[Type] AS ClientApplication,
-                        la.ipAddress AS IpAddress,
-                        la.userAgent AS UserAgent
-                    FROM dbo.OpenIddictTokens t
-                    LEFT JOIN dbo.OpenIddictAuthorizations a ON t.AuthorizationId = a.Id
-                    INNER JOIN Security.SecurityUser u ON LOWER(t.Subject) = LOWER(CAST(u.objectGuid AS NVARCHAR(36)))
-                    OUTER APPLY (
-                        SELECT TOP 1 l.ipAddress, l.userAgent
-                        FROM Security.LoginAttempt l
-                        WHERE LOWER(l.userName) = LOWER(u.accountName)
-                          AND l.timeStamp <= t.CreationDate
-                          AND l.active = 1 AND l.deleted = 0
-                        ORDER BY l.timeStamp DESC
-                    ) la
-                    WHERE t.ExpirationDate > @p0
-                      AND t.Status = 'valid'
-                      AND u.active = 1
-                      AND u.deleted = 0
-                    ORDER BY t.CreationDate DESC";
+                        s.sessionStart AS SessionStart,
+                        s.expiresAt AS ExpiresAt,
+                        s.loginMethod AS LoginMethod,
+                        s.ipAddress AS IpAddress,
+                        s.userAgent AS UserAgent,
+                        s.clientApplication AS ClientApplication
+                    FROM Security.UserSession s
+                    INNER JOIN Security.SecurityUser u ON s.securityUserId = u.id
+                    WHERE s.expiresAt > @p0
+                      AND s.isRevoked = 0
+                      AND s.active = 1 AND s.deleted = 0
+                      AND u.active = 1 AND u.deleted = 0
+                    ORDER BY s.sessionStart DESC";
 
-                var sessions = await context.Database
-                    .SqlQueryRaw<OpenIddictSessionResult>(sql, now)
-                    .ToListAsync()
-                    .ConfigureAwait(false);
+                List<SessionQueryResult> sessions = null;
+
+                try
+                {
+                    sessions = await context.Database
+                        .SqlQueryRaw<SessionQueryResult>(userSessionSql, now)
+                        .ToListAsync()
+                        .ConfigureAwait(false);
+                }
+                catch
+                {
+                    // UserSession table may not exist yet - fall back to OpenIddict
+                    sessions = null;
+                }
+
+                //
+                // If no sessions from UserSession, fall back to OpenIddict
+                //
+                if (sessions == null || sessions.Count == 0)
+                {
+                    sessions = await GetSessionsFromOpenIddict(context, now);
+                }
 
                 //
                 // Deduplicate by username, keeping the most recent session
@@ -87,6 +95,7 @@ namespace Foundation.Services
                 {
                     result.Sessions.Add(new AuthenticatedUserSession
                     {
+                        SessionId = session.SessionId > 0 ? session.SessionId : null,
                         Username = session.Username,
                         DisplayName = session.DisplayName,
                         Email = session.Email,
@@ -95,7 +104,7 @@ namespace Foundation.Services
                         ClientApplication = session.ClientApplication,
                         IpAddress = session.IpAddress,
                         UserAgent = TruncateUserAgent(session.UserAgent),
-                        LoginMethod = DetermineLoginMethod(session.ClientApplication, session.UserAgent)
+                        LoginMethod = session.LoginMethod ?? "Unknown"
                     });
                 }
 
@@ -107,7 +116,7 @@ namespace Foundation.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error retrieving authenticated users from OpenIddict");
+                _logger.LogError(ex, "Error retrieving authenticated users");
                 result.ErrorMessage = $"Failed to retrieve authenticated users: {ex.Message}";
             }
 
@@ -115,9 +124,50 @@ namespace Foundation.Services
         }
 
 
-        /// <summary>
-        /// Truncates long user agent strings for display
-        /// </summary>
+        private async Task<List<SessionQueryResult>> GetSessionsFromOpenIddict(SecurityContext context, DateTime now)
+        {
+            //
+            // Fallback: Query OpenIddictTokens joined with SecurityUsers and LoginAttempts
+            //
+            var sql = @"
+                SELECT 
+                    0 AS SessionId,
+                    u.accountName AS Username,
+                    COALESCE(NULLIF(TRIM(COALESCE(u.firstName, '') + ' ' + COALESCE(u.lastName, '')), ''), u.accountName) AS DisplayName,
+                    u.emailAddress AS Email,
+                    t.CreationDate AS SessionStart,
+                    t.ExpirationDate AS ExpiresAt,
+                    CASE 
+                        WHEN a.[Type] = 'permanent' THEN 'SSO'
+                        ELSE COALESCE(a.[Type], 'Unknown')
+                    END AS LoginMethod,
+                    la.ipAddress AS IpAddress,
+                    la.userAgent AS UserAgent,
+                    a.[Type] AS ClientApplication
+                FROM dbo.OpenIddictTokens t
+                LEFT JOIN dbo.OpenIddictAuthorizations a ON t.AuthorizationId = a.Id
+                INNER JOIN Security.SecurityUser u ON LOWER(t.Subject) = LOWER(CAST(u.objectGuid AS NVARCHAR(36)))
+                OUTER APPLY (
+                    SELECT TOP 1 l.ipAddress, l.userAgent
+                    FROM Security.LoginAttempt l
+                    WHERE LOWER(l.userName) = LOWER(u.accountName)
+                      AND l.timeStamp <= t.CreationDate
+                      AND l.active = 1 AND l.deleted = 0
+                    ORDER BY l.timeStamp DESC
+                ) la
+                WHERE t.ExpirationDate > @p0
+                  AND t.Status = 'valid'
+                  AND u.active = 1
+                  AND u.deleted = 0
+                ORDER BY t.CreationDate DESC";
+
+            return await context.Database
+                .SqlQueryRaw<SessionQueryResult>(sql, now)
+                .ToListAsync()
+                .ConfigureAwait(false);
+        }
+
+
         private string TruncateUserAgent(string userAgent)
         {
             if (string.IsNullOrEmpty(userAgent))
@@ -125,7 +175,6 @@ namespace Foundation.Services
                 return null;
             }
 
-            // Extract browser name from user agent if possible
             if (userAgent.Contains("Edge"))
                 return "Edge";
             if (userAgent.Contains("Chrome"))
@@ -135,44 +184,25 @@ namespace Foundation.Services
             if (userAgent.Contains("Safari") && !userAgent.Contains("Chrome"))
                 return "Safari";
 
-            // Fallback: truncate to 30 chars
             return userAgent.Length > 30 ? userAgent.Substring(0, 30) + "..." : userAgent;
-        }
-
-
-        /// <summary>
-        /// Determines the login method based on available data
-        /// </summary>
-        private string DetermineLoginMethod(string clientApplication, string userAgent)
-        {
-            if (string.IsNullOrEmpty(clientApplication))
-            {
-                return "Unknown";
-            }
-
-            // OpenIddict authorization type often indicates the flow
-            if (clientApplication.Equals("permanent", StringComparison.OrdinalIgnoreCase))
-            {
-                return "SSO";
-            }
-
-            return clientApplication;
         }
 
 
         /// <summary>
         /// DTO for raw SQL query results - must be public for EF Core proxy generation
         /// </summary>
-        public class OpenIddictSessionResult
+        public class SessionQueryResult
         {
+            public int SessionId { get; set; }
             public string Username { get; set; }
             public string DisplayName { get; set; }
             public string Email { get; set; }
             public DateTime? SessionStart { get; set; }
             public DateTime? ExpiresAt { get; set; }
-            public string ClientApplication { get; set; }
+            public string LoginMethod { get; set; }
             public string IpAddress { get; set; }
             public string UserAgent { get; set; }
+            public string ClientApplication { get; set; }
         }
     }
 }

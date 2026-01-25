@@ -1,0 +1,368 @@
+<app-user-session-add-edit [showAddButton]="false"></app-user-session-add-edit>
+<div class="row" *ngIf="userIsSecurityUserSessionReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSecurityUserSessionWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSecurityUserSessionWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('securityUser.name')">
+                Security  User
+                <span *ngIf="sortColumn === 'securityUser.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('tokenId')">
+                Token  Id
+                <span *ngIf="sortColumn === 'tokenId'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('sessionStart')">
+                Session  Start
+                <span *ngIf="sortColumn === 'sessionStart'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('expiresAt')">
+                Expires  At
+                <span *ngIf="sortColumn === 'expiresAt'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('ipAddress')">
+                Ip  Address
+                <span *ngIf="sortColumn === 'ipAddress'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('userAgent')">
+                User  Agent
+                <span *ngIf="sortColumn === 'userAgent'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('loginMethod')">
+                Login  Method
+                <span *ngIf="sortColumn === 'loginMethod'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('clientApplication')">
+                Client  Application
+                <span *ngIf="sortColumn === 'clientApplication'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('isRevoked')">
+                Is  Revoked
+                <span *ngIf="sortColumn === 'isRevoked'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('revokedAt')">
+                Revoked  At
+                <span *ngIf="sortColumn === 'revokedAt'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('revokedBy')">
+                Revoked  By
+                <span *ngIf="sortColumn === 'revokedBy'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('revokedReason')">
+                Revoked  Reason
+                <span *ngIf="sortColumn === 'revokedReason'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let userSession of filteredUserSessions; trackBy: getUserSessionId"
+              [ngClass]="{
+                 'row-inactive': userSession.active == false,
+                 'row-deleted': userSession.deleted == true 
+                 }">
+            <td class="header-action-button" *ngIf="userIsSecurityUserSessionWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleEdit(userSession)"
+                      ngbTooltip="Edit" 
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsSecurityUserSessionWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleDelete(userSession)"
+                      ngbTooltip="Delete" 
+                      placement="top"
+                      *ngIf="userSession.deleted == false">
+                <i class="fa fa-trash"></i>
+              </button>
+              <button class="btn btn-sm"
+                      (click)="handleUndelete(userSession)"
+                      ngbTooltip="Undelete" 
+                      placement="top"
+                      *ngIf="userSession.deleted == true">
+                <i class="fa fa-trash-arrow-up"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(userSession, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(userSession, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(userSession, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(userSession, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(userSession, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(userSession, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(userSession, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(userSession, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/securityuser', userSession.securityUserId]" class="btn btn-link text-left" ngbTooltip="Open Security User details">{{userSession.securityUser?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/usersession', userSession.id]" class="btn btn-link text-left" ngbTooltip="Open User Session details">{{userSession.tokenId}}</a></td>
+            <td class="text-truncate">{{userSession.sessionStart | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate">{{userSession.expiresAt | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate">{{userSession.ipAddress}}</td>
+            <td class="text-truncate">{{userSession.userAgent}}</td>
+            <td class="text-truncate">{{userSession.loginMethod}}</td>
+            <td class="text-truncate">{{userSession.clientApplication}}</td>
+            <td class="text-truncate"><boolean-icon [value]="userSession.isRevoked"/></td>
+            <td class="text-truncate">{{userSession.revokedAt | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate">{{userSession.revokedBy}}</td>
+            <td class="text-truncate">{{userSession.revokedReason}}</td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let userSession of filteredUserSessions; trackBy: getUserSessionId" class="card my-2"
+              [ngClass]="{
+                 'row-inactive': userSession.active == false,
+                 'row-deleted': userSession.deleted == true 
+                 }">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(userSession, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(userSession, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(userSession, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(userSession, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(userSession, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(userSession, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(userSession, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(userSession, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(userSession, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(userSession, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(userSession, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(userSession, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(userSession, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/usersession', userSession.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(userSession)" *ngIf="userIsSecurityUserSessionWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(userSession)" *ngIf="userIsSecurityUserSessionWriter() && userSession.deleted == false" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+            <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(userSession)" *ngIf="userIsSecurityUserSessionWriter() && userSession.deleted == true" ngbTooltip="Undelete">
+              <i class="fa fa-trash-arrow-upp"></i> UnDelete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{userSession.id}}</strong>
+               <small class="text-muted d-block">{{userSession.securityUser?.name}}</small>
+             </div>
+             <div>
+                <button class="btn btn-sm"
+                        [routerLink]="['/usersession', userSession.id]"
+                        ngbTooltip="User Session Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="btn btn-sm"
+                        (click)="handleEdit(userSession)"
+                        ngbTooltip="Edit User Session">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleDelete(userSession)"
+                      ngbTooltip="Delete User Session" 
+                      placement="top"
+                      *ngIf="userSession.deleted == false">
+                  <i class="fa fa-trash"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleUndelete(userSession)"
+                      ngbTooltip="Undelete User Session" 
+                      placement="top"
+                      *ngIf="userSession.deleted == true">
+                 <i class="fa fa-trash-arrow-up"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="user-session-info" *ngIf="userSession.securityUserId != null">
+              <strong>Security User: </strong>
+              <a [routerLink]="['/securityuser', userSession.securityUserId]" class="text-left p-0 m-0" ngbTooltip="Open Security User details">{{userSession.securityUser?.name}}</a>
+            </p>
+            <p class="user-session-info" *ngIf="userSession.tokenId != null">
+              <strong>Token Id: </strong>
+              {{userSession.tokenId}}
+            </p>
+            <p class="user-session-info" *ngIf="userSession.sessionStart != null">
+              <strong>Session Start: </strong>
+              {{userSession.sessionStart | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="user-session-info" *ngIf="userSession.expiresAt != null">
+              <strong>Expires At: </strong>
+              {{userSession.expiresAt | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="user-session-info" *ngIf="userSession.ipAddress != null">
+              <strong>Ip Address: </strong>
+              {{userSession.ipAddress}}
+            </p>
+            <p class="user-session-info" *ngIf="userSession.userAgent != null">
+              <strong>User Agent: </strong>
+              {{userSession.userAgent}}
+            </p>
+            <p class="user-session-info" *ngIf="userSession.loginMethod != null">
+              <strong>Login Method: </strong>
+              {{userSession.loginMethod}}
+            </p>
+            <p class="user-session-info" *ngIf="userSession.clientApplication != null">
+              <strong>Client Application: </strong>
+              {{userSession.clientApplication}}
+            </p>
+            <p class="user-session-info" *ngIf="userSession.isRevoked != null">
+              <strong>Is Revoked: </strong>
+              <boolean-icon [value]="userSession.isRevoked"/>
+            </p>
+            <p class="user-session-info" *ngIf="userSession.revokedAt != null">
+              <strong>Revoked At: </strong>
+              {{userSession.revokedAt | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="user-session-info" *ngIf="userSession.revokedBy != null">
+              <strong>Revoked By: </strong>
+              {{userSession.revokedBy}}
+            </p>
+            <p class="user-session-info" *ngIf="userSession.revokedReason != null">
+              <strong>Revoked Reason: </strong>
+              {{userSession.revokedReason}}
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+   </div>
+</div>

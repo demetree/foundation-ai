@@ -1,0 +1,66 @@
+<div class="modal-header bg-danger text-white">
+    <h5 class="modal-title">
+        <i class="fas fa-exclamation-triangle me-2"></i>{{ title }}
+    </h5>
+    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="cancel()"></button>
+</div>
+
+<div class="modal-body">
+    <p class="mb-3">
+        You are about to take action on the session for <strong>{{ username }}</strong>.
+    </p>
+
+    <!-- Action Selection -->
+    <div class="mb-3" *ngIf="showLockOption">
+        <label class="form-label fw-bold">Select Action:</label>
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="sessionAction" id="actionRevoke" value="revoke"
+                [(ngModel)]="selectedAction">
+            <label class="form-check-label" for="actionRevoke">
+                <i class="fas fa-times-circle text-warning me-1"></i>
+                <strong>Revoke Session Only</strong>
+                <small class="text-muted d-block ms-4">Ends this session. User can log in again.</small>
+            </label>
+        </div>
+        <div class="form-check mt-2">
+            <input class="form-check-input" type="radio" name="sessionAction" id="actionLock" value="revoke-and-lock"
+                [(ngModel)]="selectedAction">
+            <label class="form-check-label" for="actionLock">
+                <i class="fas fa-lock text-danger me-1"></i>
+                <strong>Revoke Session & Lock Account</strong>
+                <small class="text-muted d-block ms-4">Ends ALL sessions and prevents future logins until
+                    unlocked.</small>
+            </label>
+        </div>
+    </div>
+
+    <!-- Reason Input -->
+    <div class="mb-3">
+        <label for="reasonInput" class="form-label fw-bold">
+            Reason for this action: <span class="text-danger">*</span>
+        </label>
+        <textarea class="form-control" id="reasonInput" rows="3" [(ngModel)]="reason"
+            placeholder="Please provide a reason for this security action (required for compliance reporting)..."
+            maxlength="500">
+    </textarea>
+        <small class="text-muted">{{ reason.length }}/500 characters</small>
+    </div>
+
+    <!-- Warning for lock action -->
+    <div class="alert alert-danger mb-0" *ngIf="selectedAction === 'revoke-and-lock'">
+        <i class="fas fa-exclamation-circle me-2"></i>
+        <strong>Warning:</strong> Locking the account will prevent the user from logging in until an administrator
+        manually unlocks it.
+    </div>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="cancel()">
+        <i class="fas fa-times me-1"></i>Cancel
+    </button>
+    <button type="button" class="btn" [class.btn-warning]="selectedAction === 'revoke'"
+        [class.btn-danger]="selectedAction === 'revoke-and-lock'" (click)="confirm()" [disabled]="!reason.trim()">
+        <i class="fas fa-check me-1"></i>
+        {{ selectedAction === 'revoke' ? 'Revoke Session' : 'Revoke & Lock Account' }}
+    </button>
+</div>

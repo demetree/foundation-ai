@@ -55,6 +55,11 @@ namespace Foundation.Services
     public class AuthenticatedUserSession
     {
         /// <summary>
+        /// Session ID for revocation (only present for UserSession-tracked sessions)
+        /// </summary>
+        public int? SessionId { get; set; }
+
+        /// <summary>
         /// Username of the authenticated user
         /// </summary>
         public string Username { get; set; }

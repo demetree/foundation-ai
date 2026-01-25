@@ -73,6 +73,11 @@ namespace Foundation
             builder.Services.AddSingleton<ICredentialCacheService, CredentialCacheService>();
 
             //
+            // Add session tracking service for compliance-grade audit trails
+            //
+            builder.Services.AddScoped<ISessionTrackingService, SessionTrackingService>();
+
+            //
             // Configure LogViewer service for all Foundation apps
             //
             var logViewerConfig = new Foundation.LogViewer.LogViewerConfiguration();

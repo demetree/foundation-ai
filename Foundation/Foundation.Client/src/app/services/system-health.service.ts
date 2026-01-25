@@ -128,6 +128,7 @@ export interface AuthenticatedUsersInfo {
 }
 
 export interface AuthenticatedUserSession {
+    sessionId?: number;
     username: string;
     displayName?: string;
     clientApplication?: string;
@@ -253,6 +254,41 @@ export class SystemHealthService {
     getAuthenticatedUsers(): Observable<AuthenticatedUsersInfo> {
         return this.http.get<AuthenticatedUsersInfo>(
             `${this.baseUrl}/users`,
+            { headers: this.authService.GetAuthenticationHeaders() }
+        );
+    }
+
+    /**
+     * Revoke a specific session by ID (admin only)
+     */
+    revokeSession(sessionId: number, reason?: string): Observable<{ success: boolean; message: string }> {
+        return this.http.post<{ success: boolean; message: string }>(
+            `/api/sessions/${sessionId}/revoke`,
+            { reason: reason || 'Administrative action' },
+            { headers: this.authService.GetAuthenticationHeaders() }
+        );
+    }
+
+    /**
+     * Revoke a session AND lock the user's account (admin only)
+     * This is a high-security operation that prevents the user from logging in again.
+     */
+    revokeSessionAndLockAccount(sessionId: number, reason?: string): Observable<{
+        success: boolean;
+        message: string;
+        revokedCount: number;
+        accountLocked: boolean;
+        targetUsername: string;
+    }> {
+        return this.http.post<{
+            success: boolean;
+            message: string;
+            revokedCount: number;
+            accountLocked: boolean;
+            targetUsername: string;
+        }>(
+            `/api/sessions/${sessionId}/revoke-and-lock`,
+            { reason: reason || 'Security action - account locked' },
             { headers: this.authService.GetAuthenticationHeaders() }
         );
     }

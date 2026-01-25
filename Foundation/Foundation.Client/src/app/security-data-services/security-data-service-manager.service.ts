@@ -36,6 +36,7 @@ import {SecurityUserSecurityGroupService} from  './security-user-security-group.
 import {SecurityUserSecurityRoleService} from  './security-user-security-role.service';
 import {SecurityUserTitleService} from  './security-user-title.service';
 import {SystemSettingService} from  './system-setting.service';
+import {UserSessionService} from  './user-session.service';
 
 
 @Injectable({
@@ -70,6 +71,7 @@ export class SecurityDataServiceManagerService  {
               , public securityUserSecurityRoleService: SecurityUserSecurityRoleService
               , public securityUserTitleService: SecurityUserTitleService
               , public systemSettingService: SystemSettingService
+              , public userSessionService: UserSessionService
 ) { }  
 
 
@@ -102,5 +104,6 @@ export class SecurityDataServiceManagerService  {
         this.securityUserSecurityRoleService.ClearAllCaches();
         this.securityUserTitleService.ClearAllCaches();
         this.systemSettingService.ClearAllCaches();
+        this.userSessionService.ClearAllCaches();
     }
 }

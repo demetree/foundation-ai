@@ -364,6 +364,23 @@
                             </div>
                             </ng-template>
                         </li>
+                      <li ngbNavItem *ngIf="userSessionService.userIsSecurityUserSessionReader()">
+                            <button ngbNavLink>User Sessions
+                                <span class="badge bg-primary ms-2">
+                                    {{ (securityUserData?.UserSessionsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-user-session-table [queryParams]="{ securityUserId: securityUserData?.id }"></app-user-session-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-user-session-add-edit [preSeededData]="{ securityUserId: securityUserData?.id }" [hiddenFields]="['securityUserId']"></app-user-session-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
                     </ul>
                      <div [ngbNavOutlet]="nav"></div>
                 </div>

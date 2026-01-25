@@ -1,0 +1,108 @@
+<div class="container-fluid p-1 m-0 user-session-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="user-session-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">User Session</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit User Session' : 'Add User Session'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSecurityUserSessionReader()">
+                <div class="col m-2 user-session-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="userSessionForm" (ngSubmit)="submitForm()" class="user-session-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('securityUserId')">
+                                <label for="UserSession-securityUserId" id="label-UserSession-securityUserId"><span class="text-danger">*</span>Security User</label>
+                                <select id="UserSession-securityUserId" formControlName="securityUserId" class="form-select user-session-select" [disabled]="!userIsSecurityUserSessionWriter()">
+                                    <option [ngValue]="null">Select Security User</option>
+                                    <option *ngFor="let securityUser of securityUsers$ | async" [ngValue]="securityUser.id">{{[securityUser.accountName] | filterAndJoin}}</option>
+                                </select>
+                                <div *ngIf="userSessionForm.get('securityUserId')?.invalid && userSessionForm.get('securityUserId')?.touched" class="text-danger">
+                                    Security User is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('tokenId')">
+                                <label for="UserSession-tokenId" id="label-UserSession-tokenId">Token Id</label>
+                                <input type="text" id="UserSession-tokenId" formControlName="tokenId" placeholder="Enter Token Id" class="form-control user-session-input" [disabled]="!userIsSecurityUserSessionWriter()" aria-labelledby="label-tokenId" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sessionStart')">
+                                <label for="UserSession-sessionStart" id="label-UserSession-sessionStart"><span class="text-danger">*</span>Session Start</label>
+                                <input type="datetime-local" id="UserSession-sessionStart" formControlName="sessionStart" placeholder="Enter Session Start" class="form-control user-session-input" [disabled]="!userIsSecurityUserSessionWriter()" aria-labelledby="label-sessionStart" />
+                                <div *ngIf="userSessionForm.get('sessionStart')?.invalid && userSessionForm.get('sessionStart')?.touched" class="text-danger">
+                                    Session Start is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('expiresAt')">
+                                <label for="UserSession-expiresAt" id="label-UserSession-expiresAt"><span class="text-danger">*</span>Expires At</label>
+                                <input type="datetime-local" id="UserSession-expiresAt" formControlName="expiresAt" placeholder="Enter Expires At" class="form-control user-session-input" [disabled]="!userIsSecurityUserSessionWriter()" aria-labelledby="label-expiresAt" />
+                                <div *ngIf="userSessionForm.get('expiresAt')?.invalid && userSessionForm.get('expiresAt')?.touched" class="text-danger">
+                                    Expires At is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('ipAddress')">
+                                <label for="UserSession-ipAddress" id="label-UserSession-ipAddress">Ip Address</label>
+                                <input type="text" id="UserSession-ipAddress" formControlName="ipAddress" placeholder="Enter Ip Address" class="form-control user-session-input" [disabled]="!userIsSecurityUserSessionWriter()" aria-labelledby="label-ipAddress" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userAgent')">
+                                <label for="UserSession-userAgent" id="label-UserSession-userAgent">User Agent</label>
+                                <textarea id="UserSession-userAgent" formControlName="userAgent" placeholder="Enter User Agent" class="form-control user-session-input" [disabled]="!userIsSecurityUserSessionWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('loginMethod')">
+                                <label for="UserSession-loginMethod" id="label-UserSession-loginMethod">Login Method</label>
+                                <input type="text" id="UserSession-loginMethod" formControlName="loginMethod" placeholder="Enter Login Method" class="form-control user-session-input" [disabled]="!userIsSecurityUserSessionWriter()" aria-labelledby="label-loginMethod" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('clientApplication')">
+                                <label for="UserSession-clientApplication" id="label-UserSession-clientApplication">Client Application</label>
+                                <input type="text" id="UserSession-clientApplication" formControlName="clientApplication" placeholder="Enter Client Application" class="form-control user-session-input" [disabled]="!userIsSecurityUserSessionWriter()" aria-labelledby="label-clientApplication" />
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isRevoked')">
+                                <input type="checkbox" id="UserSession-isRevoked" formControlName="isRevoked" class="form-check-input" [disabled]="!userIsSecurityUserSessionWriter()" />
+                                <label for="UserSession-isRevoked" class="form-check-label" id="label-UserSession-isRevoked"><span class="text-danger">*</span>Is Revoked</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('revokedAt')">
+                                <label for="UserSession-revokedAt" id="label-UserSession-revokedAt">Revoked At</label>
+                                <input type="datetime-local" id="UserSession-revokedAt" formControlName="revokedAt" placeholder="Enter Revoked At" class="form-control user-session-input" [disabled]="!userIsSecurityUserSessionWriter()" aria-labelledby="label-revokedAt" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('revokedBy')">
+                                <label for="UserSession-revokedBy" id="label-UserSession-revokedBy">Revoked By</label>
+                                <input type="text" id="UserSession-revokedBy" formControlName="revokedBy" placeholder="Enter Revoked By" class="form-control user-session-input" [disabled]="!userIsSecurityUserSessionWriter()" aria-labelledby="label-revokedBy" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('revokedReason')">
+                                <label for="UserSession-revokedReason" id="label-UserSession-revokedReason">Revoked Reason</label>
+                                <textarea id="UserSession-revokedReason" formControlName="revokedReason" placeholder="Enter Revoked Reason" class="form-control user-session-input" [disabled]="!userIsSecurityUserSessionWriter()"></textarea>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="UserSession-active" formControlName="active" class="form-check-input" [disabled]="!userIsSecurityUserSessionWriter()" />
+                                <label for="UserSession-active" class="form-check-label" id="label-UserSession-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="UserSession-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSecurityUserSessionWriter()" />
+                                <label for="UserSession-deleted" class="form-check-label" id="label-UserSession-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="user-session-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="userSessionForm.pristine" (click)="loadData(true)" ngbTooltip="Reload User Session">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !userSessionForm.valid || !userSessionForm.dirty || userSessionForm.pristine  || userIsSecurityUserSessionWriter() == false " ngbTooltip="Save the User Session changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add User Session' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

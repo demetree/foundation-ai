@@ -105,6 +105,8 @@ public partial class SecurityUser
 
     public virtual ICollection<SecurityUserSecurityRole> SecurityUserSecurityRoles { get; set; } = new List<SecurityUserSecurityRole>();
 
+    public virtual ICollection<UserSession> UserSessions { get; set; } = new List<UserSession>();
+
     public virtual SecurityUser reportsToSecurityUser { get; set; }
 
     public virtual SecurityDepartment securityDepartment { get; set; }

@@ -37,6 +37,7 @@ import { SecurityUserPasswordResetTokenService } from '../../../security-data-se
 import { SecurityUserSecurityGroupService } from '../../../security-data-services/security-user-security-group.service';
 import { SecurityUserSecurityRoleService } from '../../../security-data-services/security-user-security-role.service';
 import { EntityDataTokenService } from '../../../security-data-services/entity-data-token.service';
+import { UserSessionService } from '../../../security-data-services/user-session.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -175,6 +176,7 @@ export class SecurityUserDetailComponent implements OnInit, CanComponentDeactiva
   public securityUserSecurityGroups$ = this.securityUserSecurityGroupService.GetSecurityUserSecurityGroupList();
   public securityUserSecurityRoles$ = this.securityUserSecurityRoleService.GetSecurityUserSecurityRoleList();
   public entityDataTokens$ = this.entityDataTokenService.GetEntityDataTokenList();
+  public userSessions$ = this.userSessionService.GetUserSessionList();
 
   private destroy$ = new Subject<void>();
 
@@ -194,6 +196,7 @@ export class SecurityUserDetailComponent implements OnInit, CanComponentDeactiva
     public securityUserSecurityGroupService: SecurityUserSecurityGroupService,
     public securityUserSecurityRoleService: SecurityUserSecurityRoleService,
     public entityDataTokenService: EntityDataTokenService,
+    public userSessionService: UserSessionService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,

@@ -83,6 +83,7 @@ import { ConfirmationService } from './services/confirmation-service';
 import { ConfirmationDialogComponent } from './services/confirmation-dialog/confirmation-dialog.component';
 import { InputDialogService } from './services/input-dialog.service';
 import { InputDialogComponent } from './services/input-dialog/input-dialog.component';
+import { SessionActionDialogComponent } from './services/session-action-dialog/session-action-dialog.component';
 
 //
 // Data support services
@@ -121,6 +122,7 @@ import { SecurityUserSecurityGroupService } from './security-data-services/secur
 import { SecurityUserSecurityRoleService } from './security-data-services/security-user-security-role.service';
 import { SecurityUserTitleService } from './security-data-services/security-user-title.service';
 import { SystemSettingService } from './security-data-services/system-setting.service';
+import { UserSessionService } from './security-data-services/user-session.service';
 //
 // End of imports for Security Data Services
 //
@@ -263,6 +265,10 @@ import { SystemSettingListingComponent } from './security-data-components/system
 import { SystemSettingAddEditComponent } from './security-data-components/system-setting/system-setting-add-edit/system-setting-add-edit.component';
 import { SystemSettingDetailComponent } from './security-data-components/system-setting/system-setting-detail/system-setting-detail.component';
 import { SystemSettingTableComponent } from './security-data-components/system-setting/system-setting-table/system-setting-table.component';
+import { UserSessionListingComponent } from './security-data-components/user-session/user-session-listing/user-session-listing.component';
+import { UserSessionAddEditComponent } from './security-data-components/user-session/user-session-add-edit/user-session-add-edit.component';
+import { UserSessionDetailComponent } from './security-data-components/user-session/user-session-detail/user-session-detail.component';
+import { UserSessionTableComponent } from './security-data-components/user-session/user-session-table/user-session-table.component';
 //
 // End of imports for Security Data Components
 //
@@ -526,6 +532,10 @@ import { UserCustomAddEditComponent } from './components/user-custom/user-custom
     SystemSettingAddEditComponent,
     SystemSettingDetailComponent,
     SystemSettingTableComponent,
+    UserSessionListingComponent,
+    UserSessionAddEditComponent,
+    UserSessionDetailComponent,
+    UserSessionTableComponent,
     //
     // End of declarations for Security Data Components
     //
@@ -623,6 +633,7 @@ import { UserCustomAddEditComponent } from './components/user-custom/user-custom
     NewUserComponent,
     ConfirmationDialogComponent,
     InputDialogComponent,
+    SessionActionDialogComponent,
     UserCustomListingComponent,
     UserCustomTableComponent,
     UserCustomDetailComponent,
@@ -733,6 +744,7 @@ import { UserCustomAddEditComponent } from './components/user-custom/user-custom
     SecurityUserSecurityRoleService,
     SecurityUserTitleService,
     SystemSettingService,
+    UserSessionService,
     //
     // End of provider declarations for Security Data Services
     //
