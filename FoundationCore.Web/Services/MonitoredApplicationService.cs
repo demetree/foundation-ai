@@ -45,6 +45,19 @@ namespace Foundation.Services
 
 
     /// <summary>
+    /// Configuration for the service account used for inter-application authentication
+    /// when user credentials are not available (e.g., after server restart).
+    /// Configured in appsettings.json under "ServiceAccount" section.
+    /// </summary>
+    public class ServiceAccountConfig
+    {
+        public string Username { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+        public bool Enabled { get; set; } = true;
+    }
+
+
+    /// <summary>
     /// Service for managing and querying monitored applications
     /// </summary>
     public interface IMonitoredApplicationService
@@ -101,6 +114,7 @@ namespace Foundation.Services
         private readonly ICredentialCacheService _credentialCache;
         private readonly IMemoryCache _tokenCache;
         private readonly List<MonitoredApplicationConfig> _applications;
+        private readonly ServiceAccountConfig _serviceAccount;
 
         private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(10);
         private static readonly TimeSpan TokenCacheDuration = TimeSpan.FromMinutes(30);
@@ -129,7 +143,18 @@ namespace Foundation.Services
                 appsSection.Bind(_applications);
             }
 
-            _logger.LogInformation("Loaded {Count} monitored applications", _applications.Count);
+            //
+            // Load service account configuration for fallback authentication
+            //
+            _serviceAccount = new ServiceAccountConfig();
+            var serviceAccountSection = configuration.GetSection("ServiceAccount");
+            if (serviceAccountSection.Exists())
+            {
+                serviceAccountSection.Bind(_serviceAccount);
+            }
+
+            _logger.LogInformation("Loaded {Count} monitored applications, ServiceAccount fallback: {Enabled}", 
+                _applications.Count, !string.IsNullOrEmpty(_serviceAccount.Username) && _serviceAccount.Enabled);
         }
 
 
@@ -314,7 +339,8 @@ namespace Foundation.Services
 
 
         /// <summary>
-        /// Gets a token for the remote application, either from cache or by requesting a new one
+        /// Gets a token for the remote application, either from cache or by requesting a new one.
+        /// Tries user credentials first, falls back to service account if unavailable.
         /// </summary>
         private async Task<string> GetTokenForRemoteAppAsync(MonitoredApplicationConfig app, string userObjectGuid)
         {
@@ -330,31 +356,80 @@ namespace Foundation.Services
             }
 
             //
-            // Get the user's cached credentials
+            // Try to get user's cached credentials
             //
             var credentials = _credentialCache.GetCachedCredentials(userObjectGuid);
-            if (credentials == null)
+            
+            if (credentials != null)
             {
-                _logger.LogWarning("No cached credentials found for user {UserObjectGuid}", userObjectGuid);
-                return null;
+                //
+                // Try with user credentials
+                //
+                var token = await RequestTokenAsync(app, credentials.Username, credentials.Password, cacheKey);
+                if (!string.IsNullOrEmpty(token))
+                {
+                    return token;
+                }
+                _logger.LogWarning("Failed to get token using user credentials for {UserObjectGuid}, trying service account", userObjectGuid);
+            }
+            else
+            {
+                _logger.LogDebug("No cached credentials found for user {UserObjectGuid}, trying service account", userObjectGuid);
             }
 
             //
-            // Request a token from the remote application's /connect/token endpoint
+            // Fallback to service account if configured
             //
+            if (_serviceAccount.Enabled && 
+                !string.IsNullOrEmpty(_serviceAccount.Username) && 
+                !string.IsNullOrEmpty(_serviceAccount.Password))
+            {
+                string serviceAccountCacheKey = $"RemoteToken_{app.Name}_ServiceAccount";
+                
+                //
+                // Check if we have a cached service account token
+                //
+                if (_tokenCache.TryGetValue(serviceAccountCacheKey, out string cachedServiceToken))
+                {
+                    _logger.LogDebug("Using cached service account token for {AppName}", app.Name);
+                    return cachedServiceToken;
+                }
+
+                _logger.LogInformation("Falling back to service account for {AppName} authentication", app.Name);
+                var token = await RequestTokenAsync(app, _serviceAccount.Username, _serviceAccount.Password, serviceAccountCacheKey);
+                if (!string.IsNullOrEmpty(token))
+                {
+                    return token;
+                }
+                _logger.LogWarning("Service account authentication also failed for {AppName}", app.Name);
+            }
+            else
+            {
+                _logger.LogWarning("No service account configured and user credentials unavailable - cannot authenticate to {AppName}", app.Name);
+            }
+
+            return null;
+        }
+
+
+        /// <summary>
+        /// Requests a token from a remote application's OAuth endpoint
+        /// </summary>
+        private async Task<string> RequestTokenAsync(MonitoredApplicationConfig app, string username, string password, string cacheKey)
+        {
             try
             {
                 var client = _httpClientFactory.CreateClient("MonitoredApps");
                 client.Timeout = DefaultTimeout;
 
                 var tokenUrl = $"{app.Url.TrimEnd('/')}/connect/token";
-                _logger.LogDebug("Requesting token from {TokenUrl} for user {Username}", tokenUrl, credentials.Username);
+                _logger.LogDebug("Requesting token from {TokenUrl} for user {Username}", tokenUrl, username);
 
                 var tokenRequest = new FormUrlEncodedContent(new[]
                 {
                     new KeyValuePair<string, string>("grant_type", "password"),
-                    new KeyValuePair<string, string>("username", credentials.Username),
-                    new KeyValuePair<string, string>("password", credentials.Password),
+                    new KeyValuePair<string, string>("username", username),
+                    new KeyValuePair<string, string>("password", password),
                     new KeyValuePair<string, string>("client_id", $"{app.Name.ToLowerInvariant()}_spa"),
                     new KeyValuePair<string, string>("scope", "openid profile email roles")
                 });
@@ -374,7 +449,7 @@ namespace Foundation.Services
                         // Cache the token
                         //
                         _tokenCache.Set(cacheKey, token, TokenCacheDuration);
-                        _logger.LogInformation("Obtained and cached token for {AppName}", app.Name);
+                        _logger.LogInformation("Obtained and cached token for {AppName} (user: {Username})", app.Name, username);
 
                         return token;
                     }
@@ -382,13 +457,13 @@ namespace Foundation.Services
                 else
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    _logger.LogWarning("Failed to obtain token from {AppName}: {StatusCode} - {Error}", 
-                        app.Name, response.StatusCode, errorContent);
+                    _logger.LogWarning("Failed to obtain token from {AppName} for {Username}: {StatusCode} - {Error}", 
+                        app.Name, username, response.StatusCode, errorContent);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error obtaining token from {AppName}", app.Name);
+                _logger.LogError(ex, "Error obtaining token from {AppName} for {Username}", app.Name, username);
             }
 
             return null;
