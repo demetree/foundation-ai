@@ -1,0 +1,305 @@
+<app-telemetry-disk-health-add-edit [showAddButton]="false"></app-telemetry-disk-health-add-edit>
+<div class="row" *ngIf="userIsTelemetryTelemetryDiskHealthReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsTelemetryTelemetryDiskHealthWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsTelemetryTelemetryDiskHealthWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('telemetrySnapshot.name')">
+                Telemetry  Snapshot
+                <span *ngIf="sortColumn === 'telemetrySnapshot.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('driveName')">
+                Drive  Name
+                <span *ngIf="sortColumn === 'driveName'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('driveLabel')">
+                Drive  Label
+                <span *ngIf="sortColumn === 'driveLabel'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('totalGB')">
+                Total  G  B
+                <span *ngIf="sortColumn === 'totalGB'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('freeGB')">
+                Free  G  B
+                <span *ngIf="sortColumn === 'freeGB'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('freePercent')">
+                Free  Percent
+                <span *ngIf="sortColumn === 'freePercent'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('status')">
+                Status
+                <span *ngIf="sortColumn === 'status'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('isApplicationDrive')">
+                Is  Application  Drive
+                <span *ngIf="sortColumn === 'isApplicationDrive'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let telemetryDiskHealth of filteredTelemetryDiskHealths; trackBy: getTelemetryDiskHealthId">
+            <td class="header-action-button" *ngIf="userIsTelemetryTelemetryDiskHealthWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleEdit(telemetryDiskHealth)"
+                      ngbTooltip="Edit" 
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsTelemetryTelemetryDiskHealthWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleDelete(telemetryDiskHealth)"
+                      ngbTooltip="Delete" 
+                      placement="top">
+                <i class="fa fa-trash"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(telemetryDiskHealth, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(telemetryDiskHealth, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(telemetryDiskHealth, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(telemetryDiskHealth, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(telemetryDiskHealth, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(telemetryDiskHealth, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(telemetryDiskHealth, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(telemetryDiskHealth, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/telemetrysnapshot', telemetryDiskHealth.telemetrySnapshotId]" class="btn btn-link text-left" ngbTooltip="Open Telemetry Snapshot details">{{telemetryDiskHealth.telemetrySnapshot?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/telemetrydiskhealth', telemetryDiskHealth.id]" class="btn btn-link text-left" ngbTooltip="Open Telemetry Disk Health details">{{telemetryDiskHealth.driveName}}</a></td>
+            <td class="text-truncate">{{telemetryDiskHealth.driveLabel}}</td>
+            <td class="text-truncate">{{telemetryDiskHealth.totalGB | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{telemetryDiskHealth.freeGB | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{telemetryDiskHealth.freePercent | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{telemetryDiskHealth.status}}</td>
+            <td class="text-truncate"><boolean-icon [value]="telemetryDiskHealth.isApplicationDrive"/></td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let telemetryDiskHealth of filteredTelemetryDiskHealths; trackBy: getTelemetryDiskHealthId" class="card my-2">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(telemetryDiskHealth, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(telemetryDiskHealth, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(telemetryDiskHealth, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(telemetryDiskHealth, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(telemetryDiskHealth, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(telemetryDiskHealth, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(telemetryDiskHealth, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(telemetryDiskHealth, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(telemetryDiskHealth, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(telemetryDiskHealth, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(telemetryDiskHealth, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(telemetryDiskHealth, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(telemetryDiskHealth, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/telemetrydiskhealth', telemetryDiskHealth.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(telemetryDiskHealth)" *ngIf="userIsTelemetryTelemetryDiskHealthWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(telemetryDiskHealth)" *ngIf="userIsTelemetryTelemetryDiskHealthWriter()" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{telemetryDiskHealth.id}}</strong>
+               <small class="text-muted d-block">{{telemetryDiskHealth.telemetrySnapshot?.name}}</small>
+             </div>
+             <div>
+                <button class="btn btn-sm"
+                        [routerLink]="['/telemetrydiskhealth', telemetryDiskHealth.id]"
+                        ngbTooltip="Telemetry Disk Health Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="btn btn-sm"
+                        (click)="handleEdit(telemetryDiskHealth)"
+                        ngbTooltip="Edit Telemetry Disk Health">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="btn btn-sm"
+                     (click)="handleDelete(telemetryDiskHealth)"
+                     ngbTooltip="Delete Telemetry Disk Health" 
+                     placement="top">
+                  <i class="fa fa-trash"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="telemetry-disk-health-info" *ngIf="telemetryDiskHealth.telemetrySnapshotId != null">
+              <strong>Telemetry Snapshot: </strong>
+              <a [routerLink]="['/telemetrysnapshot', telemetryDiskHealth.telemetrySnapshotId]" class="text-left p-0 m-0" ngbTooltip="Open Telemetry Snapshot details">{{telemetryDiskHealth.telemetrySnapshot?.name}}</a>
+            </p>
+            <p class="telemetry-disk-health-info" *ngIf="telemetryDiskHealth.driveName != null">
+              <strong>Drive Name: </strong>
+              {{telemetryDiskHealth.driveName}}
+            </p>
+            <p class="telemetry-disk-health-info" *ngIf="telemetryDiskHealth.driveLabel != null">
+              <strong>Drive Label: </strong>
+              {{telemetryDiskHealth.driveLabel}}
+            </p>
+            <p class="telemetry-disk-health-info" *ngIf="telemetryDiskHealth.totalGB != null">
+              <strong>Total G B: </strong>
+              {{telemetryDiskHealth.totalGB | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="telemetry-disk-health-info" *ngIf="telemetryDiskHealth.freeGB != null">
+              <strong>Free G B: </strong>
+              {{telemetryDiskHealth.freeGB | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="telemetry-disk-health-info" *ngIf="telemetryDiskHealth.freePercent != null">
+              <strong>Free Percent: </strong>
+              {{telemetryDiskHealth.freePercent | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="telemetry-disk-health-info" *ngIf="telemetryDiskHealth.status != null">
+              <strong>Status: </strong>
+              {{telemetryDiskHealth.status}}
+            </p>
+            <p class="telemetry-disk-health-info" *ngIf="telemetryDiskHealth.isApplicationDrive != null">
+              <strong>Is Application Drive: </strong>
+              <boolean-icon [value]="telemetryDiskHealth.isApplicationDrive"/>
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+   </div>
+</div>

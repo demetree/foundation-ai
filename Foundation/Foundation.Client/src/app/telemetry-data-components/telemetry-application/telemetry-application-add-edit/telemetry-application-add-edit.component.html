@@ -1,0 +1,65 @@
+<div class="add-telemetry-application" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-telemetry-application me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Telemetry Application" 
+        *ngIf="userIsTelemetryTelemetryApplicationWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #telemetryApplicationModal let-modal>
+   <div class="modal-header bg-dark text-light telemetry-application-modal-header">
+      <h5 class="modal-title mb-0" id="telemetryApplicationModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Telemetry Application' : 'Add Telemetry Application' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body telemetry-application-modal-body">
+      <form [formGroup]="telemetryApplicationForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="TelemetryApplication-name" id="label-TelemetryApplication-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="TelemetryApplication-name" formControlName="name" placeholder="Enter Name" class="form-control telemetry-application-input" [disabled]="!userIsTelemetryTelemetryApplicationWriter()" aria-labelledby="label-name" />
+                <div *ngIf="telemetryApplicationForm.get('name')?.invalid && telemetryApplicationForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('url')">
+                <label for="TelemetryApplication-url" id="label-TelemetryApplication-url">Url</label>
+                <textarea id="TelemetryApplication-url" formControlName="url" placeholder="Enter Url" class="form-control telemetry-application-input" [disabled]="!userIsTelemetryTelemetryApplicationWriter()"></textarea>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isSelf')">
+                <input type="checkbox" id="TelemetryApplication-isSelf" formControlName="isSelf" class="form-check-input" [disabled]="!userIsTelemetryTelemetryApplicationWriter()" />
+                <label for="TelemetryApplication-isSelf" class="form-check-label" id="label-TelemetryApplication-isSelf"><span class="text-danger">*</span>Is Self</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('firstSeen')">
+                <label for="TelemetryApplication-firstSeen" id="label-TelemetryApplication-firstSeen"><span class="text-danger">*</span>First Seen</label>
+                <input type="datetime-local" id="TelemetryApplication-firstSeen" formControlName="firstSeen" placeholder="Enter First Seen" class="form-control telemetry-application-input" [disabled]="!userIsTelemetryTelemetryApplicationWriter()" aria-labelledby="label-firstSeen" />
+                <div *ngIf="telemetryApplicationForm.get('firstSeen')?.invalid && telemetryApplicationForm.get('firstSeen')?.touched" class="text-danger">
+                    First Seen is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('lastSeen')">
+                <label for="TelemetryApplication-lastSeen" id="label-TelemetryApplication-lastSeen">Last Seen</label>
+                <input type="datetime-local" id="TelemetryApplication-lastSeen" formControlName="lastSeen" placeholder="Enter Last Seen" class="form-control telemetry-application-input" [disabled]="!userIsTelemetryTelemetryApplicationWriter()" aria-labelledby="label-lastSeen" />
+            </div>
+         <div class="modal-footer telemetry-application-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Telemetry Application changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !telemetryApplicationForm.valid || telemetryApplicationForm.pristine  || userIsTelemetryTelemetryApplicationWriter() == false " ngbTooltip="Save the Telemetry Application changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Telemetry Application' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

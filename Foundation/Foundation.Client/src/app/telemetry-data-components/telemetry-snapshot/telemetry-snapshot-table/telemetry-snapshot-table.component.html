@@ -1,0 +1,350 @@
+<app-telemetry-snapshot-add-edit [showAddButton]="false"></app-telemetry-snapshot-add-edit>
+<div class="row" *ngIf="userIsTelemetryTelemetrySnapshotReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsTelemetryTelemetrySnapshotWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsTelemetryTelemetrySnapshotWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('telemetryApplication.name')">
+                Telemetry  Application
+                <span *ngIf="sortColumn === 'telemetryApplication.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('telemetryCollectionRun.name')">
+                Telemetry  Collection  Run
+                <span *ngIf="sortColumn === 'telemetryCollectionRun.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('collectedAt')">
+                Collected  At
+                <span *ngIf="sortColumn === 'collectedAt'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('isOnline')">
+                Is  Online
+                <span *ngIf="sortColumn === 'isOnline'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('uptimeSeconds')">
+                Uptime  Seconds
+                <span *ngIf="sortColumn === 'uptimeSeconds'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('memoryWorkingSetMB')">
+                Memory  Working  Set  M  B
+                <span *ngIf="sortColumn === 'memoryWorkingSetMB'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('memoryGcHeapMB')">
+                Memory  Gc  Heap  M  B
+                <span *ngIf="sortColumn === 'memoryGcHeapMB'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('threadPoolWorkerThreads')">
+                Thread  Pool  Worker  Threads
+                <span *ngIf="sortColumn === 'threadPoolWorkerThreads'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('threadPoolCompletionPortThreads')">
+                Thread  Pool  Completion  Port  Threads
+                <span *ngIf="sortColumn === 'threadPoolCompletionPortThreads'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('threadPoolPendingWorkItems')">
+                Thread  Pool  Pending  Work  Items
+                <span *ngIf="sortColumn === 'threadPoolPendingWorkItems'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('machineName')">
+                Machine  Name
+                <span *ngIf="sortColumn === 'machineName'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('dotNetVersion')">
+                Dot  Net  Version
+                <span *ngIf="sortColumn === 'dotNetVersion'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('statusJson')">
+                Status  Json
+                <span *ngIf="sortColumn === 'statusJson'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let telemetrySnapshot of filteredTelemetrySnapshots; trackBy: getTelemetrySnapshotId">
+            <td class="header-action-button" *ngIf="userIsTelemetryTelemetrySnapshotWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleEdit(telemetrySnapshot)"
+                      ngbTooltip="Edit" 
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsTelemetryTelemetrySnapshotWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleDelete(telemetrySnapshot)"
+                      ngbTooltip="Delete" 
+                      placement="top">
+                <i class="fa fa-trash"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(telemetrySnapshot, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(telemetrySnapshot, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(telemetrySnapshot, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(telemetrySnapshot, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(telemetrySnapshot, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(telemetrySnapshot, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(telemetrySnapshot, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(telemetrySnapshot, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/telemetryapplication', telemetrySnapshot.telemetryApplicationId]" class="btn btn-link text-left" ngbTooltip="Open Telemetry Application details">{{telemetrySnapshot.telemetryApplication?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/telemetrycollectionrun', telemetrySnapshot.telemetryCollectionRunId]" class="btn btn-link text-left" ngbTooltip="Open Telemetry Collection Run details">{{telemetrySnapshot.telemetryCollectionRun?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/telemetrysnapshot', telemetrySnapshot.id]" class="btn btn-link text-left" ngbTooltip="Open Telemetry Snapshot details">{{telemetrySnapshot.collectedAt | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</a></td>
+            <td class="text-truncate"><boolean-icon [value]="telemetrySnapshot.isOnline"/></td>
+            <td class="text-truncate">{{telemetrySnapshot.uptimeSeconds | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{telemetrySnapshot.memoryWorkingSetMB | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{telemetrySnapshot.memoryGcHeapMB | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{telemetrySnapshot.threadPoolWorkerThreads | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{telemetrySnapshot.threadPoolCompletionPortThreads | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{telemetrySnapshot.threadPoolPendingWorkItems | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{telemetrySnapshot.machineName}}</td>
+            <td class="text-truncate">{{telemetrySnapshot.dotNetVersion}}</td>
+            <td class="text-truncate">{{telemetrySnapshot.statusJson}}</td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let telemetrySnapshot of filteredTelemetrySnapshots; trackBy: getTelemetrySnapshotId" class="card my-2">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(telemetrySnapshot, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(telemetrySnapshot, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(telemetrySnapshot, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(telemetrySnapshot, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(telemetrySnapshot, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(telemetrySnapshot, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(telemetrySnapshot, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(telemetrySnapshot, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(telemetrySnapshot, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(telemetrySnapshot, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(telemetrySnapshot, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(telemetrySnapshot, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(telemetrySnapshot, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/telemetrysnapshot', telemetrySnapshot.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(telemetrySnapshot)" *ngIf="userIsTelemetryTelemetrySnapshotWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(telemetrySnapshot)" *ngIf="userIsTelemetryTelemetrySnapshotWriter()" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{telemetrySnapshot.id}}</strong>
+               <small class="text-muted d-block">{{telemetrySnapshot.telemetryApplication?.name}}</small>
+             </div>
+             <div>
+                <button class="btn btn-sm"
+                        [routerLink]="['/telemetrysnapshot', telemetrySnapshot.id]"
+                        ngbTooltip="Telemetry Snapshot Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="btn btn-sm"
+                        (click)="handleEdit(telemetrySnapshot)"
+                        ngbTooltip="Edit Telemetry Snapshot">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="btn btn-sm"
+                     (click)="handleDelete(telemetrySnapshot)"
+                     ngbTooltip="Delete Telemetry Snapshot" 
+                     placement="top">
+                  <i class="fa fa-trash"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="telemetry-snapshot-info" *ngIf="telemetrySnapshot.telemetryApplicationId != null">
+              <strong>Telemetry Application: </strong>
+              <a [routerLink]="['/telemetryapplication', telemetrySnapshot.telemetryApplicationId]" class="text-left p-0 m-0" ngbTooltip="Open Telemetry Application details">{{telemetrySnapshot.telemetryApplication?.name}}</a>
+            </p>
+            <p class="telemetry-snapshot-info" *ngIf="telemetrySnapshot.telemetryCollectionRunId != null">
+              <strong>Telemetry Collection Run: </strong>
+              <a [routerLink]="['/telemetrycollectionrun', telemetrySnapshot.telemetryCollectionRunId]" class="text-left p-0 m-0" ngbTooltip="Open Telemetry Collection Run details">{{telemetrySnapshot.telemetryCollectionRun?.name}}</a>
+            </p>
+            <p class="telemetry-snapshot-info" *ngIf="telemetrySnapshot.collectedAt != null">
+              <strong>Collected At: </strong>
+              {{telemetrySnapshot.collectedAt | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="telemetry-snapshot-info" *ngIf="telemetrySnapshot.isOnline != null">
+              <strong>Is Online: </strong>
+              <boolean-icon [value]="telemetrySnapshot.isOnline"/>
+            </p>
+            <p class="telemetry-snapshot-info" *ngIf="telemetrySnapshot.uptimeSeconds != null">
+              <strong>Uptime Seconds: </strong>
+              {{telemetrySnapshot.uptimeSeconds | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="telemetry-snapshot-info" *ngIf="telemetrySnapshot.memoryWorkingSetMB != null">
+              <strong>Memory Working Set M B: </strong>
+              {{telemetrySnapshot.memoryWorkingSetMB | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="telemetry-snapshot-info" *ngIf="telemetrySnapshot.memoryGcHeapMB != null">
+              <strong>Memory Gc Heap M B: </strong>
+              {{telemetrySnapshot.memoryGcHeapMB | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="telemetry-snapshot-info" *ngIf="telemetrySnapshot.threadPoolWorkerThreads != null">
+              <strong>Thread Pool Worker Threads: </strong>
+              {{telemetrySnapshot.threadPoolWorkerThreads | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="telemetry-snapshot-info" *ngIf="telemetrySnapshot.threadPoolCompletionPortThreads != null">
+              <strong>Thread Pool Completion Port Threads: </strong>
+              {{telemetrySnapshot.threadPoolCompletionPortThreads | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="telemetry-snapshot-info" *ngIf="telemetrySnapshot.threadPoolPendingWorkItems != null">
+              <strong>Thread Pool Pending Work Items: </strong>
+              {{telemetrySnapshot.threadPoolPendingWorkItems | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="telemetry-snapshot-info" *ngIf="telemetrySnapshot.machineName != null">
+              <strong>Machine Name: </strong>
+              {{telemetrySnapshot.machineName}}
+            </p>
+            <p class="telemetry-snapshot-info" *ngIf="telemetrySnapshot.dotNetVersion != null">
+              <strong>Dot Net Version: </strong>
+              {{telemetrySnapshot.dotNetVersion}}
+            </p>
+            <p class="telemetry-snapshot-info" *ngIf="telemetrySnapshot.statusJson != null">
+              <strong>Status Json: </strong>
+              {{telemetrySnapshot.statusJson}}
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+   </div>
+</div>

@@ -419,6 +419,45 @@ export class AuthService {
     return false;
   }
 
+
+
+  ///
+  /// Returns true if the current user is a Telemetry Administrator
+  ///
+  get isTelemetryAdministrator(): boolean {
+
+    var user = this.currentUser;
+
+    if (user == null) {
+      return false;
+    }
+
+    if (user.roles == null || user.roles.length == 0) {
+      return false;
+    }
+
+    //
+    // Deny any access if the user as the 'Telemetry No Access' role
+    //
+    for (var i = 0; i < user.roles.length; i++) {
+      if (user.roles[i] == "Telemetry No Access") {
+        return false;
+      }
+    }
+
+    //
+    // Return true if the user is a 'An Administrator'
+    //
+    for (var i = 0; i < user.roles.length; i++) {
+      if (user.roles[i] == "Telemetry Administrator") {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+
   get isFoundationAdmin(): boolean {
 
     let user = this.currentUser;
@@ -512,6 +551,47 @@ export class AuthService {
   }
 
 
+
+  ///
+  /// Returns true if the current user is a Security Reader and Writer
+  ///
+  get isTelemetryReaderWriter(): boolean {
+
+    var user = this.currentUser;
+
+    if (user == null) {
+      return false;
+    }
+
+
+    if (user.roles == null || user.roles.length == 0) {
+      return false;
+    }
+
+    //
+    // Deny any access if the user as the 'Telemetry No Access' role
+    //
+    for (var i = 0; i < user.roles.length; i++) {
+      if (user.roles[i] == "Telemetry No Access") {
+        return false;
+      }
+    }
+
+
+    //
+    // Return true if the user is a 'Telemetry Reader and Writer' or 'Telemetry Administrator'
+    //
+    for (var i = 0; i < user.roles.length; i++) {
+      if (user.roles[i] == "Telemetry Administrator" ||
+        user.roles[i] == "Telemetry Reader and Writer") {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+
   ///
   /// Returns true if the current user is an Auditor Reader
   ///
@@ -593,6 +673,47 @@ export class AuthService {
     return false;
   }
 
+
+
+  ///
+  /// Returns true if the current user is a Telemetry Reader
+  ///
+  get isTelemetryReader(): boolean {
+
+    var user = this.currentUser;
+
+    if (user == null) {
+      return false;
+    }
+
+
+    if (user.roles == null || user.roles.length == 0) {
+      return false;
+    }
+
+    //
+    // Deny any access if the user as the 'Telemetry No Access' role
+    //
+    for (var i = 0; i < user.roles.length; i++) {
+      if (user.roles[i] == "Telemetry No Access") {
+        return false;
+      }
+    }
+
+
+    //
+    // Return true if the user is a 'Telemetry Reader' or 'Telemetry Reader and Writer' or 'Telemetry Administrator'
+    //
+    for (var i = 0; i < user.roles.length; i++) {
+      if (user.roles[i] == "Telemetry Administrator" ||
+        user.roles[i] == "Telemetry Reader and Writer" ||
+        user.roles[i] == "Telemetry Reader") {
+        return true;
+      }
+    }
+
+    return false;
+  }
 
 
   ///

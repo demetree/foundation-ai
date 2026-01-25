@@ -134,6 +134,30 @@ import { ExternalCommunicationRecipientDetailComponent } from './auditor-data-co
 //
 
 
+//
+// Beginning of imports for Telemetry Data Components
+//
+import { TelemetryApplicationListingComponent } from './telemetry-data-components/telemetry-application/telemetry-application-listing/telemetry-application-listing.component';
+import { TelemetryApplicationDetailComponent } from './telemetry-data-components/telemetry-application/telemetry-application-detail/telemetry-application-detail.component';
+import { TelemetryCollectionRunListingComponent } from './telemetry-data-components/telemetry-collection-run/telemetry-collection-run-listing/telemetry-collection-run-listing.component';
+import { TelemetryCollectionRunDetailComponent } from './telemetry-data-components/telemetry-collection-run/telemetry-collection-run-detail/telemetry-collection-run-detail.component';
+import { TelemetryDatabaseHealthListingComponent } from './telemetry-data-components/telemetry-database-health/telemetry-database-health-listing/telemetry-database-health-listing.component';
+import { TelemetryDatabaseHealthDetailComponent } from './telemetry-data-components/telemetry-database-health/telemetry-database-health-detail/telemetry-database-health-detail.component';
+import { TelemetryDiskHealthListingComponent } from './telemetry-data-components/telemetry-disk-health/telemetry-disk-health-listing/telemetry-disk-health-listing.component';
+import { TelemetryDiskHealthDetailComponent } from './telemetry-data-components/telemetry-disk-health/telemetry-disk-health-detail/telemetry-disk-health-detail.component';
+import { TelemetryErrorEventListingComponent } from './telemetry-data-components/telemetry-error-event/telemetry-error-event-listing/telemetry-error-event-listing.component';
+import { TelemetryErrorEventDetailComponent } from './telemetry-data-components/telemetry-error-event/telemetry-error-event-detail/telemetry-error-event-detail.component';
+import { TelemetryLogErrorListingComponent } from './telemetry-data-components/telemetry-log-error/telemetry-log-error-listing/telemetry-log-error-listing.component';
+import { TelemetryLogErrorDetailComponent } from './telemetry-data-components/telemetry-log-error/telemetry-log-error-detail/telemetry-log-error-detail.component';
+import { TelemetrySessionSnapshotListingComponent } from './telemetry-data-components/telemetry-session-snapshot/telemetry-session-snapshot-listing/telemetry-session-snapshot-listing.component';
+import { TelemetrySessionSnapshotDetailComponent } from './telemetry-data-components/telemetry-session-snapshot/telemetry-session-snapshot-detail/telemetry-session-snapshot-detail.component';
+import { TelemetrySnapshotListingComponent } from './telemetry-data-components/telemetry-snapshot/telemetry-snapshot-listing/telemetry-snapshot-listing.component';
+import { TelemetrySnapshotDetailComponent } from './telemetry-data-components/telemetry-snapshot/telemetry-snapshot-detail/telemetry-snapshot-detail.component';
+//
+// End of imports for Telemetry Data Components
+//
+
+
 @Injectable()
 export class LowerCaseUrlSerializer extends DefaultUrlSerializer {
   override parse(url: string): UrlTree {
@@ -442,6 +466,56 @@ const routes: Routes = [
 //
   // End of routes for Auditor Data Components
   //
+
+
+  //
+  // Beginning of routes for Telemetry Data Components
+  //
+  { path: 'telemetryapplications', component: TelemetryApplicationListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Telemetry Applications' },
+  { path: 'telemetryapplications/new', component: TelemetryApplicationDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Telemetry Application' },
+  { path: 'telemetryapplications/:telemetryApplicationId', component: TelemetryApplicationDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Telemetry Application' },
+  { path: 'telemetryapplication/:telemetryApplicationId', component: TelemetryApplicationDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Telemetry Application' },
+  { path: 'telemetryapplication', redirectTo: 'telemetryapplications' },
+  { path: 'telemetrycollectionruns', component: TelemetryCollectionRunListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Telemetry Collection Runs' },
+  { path: 'telemetrycollectionruns/new', component: TelemetryCollectionRunDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Telemetry Collection Run' },
+  { path: 'telemetrycollectionruns/:telemetryCollectionRunId', component: TelemetryCollectionRunDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Telemetry Collection Run' },
+  { path: 'telemetrycollectionrun/:telemetryCollectionRunId', component: TelemetryCollectionRunDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Telemetry Collection Run' },
+  { path: 'telemetrycollectionrun', redirectTo: 'telemetrycollectionruns' },
+  { path: 'telemetrydatabasehealths', component: TelemetryDatabaseHealthListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Telemetry Database Healths' },
+  { path: 'telemetrydatabasehealths/new', component: TelemetryDatabaseHealthDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Telemetry Database Health' },
+  { path: 'telemetrydatabasehealths/:telemetryDatabaseHealthId', component: TelemetryDatabaseHealthDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Telemetry Database Health' },
+  { path: 'telemetrydatabasehealth/:telemetryDatabaseHealthId', component: TelemetryDatabaseHealthDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Telemetry Database Health' },
+  { path: 'telemetrydatabasehealth', redirectTo: 'telemetrydatabasehealths' },
+  { path: 'telemetrydiskhealths', component: TelemetryDiskHealthListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Telemetry Disk Healths' },
+  { path: 'telemetrydiskhealths/new', component: TelemetryDiskHealthDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Telemetry Disk Health' },
+  { path: 'telemetrydiskhealths/:telemetryDiskHealthId', component: TelemetryDiskHealthDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Telemetry Disk Health' },
+  { path: 'telemetrydiskhealth/:telemetryDiskHealthId', component: TelemetryDiskHealthDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Telemetry Disk Health' },
+  { path: 'telemetrydiskhealth', redirectTo: 'telemetrydiskhealths' },
+  { path: 'telemetryerrorevents', component: TelemetryErrorEventListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Telemetry Error Events' },
+  { path: 'telemetryerrorevents/new', component: TelemetryErrorEventDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Telemetry Error Event' },
+  { path: 'telemetryerrorevents/:telemetryErrorEventId', component: TelemetryErrorEventDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Telemetry Error Event' },
+  { path: 'telemetryerrorevent/:telemetryErrorEventId', component: TelemetryErrorEventDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Telemetry Error Event' },
+  { path: 'telemetryerrorevent', redirectTo: 'telemetryerrorevents' },
+  { path: 'telemetrylogerrors', component: TelemetryLogErrorListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Telemetry Log Errors' },
+  { path: 'telemetrylogerrors/new', component: TelemetryLogErrorDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Telemetry Log Error' },
+  { path: 'telemetrylogerrors/:telemetryLogErrorId', component: TelemetryLogErrorDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Telemetry Log Error' },
+  { path: 'telemetrylogerror/:telemetryLogErrorId', component: TelemetryLogErrorDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Telemetry Log Error' },
+  { path: 'telemetrylogerror', redirectTo: 'telemetrylogerrors' },
+  { path: 'telemetrysessionsnapshots', component: TelemetrySessionSnapshotListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Telemetry Session Snapshots' },
+  { path: 'telemetrysessionsnapshots/new', component: TelemetrySessionSnapshotDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Telemetry Session Snapshot' },
+  { path: 'telemetrysessionsnapshots/:telemetrySessionSnapshotId', component: TelemetrySessionSnapshotDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Telemetry Session Snapshot' },
+  { path: 'telemetrysessionsnapshot/:telemetrySessionSnapshotId', component: TelemetrySessionSnapshotDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Telemetry Session Snapshot' },
+  { path: 'telemetrysessionsnapshot', redirectTo: 'telemetrysessionsnapshots' },
+  { path: 'telemetrysnapshots', component: TelemetrySnapshotListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Telemetry Snapshots' },
+  { path: 'telemetrysnapshots/new', component: TelemetrySnapshotDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Telemetry Snapshot' },
+  { path: 'telemetrysnapshots/:telemetrySnapshotId', component: TelemetrySnapshotDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Telemetry Snapshot' },
+  { path: 'telemetrysnapshot/:telemetrySnapshotId', component: TelemetrySnapshotDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Telemetry Snapshot' },
+  { path: 'telemetrysnapshot', redirectTo: 'telemetrysnapshots' },
+  //
+  // End of routes for Telemetry Data Components
+  //
+
+
 
 
   //

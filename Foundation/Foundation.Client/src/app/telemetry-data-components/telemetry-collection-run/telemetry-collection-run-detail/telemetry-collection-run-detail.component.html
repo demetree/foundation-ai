@@ -1,0 +1,90 @@
+<div class="container-fluid p-1 m-0 telemetry-collection-run-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="telemetry-collection-run-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Telemetry Collection Run</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Telemetry Collection Run' : 'Add Telemetry Collection Run'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsTelemetryTelemetryCollectionRunReader()">
+                <div class="col m-2 telemetry-collection-run-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="telemetryCollectionRunForm" (ngSubmit)="submitForm()" class="telemetry-collection-run-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('startTime')">
+                                <label for="TelemetryCollectionRun-startTime" id="label-TelemetryCollectionRun-startTime"><span class="text-danger">*</span>Start Time</label>
+                                <input type="datetime-local" id="TelemetryCollectionRun-startTime" formControlName="startTime" placeholder="Enter Start Time" class="form-control telemetry-collection-run-input" [disabled]="!userIsTelemetryTelemetryCollectionRunWriter()" aria-labelledby="label-startTime" />
+                                <div *ngIf="telemetryCollectionRunForm.get('startTime')?.invalid && telemetryCollectionRunForm.get('startTime')?.touched" class="text-danger">
+                                    Start Time is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('endTime')">
+                                <label for="TelemetryCollectionRun-endTime" id="label-TelemetryCollectionRun-endTime">End Time</label>
+                                <input type="datetime-local" id="TelemetryCollectionRun-endTime" formControlName="endTime" placeholder="Enter End Time" class="form-control telemetry-collection-run-input" [disabled]="!userIsTelemetryTelemetryCollectionRunWriter()" aria-labelledby="label-endTime" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('applicationsPolled')">
+                                <label for="TelemetryCollectionRun-applicationsPolled" id="label-TelemetryCollectionRun-applicationsPolled">Applications Polled</label>
+                                <input type="number" id="TelemetryCollectionRun-applicationsPolled" formControlName="applicationsPolled" placeholder="Enter Applications Polled" class="form-control telemetry-collection-run-input" [disabled]="!userIsTelemetryTelemetryCollectionRunWriter()" aria-labelledby="label-applicationsPolled" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('applicationsSucceeded')">
+                                <label for="TelemetryCollectionRun-applicationsSucceeded" id="label-TelemetryCollectionRun-applicationsSucceeded">Applications Succeeded</label>
+                                <input type="number" id="TelemetryCollectionRun-applicationsSucceeded" formControlName="applicationsSucceeded" placeholder="Enter Applications Succeeded" class="form-control telemetry-collection-run-input" [disabled]="!userIsTelemetryTelemetryCollectionRunWriter()" aria-labelledby="label-applicationsSucceeded" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('errorMessage')">
+                                <label for="TelemetryCollectionRun-errorMessage" id="label-TelemetryCollectionRun-errorMessage">Error Message</label>
+                                <textarea id="TelemetryCollectionRun-errorMessage" formControlName="errorMessage" placeholder="Enter Error Message" class="form-control telemetry-collection-run-input" [disabled]="!userIsTelemetryTelemetryCollectionRunWriter()"></textarea>
+                            </div>
+                            <div class="telemetry-collection-run-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="telemetryCollectionRunForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Telemetry Collection Run">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !telemetryCollectionRunForm.valid || !telemetryCollectionRunForm.dirty || telemetryCollectionRunForm.pristine  || userIsTelemetryTelemetryCollectionRunWriter() == false " ngbTooltip="Save the Telemetry Collection Run changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Telemetry Collection Run' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsTelemetryTelemetryCollectionRunReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 telemetry-collection-run-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="telemetrySnapshotService.userIsTelemetryTelemetrySnapshotReader()">
+                            <button ngbNavLink>Telemetry Snapshots
+                                <span class="badge bg-primary ms-2">
+                                    {{ (telemetryCollectionRunData?.TelemetrySnapshotsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-telemetry-snapshot-table [queryParams]="{ telemetryCollectionRunId: telemetryCollectionRunData?.id }"></app-telemetry-snapshot-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-telemetry-snapshot-add-edit [preSeededData]="{ telemetryCollectionRunId: telemetryCollectionRunData?.id }" [hiddenFields]="['telemetryCollectionRunId']"></app-telemetry-snapshot-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

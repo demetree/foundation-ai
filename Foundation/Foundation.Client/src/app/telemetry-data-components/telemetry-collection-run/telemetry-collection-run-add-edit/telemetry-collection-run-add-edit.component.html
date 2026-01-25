@@ -1,0 +1,62 @@
+<div class="add-telemetry-collection-run" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-telemetry-collection-run me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Telemetry Collection Run" 
+        *ngIf="userIsTelemetryTelemetryCollectionRunWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #telemetryCollectionRunModal let-modal>
+   <div class="modal-header bg-dark text-light telemetry-collection-run-modal-header">
+      <h5 class="modal-title mb-0" id="telemetryCollectionRunModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Telemetry Collection Run' : 'Add Telemetry Collection Run' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body telemetry-collection-run-modal-body">
+      <form [formGroup]="telemetryCollectionRunForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('startTime')">
+                <label for="TelemetryCollectionRun-startTime" id="label-TelemetryCollectionRun-startTime"><span class="text-danger">*</span>Start Time</label>
+                <input type="datetime-local" id="TelemetryCollectionRun-startTime" formControlName="startTime" placeholder="Enter Start Time" class="form-control telemetry-collection-run-input" [disabled]="!userIsTelemetryTelemetryCollectionRunWriter()" aria-labelledby="label-startTime" />
+                <div *ngIf="telemetryCollectionRunForm.get('startTime')?.invalid && telemetryCollectionRunForm.get('startTime')?.touched" class="text-danger">
+                    Start Time is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('endTime')">
+                <label for="TelemetryCollectionRun-endTime" id="label-TelemetryCollectionRun-endTime">End Time</label>
+                <input type="datetime-local" id="TelemetryCollectionRun-endTime" formControlName="endTime" placeholder="Enter End Time" class="form-control telemetry-collection-run-input" [disabled]="!userIsTelemetryTelemetryCollectionRunWriter()" aria-labelledby="label-endTime" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('applicationsPolled')">
+                <label for="TelemetryCollectionRun-applicationsPolled" id="label-TelemetryCollectionRun-applicationsPolled">Applications Polled</label>
+                <input type="number" id="TelemetryCollectionRun-applicationsPolled" formControlName="applicationsPolled" placeholder="Enter Applications Polled" class="form-control telemetry-collection-run-input" [disabled]="!userIsTelemetryTelemetryCollectionRunWriter()" aria-labelledby="label-applicationsPolled" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('applicationsSucceeded')">
+                <label for="TelemetryCollectionRun-applicationsSucceeded" id="label-TelemetryCollectionRun-applicationsSucceeded">Applications Succeeded</label>
+                <input type="number" id="TelemetryCollectionRun-applicationsSucceeded" formControlName="applicationsSucceeded" placeholder="Enter Applications Succeeded" class="form-control telemetry-collection-run-input" [disabled]="!userIsTelemetryTelemetryCollectionRunWriter()" aria-labelledby="label-applicationsSucceeded" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('errorMessage')">
+                <label for="TelemetryCollectionRun-errorMessage" id="label-TelemetryCollectionRun-errorMessage">Error Message</label>
+                <textarea id="TelemetryCollectionRun-errorMessage" formControlName="errorMessage" placeholder="Enter Error Message" class="form-control telemetry-collection-run-input" [disabled]="!userIsTelemetryTelemetryCollectionRunWriter()"></textarea>
+            </div>
+         <div class="modal-footer telemetry-collection-run-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Telemetry Collection Run changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !telemetryCollectionRunForm.valid || telemetryCollectionRunForm.pristine  || userIsTelemetryTelemetryCollectionRunWriter() == false " ngbTooltip="Save the Telemetry Collection Run changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Telemetry Collection Run' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

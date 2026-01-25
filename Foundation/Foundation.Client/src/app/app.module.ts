@@ -153,6 +153,22 @@ import { ExternalCommunicationRecipientService } from './auditor-data-services/e
 //
 
 
+//
+// Beginning of imports for Telemetry Data Services 
+//
+import { TelemetryDataServiceManagerService } from './telemetry-data-services/telemetry-data-service-manager.service';
+import { TelemetryApplicationService } from './telemetry-data-services/telemetry-application.service';
+import { TelemetryCollectionRunService } from './telemetry-data-services/telemetry-collection-run.service';
+import { TelemetryDatabaseHealthService } from './telemetry-data-services/telemetry-database-health.service';
+import { TelemetryDiskHealthService } from './telemetry-data-services/telemetry-disk-health.service';
+import { TelemetryErrorEventService } from './telemetry-data-services/telemetry-error-event.service';
+import { TelemetryLogErrorService } from './telemetry-data-services/telemetry-log-error.service';
+import { TelemetrySessionSnapshotService } from './telemetry-data-services/telemetry-session-snapshot.service';
+import { TelemetrySnapshotService } from './telemetry-data-services/telemetry-snapshot.service';
+//
+// End of imports for Telemetry Data Services
+//
+
 
 //
 // Beginning of imports for Security Data Components
@@ -348,6 +364,47 @@ import { ExternalCommunicationRecipientTableComponent } from './auditor-data-com
 //
 
 //
+// Beginning of imports for Telemetry Data Components
+//
+import { TelemetryApplicationListingComponent } from './telemetry-data-components/telemetry-application/telemetry-application-listing/telemetry-application-listing.component';
+import { TelemetryApplicationAddEditComponent } from './telemetry-data-components/telemetry-application/telemetry-application-add-edit/telemetry-application-add-edit.component';
+import { TelemetryApplicationDetailComponent } from './telemetry-data-components/telemetry-application/telemetry-application-detail/telemetry-application-detail.component';
+import { TelemetryApplicationTableComponent } from './telemetry-data-components/telemetry-application/telemetry-application-table/telemetry-application-table.component';
+import { TelemetryCollectionRunListingComponent } from './telemetry-data-components/telemetry-collection-run/telemetry-collection-run-listing/telemetry-collection-run-listing.component';
+import { TelemetryCollectionRunAddEditComponent } from './telemetry-data-components/telemetry-collection-run/telemetry-collection-run-add-edit/telemetry-collection-run-add-edit.component';
+import { TelemetryCollectionRunDetailComponent } from './telemetry-data-components/telemetry-collection-run/telemetry-collection-run-detail/telemetry-collection-run-detail.component';
+import { TelemetryCollectionRunTableComponent } from './telemetry-data-components/telemetry-collection-run/telemetry-collection-run-table/telemetry-collection-run-table.component';
+import { TelemetryDatabaseHealthListingComponent } from './telemetry-data-components/telemetry-database-health/telemetry-database-health-listing/telemetry-database-health-listing.component';
+import { TelemetryDatabaseHealthAddEditComponent } from './telemetry-data-components/telemetry-database-health/telemetry-database-health-add-edit/telemetry-database-health-add-edit.component';
+import { TelemetryDatabaseHealthDetailComponent } from './telemetry-data-components/telemetry-database-health/telemetry-database-health-detail/telemetry-database-health-detail.component';
+import { TelemetryDatabaseHealthTableComponent } from './telemetry-data-components/telemetry-database-health/telemetry-database-health-table/telemetry-database-health-table.component';
+import { TelemetryDiskHealthListingComponent } from './telemetry-data-components/telemetry-disk-health/telemetry-disk-health-listing/telemetry-disk-health-listing.component';
+import { TelemetryDiskHealthAddEditComponent } from './telemetry-data-components/telemetry-disk-health/telemetry-disk-health-add-edit/telemetry-disk-health-add-edit.component';
+import { TelemetryDiskHealthDetailComponent } from './telemetry-data-components/telemetry-disk-health/telemetry-disk-health-detail/telemetry-disk-health-detail.component';
+import { TelemetryDiskHealthTableComponent } from './telemetry-data-components/telemetry-disk-health/telemetry-disk-health-table/telemetry-disk-health-table.component';
+import { TelemetryErrorEventListingComponent } from './telemetry-data-components/telemetry-error-event/telemetry-error-event-listing/telemetry-error-event-listing.component';
+import { TelemetryErrorEventAddEditComponent } from './telemetry-data-components/telemetry-error-event/telemetry-error-event-add-edit/telemetry-error-event-add-edit.component';
+import { TelemetryErrorEventDetailComponent } from './telemetry-data-components/telemetry-error-event/telemetry-error-event-detail/telemetry-error-event-detail.component';
+import { TelemetryErrorEventTableComponent } from './telemetry-data-components/telemetry-error-event/telemetry-error-event-table/telemetry-error-event-table.component';
+import { TelemetryLogErrorListingComponent } from './telemetry-data-components/telemetry-log-error/telemetry-log-error-listing/telemetry-log-error-listing.component';
+import { TelemetryLogErrorAddEditComponent } from './telemetry-data-components/telemetry-log-error/telemetry-log-error-add-edit/telemetry-log-error-add-edit.component';
+import { TelemetryLogErrorDetailComponent } from './telemetry-data-components/telemetry-log-error/telemetry-log-error-detail/telemetry-log-error-detail.component';
+import { TelemetryLogErrorTableComponent } from './telemetry-data-components/telemetry-log-error/telemetry-log-error-table/telemetry-log-error-table.component';
+import { TelemetrySessionSnapshotListingComponent } from './telemetry-data-components/telemetry-session-snapshot/telemetry-session-snapshot-listing/telemetry-session-snapshot-listing.component';
+import { TelemetrySessionSnapshotAddEditComponent } from './telemetry-data-components/telemetry-session-snapshot/telemetry-session-snapshot-add-edit/telemetry-session-snapshot-add-edit.component';
+import { TelemetrySessionSnapshotDetailComponent } from './telemetry-data-components/telemetry-session-snapshot/telemetry-session-snapshot-detail/telemetry-session-snapshot-detail.component';
+import { TelemetrySessionSnapshotTableComponent } from './telemetry-data-components/telemetry-session-snapshot/telemetry-session-snapshot-table/telemetry-session-snapshot-table.component';
+import { TelemetrySnapshotListingComponent } from './telemetry-data-components/telemetry-snapshot/telemetry-snapshot-listing/telemetry-snapshot-listing.component';
+import { TelemetrySnapshotAddEditComponent } from './telemetry-data-components/telemetry-snapshot/telemetry-snapshot-add-edit/telemetry-snapshot-add-edit.component';
+import { TelemetrySnapshotDetailComponent } from './telemetry-data-components/telemetry-snapshot/telemetry-snapshot-detail/telemetry-snapshot-detail.component';
+import { TelemetrySnapshotTableComponent } from './telemetry-data-components/telemetry-snapshot/telemetry-snapshot-table/telemetry-snapshot-table.component';
+//
+// End of imports for Telemetry Data Components
+//
+
+
+
+//
 // Log Viewer Component
 //
 import { LogViewerListingComponent } from './components/log-viewer/log-viewer-listing/log-viewer-listing.component';
@@ -426,193 +483,235 @@ import { IntelligenceModalComponent } from './components/shared/intelligence-mod
 
     //
     // Beginning of declarations for Security Data Components
-    //
-    EntityDataTokenListingComponent,
-    EntityDataTokenAddEditComponent,
-    EntityDataTokenDetailComponent,
-    EntityDataTokenTableComponent,
-    EntityDataTokenEventListingComponent,
-    EntityDataTokenEventAddEditComponent,
-    EntityDataTokenEventDetailComponent,
-    EntityDataTokenEventTableComponent,
-    EntityDataTokenEventTypeListingComponent,
-    EntityDataTokenEventTypeAddEditComponent,
-    EntityDataTokenEventTypeDetailComponent,
-    EntityDataTokenEventTypeTableComponent,
-    LoginAttemptListingComponent,
-    LoginAttemptAddEditComponent,
-    LoginAttemptDetailComponent,
-    LoginAttemptTableComponent,
-    ModuleListingComponent,
-    ModuleAddEditComponent,
-    ModuleDetailComponent,
-    ModuleTableComponent,
-    ModuleSecurityRoleListingComponent,
-    ModuleSecurityRoleAddEditComponent,
-    ModuleSecurityRoleDetailComponent,
-    ModuleSecurityRoleTableComponent,
-    OAUTHTokenListingComponent,
-    OAUTHTokenAddEditComponent,
-    OAUTHTokenDetailComponent,
-    OAUTHTokenTableComponent,
-    PrivilegeListingComponent,
-    PrivilegeAddEditComponent,
-    PrivilegeDetailComponent,
-    PrivilegeTableComponent,
-    SecurityDepartmentListingComponent,
-    SecurityDepartmentAddEditComponent,
-    SecurityDepartmentDetailComponent,
-    SecurityDepartmentTableComponent,
-    SecurityDepartmentUserListingComponent,
-    SecurityDepartmentUserAddEditComponent,
-    SecurityDepartmentUserDetailComponent,
-    SecurityDepartmentUserTableComponent,
-    SecurityGroupListingComponent,
-    SecurityGroupAddEditComponent,
-    SecurityGroupDetailComponent,
-    SecurityGroupTableComponent,
-    SecurityGroupSecurityRoleListingComponent,
-    SecurityGroupSecurityRoleAddEditComponent,
-    SecurityGroupSecurityRoleDetailComponent,
-    SecurityGroupSecurityRoleTableComponent,
-    SecurityOrganizationListingComponent,
-    SecurityOrganizationAddEditComponent,
-    SecurityOrganizationDetailComponent,
-    SecurityOrganizationTableComponent,
-    SecurityOrganizationUserListingComponent,
-    SecurityOrganizationUserAddEditComponent,
-    SecurityOrganizationUserDetailComponent,
-    SecurityOrganizationUserTableComponent,
-    SecurityRoleListingComponent,
-    SecurityRoleAddEditComponent,
-    SecurityRoleDetailComponent,
-    SecurityRoleTableComponent,
-    SecurityTeamListingComponent,
-    SecurityTeamAddEditComponent,
-    SecurityTeamDetailComponent,
-    SecurityTeamTableComponent,
-    SecurityTeamUserListingComponent,
-    SecurityTeamUserAddEditComponent,
-    SecurityTeamUserDetailComponent,
-    SecurityTeamUserTableComponent,
-    SecurityTenantListingComponent,
-    SecurityTenantAddEditComponent,
-    SecurityTenantDetailComponent,
-    SecurityTenantTableComponent,
-    SecurityTenantUserListingComponent,
-    SecurityTenantUserAddEditComponent,
-    SecurityTenantUserDetailComponent,
-    SecurityTenantUserTableComponent,
-    SecurityUserListingComponent,
-    SecurityUserAddEditComponent,
-    SecurityUserDetailComponent,
-    SecurityUserTableComponent,
-    SecurityUserEventListingComponent,
-    SecurityUserEventAddEditComponent,
-    SecurityUserEventDetailComponent,
-    SecurityUserEventTableComponent,
-    SecurityUserEventTypeListingComponent,
-    SecurityUserEventTypeAddEditComponent,
-    SecurityUserEventTypeDetailComponent,
-    SecurityUserEventTypeTableComponent,
-    SecurityUserPasswordResetTokenListingComponent,
-    SecurityUserPasswordResetTokenAddEditComponent,
-    SecurityUserPasswordResetTokenDetailComponent,
-    SecurityUserPasswordResetTokenTableComponent,
-    SecurityUserSecurityGroupListingComponent,
-    SecurityUserSecurityGroupAddEditComponent,
-    SecurityUserSecurityGroupDetailComponent,
-    SecurityUserSecurityGroupTableComponent,
-    SecurityUserSecurityRoleListingComponent,
-    SecurityUserSecurityRoleAddEditComponent,
-    SecurityUserSecurityRoleDetailComponent,
-    SecurityUserSecurityRoleTableComponent,
-    SecurityUserTitleListingComponent,
-    SecurityUserTitleAddEditComponent,
-    SecurityUserTitleDetailComponent,
-    SecurityUserTitleTableComponent,
-    SystemSettingListingComponent,
-    SystemSettingAddEditComponent,
-    SystemSettingDetailComponent,
-    SystemSettingTableComponent,
-    UserSessionListingComponent,
-    UserSessionAddEditComponent,
-    UserSessionDetailComponent,
-    UserSessionTableComponent,
-    //
+//
+EntityDataTokenListingComponent,
+EntityDataTokenAddEditComponent,
+EntityDataTokenDetailComponent,
+EntityDataTokenTableComponent,
+EntityDataTokenEventListingComponent,
+EntityDataTokenEventAddEditComponent,
+EntityDataTokenEventDetailComponent,
+EntityDataTokenEventTableComponent,
+EntityDataTokenEventTypeListingComponent,
+EntityDataTokenEventTypeAddEditComponent,
+EntityDataTokenEventTypeDetailComponent,
+EntityDataTokenEventTypeTableComponent,
+LoginAttemptListingComponent,
+LoginAttemptAddEditComponent,
+LoginAttemptDetailComponent,
+LoginAttemptTableComponent,
+ModuleListingComponent,
+ModuleAddEditComponent,
+ModuleDetailComponent,
+ModuleTableComponent,
+ModuleSecurityRoleListingComponent,
+ModuleSecurityRoleAddEditComponent,
+ModuleSecurityRoleDetailComponent,
+ModuleSecurityRoleTableComponent,
+OAUTHTokenListingComponent,
+OAUTHTokenAddEditComponent,
+OAUTHTokenDetailComponent,
+OAUTHTokenTableComponent,
+PrivilegeListingComponent,
+PrivilegeAddEditComponent,
+PrivilegeDetailComponent,
+PrivilegeTableComponent,
+SecurityDepartmentListingComponent,
+SecurityDepartmentAddEditComponent,
+SecurityDepartmentDetailComponent,
+SecurityDepartmentTableComponent,
+SecurityDepartmentUserListingComponent,
+SecurityDepartmentUserAddEditComponent,
+SecurityDepartmentUserDetailComponent,
+SecurityDepartmentUserTableComponent,
+SecurityGroupListingComponent,
+SecurityGroupAddEditComponent,
+SecurityGroupDetailComponent,
+SecurityGroupTableComponent,
+SecurityGroupSecurityRoleListingComponent,
+SecurityGroupSecurityRoleAddEditComponent,
+SecurityGroupSecurityRoleDetailComponent,
+SecurityGroupSecurityRoleTableComponent,
+SecurityOrganizationListingComponent,
+SecurityOrganizationAddEditComponent,
+SecurityOrganizationDetailComponent,
+SecurityOrganizationTableComponent,
+SecurityOrganizationUserListingComponent,
+SecurityOrganizationUserAddEditComponent,
+SecurityOrganizationUserDetailComponent,
+SecurityOrganizationUserTableComponent,
+SecurityRoleListingComponent,
+SecurityRoleAddEditComponent,
+SecurityRoleDetailComponent,
+SecurityRoleTableComponent,
+SecurityTeamListingComponent,
+SecurityTeamAddEditComponent,
+SecurityTeamDetailComponent,
+SecurityTeamTableComponent,
+SecurityTeamUserListingComponent,
+SecurityTeamUserAddEditComponent,
+SecurityTeamUserDetailComponent,
+SecurityTeamUserTableComponent,
+SecurityTenantListingComponent,
+SecurityTenantAddEditComponent,
+SecurityTenantDetailComponent,
+SecurityTenantTableComponent,
+SecurityTenantUserListingComponent,
+SecurityTenantUserAddEditComponent,
+SecurityTenantUserDetailComponent,
+SecurityTenantUserTableComponent,
+SecurityUserListingComponent,
+SecurityUserAddEditComponent,
+SecurityUserDetailComponent,
+SecurityUserTableComponent,
+SecurityUserEventListingComponent,
+SecurityUserEventAddEditComponent,
+SecurityUserEventDetailComponent,
+SecurityUserEventTableComponent,
+SecurityUserEventTypeListingComponent,
+SecurityUserEventTypeAddEditComponent,
+SecurityUserEventTypeDetailComponent,
+SecurityUserEventTypeTableComponent,
+SecurityUserPasswordResetTokenListingComponent,
+SecurityUserPasswordResetTokenAddEditComponent,
+SecurityUserPasswordResetTokenDetailComponent,
+SecurityUserPasswordResetTokenTableComponent,
+SecurityUserSecurityGroupListingComponent,
+SecurityUserSecurityGroupAddEditComponent,
+SecurityUserSecurityGroupDetailComponent,
+SecurityUserSecurityGroupTableComponent,
+SecurityUserSecurityRoleListingComponent,
+SecurityUserSecurityRoleAddEditComponent,
+SecurityUserSecurityRoleDetailComponent,
+SecurityUserSecurityRoleTableComponent,
+SecurityUserTitleListingComponent,
+SecurityUserTitleAddEditComponent,
+SecurityUserTitleDetailComponent,
+SecurityUserTitleTableComponent,
+SystemSettingListingComponent,
+SystemSettingAddEditComponent,
+SystemSettingDetailComponent,
+SystemSettingTableComponent,
+UserSessionListingComponent,
+UserSessionAddEditComponent,
+UserSessionDetailComponent,
+UserSessionTableComponent,
+//
     // End of declarations for Security Data Components
     //
 
     //
     // Beginning of declarations for Auditor Data Components
-    //
-    AuditAccessTypeListingComponent,
-    AuditAccessTypeAddEditComponent,
-    AuditAccessTypeDetailComponent,
-    AuditAccessTypeTableComponent,
-    AuditEventListingComponent,
-    AuditEventAddEditComponent,
-    AuditEventDetailComponent,
-    AuditEventTableComponent,
-    AuditEventEntityStateListingComponent,
-    AuditEventEntityStateAddEditComponent,
-    AuditEventEntityStateDetailComponent,
-    AuditEventEntityStateTableComponent,
-    AuditEventErrorMessageListingComponent,
-    AuditEventErrorMessageAddEditComponent,
-    AuditEventErrorMessageDetailComponent,
-    AuditEventErrorMessageTableComponent,
-    AuditHostSystemListingComponent,
-    AuditHostSystemAddEditComponent,
-    AuditHostSystemDetailComponent,
-    AuditHostSystemTableComponent,
-    AuditModuleListingComponent,
-    AuditModuleAddEditComponent,
-    AuditModuleDetailComponent,
-    AuditModuleTableComponent,
-    AuditModuleEntityListingComponent,
-    AuditModuleEntityAddEditComponent,
-    AuditModuleEntityDetailComponent,
-    AuditModuleEntityTableComponent,
-    AuditPlanBListingComponent,
-    AuditPlanBAddEditComponent,
-    AuditPlanBDetailComponent,
-    AuditPlanBTableComponent,
-    AuditResourceListingComponent,
-    AuditResourceAddEditComponent,
-    AuditResourceDetailComponent,
-    AuditResourceTableComponent,
-    AuditSessionListingComponent,
-    AuditSessionAddEditComponent,
-    AuditSessionDetailComponent,
-    AuditSessionTableComponent,
-    AuditSourceListingComponent,
-    AuditSourceAddEditComponent,
-    AuditSourceDetailComponent,
-    AuditSourceTableComponent,
-    AuditTypeListingComponent,
-    AuditTypeAddEditComponent,
-    AuditTypeDetailComponent,
-    AuditTypeTableComponent,
-    AuditUserListingComponent,
-    AuditUserAddEditComponent,
-    AuditUserDetailComponent,
-    AuditUserTableComponent,
-    AuditUserAgentListingComponent,
-    AuditUserAgentAddEditComponent,
-    AuditUserAgentDetailComponent,
-    AuditUserAgentTableComponent,
-    ExternalCommunicationListingComponent,
-    ExternalCommunicationAddEditComponent,
-    ExternalCommunicationDetailComponent,
-    ExternalCommunicationTableComponent,
-    ExternalCommunicationRecipientListingComponent,
-    ExternalCommunicationRecipientAddEditComponent,
-    ExternalCommunicationRecipientDetailComponent,
-    ExternalCommunicationRecipientTableComponent,
-    //
+//
+AuditAccessTypeListingComponent,
+AuditAccessTypeAddEditComponent,
+AuditAccessTypeDetailComponent,
+AuditAccessTypeTableComponent,
+AuditEventListingComponent,
+AuditEventAddEditComponent,
+AuditEventDetailComponent,
+AuditEventTableComponent,
+AuditEventEntityStateListingComponent,
+AuditEventEntityStateAddEditComponent,
+AuditEventEntityStateDetailComponent,
+AuditEventEntityStateTableComponent,
+AuditEventErrorMessageListingComponent,
+AuditEventErrorMessageAddEditComponent,
+AuditEventErrorMessageDetailComponent,
+AuditEventErrorMessageTableComponent,
+AuditHostSystemListingComponent,
+AuditHostSystemAddEditComponent,
+AuditHostSystemDetailComponent,
+AuditHostSystemTableComponent,
+AuditModuleListingComponent,
+AuditModuleAddEditComponent,
+AuditModuleDetailComponent,
+AuditModuleTableComponent,
+AuditModuleEntityListingComponent,
+AuditModuleEntityAddEditComponent,
+AuditModuleEntityDetailComponent,
+AuditModuleEntityTableComponent,
+AuditPlanBListingComponent,
+AuditPlanBAddEditComponent,
+AuditPlanBDetailComponent,
+AuditPlanBTableComponent,
+AuditResourceListingComponent,
+AuditResourceAddEditComponent,
+AuditResourceDetailComponent,
+AuditResourceTableComponent,
+AuditSessionListingComponent,
+AuditSessionAddEditComponent,
+AuditSessionDetailComponent,
+AuditSessionTableComponent,
+AuditSourceListingComponent,
+AuditSourceAddEditComponent,
+AuditSourceDetailComponent,
+AuditSourceTableComponent,
+AuditTypeListingComponent,
+AuditTypeAddEditComponent,
+AuditTypeDetailComponent,
+AuditTypeTableComponent,
+AuditUserListingComponent,
+AuditUserAddEditComponent,
+AuditUserDetailComponent,
+AuditUserTableComponent,
+AuditUserAgentListingComponent,
+AuditUserAgentAddEditComponent,
+AuditUserAgentDetailComponent,
+AuditUserAgentTableComponent,
+ExternalCommunicationListingComponent,
+ExternalCommunicationAddEditComponent,
+ExternalCommunicationDetailComponent,
+ExternalCommunicationTableComponent,
+ExternalCommunicationRecipientListingComponent,
+ExternalCommunicationRecipientAddEditComponent,
+ExternalCommunicationRecipientDetailComponent,
+ExternalCommunicationRecipientTableComponent,
+//
     // End of declarations for Auditor Data Components
     //
+
+
+    //
+    // Beginning of declarations for Telemetry Data Components
+    //
+    TelemetryApplicationListingComponent,
+    TelemetryApplicationAddEditComponent,
+    TelemetryApplicationDetailComponent,
+    TelemetryApplicationTableComponent,
+    TelemetryCollectionRunListingComponent,
+    TelemetryCollectionRunAddEditComponent,
+    TelemetryCollectionRunDetailComponent,
+    TelemetryCollectionRunTableComponent,
+    TelemetryDatabaseHealthListingComponent,
+    TelemetryDatabaseHealthAddEditComponent,
+    TelemetryDatabaseHealthDetailComponent,
+    TelemetryDatabaseHealthTableComponent,
+    TelemetryDiskHealthListingComponent,
+    TelemetryDiskHealthAddEditComponent,
+    TelemetryDiskHealthDetailComponent,
+    TelemetryDiskHealthTableComponent,
+    TelemetryErrorEventListingComponent,
+    TelemetryErrorEventAddEditComponent,
+    TelemetryErrorEventDetailComponent,
+    TelemetryErrorEventTableComponent,
+    TelemetryLogErrorListingComponent,
+    TelemetryLogErrorAddEditComponent,
+    TelemetryLogErrorDetailComponent,
+    TelemetryLogErrorTableComponent,
+    TelemetrySessionSnapshotListingComponent,
+    TelemetrySessionSnapshotAddEditComponent,
+    TelemetrySessionSnapshotDetailComponent,
+    TelemetrySessionSnapshotTableComponent,
+    TelemetrySnapshotListingComponent,
+    TelemetrySnapshotAddEditComponent,
+    TelemetrySnapshotDetailComponent,
+    TelemetrySnapshotTableComponent,
+    //
+    // End of declarations for Telemetry Data Components
+    //
+
+
 
     //
     // Log Viewer Component
@@ -721,63 +820,81 @@ import { IntelligenceModalComponent } from './components/shared/intelligence-mod
 
     //
     // Beginning of provider declarations for Security Data Services
-    //
-    SecurityDataServiceManagerService,
-    EntityDataTokenService,
-    EntityDataTokenEventService,
-    EntityDataTokenEventTypeService,
-    LoginAttemptService,
-    ModuleService,
-    ModuleSecurityRoleService,
-    OAUTHTokenService,
-    PrivilegeService,
-    SecurityDepartmentService,
-    SecurityDepartmentUserService,
-    SecurityGroupService,
-    SecurityGroupSecurityRoleService,
-    SecurityOrganizationService,
-    SecurityOrganizationUserService,
-    SecurityRoleService,
-    SecurityTeamService,
-    SecurityTeamUserService,
-    SecurityTenantService,
-    SecurityTenantUserService,
-    SecurityUserService,
-    SecurityUserEventService,
-    SecurityUserEventTypeService,
-    SecurityUserPasswordResetTokenService,
-    SecurityUserSecurityGroupService,
-    SecurityUserSecurityRoleService,
-    SecurityUserTitleService,
-    SystemSettingService,
-    UserSessionService,
-    //
+//
+SecurityDataServiceManagerService,
+EntityDataTokenService,
+EntityDataTokenEventService,
+EntityDataTokenEventTypeService,
+LoginAttemptService,
+ModuleService,
+ModuleSecurityRoleService,
+OAUTHTokenService,
+PrivilegeService,
+SecurityDepartmentService,
+SecurityDepartmentUserService,
+SecurityGroupService,
+SecurityGroupSecurityRoleService,
+SecurityOrganizationService,
+SecurityOrganizationUserService,
+SecurityRoleService,
+SecurityTeamService,
+SecurityTeamUserService,
+SecurityTenantService,
+SecurityTenantUserService,
+SecurityUserService,
+SecurityUserEventService,
+SecurityUserEventTypeService,
+SecurityUserPasswordResetTokenService,
+SecurityUserSecurityGroupService,
+SecurityUserSecurityRoleService,
+SecurityUserTitleService,
+SystemSettingService,
+UserSessionService,
+//
     // End of provider declarations for Security Data Services
     //
 
 
     //
     // Beginning of provider declarations for Auditor Data Services
-    //
-    AuditorDataServiceManagerService,
-    AuditAccessTypeService,
-    AuditEventService,
-    AuditEventEntityStateService,
-    AuditEventErrorMessageService,
-    AuditHostSystemService,
-    AuditModuleService,
-    AuditModuleEntityService,
-    AuditPlanBService,
-    AuditResourceService,
-    AuditSessionService,
-    AuditSourceService,
-    AuditTypeService,
-    AuditUserService,
-    AuditUserAgentService,
-    ExternalCommunicationService,
-    ExternalCommunicationRecipientService,
-    //
+//
+AuditorDataServiceManagerService,
+AuditAccessTypeService,
+AuditEventService,
+AuditEventEntityStateService,
+AuditEventErrorMessageService,
+AuditHostSystemService,
+AuditModuleService,
+AuditModuleEntityService,
+AuditPlanBService,
+AuditResourceService,
+AuditSessionService,
+AuditSourceService,
+AuditTypeService,
+AuditUserService,
+AuditUserAgentService,
+ExternalCommunicationService,
+ExternalCommunicationRecipientService,
+//
     // End of provider declarations for Auditor Data Services
+    //
+
+
+
+    //
+    // Beginning of provider declarations for Telemetry Data Services 
+    //
+    TelemetryDataServiceManagerService,
+    TelemetryApplicationService,
+    TelemetryCollectionRunService,
+    TelemetryDatabaseHealthService,
+    TelemetryDiskHealthService,
+    TelemetryErrorEventService,
+    TelemetryLogErrorService,
+    TelemetrySessionSnapshotService,
+    TelemetrySnapshotService,
+    //
+    // End of provider declarations for Telemetry Data Services
     //
 
 

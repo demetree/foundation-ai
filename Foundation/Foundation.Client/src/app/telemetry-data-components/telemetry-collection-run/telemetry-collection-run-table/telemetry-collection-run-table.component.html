@@ -1,0 +1,277 @@
+<app-telemetry-collection-run-add-edit [showAddButton]="false"></app-telemetry-collection-run-add-edit>
+<div class="row" *ngIf="userIsTelemetryTelemetryCollectionRunReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsTelemetryTelemetryCollectionRunWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsTelemetryTelemetryCollectionRunWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('startTime')">
+                Start  Time
+                <span *ngIf="sortColumn === 'startTime'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('endTime')">
+                End  Time
+                <span *ngIf="sortColumn === 'endTime'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('applicationsPolled')">
+                Applications  Polled
+                <span *ngIf="sortColumn === 'applicationsPolled'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('applicationsSucceeded')">
+                Applications  Succeeded
+                <span *ngIf="sortColumn === 'applicationsSucceeded'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('errorMessage')">
+                Error  Message
+                <span *ngIf="sortColumn === 'errorMessage'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let telemetryCollectionRun of filteredTelemetryCollectionRuns; trackBy: getTelemetryCollectionRunId">
+            <td class="header-action-button" *ngIf="userIsTelemetryTelemetryCollectionRunWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleEdit(telemetryCollectionRun)"
+                      ngbTooltip="Edit" 
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsTelemetryTelemetryCollectionRunWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleDelete(telemetryCollectionRun)"
+                      ngbTooltip="Delete" 
+                      placement="top">
+                <i class="fa fa-trash"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(telemetryCollectionRun, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(telemetryCollectionRun, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(telemetryCollectionRun, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(telemetryCollectionRun, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(telemetryCollectionRun, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(telemetryCollectionRun, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(telemetryCollectionRun, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(telemetryCollectionRun, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/telemetrycollectionrun', telemetryCollectionRun.id]" class="btn btn-link text-left" ngbTooltip="Open Telemetry Collection Run details">{{telemetryCollectionRun.startTime | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</a></td>
+            <td class="text-truncate">{{telemetryCollectionRun.endTime | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate">{{telemetryCollectionRun.applicationsPolled | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{telemetryCollectionRun.applicationsSucceeded | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{telemetryCollectionRun.errorMessage}}</td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let telemetryCollectionRun of filteredTelemetryCollectionRuns; trackBy: getTelemetryCollectionRunId" class="card my-2">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(telemetryCollectionRun, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(telemetryCollectionRun, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(telemetryCollectionRun, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(telemetryCollectionRun, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(telemetryCollectionRun, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(telemetryCollectionRun, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(telemetryCollectionRun, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(telemetryCollectionRun, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(telemetryCollectionRun, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(telemetryCollectionRun, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(telemetryCollectionRun, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(telemetryCollectionRun, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(telemetryCollectionRun, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/telemetrycollectionrun', telemetryCollectionRun.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(telemetryCollectionRun)" *ngIf="userIsTelemetryTelemetryCollectionRunWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(telemetryCollectionRun)" *ngIf="userIsTelemetryTelemetryCollectionRunWriter()" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{telemetryCollectionRun.id}}</strong>
+             </div>
+             <div>
+                <button class="btn btn-sm"
+                        [routerLink]="['/telemetrycollectionrun', telemetryCollectionRun.id]"
+                        ngbTooltip="Telemetry Collection Run Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="btn btn-sm"
+                        (click)="handleEdit(telemetryCollectionRun)"
+                        ngbTooltip="Edit Telemetry Collection Run">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="btn btn-sm"
+                     (click)="handleDelete(telemetryCollectionRun)"
+                     ngbTooltip="Delete Telemetry Collection Run" 
+                     placement="top">
+                  <i class="fa fa-trash"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="telemetry-collection-run-info" *ngIf="telemetryCollectionRun.startTime != null">
+              <strong>Start Time: </strong>
+              {{telemetryCollectionRun.startTime | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="telemetry-collection-run-info" *ngIf="telemetryCollectionRun.endTime != null">
+              <strong>End Time: </strong>
+              {{telemetryCollectionRun.endTime | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="telemetry-collection-run-info" *ngIf="telemetryCollectionRun.applicationsPolled != null">
+              <strong>Applications Polled: </strong>
+              {{telemetryCollectionRun.applicationsPolled | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="telemetry-collection-run-info" *ngIf="telemetryCollectionRun.applicationsSucceeded != null">
+              <strong>Applications Succeeded: </strong>
+              {{telemetryCollectionRun.applicationsSucceeded | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="telemetry-collection-run-info" *ngIf="telemetryCollectionRun.errorMessage != null">
+              <strong>Error Message: </strong>
+              {{telemetryCollectionRun.errorMessage}}
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+   </div>
+</div>

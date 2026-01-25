@@ -1,0 +1,76 @@
+<div class="add-telemetry-database-health" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-telemetry-database-health me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Telemetry Database Health" 
+        *ngIf="userIsTelemetryTelemetryDatabaseHealthWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #telemetryDatabaseHealthModal let-modal>
+   <div class="modal-header bg-dark text-light telemetry-database-health-modal-header">
+      <h5 class="modal-title mb-0" id="telemetryDatabaseHealthModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Telemetry Database Health' : 'Add Telemetry Database Health' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body telemetry-database-health-modal-body">
+      <form [formGroup]="telemetryDatabaseHealthForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('telemetrySnapshotId')">
+                <label for="TelemetryDatabaseHealth-telemetrySnapshotId" id="label-TelemetryDatabaseHealth-telemetrySnapshotId"><span class="text-danger">*</span>Telemetry Snapshot</label>
+                <select id="TelemetryDatabaseHealth-telemetrySnapshotId" formControlName="telemetrySnapshotId" class="form-select telemetry-database-health-select" [disabled]="!userIsTelemetryTelemetryDatabaseHealthWriter()">
+                    <option [ngValue]="null">Select Telemetry Snapshot</option>
+                    <option *ngFor="let telemetrySnapshot of telemetrySnapshots$ | async" [ngValue]="telemetrySnapshot.id">{{telemetrySnapshot.machineName}}</option>
+                </select>
+                <div *ngIf="telemetryDatabaseHealthForm.get('telemetrySnapshotId')?.invalid && telemetryDatabaseHealthForm.get('telemetrySnapshotId')?.touched" class="text-danger">
+                    Telemetry Snapshot is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('databaseName')">
+                <label for="TelemetryDatabaseHealth-databaseName" id="label-TelemetryDatabaseHealth-databaseName"><span class="text-danger">*</span>Database Name</label>
+                <input type="text" id="TelemetryDatabaseHealth-databaseName" formControlName="databaseName" placeholder="Enter Database Name" class="form-control telemetry-database-health-input" [disabled]="!userIsTelemetryTelemetryDatabaseHealthWriter()" aria-labelledby="label-databaseName" />
+                <div *ngIf="telemetryDatabaseHealthForm.get('databaseName')?.invalid && telemetryDatabaseHealthForm.get('databaseName')?.touched" class="text-danger">
+                    Database Name is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isConnected')">
+                <input type="checkbox" id="TelemetryDatabaseHealth-isConnected" formControlName="isConnected" class="form-check-input" [disabled]="!userIsTelemetryTelemetryDatabaseHealthWriter()" />
+                <label for="TelemetryDatabaseHealth-isConnected" class="form-check-label" id="label-TelemetryDatabaseHealth-isConnected"><span class="text-danger">*</span>Is Connected</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('status')">
+                <label for="TelemetryDatabaseHealth-status" id="label-TelemetryDatabaseHealth-status">Status</label>
+                <input type="text" id="TelemetryDatabaseHealth-status" formControlName="status" placeholder="Enter Status" class="form-control telemetry-database-health-input" [disabled]="!userIsTelemetryTelemetryDatabaseHealthWriter()" aria-labelledby="label-status" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('server')">
+                <label for="TelemetryDatabaseHealth-server" id="label-TelemetryDatabaseHealth-server">Server</label>
+                <input type="text" id="TelemetryDatabaseHealth-server" formControlName="server" placeholder="Enter Server" class="form-control telemetry-database-health-input" [disabled]="!userIsTelemetryTelemetryDatabaseHealthWriter()" aria-labelledby="label-server" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('provider')">
+                <label for="TelemetryDatabaseHealth-provider" id="label-TelemetryDatabaseHealth-provider">Provider</label>
+                <input type="text" id="TelemetryDatabaseHealth-provider" formControlName="provider" placeholder="Enter Provider" class="form-control telemetry-database-health-input" [disabled]="!userIsTelemetryTelemetryDatabaseHealthWriter()" aria-labelledby="label-provider" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('errorMessage')">
+                <label for="TelemetryDatabaseHealth-errorMessage" id="label-TelemetryDatabaseHealth-errorMessage">Error Message</label>
+                <textarea id="TelemetryDatabaseHealth-errorMessage" formControlName="errorMessage" placeholder="Enter Error Message" class="form-control telemetry-database-health-input" [disabled]="!userIsTelemetryTelemetryDatabaseHealthWriter()"></textarea>
+            </div>
+         <div class="modal-footer telemetry-database-health-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Telemetry Database Health changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !telemetryDatabaseHealthForm.valid || telemetryDatabaseHealthForm.pristine  || userIsTelemetryTelemetryDatabaseHealthWriter() == false " ngbTooltip="Save the Telemetry Database Health changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Telemetry Database Health' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

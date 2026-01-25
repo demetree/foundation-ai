@@ -1,0 +1,127 @@
+<div class="container-fluid p-1 m-0 telemetry-application-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="telemetry-application-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Telemetry Application</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Telemetry Application' : 'Add Telemetry Application'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsTelemetryTelemetryApplicationReader()">
+                <div class="col m-2 telemetry-application-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="telemetryApplicationForm" (ngSubmit)="submitForm()" class="telemetry-application-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="TelemetryApplication-name" id="label-TelemetryApplication-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="TelemetryApplication-name" formControlName="name" placeholder="Enter Name" class="form-control telemetry-application-input" [disabled]="!userIsTelemetryTelemetryApplicationWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="telemetryApplicationForm.get('name')?.invalid && telemetryApplicationForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('url')">
+                                <label for="TelemetryApplication-url" id="label-TelemetryApplication-url">Url</label>
+                                <textarea id="TelemetryApplication-url" formControlName="url" placeholder="Enter Url" class="form-control telemetry-application-input" [disabled]="!userIsTelemetryTelemetryApplicationWriter()"></textarea>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isSelf')">
+                                <input type="checkbox" id="TelemetryApplication-isSelf" formControlName="isSelf" class="form-check-input" [disabled]="!userIsTelemetryTelemetryApplicationWriter()" />
+                                <label for="TelemetryApplication-isSelf" class="form-check-label" id="label-TelemetryApplication-isSelf"><span class="text-danger">*</span>Is Self</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('firstSeen')">
+                                <label for="TelemetryApplication-firstSeen" id="label-TelemetryApplication-firstSeen"><span class="text-danger">*</span>First Seen</label>
+                                <input type="datetime-local" id="TelemetryApplication-firstSeen" formControlName="firstSeen" placeholder="Enter First Seen" class="form-control telemetry-application-input" [disabled]="!userIsTelemetryTelemetryApplicationWriter()" aria-labelledby="label-firstSeen" />
+                                <div *ngIf="telemetryApplicationForm.get('firstSeen')?.invalid && telemetryApplicationForm.get('firstSeen')?.touched" class="text-danger">
+                                    First Seen is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('lastSeen')">
+                                <label for="TelemetryApplication-lastSeen" id="label-TelemetryApplication-lastSeen">Last Seen</label>
+                                <input type="datetime-local" id="TelemetryApplication-lastSeen" formControlName="lastSeen" placeholder="Enter Last Seen" class="form-control telemetry-application-input" [disabled]="!userIsTelemetryTelemetryApplicationWriter()" aria-labelledby="label-lastSeen" />
+                            </div>
+                            <div class="telemetry-application-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="telemetryApplicationForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Telemetry Application">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !telemetryApplicationForm.valid || !telemetryApplicationForm.dirty || telemetryApplicationForm.pristine  || userIsTelemetryTelemetryApplicationWriter() == false " ngbTooltip="Save the Telemetry Application changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Telemetry Application' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsTelemetryTelemetryApplicationReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 telemetry-application-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="telemetrySnapshotService.userIsTelemetryTelemetrySnapshotReader()">
+                            <button ngbNavLink>Telemetry Snapshots
+                                <span class="badge bg-primary ms-2">
+                                    {{ (telemetryApplicationData?.TelemetrySnapshotsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-telemetry-snapshot-table [queryParams]="{ telemetryApplicationId: telemetryApplicationData?.id }"></app-telemetry-snapshot-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-telemetry-snapshot-add-edit [preSeededData]="{ telemetryApplicationId: telemetryApplicationData?.id }" [hiddenFields]="['telemetryApplicationId']"></app-telemetry-snapshot-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="telemetryErrorEventService.userIsTelemetryTelemetryErrorEventReader()">
+                            <button ngbNavLink>Telemetry Error Events
+                                <span class="badge bg-primary ms-2">
+                                    {{ (telemetryApplicationData?.TelemetryErrorEventsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-telemetry-error-event-table [queryParams]="{ telemetryApplicationId: telemetryApplicationData?.id }"></app-telemetry-error-event-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-telemetry-error-event-add-edit [preSeededData]="{ telemetryApplicationId: telemetryApplicationData?.id }" [hiddenFields]="['telemetryApplicationId']"></app-telemetry-error-event-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="telemetryLogErrorService.userIsTelemetryTelemetryLogErrorReader()">
+                            <button ngbNavLink>Telemetry Log Errors
+                                <span class="badge bg-primary ms-2">
+                                    {{ (telemetryApplicationData?.TelemetryLogErrorsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-telemetry-log-error-table [queryParams]="{ telemetryApplicationId: telemetryApplicationData?.id }"></app-telemetry-log-error-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-telemetry-log-error-add-edit [preSeededData]="{ telemetryApplicationId: telemetryApplicationData?.id }" [hiddenFields]="['telemetryApplicationId']"></app-telemetry-log-error-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

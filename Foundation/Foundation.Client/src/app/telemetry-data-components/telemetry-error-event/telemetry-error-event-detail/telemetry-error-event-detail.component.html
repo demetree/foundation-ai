@@ -1,0 +1,92 @@
+<div class="container-fluid p-1 m-0 telemetry-error-event-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="telemetry-error-event-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Telemetry Error Event</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Telemetry Error Event' : 'Add Telemetry Error Event'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsTelemetryTelemetryErrorEventReader()">
+                <div class="col m-2 telemetry-error-event-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="telemetryErrorEventForm" (ngSubmit)="submitForm()" class="telemetry-error-event-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('telemetryApplicationId')">
+                                <label for="TelemetryErrorEvent-telemetryApplicationId" id="label-TelemetryErrorEvent-telemetryApplicationId"><span class="text-danger">*</span>Telemetry Application</label>
+                                <select id="TelemetryErrorEvent-telemetryApplicationId" formControlName="telemetryApplicationId" class="form-select telemetry-error-event-select" [disabled]="!userIsTelemetryTelemetryErrorEventWriter()">
+                                    <option [ngValue]="null">Select Telemetry Application</option>
+                                    <option *ngFor="let telemetryApplication of telemetryApplications$ | async" [ngValue]="telemetryApplication.id">{{telemetryApplication.name}}</option>
+                                </select>
+                                <div *ngIf="telemetryErrorEventForm.get('telemetryApplicationId')?.invalid && telemetryErrorEventForm.get('telemetryApplicationId')?.touched" class="text-danger">
+                                    Telemetry Application is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('telemetrySnapshotId')">
+                                <label for="TelemetryErrorEvent-telemetrySnapshotId" id="label-TelemetryErrorEvent-telemetrySnapshotId">Telemetry Snapshot</label>
+                                <select id="TelemetryErrorEvent-telemetrySnapshotId" formControlName="telemetrySnapshotId" class="form-select telemetry-error-event-select" [disabled]="!userIsTelemetryTelemetryErrorEventWriter()">
+                                    <option [ngValue]="null">Select Telemetry Snapshot</option>
+                                    <option *ngFor="let telemetrySnapshot of telemetrySnapshots$ | async" [ngValue]="telemetrySnapshot.id">{{telemetrySnapshot.machineName}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('originalAuditEventId')">
+                                <label for="TelemetryErrorEvent-originalAuditEventId" id="label-TelemetryErrorEvent-originalAuditEventId">Original Audit Event Id</label>
+                                <input type="number" id="TelemetryErrorEvent-originalAuditEventId" formControlName="originalAuditEventId" placeholder="Enter Original Audit Event Id" class="form-control telemetry-error-event-input" [disabled]="!userIsTelemetryTelemetryErrorEventWriter()" aria-labelledby="label-originalAuditEventId" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('occurredAt')">
+                                <label for="TelemetryErrorEvent-occurredAt" id="label-TelemetryErrorEvent-occurredAt"><span class="text-danger">*</span>Occurred At</label>
+                                <input type="datetime-local" id="TelemetryErrorEvent-occurredAt" formControlName="occurredAt" placeholder="Enter Occurred At" class="form-control telemetry-error-event-input" [disabled]="!userIsTelemetryTelemetryErrorEventWriter()" aria-labelledby="label-occurredAt" />
+                                <div *ngIf="telemetryErrorEventForm.get('occurredAt')?.invalid && telemetryErrorEventForm.get('occurredAt')?.touched" class="text-danger">
+                                    Occurred At is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('auditTypeName')">
+                                <label for="TelemetryErrorEvent-auditTypeName" id="label-TelemetryErrorEvent-auditTypeName">Audit Type Name</label>
+                                <input type="text" id="TelemetryErrorEvent-auditTypeName" formControlName="auditTypeName" placeholder="Enter Audit Type Name" class="form-control telemetry-error-event-input" [disabled]="!userIsTelemetryTelemetryErrorEventWriter()" aria-labelledby="label-auditTypeName" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('moduleName')">
+                                <label for="TelemetryErrorEvent-moduleName" id="label-TelemetryErrorEvent-moduleName">Module Name</label>
+                                <input type="text" id="TelemetryErrorEvent-moduleName" formControlName="moduleName" placeholder="Enter Module Name" class="form-control telemetry-error-event-input" [disabled]="!userIsTelemetryTelemetryErrorEventWriter()" aria-labelledby="label-moduleName" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('entityName')">
+                                <label for="TelemetryErrorEvent-entityName" id="label-TelemetryErrorEvent-entityName">Entity Name</label>
+                                <input type="text" id="TelemetryErrorEvent-entityName" formControlName="entityName" placeholder="Enter Entity Name" class="form-control telemetry-error-event-input" [disabled]="!userIsTelemetryTelemetryErrorEventWriter()" aria-labelledby="label-entityName" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userName')">
+                                <label for="TelemetryErrorEvent-userName" id="label-TelemetryErrorEvent-userName">User Name</label>
+                                <textarea id="TelemetryErrorEvent-userName" formControlName="userName" placeholder="Enter User Name" class="form-control telemetry-error-event-input" [disabled]="!userIsTelemetryTelemetryErrorEventWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('message')">
+                                <label for="TelemetryErrorEvent-message" id="label-TelemetryErrorEvent-message">Message</label>
+                                <textarea id="TelemetryErrorEvent-message" formControlName="message" placeholder="Enter Message" class="form-control telemetry-error-event-input" [disabled]="!userIsTelemetryTelemetryErrorEventWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('errorMessage')">
+                                <label for="TelemetryErrorEvent-errorMessage" id="label-TelemetryErrorEvent-errorMessage">Error Message</label>
+                                <textarea id="TelemetryErrorEvent-errorMessage" formControlName="errorMessage" placeholder="Enter Error Message" class="form-control telemetry-error-event-input" [disabled]="!userIsTelemetryTelemetryErrorEventWriter()"></textarea>
+                            </div>
+                            <div class="telemetry-error-event-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="telemetryErrorEventForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Telemetry Error Event">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !telemetryErrorEventForm.valid || !telemetryErrorEventForm.dirty || telemetryErrorEventForm.pristine  || userIsTelemetryTelemetryErrorEventWriter() == false " ngbTooltip="Save the Telemetry Error Event changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Telemetry Error Event' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

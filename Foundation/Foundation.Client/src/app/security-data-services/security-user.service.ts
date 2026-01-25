@@ -31,6 +31,7 @@ import { SecurityUserSecurityGroupService, SecurityUserSecurityGroupData } from 
 import { SecurityUserSecurityRoleService, SecurityUserSecurityRoleData } from './security-user-security-role.service';
 import { EntityDataTokenService, EntityDataTokenData } from './entity-data-token.service';
 import { UserSessionService, UserSessionData } from './user-session.service';
+import { AdminCreateUserRequest } from '../models/create-user-model';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -129,38 +130,9 @@ export class SecurityUserSubmitData {
 }
 
 
-//
-// Request model for Admin/CreateUser endpoint.
-// Creates a new user with password in a single atomic transaction.
-//
-export interface AdminCreateUserRequest {
-    accountName: string;
-    password: string;
-    firstName?: string | null;
-    middleName?: string | null;
-    lastName?: string | null;
-    emailAddress?: string | null;
-    cellPhoneNumber?: string | null;
-    phoneNumber?: string | null;
-    phoneExtension?: string | null;
-    description?: string | null;
-    securityUserTitleId?: number | null;
-    reportsToSecurityUserId?: number | null;
-    securityTenantId?: number | null;
-    securityOrganizationId?: number | null;
-    securityDepartmentId?: number | null;
-    securityTeamId?: number | null;
-    readPermissionLevel?: number;
-    writePermissionLevel?: number;
-    mustChangePassword?: boolean;
-    twoFactorSendByEmail?: boolean;
-    twoFactorSendBySMS?: boolean;
-}
-
-
 export class SecurityUserBasicListData {
-    id!: bigint | number;
-    name!: string;
+  id!: bigint | number;
+  name!: string;
 }
 
 
@@ -251,55 +223,55 @@ export class SecurityUserData {
     // Private lazy-loading caches for related collections
     //
     private _securityTenantUsers: SecurityTenantUserData[] | null = null;
-    private _securityTenantUsersPromise: Promise<SecurityTenantUserData[]> | null = null;
+    private _securityTenantUsersPromise: Promise<SecurityTenantUserData[]> | null  = null;
     private _securityTenantUsersSubject = new BehaviorSubject<SecurityTenantUserData[] | null>(null);
 
-
+                
     private _securityOrganizationUsers: SecurityOrganizationUserData[] | null = null;
-    private _securityOrganizationUsersPromise: Promise<SecurityOrganizationUserData[]> | null = null;
+    private _securityOrganizationUsersPromise: Promise<SecurityOrganizationUserData[]> | null  = null;
     private _securityOrganizationUsersSubject = new BehaviorSubject<SecurityOrganizationUserData[] | null>(null);
 
-
+                
     private _securityDepartmentUsers: SecurityDepartmentUserData[] | null = null;
-    private _securityDepartmentUsersPromise: Promise<SecurityDepartmentUserData[]> | null = null;
+    private _securityDepartmentUsersPromise: Promise<SecurityDepartmentUserData[]> | null  = null;
     private _securityDepartmentUsersSubject = new BehaviorSubject<SecurityDepartmentUserData[] | null>(null);
 
-
+                
     private _securityTeamUsers: SecurityTeamUserData[] | null = null;
-    private _securityTeamUsersPromise: Promise<SecurityTeamUserData[]> | null = null;
+    private _securityTeamUsersPromise: Promise<SecurityTeamUserData[]> | null  = null;
     private _securityTeamUsersSubject = new BehaviorSubject<SecurityTeamUserData[] | null>(null);
 
-
+                
     private _securityUserEvents: SecurityUserEventData[] | null = null;
-    private _securityUserEventsPromise: Promise<SecurityUserEventData[]> | null = null;
+    private _securityUserEventsPromise: Promise<SecurityUserEventData[]> | null  = null;
     private _securityUserEventsSubject = new BehaviorSubject<SecurityUserEventData[] | null>(null);
 
-
+                
     private _securityUserPasswordResetTokens: SecurityUserPasswordResetTokenData[] | null = null;
-    private _securityUserPasswordResetTokensPromise: Promise<SecurityUserPasswordResetTokenData[]> | null = null;
+    private _securityUserPasswordResetTokensPromise: Promise<SecurityUserPasswordResetTokenData[]> | null  = null;
     private _securityUserPasswordResetTokensSubject = new BehaviorSubject<SecurityUserPasswordResetTokenData[] | null>(null);
 
-
+                
     private _securityUserSecurityGroups: SecurityUserSecurityGroupData[] | null = null;
-    private _securityUserSecurityGroupsPromise: Promise<SecurityUserSecurityGroupData[]> | null = null;
+    private _securityUserSecurityGroupsPromise: Promise<SecurityUserSecurityGroupData[]> | null  = null;
     private _securityUserSecurityGroupsSubject = new BehaviorSubject<SecurityUserSecurityGroupData[] | null>(null);
 
-
+                
     private _securityUserSecurityRoles: SecurityUserSecurityRoleData[] | null = null;
-    private _securityUserSecurityRolesPromise: Promise<SecurityUserSecurityRoleData[]> | null = null;
+    private _securityUserSecurityRolesPromise: Promise<SecurityUserSecurityRoleData[]> | null  = null;
     private _securityUserSecurityRolesSubject = new BehaviorSubject<SecurityUserSecurityRoleData[] | null>(null);
 
-
+                
     private _entityDataTokens: EntityDataTokenData[] | null = null;
-    private _entityDataTokensPromise: Promise<EntityDataTokenData[]> | null = null;
+    private _entityDataTokensPromise: Promise<EntityDataTokenData[]> | null  = null;
     private _entityDataTokensSubject = new BehaviorSubject<EntityDataTokenData[] | null>(null);
 
-
+                
     private _userSessions: UserSessionData[] | null = null;
-    private _userSessionsPromise: Promise<UserSessionData[]> | null = null;
+    private _userSessionsPromise: Promise<UserSessionData[]> | null  = null;
     private _userSessionsSubject = new BehaviorSubject<UserSessionData[] | null>(null);
 
-
+                
 
     //
     // Public observables — use with | async in templates
@@ -311,18 +283,17 @@ export class SecurityUserData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-            if (this._securityTenantUsers === null && this._securityTenantUsersPromise === null) {
-                this.loadSecurityTenantUsers(); // Private method to start fetch
-            }
+          if (this._securityTenantUsers === null && this._securityTenantUsersPromise === null) {
+            this.loadSecurityTenantUsers(); // Private method to start fetch
+          }
         }),
         shareReplay(1) // Cache last emit
     );
 
-
-    public SecurityTenantUsersCount$ = SecurityTenantUserService.Instance.GetSecurityTenantUsersRowCount({
-        securityUserId: this.id,
-        active: true,
-        deleted: false
+  
+    public SecurityTenantUsersCount$ = SecurityTenantUserService.Instance.GetSecurityTenantUsersRowCount({securityUserId: this.id,
+      active: true,
+      deleted: false
     });
 
 
@@ -331,18 +302,17 @@ export class SecurityUserData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-            if (this._securityOrganizationUsers === null && this._securityOrganizationUsersPromise === null) {
-                this.loadSecurityOrganizationUsers(); // Private method to start fetch
-            }
+          if (this._securityOrganizationUsers === null && this._securityOrganizationUsersPromise === null) {
+            this.loadSecurityOrganizationUsers(); // Private method to start fetch
+          }
         }),
         shareReplay(1) // Cache last emit
     );
 
-
-    public SecurityOrganizationUsersCount$ = SecurityOrganizationUserService.Instance.GetSecurityOrganizationUsersRowCount({
-        securityUserId: this.id,
-        active: true,
-        deleted: false
+  
+    public SecurityOrganizationUsersCount$ = SecurityOrganizationUserService.Instance.GetSecurityOrganizationUsersRowCount({securityUserId: this.id,
+      active: true,
+      deleted: false
     });
 
 
@@ -351,18 +321,17 @@ export class SecurityUserData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-            if (this._securityDepartmentUsers === null && this._securityDepartmentUsersPromise === null) {
-                this.loadSecurityDepartmentUsers(); // Private method to start fetch
-            }
+          if (this._securityDepartmentUsers === null && this._securityDepartmentUsersPromise === null) {
+            this.loadSecurityDepartmentUsers(); // Private method to start fetch
+          }
         }),
         shareReplay(1) // Cache last emit
     );
 
-
-    public SecurityDepartmentUsersCount$ = SecurityDepartmentUserService.Instance.GetSecurityDepartmentUsersRowCount({
-        securityUserId: this.id,
-        active: true,
-        deleted: false
+  
+    public SecurityDepartmentUsersCount$ = SecurityDepartmentUserService.Instance.GetSecurityDepartmentUsersRowCount({securityUserId: this.id,
+      active: true,
+      deleted: false
     });
 
 
@@ -371,18 +340,17 @@ export class SecurityUserData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-            if (this._securityTeamUsers === null && this._securityTeamUsersPromise === null) {
-                this.loadSecurityTeamUsers(); // Private method to start fetch
-            }
+          if (this._securityTeamUsers === null && this._securityTeamUsersPromise === null) {
+            this.loadSecurityTeamUsers(); // Private method to start fetch
+          }
         }),
         shareReplay(1) // Cache last emit
     );
 
-
-    public SecurityTeamUsersCount$ = SecurityTeamUserService.Instance.GetSecurityTeamUsersRowCount({
-        securityUserId: this.id,
-        active: true,
-        deleted: false
+  
+    public SecurityTeamUsersCount$ = SecurityTeamUserService.Instance.GetSecurityTeamUsersRowCount({securityUserId: this.id,
+      active: true,
+      deleted: false
     });
 
 
@@ -391,18 +359,17 @@ export class SecurityUserData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-            if (this._securityUserEvents === null && this._securityUserEventsPromise === null) {
-                this.loadSecurityUserEvents(); // Private method to start fetch
-            }
+          if (this._securityUserEvents === null && this._securityUserEventsPromise === null) {
+            this.loadSecurityUserEvents(); // Private method to start fetch
+          }
         }),
         shareReplay(1) // Cache last emit
     );
 
-
-    public SecurityUserEventsCount$ = SecurityUserEventService.Instance.GetSecurityUserEventsRowCount({
-        securityUserId: this.id,
-        active: true,
-        deleted: false
+  
+    public SecurityUserEventsCount$ = SecurityUserEventService.Instance.GetSecurityUserEventsRowCount({securityUserId: this.id,
+      active: true,
+      deleted: false
     });
 
 
@@ -411,18 +378,17 @@ export class SecurityUserData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-            if (this._securityUserPasswordResetTokens === null && this._securityUserPasswordResetTokensPromise === null) {
-                this.loadSecurityUserPasswordResetTokens(); // Private method to start fetch
-            }
+          if (this._securityUserPasswordResetTokens === null && this._securityUserPasswordResetTokensPromise === null) {
+            this.loadSecurityUserPasswordResetTokens(); // Private method to start fetch
+          }
         }),
         shareReplay(1) // Cache last emit
     );
 
-
-    public SecurityUserPasswordResetTokensCount$ = SecurityUserPasswordResetTokenService.Instance.GetSecurityUserPasswordResetTokensRowCount({
-        securityUserId: this.id,
-        active: true,
-        deleted: false
+  
+    public SecurityUserPasswordResetTokensCount$ = SecurityUserPasswordResetTokenService.Instance.GetSecurityUserPasswordResetTokensRowCount({securityUserId: this.id,
+      active: true,
+      deleted: false
     });
 
 
@@ -431,18 +397,17 @@ export class SecurityUserData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-            if (this._securityUserSecurityGroups === null && this._securityUserSecurityGroupsPromise === null) {
-                this.loadSecurityUserSecurityGroups(); // Private method to start fetch
-            }
+          if (this._securityUserSecurityGroups === null && this._securityUserSecurityGroupsPromise === null) {
+            this.loadSecurityUserSecurityGroups(); // Private method to start fetch
+          }
         }),
         shareReplay(1) // Cache last emit
     );
 
-
-    public SecurityUserSecurityGroupsCount$ = SecurityUserSecurityGroupService.Instance.GetSecurityUserSecurityGroupsRowCount({
-        securityUserId: this.id,
-        active: true,
-        deleted: false
+  
+    public SecurityUserSecurityGroupsCount$ = SecurityUserSecurityGroupService.Instance.GetSecurityUserSecurityGroupsRowCount({securityUserId: this.id,
+      active: true,
+      deleted: false
     });
 
 
@@ -451,18 +416,17 @@ export class SecurityUserData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-            if (this._securityUserSecurityRoles === null && this._securityUserSecurityRolesPromise === null) {
-                this.loadSecurityUserSecurityRoles(); // Private method to start fetch
-            }
+          if (this._securityUserSecurityRoles === null && this._securityUserSecurityRolesPromise === null) {
+            this.loadSecurityUserSecurityRoles(); // Private method to start fetch
+          }
         }),
         shareReplay(1) // Cache last emit
     );
 
-
-    public SecurityUserSecurityRolesCount$ = SecurityUserSecurityRoleService.Instance.GetSecurityUserSecurityRolesRowCount({
-        securityUserId: this.id,
-        active: true,
-        deleted: false
+  
+    public SecurityUserSecurityRolesCount$ = SecurityUserSecurityRoleService.Instance.GetSecurityUserSecurityRolesRowCount({securityUserId: this.id,
+      active: true,
+      deleted: false
     });
 
 
@@ -471,18 +435,17 @@ export class SecurityUserData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-            if (this._entityDataTokens === null && this._entityDataTokensPromise === null) {
-                this.loadEntityDataTokens(); // Private method to start fetch
-            }
+          if (this._entityDataTokens === null && this._entityDataTokensPromise === null) {
+            this.loadEntityDataTokens(); // Private method to start fetch
+          }
         }),
         shareReplay(1) // Cache last emit
     );
 
-
-    public EntityDataTokensCount$ = EntityDataTokenService.Instance.GetEntityDataTokensRowCount({
-        securityUserId: this.id,
-        active: true,
-        deleted: false
+  
+    public EntityDataTokensCount$ = EntityDataTokenService.Instance.GetEntityDataTokensRowCount({securityUserId: this.id,
+      active: true,
+      deleted: false
     });
 
 
@@ -491,101 +454,100 @@ export class SecurityUserData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-            if (this._userSessions === null && this._userSessionsPromise === null) {
-                this.loadUserSessions(); // Private method to start fetch
-            }
+          if (this._userSessions === null && this._userSessionsPromise === null) {
+            this.loadUserSessions(); // Private method to start fetch
+          }
         }),
         shareReplay(1) // Cache last emit
     );
 
-
-    public UserSessionsCount$ = UserSessionService.Instance.GetUserSessionsRowCount({
-        securityUserId: this.id,
-        active: true,
-        deleted: false
+  
+    public UserSessionsCount$ = UserSessionService.Instance.GetUserSessionsRowCount({securityUserId: this.id,
+      active: true,
+      deleted: false
     });
 
 
 
 
-    //
-    // Full reload — refreshes the entire object and clears all lazy caches 
-    //
-    // Promise based reload method to allow rebuilding of any SecurityUserData object with all of it's relations on demand.  Useful for navigating into nav property
-    // objects and getting full state after put or post that may not have returned all nav properties.
-    //
-    // Usage examples:;
-    //
-    //  Async:
-    //   await this.securityUser.Reload();
-    //
-    //  Non Async:
-    //
-    //     securityUser[0].Reload().then(x => {
-    //        this.securityUser = x;
-    //    });
-    //
-    public async Reload(includeRelations: boolean = true): Promise<this> {
+  //
+  // Full reload — refreshes the entire object and clears all lazy caches 
+  //
+  // Promise based reload method to allow rebuilding of any SecurityUserData object with all of it's relations on demand.  Useful for navigating into nav property
+  // objects and getting full state after put or post that may not have returned all nav properties.
+  //
+  // Usage examples:;
+  //
+  //  Async:
+  //   await this.securityUser.Reload();
+  //
+  //  Non Async:
+  //
+  //     securityUser[0].Reload().then(x => {
+  //        this.securityUser = x;
+  //    });
+  //
+  public async Reload(includeRelations: boolean = true): Promise<this> {
 
-        const fresh = await lastValueFrom(
-            SecurityUserService.Instance.GetSecurityUser(this.id, includeRelations)
-        );
+    const fresh = await lastValueFrom(
+      SecurityUserService.Instance.GetSecurityUser(this.id, includeRelations)
+    );
 
-        // Merge fresh data into this instance (preserves reference)
-        this.UpdateFrom(fresh as this);
+    // Merge fresh data into this instance (preserves reference)
+    this.UpdateFrom(fresh as this);
 
-        // Clear all lazy caches to force re-load on next access
-        this.clearAllLazyCaches();
+    // Clear all lazy caches to force re-load on next access
+    this.clearAllLazyCaches();
 
-        return this;
-    }
+    return this;
+  }
 
 
-    private clearAllLazyCaches(): void {
-        //
-        // Reset every collection cache and notify subscribers
-        //
-        this._securityTenantUsers = null;
-        this._securityTenantUsersPromise = null;
-        this._securityTenantUsersSubject.next(null);
+  private clearAllLazyCaches(): void {
+     //
+     // Reset every collection cache and notify subscribers
+     //
+     this._securityTenantUsers = null;
+     this._securityTenantUsersPromise = null;
+     this._securityTenantUsersSubject.next(null);
 
-        this._securityOrganizationUsers = null;
-        this._securityOrganizationUsersPromise = null;
-        this._securityOrganizationUsersSubject.next(null);
+     this._securityOrganizationUsers = null;
+     this._securityOrganizationUsersPromise = null;
+     this._securityOrganizationUsersSubject.next(null);
 
-        this._securityDepartmentUsers = null;
-        this._securityDepartmentUsersPromise = null;
-        this._securityDepartmentUsersSubject.next(null);
+     this._securityDepartmentUsers = null;
+     this._securityDepartmentUsersPromise = null;
+     this._securityDepartmentUsersSubject.next(null);
 
-        this._securityTeamUsers = null;
-        this._securityTeamUsersPromise = null;
-        this._securityTeamUsersSubject.next(null);
+     this._securityTeamUsers = null;
+     this._securityTeamUsersPromise = null;
+     this._securityTeamUsersSubject.next(null);
 
-        this._securityUserEvents = null;
-        this._securityUserEventsPromise = null;
-        this._securityUserEventsSubject.next(null);
+     this._securityUserEvents = null;
+     this._securityUserEventsPromise = null;
+     this._securityUserEventsSubject.next(null);
 
-        this._securityUserPasswordResetTokens = null;
-        this._securityUserPasswordResetTokensPromise = null;
-        this._securityUserPasswordResetTokensSubject.next(null);
+     this._securityUserPasswordResetTokens = null;
+     this._securityUserPasswordResetTokensPromise = null;
+     this._securityUserPasswordResetTokensSubject.next(null);
 
-        this._securityUserSecurityGroups = null;
-        this._securityUserSecurityGroupsPromise = null;
-        this._securityUserSecurityGroupsSubject.next(null);
+     this._securityUserSecurityGroups = null;
+     this._securityUserSecurityGroupsPromise = null;
+     this._securityUserSecurityGroupsSubject.next(null);
 
-        this._securityUserSecurityRoles = null;
-        this._securityUserSecurityRolesPromise = null;
-        this._securityUserSecurityRolesSubject.next(null);
+     this._securityUserSecurityRoles = null;
+     this._securityUserSecurityRolesPromise = null;
+     this._securityUserSecurityRolesSubject.next(null);
 
-        this._entityDataTokens = null;
-        this._entityDataTokensPromise = null;
-        this._entityDataTokensSubject.next(null);
+     this._entityDataTokens = null;
+     this._entityDataTokensPromise = null;
+     this._entityDataTokensSubject.next(null);
 
-        this._userSessions = null;
-        this._userSessionsPromise = null;
-        this._userSessionsSubject.next(null);
+     this._userSessions = null;
+     this._userSessionsPromise = null;
+     this._userSessionsSubject.next(null);
 
-    }
+  }
 
     //
     // Promise-based getters below — same lazy-load logic as observables
@@ -627,19 +589,19 @@ export class SecurityUserData {
         this._securityTenantUsersPromise = lastValueFrom(
             SecurityUserService.Instance.GetSecurityTenantUsersForSecurityUser(this.id)
         )
-            .then(SecurityTenantUsers => {
-                this._securityTenantUsers = SecurityTenantUsers ?? [];
-                this._securityTenantUsersSubject.next(this._securityTenantUsers);
-                return this._securityTenantUsers;
-            })
-            .catch(err => {
-                this._securityTenantUsers = [];
-                this._securityTenantUsersSubject.next(this._securityTenantUsers);
-                throw err;
-            })
-            .finally(() => {
-                this._securityTenantUsersPromise = null; // Allow retry if needed
-            });
+        .then(SecurityTenantUsers => {
+            this._securityTenantUsers = SecurityTenantUsers ?? [];
+            this._securityTenantUsersSubject.next(this._securityTenantUsers);
+            return this._securityTenantUsers;
+         })
+        .catch(err => {
+            this._securityTenantUsers = [];
+            this._securityTenantUsersSubject.next(this._securityTenantUsers);
+            throw err;
+        })
+        .finally(() => {
+            this._securityTenantUsersPromise = null; // Allow retry if needed
+        });
     }
 
     /**
@@ -692,19 +654,19 @@ export class SecurityUserData {
         this._securityOrganizationUsersPromise = lastValueFrom(
             SecurityUserService.Instance.GetSecurityOrganizationUsersForSecurityUser(this.id)
         )
-            .then(SecurityOrganizationUsers => {
-                this._securityOrganizationUsers = SecurityOrganizationUsers ?? [];
-                this._securityOrganizationUsersSubject.next(this._securityOrganizationUsers);
-                return this._securityOrganizationUsers;
-            })
-            .catch(err => {
-                this._securityOrganizationUsers = [];
-                this._securityOrganizationUsersSubject.next(this._securityOrganizationUsers);
-                throw err;
-            })
-            .finally(() => {
-                this._securityOrganizationUsersPromise = null; // Allow retry if needed
-            });
+        .then(SecurityOrganizationUsers => {
+            this._securityOrganizationUsers = SecurityOrganizationUsers ?? [];
+            this._securityOrganizationUsersSubject.next(this._securityOrganizationUsers);
+            return this._securityOrganizationUsers;
+         })
+        .catch(err => {
+            this._securityOrganizationUsers = [];
+            this._securityOrganizationUsersSubject.next(this._securityOrganizationUsers);
+            throw err;
+        })
+        .finally(() => {
+            this._securityOrganizationUsersPromise = null; // Allow retry if needed
+        });
     }
 
     /**
@@ -757,19 +719,19 @@ export class SecurityUserData {
         this._securityDepartmentUsersPromise = lastValueFrom(
             SecurityUserService.Instance.GetSecurityDepartmentUsersForSecurityUser(this.id)
         )
-            .then(SecurityDepartmentUsers => {
-                this._securityDepartmentUsers = SecurityDepartmentUsers ?? [];
-                this._securityDepartmentUsersSubject.next(this._securityDepartmentUsers);
-                return this._securityDepartmentUsers;
-            })
-            .catch(err => {
-                this._securityDepartmentUsers = [];
-                this._securityDepartmentUsersSubject.next(this._securityDepartmentUsers);
-                throw err;
-            })
-            .finally(() => {
-                this._securityDepartmentUsersPromise = null; // Allow retry if needed
-            });
+        .then(SecurityDepartmentUsers => {
+            this._securityDepartmentUsers = SecurityDepartmentUsers ?? [];
+            this._securityDepartmentUsersSubject.next(this._securityDepartmentUsers);
+            return this._securityDepartmentUsers;
+         })
+        .catch(err => {
+            this._securityDepartmentUsers = [];
+            this._securityDepartmentUsersSubject.next(this._securityDepartmentUsers);
+            throw err;
+        })
+        .finally(() => {
+            this._securityDepartmentUsersPromise = null; // Allow retry if needed
+        });
     }
 
     /**
@@ -822,19 +784,19 @@ export class SecurityUserData {
         this._securityTeamUsersPromise = lastValueFrom(
             SecurityUserService.Instance.GetSecurityTeamUsersForSecurityUser(this.id)
         )
-            .then(SecurityTeamUsers => {
-                this._securityTeamUsers = SecurityTeamUsers ?? [];
-                this._securityTeamUsersSubject.next(this._securityTeamUsers);
-                return this._securityTeamUsers;
-            })
-            .catch(err => {
-                this._securityTeamUsers = [];
-                this._securityTeamUsersSubject.next(this._securityTeamUsers);
-                throw err;
-            })
-            .finally(() => {
-                this._securityTeamUsersPromise = null; // Allow retry if needed
-            });
+        .then(SecurityTeamUsers => {
+            this._securityTeamUsers = SecurityTeamUsers ?? [];
+            this._securityTeamUsersSubject.next(this._securityTeamUsers);
+            return this._securityTeamUsers;
+         })
+        .catch(err => {
+            this._securityTeamUsers = [];
+            this._securityTeamUsersSubject.next(this._securityTeamUsers);
+            throw err;
+        })
+        .finally(() => {
+            this._securityTeamUsersPromise = null; // Allow retry if needed
+        });
     }
 
     /**
@@ -887,19 +849,19 @@ export class SecurityUserData {
         this._securityUserEventsPromise = lastValueFrom(
             SecurityUserService.Instance.GetSecurityUserEventsForSecurityUser(this.id)
         )
-            .then(SecurityUserEvents => {
-                this._securityUserEvents = SecurityUserEvents ?? [];
-                this._securityUserEventsSubject.next(this._securityUserEvents);
-                return this._securityUserEvents;
-            })
-            .catch(err => {
-                this._securityUserEvents = [];
-                this._securityUserEventsSubject.next(this._securityUserEvents);
-                throw err;
-            })
-            .finally(() => {
-                this._securityUserEventsPromise = null; // Allow retry if needed
-            });
+        .then(SecurityUserEvents => {
+            this._securityUserEvents = SecurityUserEvents ?? [];
+            this._securityUserEventsSubject.next(this._securityUserEvents);
+            return this._securityUserEvents;
+         })
+        .catch(err => {
+            this._securityUserEvents = [];
+            this._securityUserEventsSubject.next(this._securityUserEvents);
+            throw err;
+        })
+        .finally(() => {
+            this._securityUserEventsPromise = null; // Allow retry if needed
+        });
     }
 
     /**
@@ -952,19 +914,19 @@ export class SecurityUserData {
         this._securityUserPasswordResetTokensPromise = lastValueFrom(
             SecurityUserService.Instance.GetSecurityUserPasswordResetTokensForSecurityUser(this.id)
         )
-            .then(SecurityUserPasswordResetTokens => {
-                this._securityUserPasswordResetTokens = SecurityUserPasswordResetTokens ?? [];
-                this._securityUserPasswordResetTokensSubject.next(this._securityUserPasswordResetTokens);
-                return this._securityUserPasswordResetTokens;
-            })
-            .catch(err => {
-                this._securityUserPasswordResetTokens = [];
-                this._securityUserPasswordResetTokensSubject.next(this._securityUserPasswordResetTokens);
-                throw err;
-            })
-            .finally(() => {
-                this._securityUserPasswordResetTokensPromise = null; // Allow retry if needed
-            });
+        .then(SecurityUserPasswordResetTokens => {
+            this._securityUserPasswordResetTokens = SecurityUserPasswordResetTokens ?? [];
+            this._securityUserPasswordResetTokensSubject.next(this._securityUserPasswordResetTokens);
+            return this._securityUserPasswordResetTokens;
+         })
+        .catch(err => {
+            this._securityUserPasswordResetTokens = [];
+            this._securityUserPasswordResetTokensSubject.next(this._securityUserPasswordResetTokens);
+            throw err;
+        })
+        .finally(() => {
+            this._securityUserPasswordResetTokensPromise = null; // Allow retry if needed
+        });
     }
 
     /**
@@ -1017,19 +979,19 @@ export class SecurityUserData {
         this._securityUserSecurityGroupsPromise = lastValueFrom(
             SecurityUserService.Instance.GetSecurityUserSecurityGroupsForSecurityUser(this.id)
         )
-            .then(SecurityUserSecurityGroups => {
-                this._securityUserSecurityGroups = SecurityUserSecurityGroups ?? [];
-                this._securityUserSecurityGroupsSubject.next(this._securityUserSecurityGroups);
-                return this._securityUserSecurityGroups;
-            })
-            .catch(err => {
-                this._securityUserSecurityGroups = [];
-                this._securityUserSecurityGroupsSubject.next(this._securityUserSecurityGroups);
-                throw err;
-            })
-            .finally(() => {
-                this._securityUserSecurityGroupsPromise = null; // Allow retry if needed
-            });
+        .then(SecurityUserSecurityGroups => {
+            this._securityUserSecurityGroups = SecurityUserSecurityGroups ?? [];
+            this._securityUserSecurityGroupsSubject.next(this._securityUserSecurityGroups);
+            return this._securityUserSecurityGroups;
+         })
+        .catch(err => {
+            this._securityUserSecurityGroups = [];
+            this._securityUserSecurityGroupsSubject.next(this._securityUserSecurityGroups);
+            throw err;
+        })
+        .finally(() => {
+            this._securityUserSecurityGroupsPromise = null; // Allow retry if needed
+        });
     }
 
     /**
@@ -1082,19 +1044,19 @@ export class SecurityUserData {
         this._securityUserSecurityRolesPromise = lastValueFrom(
             SecurityUserService.Instance.GetSecurityUserSecurityRolesForSecurityUser(this.id)
         )
-            .then(SecurityUserSecurityRoles => {
-                this._securityUserSecurityRoles = SecurityUserSecurityRoles ?? [];
-                this._securityUserSecurityRolesSubject.next(this._securityUserSecurityRoles);
-                return this._securityUserSecurityRoles;
-            })
-            .catch(err => {
-                this._securityUserSecurityRoles = [];
-                this._securityUserSecurityRolesSubject.next(this._securityUserSecurityRoles);
-                throw err;
-            })
-            .finally(() => {
-                this._securityUserSecurityRolesPromise = null; // Allow retry if needed
-            });
+        .then(SecurityUserSecurityRoles => {
+            this._securityUserSecurityRoles = SecurityUserSecurityRoles ?? [];
+            this._securityUserSecurityRolesSubject.next(this._securityUserSecurityRoles);
+            return this._securityUserSecurityRoles;
+         })
+        .catch(err => {
+            this._securityUserSecurityRoles = [];
+            this._securityUserSecurityRolesSubject.next(this._securityUserSecurityRoles);
+            throw err;
+        })
+        .finally(() => {
+            this._securityUserSecurityRolesPromise = null; // Allow retry if needed
+        });
     }
 
     /**
@@ -1147,19 +1109,19 @@ export class SecurityUserData {
         this._entityDataTokensPromise = lastValueFrom(
             SecurityUserService.Instance.GetEntityDataTokensForSecurityUser(this.id)
         )
-            .then(EntityDataTokens => {
-                this._entityDataTokens = EntityDataTokens ?? [];
-                this._entityDataTokensSubject.next(this._entityDataTokens);
-                return this._entityDataTokens;
-            })
-            .catch(err => {
-                this._entityDataTokens = [];
-                this._entityDataTokensSubject.next(this._entityDataTokens);
-                throw err;
-            })
-            .finally(() => {
-                this._entityDataTokensPromise = null; // Allow retry if needed
-            });
+        .then(EntityDataTokens => {
+            this._entityDataTokens = EntityDataTokens ?? [];
+            this._entityDataTokensSubject.next(this._entityDataTokens);
+            return this._entityDataTokens;
+         })
+        .catch(err => {
+            this._entityDataTokens = [];
+            this._entityDataTokensSubject.next(this._entityDataTokens);
+            throw err;
+        })
+        .finally(() => {
+            this._entityDataTokensPromise = null; // Allow retry if needed
+        });
     }
 
     /**
@@ -1212,19 +1174,19 @@ export class SecurityUserData {
         this._userSessionsPromise = lastValueFrom(
             SecurityUserService.Instance.GetUserSessionsForSecurityUser(this.id)
         )
-            .then(UserSessions => {
-                this._userSessions = UserSessions ?? [];
-                this._userSessionsSubject.next(this._userSessions);
-                return this._userSessions;
-            })
-            .catch(err => {
-                this._userSessions = [];
-                this._userSessionsSubject.next(this._userSessions);
-                throw err;
-            })
-            .finally(() => {
-                this._userSessionsPromise = null; // Allow retry if needed
-            });
+        .then(UserSessions => {
+            this._userSessions = UserSessions ?? [];
+            this._userSessionsSubject.next(this._userSessions);
+            return this._userSessions;
+         })
+        .catch(err => {
+            this._userSessions = [];
+            this._userSessionsSubject.next(this._userSessions);
+            throw err;
+        })
+        .finally(() => {
+            this._userSessionsPromise = null; // Allow retry if needed
+        });
     }
 
     /**
@@ -1261,7 +1223,7 @@ export class SecurityUserData {
 
 
 @Injectable({
-    providedIn: 'root'
+  providedIn: 'root'
 })
 export class SecurityUserService extends SecureEndpointBase {
 
@@ -1298,7 +1260,7 @@ export class SecurityUserService extends SecureEndpointBase {
     }
 
     public static get Instance(): SecurityUserService {
-        return SecurityUserService._instance;
+      return SecurityUserService._instance;
     }
 
 
@@ -1307,7 +1269,7 @@ export class SecurityUserService extends SecureEndpointBase {
         const configHash = this.getConfigHash(config);
 
         if (this.listCache.has(configHash)) {
-            this.listCache.delete(configHash);
+          this.listCache.delete(configHash);
         }
 
         if (this.rowCountCache.has(configHash)) {
@@ -1383,7 +1345,7 @@ export class SecurityUserService extends SecureEndpointBase {
         return output;
     }
 
-    public GetSecurityUser(id: bigint | number, includeRelations: boolean = true): Observable<SecurityUserData> {
+    public GetSecurityUser(id: bigint | number, includeRelations: boolean = true) : Observable<SecurityUserData> {
 
         const configHash = this.utilityService.hashCode("_" + id.toString() + "_" + includeRelations.toString());
 
@@ -1393,7 +1355,7 @@ export class SecurityUserService extends SecureEndpointBase {
                 shareReplay({ bufferSize: SHARE_REPLAY_CACHE_SIZE, refCount: true }),
                 catchError((error) => {
                     this.recordCache.delete(configHash);
-
+          
                     //this.alertService.showHttpErrorMessage("Unable to get SecurityUser", error);
 
                     return throwError(() => error);
@@ -1408,7 +1370,7 @@ export class SecurityUserService extends SecureEndpointBase {
         return this.recordCache.get(configHash) as Observable<SecurityUserData>;
     }
 
-    private requestSecurityUser(id: bigint | number, includeRelations: boolean = true): Observable<SecurityUserData> {
+    private requestSecurityUser(id: bigint | number, includeRelations: boolean = true) : Observable<SecurityUserData> {
 
         let queryParams = new HttpParams();
 
@@ -1416,17 +1378,16 @@ export class SecurityUserService extends SecureEndpointBase {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.get<SecurityUserData>(this.baseUrl + 'api/SecurityUser/' + id.toString(), {
-            params: queryParams,
-            headers: authenticationHeaders
-        }).pipe(
+        return this.http.get<SecurityUserData>(this.baseUrl + 'api/SecurityUser/' + id.toString(), { 
+            params: queryParams, 
+            headers: authenticationHeaders }).pipe(
             map(raw => this.ReviveSecurityUser(raw)),
             catchError(error => {
                 return this.handleError(error, () => this.requestSecurityUser(id, includeRelations));
             }));
     }
 
-    public GetSecurityUserList(config: SecurityUserQueryParameters | any = null): Observable<Array<SecurityUserData>> {
+    public GetSecurityUserList(config: SecurityUserQueryParameters | any = null) : Observable<Array<SecurityUserData>> {
 
         const configHash = this.getConfigHash(config);
 
@@ -1451,7 +1412,7 @@ export class SecurityUserService extends SecureEndpointBase {
     }
 
 
-    private requestSecurityUserList(config: SecurityUserQueryParameters | any): Observable<Array<SecurityUserData>> {
+    private requestSecurityUserList(config: SecurityUserQueryParameters | any) : Observable <Array<SecurityUserData>> {
 
         let queryParams = new HttpParams();
 
@@ -1466,17 +1427,16 @@ export class SecurityUserService extends SecureEndpointBase {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.get<Array<SecurityUserData>>(this.baseUrl + 'api/SecurityUsers', {
-            params: queryParams,
-            headers: authenticationHeaders
-        }).pipe(
+        return this.http.get<Array<SecurityUserData>>(this.baseUrl + 'api/SecurityUsers', { 
+            params: queryParams, 
+            headers: authenticationHeaders }).pipe(
             map(rawList => this.ReviveSecurityUserList(rawList)),
             catchError(error => {
                 return this.handleError(error, () => this.requestSecurityUserList(config));
             }));
     }
 
-    public GetSecurityUsersRowCount(config: SecurityUserQueryParameters | any = null): Observable<bigint | number> {
+    public GetSecurityUsersRowCount(config: SecurityUserQueryParameters | any = null) : Observable<bigint | number> {
 
         const configHash = this.getConfigHash(config);
 
@@ -1485,7 +1445,7 @@ export class SecurityUserService extends SecureEndpointBase {
                 shareReplay({ bufferSize: SHARE_REPLAY_CACHE_SIZE, refCount: true }),
                 catchError((error) => {
                     this.rowCountCache.delete(configHash);
-
+          
                     //this.alertService.showHttpErrorMessage("Unable to get SecurityUsers row count", error);
 
                     return throwError(() => error);
@@ -1500,7 +1460,7 @@ export class SecurityUserService extends SecureEndpointBase {
         return this.rowCountCache.get(configHash) as Observable<bigint | number>;
     }
 
-    private requestSecurityUsersRowCount(config: SecurityUserQueryParameters | any): Observable<bigint | number> {
+    private requestSecurityUsersRowCount(config: SecurityUserQueryParameters | any) : Observable<bigint | number> {
 
         let queryParams = new HttpParams();
 
@@ -1521,7 +1481,7 @@ export class SecurityUserService extends SecureEndpointBase {
             }));
     }
 
-    public GetSecurityUsersBasicListData(config: SecurityUserQueryParameters | any = null): Observable<Array<SecurityUserBasicListData>> {
+    public GetSecurityUsersBasicListData(config: SecurityUserQueryParameters | any = null) : Observable<Array<SecurityUserBasicListData>> {
 
         const configHash = this.getConfigHash(config);
 
@@ -1536,7 +1496,7 @@ export class SecurityUserService extends SecureEndpointBase {
                     return throwError(() => error);
                 })
             );
-
+      
             this.basicListDataCache.set(configHash, securityUsersBasicListData$);
 
             return securityUsersBasicListData$;
@@ -1546,7 +1506,7 @@ export class SecurityUserService extends SecureEndpointBase {
     }
 
 
-    private requestSecurityUsersBasicListData(config: SecurityUserQueryParameters | any): Observable<Array<SecurityUserBasicListData>> {
+    private requestSecurityUsersBasicListData(config: SecurityUserQueryParameters | any) : Observable<Array<SecurityUserBasicListData>> {
 
         let queryParams = new HttpParams();
 
@@ -1569,11 +1529,11 @@ export class SecurityUserService extends SecureEndpointBase {
     }
 
 
-    public PutSecurityUser(id: bigint | number, securityUser: SecurityUserSubmitData): Observable<SecurityUserData> {
+    public PutSecurityUser(id: bigint | number, securityUser: SecurityUserSubmitData) : Observable<SecurityUserData> {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.put<SecurityUserData>(this.baseUrl + 'api/SecurityUser/' + id.toString(), securityUser, { headers: authenticationHeaders }).pipe(
+        return this.http.put<SecurityUserData>(this.baseUrl + 'api/SecurityUser/' + id.toString(), securityUser, { headers: authenticationHeaders } ).pipe(
             tap(() => this.ClearAllCaches()),
             map(raw => this.ReviveSecurityUser(raw)),
             catchError(error => {
@@ -1582,42 +1542,24 @@ export class SecurityUserService extends SecureEndpointBase {
     }
 
 
-    public PostSecurityUser(securityUser: SecurityUserSubmitData): Observable<SecurityUserData> {
+    public PostSecurityUser(securityUser: SecurityUserSubmitData) : Observable<SecurityUserData> {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.post<SecurityUserData>(this.baseUrl + 'api/SecurityUser', securityUser, { headers: authenticationHeaders }).pipe(
+        return this.http.post<SecurityUserData>(this.baseUrl + 'api/SecurityUser', securityUser, { headers: authenticationHeaders } ).pipe(
             tap(() => this.ClearAllCaches()),
             map(raw => this.ReviveSecurityUser(raw)),
             catchError(error => {
-                return this.handleError(error, () => this.PostSecurityUser(securityUser));
+              return this.handleError(error, () => this.PostSecurityUser(securityUser));
             }));
     }
 
-
-    /**
-     * Creates a new user with password via the Admin endpoint.
-     * This is the preferred method for creating users as it handles
-     * password securely in a single atomic transaction.
-     */
-    public AdminCreateUser(request: AdminCreateUserRequest): Observable<SecurityUserData> {
+  
+    public DeleteSecurityUser(id: bigint | number) : Observable<any> {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.post<SecurityUserData>(this.baseUrl + 'api/Admin/CreateUser', request, { headers: authenticationHeaders }).pipe(
-            tap(() => this.ClearAllCaches()),
-            map(raw => this.ReviveSecurityUser(raw)),
-            catchError(error => {
-                return this.handleError(error, () => this.AdminCreateUser(request));
-            }));
-    }
-
-
-    public DeleteSecurityUser(id: bigint | number): Observable<any> {
-
-        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
-
-        return this.http.delete<void>(this.baseUrl + 'api/SecurityUser/' + id.toString(), { headers: authenticationHeaders }).pipe(
+        return this.http.delete<void>(this.baseUrl + 'api/SecurityUser/' + id.toString(), { headers: authenticationHeaders } ).pipe(
             tap(() => this.ClearAllCaches()),
             catchError(error => {
                 return this.handleError(error, () => this.DeleteSecurityUser(id));
@@ -1683,13 +1625,13 @@ export class SecurityUserService extends SecureEndpointBase {
         // Next test to see if the user has a high enough write permission level to write to Security.SecurityUsers
         //
         if (userIsSecuritySecurityUserWriter == true) {
-            let user = this.authService.currentUser;
+          let user = this.authService.currentUser;
 
-            if (user != null) {
-                userIsSecuritySecurityUserWriter = user.writePermission >= 0;
-            } else {
-                userIsSecuritySecurityUserWriter = false;
-            }
+          if (user != null) {
+            userIsSecuritySecurityUserWriter = user.writePermission >= 0;
+          } else {
+            userIsSecuritySecurityUserWriter = false;
+          }      
         }
 
         return userIsSecuritySecurityUserWriter;
@@ -1795,295 +1737,303 @@ export class SecurityUserService extends SecureEndpointBase {
     }
 
 
-    /**
-      *
-      * Revives a plain object from the server into a full SecurityUserData instance.
-      *
-      * This is critical for the lazy-loading pattern to work correctly.
-      *
-      * When the server returns JSON, it is a plain object with no prototype methods
-      * or observable properties. This method:
-      * 1. Re-attaches the SecurityUserData prototype
-      * 2. Copies all properties from the raw object
-      * 3. Re-initializes all private caches and BehaviorSubjects
-      * 4. Re-creates all public observable properties ($ suffixed) with their
-      *    original tap() triggers that initiate lazy loading on first subscription
-      *
-      * Without this, revived objects would not trigger loads when SecurityUserTags$ etc.
-      * are subscribed to in templates.
-      *
-      */
-    public ReviveSecurityUser(raw: any): SecurityUserData {
-        if (!raw) return raw;
+ /**
+   *
+   * Revives a plain object from the server into a full SecurityUserData instance.
+   *
+   * This is critical for the lazy-loading pattern to work correctly.
+   *
+   * When the server returns JSON, it is a plain object with no prototype methods
+   * or observable properties. This method:
+   * 1. Re-attaches the SecurityUserData prototype
+   * 2. Copies all properties from the raw object
+   * 3. Re-initializes all private caches and BehaviorSubjects
+   * 4. Re-creates all public observable properties ($ suffixed) with their
+   *    original tap() triggers that initiate lazy loading on first subscription
+   *
+   * Without this, revived objects would not trigger loads when SecurityUserTags$ etc.
+   * are subscribed to in templates.
+   *
+   */
+  public ReviveSecurityUser(raw: any): SecurityUserData {
+    if (!raw) return raw;
 
-        //
-        // Create a SecurityUserData object instance with correct prototype
-        //
-        const revived = Object.create(SecurityUserData.prototype) as SecurityUserData;
+    //
+    // Create a SecurityUserData object instance with correct prototype
+    //
+    const revived = Object.create(SecurityUserData.prototype) as SecurityUserData;
 
-        //
-        // Copy all raw properties
-        //
-        Object.assign(revived, raw);
+    //
+    // Copy all raw properties
+    //
+    Object.assign(revived, raw);
 
-        //
-        // Explicitly initialize all private caches
-        // This ensures the getters work correctly on revived objects
-        //
-        (revived as any)._securityUsers = null;
-        (revived as any)._securityUsersPromise = null;
-        (revived as any)._securityUsersSubject = new BehaviorSubject<SecurityUserData[] | null>(null);
+    //
+    // Explicitly initialize all private caches
+    // This ensures the getters work correctly on revived objects
+    //
+    (revived as any)._securityUsers = null;
+    (revived as any)._securityUsersPromise = null;
+    (revived as any)._securityUsersSubject = new BehaviorSubject<SecurityUserData[] | null>(null);
 
-        (revived as any)._securityTenantUsers = null;
-        (revived as any)._securityTenantUsersPromise = null;
-        (revived as any)._securityTenantUsersSubject = new BehaviorSubject<SecurityTenantUserData[] | null>(null);
+    (revived as any)._securityTenantUsers = null;
+    (revived as any)._securityTenantUsersPromise = null;
+    (revived as any)._securityTenantUsersSubject = new BehaviorSubject<SecurityTenantUserData[] | null>(null);
 
-        (revived as any)._securityOrganizationUsers = null;
-        (revived as any)._securityOrganizationUsersPromise = null;
-        (revived as any)._securityOrganizationUsersSubject = new BehaviorSubject<SecurityOrganizationUserData[] | null>(null);
+    (revived as any)._securityOrganizationUsers = null;
+    (revived as any)._securityOrganizationUsersPromise = null;
+    (revived as any)._securityOrganizationUsersSubject = new BehaviorSubject<SecurityOrganizationUserData[] | null>(null);
 
-        (revived as any)._securityDepartmentUsers = null;
-        (revived as any)._securityDepartmentUsersPromise = null;
-        (revived as any)._securityDepartmentUsersSubject = new BehaviorSubject<SecurityDepartmentUserData[] | null>(null);
+    (revived as any)._securityDepartmentUsers = null;
+    (revived as any)._securityDepartmentUsersPromise = null;
+    (revived as any)._securityDepartmentUsersSubject = new BehaviorSubject<SecurityDepartmentUserData[] | null>(null);
 
-        (revived as any)._securityTeamUsers = null;
-        (revived as any)._securityTeamUsersPromise = null;
-        (revived as any)._securityTeamUsersSubject = new BehaviorSubject<SecurityTeamUserData[] | null>(null);
+    (revived as any)._securityTeamUsers = null;
+    (revived as any)._securityTeamUsersPromise = null;
+    (revived as any)._securityTeamUsersSubject = new BehaviorSubject<SecurityTeamUserData[] | null>(null);
 
-        (revived as any)._securityUserEvents = null;
-        (revived as any)._securityUserEventsPromise = null;
-        (revived as any)._securityUserEventsSubject = new BehaviorSubject<SecurityUserEventData[] | null>(null);
+    (revived as any)._securityUserEvents = null;
+    (revived as any)._securityUserEventsPromise = null;
+    (revived as any)._securityUserEventsSubject = new BehaviorSubject<SecurityUserEventData[] | null>(null);
 
-        (revived as any)._securityUserPasswordResetTokens = null;
-        (revived as any)._securityUserPasswordResetTokensPromise = null;
-        (revived as any)._securityUserPasswordResetTokensSubject = new BehaviorSubject<SecurityUserPasswordResetTokenData[] | null>(null);
+    (revived as any)._securityUserPasswordResetTokens = null;
+    (revived as any)._securityUserPasswordResetTokensPromise = null;
+    (revived as any)._securityUserPasswordResetTokensSubject = new BehaviorSubject<SecurityUserPasswordResetTokenData[] | null>(null);
 
-        (revived as any)._securityUserSecurityGroups = null;
-        (revived as any)._securityUserSecurityGroupsPromise = null;
-        (revived as any)._securityUserSecurityGroupsSubject = new BehaviorSubject<SecurityUserSecurityGroupData[] | null>(null);
+    (revived as any)._securityUserSecurityGroups = null;
+    (revived as any)._securityUserSecurityGroupsPromise = null;
+    (revived as any)._securityUserSecurityGroupsSubject = new BehaviorSubject<SecurityUserSecurityGroupData[] | null>(null);
 
-        (revived as any)._securityUserSecurityRoles = null;
-        (revived as any)._securityUserSecurityRolesPromise = null;
-        (revived as any)._securityUserSecurityRolesSubject = new BehaviorSubject<SecurityUserSecurityRoleData[] | null>(null);
+    (revived as any)._securityUserSecurityRoles = null;
+    (revived as any)._securityUserSecurityRolesPromise = null;
+    (revived as any)._securityUserSecurityRolesSubject = new BehaviorSubject<SecurityUserSecurityRoleData[] | null>(null);
 
-        (revived as any)._entityDataTokens = null;
-        (revived as any)._entityDataTokensPromise = null;
-        (revived as any)._entityDataTokensSubject = new BehaviorSubject<EntityDataTokenData[] | null>(null);
+    (revived as any)._entityDataTokens = null;
+    (revived as any)._entityDataTokensPromise = null;
+    (revived as any)._entityDataTokensSubject = new BehaviorSubject<EntityDataTokenData[] | null>(null);
 
-        (revived as any)._userSessions = null;
-        (revived as any)._userSessionsPromise = null;
-        (revived as any)._userSessionsSubject = new BehaviorSubject<UserSessionData[] | null>(null);
-
-
-        //
-        // Re-attach ALL public observables with their lazy-load tap() triggers
-        // This mirrors the original class definition exactly
-        //
-        //
-        // Re-create all public observables with their lazy-load triggers
-        // We use 'as any' because:
-        // 1. The revived object has the correct prototype
-        // 2. But private methods (loadSecurityUserXYZ, etc.) are not accessible via the typed variable
-        // 3. This is a controlled revival context — safe and necessary
-        //
-        (revived as any).SecurityUsers$ = (revived as any)._securityUsersSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._securityUsers === null && (revived as any)._securityUsersPromise === null) {
-                    (revived as any).loadSecurityUsers();        // Need to cast to any to invoke private load method
-                }
-            }),
-            shareReplay(1)
-        );
-
-        (revived as any).SecurityUsersCount$ = SecurityUserService.Instance.GetSecurityUsersRowCount({
-            securityUserId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
+    (revived as any)._userSessions = null;
+    (revived as any)._userSessionsPromise = null;
+    (revived as any)._userSessionsSubject = new BehaviorSubject<UserSessionData[] | null>(null);
 
 
+    //
+    // Re-attach ALL public observables with their lazy-load tap() triggers
+    // This mirrors the original class definition exactly
+    //
+    //
+    // Re-create all public observables with their lazy-load triggers
+    // We use 'as any' because:
+    // 1. The revived object has the correct prototype
+    // 2. But private methods (loadSecurityUserXYZ, etc.) are not accessible via the typed variable
+    // 3. This is a controlled revival context — safe and necessary
+    //
+    (revived as any).SecurityUsers$ = (revived as any)._securityUsersSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._securityUsers === null && (revived as any)._securityUsersPromise === null) {
+                (revived as any).loadSecurityUsers();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
 
-        (revived as any).SecurityTenantUsers$ = (revived as any)._securityTenantUsersSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._securityTenantUsers === null && (revived as any)._securityTenantUsersPromise === null) {
-                    (revived as any).loadSecurityTenantUsers();        // Need to cast to any to invoke private load method
-                }
-            }),
-            shareReplay(1)
-        );
-
-        (revived as any).SecurityTenantUsersCount$ = SecurityTenantUserService.Instance.GetSecurityTenantUsersRowCount({
-            securityUserId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
+    (revived as any).SecurityUsersCount$ = SecurityUserService.Instance.GetSecurityUsersRowCount({securityUserId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
 
 
 
-        (revived as any).SecurityOrganizationUsers$ = (revived as any)._securityOrganizationUsersSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._securityOrganizationUsers === null && (revived as any)._securityOrganizationUsersPromise === null) {
-                    (revived as any).loadSecurityOrganizationUsers();        // Need to cast to any to invoke private load method
-                }
-            }),
-            shareReplay(1)
-        );
+    (revived as any).SecurityTenantUsers$ = (revived as any)._securityTenantUsersSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._securityTenantUsers === null && (revived as any)._securityTenantUsersPromise === null) {
+                (revived as any).loadSecurityTenantUsers();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
 
-        (revived as any).SecurityOrganizationUsersCount$ = SecurityOrganizationUserService.Instance.GetSecurityOrganizationUsersRowCount({
-            securityUserId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
-
-
-
-        (revived as any).SecurityDepartmentUsers$ = (revived as any)._securityDepartmentUsersSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._securityDepartmentUsers === null && (revived as any)._securityDepartmentUsersPromise === null) {
-                    (revived as any).loadSecurityDepartmentUsers();        // Need to cast to any to invoke private load method
-                }
-            }),
-            shareReplay(1)
-        );
-
-        (revived as any).SecurityDepartmentUsersCount$ = SecurityDepartmentUserService.Instance.GetSecurityDepartmentUsersRowCount({
-            securityUserId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
+    (revived as any).SecurityTenantUsersCount$ = SecurityTenantUserService.Instance.GetSecurityTenantUsersRowCount({securityUserId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
 
 
 
-        (revived as any).SecurityTeamUsers$ = (revived as any)._securityTeamUsersSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._securityTeamUsers === null && (revived as any)._securityTeamUsersPromise === null) {
-                    (revived as any).loadSecurityTeamUsers();        // Need to cast to any to invoke private load method
-                }
-            }),
-            shareReplay(1)
-        );
+    (revived as any).SecurityOrganizationUsers$ = (revived as any)._securityOrganizationUsersSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._securityOrganizationUsers === null && (revived as any)._securityOrganizationUsersPromise === null) {
+                (revived as any).loadSecurityOrganizationUsers();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
 
-        (revived as any).SecurityTeamUsersCount$ = SecurityTeamUserService.Instance.GetSecurityTeamUsersRowCount({
-            securityUserId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
-
-
-
-        (revived as any).SecurityUserEvents$ = (revived as any)._securityUserEventsSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._securityUserEvents === null && (revived as any)._securityUserEventsPromise === null) {
-                    (revived as any).loadSecurityUserEvents();        // Need to cast to any to invoke private load method
-                }
-            }),
-            shareReplay(1)
-        );
-
-        (revived as any).SecurityUserEventsCount$ = SecurityUserEventService.Instance.GetSecurityUserEventsRowCount({
-            securityUserId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
+    (revived as any).SecurityOrganizationUsersCount$ = SecurityOrganizationUserService.Instance.GetSecurityOrganizationUsersRowCount({securityUserId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
 
 
 
-        (revived as any).SecurityUserPasswordResetTokens$ = (revived as any)._securityUserPasswordResetTokensSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._securityUserPasswordResetTokens === null && (revived as any)._securityUserPasswordResetTokensPromise === null) {
-                    (revived as any).loadSecurityUserPasswordResetTokens();        // Need to cast to any to invoke private load method
-                }
-            }),
-            shareReplay(1)
-        );
+    (revived as any).SecurityDepartmentUsers$ = (revived as any)._securityDepartmentUsersSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._securityDepartmentUsers === null && (revived as any)._securityDepartmentUsersPromise === null) {
+                (revived as any).loadSecurityDepartmentUsers();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
 
-        (revived as any).SecurityUserPasswordResetTokensCount$ = SecurityUserPasswordResetTokenService.Instance.GetSecurityUserPasswordResetTokensRowCount({
-            securityUserId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
-
-
-
-        (revived as any).SecurityUserSecurityGroups$ = (revived as any)._securityUserSecurityGroupsSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._securityUserSecurityGroups === null && (revived as any)._securityUserSecurityGroupsPromise === null) {
-                    (revived as any).loadSecurityUserSecurityGroups();        // Need to cast to any to invoke private load method
-                }
-            }),
-            shareReplay(1)
-        );
-
-        (revived as any).SecurityUserSecurityGroupsCount$ = SecurityUserSecurityGroupService.Instance.GetSecurityUserSecurityGroupsRowCount({
-            securityUserId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
+    (revived as any).SecurityDepartmentUsersCount$ = SecurityDepartmentUserService.Instance.GetSecurityDepartmentUsersRowCount({securityUserId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
 
 
 
-        (revived as any).SecurityUserSecurityRoles$ = (revived as any)._securityUserSecurityRolesSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._securityUserSecurityRoles === null && (revived as any)._securityUserSecurityRolesPromise === null) {
-                    (revived as any).loadSecurityUserSecurityRoles();        // Need to cast to any to invoke private load method
-                }
-            }),
-            shareReplay(1)
-        );
+    (revived as any).SecurityTeamUsers$ = (revived as any)._securityTeamUsersSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._securityTeamUsers === null && (revived as any)._securityTeamUsersPromise === null) {
+                (revived as any).loadSecurityTeamUsers();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
 
-        (revived as any).SecurityUserSecurityRolesCount$ = SecurityUserSecurityRoleService.Instance.GetSecurityUserSecurityRolesRowCount({
-            securityUserId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
-
-
-
-        (revived as any).EntityDataTokens$ = (revived as any)._entityDataTokensSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._entityDataTokens === null && (revived as any)._entityDataTokensPromise === null) {
-                    (revived as any).loadEntityDataTokens();        // Need to cast to any to invoke private load method
-                }
-            }),
-            shareReplay(1)
-        );
-
-        (revived as any).EntityDataTokensCount$ = EntityDataTokenService.Instance.GetEntityDataTokensRowCount({
-            securityUserId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
+    (revived as any).SecurityTeamUsersCount$ = SecurityTeamUserService.Instance.GetSecurityTeamUsersRowCount({securityUserId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
 
 
 
-        (revived as any).UserSessions$ = (revived as any)._userSessionsSubject.asObservable().pipe(
-            tap(() => {
-                if ((revived as any)._userSessions === null && (revived as any)._userSessionsPromise === null) {
-                    (revived as any).loadUserSessions();        // Need to cast to any to invoke private load method
-                }
-            }),
-            shareReplay(1)
-        );
+    (revived as any).SecurityUserEvents$ = (revived as any)._securityUserEventsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._securityUserEvents === null && (revived as any)._securityUserEventsPromise === null) {
+                (revived as any).loadSecurityUserEvents();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
 
-        (revived as any).UserSessionsCount$ = UserSessionService.Instance.GetUserSessionsRowCount({
-            securityUserId: (revived as any).id,
-            active: true,
-            deleted: false
-        });
+    (revived as any).SecurityUserEventsCount$ = SecurityUserEventService.Instance.GetSecurityUserEventsRowCount({securityUserId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).SecurityUserPasswordResetTokens$ = (revived as any)._securityUserPasswordResetTokensSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._securityUserPasswordResetTokens === null && (revived as any)._securityUserPasswordResetTokensPromise === null) {
+                (revived as any).loadSecurityUserPasswordResetTokens();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).SecurityUserPasswordResetTokensCount$ = SecurityUserPasswordResetTokenService.Instance.GetSecurityUserPasswordResetTokensRowCount({securityUserId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).SecurityUserSecurityGroups$ = (revived as any)._securityUserSecurityGroupsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._securityUserSecurityGroups === null && (revived as any)._securityUserSecurityGroupsPromise === null) {
+                (revived as any).loadSecurityUserSecurityGroups();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).SecurityUserSecurityGroupsCount$ = SecurityUserSecurityGroupService.Instance.GetSecurityUserSecurityGroupsRowCount({securityUserId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).SecurityUserSecurityRoles$ = (revived as any)._securityUserSecurityRolesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._securityUserSecurityRoles === null && (revived as any)._securityUserSecurityRolesPromise === null) {
+                (revived as any).loadSecurityUserSecurityRoles();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).SecurityUserSecurityRolesCount$ = SecurityUserSecurityRoleService.Instance.GetSecurityUserSecurityRolesRowCount({securityUserId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).EntityDataTokens$ = (revived as any)._entityDataTokensSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._entityDataTokens === null && (revived as any)._entityDataTokensPromise === null) {
+                (revived as any).loadEntityDataTokens();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).EntityDataTokensCount$ = EntityDataTokenService.Instance.GetEntityDataTokensRowCount({securityUserId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).UserSessions$ = (revived as any)._userSessionsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._userSessions === null && (revived as any)._userSessionsPromise === null) {
+                (revived as any).loadUserSessions();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).UserSessionsCount$ = UserSessionService.Instance.GetUserSessionsRowCount({securityUserId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
 
 
 
 
-        return revived;
+    return revived;
+  }
+
+
+  /**
+   * Creates a new user with password via the Admin endpoint.
+   * This is the preferred method for creating users as it handles
+   * password securely in a single atomic transaction.
+   */
+  public AdminCreateUser(request: AdminCreateUserRequest): Observable<SecurityUserData> {
+
+    const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+    return this.http.post<SecurityUserData>(this.baseUrl + 'api/Admin/CreateUser', request, { headers: authenticationHeaders }).pipe(
+      tap(() => this.ClearAllCaches()),
+      map(raw => this.ReviveSecurityUser(raw)),
+      catchError(error => {
+        return this.handleError(error, () => this.AdminCreateUser(request));
+      }));
+  }
+
+
+  private ReviveSecurityUserList(rawList: any[]): SecurityUserData[] {
+
+    if (!rawList) {
+        return [];
     }
 
-    private ReviveSecurityUserList(rawList: any[]): SecurityUserData[] {
-
-        if (!rawList) {
-            return [];
-        }
-
-        return rawList.map(raw => this.ReviveSecurityUser(raw));
-    }
+    return rawList.map(raw => this.ReviveSecurityUser(raw));
+  }
 
 }

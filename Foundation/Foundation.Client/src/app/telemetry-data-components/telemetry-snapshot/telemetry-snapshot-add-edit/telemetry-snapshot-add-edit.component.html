@@ -1,0 +1,106 @@
+<div class="add-telemetry-snapshot" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-telemetry-snapshot me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Telemetry Snapshot" 
+        *ngIf="userIsTelemetryTelemetrySnapshotWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #telemetrySnapshotModal let-modal>
+   <div class="modal-header bg-dark text-light telemetry-snapshot-modal-header">
+      <h5 class="modal-title mb-0" id="telemetrySnapshotModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Telemetry Snapshot' : 'Add Telemetry Snapshot' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body telemetry-snapshot-modal-body">
+      <form [formGroup]="telemetrySnapshotForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('telemetryApplicationId')">
+                <label for="TelemetrySnapshot-telemetryApplicationId" id="label-TelemetrySnapshot-telemetryApplicationId"><span class="text-danger">*</span>Telemetry Application</label>
+                <select id="TelemetrySnapshot-telemetryApplicationId" formControlName="telemetryApplicationId" class="form-select telemetry-snapshot-select" [disabled]="!userIsTelemetryTelemetrySnapshotWriter()">
+                    <option [ngValue]="null">Select Telemetry Application</option>
+                    <option *ngFor="let telemetryApplication of telemetryApplications$ | async" [ngValue]="telemetryApplication.id">{{telemetryApplication.name}}</option>
+                </select>
+                <div *ngIf="telemetrySnapshotForm.get('telemetryApplicationId')?.invalid && telemetrySnapshotForm.get('telemetryApplicationId')?.touched" class="text-danger">
+                    Telemetry Application is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('telemetryCollectionRunId')">
+                <label for="TelemetrySnapshot-telemetryCollectionRunId" id="label-TelemetrySnapshot-telemetryCollectionRunId"><span class="text-danger">*</span>Telemetry Collection Run</label>
+                <select id="TelemetrySnapshot-telemetryCollectionRunId" formControlName="telemetryCollectionRunId" class="form-select telemetry-snapshot-select" [disabled]="!userIsTelemetryTelemetrySnapshotWriter()">
+                    <option [ngValue]="null">Select Telemetry Collection Run</option>
+                    <option *ngFor="let telemetryCollectionRun of telemetryCollectionRuns$ | async" [ngValue]="telemetryCollectionRun.id">{{telemetryCollectionRun.errorMessage}}</option>
+                </select>
+                <div *ngIf="telemetrySnapshotForm.get('telemetryCollectionRunId')?.invalid && telemetrySnapshotForm.get('telemetryCollectionRunId')?.touched" class="text-danger">
+                    Telemetry Collection Run is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('collectedAt')">
+                <label for="TelemetrySnapshot-collectedAt" id="label-TelemetrySnapshot-collectedAt"><span class="text-danger">*</span>Collected At</label>
+                <input type="datetime-local" id="TelemetrySnapshot-collectedAt" formControlName="collectedAt" placeholder="Enter Collected At" class="form-control telemetry-snapshot-input" [disabled]="!userIsTelemetryTelemetrySnapshotWriter()" aria-labelledby="label-collectedAt" />
+                <div *ngIf="telemetrySnapshotForm.get('collectedAt')?.invalid && telemetrySnapshotForm.get('collectedAt')?.touched" class="text-danger">
+                    Collected At is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isOnline')">
+                <input type="checkbox" id="TelemetrySnapshot-isOnline" formControlName="isOnline" class="form-check-input" [disabled]="!userIsTelemetryTelemetrySnapshotWriter()" />
+                <label for="TelemetrySnapshot-isOnline" class="form-check-label" id="label-TelemetrySnapshot-isOnline"><span class="text-danger">*</span>Is Online</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('uptimeSeconds')">
+                <label for="TelemetrySnapshot-uptimeSeconds" id="label-TelemetrySnapshot-uptimeSeconds">Uptime Seconds</label>
+                <input type="number" id="TelemetrySnapshot-uptimeSeconds" formControlName="uptimeSeconds" placeholder="Enter Uptime Seconds" class="form-control telemetry-snapshot-input" [disabled]="!userIsTelemetryTelemetrySnapshotWriter()" aria-labelledby="label-uptimeSeconds" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('memoryWorkingSetMB')">
+                <label for="TelemetrySnapshot-memoryWorkingSetMB" id="label-TelemetrySnapshot-memoryWorkingSetMB">Memory Working Set M B</label>
+                <input type="number" id="TelemetrySnapshot-memoryWorkingSetMB" formControlName="memoryWorkingSetMB" placeholder="Enter Memory Working Set M B" class="form-control telemetry-snapshot-input" [disabled]="!userIsTelemetryTelemetrySnapshotWriter()" aria-labelledby="label-memoryWorkingSetMB" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('memoryGcHeapMB')">
+                <label for="TelemetrySnapshot-memoryGcHeapMB" id="label-TelemetrySnapshot-memoryGcHeapMB">Memory Gc Heap M B</label>
+                <input type="number" id="TelemetrySnapshot-memoryGcHeapMB" formControlName="memoryGcHeapMB" placeholder="Enter Memory Gc Heap M B" class="form-control telemetry-snapshot-input" [disabled]="!userIsTelemetryTelemetrySnapshotWriter()" aria-labelledby="label-memoryGcHeapMB" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('threadPoolWorkerThreads')">
+                <label for="TelemetrySnapshot-threadPoolWorkerThreads" id="label-TelemetrySnapshot-threadPoolWorkerThreads">Thread Pool Worker Threads</label>
+                <input type="number" id="TelemetrySnapshot-threadPoolWorkerThreads" formControlName="threadPoolWorkerThreads" placeholder="Enter Thread Pool Worker Threads" class="form-control telemetry-snapshot-input" [disabled]="!userIsTelemetryTelemetrySnapshotWriter()" aria-labelledby="label-threadPoolWorkerThreads" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('threadPoolCompletionPortThreads')">
+                <label for="TelemetrySnapshot-threadPoolCompletionPortThreads" id="label-TelemetrySnapshot-threadPoolCompletionPortThreads">Thread Pool Completion Port Threads</label>
+                <input type="number" id="TelemetrySnapshot-threadPoolCompletionPortThreads" formControlName="threadPoolCompletionPortThreads" placeholder="Enter Thread Pool Completion Port Threads" class="form-control telemetry-snapshot-input" [disabled]="!userIsTelemetryTelemetrySnapshotWriter()" aria-labelledby="label-threadPoolCompletionPortThreads" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('threadPoolPendingWorkItems')">
+                <label for="TelemetrySnapshot-threadPoolPendingWorkItems" id="label-TelemetrySnapshot-threadPoolPendingWorkItems">Thread Pool Pending Work Items</label>
+                <input type="number" id="TelemetrySnapshot-threadPoolPendingWorkItems" formControlName="threadPoolPendingWorkItems" placeholder="Enter Thread Pool Pending Work Items" class="form-control telemetry-snapshot-input" [disabled]="!userIsTelemetryTelemetrySnapshotWriter()" aria-labelledby="label-threadPoolPendingWorkItems" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('machineName')">
+                <label for="TelemetrySnapshot-machineName" id="label-TelemetrySnapshot-machineName">Machine Name</label>
+                <input type="text" id="TelemetrySnapshot-machineName" formControlName="machineName" placeholder="Enter Machine Name" class="form-control telemetry-snapshot-input" [disabled]="!userIsTelemetryTelemetrySnapshotWriter()" aria-labelledby="label-machineName" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('dotNetVersion')">
+                <label for="TelemetrySnapshot-dotNetVersion" id="label-TelemetrySnapshot-dotNetVersion">Dot Net Version</label>
+                <input type="text" id="TelemetrySnapshot-dotNetVersion" formControlName="dotNetVersion" placeholder="Enter Dot Net Version" class="form-control telemetry-snapshot-input" [disabled]="!userIsTelemetryTelemetrySnapshotWriter()" aria-labelledby="label-dotNetVersion" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('statusJson')">
+                <label for="TelemetrySnapshot-statusJson" id="label-TelemetrySnapshot-statusJson">Status Json</label>
+                <textarea id="TelemetrySnapshot-statusJson" formControlName="statusJson" placeholder="Enter Status Json" class="form-control telemetry-snapshot-input" [disabled]="!userIsTelemetryTelemetrySnapshotWriter()"></textarea>
+            </div>
+         <div class="modal-footer telemetry-snapshot-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Telemetry Snapshot changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !telemetrySnapshotForm.valid || telemetrySnapshotForm.pristine  || userIsTelemetryTelemetrySnapshotWriter() == false " ngbTooltip="Save the Telemetry Snapshot changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Telemetry Snapshot' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

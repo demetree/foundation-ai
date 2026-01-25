@@ -1,0 +1,68 @@
+<div class="add-telemetry-session-snapshot" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-telemetry-session-snapshot me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Telemetry Session Snapshot" 
+        *ngIf="userIsTelemetryTelemetrySessionSnapshotWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #telemetrySessionSnapshotModal let-modal>
+   <div class="modal-header bg-dark text-light telemetry-session-snapshot-modal-header">
+      <h5 class="modal-title mb-0" id="telemetrySessionSnapshotModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Telemetry Session Snapshot' : 'Add Telemetry Session Snapshot' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body telemetry-session-snapshot-modal-body">
+      <form [formGroup]="telemetrySessionSnapshotForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('telemetrySnapshotId')">
+                <label for="TelemetrySessionSnapshot-telemetrySnapshotId" id="label-TelemetrySessionSnapshot-telemetrySnapshotId"><span class="text-danger">*</span>Telemetry Snapshot</label>
+                <select id="TelemetrySessionSnapshot-telemetrySnapshotId" formControlName="telemetrySnapshotId" class="form-select telemetry-session-snapshot-select" [disabled]="!userIsTelemetryTelemetrySessionSnapshotWriter()">
+                    <option [ngValue]="null">Select Telemetry Snapshot</option>
+                    <option *ngFor="let telemetrySnapshot of telemetrySnapshots$ | async" [ngValue]="telemetrySnapshot.id">{{telemetrySnapshot.machineName}}</option>
+                </select>
+                <div *ngIf="telemetrySessionSnapshotForm.get('telemetrySnapshotId')?.invalid && telemetrySessionSnapshotForm.get('telemetrySnapshotId')?.touched" class="text-danger">
+                    Telemetry Snapshot is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('activeSessionCount')">
+                <label for="TelemetrySessionSnapshot-activeSessionCount" id="label-TelemetrySessionSnapshot-activeSessionCount"><span class="text-danger">*</span>Active Session Count</label>
+                <input type="number" id="TelemetrySessionSnapshot-activeSessionCount" formControlName="activeSessionCount" placeholder="Enter Active Session Count" class="form-control telemetry-session-snapshot-input" [disabled]="!userIsTelemetryTelemetrySessionSnapshotWriter()" aria-labelledby="label-activeSessionCount" />
+                <div *ngIf="telemetrySessionSnapshotForm.get('activeSessionCount')?.invalid && telemetrySessionSnapshotForm.get('activeSessionCount')?.touched" class="text-danger">
+                    Active Session Count is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('expiredSessionCount')">
+                <label for="TelemetrySessionSnapshot-expiredSessionCount" id="label-TelemetrySessionSnapshot-expiredSessionCount">Expired Session Count</label>
+                <input type="number" id="TelemetrySessionSnapshot-expiredSessionCount" formControlName="expiredSessionCount" placeholder="Enter Expired Session Count" class="form-control telemetry-session-snapshot-input" [disabled]="!userIsTelemetryTelemetrySessionSnapshotWriter()" aria-labelledby="label-expiredSessionCount" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('oldestSessionStart')">
+                <label for="TelemetrySessionSnapshot-oldestSessionStart" id="label-TelemetrySessionSnapshot-oldestSessionStart">Oldest Session Start</label>
+                <input type="datetime-local" id="TelemetrySessionSnapshot-oldestSessionStart" formControlName="oldestSessionStart" placeholder="Enter Oldest Session Start" class="form-control telemetry-session-snapshot-input" [disabled]="!userIsTelemetryTelemetrySessionSnapshotWriter()" aria-labelledby="label-oldestSessionStart" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('newestSessionStart')">
+                <label for="TelemetrySessionSnapshot-newestSessionStart" id="label-TelemetrySessionSnapshot-newestSessionStart">Newest Session Start</label>
+                <input type="datetime-local" id="TelemetrySessionSnapshot-newestSessionStart" formControlName="newestSessionStart" placeholder="Enter Newest Session Start" class="form-control telemetry-session-snapshot-input" [disabled]="!userIsTelemetryTelemetrySessionSnapshotWriter()" aria-labelledby="label-newestSessionStart" />
+            </div>
+         <div class="modal-footer telemetry-session-snapshot-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Telemetry Session Snapshot changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !telemetrySessionSnapshotForm.valid || telemetrySessionSnapshotForm.pristine  || userIsTelemetryTelemetrySessionSnapshotWriter() == false " ngbTooltip="Save the Telemetry Session Snapshot changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Telemetry Session Snapshot' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

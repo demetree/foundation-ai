@@ -376,8 +376,6 @@ export class UserCustomDetailComponent implements OnInit, OnDestroy {
                 }
             },
             () => { }
-            },
-            () => { }
         );
     }
 

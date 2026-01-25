@@ -1,0 +1,84 @@
+<div class="container-fluid p-1 m-0 telemetry-log-error-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="telemetry-log-error-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Telemetry Log Error</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Telemetry Log Error' : 'Add Telemetry Log Error'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsTelemetryTelemetryLogErrorReader()">
+                <div class="col m-2 telemetry-log-error-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="telemetryLogErrorForm" (ngSubmit)="submitForm()" class="telemetry-log-error-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('telemetryApplicationId')">
+                                <label for="TelemetryLogError-telemetryApplicationId" id="label-TelemetryLogError-telemetryApplicationId"><span class="text-danger">*</span>Telemetry Application</label>
+                                <select id="TelemetryLogError-telemetryApplicationId" formControlName="telemetryApplicationId" class="form-select telemetry-log-error-select" [disabled]="!userIsTelemetryTelemetryLogErrorWriter()">
+                                    <option [ngValue]="null">Select Telemetry Application</option>
+                                    <option *ngFor="let telemetryApplication of telemetryApplications$ | async" [ngValue]="telemetryApplication.id">{{telemetryApplication.name}}</option>
+                                </select>
+                                <div *ngIf="telemetryLogErrorForm.get('telemetryApplicationId')?.invalid && telemetryLogErrorForm.get('telemetryApplicationId')?.touched" class="text-danger">
+                                    Telemetry Application is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('telemetrySnapshotId')">
+                                <label for="TelemetryLogError-telemetrySnapshotId" id="label-TelemetryLogError-telemetrySnapshotId">Telemetry Snapshot</label>
+                                <select id="TelemetryLogError-telemetrySnapshotId" formControlName="telemetrySnapshotId" class="form-select telemetry-log-error-select" [disabled]="!userIsTelemetryTelemetryLogErrorWriter()">
+                                    <option [ngValue]="null">Select Telemetry Snapshot</option>
+                                    <option *ngFor="let telemetrySnapshot of telemetrySnapshots$ | async" [ngValue]="telemetrySnapshot.id">{{telemetrySnapshot.machineName}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('capturedAt')">
+                                <label for="TelemetryLogError-capturedAt" id="label-TelemetryLogError-capturedAt"><span class="text-danger">*</span>Captured At</label>
+                                <input type="datetime-local" id="TelemetryLogError-capturedAt" formControlName="capturedAt" placeholder="Enter Captured At" class="form-control telemetry-log-error-input" [disabled]="!userIsTelemetryTelemetryLogErrorWriter()" aria-labelledby="label-capturedAt" />
+                                <div *ngIf="telemetryLogErrorForm.get('capturedAt')?.invalid && telemetryLogErrorForm.get('capturedAt')?.touched" class="text-danger">
+                                    Captured At is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('logFileName')">
+                                <label for="TelemetryLogError-logFileName" id="label-TelemetryLogError-logFileName">Log File Name</label>
+                                <input type="text" id="TelemetryLogError-logFileName" formControlName="logFileName" placeholder="Enter Log File Name" class="form-control telemetry-log-error-input" [disabled]="!userIsTelemetryTelemetryLogErrorWriter()" aria-labelledby="label-logFileName" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('logTimestamp')">
+                                <label for="TelemetryLogError-logTimestamp" id="label-TelemetryLogError-logTimestamp">Log Timestamp</label>
+                                <input type="datetime-local" id="TelemetryLogError-logTimestamp" formControlName="logTimestamp" placeholder="Enter Log Timestamp" class="form-control telemetry-log-error-input" [disabled]="!userIsTelemetryTelemetryLogErrorWriter()" aria-labelledby="label-logTimestamp" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('level')">
+                                <label for="TelemetryLogError-level" id="label-TelemetryLogError-level">Level</label>
+                                <input type="text" id="TelemetryLogError-level" formControlName="level" placeholder="Enter Level" class="form-control telemetry-log-error-input" [disabled]="!userIsTelemetryTelemetryLogErrorWriter()" aria-labelledby="label-level" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('message')">
+                                <label for="TelemetryLogError-message" id="label-TelemetryLogError-message">Message</label>
+                                <textarea id="TelemetryLogError-message" formControlName="message" placeholder="Enter Message" class="form-control telemetry-log-error-input" [disabled]="!userIsTelemetryTelemetryLogErrorWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('exception')">
+                                <label for="TelemetryLogError-exception" id="label-TelemetryLogError-exception">Exception</label>
+                                <textarea id="TelemetryLogError-exception" formControlName="exception" placeholder="Enter Exception" class="form-control telemetry-log-error-input" [disabled]="!userIsTelemetryTelemetryLogErrorWriter()"></textarea>
+                            </div>
+                            <div class="telemetry-log-error-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="telemetryLogErrorForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Telemetry Log Error">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !telemetryLogErrorForm.valid || !telemetryLogErrorForm.dirty || telemetryLogErrorForm.pristine  || userIsTelemetryTelemetryLogErrorWriter() == false " ngbTooltip="Save the Telemetry Log Error changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Telemetry Log Error' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

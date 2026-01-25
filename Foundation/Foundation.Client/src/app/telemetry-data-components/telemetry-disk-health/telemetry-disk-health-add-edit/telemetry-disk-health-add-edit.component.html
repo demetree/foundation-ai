@@ -1,0 +1,80 @@
+<div class="add-telemetry-disk-health" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-telemetry-disk-health me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Telemetry Disk Health" 
+        *ngIf="userIsTelemetryTelemetryDiskHealthWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #telemetryDiskHealthModal let-modal>
+   <div class="modal-header bg-dark text-light telemetry-disk-health-modal-header">
+      <h5 class="modal-title mb-0" id="telemetryDiskHealthModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Telemetry Disk Health' : 'Add Telemetry Disk Health' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body telemetry-disk-health-modal-body">
+      <form [formGroup]="telemetryDiskHealthForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('telemetrySnapshotId')">
+                <label for="TelemetryDiskHealth-telemetrySnapshotId" id="label-TelemetryDiskHealth-telemetrySnapshotId"><span class="text-danger">*</span>Telemetry Snapshot</label>
+                <select id="TelemetryDiskHealth-telemetrySnapshotId" formControlName="telemetrySnapshotId" class="form-select telemetry-disk-health-select" [disabled]="!userIsTelemetryTelemetryDiskHealthWriter()">
+                    <option [ngValue]="null">Select Telemetry Snapshot</option>
+                    <option *ngFor="let telemetrySnapshot of telemetrySnapshots$ | async" [ngValue]="telemetrySnapshot.id">{{telemetrySnapshot.machineName}}</option>
+                </select>
+                <div *ngIf="telemetryDiskHealthForm.get('telemetrySnapshotId')?.invalid && telemetryDiskHealthForm.get('telemetrySnapshotId')?.touched" class="text-danger">
+                    Telemetry Snapshot is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('driveName')">
+                <label for="TelemetryDiskHealth-driveName" id="label-TelemetryDiskHealth-driveName"><span class="text-danger">*</span>Drive Name</label>
+                <input type="text" id="TelemetryDiskHealth-driveName" formControlName="driveName" placeholder="Enter Drive Name" class="form-control telemetry-disk-health-input" [disabled]="!userIsTelemetryTelemetryDiskHealthWriter()" aria-labelledby="label-driveName" />
+                <div *ngIf="telemetryDiskHealthForm.get('driveName')?.invalid && telemetryDiskHealthForm.get('driveName')?.touched" class="text-danger">
+                    Drive Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('driveLabel')">
+                <label for="TelemetryDiskHealth-driveLabel" id="label-TelemetryDiskHealth-driveLabel">Drive Label</label>
+                <input type="text" id="TelemetryDiskHealth-driveLabel" formControlName="driveLabel" placeholder="Enter Drive Label" class="form-control telemetry-disk-health-input" [disabled]="!userIsTelemetryTelemetryDiskHealthWriter()" aria-labelledby="label-driveLabel" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('totalGB')">
+                <label for="TelemetryDiskHealth-totalGB" id="label-TelemetryDiskHealth-totalGB">Total G B</label>
+                <input type="number" id="TelemetryDiskHealth-totalGB" formControlName="totalGB" placeholder="Enter Total G B" class="form-control telemetry-disk-health-input" [disabled]="!userIsTelemetryTelemetryDiskHealthWriter()" aria-labelledby="label-totalGB" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('freeGB')">
+                <label for="TelemetryDiskHealth-freeGB" id="label-TelemetryDiskHealth-freeGB">Free G B</label>
+                <input type="number" id="TelemetryDiskHealth-freeGB" formControlName="freeGB" placeholder="Enter Free G B" class="form-control telemetry-disk-health-input" [disabled]="!userIsTelemetryTelemetryDiskHealthWriter()" aria-labelledby="label-freeGB" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('freePercent')">
+                <label for="TelemetryDiskHealth-freePercent" id="label-TelemetryDiskHealth-freePercent">Free Percent</label>
+                <input type="number" id="TelemetryDiskHealth-freePercent" formControlName="freePercent" placeholder="Enter Free Percent" class="form-control telemetry-disk-health-input" [disabled]="!userIsTelemetryTelemetryDiskHealthWriter()" aria-labelledby="label-freePercent" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('status')">
+                <label for="TelemetryDiskHealth-status" id="label-TelemetryDiskHealth-status">Status</label>
+                <input type="text" id="TelemetryDiskHealth-status" formControlName="status" placeholder="Enter Status" class="form-control telemetry-disk-health-input" [disabled]="!userIsTelemetryTelemetryDiskHealthWriter()" aria-labelledby="label-status" />
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isApplicationDrive')">
+                <input type="checkbox" id="TelemetryDiskHealth-isApplicationDrive" formControlName="isApplicationDrive" class="form-check-input" [disabled]="!userIsTelemetryTelemetryDiskHealthWriter()" />
+                <label for="TelemetryDiskHealth-isApplicationDrive" class="form-check-label" id="label-TelemetryDiskHealth-isApplicationDrive"><span class="text-danger">*</span>Is Application Drive</label>
+            </div>
+         <div class="modal-footer telemetry-disk-health-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Telemetry Disk Health changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !telemetryDiskHealthForm.valid || telemetryDiskHealthForm.pristine  || userIsTelemetryTelemetryDiskHealthWriter() == false " ngbTooltip="Save the Telemetry Disk Health changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Telemetry Disk Health' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>
