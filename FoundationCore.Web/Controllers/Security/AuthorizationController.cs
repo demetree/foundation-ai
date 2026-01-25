@@ -338,14 +338,17 @@ namespace Foundation.Security.Controllers.WebAPI
 
 
         /// <summary>
-        /// Adds session_id claim to the principal for session validation middleware
+        /// Adds session_id claim to the principal for session validation middleware.
+        /// Must set destination to AccessToken so it's included in the JWT token.
         /// </summary>
         private void AddSessionIdClaim(ClaimsPrincipal principal, int sessionId)
         {
             var identity = principal.Identity as ClaimsIdentity;
             if (identity != null)
             {
-                identity.AddClaim(new Claim("session_id", sessionId.ToString()));
+                var claim = new Claim("session_id", sessionId.ToString());
+                claim.SetDestinations(Destinations.AccessToken);
+                identity.AddClaim(claim);
             }
         }
 

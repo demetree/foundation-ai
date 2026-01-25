@@ -22,6 +22,7 @@ import {
     ApplicationMetricItem
 } from '../../services/system-health.service';
 import { SessionActionDialogComponent, SessionActionResult } from '../../services/session-action-dialog/session-action-dialog.component';
+import { AlertService } from '../../services/alert.service';
 
 
 @Component({
@@ -87,7 +88,8 @@ export class SystemHealthComponent implements OnInit, OnDestroy {
     constructor(
         private systemHealthService: SystemHealthService,
         private monitoredAppsService: MonitoredApplicationsService,
-        private modalService: NgbModal
+        private modalService: NgbModal,
+        private alertService: AlertService
     ) { }
 
 
@@ -195,14 +197,17 @@ export class SystemHealthComponent implements OnInit, OnDestroy {
                                     );
                                     this.authenticatedUsers.totalCount = this.authenticatedUsers.sessions.length;
                                 }
-                                alert(`Account for ${response.targetUsername} has been locked. ${response.revokedCount} session(s) revoked.`);
+                                this.alertService.showSuccessMessage(
+                                    'Account Locked',
+                                    `Account for ${response.targetUsername} has been locked. ${response.revokedCount} session(s) revoked.`
+                                );
                             }
                             this.revokingSessionId = null;
                         },
                         error: (err: Error) => {
                             console.error('Failed to revoke and lock:', err);
                             this.revokingSessionId = null;
-                            alert('Failed to revoke and lock: ' + err.message);
+                            this.alertService.showErrorMessage('Revoke Failed', 'Failed to revoke and lock: ' + err.message);
                         }
                     });
             } else {
@@ -224,7 +229,7 @@ export class SystemHealthComponent implements OnInit, OnDestroy {
                         error: (err: Error) => {
                             console.error('Failed to revoke session:', err);
                             this.revokingSessionId = null;
-                            alert('Failed to revoke session: ' + err.message);
+                            this.alertService.showErrorMessage('Revoke Failed', 'Failed to revoke session: ' + err.message);
                         }
                     });
             }
