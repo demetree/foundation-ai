@@ -39,6 +39,16 @@ namespace Foundation.Services
         /// Gets all sessions for a specific user
         /// </summary>
         Task<List<SessionInfo>> GetUserSessionsAsync(int securityUserId);
+
+        /// <summary>
+        /// Checks if a session is still valid (not revoked, not expired)
+        /// </summary>
+        Task<bool> IsSessionValidAsync(int sessionId);
+
+        /// <summary>
+        /// Checks if a session is still valid by token ID
+        /// </summary>
+        Task<bool> IsSessionValidByTokenAsync(string tokenId);
     }
 
 

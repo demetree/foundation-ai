@@ -130,7 +130,11 @@ namespace Foundation.Security.Controllers.WebAPI
                 //
                 // Record session for compliance tracking
                 //
-                await RecordSessionAsync(securityUser, "Password", request.ClientId);
+                int sessionId = await RecordSessionAsync(securityUser, "Password", request.ClientId);
+                if (sessionId > 0)
+                {
+                    AddSessionIdClaim(principal, sessionId);
+                }
 
                 //
                 // This completes the sign in process
@@ -184,7 +188,11 @@ namespace Foundation.Security.Controllers.WebAPI
                     //
                     // Record session for compliance tracking (refresh token)
                     //
-                    await RecordSessionAsync(securityUser, "RefreshToken", request.ClientId);
+                    int sessionId = await RecordSessionAsync(securityUser, "RefreshToken", request.ClientId);
+                    if (sessionId > 0)
+                    {
+                        AddSessionIdClaim(principal, sessionId);
+                    }
 
                     //
                     // This completes the sign in process
@@ -260,7 +268,11 @@ namespace Foundation.Security.Controllers.WebAPI
                 //
                 // Record session for compliance tracking (SSO provider)
                 //
-                await RecordSessionAsync(securityUser, provider ?? "SSO", request.ClientId);
+                int sessionId = await RecordSessionAsync(securityUser, provider ?? "SSO", request.ClientId);
+                if (sessionId > 0)
+                {
+                    AddSessionIdClaim(principal, sessionId);
+                }
 
                 //
                 // This completes the sign in process
@@ -293,11 +305,12 @@ namespace Foundation.Security.Controllers.WebAPI
         /// <summary>
         /// Records session metadata for compliance tracking
         /// </summary>
-        private async Task RecordSessionAsync(SecurityUser user, string loginMethod, string clientApplication)
+        /// <returns>The session ID, or 0 if recording failed</returns>
+        private async Task<int> RecordSessionAsync(SecurityUser user, string loginMethod, string clientApplication)
         {
             if (_sessionTracking == null)
             {
-                return; // Session tracking not configured
+                return 0; // Session tracking not configured
             }
 
             try
@@ -314,11 +327,25 @@ namespace Foundation.Security.Controllers.WebAPI
                     ClientApplication = clientApplication
                 };
 
-                await _sessionTracking.RecordSessionAsync(sessionInfo);
+                return await _sessionTracking.RecordSessionAsync(sessionInfo);
             }
             catch
             {
                 // Don't fail the login if session tracking fails
+                return 0;
+            }
+        }
+
+
+        /// <summary>
+        /// Adds session_id claim to the principal for session validation middleware
+        /// </summary>
+        private void AddSessionIdClaim(ClaimsPrincipal principal, int sessionId)
+        {
+            var identity = principal.Identity as ClaimsIdentity;
+            if (identity != null)
+            {
+                identity.AddClaim(new Claim("session_id", sessionId.ToString()));
             }
         }
 

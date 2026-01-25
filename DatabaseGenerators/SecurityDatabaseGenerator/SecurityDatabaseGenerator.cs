@@ -349,6 +349,15 @@ namespace Foundation.Security.Database
             securityUserEventTypeTable.AddData(new Dictionary<string, string> { { "name", "AccountUnlocked" },
                                                                     { "description", "Account Unlocked" } });
 
+            //
+            // AI-Generated: Added for session revocation tracking
+            //
+            securityUserEventTypeTable.AddData(new Dictionary<string, string> { { "name", "SessionRevoked" },
+                                                                    { "description", "Session Revoked" } });
+
+            securityUserEventTypeTable.AddData(new Dictionary<string, string> { { "name", "SessionRevokedWithAccountLock" },
+                                                                    { "description", "Session Revoked With Account Lock" } });
+
 
 
             Database.Table securityUserEventTable = database.AddTable("SecurityUserEvent");

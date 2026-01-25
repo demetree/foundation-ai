@@ -49,7 +49,9 @@ namespace Foundation.Security
             SystemInitiatedPasswordResetCompleted = 11,
             AdminInitiatedPasswordSet = 12,
             AdminActionLockAccount = 13,
-            AccountUnlocked = 14
+            AccountUnlocked = 14,
+            SessionRevoked = 15,
+            SessionRevokedWithAccountLock = 16
         }
 
 
@@ -296,7 +298,7 @@ namespace Foundation.Security
             {
                 List<SecurityUserEventType> allSUETs = (from x in db.SecurityUserEventTypes select x).AsNoTracking().ToList();
 
-                if (allSUETs.Count != 14)
+                if (allSUETs.Count != 16)
                 {
                     throw new Exception("Security System Integrity Error.  Incorrect number of Security User Event Types in Security database.");
                 }
@@ -315,10 +317,12 @@ namespace Foundation.Security
                                                               (x.id == 11 && x.name == "SystemInitiatedPasswordResetCompleted") ||
                                                               (x.id == 12 && x.name == "AdminInitiatedPasswordSet") ||
                                                               (x.id == 13 && x.name == "AdminActionLockAccount") ||
-                                                              (x.id == 14 && x.name == "AccountUnlocked"))
+                                                              (x.id == 14 && x.name == "AccountUnlocked") ||
+                                                              (x.id == 15 && x.name == "SessionRevoked") ||
+                                                              (x.id == 16 && x.name == "SessionRevokedWithAccountLock"))
                                                               select x).ToList();
 
-                if (validatedTypes.Count != 14)
+                if (validatedTypes.Count != 16)
                 {
                     throw new Exception("Security System Integrity Error.  Security User Event Type configuration is incorrect in the Security database.");
                 }
@@ -355,7 +359,9 @@ namespace Foundation.Security
                 (11, "SystemInitiatedPasswordResetCompleted", "SystemInitiatedPasswordResetCompleted"),
                 (12, "AdminInitiatedPasswordSet", "Admin Initiated Password Set"),
                 (13, "AdminActionLockAccount", "Admin Action Lock Account"),
-                (14, "AccountUnlocked", "Account Unlocked")
+                (14, "AccountUnlocked", "Account Unlocked"),
+                (15, "SessionRevoked", "Session Revoked"),
+                (16, "SessionRevokedWithAccountLock", "Session Revoked With Account Lock")
             };
 
             try

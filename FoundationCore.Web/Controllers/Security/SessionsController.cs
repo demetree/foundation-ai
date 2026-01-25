@@ -195,40 +195,67 @@ namespace Foundation.Security.Controllers.WebAPI
             try
             {
                 //
-                // Get session details before revocation for audit
+                // Get the session to find the target user for event logging
                 //
-                var sessions = await _sessionTracking.GetUserSessionsAsync(0); // We'll get session info from the revoke call
+                var session = await _context.UserSessions
+                    .Include(s => s.securityUser)
+                    .FirstOrDefaultAsync(s => s.id == sessionId && s.active && !s.deleted, cancellationToken);
+
+                if (session == null)
+                {
+                    await CreateAuditEventAsync(
+                        AuditEngine.AuditType.Error,
+                        $"Attempted to revoke session {sessionId} but session was not found. Admin: '{adminUsername}'",
+                        sessionId.ToString());
+
+                    return NotFound(new { success = false, message = "Session not found" });
+                }
+
+                var targetUser = session.securityUser;
+                int targetUserId = targetUser?.id ?? 0;
+                string targetUsername = targetUser?.accountName ?? "Unknown";
                 
                 var success = await _sessionTracking.RevokeSessionAsync(sessionId, adminUsername, reason);
 
                 if (success)
                 {
                     //
+                    // Log SecurityUserEvent for the target user
+                    //
+                    if (targetUser != null)
+                    {
+                        SecurityLogic.AddUserEvent(
+                            targetUser,
+                            SecurityLogic.SecurityUserEventTypes.SessionRevoked,
+                            $"Session revoked by '{adminUsername}'. Reason: {reason}");
+                    }
+
+                    //
                     // Audit the successful revocation with full details
                     //
                     await CreateAuditEventAsync(
                         AuditEngine.AuditType.UpdateEntity,
-                        $"Session {sessionId} successfully REVOKED by '{adminUsername}'. Reason: {reason}",
+                        $"Session {sessionId} for user '{targetUsername}' successfully REVOKED by '{adminUsername}'. Reason: {reason}",
                         true,
                         sessionId.ToString(),
-                        JsonSerializer.Serialize(new { sessionId, status = "active" }),
-                        JsonSerializer.Serialize(new { sessionId, status = "revoked", revokedBy = adminUsername, revokedAt = DateTime.UtcNow, reason }),
+                        JsonSerializer.Serialize(new { sessionId, userId = targetUserId, username = targetUsername, status = "active" }),
+                        JsonSerializer.Serialize(new { sessionId, userId = targetUserId, username = targetUsername, status = "revoked", revokedBy = adminUsername, revokedAt = DateTime.UtcNow, reason }),
                         null);
 
                     _logger.LogWarning(
-                        "SECURITY: Session {SessionId} revoked by {Admin}. Reason: {Reason}",
-                        sessionId, adminUsername, reason);
+                        "SECURITY: Session {SessionId} for user '{TargetUser}' revoked by {Admin}. Reason: {Reason}",
+                        sessionId, targetUsername, adminUsername, reason);
 
-                    return Ok(new { success = true, message = "Session revoked successfully" });
+                    return Ok(new { success = true, message = "Session revoked successfully", targetUsername });
                 }
                 else
                 {
                     await CreateAuditEventAsync(
                         AuditEngine.AuditType.Error,
-                        $"Attempted to revoke session {sessionId} but session was not found or already revoked. Admin: '{adminUsername}'",
+                        $"Attempted to revoke session {sessionId} but session was already revoked. Admin: '{adminUsername}'",
                         sessionId.ToString());
 
-                    return NotFound(new { success = false, message = "Session not found or already revoked" });
+                    return NotFound(new { success = false, message = "Session already revoked" });
                 }
             }
             catch (Exception ex)
@@ -413,6 +440,14 @@ namespace Foundation.Security.Controllers.WebAPI
                 {
                     targetUser.canLogin = false;
                     await _context.SaveChangesAsync(cancellationToken);
+
+                    //
+                    // Log SecurityUserEvent for the target user
+                    //
+                    SecurityLogic.AddUserEvent(
+                        targetUser,
+                        SecurityLogic.SecurityUserEventTypes.SessionRevokedWithAccountLock,
+                        $"All sessions revoked and account locked by '{adminUsername}'. {revokedCount} session(s) terminated. Reason: {reason}");
                 }
 
                 //

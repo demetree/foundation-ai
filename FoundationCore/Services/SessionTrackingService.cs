@@ -268,6 +268,79 @@ namespace Foundation.Services
         }
 
 
+        public async Task<bool> IsSessionValidAsync(int sessionId)
+        {
+            try
+            {
+                await using var context = new SecurityContext();
+                var now = DateTime.UtcNow;
+
+                var sql = @"
+                    SELECT COUNT(1)
+                    FROM Security.UserSession s
+                    INNER JOIN Security.SecurityUser u ON s.securityUserId = u.id
+                    WHERE s.id = @sessionId
+                      AND s.expiresAt > @now
+                      AND s.isRevoked = 0
+                      AND s.active = 1 AND s.deleted = 0
+                      AND u.active = 1 AND u.deleted = 0 AND u.canLogin = 1";
+
+                var result = await context.Database
+                    .SqlQueryRaw<int>(sql, 
+                        new SqlParameter("@sessionId", sessionId),
+                        new SqlParameter("@now", now))
+                    .ToListAsync()
+                    .ConfigureAwait(false);
+
+                return result.Count > 0 && result[0] > 0;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking session validity for session {SessionId}", sessionId);
+                return false; // Fail closed - treat as invalid on error
+            }
+        }
+
+
+        public async Task<bool> IsSessionValidByTokenAsync(string tokenId)
+        {
+            if (string.IsNullOrEmpty(tokenId))
+            {
+                return false;
+            }
+
+            try
+            {
+                await using var context = new SecurityContext();
+                var now = DateTime.UtcNow;
+
+                var sql = @"
+                    SELECT COUNT(1)
+                    FROM Security.UserSession s
+                    INNER JOIN Security.SecurityUser u ON s.securityUserId = u.id
+                    WHERE s.tokenId = @tokenId
+                      AND s.expiresAt > @now
+                      AND s.isRevoked = 0
+                      AND s.active = 1 AND s.deleted = 0
+                      AND u.active = 1 AND u.deleted = 0 AND u.canLogin = 1";
+
+                var result = await context.Database
+                    .SqlQueryRaw<int>(sql,
+                        new SqlParameter("@tokenId", tokenId),
+                        new SqlParameter("@now", now))
+                    .ToListAsync()
+                    .ConfigureAwait(false);
+
+                return result.Count > 0 && result[0] > 0;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking session validity for token");
+                return false; // Fail closed - treat as invalid on error
+            }
+        }
+
+
         private string TruncateUserAgent(string userAgent)
         {
             if (string.IsNullOrEmpty(userAgent))

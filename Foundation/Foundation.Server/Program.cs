@@ -300,6 +300,12 @@ namespace Foundation.Server
                 app.UseHttpsRedirection();
 
                 app.UseAuthentication();
+
+                //
+                // Session validation middleware - ensures revoked sessions are rejected immediately
+                //
+                app.UseMiddleware<Foundation.Middleware.SessionValidationMiddleware>();
+
                 app.UseAuthorization();
 
 
