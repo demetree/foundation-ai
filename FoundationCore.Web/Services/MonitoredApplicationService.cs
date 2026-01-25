@@ -55,14 +55,27 @@ namespace Foundation.Services
         List<MonitoredApplicationConfig> GetConfiguredApplications();
 
         /// <summary>
-        /// Get health status for a specific application
+        /// Get health status for a specific application (unauthenticated)
         /// </summary>
         Task<MonitoredApplicationStatus> GetApplicationStatusAsync(string appName);
 
         /// <summary>
-        /// Get health status for all configured applications
+        /// Get health status for a specific application with authentication
+        /// </summary>
+        /// <param name="appName">Application name</param>
+        /// <param name="userObjectGuid">Object GUID of current user for authentication</param>
+        Task<MonitoredApplicationStatus> GetApplicationStatusAsync(string appName, string userObjectGuid);
+
+        /// <summary>
+        /// Get health status for all configured applications (unauthenticated)
         /// </summary>
         Task<List<MonitoredApplicationStatus>> GetAllApplicationStatusesAsync();
+
+        /// <summary>
+        /// Get health status for all configured applications with authentication
+        /// </summary>
+        /// <param name="userObjectGuid">Object GUID of current user for authentication</param>
+        Task<List<MonitoredApplicationStatus>> GetAllApplicationStatusesAsync(string userObjectGuid);
 
         /// <summary>
         /// Get a specific application config by name
@@ -142,19 +155,47 @@ namespace Foundation.Services
                 };
             }
 
-            return await FetchHealthStatusAsync(app);
+            return await FetchHealthStatusAsync(app, null);
+        }
+
+
+        public async Task<MonitoredApplicationStatus> GetApplicationStatusAsync(string appName, string userObjectGuid)
+        {
+            var app = _applications.FirstOrDefault(a =>
+                a.Name.Equals(appName, StringComparison.OrdinalIgnoreCase));
+
+            if (app == null)
+            {
+                return new MonitoredApplicationStatus
+                {
+                    Name = appName,
+                    IsAvailable = false,
+                    Status = "Not Found",
+                    Error = $"Application '{appName}' is not configured"
+                };
+            }
+
+            return await FetchHealthStatusAsync(app, userObjectGuid);
         }
 
 
         public async Task<List<MonitoredApplicationStatus>> GetAllApplicationStatusesAsync()
         {
-            var tasks = _applications.Select(app => FetchHealthStatusAsync(app));
+            var tasks = _applications.Select(app => FetchHealthStatusAsync(app, null));
             var results = await Task.WhenAll(tasks);
             return results.ToList();
         }
 
 
-        private async Task<MonitoredApplicationStatus> FetchHealthStatusAsync(MonitoredApplicationConfig app)
+        public async Task<List<MonitoredApplicationStatus>> GetAllApplicationStatusesAsync(string userObjectGuid)
+        {
+            var tasks = _applications.Select(app => FetchHealthStatusAsync(app, userObjectGuid));
+            var results = await Task.WhenAll(tasks);
+            return results.ToList();
+        }
+
+
+        private async Task<MonitoredApplicationStatus> FetchHealthStatusAsync(MonitoredApplicationConfig app, string userObjectGuid)
         {
             var result = new MonitoredApplicationStatus
             {
@@ -166,17 +207,27 @@ namespace Foundation.Services
 
             try
             {
-                //
-                // For "self" applications, we could optionally call the local endpoint
-                // but we'll still use HTTP for consistency
-                //
                 var client = _httpClientFactory.CreateClient("MonitoredApps");
                 client.Timeout = DefaultTimeout;
 
                 var url = $"{app.Url.TrimEnd('/')}/api/SystemHealth/status";
                 _logger.LogDebug("Fetching health status from {Url}", url);
 
-                var response = await client.GetAsync(url);
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
+
+                //
+                // Add authentication if userObjectGuid is provided
+                //
+                if (!string.IsNullOrEmpty(userObjectGuid) && !app.IsSelf)
+                {
+                    string token = await GetTokenForRemoteAppAsync(app, userObjectGuid);
+                    if (!string.IsNullOrEmpty(token))
+                    {
+                        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                    }
+                }
+
+                var response = await client.SendAsync(request);
 
                 if (response.IsSuccessStatusCode)
                 {

@@ -57,11 +57,10 @@ namespace Foundation.Controllers.WebAPI
         // GET: api/SystemHealth/status
         //
         // Returns complete system health snapshot
-        // AllowAnonymous enables server-to-server health checks without auth
-        // Responses are cached for 1 second to rate limit and protect against DDOS
+        // Requires authentication via Auditor module (same as other endpoints)
+        // Responses are cached for 1 second to rate limit
         //
         [HttpGet("status")]
-        [AllowAnonymous]
         public IActionResult GetStatus()
         {
             try

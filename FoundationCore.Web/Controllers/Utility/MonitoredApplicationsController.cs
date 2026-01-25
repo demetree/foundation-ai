@@ -63,7 +63,12 @@ namespace Foundation.Controllers.WebAPI
         {
             try
             {
-                var statuses = await _monitoredAppService.GetAllApplicationStatusesAsync();
+                //
+                // Get current user's objectGuid for authenticated health checks
+                //
+                string userObjectGuid = User.FindFirst("sub")?.Value;
+
+                var statuses = await _monitoredAppService.GetAllApplicationStatusesAsync(userObjectGuid);
                 return Ok(statuses);
             }
             catch (Exception ex)
@@ -84,7 +89,12 @@ namespace Foundation.Controllers.WebAPI
         {
             try
             {
-                var status = await _monitoredAppService.GetApplicationStatusAsync(name);
+                //
+                // Get current user's objectGuid for authenticated health checks
+                //
+                string userObjectGuid = User.FindFirst("sub")?.Value;
+
+                var status = await _monitoredAppService.GetApplicationStatusAsync(name, userObjectGuid);
                 return Ok(status);
             }
             catch (Exception ex)
