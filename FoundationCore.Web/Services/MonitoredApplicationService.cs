@@ -218,7 +218,7 @@ namespace Foundation.Services
                 //
                 // Add authentication if userObjectGuid is provided
                 //
-                if (!string.IsNullOrEmpty(userObjectGuid) && !app.IsSelf)
+                if (!string.IsNullOrEmpty(userObjectGuid))
                 {
                     string token = await GetTokenForRemoteAppAsync(app, userObjectGuid);
                     if (!string.IsNullOrEmpty(token))
