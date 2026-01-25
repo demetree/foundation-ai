@@ -1,0 +1,270 @@
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { AuthService } from './auth.service';
+
+//
+// Telemetry Service
+//
+// Angular service for retrieving historical telemetry data from the backend.
+// Provides access to snapshots, trends, errors, and dashboard summary.
+//
+
+// Snapshot response types
+export interface TelemetrySnapshotDto {
+    id: number;
+    applicationName: string;
+    collectedAt: Date;
+    isOnline: boolean;
+    uptimeSeconds?: number;
+    memoryWorkingSetMB?: number;
+    memoryGcHeapMB?: number;
+    threadPoolWorkerThreads?: number;
+    threadPoolPendingWorkItems?: number;
+    machineName?: string;
+}
+
+export interface TelemetrySnapshotsResponse {
+    snapshots: TelemetrySnapshotDto[];
+    count: number;
+}
+
+// Trend response types
+export interface MemoryTrendPoint {
+    timestamp: Date;
+    applicationName: string;
+    workingSetMB?: number;
+    gcHeapMB?: number;
+}
+
+export interface MemoryTrendsResponse {
+    data: MemoryTrendPoint[];
+    hours: number;
+    count: number;
+}
+
+export interface DiskTrendPoint {
+    timestamp: Date;
+    applicationName: string;
+    driveName: string;
+    totalGB: number;
+    freeGB: number;
+    freePercent: number;
+    status?: string;
+}
+
+export interface DiskTrendsResponse {
+    data: DiskTrendPoint[];
+    hours: number;
+    count: number;
+}
+
+export interface SessionTrendPoint {
+    timestamp: Date;
+    applicationName: string;
+    activeSessionCount: number;
+    expiredSessionCount: number;
+}
+
+export interface SessionTrendsResponse {
+    data: SessionTrendPoint[];
+    hours: number;
+    count: number;
+}
+
+// Error event types
+export interface TelemetryErrorEventDto {
+    id: number;
+    applicationName: string;
+    occurredAt: Date;
+    auditTypeName?: string;
+    moduleName?: string;
+    entityName?: string;
+    userName?: string;
+    message?: string;
+}
+
+export interface TelemetryErrorsResponse {
+    errors: TelemetryErrorEventDto[];
+    count: number;
+}
+
+// Application types
+export interface TelemetryApplicationDto {
+    id: number;
+    name: string;
+    url?: string;
+    isSelf: boolean;
+    firstSeen?: Date;
+    lastSeen?: Date;
+}
+
+export interface TelemetryApplicationsResponse {
+    applications: TelemetryApplicationDto[];
+    count: number;
+}
+
+// Collection run types
+export interface TelemetryCollectionRunDto {
+    id: number;
+    startTime: Date;
+    endTime?: Date;
+    durationMs?: number;
+    applicationsPolled: number;
+    applicationsSucceeded: number;
+    errorMessage?: string;
+}
+
+export interface TelemetryCollectionRunsResponse {
+    runs: TelemetryCollectionRunDto[];
+    count: number;
+}
+
+// Dashboard summary types
+export interface TelemetrySummaryResponse {
+    applications: {
+        name: string;
+        url?: string;
+        isSelf: boolean;
+        firstSeen?: Date;
+        lastSeen?: Date;
+    }[];
+    latestSnapshots: {
+        applicationName: string;
+        collectedAt: Date;
+        isOnline: boolean;
+        uptimeSeconds?: number;
+        memoryWorkingSetMB?: number;
+        memoryGcHeapMB?: number;
+        machineName?: string;
+    }[];
+    lastCollectionRun?: {
+        startTime: Date;
+        endTime?: Date;
+        applicationsPolled: number;
+        applicationsSucceeded: number;
+        errorMessage?: string;
+    };
+    last24Hours: {
+        totalSnapshots: number;
+        onlineCount: number;
+        avgMemoryMB?: number;
+        maxMemoryMB?: number;
+        errorCount: number;
+    };
+}
+
+
+@Injectable({
+    providedIn: 'root'
+})
+export class TelemetryService {
+    private readonly baseUrl = '/api/Telemetry';
+
+    constructor(
+        private http: HttpClient,
+        private authService: AuthService
+    ) { }
+
+    /**
+     * Get dashboard summary with latest snapshots and aggregated statistics
+     */
+    getSummary(): Observable<TelemetrySummaryResponse> {
+        return this.http.get<TelemetrySummaryResponse>(
+            `${this.baseUrl}/summary`,
+            { headers: this.authService.GetAuthenticationHeaders() }
+        );
+    }
+
+    /**
+     * Get historical snapshots with optional filtering
+     */
+    getSnapshots(appName?: string, startDate?: Date, endDate?: Date, limit: number = 100): Observable<TelemetrySnapshotsResponse> {
+        let params = new HttpParams();
+        if (appName) params = params.set('appName', appName);
+        if (startDate) params = params.set('startDate', startDate.toISOString());
+        if (endDate) params = params.set('endDate', endDate.toISOString());
+        params = params.set('limit', limit.toString());
+
+        return this.http.get<TelemetrySnapshotsResponse>(
+            `${this.baseUrl}/snapshots`,
+            { headers: this.authService.GetAuthenticationHeaders(), params }
+        );
+    }
+
+    /**
+     * Get memory usage trends for charting
+     */
+    getMemoryTrends(appName?: string, hours: number = 24): Observable<MemoryTrendsResponse> {
+        let params = new HttpParams().set('hours', hours.toString());
+        if (appName) params = params.set('appName', appName);
+
+        return this.http.get<MemoryTrendsResponse>(
+            `${this.baseUrl}/trends/memory`,
+            { headers: this.authService.GetAuthenticationHeaders(), params }
+        );
+    }
+
+    /**
+     * Get disk usage trends for charting
+     */
+    getDiskTrends(appName?: string, hours: number = 24): Observable<DiskTrendsResponse> {
+        let params = new HttpParams().set('hours', hours.toString());
+        if (appName) params = params.set('appName', appName);
+
+        return this.http.get<DiskTrendsResponse>(
+            `${this.baseUrl}/trends/disk`,
+            { headers: this.authService.GetAuthenticationHeaders(), params }
+        );
+    }
+
+    /**
+     * Get session count trends for charting
+     */
+    getSessionTrends(appName?: string, hours: number = 24): Observable<SessionTrendsResponse> {
+        let params = new HttpParams().set('hours', hours.toString());
+        if (appName) params = params.set('appName', appName);
+
+        return this.http.get<SessionTrendsResponse>(
+            `${this.baseUrl}/trends/sessions`,
+            { headers: this.authService.GetAuthenticationHeaders(), params }
+        );
+    }
+
+    /**
+     * Get error events with optional filtering
+     */
+    getErrors(appName?: string, startDate?: Date, endDate?: Date, limit: number = 100): Observable<TelemetryErrorsResponse> {
+        let params = new HttpParams();
+        if (appName) params = params.set('appName', appName);
+        if (startDate) params = params.set('startDate', startDate.toISOString());
+        if (endDate) params = params.set('endDate', endDate.toISOString());
+        params = params.set('limit', limit.toString());
+
+        return this.http.get<TelemetryErrorsResponse>(
+            `${this.baseUrl}/errors`,
+            { headers: this.authService.GetAuthenticationHeaders(), params }
+        );
+    }
+
+    /**
+     * Get list of monitored applications
+     */
+    getApplications(): Observable<TelemetryApplicationsResponse> {
+        return this.http.get<TelemetryApplicationsResponse>(
+            `${this.baseUrl}/applications`,
+            { headers: this.authService.GetAuthenticationHeaders() }
+        );
+    }
+
+    /**
+     * Get recent collection run history
+     */
+    getCollectionRuns(limit: number = 50): Observable<TelemetryCollectionRunsResponse> {
+        const params = new HttpParams().set('limit', limit.toString());
+        return this.http.get<TelemetryCollectionRunsResponse>(
+            `${this.baseUrl}/collection-runs`,
+            { headers: this.authService.GetAuthenticationHeaders(), params }
+        );
+    }
+}

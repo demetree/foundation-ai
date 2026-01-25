@@ -69,6 +69,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\FoundationCore.Web\Foundation.Web.csproj" />
+    <ProjectReference Include="..\..\Foundation.Telemetry\Foundation.Telemetry.csproj" />
     <ProjectReference Include="..\Foundation.Client\Foundation.Client.esproj" />
   </ItemGroup>
 

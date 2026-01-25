@@ -88,6 +88,17 @@ namespace Foundation.Web.Utility
             controllers.Add(typeof(Foundation.Controllers.WebAPI.MonitoredApplicationsController));  // System Health end poitns
         }
 
+        /// <summary>
+        /// 
+        /// This adds the telemetry controller for historical data queries
+        /// 
+        /// </summary>
+        /// <param name="controllers"></param>
+        public static void AddTelemetryController(List<Type> controllers)
+        {
+            controllers.Add(typeof(Foundation.Controllers.WebAPI.TelemetryController));  // Telemetry historical data
+        }
+
 
         public static void AddAuditorWebAPIControllers(List<Type> controllers)
         {

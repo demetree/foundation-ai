@@ -124,6 +124,7 @@ namespace Foundation.Services
 
         private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(10);
         private static readonly TimeSpan TokenCacheDuration = TimeSpan.FromMinutes(30);
+        private const string SERVICE_ACCOUNT_MARKER = "__SERVICE_ACCOUNT__";
 
 
         public MonitoredApplicationService(
@@ -212,7 +213,8 @@ namespace Foundation.Services
 
         public async Task<List<MonitoredApplicationStatus>> GetAllApplicationStatusesAsync()
         {
-            var tasks = _applications.Select(app => FetchHealthStatusAsync(app, null));
+            // Use service account marker for background/automated calls
+            var tasks = _applications.Select(app => FetchHealthStatusAsync(app, SERVICE_ACCOUNT_MARKER));
             var results = await Task.WhenAll(tasks);
             return results.ToList();
         }
@@ -395,7 +397,14 @@ namespace Foundation.Services
         /// </summary>
         private async Task<string> GetTokenForRemoteAppAsync(MonitoredApplicationConfig app, string userObjectGuid)
         {
-            string cacheKey = $"RemoteToken_{app.Name}_{userObjectGuid}";
+            //
+            // If SERVICE_ACCOUNT_MARKER is used, skip user credential lookup and go directly to service account
+            //
+            bool useServiceAccountDirectly = userObjectGuid == SERVICE_ACCOUNT_MARKER;
+            
+            string cacheKey = useServiceAccountDirectly 
+                ? $"RemoteToken_{app.Name}_ServiceAccount" 
+                : $"RemoteToken_{app.Name}_{userObjectGuid}";
 
             //
             // Check if we have a cached token for this app+user
@@ -407,25 +416,28 @@ namespace Foundation.Services
             }
 
             //
-            // Try to get user's cached credentials
+            // If not using service account marker, try to get user's cached credentials first
             //
-            var credentials = _credentialCache.GetCachedCredentials(userObjectGuid);
-            
-            if (credentials != null)
+            if (!useServiceAccountDirectly)
             {
-                //
-                // Try with user credentials
-                //
-                var token = await RequestTokenAsync(app, credentials.Username, credentials.Password, cacheKey);
-                if (!string.IsNullOrEmpty(token))
+                var credentials = _credentialCache.GetCachedCredentials(userObjectGuid);
+                
+                if (credentials != null)
                 {
-                    return token;
+                    //
+                    // Try with user credentials
+                    //
+                    var token = await RequestTokenAsync(app, credentials.Username, credentials.Password, cacheKey);
+                    if (!string.IsNullOrEmpty(token))
+                    {
+                        return token;
+                    }
+                    _logger.LogWarning("Failed to get token using user credentials for {UserObjectGuid}, trying service account", userObjectGuid);
                 }
-                _logger.LogWarning("Failed to get token using user credentials for {UserObjectGuid}, trying service account", userObjectGuid);
-            }
-            else
-            {
-                _logger.LogDebug("No cached credentials found for user {UserObjectGuid}, trying service account", userObjectGuid);
+                else
+                {
+                    _logger.LogDebug("No cached credentials found for user {UserObjectGuid}, trying service account", userObjectGuid);
+                }
             }
 
             //

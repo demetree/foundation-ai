@@ -7,7 +7,8 @@ import { takeUntil } from 'rxjs/operators';
 
 import { AuthService } from '../../../services/auth.service';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
-import { SecurityUserService, SecurityUserData, SecurityUserSubmitData} from '../../../security-data-services/security-user.service';
+import { SecurityUserService, SecurityUserData, SecurityUserSubmitData } from '../../../security-data-services/security-user.service';
+import { SecurityUserCustomService } from '../../../security-data-services/security-user-custom.service';
 import { SecurityUserTitleService, SecurityUserTitleData } from '../../../security-data-services/security-user-title.service';
 import { SecurityTenantService, SecurityTenantData } from '../../../security-data-services/security-tenant.service';
 import { SecurityOrganizationService, SecurityOrganizationData } from '../../../security-data-services/security-organization.service';
@@ -56,6 +57,7 @@ export class UserCustomAddEditComponent implements OnInit, OnDestroy {
     constructor(
         private modalService: NgbModal,
         private securityUserService: SecurityUserService,
+        private securityUserCustomService: SecurityUserCustomService,
         private securityUserTitleService: SecurityUserTitleService,
         private securityTenantService: SecurityTenantService,
         private securityOrganizationService: SecurityOrganizationService,
@@ -397,7 +399,7 @@ export class UserCustomAddEditComponent implements OnInit, OnDestroy {
     }
 
     private addUser(request: AdminCreateUserRequest): void {
-        this.securityUserService.AdminCreateUser(request).subscribe({
+        this.securityUserCustomService.AdminCreateUser(request).subscribe({
             next: (newUser: SecurityUserData) => {
                 this.alertService.showMessage('Success', 'User created successfully', MessageSeverity.success);
                 this.userChanged.next(newUser);

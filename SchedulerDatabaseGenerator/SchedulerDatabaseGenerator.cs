@@ -1109,6 +1109,85 @@ All operational tables include multi-tenant support, versioning where appropriat
             #endregion
 
 
+
+            #region Volunteer Status master 
+
+            // -----------------------------------------------------------------------------
+            // VOLUNTEER STATUS (Master list - lifecycle states for volunteers)
+            // -----------------------------------------------------------------------------
+            Database.Table volunteerStatusTable = database.AddTable("VolunteerStatus");
+            volunteerStatusTable.comment = @"Master list of volunteer lifecycle/status values.
+Examples: Prospect, Active, On Leave, Inactive, Not Re-invited.
+Used to track engagement level and control visibility/assignment rules.";
+            volunteerStatusTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            volunteerStatusTable.AddIdField();
+            volunteerStatusTable.AddNameAndDescriptionFields(true, true, false);
+            volunteerStatusTable.AddSequenceField();
+            volunteerStatusTable.AddHTMLColorField("color", true).AddScriptComments("Suggested UI color for this status");
+            volunteerStatusTable.AddForeignKeyField(iconTable, true).AddScriptComments("Optional icon for visual distinction");
+            volunteerStatusTable.AddBoolField("isActive", true, true).AddScriptComments("Whether volunteers in this status are generally schedulable");
+            volunteerStatusTable.AddBoolField("preventsScheduling", false, false).AddScriptComments("Hard block: cannot be assigned to events");
+            volunteerStatusTable.AddBoolField("requiresApproval", false, false).AddScriptComments("New assignments need coordinator approval");
+            volunteerStatusTable.AddControlFields();
+
+            // Suggested seed data (you can adjust or move to tenant-specific if preferred)
+            volunteerStatusTable.AddData(new Dictionary<string, string>
+{
+    { "name", "Prospect / Interested" },
+    { "description", "Has expressed interest but not yet onboarded" },
+    { "sequence", "10" },
+    { "color", "#9E9E9E" },
+    { "isActive", "0" },
+    { "preventsScheduling", "1" },
+    { "objectGuid", "a1111111-2222-3333-4444-555555555001" }
+});
+
+            volunteerStatusTable.AddData(new Dictionary<string, string>
+{
+    { "name", "Active" },
+    { "description", "Fully onboarded and available for assignments" },
+    { "sequence", "20" },
+    { "color", "#4CAF50" },
+    { "isActive", "1" },
+    { "preventsScheduling", "0" },
+    { "objectGuid", "a1111111-2222-3333-4444-555555555002" }
+});
+
+            volunteerStatusTable.AddData(new Dictionary<string, string>
+{
+    { "name", "On Hiatus / Leave" },
+    { "description", "Temporary break (maternity, travel, etc.)" },
+    { "sequence", "30" },
+    { "color", "#FF9800" },
+    { "isActive", "0" },
+    { "preventsScheduling", "1" },
+    { "objectGuid", "a1111111-2222-3333-4444-555555555003" }
+});
+
+            volunteerStatusTable.AddData(new Dictionary<string, string>
+{
+    { "name", "Inactive" },
+    { "description", "No longer participating, but record retained" },
+    { "sequence", "40" },
+    { "color", "#757575" },
+    { "isActive", "0" },
+    { "preventsScheduling", "1" },
+    { "objectGuid", "a1111111-2222-3333-4444-555555555004" }
+});
+
+            volunteerStatusTable.AddData(new Dictionary<string, string>
+{
+    { "name", "Not Re-invited" },
+    { "description", "Previous issues; do not contact or schedule" },
+    { "sequence", "50" },
+    { "color", "#F44336" },
+    { "isActive", "0" },
+    { "preventsScheduling", "1" },
+    { "objectGuid", "a1111111-2222-3333-4444-555555555005" }
+});
+
+            #endregion
+
             #region Contact 
 
 
@@ -2504,7 +2583,7 @@ You attach the specific Crew/Resource to Event B.";
             scheduledEventTable.AddIdField();
             scheduledEventTable.AddMultiTenantSupport();
 
-            scheduledEventTable.AddForeignKeyField(officeTable, true, true).AddScriptComments("Snapshot of office that the first resource assigned to this event belongs to.  This should NOT be updated if a resource moves to a different office post event assignment.  It should only change if there was an original entry error that needs to be corrected.");
+            scheduledEventTable.AddForeignKeyField(officeTable, true, true).AddScriptComments("Snapshot of office that the first resource assigned to this event belongs to.  This should NOT be updated if a resource moves to a different office post-event assignment.  It should only change if there was an original entry error that needs to be corrected.");
             scheduledEventTable.AddForeignKeyField(clientTable, true, true).AddScriptComments("Snapshot of client that this event belongs to.  It should be that of the scheduling target.  It should only change if there was an original entry error that needs to be corrected.");
 
             // Retain the template that was used to create this scheduled event, if one was used.
@@ -2760,52 +2839,6 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
             #endregion
 
 
-
-            #region Event Resource Assignments (individual + crew)
-
-            Database.Table eventResourceAssignmentTable = database.AddTable("EventResourceAssignment");
-            eventResourceAssignmentTable.comment = @"Links resources (or entire crews) to events.  Supports partial assignments and role designation.  - If crewId is non-NULL → this row represents assignment of the whole crew - If resourceId is non-NULL and crewId is NULL → individual resource assignment - assignmentStart/End NULL → uses full event duration";
-            eventResourceAssignmentTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_REGULAR_USER_SECURITY_LEVEL);
-            eventResourceAssignmentTable.AddIdField();
-            eventResourceAssignmentTable.AddMultiTenantSupport();
-            eventResourceAssignmentTable.AddForeignKeyField(scheduledEventTable, false, true);
-            eventResourceAssignmentTable.AddForeignKeyField(officeTable, true, true).AddScriptComments("Snapshot of office resource assigned to this event belongs to at the time of assignment.  This should never change, and should NOT be updated if a resource moves to a different office post event assignment.");
-
-            eventResourceAssignmentTable.AddForeignKeyField(resourceTable, true, true).AddScriptComments("Required for individual assignments; should be NULL when crewId is used");
-            eventResourceAssignmentTable.AddForeignKeyField(crewTable, true, true).AddScriptComments("Optional – when set, assigns the entire crew as a unit");
-            eventResourceAssignmentTable.AddForeignKeyField(assignmentRoleTable, true, true).AddScriptComments("Optional role for this assignment (individual or crew member default)");
-
-
-            Database.Table.Field eventResourceAssignemtAssignmentStatusField = eventResourceAssignmentTable.AddForeignKeyField(assignmentStatusTable, false, true).AddScriptComments("NULL = Planned, non-NULL links to AssignmentStatus master table");
-            eventResourceAssignemtAssignmentStatusField.defaultValue = "1"; // This here to make the 'Planned' status the default value.
-
-            eventResourceAssignmentTable.AddDateTimeField("assignmentStartDateTime", true).AddScriptComments("NULL = starts at event start");
-            eventResourceAssignmentTable.AddDateTimeField("assignmentEndDateTime", true).AddScriptComments("NULL = ends at event end");
-            eventResourceAssignmentTable.AddTextField("notes", true);
-
-            eventResourceAssignmentTable.AddBoolField("isTravelRequired", true).AddScriptComments("Whether or not travel is required for the assignment");
-
-            eventResourceAssignmentTable.AddIntField("travelDurationMinutes", true, 0).AddScriptComments("Time required to get to the site");
-            eventResourceAssignmentTable.AddSingleField("distanceKilometers", true, 0).AddScriptComments("Useful for expense calculation");
-            eventResourceAssignmentTable.AddString100Field("startLocation", true);
-
-
-            eventResourceAssignmentTable.AddDateTimeField("actualStartDateTime", true);
-            eventResourceAssignmentTable.AddDateTimeField("actualEndDateTime", true);
-            eventResourceAssignmentTable.AddTextField("actualNotes", true);
-
-            eventResourceAssignmentTable.AddVersionControl();
-            eventResourceAssignmentTable.AddControlFields();
-
-            // Performance index for conflict and blackout detection queries
-            eventResourceAssignmentTable.CreateIndexForFields(new List<string> { "tenantGuid", "resourceId", "assignmentStartDateTime", "assignmentEndDateTime" });
-            eventResourceAssignmentTable.CreateIndexForFields(new List<string> { "tenantGuid", "crewId", "assignmentStartDateTime", "assignmentEndDateTime" });
-
-
-
-
-
-            #endregion
 
             #region Notification subscripion rules
 
@@ -3328,6 +3361,173 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
 
 
             #endregion
+
+
+
+            #region Volunteer extensions to resource
+
+
+            //-----------------------------------------------------------------------------
+            // VOLUNTEER PROFILE (1:1 extension of Resource)
+            // -----------------------------------------------------------------------------
+            Database.Table volunteerProfileTable = database.AddTable("VolunteerProfile");
+            volunteerProfileTable.comment = @"Volunteer-specific extended profile.
+One-to-one with Resource — allows volunteers to be scheduled just like paid resources
+while carrying volunteer-specific metadata, hours tracking, preferences, etc.";
+            volunteerProfileTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            volunteerProfileTable.AddIdField();
+            volunteerProfileTable.AddMultiTenantSupport();
+            volunteerProfileTable.AddForeignKeyField(resourceTable, false, true).AddScriptComments("The Resource this volunteer profile belongs to (1:1)");
+            volunteerProfileTable.AddForeignKeyField(volunteerStatusTable, false, true).AddScriptComments("Current lifecycle status of this volunteer");
+            volunteerProfileTable.AddDateField("onboardedDate", true).AddScriptComments("Date volunteer was approved/onboarded");
+            volunteerProfileTable.AddDateField("inactiveSince", true).AddScriptComments("If inactive, when they went inactive");
+            volunteerProfileTable.AddSingleField("totalHoursServed", true, 0).AddScriptComments("Cached/rolled-up lifetime volunteer hours");
+            volunteerProfileTable.AddDateField("lastActivityDate", true).AddScriptComments("Most recent event/assignment end date");
+            volunteerProfileTable.AddBoolField("backgroundCheckCompleted", false, false);
+            volunteerProfileTable.AddDateField("backgroundCheckDate", true);
+            volunteerProfileTable.AddDateField("backgroundCheckExpiry", true);
+            volunteerProfileTable.AddBoolField("confidentialityAgreementSigned", false, false);
+            volunteerProfileTable.AddDateField("confidentialityAgreementDate", true);
+            volunteerProfileTable.AddTextField("availabilityPreferences", true).AddScriptComments("Free text or structured JSON: e.g. 'prefers weekends', 'no evenings after 8pm'");
+            volunteerProfileTable.AddTextField("interestsAndSkillsNotes", true).AddScriptComments("Self-reported interests, hobbies, or extra skills");
+            volunteerProfileTable.AddTextField("emergencyContactNotes", true).AddScriptComments("Any special emergency instructions or notes");
+            volunteerProfileTable.AddForeignKeyField(constituentTable, true, true).AddScriptComments("Optional link to fundraising/constituent record if relevant");
+            volunteerProfileTable.AddForeignKeyField(iconTable, true).AddScriptComments("Optional override icon for volunteer-specific UI");
+            volunteerProfileTable.AddHTMLColorField("color", true).AddScriptComments("Optional override color");
+            volunteerProfileTable.AddTextField("attributes", true).AddScriptComments("Arbitrary JSON for future extension");
+            volunteerProfileTable.AddVersionControl();
+            volunteerProfileTable.AddControlFields();
+
+            // Optional: unique constraint to enforce 1:1
+            volunteerProfileTable.AddUniqueConstraint("tenantGuid", "resourceId", true);
+
+
+            // -----------------------------------------------------------------------------
+            // VOLUNTEER GROUP (Persistent named groups of volunteers, similar to Crew but volunteer-focused)
+            // -----------------------------------------------------------------------------
+            Database.Table volunteerGroupTable = database.AddTable("VolunteerGroup");
+            volunteerGroupTable.comment = @"Named, persistent groups of volunteers that are often scheduled together.
+Examples: 'Saturday Soup Kitchen Team', 'Festival Setup Crew', 'Board of Directors Helpers'.
+Similar to Crew table but volunteer-specific with lighter structure and volunteer-oriented metadata.";
+            volunteerGroupTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            volunteerGroupTable.AddIdField();
+            volunteerGroupTable.AddMultiTenantSupport();
+            volunteerGroupTable.AddNameAndDescriptionFields(true, true, true);
+            volunteerGroupTable.AddTextField("purpose", true).AddScriptComments("What this group is mainly used for (e.g. 'Food distribution', 'Event setup & teardown')");
+            volunteerGroupTable.AddForeignKeyField(officeTable, true, true).AddScriptComments("Optional office/branch this volunteer group is associated with");
+            volunteerGroupTable.AddForeignKeyField(volunteerStatusTable, true, true).AddScriptComments("Minimum status required for members (e.g. Active only)");
+            volunteerGroupTable.AddIntField("maxMembers", true, null).AddScriptComments("Optional soft cap on group size");
+            volunteerGroupTable.AddForeignKeyField(iconTable, true).AddScriptComments("Icon for UI display (e.g. group of people, soup bowl, hammer)");
+            volunteerGroupTable.AddHTMLColorField("color", true).AddScriptComments("Suggested color for calendar/events");
+            volunteerGroupTable.AddTextField("notes", true);
+            volunteerGroupTable.AddBinaryDataFields("avatar"); // optional group photo/logo
+            volunteerGroupTable.AddVersionControl();
+            volunteerGroupTable.AddControlFields();
+            volunteerGroupTable.SetDisplayNameField("name");
+            volunteerGroupTable.canBeFavourited = true;
+
+            // Junction table: VolunteerGroup → Resource (via VolunteerProfile or directly)
+            Database.Table volunteerGroupMemberTable = database.AddTable("VolunteerGroupMember");
+            volunteerGroupMemberTable.comment = @"Membership in a VolunteerGroup.
+Links Resources (volunteers) to groups, with optional default role and sequence.";
+            volunteerGroupMemberTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            volunteerGroupMemberTable.AddIdField();
+            volunteerGroupMemberTable.AddMultiTenantSupport();
+            volunteerGroupMemberTable.AddForeignKeyField(volunteerGroupTable, false, true);
+            volunteerGroupMemberTable.AddForeignKeyField(resourceTable, false, true).AddScriptComments("The volunteer (Resource) in this group");
+            volunteerGroupMemberTable.AddForeignKeyField(assignmentRoleTable, true, true).AddScriptComments("Default role this person plays in the group (e.g. 'Team Lead', 'Driver')");
+            volunteerGroupMemberTable.AddIntField("sequence", false, 1).AddScriptComments("Display/order position within the group");
+            volunteerGroupMemberTable.AddDateField("joinedDate", true);
+            volunteerGroupMemberTable.AddDateField("leftDate", true).AddScriptComments("If they left the group");
+            volunteerGroupMemberTable.AddTextField("notes", true).AddScriptComments("e.g. 'Prefers kitchen duties', 'Only available 1st Saturday'");
+            volunteerGroupMemberTable.AddVersionControl();
+            volunteerGroupMemberTable.AddControlFields();
+
+            // Enforce one membership per volunteer per group
+            volunteerGroupMemberTable.AddUniqueConstraint("tenantGuid", "volunteerGroupId", "resourceId", false);
+
+            #endregion
+
+
+
+            #region Event Resource Assignments (individual + crew + volunteer group)
+
+            Database.Table eventResourceAssignmentTable = database.AddTable("EventResourceAssignment");
+            eventResourceAssignmentTable.comment = @"Links resources, crews, or volunteer groups o events.  Supports partial assignments and role designation.  - If crewId is non-NULL → this row represents assignment of the whole crew - If resourceId is non-NULL and crewId is NULL → individual resource assignment - assignmentStart/End NULL → uses full event duration.  only one of crewId, volunteerGroupId, resourceId should be populated per row (business rule in app layer).";
+            eventResourceAssignmentTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_REGULAR_USER_SECURITY_LEVEL);
+            eventResourceAssignmentTable.AddIdField();
+            eventResourceAssignmentTable.AddMultiTenantSupport();
+            eventResourceAssignmentTable.AddForeignKeyField(scheduledEventTable, false, true);
+            eventResourceAssignmentTable.AddForeignKeyField(officeTable, true, true).AddScriptComments("Snapshot of office resource assigned to this event belongs to at the time of assignment.  This should never change, and should NOT be updated if a resource moves to a different office post-event assignment.");
+
+            eventResourceAssignmentTable.AddForeignKeyField(resourceTable, true, true).AddScriptComments("Required for individual assignments; should be NULL when crewId is used");
+            eventResourceAssignmentTable.AddForeignKeyField(crewTable, true, true).AddScriptComments("Optional – when set, assigns the entire crew as a unit");
+            eventResourceAssignmentTable.AddForeignKeyField(volunteerGroupTable, true, true).AddScriptComments("Optional: assign an entire VolunteerGroup instead of/in addition to individual resources or Crew");
+            eventResourceAssignmentTable.AddForeignKeyField(assignmentRoleTable, true, true).AddScriptComments("Optional role for this assignment (individual or crew member default)");
+
+
+            Database.Table.Field eventResourceAssignemtAssignmentStatusField = eventResourceAssignmentTable.AddForeignKeyField(assignmentStatusTable, false, true).AddScriptComments("NULL = Planned, non-NULL links to AssignmentStatus master table");
+            eventResourceAssignemtAssignmentStatusField.defaultValue = "1"; // This here to make the 'Planned' status the default value.
+
+            eventResourceAssignmentTable.AddDateTimeField("assignmentStartDateTime", true).AddScriptComments("NULL = starts at event start");
+            eventResourceAssignmentTable.AddDateTimeField("assignmentEndDateTime", true).AddScriptComments("NULL = ends at event end");
+            eventResourceAssignmentTable.AddTextField("notes", true);
+
+            eventResourceAssignmentTable.AddBoolField("isTravelRequired", true).AddScriptComments("Whether or not travel is required for the assignment");
+
+            eventResourceAssignmentTable.AddIntField("travelDurationMinutes", true, 0).AddScriptComments("Time required to get to the site");
+            eventResourceAssignmentTable.AddSingleField("distanceKilometers", true, 0).AddScriptComments("Useful for expense calculation");
+            eventResourceAssignmentTable.AddString100Field("startLocation", true);
+
+
+            eventResourceAssignmentTable.AddDateTimeField("actualStartDateTime", true);
+            eventResourceAssignmentTable.AddDateTimeField("actualEndDateTime", true);
+            eventResourceAssignmentTable.AddTextField("actualNotes", true);
+
+
+            // -----------------------------------------------------------------------------
+            // VOLUNTEER-SPECIFIC FIELDS (add these to the existing EventResourceAssignment table)
+            // -----------------------------------------------------------------------------
+
+            eventResourceAssignmentTable.AddBoolField("isVolunteer", false, false)
+                .AddScriptComments(@"True = this is a volunteer (unpaid) assignment.
+Used to:
+- Exclude from payroll/wage calculations
+- Include in volunteer hours totals
+- Apply different approval/reminder workflows
+- Filter volunteer-specific reports");
+
+            eventResourceAssignmentTable.AddSingleField("reportedVolunteerHours", true, null).AddScriptComments("Hours the volunteer self-reported (or coordinator entered) for this assignment");
+
+            eventResourceAssignmentTable.AddSingleField("approvedVolunteerHours", true, null).AddScriptComments("Approved/confirmed hours (may differ from reported if adjustments needed)");
+
+            eventResourceAssignmentTable.AddForeignKeyField("hoursApprovedByContactId", contactTable, true, true).AddScriptComments("Contact (usually staff/coordinator) who approved the hours");
+
+            eventResourceAssignmentTable.AddDateTimeField("approvedDateTime", true).AddScriptComments("When the hours were approved");
+
+            eventResourceAssignmentTable.AddMoneyField("reimbursementAmount", true, true).AddScriptComments("Optional: mileage, parking, meals, etc. — not a wage");
+
+            eventResourceAssignmentTable.AddForeignKeyField(chargeTypeTable, true, true).AddScriptComments("Optional: links to an expense-type ChargeType for the reimbursement (e.g. 'Mileage Reimbursement')");
+
+            eventResourceAssignmentTable.AddBoolField("reimbursementRequested", false, false).AddScriptComments("Volunteer has flagged that they want/need reimbursement");
+
+            eventResourceAssignmentTable.AddTextField("volunteerNotes", true).AddScriptComments("Volunteer-specific notes for this assignment (e.g. 'Prefers morning shifts next time', 'Brought own tools')");
+
+            // Optional: Add a status override just for volunteer assignments if you want more granularity
+            // (you can reuse assignmentStatusTable, or create a separate VolunteerAssignmentStatus if needed)           
+
+
+
+            eventResourceAssignmentTable.AddVersionControl();
+            eventResourceAssignmentTable.AddControlFields();
+
+            // Performance index for conflict and blackout detection queries
+            eventResourceAssignmentTable.CreateIndexForFields(new List<string> { "tenantGuid", "resourceId", "assignmentStartDateTime", "assignmentEndDateTime" });
+            eventResourceAssignmentTable.CreateIndexForFields(new List<string> { "tenantGuid", "crewId", "assignmentStartDateTime", "assignmentEndDateTime" });
+
+
+            #endregion
+
         }
     }
 }
