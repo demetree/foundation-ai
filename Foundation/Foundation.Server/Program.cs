@@ -226,6 +226,12 @@ namespace Foundation.Server
                     new Foundation.Services.DbContextHealthProvider<AuditorContext>("Auditor"));
 
                 //
+                // Authenticated Users Provider (for System Health dashboard)
+                //
+                builder.Services.AddSingleton<Foundation.Services.IAuthenticatedUsersProvider,
+                    Foundation.Services.SecurityContextAuthenticatedUsersProvider>();
+
+                //
                 // Configurations
                 //
                 builder.Services.Configure<AppSettings>(builder.Configuration);

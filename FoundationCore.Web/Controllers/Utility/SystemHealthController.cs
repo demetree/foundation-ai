@@ -36,6 +36,8 @@ namespace Foundation.Controllers.WebAPI
         private readonly IConfiguration _configuration;
         private readonly IEnumerable<IDatabaseHealthProvider> _databaseProviders;
         private readonly IMonitoredApplicationService _monitoredAppsService;
+        private readonly IAuthenticatedUsersProvider _authenticatedUsersProvider;
+        private readonly IEnumerable<IApplicationMetricsProvider> _metricsProviders;
         private static readonly DateTime _startTime = DateTime.UtcNow;
 
         //
@@ -51,13 +53,17 @@ namespace Foundation.Controllers.WebAPI
             ILogger<SystemHealthController> logger,
             IConfiguration configuration,
             IMonitoredApplicationService monitoredAppsService = null,
-            IEnumerable<IDatabaseHealthProvider> databaseProviders = null)
+            IAuthenticatedUsersProvider authenticatedUsersProvider = null,
+            IEnumerable<IDatabaseHealthProvider> databaseProviders = null,
+            IEnumerable<IApplicationMetricsProvider> metricsProviders = null)
             : base("Auditor", "SystemHealth")
         {
             _logger = logger;
             _configuration = configuration;
             _monitoredAppsService = monitoredAppsService;
+            _authenticatedUsersProvider = authenticatedUsersProvider;
             _databaseProviders = databaseProviders ?? Array.Empty<IDatabaseHealthProvider>();
+            _metricsProviders = metricsProviders ?? Array.Empty<IApplicationMetricsProvider>();
         }
 
 
@@ -250,6 +256,88 @@ namespace Foundation.Controllers.WebAPI
             {
                 _logger.LogError(ex, "Error getting disk metrics");
                 return Problem("Failed to retrieve disk metrics");
+            }
+        }
+
+
+        //
+        // GET: api/SystemHealth/users
+        //
+        // Returns authenticated user sessions from OAuth tokens
+        //
+        [HttpGet("users")]
+        public async Task<IActionResult> GetAuthenticatedUsers()
+        {
+            try
+            {
+                if (_authenticatedUsersProvider == null)
+                {
+                    return Ok(new AuthenticatedUsersInfo
+                    {
+                        ErrorMessage = "Authenticated users provider not configured"
+                    });
+                }
+
+                var result = await _authenticatedUsersProvider.GetAuthenticatedUsersAsync().ConfigureAwait(false);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting authenticated users");
+                return Problem("Failed to retrieve authenticated users");
+            }
+        }
+
+
+        //
+        // GET: api/SystemHealth/metrics
+        //
+        // Returns application-specific business metrics from all registered providers
+        //
+        [HttpGet("metrics")]
+        public async Task<IActionResult> GetApplicationMetrics()
+        {
+            try
+            {
+                var response = new ApplicationMetricsResponse();
+
+                foreach (var provider in _metricsProviders)
+                {
+                    try
+                    {
+                        var metrics = await provider.GetMetricsAsync().ConfigureAwait(false);
+                        response.Applications.Add(new ApplicationMetricsGroup
+                        {
+                            ApplicationName = provider.ApplicationName,
+                            Metrics = metrics?.ToList() ?? new List<ApplicationMetric>()
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to get metrics from provider {Provider}", provider.ApplicationName);
+                        response.Applications.Add(new ApplicationMetricsGroup
+                        {
+                            ApplicationName = provider.ApplicationName,
+                            Metrics = new List<ApplicationMetric>
+                            {
+                                new ApplicationMetric
+                                {
+                                    Name = "Error",
+                                    Value = "Failed to retrieve",
+                                    State = MetricState.Critical,
+                                    DataType = MetricDataType.Text
+                                }
+                            }
+                        });
+                    }
+                }
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting application metrics");
+                return Problem("Failed to retrieve application metrics");
             }
         }
 

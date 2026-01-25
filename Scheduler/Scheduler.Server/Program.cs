@@ -391,6 +391,18 @@ namespace Foundation.Scheduler
                     new Foundation.Services.DbContextHealthProvider<SchedulerContext>("Scheduler"));
 
                 //
+                // Authenticated Users Provider (for System Health dashboard)
+                //
+                builder.Services.AddSingleton<Foundation.Services.IAuthenticatedUsersProvider,
+                    Foundation.Services.SecurityContextAuthenticatedUsersProvider>();
+
+                //
+                // Application Metrics Provider (for System Health dashboard)
+                //
+                builder.Services.AddSingleton<Foundation.Services.IApplicationMetricsProvider,
+                    global::Scheduler.Server.Services.SchedulerMetricsProvider>();
+
+                //
                 // Configurations
                 //
                 builder.Services.Configure<AppSettings>(builder.Configuration);

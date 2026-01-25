@@ -270,7 +270,7 @@
           </div>
           <div>
             <h5 class="mb-0">Disk Space</h5>
-            <small class="text-muted">{{ healthStatus.disk?.applicationPath }}</small>
+            <small class="text-muted">{{ healthStatus.disk.applicationPath }}</small>
           </div>
         </div>
         <div class="card-body">
@@ -295,6 +295,88 @@
                 <div class="d-flex justify-content-between small text-muted">
                   <span>{{ drive.usedGB }} GB used</span>
                   <span>{{ drive.freeGB }} GB free of {{ drive.totalGB }} GB</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Authenticated Users Card -->
+    <div class="col-md-6 col-lg-4" *ngIf="showUsersPanel">
+      <div class="card health-card h-100 border-0 shadow-sm">
+        <div class="card-header bg-transparent border-0 d-flex align-items-center">
+          <div class="stat-circle bg-info-soft me-3">
+            <i class="fas fa-users fa-lg text-info"></i>
+          </div>
+          <div>
+            <h5 class="mb-0">Authenticated Users</h5>
+            <small class="text-muted">Active sessions</small>
+          </div>
+          <span class="ms-auto badge bg-info" *ngIf="authenticatedUsers">
+            {{ authenticatedUsers.totalCount }}
+          </span>
+        </div>
+        <div class="card-body">
+          <div *ngIf="usersLoading" class="text-center py-3">
+            <i class="fas fa-spinner fa-spin"></i> Loading...
+          </div>
+          <div *ngIf="!usersLoading && authenticatedUsers">
+            <div *ngIf="authenticatedUsers.errorMessage" class="text-danger small">
+              <i class="fas fa-exclamation-triangle me-1"></i>{{ authenticatedUsers.errorMessage }}
+            </div>
+            <div *ngIf="authenticatedUsers.sessions?.length === 0" class="text-muted text-center py-2">
+              <i class="fas fa-info-circle me-1"></i>No active sessions
+            </div>
+            <div *ngFor="let session of authenticatedUsers.sessions?.slice(0, 5); let last = last" [class.mb-2]="!last"
+              [class.border-bottom]="!last" [class.pb-2]="!last">
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="fw-bold small">
+                  <i class="fas fa-user me-1 text-muted"></i>{{ session.displayName || session.username }}
+                </span>
+                <span class="badge bg-secondary small">{{ session.clientApplication || 'N/A' }}</span>
+              </div>
+              <div class="small text-muted" *ngIf="session.email">{{ session.email }}</div>
+            </div>
+            <div *ngIf="(authenticatedUsers?.sessions?.length ?? 0) > 5" class="text-muted small mt-2 text-center">
+              +{{ authenticatedUsers.sessions.length - 5 }} more users
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Application Metrics Card -->
+    <div class="col-md-6 col-lg-8" *ngIf="showMetricsPanel && appMetrics?.applications?.length">
+      <div class="card health-card h-100 border-0 shadow-sm">
+        <div class="card-header bg-transparent border-0 d-flex align-items-center">
+          <div class="stat-circle bg-success-soft me-3">
+            <i class="fas fa-chart-bar fa-lg text-success"></i>
+          </div>
+          <div>
+            <h5 class="mb-0">Application Metrics</h5>
+            <small class="text-muted">Business domain metrics</small>
+          </div>
+        </div>
+        <div class="card-body">
+          <div *ngIf="metricsLoading" class="text-center py-3">
+            <i class="fas fa-spinner fa-spin"></i> Loading...
+          </div>
+          <div *ngIf="!metricsLoading && appMetrics">
+            <div *ngFor="let app of appMetrics.applications" class="mb-3">
+              <h6 class="text-muted mb-2">
+                <i class="fas fa-cube me-1"></i>{{ app.applicationName }}
+              </h6>
+              <div class="row g-2">
+                <div class="col-sm-6 col-md-4 col-lg-3" *ngFor="let metric of app.metrics">
+                  <div class="metric-card p-2 rounded text-center" [ngClass]="getMetricStateClass(metric.state)"
+                    [title]="metric.description || ''">
+                    <div class="metric-value fw-bold">{{ metric.value }}</div>
+                    <div class="metric-name small text-muted">{{ metric.name }}</div>
+                  </div>
                 </div>
               </div>
             </div>

@@ -115,6 +115,56 @@ export interface ThreadPoolMetrics {
     };
 }
 
+
+//
+// Authenticated Users Types
+//
+
+export interface AuthenticatedUsersInfo {
+    sessions: AuthenticatedUserSession[];
+    totalCount: number;
+    asOf: Date;
+    errorMessage?: string;
+}
+
+export interface AuthenticatedUserSession {
+    username: string;
+    displayName?: string;
+    clientApplication?: string;
+    sessionStart: Date;
+    expiresAt: Date;
+    isExpired: boolean;
+    email?: string;
+}
+
+
+//
+// Application Metrics Types
+//
+
+export type MetricState = 'Healthy' | 'Warning' | 'Critical' | 'Unknown';
+export type MetricDataType = 'Number' | 'Percentage' | 'Text' | 'Boolean' | 'Duration';
+
+export interface ApplicationMetricsResponse {
+    applications: ApplicationMetricsGroup[];
+    errorMessage?: string;
+}
+
+export interface ApplicationMetricsGroup {
+    applicationName: string;
+    metrics: ApplicationMetricItem[];
+}
+
+export interface ApplicationMetricItem {
+    name: string;
+    value: string;
+    state: MetricState;
+    dataType: MetricDataType;
+    category?: string;
+    description?: string;
+    icon?: string;
+}
+
 @Injectable({
     providedIn: 'root'
 })
@@ -191,6 +241,26 @@ export class SystemHealthService {
                 headers: this.authService.GetAuthenticationHeaders(),
                 params: params
             }
+        );
+    }
+
+    /**
+     * Get authenticated user sessions from OAuth tokens
+     */
+    getAuthenticatedUsers(): Observable<AuthenticatedUsersInfo> {
+        return this.http.get<AuthenticatedUsersInfo>(
+            `${this.baseUrl}/users`,
+            { headers: this.authService.GetAuthenticationHeaders() }
+        );
+    }
+
+    /**
+     * Get application-specific business metrics
+     */
+    getApplicationMetrics(): Observable<ApplicationMetricsResponse> {
+        return this.http.get<ApplicationMetricsResponse>(
+            `${this.baseUrl}/metrics`,
+            { headers: this.authService.GetAuthenticationHeaders() }
         );
     }
 }

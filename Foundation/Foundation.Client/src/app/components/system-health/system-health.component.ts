@@ -15,7 +15,10 @@ import {
     DriveInfo,
     MonitoredApplicationsService,
     MonitoredApplicationStatus,
-    TableStatisticsInfo
+    TableStatisticsInfo,
+    AuthenticatedUsersInfo,
+    ApplicationMetricsResponse,
+    ApplicationMetricItem
 } from '../../services/system-health.service';
 
 
@@ -63,6 +66,20 @@ export class SystemHealthComponent implements OnInit, OnDestroy {
     tableSortColumn: 'tableName' | 'rowCount' | 'sizeMB' = 'rowCount';
     tableSortDirection: 'asc' | 'desc' = 'desc';
 
+    //
+    // Authenticated Users panel
+    //
+    authenticatedUsers: AuthenticatedUsersInfo | null = null;
+    usersLoading = false;
+    showUsersPanel = true;
+
+    //
+    // Application Metrics panel
+    //
+    appMetrics: ApplicationMetricsResponse | null = null;
+    metricsLoading = false;
+    showMetricsPanel = true;
+
 
     constructor(
         private systemHealthService: SystemHealthService,
@@ -72,6 +89,8 @@ export class SystemHealthComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.loadAllApplications();
+        this.loadAuthenticatedUsers();
+        this.loadApplicationMetrics();
         this.startAutoRefresh();
     }
 
@@ -115,6 +134,59 @@ export class SystemHealthComponent implements OnInit, OnDestroy {
         if (this.applications.length > 0 && this.selectedAppIndex < this.applications.length) {
             const selectedApp = this.applications[this.selectedAppIndex];
             this.healthStatus = selectedApp.healthData || null;
+        }
+    }
+
+
+    //
+    // Load authenticated users
+    //
+    loadAuthenticatedUsers(): void {
+        this.usersLoading = true;
+        this.systemHealthService.getAuthenticatedUsers()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (users: AuthenticatedUsersInfo) => {
+                    this.authenticatedUsers = users;
+                    this.usersLoading = false;
+                },
+                error: (err: Error) => {
+                    console.error('Failed to load authenticated users:', err);
+                    this.usersLoading = false;
+                }
+            });
+    }
+
+
+    //
+    // Load application metrics
+    //
+    loadApplicationMetrics(): void {
+        this.metricsLoading = true;
+        this.systemHealthService.getApplicationMetrics()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (metrics: ApplicationMetricsResponse) => {
+                    this.appMetrics = metrics;
+                    this.metricsLoading = false;
+                },
+                error: (err: Error) => {
+                    console.error('Failed to load application metrics:', err);
+                    this.metricsLoading = false;
+                }
+            });
+    }
+
+
+    //
+    // Get CSS class for metric state
+    //
+    getMetricStateClass(state: string): string {
+        switch (state?.toLowerCase()) {
+            case 'healthy': return 'metric-healthy';
+            case 'warning': return 'metric-warning';
+            case 'critical': return 'metric-critical';
+            default: return 'metric-unknown';
         }
     }
 
