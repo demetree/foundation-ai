@@ -1,26 +1,46 @@
 
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { Observable, Subject, of } from 'rxjs';
+import { delay, switchMap, map, catchError, shareReplay, tap } from 'rxjs/operators';
+import { RagProviderResolver } from './resolvers/rag-provider.resolver';
 
 //
-// Intelligence Context - Defines what we are analyzing
+// 1. Trust-First Interfaces
 //
+
+export interface Citation {
+    sourceName: string;
+    sourceUrl: string;
+    quotedSnippet?: string;
+}
+
+export interface IntelligenceField<T> {
+    value: T;
+    confidence: number;
+    citations: Citation[];
+    isVerified: boolean;
+}
+
+export type IntentType = 'prospecting' | 'renewal' | 'risk' | 'upsell';
+
 export interface IntelligenceContext {
     entityType: string;
     entityId: number | string;
     correlationId?: string;
+    intent: IntentType;
+    groundingRequired: boolean;
 }
 
-//
-// Dossier Data Structures
-//
+export type DossierStatus = 'complete' | 'partial' | 'failed' | 'unverified';
+
 export interface IntelligenceDossier {
-    digitalFootprint?: DigitalFootprint;
-    professionalSummary?: string;
-    engagementHooks?: string[];
+    status: DossierStatus;
     generatedAt: Date;
     provider: string;
+
+    professionalSummary?: IntelligenceField<string>;
+    digitalFootprint?: IntelligenceField<DigitalFootprint>;
+    engagementHooks?: IntelligenceField<string[]>;
 }
 
 export interface DigitalFootprint {
@@ -31,7 +51,7 @@ export interface DigitalFootprint {
 }
 
 //
-// RAG Provider Interface - Strategy Pattern
+// RAG Provider Interface
 //
 export interface IRagProvider {
     getIntelligence(context: IntelligenceContext): Observable<IntelligenceDossier>;
@@ -45,46 +65,78 @@ export interface IRagProvider {
 })
 export class IntelligenceService {
 
-    private _activeProvider: IRagProvider;
+    private _requestSubject = new Subject<IntelligenceContext>();
 
-    constructor() {
-        // Default to Mock provider for now
-        this._activeProvider = new MockRagProvider();
+    //
+    // Automatic Cancellation & Processing Stream
+    //
+    public dossier$: Observable<IntelligenceDossier> = this._requestSubject.pipe(
+        switchMap(context => {
+            const provider = this.providerResolver.resolve(context);
+
+            return provider.getIntelligence(context).pipe(
+                map(dossier => this.validateDossier(dossier, context)),
+                catchError(err => of(this.createFailedDossier(err, context)))
+            );
+        }),
+        shareReplay(1)
+    );
+
+    constructor(
+        private providerResolver: RagProviderResolver
+    ) { }
+
+    /**
+     * Triggers a new intelligence analysis.
+     * Previous requests are automatically cancelled via switchMap.
+     */
+    public getIntelligence(context: IntelligenceContext): void {
+        this._requestSubject.next(context);
     }
 
-    public getIntelligence(context: IntelligenceContext): Observable<IntelligenceDossier> {
-        return this._activeProvider.getIntelligence(context);
+    //
+    // Anti-Hallucination Validation Logic
+    //
+    private validateDossier(dossier: IntelligenceDossier, context: IntelligenceContext): IntelligenceDossier {
+
+        if (!context.groundingRequired) {
+            return dossier;
+        }
+
+        let isValid = true;
+
+        // specific validation for Professional Summary
+        if (dossier.professionalSummary) {
+            if (!dossier.professionalSummary.citations || dossier.professionalSummary.citations.length === 0) {
+                dossier.professionalSummary.isVerified = false;
+                isValid = false;
+            }
+        }
+
+        // If grounding was required but failed verification, downgrade status
+        if (!isValid) {
+            dossier.status = 'partial';
+            // In strict mode, we might even set it to 'unverified' or throw
+            if (context.groundingRequired && !isValid) {
+                dossier.status = 'unverified';
+            }
+        }
+
+        return dossier;
     }
-}
 
-//
-// Mock Provider Implementation
-//
-export class MockRagProvider implements IRagProvider {
-
-    public getIntelligence(context: IntelligenceContext): Observable<IntelligenceDossier> {
-
-        //
-        // Simulate network latency (between 1.5s and 3s)
-        //
-        const latency = Math.floor(Math.random() * 1500) + 1500;
-
-        const dossier: IntelligenceDossier = {
+    private createFailedDossier(error: any, context: IntelligenceContext): IntelligenceDossier {
+        console.error('Intelligence gathering failed', error);
+        return {
+            status: 'failed',
             generatedAt: new Date(),
-            provider: 'Mock RAG Engine v1.0',
-            professionalSummary: 'Senior Project Manager with 15+ years in commercial construction. distinct focus on sustainable building practices and LEAN methodologies. Recently mentioned in "Construction Weekly" regarding the downtown metro expansion.',
-            digitalFootprint: {
-                linkedInUrl: 'https://linkedin.com/in/example',
-                twitterHandle: '@construction_guru',
-                publicMentions: 12
-            },
-            engagementHooks: [
-                'Mention the recent "Downtown Metro" article.',
-                'Ask about their experience with the new LEED v4.1 standards.',
-                'Connect on their shared interest in modular pre-fabrication.'
-            ]
+            provider: 'System Error Handler',
+            professionalSummary: {
+                value: 'Unable to generate intelligence due to an error.',
+                confidence: 0,
+                citations: [],
+                isVerified: false
+            }
         };
-
-        return of(dossier).pipe(delay(latency));
     }
 }

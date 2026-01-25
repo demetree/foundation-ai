@@ -490,7 +490,9 @@ export class ContactCustomDetailComponent implements OnInit {
     modalRef.componentInstance.context = {
       entityType: 'Contact',
       entityId: this.contact.id,
-      correlationId: this.contact.email || this.contact.firstName + ' ' + this.contact.lastName
+      correlationId: this.contact.email || this.contact.firstName + ' ' + this.contact.lastName,
+      intent: 'prospecting',
+      groundingRequired: true
     };
   }
 }

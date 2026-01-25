@@ -18,6 +18,8 @@ import { ToastaModule } from 'ngx-toasta';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { NgChartsModule } from 'ng2-charts';
 import { IntelligenceService } from './services/intelligence.service';
+import { RagProviderResolver } from './services/resolvers/rag-provider.resolver';
+import { GeminiGroundingProvider } from './services/providers/gemini-grounding.provider';
 import { IntelligenceModalComponent } from './components/shared/intelligence-modal/intelligence-modal.component';
 
 import { AppRoutingModule } from './app-routing.module';
@@ -2060,6 +2062,8 @@ import { TributeTypeTableComponent } from './scheduler-data-components/tribute-t
     AssignmentService,
     SchedulerHelperService,
     IntelligenceService,
+    RagProviderResolver,
+    GeminiGroundingProvider,
 
     //
     // Pipes

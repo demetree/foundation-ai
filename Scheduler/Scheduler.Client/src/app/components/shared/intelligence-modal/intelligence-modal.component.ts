@@ -36,16 +36,27 @@ export class IntelligenceModalComponent implements OnInit {
         this.isLoading = true;
         this.error = null;
 
-        this.intelligenceService.getIntelligence(this.context)
+        // Subscribe to the shared stream
+        // Note: In a real app, we might want to filter this stream by correlationId to ensure we don't get mixed results,
+        // but for this task we assume single-user interactive mode.
+        this.intelligenceService.dossier$
             .pipe(
                 finalize(() => {
-                    // unexpected termination safety
+                    // This finalize might not trigger on 'next', only on complete/error of the stream? 
+                    // Actually, dossier$ is long-lived. We should handle loading state inside the subscription.
                 })
             )
             .subscribe({
                 next: (data) => {
                     this.dossier = data;
                     this.isLoading = false;
+
+                    if (data.status === 'failed') {
+                        this.error = "Unable to gather intelligence.";
+                    }
+                    if (data.status === 'unverified') {
+                        this.error = "Intelligence gathered but failed verification standards.";
+                    }
                 },
                 error: (err) => {
                     console.error('Intelligence gathering failed', err);
@@ -53,6 +64,9 @@ export class IntelligenceModalComponent implements OnInit {
                     this.isLoading = false;
                 }
             });
+
+        // Trigger the request
+        this.intelligenceService.getIntelligence(this.context);
     }
 
     public close(): void {
