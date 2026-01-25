@@ -40,6 +40,10 @@
 
                 <!-- Quick Actions -->
                 <div class="btn-group" *ngIf="userIsSecurityUserWriter()">
+                    <button class="btn btn-glass btn-sm me-2" ngbTooltip="Smart Insight" (click)="openSmartInsight()"
+                        style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+                        <i class="fa-solid fa-sparkles"></i>
+                    </button>
                     <button class="btn btn-glass btn-sm" ngbTooltip="Edit User" (click)="editUser()">
                         <i class="fa-solid fa-pen-to-square"></i>
                     </button>

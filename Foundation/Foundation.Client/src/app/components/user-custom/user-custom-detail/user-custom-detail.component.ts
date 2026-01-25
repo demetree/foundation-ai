@@ -18,6 +18,8 @@ import { NavigationService } from '../../../utility-services/navigation.service'
 import { UserCustomAddEditComponent } from '../user-custom-add-edit/user-custom-add-edit.component';
 import { UserImageUploadComponent } from '../user-image-upload/user-image-upload.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { IntelligenceService } from '../../../services/intelligence.service';
+import { IntelligenceModalComponent } from '../../shared/intelligence-modal/intelligence-modal.component';
 
 export type UserStatusType = 'active' | 'cooling-down' | 'locked' | 'inactive' | 'no-login';
 
@@ -65,7 +67,8 @@ export class UserCustomDetailComponent implements OnInit, OnDestroy {
         private location: Location,
         private alertService: AlertService,
         private navigationService: NavigationService,
-        private modalService: NgbModal
+        private modalService: NgbModal,
+        private intelligenceService: IntelligenceService
     ) { }
 
 
@@ -373,6 +376,26 @@ export class UserCustomDetailComponent implements OnInit, OnDestroy {
                 }
             },
             () => { }
+            },
+            () => { }
         );
     }
+
+
+    //
+    // Smart Insight
+    //
+    public openSmartInsight(): void {
+    const modalRef = this.modalService.open(IntelligenceModalComponent, {
+        size: 'lg',
+        centered: true,
+        backdrop: 'static'
+    });
+
+    modalRef.componentInstance.context = {
+        entityType: 'User',
+        entityId: this.user!.id,
+        correlationId: this.user!.accountName
+    };
+}
 }

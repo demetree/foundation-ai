@@ -14,6 +14,8 @@ import { ConstituentJourneyStageService } from '../../../scheduler-data-services
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ConstituentJourneyUpdateModalComponent } from '../constituent-journey-update-modal/constituent-journey-update-modal.component';
 import { CurrentUserService } from '../../../services/current-user.service';
+import { IntelligenceService } from '../../../services/intelligence.service';
+import { IntelligenceModalComponent } from '../../shared/intelligence-modal/intelligence-modal.component';
 
 @Component({
   selector: 'app-contact-custom-detail',
@@ -54,7 +56,8 @@ export class ContactCustomDetailComponent implements OnInit {
     private alertService: AlertService,
     private currentUserService: CurrentUserService,
     private modalService: NgbModal,
-    private navigationService: NavigationService) {
+    private navigationService: NavigationService,
+    private intelligenceService: IntelligenceService) {
 
   }
 
@@ -470,5 +473,26 @@ export class ContactCustomDetailComponent implements OnInit {
     }, () => {
       // Dismissed
     });
+  }
+
+  //
+  // Smart Insight
+  //
+  public openSmartInsight(): void {
+    if (!this.contact) return;
+
+    const modalRef = this.modalService.open(IntelligenceModalComponent, {
+      size: 'lg',
+      centered: true,
+      backdrop: 'static'
+    });
+
+    modalRef.componentInstance.context = {
+      entityType: 'Contact',
+      entityId: this.contact.id,
+      correlationId: this.contact.email || this.contact.firstName + ' ' + this.contact.lastName,
+      intent: 'prospecting',
+      groundingRequired: true
+    };
   }
 }

@@ -96,6 +96,12 @@
 
         <!-- Actions -->
         <div class="text-end align-self-start align-self-md-center">
+          <button class="btn btn-glass btn-sm me-2" ngbTooltip="Smart Insight" (click)="openSmartInsight()"
+            *ngIf="contact"
+            style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+            <i class="fa-solid fa-sparkles"></i>
+          </button>
+
           <button class="btn btn-glass" (click)="openEditModal()" *ngIf="userIsSchedulerContactWriter()">
             <i class="fa fa-pen me-2"></i> Edit
           </button>

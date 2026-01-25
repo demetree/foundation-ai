@@ -396,6 +396,8 @@ import { OrganizationAddEditComponent } from './components/tenant-custom/organiz
 import { DepartmentAddEditComponent } from './components/tenant-custom/department-add-edit/department-add-edit.component';
 import { TeamAddEditComponent } from './components/tenant-custom/team-add-edit/team-add-edit.component';
 import { UserCustomAddEditComponent } from './components/user-custom/user-custom-add-edit/user-custom-add-edit.component';
+import { IntelligenceService } from './services/intelligence.service';
+import { IntelligenceModalComponent } from './components/shared/intelligence-modal/intelligence-modal.component';
 
 
 @NgModule({
@@ -664,6 +666,7 @@ import { UserCustomAddEditComponent } from './components/user-custom/user-custom
     DepartmentAddEditComponent,
     TeamAddEditComponent,
     UserCustomAddEditComponent,
+    IntelligenceModalComponent,
   ],
   imports: [
     BrowserModule,
@@ -714,6 +717,7 @@ import { UserCustomAddEditComponent } from './components/user-custom/user-custom
     CurrentUserService,
     ConfirmationService,
     InputDialogService,
+    IntelligenceService,
 
     //
     // Beginning of provider declarations for Security Data Services
