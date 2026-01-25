@@ -177,14 +177,19 @@ export class SystemHealthService {
     }
 
     /**
-     * Get table statistics for a specific database (on-demand, expensive operation)
+     * Get table statistics for a specific database (on-demand, expensive operation).
+     * If appName is provided, the request will be proxied to that remote application.
      */
-    getTableStatistics(databaseName: string): Observable<TableStatisticsInfo> {
+    getTableStatistics(databaseName: string, appName?: string): Observable<TableStatisticsInfo> {
+        const params: { [key: string]: string } = { database: databaseName };
+        if (appName) {
+            params['appName'] = appName;
+        }
         return this.http.get<TableStatisticsInfo>(
             `${this.baseUrl}/database/tables`,
             {
                 headers: this.authService.GetAuthenticationHeaders(),
-                params: { database: databaseName }
+                params: params
             }
         );
     }

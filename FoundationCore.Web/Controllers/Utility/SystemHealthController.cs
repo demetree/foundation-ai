@@ -35,6 +35,7 @@ namespace Foundation.Controllers.WebAPI
         private readonly ILogger<SystemHealthController> _logger;
         private readonly IConfiguration _configuration;
         private readonly IEnumerable<IDatabaseHealthProvider> _databaseProviders;
+        private readonly IMonitoredApplicationService _monitoredAppsService;
         private static readonly DateTime _startTime = DateTime.UtcNow;
 
         //
@@ -49,11 +50,13 @@ namespace Foundation.Controllers.WebAPI
         public SystemHealthController(
             ILogger<SystemHealthController> logger,
             IConfiguration configuration,
+            IMonitoredApplicationService monitoredAppsService = null,
             IEnumerable<IDatabaseHealthProvider> databaseProviders = null)
             : base("Auditor", "SystemHealth")
         {
             _logger = logger;
             _configuration = configuration;
+            _monitoredAppsService = monitoredAppsService;
             _databaseProviders = databaseProviders ?? Array.Empty<IDatabaseHealthProvider>();
         }
 
@@ -156,13 +159,14 @@ namespace Foundation.Controllers.WebAPI
 
 
         //
-        // GET: api/SystemHealth/database/tables?database=Security
+        // GET: api/SystemHealth/database/tables?database=Security&appName=Scheduler
         //
-        // Returns table-level statistics for a specific database
-        // This is an expensive operation and should only be called on-demand
+        // Returns table-level statistics for a specific database.
+        // If appName is provided and doesn't match self, proxies to that remote application.
+        // This is an expensive operation and should only be called on-demand.
         //
         [HttpGet("database/tables")]
-        public async Task<IActionResult> GetDatabaseTables([FromQuery] string database)
+        public async Task<IActionResult> GetDatabaseTables([FromQuery] string database, [FromQuery] string appName = null)
         {
             try
             {
@@ -172,7 +176,44 @@ namespace Foundation.Controllers.WebAPI
                 }
 
                 //
-                // Find the provider for the requested database
+                // Check if we need to proxy to a remote application
+                //
+                if (!string.IsNullOrWhiteSpace(appName) && _monitoredAppsService != null)
+                {
+                    var app = _monitoredAppsService.GetApplicationByName(appName);
+                    if (app != null && !app.IsSelf)
+                    {
+                        //
+                        // Proxy the request to the remote application
+                        //
+                        var userObjectGuid = User?.Claims?.FirstOrDefault(c => c.Type == "sub")?.Value;
+                        if (string.IsNullOrEmpty(userObjectGuid))
+                        {
+                            return Unauthorized("User authentication required for remote app access");
+                        }
+
+                        var response = await _monitoredAppsService.MakeAuthenticatedRequestAsync(
+                            appName, 
+                            $"api/SystemHealth/database/tables?database={database}",
+                            userObjectGuid).ConfigureAwait(false);
+
+                        if (response.IsSuccessStatusCode)
+                        {
+                            var content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            return Content(content, "application/json");
+                        }
+                        else
+                        {
+                            var errorContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            _logger.LogWarning("Remote app {AppName} returned {StatusCode}: {Error}", 
+                                appName, response.StatusCode, errorContent);
+                            return Problem($"Remote application returned error: {response.StatusCode}");
+                        }
+                    }
+                }
+
+                //
+                // Local database - find the provider for the requested database
                 //
                 var provider = _databaseProviders.FirstOrDefault(p => 
                     string.Equals(p.Name, database, StringComparison.OrdinalIgnoreCase));

@@ -288,7 +288,13 @@ export class SystemHealthComponent implements OnInit, OnDestroy {
         this.tableStats = null;
         this.tableStatsLoading = true;
 
-        this.systemHealthService.getTableStatistics(databaseName)
+        //
+        // Get the selected application name for remote app proxying
+        //
+        const selectedApp = this.applications[this.selectedAppIndex];
+        const appName = selectedApp?.name;
+
+        this.systemHealthService.getTableStatistics(databaseName, appName)
             .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: (stats: TableStatisticsInfo) => {

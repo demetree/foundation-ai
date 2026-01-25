@@ -258,7 +258,13 @@ namespace Foundation.Services
             }
             catch (Exception ex)
             {
-                result.ErrorMessage = ex.Message;
+                //
+                // Include exception type and inner exception for diagnostics
+                //
+                var innerMessage = ex.InnerException?.Message;
+                result.ErrorMessage = innerMessage != null 
+                    ? $"{ex.GetType().Name}: {ex.Message} -> {innerMessage}"
+                    : $"{ex.GetType().Name}: {ex.Message}";
             }
 
             return result;
