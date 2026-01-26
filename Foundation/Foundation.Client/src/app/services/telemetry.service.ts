@@ -19,6 +19,7 @@ export interface TelemetrySnapshotDto {
     uptimeSeconds?: number;
     memoryWorkingSetMB?: number;
     memoryGcHeapMB?: number;
+    cpuPercent?: number;
     threadPoolWorkerThreads?: number;
     threadPoolPendingWorkItems?: number;
     machineName?: string;

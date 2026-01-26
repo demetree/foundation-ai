@@ -277,6 +277,13 @@ namespace Foundation.Telemetry
                             if (environment.TryGetProperty("dotNetVersion", out var dotnet))
                                 snapshot.dotNetVersion = dotnet.GetString();
                         }
+
+                        // CPU is nested under application.cpu.percent
+                        if (application.TryGetProperty("cpu", out var cpu))
+                        {
+                            if (cpu.TryGetProperty("percent", out var percent))
+                                snapshot.cpuPercent = percent.GetDouble();
+                        }
                     }
 
                     // ThreadPool is at the root level

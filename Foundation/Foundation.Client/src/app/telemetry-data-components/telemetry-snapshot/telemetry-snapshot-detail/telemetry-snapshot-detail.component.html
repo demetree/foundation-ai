@@ -60,6 +60,10 @@
                                 <label for="TelemetrySnapshot-memoryGcHeapMB" id="label-TelemetrySnapshot-memoryGcHeapMB">Memory Gc Heap M B</label>
                                 <input type="number" id="TelemetrySnapshot-memoryGcHeapMB" formControlName="memoryGcHeapMB" placeholder="Enter Memory Gc Heap M B" class="form-control telemetry-snapshot-input" [disabled]="!userIsTelemetryTelemetrySnapshotWriter()" aria-labelledby="label-memoryGcHeapMB" />
                             </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('cpuPercent')">
+                                <label for="TelemetrySnapshot-cpuPercent" id="label-TelemetrySnapshot-cpuPercent">Cpu Percent</label>
+                                <input type="number" id="TelemetrySnapshot-cpuPercent" formControlName="cpuPercent" placeholder="Enter Cpu Percent" class="form-control telemetry-snapshot-input" [disabled]="!userIsTelemetryTelemetrySnapshotWriter()" aria-labelledby="label-cpuPercent" />
+                            </div>
                             <div class="form-group" *ngIf="!isFieldHidden('threadPoolWorkerThreads')">
                                 <label for="TelemetrySnapshot-threadPoolWorkerThreads" id="label-TelemetrySnapshot-threadPoolWorkerThreads">Thread Pool Worker Threads</label>
                                 <input type="number" id="TelemetrySnapshot-threadPoolWorkerThreads" formControlName="threadPoolWorkerThreads" placeholder="Enter Thread Pool Worker Threads" class="form-control telemetry-snapshot-input" [disabled]="!userIsTelemetryTelemetrySnapshotWriter()" aria-labelledby="label-threadPoolWorkerThreads" />

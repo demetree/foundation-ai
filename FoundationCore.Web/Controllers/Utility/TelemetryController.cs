@@ -83,6 +83,7 @@ namespace Foundation.Controllers.WebAPI
                             s.uptimeSeconds,
                             s.memoryWorkingSetMB,
                             s.memoryGcHeapMB,
+                            s.cpuPercent,
                             s.threadPoolWorkerThreads,
                             s.threadPoolPendingWorkItems,
                             s.machineName

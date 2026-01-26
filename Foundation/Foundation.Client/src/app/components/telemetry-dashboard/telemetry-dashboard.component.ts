@@ -6,7 +6,7 @@
 //
 
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Subject } from 'rxjs';
+import { Subject, Subscription, interval } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import {
     TelemetryService,
@@ -26,6 +26,7 @@ import {
 export class TelemetryDashboardComponent implements OnInit, OnDestroy {
 
     private destroy$ = new Subject<void>();
+    private autoRefreshSubscription: Subscription | null = null;
 
     // Loading states
     loading = true;
@@ -43,6 +44,10 @@ export class TelemetryDashboardComponent implements OnInit, OnDestroy {
     selectedHours: number = 24;
     hourOptions = [1, 6, 12, 24, 48, 72, 168]; // up to 1 week
 
+    // Auto-refresh
+    autoRefreshEnabled = false;
+    autoRefreshSeconds = 30;
+
     // View state
     activeTab: 'overview' | 'snapshots' | 'runs' = 'overview';
 
@@ -58,6 +63,34 @@ export class TelemetryDashboardComponent implements OnInit, OnDestroy {
     ngOnDestroy(): void {
         this.destroy$.next();
         this.destroy$.complete();
+        this.stopAutoRefresh();
+    }
+
+
+    toggleAutoRefresh(): void {
+        this.autoRefreshEnabled = !this.autoRefreshEnabled;
+        if (this.autoRefreshEnabled) {
+            this.startAutoRefresh();
+        } else {
+            this.stopAutoRefresh();
+        }
+    }
+
+
+    private startAutoRefresh(): void {
+        this.autoRefreshSubscription = interval(this.autoRefreshSeconds * 1000)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(() => {
+                this.loadData();
+            });
+    }
+
+
+    private stopAutoRefresh(): void {
+        if (this.autoRefreshSubscription) {
+            this.autoRefreshSubscription.unsubscribe();
+            this.autoRefreshSubscription = null;
+        }
     }
 
 
@@ -191,6 +224,12 @@ export class TelemetryDashboardComponent implements OnInit, OnDestroy {
     formatMemory(mb: number | undefined): string {
         if (mb === undefined || mb === null) return '-';
         return `${mb.toFixed(1)} MB`;
+    }
+
+
+    formatCpu(percent: number | undefined): string {
+        if (percent === undefined || percent === null) return '-';
+        return `${percent.toFixed(1)}%`;
     }
 
 

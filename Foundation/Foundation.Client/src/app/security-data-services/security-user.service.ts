@@ -31,7 +31,6 @@ import { SecurityUserSecurityGroupService, SecurityUserSecurityGroupData } from 
 import { SecurityUserSecurityRoleService, SecurityUserSecurityRoleData } from './security-user-security-role.service';
 import { EntityDataTokenService, EntityDataTokenData } from './entity-data-token.service';
 import { UserSessionService, UserSessionData } from './user-session.service';
-import { AdminCreateUserRequest } from '../models/create-user-model';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -2007,25 +2006,6 @@ export class SecurityUserService extends SecureEndpointBase {
 
     return revived;
   }
-
-
-  /**
-   * Creates a new user with password via the Admin endpoint.
-   * This is the preferred method for creating users as it handles
-   * password securely in a single atomic transaction.
-   */
-  public AdminCreateUser(request: AdminCreateUserRequest): Observable<SecurityUserData> {
-
-    const authenticationHeaders = this.authService.GetAuthenticationHeaders();
-
-    return this.http.post<SecurityUserData>(this.baseUrl + 'api/Admin/CreateUser', request, { headers: authenticationHeaders }).pipe(
-      tap(() => this.ClearAllCaches()),
-      map(raw => this.ReviveSecurityUser(raw)),
-      catchError(error => {
-        return this.handleError(error, () => this.AdminCreateUser(request));
-      }));
-  }
-
 
   private ReviveSecurityUserList(rawList: any[]): SecurityUserData[] {
 

@@ -92,6 +92,7 @@ CREATE TABLE "Telemetry"."TelemetrySnapshot"
 	"uptimeSeconds" BIGINT NULL,
 	"memoryWorkingSetMB" DOUBLE PRECISION NULL,
 	"memoryGcHeapMB" DOUBLE PRECISION NULL,
+	"cpuPercent" DOUBLE PRECISION NULL,
 	"threadPoolWorkerThreads" INT NULL,
 	"threadPoolCompletionPortThreads" INT NULL,
 	"threadPoolPendingWorkItems" INT NULL,

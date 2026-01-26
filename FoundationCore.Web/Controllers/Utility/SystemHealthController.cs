@@ -350,6 +350,23 @@ namespace Foundation.Controllers.WebAPI
         {
             var uptime = DateTime.UtcNow - _startTime;
 
+            // Calculate CPU usage as percentage of total CPU time over uptime
+            double cpuPercent = 0;
+            try
+            {
+                var totalCpuTime = process.TotalProcessorTime.TotalMilliseconds;
+                var uptimeMs = uptime.TotalMilliseconds;
+                if (uptimeMs > 0)
+                {
+                    // Divide by processor count to get per-core average
+                    cpuPercent = Math.Round((totalCpuTime / uptimeMs / Environment.ProcessorCount) * 100, 2);
+                }
+            }
+            catch
+            {
+                // CPU metrics may not be available on all platforms
+            }
+
             return new
             {
                 Status = "Running",
@@ -369,6 +386,11 @@ namespace Foundation.Controllers.WebAPI
                     Gen0Collections = GC.CollectionCount(0),
                     Gen1Collections = GC.CollectionCount(1),
                     Gen2Collections = GC.CollectionCount(2)
+                },
+                Cpu = new
+                {
+                    Percent = cpuPercent,
+                    ProcessorCount = Environment.ProcessorCount
                 },
                 Process = new
                 {

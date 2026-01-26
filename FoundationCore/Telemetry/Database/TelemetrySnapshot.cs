@@ -23,6 +23,8 @@ public partial class TelemetrySnapshot
 
     public double? memoryGcHeapMB { get; set; }
 
+    public double? cpuPercent { get; set; }
+
     public int? threadPoolWorkerThreads { get; set; }
 
     public int? threadPoolCompletionPortThreads { get; set; }

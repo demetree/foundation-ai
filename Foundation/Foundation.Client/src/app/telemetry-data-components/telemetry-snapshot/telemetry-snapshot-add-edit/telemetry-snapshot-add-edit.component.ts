@@ -43,6 +43,7 @@ interface TelemetrySnapshotFormValues {
   uptimeSeconds: string | null,     // Stored as string for form input, converted to number on submit.
   memoryWorkingSetMB: string | null,     // Stored as string for form input, converted to number on submit.
   memoryGcHeapMB: string | null,     // Stored as string for form input, converted to number on submit.
+  cpuPercent: string | null,     // Stored as string for form input, converted to number on submit.
   threadPoolWorkerThreads: string | null,     // Stored as string for form input, converted to number on submit.
   threadPoolCompletionPortThreads: string | null,     // Stored as string for form input, converted to number on submit.
   threadPoolPendingWorkItems: string | null,     // Stored as string for form input, converted to number on submit.
@@ -86,6 +87,7 @@ export class TelemetrySnapshotAddEditComponent {
         uptimeSeconds: [''],
         memoryWorkingSetMB: [''],
         memoryGcHeapMB: [''],
+        cpuPercent: [''],
         threadPoolWorkerThreads: [''],
         threadPoolCompletionPortThreads: [''],
         threadPoolPendingWorkItems: [''],
@@ -235,6 +237,7 @@ export class TelemetrySnapshotAddEditComponent {
         uptimeSeconds: formValue.uptimeSeconds ? Number(formValue.uptimeSeconds) : null,
         memoryWorkingSetMB: formValue.memoryWorkingSetMB ? Number(formValue.memoryWorkingSetMB) : null,
         memoryGcHeapMB: formValue.memoryGcHeapMB ? Number(formValue.memoryGcHeapMB) : null,
+        cpuPercent: formValue.cpuPercent ? Number(formValue.cpuPercent) : null,
         threadPoolWorkerThreads: formValue.threadPoolWorkerThreads ? Number(formValue.threadPoolWorkerThreads) : null,
         threadPoolCompletionPortThreads: formValue.threadPoolCompletionPortThreads ? Number(formValue.threadPoolCompletionPortThreads) : null,
         threadPoolPendingWorkItems: formValue.threadPoolPendingWorkItems ? Number(formValue.threadPoolPendingWorkItems) : null,
@@ -370,6 +373,7 @@ export class TelemetrySnapshotAddEditComponent {
         uptimeSeconds: '',
         memoryWorkingSetMB: '',
         memoryGcHeapMB: '',
+        cpuPercent: '',
         threadPoolWorkerThreads: '',
         threadPoolCompletionPortThreads: '',
         threadPoolPendingWorkItems: '',
@@ -392,6 +396,7 @@ export class TelemetrySnapshotAddEditComponent {
         uptimeSeconds: telemetrySnapshotData.uptimeSeconds?.toString() ?? '',
         memoryWorkingSetMB: telemetrySnapshotData.memoryWorkingSetMB?.toString() ?? '',
         memoryGcHeapMB: telemetrySnapshotData.memoryGcHeapMB?.toString() ?? '',
+        cpuPercent: telemetrySnapshotData.cpuPercent?.toString() ?? '',
         threadPoolWorkerThreads: telemetrySnapshotData.threadPoolWorkerThreads?.toString() ?? '',
         threadPoolCompletionPortThreads: telemetrySnapshotData.threadPoolCompletionPortThreads?.toString() ?? '',
         threadPoolPendingWorkItems: telemetrySnapshotData.threadPoolPendingWorkItems?.toString() ?? '',

@@ -116,6 +116,11 @@ and correlated error events from audit logs and log files.";
             telemetrySnapshotTable.AddDoubleField("memoryGcHeapMB", true);
 
             //
+            // CPU metrics
+            //
+            telemetrySnapshotTable.AddDoubleField("cpuPercent", true);
+
+            //
             // Thread pool metrics
             //
             telemetrySnapshotTable.AddIntField("threadPoolWorkerThreads", true);

@@ -7,8 +7,13 @@
             <p class="subtitle">Historical system health metrics and trends</p>
         </div>
         <div class="header-actions">
+            <div class="auto-refresh-toggle me-2">
+                <label class="form-check-label me-1" for="autoRefreshToggle">Auto</label>
+                <input type="checkbox" class="form-check-input" id="autoRefreshToggle" [(ngModel)]="autoRefreshEnabled"
+                    (change)="toggleAutoRefresh()">
+            </div>
             <button class="btn btn-outline-primary btn-sm" (click)="refresh()" [disabled]="loading">
-                <i class="fas fa-sync-alt" [ngClass]="{'fa-spin': loading}"></i> Refresh
+                <i class="fas fa-sync-alt" [ngClass]="{'fa-spin': loading || autoRefreshEnabled}"></i> Refresh
             </button>
         </div>
     </div>
@@ -211,6 +216,7 @@
                             <th>Status</th>
                             <th>Uptime</th>
                             <th>Memory</th>
+                            <th>CPU</th>
                             <th>Machine</th>
                         </tr>
                     </thead>
@@ -226,6 +232,7 @@
                             </td>
                             <td>{{ formatUptime(snap.uptimeSeconds) }}</td>
                             <td>{{ formatMemory(snap.memoryWorkingSetMB) }}</td>
+                            <td>{{ formatCpu(snap.cpuPercent) }}</td>
                             <td>{{ snap.machineName || '-' }}</td>
                         </tr>
                         <tr *ngIf="recentSnapshots.length === 0">

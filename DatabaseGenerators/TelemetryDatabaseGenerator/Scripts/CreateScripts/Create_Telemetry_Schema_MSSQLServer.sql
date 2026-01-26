@@ -92,6 +92,7 @@ CREATE TABLE [Telemetry].[TelemetrySnapshot]
 	[uptimeSeconds] BIGINT NULL,
 	[memoryWorkingSetMB] FLOAT NULL,
 	[memoryGcHeapMB] FLOAT NULL,
+	[cpuPercent] FLOAT NULL,
 	[threadPoolWorkerThreads] INT NULL,
 	[threadPoolCompletionPortThreads] INT NULL,
 	[threadPoolPendingWorkItems] INT NULL,
