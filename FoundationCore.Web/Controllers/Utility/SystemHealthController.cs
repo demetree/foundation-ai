@@ -553,5 +553,116 @@ namespace Foundation.Controllers.WebAPI
                 return $"{uptime.Minutes}m {uptime.Seconds}s";
             }
         }
+
+
+        //
+        // GET: api/SystemHealth/remote/{appName}
+        //
+        // Returns real-time system health from a remote monitored application.
+        // Uses MonitoredApplicationService for proper authentication and proxying.
+        //
+        [HttpGet("remote/{appName}")]
+        public async Task<IActionResult> GetRemoteStatus(string appName)
+        {
+            try
+            {
+                if (_monitoredAppsService == null)
+                {
+                    return Problem("Monitored application service not available");
+                }
+
+                // Check if this is the current server
+                var app = _monitoredAppsService.GetApplicationByName(appName);
+                if (app == null)
+                {
+                    return NotFound($"Application '{appName}' not found");
+                }
+
+                if (app.IsSelf)
+                {
+                    // Redirect to local status - frontend should call GetStatus instead
+                    return Ok(new { isSelf = true, message = "Use local /api/SystemHealth endpoint" });
+                }
+
+                // Get user identity for authenticated proxy request
+                var userObjectGuid = User?.Claims?.FirstOrDefault(c => c.Type == "sub")?.Value;
+
+                // Use the monitored app service to fetch status with proper auth
+                var status = await _monitoredAppsService.GetApplicationStatusAsync(appName, userObjectGuid);
+
+                if (status.IsAvailable && status.HealthData != null)
+                {
+                    // Return the full health data from the remote app
+                    return Ok(status.HealthData);
+                }
+                else
+                {
+                    return StatusCode(503, new
+                    {
+                        error = status.Error ?? "Remote application unavailable",
+                        appName = appName,
+                        status = status.Status
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching remote status for {AppName}", appName);
+                return Problem($"Failed to fetch system health from {appName}");
+            }
+        }
+
+
+        //
+        // GET: api/SystemHealth/remote/{appName}/users
+        //
+        // Returns authenticated users from a remote monitored application.
+        //
+        [HttpGet("remote/{appName}/users")]
+        public async Task<IActionResult> GetRemoteUsers(string appName)
+        {
+            try
+            {
+                if (_monitoredAppsService == null)
+                {
+                    return Problem("Monitored application service not available");
+                }
+
+                var app = _monitoredAppsService.GetApplicationByName(appName);
+                if (app == null)
+                {
+                    return NotFound($"Application '{appName}' not found");
+                }
+
+                if (app.IsSelf)
+                {
+                    return Ok(new { isSelf = true, message = "Use local endpoint" });
+                }
+
+                var userObjectGuid = User?.Claims?.FirstOrDefault(c => c.Type == "sub")?.Value;
+
+                var response = await _monitoredAppsService.MakeAuthenticatedRequestAsync(
+                    appName, 
+                    "api/SystemHealth/authenticated-users",
+                    userObjectGuid);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                    return Content(content, "application/json");
+                }
+                else
+                {
+                    return StatusCode((int)response.StatusCode, new { 
+                        error = $"Remote server returned {response.StatusCode}"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Error fetching remote users for {AppName}", appName);
+                return StatusCode(503, new { error = "Cannot fetch remote users" });
+            }
+        }
     }
 }

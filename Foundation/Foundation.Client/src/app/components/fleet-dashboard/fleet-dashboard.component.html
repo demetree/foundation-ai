@@ -198,10 +198,36 @@
     <!-- ================================================ -->
     <div class="tab-content" *ngIf="activeMainTab === 'realtime' && !loading">
         <div class="realtime-content">
-            <!-- Health Status Display -->
-            <div *ngIf="healthStatus">
+
+            <!-- Application Selector -->
+            <div class="app-selector" *ngIf="summary?.applications?.length">
                 <h5 class="section-title">
-                    <i class="fas fa-heartbeat me-2"></i>This Server - Live Metrics
+                    <i class="fas fa-server me-2"></i>Select System to Monitor
+                </h5>
+                <div class="app-grid app-selector-grid">
+                    <div *ngFor="let app of summary?.applications || []" class="app-card clickable"
+                        [class.selected]="selectedRealtimeApp?.name === app.name" [ngClass]="getAppStatusClass(app)"
+                        (click)="selectRealtimeApp(app)">
+                        <div class="app-header">
+                            <span class="app-name">{{ app.name }}</span>
+                            <span class="app-self-badge" *ngIf="app.isSelf">This Server</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading spinner for realtime data -->
+            <div *ngIf="realtimeLoading" class="loading-container mt-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2 text-muted">Fetching live data from {{ selectedRealtimeApp?.name }}...</p>
+            </div>
+
+            <!-- Health Status Display -->
+            <div *ngIf="healthStatus && !realtimeLoading">
+                <h5 class="section-title">
+                    <i class="fas fa-heartbeat me-2"></i>{{ selectedRealtimeApp?.name || 'This Server' }} - Live Metrics
                 </h5>
                 <div class="row g-3">
                     <div class="col-md-4">
@@ -281,11 +307,79 @@
                 </div>
             </div>
 
+            <!-- Remote App Telemetry Display (from collected snapshots) -->
+            <div *ngIf="selectedSnapshot && !realtimeLoading && !selectedRealtimeApp?.isSelf">
+                <h5 class="section-title">
+                    <i class="fas fa-database me-2"></i>{{ selectedRealtimeApp?.name }} - Last Collected Data
+                </h5>
+                <div class="alert alert-info mb-3">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Showing data from last telemetry collection. For real-time metrics, visit the application's own
+                    dashboard.
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <div class="metric-label">Status</div>
+                            <div class="metric-value"
+                                [ngClass]="{'text-success': selectedSnapshot.isOnline, 'text-danger': !selectedSnapshot.isOnline}">
+                                <i class="fas"
+                                    [ngClass]="selectedSnapshot.isOnline ? 'fa-check-circle' : 'fa-times-circle'"></i>
+                                {{ selectedSnapshot.isOnline ? 'Online' : 'Offline' }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <div class="metric-label">Uptime</div>
+                            <div class="metric-value">{{ formatUptime(selectedSnapshot.uptimeSeconds) }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <div class="metric-label">Memory</div>
+                            <div class="metric-value">{{ formatMemory(selectedSnapshot.memoryWorkingSetMB) }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <div class="metric-label">CPU</div>
+                            <div class="metric-value">{{ formatCpu(selectedSnapshot.cpuPercent) }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row g-3 mt-2"
+                    *ngIf="selectedSnapshot.machineName || selectedSnapshot.threadPoolWorkerThreads">
+                    <div class="col-md-4" *ngIf="selectedSnapshot.machineName">
+                        <div class="metric-card">
+                            <div class="metric-label">Machine</div>
+                            <div class="metric-value">{{ selectedSnapshot.machineName }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4" *ngIf="selectedSnapshot.threadPoolWorkerThreads">
+                        <div class="metric-card">
+                            <div class="metric-label">Worker Threads</div>
+                            <div class="metric-value">{{ selectedSnapshot.threadPoolWorkerThreads }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4" *ngIf="selectedSnapshot.threadPoolPendingWorkItems !== undefined">
+                        <div class="metric-card">
+                            <div class="metric-label">Pending Work</div>
+                            <div class="metric-value">{{ selectedSnapshot.threadPoolPendingWorkItems }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-muted mt-3">
+                    <i class="fas fa-clock me-1"></i>Last collected: {{ formatRelativeTime(selectedSnapshot.collectedAt)
+                    }}
+                </div>
+            </div>
+
             <!-- No data state -->
-            <div *ngIf="!healthStatus" class="alert alert-info">
+            <div *ngIf="!healthStatus && !selectedSnapshot && !realtimeLoading && !error" class="alert alert-info">
                 <i class="fas fa-info-circle me-2"></i>
                 <strong>Real-Time View</strong><br>
-                Loading live metrics for this server...
+                Select an application above to view its metrics.
             </div>
         </div>
     </div>
@@ -387,8 +481,10 @@
                             <td>{{ formatRelativeTime(snap.collectedAt) }}</td>
                             <td>{{ snap.applicationName }}</td>
                             <td>
-                                <span
-                                    [ngClass]="{'badge bg-success': snap.isOnline, 'badge bg-danger': !snap.isOnline}">
+                                <span class="status-badge" [class.online]="snap.isOnline"
+                                    [class.offline]="!snap.isOnline">
+                                    <i class="fas"
+                                        [ngClass]="snap.isOnline ? 'fa-check-circle' : 'fa-times-circle'"></i>
                                     {{ snap.isOnline ? 'Online' : 'Offline' }}
                                 </span>
                             </td>

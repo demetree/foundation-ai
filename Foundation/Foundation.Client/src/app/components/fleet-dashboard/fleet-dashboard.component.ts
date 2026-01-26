@@ -12,7 +12,6 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Subject, Subscription, interval, forkJoin, of } from 'rxjs';
 import { takeUntil, catchError } from 'rxjs/operators';
-import { takeUntil } from 'rxjs/operators';
 import {
     TelemetryService,
     TelemetrySummaryResponse,
@@ -50,6 +49,22 @@ export class FleetDashboardComponent implements OnInit, OnDestroy {
     appMetrics: ApplicationMetricsResponse | null = null;
     lastUpdated: Date | null = null;
 
+    // Real-time app selector
+    selectedRealtimeApp: { name: string; url?: string; isSelf: boolean } | null = null;
+    selectedSnapshot: {
+        applicationName: string;
+        collectedAt: Date;
+        isOnline: boolean;
+        uptimeSeconds?: number;
+        memoryWorkingSetMB?: number;
+        memoryGcHeapMB?: number;
+        cpuPercent?: number;
+        threadPoolWorkerThreads?: number;
+        threadPoolPendingWorkItems?: number;
+        machineName?: string;
+    } | null = null;
+    realtimeLoading = false;
+
     // Historical data
     recentSnapshots: TelemetrySnapshotDto[] = [];
     collectionRuns: TelemetryCollectionRunDto[] = [];
@@ -67,10 +82,6 @@ export class FleetDashboardComponent implements OnInit, OnDestroy {
 
     // Historical sub-tabs
     activeHistoricalTab: 'overview' | 'snapshots' | 'runs' = 'overview';
-
-    // Real-time app selector
-    selectedRealtimeApp: { name: string; url?: string; isSelf: boolean } | null = null;
-    realtimeLoading = false;
 
 
     constructor(
@@ -185,18 +196,18 @@ export class FleetDashboardComponent implements OnInit, OnDestroy {
         }
 
         this.realtimeLoading = true;
+        this.loading = false;
         this.error = null;
         this.healthStatus = null;
         this.authenticatedUsers = null;
+        this.selectedSnapshot = null;
 
-        // If this is 'self' (current server), use the SystemHealthService
+        // If this is 'self' (current server), use local SystemHealthService
         if (this.selectedRealtimeApp.isSelf) {
             this.loadLocalHealth();
-        } else if (this.selectedRealtimeApp.url) {
-            this.loadRemoteHealth(this.selectedRealtimeApp.url);
         } else {
-            this.error = 'No URL configured for this application';
-            this.realtimeLoading = false;
+            // For remote apps, use the server proxy to get real-time health
+            this.loadRemoteHealth(this.selectedRealtimeApp.name);
         }
     }
 
@@ -207,13 +218,11 @@ export class FleetDashboardComponent implements OnInit, OnDestroy {
                 next: (status: SystemHealthStatus) => {
                     this.healthStatus = status;
                     this.realtimeLoading = false;
-                    this.loading = false;
                     this.lastUpdated = new Date();
                 },
                 error: (err: Error) => {
                     this.error = 'Failed to load real-time data';
                     this.realtimeLoading = false;
-                    this.loading = false;
                     console.error('Real-time data error:', err);
                 }
             });
@@ -231,199 +240,213 @@ export class FleetDashboardComponent implements OnInit, OnDestroy {
             });
     }
 
-    private loadRemoteHealth(baseUrl: string): void {
-        // Call the remote server's /api/SystemHealth endpoint
-        const healthUrl = `${baseUrl}/api/SystemHealth`;
-
-        this.http.get<SystemHealthStatus>(healthUrl)
-            .pipe(
-                takeUntil(this.destroy$),
-                catchError(err => {
-                    console.error('Remote health error:', err);
-                    return of(null);
-                })
-            )
+    private loadRemoteHealth(appName: string): void {
+        // Use the server proxy to fetch real-time health from the remote app
+        // This uses SystemHealthController which proxies via MonitoredApplicationService (with proper auth)
+        this.systemHealthService.getRemoteStatus(appName)
+            .pipe(takeUntil(this.destroy$))
             .subscribe({
-                next: (status) => {
-                    if (status) {
-                        this.healthStatus = status;
-                    } else {
-                        this.error = `Could not connect to ${this.selectedRealtimeApp?.name}`;
+                next: (response: any) => {
+                    // Check if proxy returned isSelf (shouldn't happen, but handle it)
+                    if (response?.isSelf) {
+                        this.loadLocalHealth();
+                        return;
                     }
+                    // The response is the SystemHealthStatus from the remote app
+                    this.healthStatus = response;
                     this.realtimeLoading = false;
+                    this.lastUpdated = new Date();
+                },
+                error: (err: any) => {
+                    // On error, fall back to showing the telemetry snapshot
+                    console.warn('Remote health proxy failed, falling back to snapshot:', err);
+                    this.loadFallbackSnapshot(appName);
+                }
+            });
+
+        // Also try to get authenticated users from remote
+        this.systemHealthService.getRemoteUsers(appName)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (response: any) => {
+                    if (!response?.isSelf) {
+                        this.authenticatedUsers = response;
+                    }
+                },
+                error: () => {
+                    // Silent fail for users - not critical
+                }
+            });
+    }
+
+    private loadFallbackSnapshot(appName: string): void {
+        // Fallback: Use telemetry snapshot if real-time proxy fails
+        if (this.summary?.latestSnapshots) {
+            const snapshot = this.summary.latestSnapshots.find(s => s.applicationName === appName);
+            if (snapshot) {
+                this.selectedSnapshot = snapshot;
+                this.lastUpdated = new Date(snapshot.collectedAt);
+                this.error = 'Real-time connection unavailable - showing last collected data';
+            } else {
+                this.error = `Cannot connect to ${appName} - no data available`;
+            }
+        } else {
+            this.error = `Cannot connect to ${appName}`;
+        }
+        this.realtimeLoading = false;
+    }
+
+
+    // ========================================
+    // Historical Data (Tab 3)
+    // ========================================
+
+    loadHistoricalData(): void {
+        this.loading = true;
+        this.error = null;
+
+        const startDate = new Date();
+        startDate.setHours(startDate.getHours() - this.selectedHours);
+
+        forkJoin({
+            summary: this.telemetryService.getSummary(),
+            snapshots: this.telemetryService.getSnapshots(
+                this.selectedAppName || undefined,
+                startDate,
+                undefined,
+                100
+            ),
+            runs: this.telemetryService.getCollectionRuns(50)
+        })
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (result) => {
+                    this.summary = result.summary;
+                    this.recentSnapshots = result.snapshots.snapshots;
+                    this.collectionRuns = result.runs.runs;
                     this.loading = false;
                     this.lastUpdated = new Date();
-                }
-            });
-
-        // Try to load authenticated users from remote
-        const usersUrl = `${baseUrl}/api/SystemHealth/authenticated-users`;
-        this.http.get<AuthenticatedUsersInfo>(usersUrl)
-            .pipe(
-                takeUntil(this.destroy$),
-                catchError(() => of(null))
-            )
-            .subscribe({
-                next: (users) => {
-                    if (users) {
-                        this.authenticatedUsers = users;
-                    }
+                },
+                error: (err: Error) => {
+                    this.error = 'Failed to load historical data';
+                    this.loading = false;
+                    console.error('Historical data error:', err);
                 }
             });
     }
-}
+
+    onAppFilterChange(): void {
+        this.loadHistoricalData();
+    }
+
+    onHoursChange(): void {
+        this.loadHistoricalData();
+    }
 
 
-// ========================================
-// Historical Data (Tab 3)
-// ========================================
+    // ========================================
+    // Auto-Refresh
+    // ========================================
 
-loadHistoricalData(): void {
-    this.loading = true;
-    this.error = null;
-
-    const startDate = new Date();
-    startDate.setHours(startDate.getHours() - this.selectedHours);
-
-    forkJoin({
-        summary: this.telemetryService.getSummary(),
-    snapshots: this.telemetryService.getSnapshots(
-        this.selectedAppName || undefined,
-        startDate,
-        undefined,
-        100
-    ),
-    runs: this.telemetryService.getCollectionRuns(50)
-})
-            .pipe(takeUntil(this.destroy$))
-    .subscribe({
-        next: (result) => {
-            this.summary = result.summary;
-            this.recentSnapshots = result.snapshots.snapshots;
-            this.collectionRuns = result.runs.runs;
-            this.loading = false;
-            this.lastUpdated = new Date();
-        },
-        error: (err) => {
-            this.error = 'Failed to load historical data';
-            this.loading = false;
-            console.error('Historical data error:', err);
+    toggleAutoRefresh(): void {
+        this.autoRefreshEnabled = !this.autoRefreshEnabled;
+        if (this.autoRefreshEnabled) {
+            this.startAutoRefresh();
+        } else {
+            this.stopAutoRefresh();
         }
-    });
-    }
-
-onAppFilterChange(): void {
-    this.loadHistoricalData();
-}
-
-onHoursChange(): void {
-    this.loadHistoricalData();
-}
-
-
-// ========================================
-// Auto-Refresh
-// ========================================
-
-toggleAutoRefresh(): void {
-    this.autoRefreshEnabled = !this.autoRefreshEnabled;
-    if(this.autoRefreshEnabled) {
-    this.startAutoRefresh();
-} else {
-    this.stopAutoRefresh();
-}
     }
 
     private startAutoRefresh(): void {
-    this.autoRefreshCountdown = this.autoRefreshSeconds;
-    this.autoRefreshSubscription = interval(1000)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe(() => {
-            this.autoRefreshCountdown--;
-            if (this.autoRefreshCountdown <= 0) {
-                this.refresh();
-                this.autoRefreshCountdown = this.autoRefreshSeconds;
-            }
-        });
-}
+        this.autoRefreshCountdown = this.autoRefreshSeconds;
+        this.autoRefreshSubscription = interval(1000)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(() => {
+                this.autoRefreshCountdown--;
+                if (this.autoRefreshCountdown <= 0) {
+                    this.refresh();
+                    this.autoRefreshCountdown = this.autoRefreshSeconds;
+                }
+            });
+    }
 
     private stopAutoRefresh(): void {
-    if(this.autoRefreshSubscription) {
-    this.autoRefreshSubscription.unsubscribe();
-    this.autoRefreshSubscription = null;
-}
+        if (this.autoRefreshSubscription) {
+            this.autoRefreshSubscription.unsubscribe();
+            this.autoRefreshSubscription = null;
+        }
     }
 
-refresh(): void {
-    if(this.activeMainTab === 'overview') {
-    this.loadFleetOverview();
-} else if (this.activeMainTab === 'realtime') {
-    this.loadRealTimeData();
-} else if (this.activeMainTab === 'historical') {
-    this.loadHistoricalData();
-}
+    refresh(): void {
+        if (this.activeMainTab === 'overview') {
+            this.loadFleetOverview();
+        } else if (this.activeMainTab === 'realtime') {
+            this.loadRealTimeData();
+        } else if (this.activeMainTab === 'historical') {
+            this.loadHistoricalData();
+        }
     }
 
 
-// ========================================
-// Formatting Helpers
-// ========================================
+    // ========================================
+    // Formatting Helpers
+    // ========================================
 
-formatUptime(seconds: number | undefined): string {
-    if (!seconds) return '-';
-    const days = Math.floor(seconds / 86400);
-    const hours = Math.floor((seconds % 86400) / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    if (days > 0) return `${days}d ${hours}h`;
-    if (hours > 0) return `${hours}h ${mins}m`;
-    return `${mins}m`;
-}
+    formatUptime(seconds: number | undefined): string {
+        if (!seconds) return '-';
+        const days = Math.floor(seconds / 86400);
+        const hours = Math.floor((seconds % 86400) / 3600);
+        const mins = Math.floor((seconds % 3600) / 60);
+        if (days > 0) return `${days}d ${hours}h`;
+        if (hours > 0) return `${hours}h ${mins}m`;
+        return `${mins}m`;
+    }
 
-formatMemory(mb: number | undefined): string {
-    if (mb === undefined || mb === null) return '-';
-    return `${mb.toFixed(1)} MB`;
-}
+    formatMemory(mb: number | undefined): string {
+        if (mb === undefined || mb === null) return '-';
+        return `${mb.toFixed(1)} MB`;
+    }
 
-formatCpu(percent: number | undefined): string {
-    if (percent === undefined || percent === null) return '-';
-    return `${percent.toFixed(1)}%`;
-}
+    formatCpu(percent: number | undefined): string {
+        if (percent === undefined || percent === null) return '-';
+        return `${percent.toFixed(1)}%`;
+    }
 
-formatDate(date: Date | string | undefined): string {
-    if (!date) return '-';
-    return new Date(date).toLocaleString();
-}
+    formatDate(date: Date | string | undefined): string {
+        if (!date) return '-';
+        return new Date(date).toLocaleString();
+    }
 
-formatRelativeTime(date: Date | string | undefined): string {
-    if (!date) return '-';
-    const d = new Date(date);
-    const now = new Date();
-    const diffMs = now.getTime() - d.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
+    formatRelativeTime(date: Date | string | undefined): string {
+        if (!date) return '-';
+        const d = new Date(date);
+        const now = new Date();
+        const diffMs = now.getTime() - d.getTime();
+        const diffMins = Math.floor(diffMs / 60000);
 
-    if (diffMins < 1) return 'just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    const diffHours = Math.floor(diffMins / 60);
-    if (diffHours < 24) return `${diffHours}h ago`;
-    const diffDays = Math.floor(diffHours / 24);
-    return `${diffDays}d ago`;
-}
+        if (diffMins < 1) return 'just now';
+        if (diffMins < 60) return `${diffMins}m ago`;
+        const diffHours = Math.floor(diffMins / 60);
+        if (diffHours < 24) return `${diffHours}h ago`;
+        const diffDays = Math.floor(diffHours / 24);
+        return `${diffDays}d ago`;
+    }
 
-formatDuration(ms: number | undefined): string {
-    if (!ms) return '-';
-    if (ms < 1000) return `${ms}ms`;
-    return `${(ms / 1000).toFixed(1)}s`;
-}
+    formatDuration(ms: number | undefined): string {
+        if (!ms) return '-';
+        if (ms < 1000) return `${ms}ms`;
+        return `${(ms / 1000).toFixed(1)}s`;
+    }
 
-getSuccessRate(run: TelemetryCollectionRunDto): number {
-    if (!run.applicationsPolled) return 0;
-    return Math.round((run.applicationsSucceeded / run.applicationsPolled) * 100);
-}
+    getSuccessRate(run: TelemetryCollectionRunDto): number {
+        if (!run.applicationsPolled) return 0;
+        return Math.round((run.applicationsSucceeded / run.applicationsPolled) * 100);
+    }
 
-getSuccessClass(run: TelemetryCollectionRunDto): string {
-    const rate = this.getSuccessRate(run);
-    if (rate === 100) return 'text-success';
-    if (rate >= 50) return 'text-warning';
-    return 'text-danger';
-}
+    getSuccessClass(run: TelemetryCollectionRunDto): string {
+        const rate = this.getSuccessRate(run);
+        if (rate === 100) return 'text-success';
+        if (rate >= 50) return 'text-warning';
+        return 'text-danger';
+    }
 }

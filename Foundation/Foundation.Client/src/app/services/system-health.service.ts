@@ -302,6 +302,27 @@ export class SystemHealthService {
             { headers: this.authService.GetAuthenticationHeaders() }
         );
     }
+
+    /**
+     * Get real-time health from a remote application via server proxy.
+     * Uses authenticated proxying through MonitoredApplicationService.
+     */
+    getRemoteStatus(appName: string): Observable<SystemHealthStatus> {
+        return this.http.get<SystemHealthStatus>(
+            `${this.baseUrl}/remote/${encodeURIComponent(appName)}`,
+            { headers: this.authService.GetAuthenticationHeaders() }
+        );
+    }
+
+    /**
+     * Get authenticated users from a remote application via server proxy.
+     */
+    getRemoteUsers(appName: string): Observable<AuthenticatedUsersInfo> {
+        return this.http.get<AuthenticatedUsersInfo>(
+            `${this.baseUrl}/remote/${encodeURIComponent(appName)}/users`,
+            { headers: this.authService.GetAuthenticationHeaders() }
+        );
+    }
 }
 
 
