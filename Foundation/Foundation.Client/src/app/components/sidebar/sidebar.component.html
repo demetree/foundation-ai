@@ -51,13 +51,13 @@
       </a>
     </li>
 
-    <!-- System Health -->
+    <!-- Fleet Monitor -->
     <li class="nav-item">
-      <a routerLink="/system-health" routerLinkActive="active" class="nav-link text-white"
-        [ngbTooltip]="!isExpanded ? 'System Health' : null" triggers="hover" #tHealth="ngbTooltip"
+      <a routerLink="/fleet" routerLinkActive="active" class="nav-link text-white"
+        [ngbTooltip]="!isExpanded ? 'Fleet Monitor' : null" triggers="hover" #tHealth="ngbTooltip"
         (click)="tHealth.close()" placement="right" tooltipClass="sidebar-tip">
-        <i class="fa-solid fa-heartbeat"></i>
-        <span class="label px-2">System Health</span>
+        <i class="fa-solid fa-satellite-dish"></i>
+        <span class="label px-2">Fleet Monitor</span>
       </a>
     </li>
 

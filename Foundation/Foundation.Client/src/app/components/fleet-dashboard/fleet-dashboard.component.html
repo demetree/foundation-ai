@@ -1,0 +1,447 @@
+<!-- Fleet Dashboard - Unified Operational Hub -->
+<div class="fleet-dashboard">
+
+    <!-- Premium Header -->
+    <div class="card premium-header shadow-lg border-0">
+        <div
+            class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3 border-0 bg-transparent">
+            <div class="header-left">
+                <h3 class="page-title mb-0 fw-bold text-white">
+                    <i class="fas fa-satellite-dish me-2"></i>Fleet Monitor
+                </h3>
+                <small class="text-white-50">Unified operational hub for your cloud services</small>
+            </div>
+            <div class="header-stats d-flex align-items-center gap-2">
+                <!-- Fleet status summary -->
+                <span class="badge badge-glass" *ngIf="summary">
+                    <i class="fas fa-check-circle me-1" *ngIf="getOfflineCount() === 0"></i>
+                    <i class="fas fa-exclamation-triangle me-1" *ngIf="getOfflineCount() > 0"></i>
+                    {{ getOnlineCount() }}/{{ getTotalApps() }} Online
+                </span>
+
+                <!-- Last updated -->
+                <span class="badge badge-glass" *ngIf="lastUpdated">
+                    <i class="fas fa-clock me-1"></i>{{ lastUpdated | date:'HH:mm:ss' }}
+                </span>
+
+                <!-- Auto-refresh toggle -->
+                <div class="btn-group">
+                    <button class="btn btn-sm" [class.btn-success]="autoRefreshEnabled"
+                        [class.btn-outline-light]="!autoRefreshEnabled" (click)="toggleAutoRefresh()"
+                        [title]="autoRefreshEnabled ? 'Auto-refresh ON' : 'Enable auto-refresh'">
+                        <i class="fas fa-sync-alt" [class.fa-spin]="autoRefreshEnabled"></i>
+                        <span class="ms-1" *ngIf="autoRefreshEnabled">{{ autoRefreshCountdown }}s</span>
+                    </button>
+                </div>
+
+                <button class="btn btn-sm btn-outline-light" (click)="refresh()" title="Refresh" [disabled]="loading">
+                    <i class="fas fa-refresh" [class.fa-spin]="loading"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Main Navigation Tabs -->
+    <ul class="nav nav-tabs main-tabs mt-3">
+        <li class="nav-item">
+            <a class="nav-link" [class.active]="activeMainTab === 'overview'" (click)="setMainTab('overview')">
+                <i class="fas fa-th-large me-2"></i>Fleet Overview
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" [class.active]="activeMainTab === 'realtime'" (click)="setMainTab('realtime')">
+                <i class="fas fa-heartbeat me-2"></i>Real-Time
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" [class.active]="activeMainTab === 'historical'" (click)="setMainTab('historical')">
+                <i class="fas fa-chart-line me-2"></i>Historical
+            </a>
+        </li>
+    </ul>
+
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="loading-container">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2 text-muted">Loading fleet data...</p>
+    </div>
+
+
+    <!-- Error State -->
+    <div *ngIf="error" class="alert alert-danger mt-4">
+        <i class="fas fa-exclamation-triangle me-2"></i>{{ error }}
+    </div>
+
+
+    <!-- ================================================ -->
+    <!-- TAB 1: Fleet Overview -->
+    <!-- ================================================ -->
+    <div class="tab-content" *ngIf="activeMainTab === 'overview' && !loading && summary">
+
+        <!-- Summary Cards -->
+        <div class="summary-cards">
+            <div class="summary-card">
+                <div class="card-icon bg-primary">
+                    <i class="fas fa-server"></i>
+                </div>
+                <div class="card-content">
+                    <h4>{{ getTotalApps() }}</h4>
+                    <p>Total Services</p>
+                </div>
+            </div>
+
+            <div class="summary-card">
+                <div class="card-icon bg-success">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="card-content">
+                    <h4>{{ getOnlineCount() }}</h4>
+                    <p>Online</p>
+                </div>
+            </div>
+
+            <div class="summary-card" *ngIf="getOfflineCount() > 0">
+                <div class="card-icon bg-danger">
+                    <i class="fas fa-times-circle"></i>
+                </div>
+                <div class="card-content">
+                    <h4>{{ getOfflineCount() }}</h4>
+                    <p>Offline</p>
+                </div>
+            </div>
+
+            <div class="summary-card" *ngIf="summary.last24Hours">
+                <div class="card-icon"
+                    [ngClass]="{'bg-danger': summary.last24Hours.errorCount > 0, 'bg-success': summary.last24Hours.errorCount === 0}">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="card-content">
+                    <h4>{{ summary.last24Hours.errorCount }}</h4>
+                    <p>Errors (24h)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Application Cards Grid -->
+        <h5 class="section-title">
+            <i class="fas fa-server me-2"></i>Service Status
+        </h5>
+        <div class="app-grid">
+            <div *ngFor="let app of summary.applications" class="app-card" [ngClass]="getAppStatusClass(app)">
+                <div class="app-header">
+                    <span class="app-name">{{ app.name }}</span>
+                    <span class="app-self-badge" *ngIf="app.isSelf">Self</span>
+                </div>
+
+                <!-- Show latest snapshot data -->
+                <div class="app-details" *ngIf="summary.latestSnapshots">
+                    <ng-container *ngFor="let snap of summary.latestSnapshots">
+                        <ng-container *ngIf="snap.applicationName === app.name">
+                            <div class="stat-row">
+                                <span class="stat-label">Status:</span>
+                                <span [ngClass]="{'text-success': snap.isOnline, 'text-danger': !snap.isOnline}">
+                                    <i class="fas" [ngClass]="getStatusIcon(snap.isOnline)"></i>
+                                    {{ snap.isOnline ? 'Online' : 'Offline' }}
+                                </span>
+                            </div>
+                            <div class="stat-row" *ngIf="snap.isOnline">
+                                <span class="stat-label">Uptime:</span>
+                                <span>{{ formatUptime(snap.uptimeSeconds) }}</span>
+                            </div>
+                            <div class="stat-row" *ngIf="snap.isOnline">
+                                <span class="stat-label">Memory:</span>
+                                <span>{{ formatMemory(snap.memoryWorkingSetMB) }}</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">Last Seen:</span>
+                                <span>{{ formatRelativeTime(snap.collectedAt) }}</span>
+                            </div>
+                        </ng-container>
+                    </ng-container>
+                </div>
+            </div>
+        </div>
+
+        <!-- Last Collection Run -->
+        <div class="section" *ngIf="summary.lastCollectionRun">
+            <h5 class="section-title">
+                <i class="fas fa-clock me-2"></i>Last Collection
+            </h5>
+            <div class="last-run-info">
+                <div class="info-item">
+                    <span class="label">Time:</span>
+                    <span>{{ formatRelativeTime(summary.lastCollectionRun.startTime) }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Polled:</span>
+                    <span>{{ summary.lastCollectionRun.applicationsPolled }} apps</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Succeeded:</span>
+                    <span
+                        [ngClass]="{'text-success': summary.lastCollectionRun.applicationsSucceeded === summary.lastCollectionRun.applicationsPolled, 'text-warning': summary.lastCollectionRun.applicationsSucceeded < summary.lastCollectionRun.applicationsPolled}">
+                        {{ summary.lastCollectionRun.applicationsSucceeded }}/{{
+                        summary.lastCollectionRun.applicationsPolled }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ================================================ -->
+    <!-- TAB 2: Real-Time (This Server) -->
+    <!-- ================================================ -->
+    <div class="tab-content" *ngIf="activeMainTab === 'realtime' && !loading">
+        <div class="realtime-content">
+            <!-- Health Status Display -->
+            <div *ngIf="healthStatus">
+                <h5 class="section-title">
+                    <i class="fas fa-heartbeat me-2"></i>This Server - Live Metrics
+                </h5>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="metric-card">
+                            <div class="metric-label">Status</div>
+                            <div class="metric-value"
+                                [ngClass]="{'text-success': healthStatus.application?.status === 'Healthy', 'text-danger': healthStatus.application?.status !== 'Healthy'}">
+                                {{ healthStatus.application?.status }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="metric-card">
+                            <div class="metric-label">Uptime</div>
+                            <div class="metric-value">{{ healthStatus.application?.uptime?.display }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="metric-card">
+                            <div class="metric-label">Memory</div>
+                            <div class="metric-value">{{ formatMemory(healthStatus.application?.memory?.workingSetMB) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Thread Pool -->
+                <h5 class="section-title mt-4">
+                    <i class="fas fa-stream me-2"></i>Thread Pool
+                </h5>
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <div class="metric-label">Workers In Use</div>
+                            <div class="metric-value">{{ healthStatus.threadPool?.workerThreads?.inUse }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <div class="metric-label">Workers Available</div>
+                            <div class="metric-value">{{ healthStatus.threadPool?.workerThreads?.available }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <div class="metric-label">IO In Use</div>
+                            <div class="metric-value">{{ healthStatus.threadPool?.completionPortThreads?.inUse }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <div class="metric-label">IO Available</div>
+                            <div class="metric-value">{{ healthStatus.threadPool?.completionPortThreads?.available }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Authenticated Users -->
+                <h5 class="section-title mt-4" *ngIf="authenticatedUsers">
+                    <i class="fas fa-users me-2"></i>Authenticated Users
+                    <span class="badge bg-info ms-2">{{ authenticatedUsers.totalCount }}</span>
+                </h5>
+                <div *ngIf="authenticatedUsers?.sessions?.length === 0" class="text-muted">
+                    <i class="fas fa-info-circle me-1"></i>No active sessions
+                </div>
+                <div class="row g-2" *ngIf="authenticatedUsers?.sessions?.length">
+                    <div class="col-md-4" *ngFor="let session of authenticatedUsers?.sessions?.slice(0, 6) || []">
+                        <div class="user-card">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-user me-2 text-muted"></i>
+                                <span class="fw-bold">{{ session.displayName || session.username }}</span>
+                            </div>
+                            <small class="text-muted" *ngIf="session.ipAddress">{{ session.ipAddress }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- No data state -->
+            <div *ngIf="!healthStatus" class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Real-Time View</strong><br>
+                Loading live metrics for this server...
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ================================================ -->
+    <!-- TAB 3: Historical -->
+    <!-- ================================================ -->
+    <div class="tab-content" *ngIf="activeMainTab === 'historical' && !loading">
+
+        <!-- Filters -->
+        <div class="filters-bar">
+            <div class="filter-group">
+                <label>Application:</label>
+                <select class="form-select form-select-sm" [(ngModel)]="selectedAppName" (change)="onAppFilterChange()">
+                    <option value="">All Applications</option>
+                    <option *ngFor="let app of summary?.applications" [value]="app.name">{{ app.name }}</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Time Range:</label>
+                <select class="form-select form-select-sm" [(ngModel)]="selectedHours" (change)="onHoursChange()">
+                    <option *ngFor="let h of hourOptions" [value]="h">Last {{ h }}h</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Historical Sub-Tabs -->
+        <ul class="nav nav-tabs sub-tabs">
+            <li class="nav-item">
+                <a class="nav-link" [class.active]="activeHistoricalTab === 'overview'"
+                    (click)="setHistoricalTab('overview')">
+                    <i class="fas fa-chart-pie me-1"></i> Overview
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" [class.active]="activeHistoricalTab === 'snapshots'"
+                    (click)="setHistoricalTab('snapshots')">
+                    <i class="fas fa-camera me-1"></i> Snapshots
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" [class.active]="activeHistoricalTab === 'runs'" (click)="setHistoricalTab('runs')">
+                    <i class="fas fa-history me-1"></i> Collection Runs
+                </a>
+            </li>
+        </ul>
+
+        <!-- Historical Overview -->
+        <div class="sub-tab-content" *ngIf="activeHistoricalTab === 'overview' && summary">
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <div class="card-icon bg-info">
+                        <i class="fas fa-camera"></i>
+                    </div>
+                    <div class="card-content">
+                        <h4>{{ summary.last24Hours?.totalSnapshots || 0 }}</h4>
+                        <p>Snapshots (24h)</p>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <div class="card-icon bg-success">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <div class="card-content">
+                        <h4>{{ summary.last24Hours?.onlineCount || 0 }}</h4>
+                        <p>Online Readings</p>
+                    </div>
+                </div>
+                <div class="summary-card" *ngIf="summary.last24Hours?.avgMemoryMB">
+                    <div class="card-icon bg-primary">
+                        <i class="fas fa-memory"></i>
+                    </div>
+                    <div class="card-content">
+                        <h4>{{ summary.last24Hours?.avgMemoryMB?.toFixed(0) }} MB</h4>
+                        <p>Avg Memory</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Snapshots Table -->
+        <div class="sub-tab-content" *ngIf="activeHistoricalTab === 'snapshots'">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Application</th>
+                            <th>Status</th>
+                            <th>Uptime</th>
+                            <th>Memory</th>
+                            <th>CPU</th>
+                            <th>Machine</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let snap of recentSnapshots">
+                            <td>{{ formatRelativeTime(snap.collectedAt) }}</td>
+                            <td>{{ snap.applicationName }}</td>
+                            <td>
+                                <span
+                                    [ngClass]="{'badge bg-success': snap.isOnline, 'badge bg-danger': !snap.isOnline}">
+                                    {{ snap.isOnline ? 'Online' : 'Offline' }}
+                                </span>
+                            </td>
+                            <td>{{ formatUptime(snap.uptimeSeconds) }}</td>
+                            <td>{{ formatMemory(snap.memoryWorkingSetMB) }}</td>
+                            <td>{{ formatCpu(snap.cpuPercent) }}</td>
+                            <td>{{ snap.machineName || '-' }}</td>
+                        </tr>
+                        <tr *ngIf="recentSnapshots.length === 0">
+                            <td colspan="7" class="text-center text-muted">No snapshots found</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Collection Runs Table -->
+        <div class="sub-tab-content" *ngIf="activeHistoricalTab === 'runs'">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Duration</th>
+                            <th>Apps Polled</th>
+                            <th>Succeeded</th>
+                            <th>Success Rate</th>
+                            <th>Errors</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let run of collectionRuns">
+                            <td>{{ formatRelativeTime(run.startTime) }}</td>
+                            <td>{{ formatDuration(run.durationMs) }}</td>
+                            <td>{{ run.applicationsPolled }}</td>
+                            <td>{{ run.applicationsSucceeded }}</td>
+                            <td [ngClass]="getSuccessClass(run)">{{ getSuccessRate(run) }}%</td>
+                            <td>
+                                <span *ngIf="run.errorMessage" class="text-danger" [title]="run.errorMessage">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </span>
+                                <span *ngIf="!run.errorMessage" class="text-success">
+                                    <i class="fas fa-check"></i>
+                                </span>
+                            </td>
+                        </tr>
+                        <tr *ngIf="collectionRuns.length === 0">
+                            <td colspan="6" class="text-center text-muted">No collection runs found</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
