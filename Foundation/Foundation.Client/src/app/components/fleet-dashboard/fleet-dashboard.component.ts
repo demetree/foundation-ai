@@ -77,7 +77,7 @@ export class FleetDashboardComponent implements OnInit, OnDestroy {
 
     // Auto-refresh
     autoRefreshEnabled = false;
-    autoRefreshSeconds = 30;
+    autoRefreshInterval = 30;  // Interval in seconds (10, 30, 60, 120)
     autoRefreshCountdown = 30;
 
     // Historical sub-tabs
@@ -357,15 +357,25 @@ export class FleetDashboardComponent implements OnInit, OnDestroy {
         }
     }
 
+    setAutoRefreshInterval(seconds: number): void {
+        this.autoRefreshInterval = seconds;
+        this.autoRefreshCountdown = seconds;
+        // If auto-refresh is already running, restart with new interval
+        if (this.autoRefreshEnabled) {
+            this.stopAutoRefresh();
+            this.startAutoRefresh();
+        }
+    }
+
     private startAutoRefresh(): void {
-        this.autoRefreshCountdown = this.autoRefreshSeconds;
+        this.autoRefreshCountdown = this.autoRefreshInterval;
         this.autoRefreshSubscription = interval(1000)
             .pipe(takeUntil(this.destroy$))
             .subscribe(() => {
                 this.autoRefreshCountdown--;
                 if (this.autoRefreshCountdown <= 0) {
                     this.refresh();
-                    this.autoRefreshCountdown = this.autoRefreshSeconds;
+                    this.autoRefreshCountdown = this.autoRefreshInterval;
                 }
             });
     }
