@@ -491,6 +491,7 @@ import { IntelligenceModalComponent } from './components/shared/intelligence-mod
 
     HeaderComponent,
     SidebarComponent,
+    SystemHealthComponent,
 
     //
     // Beginning of declarations for Security Data Components
@@ -838,6 +839,7 @@ import { IntelligenceModalComponent } from './components/shared/intelligence-mod
     ConfirmationService,
     InputDialogService,
     IntelligenceService,
+    SystemHealthService,
 
     //
     // Beginning of provider declarations for Security Data Services

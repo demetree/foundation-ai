@@ -74,6 +74,8 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
 import { NewUserComponent } from './components/new-user/new-user.component';
 
+import { SystemHealthComponent } from './components/system-health/system-health.component';
+import { SystemHealthService } from './services/system-health.service';
 
 //
 // Custom Components
@@ -1164,6 +1166,8 @@ import { TributeTypeTableComponent } from './scheduler-data-components/tribute-t
     HeaderComponent,
     SidebarComponent,
 
+    SystemHealthComponent,
+
 
     //
     // Custom components
@@ -2008,6 +2012,7 @@ import { TributeTypeTableComponent } from './scheduler-data-components/tribute-t
     OverviewDispatcherTabComponent,
     OverviewSchedulerTabComponent,
     IntelligenceModalComponent,
+   
   ],
   imports: [
     BrowserModule,
@@ -2061,6 +2066,7 @@ import { TributeTypeTableComponent } from './scheduler-data-components/tribute-t
     CrewWithMembersService,
     AssignmentService,
     SchedulerHelperService,
+    SystemHealthService,
     IntelligenceService,
     RagProviderResolver,
     GeminiGroundingProvider,

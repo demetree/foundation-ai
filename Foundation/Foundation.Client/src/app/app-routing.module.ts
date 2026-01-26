@@ -208,7 +208,7 @@ const routes: Routes = [
   { path: 'auditevents', component: AuditEventCustomListingComponent, canActivate: [AuthGuard], title: 'Audit Events' },
   { path: 'logs', component: LogViewerListingComponent, canActivate: [AuthGuard], title: 'System Logs' },
   { path: 'fleet', component: FleetDashboardComponent, canActivate: [AuthGuard], title: 'Fleet Monitor' },
-  { path: 'system-health', redirectTo: 'fleet', pathMatch: 'full' },
+  { path: 'system-health', component: SystemHealthComponent, canActivate: [AuthGuard], title: 'System Health' },
   { path: 'telemetry-dashboard', redirectTo: 'fleet', pathMatch: 'full' },
 
 

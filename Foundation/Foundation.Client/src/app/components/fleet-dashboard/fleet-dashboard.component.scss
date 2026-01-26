@@ -432,3 +432,206 @@
 .app-selector-grid {
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
 }
+
+
+// ============================================
+// Health Cards (from system-health component)
+// ============================================
+
+.health-card {
+    border-radius: 12px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    background: var(--bs-card-bg, #fff);
+    border: 1px solid var(--bs-border-color, #dee2e6);
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .card-header {
+        padding: 1rem 1.25rem;
+        background: transparent;
+        border-bottom: 1px solid var(--bs-border-color, #eee);
+
+        h5 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 0;
+        }
+    }
+
+    .card-body {
+        padding: 1rem 1.25rem;
+    }
+}
+
+
+// Stat circles (icons)
+.stat-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.bg-primary-soft {
+    background-color: rgba(102, 126, 234, 0.15);
+}
+
+.bg-info-soft {
+    background-color: rgba(23, 162, 184, 0.15);
+}
+
+.bg-warning-soft {
+    background-color: rgba(255, 193, 7, 0.15);
+}
+
+.bg-success-soft {
+    background-color: rgba(40, 167, 69, 0.15);
+}
+
+.bg-secondary-soft {
+    background-color: rgba(108, 117, 125, 0.15);
+}
+
+.bg-danger-soft {
+    background-color: rgba(220, 53, 69, 0.15);
+}
+
+
+// Metric rows (label/value pairs)
+.metric-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+
+    &:last-child {
+        border-bottom: none;
+    }
+
+    .metric-label {
+        color: #6c757d;
+        font-size: 0.875rem;
+    }
+
+    .metric-value {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #212529;
+    }
+}
+
+
+// Drive cards
+.drive-card {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+
+    &.app-drive {
+        background: rgba(102, 126, 234, 0.05);
+        border-color: rgba(102, 126, 234, 0.2);
+    }
+}
+
+
+// Database items
+.database-item {
+    .fw-bold {
+        font-size: 0.95rem;
+    }
+}
+
+
+// Table Statistics Modal
+.sortable {
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.15s ease;
+
+    &:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    i.fa-sort,
+    i.fa-sort-up,
+    i.fa-sort-down {
+        opacity: 0.5;
+    }
+
+    i.fa-sort-up,
+    i.fa-sort-down {
+        opacity: 1;
+        color: #667eea;
+    }
+}
+
+.modal-content {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+    border-bottom-color: #e9ecef;
+    padding: 1rem 1.5rem;
+
+    .modal-title {
+        font-weight: 600;
+    }
+}
+
+.modal-body {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.table code {
+    background: #f8f9fa;
+    padding: 0.125rem 0.375rem;
+    border-radius: 4px;
+    font-size: 0.8125rem;
+}
+
+
+// Metric state variants
+.metric-healthy {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    border-color: #28a745;
+
+    .metric-value {
+        color: #155724;
+    }
+}
+
+.metric-warning {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%);
+    border-color: #ffc107;
+
+    .metric-value {
+        color: #856404;
+    }
+}
+
+.metric-critical {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    border-color: #dc3545;
+
+    .metric-value {
+        color: #721c24;
+    }
+}
+
+.metric-unknown {
+    background: #e9ecef;
+    border-color: #6c757d;
+
+    .metric-value {
+        color: #495057;
+    }
+}

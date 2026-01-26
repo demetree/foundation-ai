@@ -247,86 +247,291 @@
                 <p class="mt-2 text-muted">Fetching live data from {{ selectedRealtimeApp?.name }}...</p>
             </div>
 
-            <!-- Health Status Display -->
+            <!-- Health Status Display (Card-Based Layout) -->
             <div *ngIf="healthStatus && !realtimeLoading">
-                <h5 class="section-title">
-                    <i class="fas fa-heartbeat me-2"></i>{{ selectedRealtimeApp?.name || 'This Server' }} - Live Metrics
-                </h5>
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <div class="metric-card">
-                            <div class="metric-label">Status</div>
-                            <div class="metric-value"
-                                [ngClass]="{'text-success': healthStatus.application?.status === 'Healthy', 'text-danger': healthStatus.application?.status !== 'Healthy'}">
-                                {{ healthStatus.application?.status }}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="metric-card">
-                            <div class="metric-label">Uptime</div>
-                            <div class="metric-value">{{ healthStatus.application?.uptime?.display }}</div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="metric-card">
-                            <div class="metric-label">Memory</div>
-                            <div class="metric-value">{{ formatMemory(healthStatus.application?.memory?.workingSetMB) }}
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <div class="row g-4">
 
-                <!-- Thread Pool -->
-                <h5 class="section-title mt-4">
-                    <i class="fas fa-stream me-2"></i>Thread Pool
-                </h5>
-                <div class="row g-3">
-                    <div class="col-md-3">
-                        <div class="metric-card">
-                            <div class="metric-label">Workers In Use</div>
-                            <div class="metric-value">{{ healthStatus.threadPool?.workerThreads?.inUse }}</div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="metric-card">
-                            <div class="metric-label">Workers Available</div>
-                            <div class="metric-value">{{ healthStatus.threadPool?.workerThreads?.available }}</div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="metric-card">
-                            <div class="metric-label">IO In Use</div>
-                            <div class="metric-value">{{ healthStatus.threadPool?.completionPortThreads?.inUse }}</div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="metric-card">
-                            <div class="metric-label">IO Available</div>
-                            <div class="metric-value">{{ healthStatus.threadPool?.completionPortThreads?.available }}
+                    <!-- Application Status Card -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card health-card h-100 border-0 shadow-sm">
+                            <div class="card-header bg-transparent border-0 d-flex align-items-center">
+                                <div class="stat-circle bg-primary-soft me-3">
+                                    <i class="fas fa-server fa-lg text-primary"></i>
+                                </div>
+                                <div>
+                                    <h5 class="mb-0">Application</h5>
+                                    <small class="text-muted">{{ healthStatus.application?.process?.name }}</small>
+                                </div>
+                                <span class="ms-auto badge"
+                                    [ngClass]="getStatusClass(healthStatus.application?.status || '')">
+                                    <i class="fas"
+                                        [ngClass]="getStatusIcon(healthStatus.application?.status === 'Healthy')"></i>
+                                    {{ healthStatus.application?.status }}
+                                </span>
+                            </div>
+                            <div class="card-body">
+                                <div class="metric-row">
+                                    <span class="metric-label"><i class="fas fa-clock me-2"></i>Uptime</span>
+                                    <span class="metric-value">{{ healthStatus.application?.uptime?.display }}</span>
+                                </div>
+                                <div class="metric-row">
+                                    <span class="metric-label"><i class="fas fa-microchip me-2"></i>Process ID</span>
+                                    <span class="metric-value">{{ healthStatus.application?.process?.id }}</span>
+                                </div>
+                                <div class="metric-row">
+                                    <span class="metric-label"><i class="fas fa-code-branch me-2"></i>.NET
+                                        Version</span>
+                                    <span class="metric-value">{{ healthStatus.application?.environment?.dotNetVersion
+                                        }}</span>
+                                </div>
+                                <div class="metric-row">
+                                    <span class="metric-label"><i class="fas fa-desktop me-2"></i>Machine</span>
+                                    <span class="metric-value">{{ healthStatus.application?.environment?.machineName
+                                        }}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Authenticated Users -->
-                <h5 class="section-title mt-4" *ngIf="authenticatedUsers">
-                    <i class="fas fa-users me-2"></i>Authenticated Users
-                    <span class="badge bg-info ms-2">{{ authenticatedUsers.totalCount }}</span>
-                </h5>
-                <div *ngIf="authenticatedUsers?.sessions?.length === 0" class="text-muted">
-                    <i class="fas fa-info-circle me-1"></i>No active sessions
-                </div>
-                <div class="row g-2" *ngIf="authenticatedUsers?.sessions?.length">
-                    <div class="col-md-4" *ngFor="let session of authenticatedUsers?.sessions?.slice(0, 6) || []">
-                        <div class="user-card">
-                            <div class="d-flex align-items-center">
-                                <i class="fas fa-user me-2 text-muted"></i>
-                                <span class="fw-bold">{{ session.displayName || session.username }}</span>
+                    <!-- Memory Card -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card health-card h-100 border-0 shadow-sm">
+                            <div class="card-header bg-transparent border-0 d-flex align-items-center">
+                                <div class="stat-circle bg-info-soft me-3">
+                                    <i class="fas fa-memory fa-lg text-info"></i>
+                                </div>
+                                <div>
+                                    <h5 class="mb-0">Memory</h5>
+                                    <small class="text-muted">Process memory usage</small>
+                                </div>
                             </div>
-                            <small class="text-muted" *ngIf="session.ipAddress">{{ session.ipAddress }}</small>
+                            <div class="card-body">
+                                <div class="metric-row">
+                                    <span class="metric-label"><i class="fas fa-chart-pie me-2"></i>Working Set</span>
+                                    <span class="metric-value fw-bold">{{
+                                        formatMemory(healthStatus.application?.memory?.workingSetMB) }}</span>
+                                </div>
+                                <div class="metric-row">
+                                    <span class="metric-label"><i class="fas fa-layer-group me-2"></i>GC Heap</span>
+                                    <span class="metric-value">{{
+                                        formatMemory(healthStatus.application?.memory?.gcHeapMB) }}</span>
+                                </div>
+                                <div class="metric-row">
+                                    <span class="metric-label"><i class="fas fa-recycle me-2"></i>GC Gen0</span>
+                                    <span class="metric-value">{{ healthStatus.application?.memory?.gen0Collections
+                                        }}</span>
+                                </div>
+                                <div class="metric-row">
+                                    <span class="metric-label"><i class="fas fa-recycle me-2"></i>GC Gen1/Gen2</span>
+                                    <span class="metric-value">{{ healthStatus.application?.memory?.gen1Collections }} /
+                                        {{ healthStatus.application?.memory?.gen2Collections }}</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
+
+                    <!-- Thread Pool Card -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card health-card h-100 border-0 shadow-sm">
+                            <div class="card-header bg-transparent border-0 d-flex align-items-center">
+                                <div class="stat-circle bg-warning-soft me-3">
+                                    <i class="fas fa-stream fa-lg text-warning"></i>
+                                </div>
+                                <div>
+                                    <h5 class="mb-0">Thread Pool</h5>
+                                    <small class="text-muted">Worker thread status</small>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="metric-row">
+                                    <span class="metric-label"><i class="fas fa-bolt me-2"></i>Workers In Use</span>
+                                    <span class="metric-value fw-bold">{{ healthStatus.threadPool?.workerThreads?.inUse
+                                        }}</span>
+                                </div>
+                                <div class="metric-row">
+                                    <span class="metric-label"><i class="fas fa-check me-2"></i>Workers Available</span>
+                                    <span class="metric-value">{{ healthStatus.threadPool?.workerThreads?.available
+                                        }}</span>
+                                </div>
+                                <div class="metric-row">
+                                    <span class="metric-label"><i class="fas fa-bolt me-2"></i>IO In Use</span>
+                                    <span class="metric-value">{{ healthStatus.threadPool?.completionPortThreads?.inUse
+                                        }}</span>
+                                </div>
+                                <div class="metric-row">
+                                    <span class="metric-label"><i class="fas fa-check me-2"></i>IO Available</span>
+                                    <span class="metric-value">{{
+                                        healthStatus.threadPool?.completionPortThreads?.available }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Database Card -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card health-card h-100 border-0 shadow-sm">
+                            <div class="card-header bg-transparent border-0 d-flex align-items-center">
+                                <div class="stat-circle bg-success-soft me-3">
+                                    <i class="fas fa-database fa-lg text-success"></i>
+                                </div>
+                                <div>
+                                    <h5 class="mb-0">Databases</h5>
+                                    <small class="text-muted">{{ healthStatus.database?.databases?.length || 0 }}
+                                        connection(s)</small>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div *ngFor="let db of healthStatus.database?.databases; let last = last"
+                                    class="database-item" [class.mb-3]="!last" [class.border-bottom]="!last"
+                                    [class.pb-3]="!last">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="fw-bold">{{ db.name }}</span>
+                                        <span class="badge" [ngClass]="db.isConnected ? 'bg-success' : 'bg-danger'">
+                                            <i class="fas" [ngClass]="db.isConnected ? 'fa-check' : 'fa-times'"></i>
+                                            {{ db.status }}
+                                        </span>
+                                    </div>
+                                    <div class="metric-row small">
+                                        <span class="metric-label text-muted"><i class="fas fa-server me-1"></i>{{
+                                            db.server }}</span>
+                                    </div>
+                                    <div class="metric-row small" *ngIf="db.database">
+                                        <span class="metric-label text-muted"><i class="fas fa-table me-1"></i>{{
+                                            db.database }}</span>
+                                    </div>
+                                    <button *ngIf="db.isConnected" class="btn btn-sm btn-outline-secondary mt-2 w-100"
+                                        (click)="openTableModal(db.name)">
+                                        <i class="fas fa-table me-1"></i>View Tables
+                                    </button>
+                                </div>
+                                <div *ngIf="!healthStatus.database?.databases?.length"
+                                    class="text-muted text-center py-2">
+                                    <i class="fas fa-info-circle me-1"></i>No database providers registered
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Disk Space Card -->
+                    <div class="col-md-6 col-lg-8" *ngIf="healthStatus.disk?.drives?.length">
+                        <div class="card health-card h-100 border-0 shadow-sm">
+                            <div class="card-header bg-transparent border-0 d-flex align-items-center">
+                                <div class="stat-circle bg-secondary-soft me-3">
+                                    <i class="fas fa-hdd fa-lg text-secondary"></i>
+                                </div>
+                                <div>
+                                    <h5 class="mb-0">Disk Space</h5>
+                                    <small class="text-muted">{{ healthStatus.disk?.applicationPath }}</small>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-md-6" *ngFor="let drive of healthStatus.disk?.drives">
+                                        <div class="drive-card p-3 rounded"
+                                            [class.app-drive]="drive.isApplicationDrive">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <span class="fw-bold">
+                                                    <i class="fas fa-hdd me-2"></i>{{ drive.name }}
+                                                    <span *ngIf="drive.label" class="text-muted">({{ drive.label
+                                                        }})</span>
+                                                    <span *ngIf="drive.isApplicationDrive"
+                                                        class="badge bg-primary ms-2">App</span>
+                                                </span>
+                                                <span class="badge" [ngClass]="getStatusClass(drive.status)">
+                                                    {{ drive.status }}
+                                                </span>
+                                            </div>
+                                            <div class="progress mb-2" style="height: 8px;">
+                                                <div class="progress-bar" [ngClass]="getDriveStatusClass(drive)"
+                                                    [style.width.%]="drive.usedPercent" role="progressbar">
+                                                </div>
+                                            </div>
+                                            <div class="d-flex justify-content-between small text-muted">
+                                                <span>{{ drive.usedGB }} GB used</span>
+                                                <span>{{ drive.freeGB }} GB free of {{ drive.totalGB }} GB</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Authenticated Users Card -->
+                    <div class="col-md-6 col-lg-4" *ngIf="authenticatedUsers">
+                        <div class="card health-card h-100 border-0 shadow-sm">
+                            <div class="card-header bg-transparent border-0 d-flex align-items-center">
+                                <div class="stat-circle bg-info-soft me-3">
+                                    <i class="fas fa-users fa-lg text-info"></i>
+                                </div>
+                                <div>
+                                    <h5 class="mb-0">Authenticated Users</h5>
+                                    <small class="text-muted">Active sessions</small>
+                                </div>
+                                <span class="ms-auto badge bg-info">
+                                    {{ authenticatedUsers?.totalCount }}
+                                </span>
+                            </div>
+                            <div class="card-body">
+                                <div *ngIf="authenticatedUsers?.sessions?.length === 0"
+                                    class="text-muted text-center py-2">
+                                    <i class="fas fa-info-circle me-1"></i>No active sessions
+                                </div>
+                                <div *ngFor="let session of authenticatedUsers?.sessions?.slice(0, 5); let last = last"
+                                    [class.mb-2]="!last" [class.border-bottom]="!last" [class.pb-2]="!last">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="fw-bold small">
+                                            <i class="fas fa-user me-1 text-muted"></i>{{ session.displayName ||
+                                            session.username }}
+                                        </span>
+                                        <span class="badge bg-secondary small" *ngIf="session.loginMethod">{{
+                                            session.loginMethod }}</span>
+                                    </div>
+                                    <div class="small text-muted">
+                                        <span *ngIf="session.ipAddress" title="IP Address"><i
+                                                class="fas fa-network-wired me-1"></i>{{ session.ipAddress }}</span>
+                                    </div>
+                                </div>
+                                <div *ngIf="(authenticatedUsers?.sessions?.length ?? 0) > 5"
+                                    class="text-muted small mt-2 text-center">
+                                    +{{ (authenticatedUsers?.sessions?.length ?? 0) - 5 }} more users
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Application Metrics Card -->
+                    <div class="col-md-6 col-lg-8" *ngIf="appMetrics?.applications?.length">
+                        <div class="card health-card h-100 border-0 shadow-sm">
+                            <div class="card-header bg-transparent border-0 d-flex align-items-center">
+                                <div class="stat-circle bg-success-soft me-3">
+                                    <i class="fas fa-chart-bar fa-lg text-success"></i>
+                                </div>
+                                <div>
+                                    <h5 class="mb-0">Application Metrics</h5>
+                                    <small class="text-muted">Business domain metrics</small>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div *ngFor="let app of appMetrics?.applications" class="mb-3">
+                                    <h6 class="text-muted mb-2">
+                                        <i class="fas fa-cube me-1"></i>{{ app.applicationName }}
+                                    </h6>
+                                    <div class="row g-2">
+                                        <div class="col-sm-6 col-md-4 col-lg-3" *ngFor="let metric of app.metrics">
+                                            <div class="metric-card p-2 rounded text-center"
+                                                [ngClass]="getMetricStateClass(metric.state)"
+                                                [title]="metric.description || ''">
+                                                <div class="metric-value fw-bold">{{ metric.value }}</div>
+                                                <div class="metric-name small text-muted">{{ metric.name }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
@@ -561,6 +766,91 @@
                 </table>
             </div>
         </div>
+
     </div>
 
-</div>
+    <!-- Table Statistics Modal -->
+    <div class="modal fade" [class.show]="showTableModal" [style.display]="showTableModal ? 'block' : 'none'"
+        tabindex="-1" role="dialog" (click)="closeTableModal()">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document" (click)="$event.stopPropagation()">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-table me-2"></i>Table Statistics - {{ selectedDatabaseName }}
+                    </h5>
+                    <button type="button" class="btn-close" (click)="closeTableModal()"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Loading state -->
+                    <div *ngIf="tableStatsLoading" class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2 text-muted">Loading table statistics...</p>
+                    </div>
+
+                    <!-- Error state -->
+                    <div *ngIf="!tableStatsLoading && tableStats?.errorMessage" class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>{{ tableStats?.errorMessage }}
+                    </div>
+
+                    <!-- Statistics summary -->
+                    <div *ngIf="!tableStatsLoading && tableStats && !tableStats.errorMessage">
+                        <div class="row mb-3">
+                            <div class="col-4 text-center">
+                                <div class="h4 mb-0">{{ tableStats.totalTables }}</div>
+                                <small class="text-muted">Tables</small>
+                            </div>
+                            <div class="col-4 text-center">
+                                <div class="h4 mb-0">{{ formatRowCount(tableStats.totalRows) }}</div>
+                                <small class="text-muted">Total Rows</small>
+                            </div>
+                            <div class="col-4 text-center" *ngIf="tableStats.sizeAvailable">
+                                <div class="h4 mb-0">{{ tableStats.totalSizeMB | number:'1.1-1' }} MB</div>
+                                <small class="text-muted">Total Size</small>
+                            </div>
+                        </div>
+
+                        <!-- Table list -->
+                        <table class="table table-sm table-hover">
+                            <thead>
+                                <tr>
+                                    <th class="sortable" (click)="sortTables('tableName')">
+                                        Table Name
+                                        <i class="fas ms-1"
+                                            [ngClass]="tableSortColumn === 'tableName' ? (tableSortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort'"></i>
+                                    </th>
+                                    <th class="sortable text-end" (click)="sortTables('rowCount')">
+                                        Rows
+                                        <i class="fas ms-1"
+                                            [ngClass]="tableSortColumn === 'rowCount' ? (tableSortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort'"></i>
+                                    </th>
+                                    <th class="sortable text-end" *ngIf="tableStats.sizeAvailable"
+                                        (click)="sortTables('sizeMB')">
+                                        Size (MB)
+                                        <i class="fas ms-1"
+                                            [ngClass]="tableSortColumn === 'sizeMB' ? (tableSortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort'"></i>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let table of getSortedTables()">
+                                    <td><code>{{ table.tableName }}</code></td>
+                                    <td class="text-end">{{ table.rowCount | number }}</td>
+                                    <td class="text-end" *ngIf="tableStats.sizeAvailable">{{ table.sizeMB |
+                                        number:'1.2-2' }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <small class="text-muted me-auto">
+                        <i class="fas fa-info-circle me-1"></i>Row counts are approximate
+                    </small>
+                    <button type="button" class="btn btn-secondary" (click)="closeTableModal()">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show" *ngIf="showTableModal" (click)="closeTableModal()"></div>

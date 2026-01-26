@@ -18,6 +18,7 @@ import { Utilities } from './services/utilities';
 import { NewUserComponent } from './components/new-user/new-user.component';
 import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
 
+import { SystemHealthComponent } from './components/system-health/system-health.component';
 
 //
 // Custom screens
@@ -538,6 +539,8 @@ const routes: Routes = [
   { path: 'schedulingtarget/:schedulingTargetId', component: SchedulingTargetCustomDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Scheduling Target' },
 
 
+
+  { path: 'system-health', component: SystemHealthComponent, canActivate: [AuthGuard], title: 'System Health' },
 
   //
   // Security Data Component references - Auto Generated.

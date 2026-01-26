@@ -459,4 +459,97 @@ export class FleetDashboardComponent implements OnInit, OnDestroy {
         if (rate >= 50) return 'text-warning';
         return 'text-danger';
     }
+
+
+    // ========================================
+    // Health Card Helpers (from system-health)
+    // ========================================
+
+    getStatusClass(status: string): string {
+        const s = (status || '').toLowerCase();
+        if (s === 'healthy' || s === 'connected' || s === 'ok') return 'bg-success';
+        if (s === 'warning' || s === 'degraded') return 'bg-warning';
+        if (s === 'critical' || s === 'unavailable' || s === 'error') return 'bg-danger';
+        return 'bg-secondary';
+    }
+
+    getDriveStatusClass(drive: any): string {
+        if (!drive) return 'bg-secondary';
+        const percent = drive.usedPercent || 0;
+        if (percent >= 90) return 'bg-danger';
+        if (percent >= 75) return 'bg-warning';
+        return 'bg-success';
+    }
+
+    getMetricStateClass(state: string | undefined): string {
+        if (!state) return '';
+        const s = state.toLowerCase();
+        if (s === 'healthy' || s === 'ok' || s === 'good') return 'metric-healthy';
+        if (s === 'warning' || s === 'degraded') return 'metric-warning';
+        if (s === 'critical' || s === 'error') return 'metric-critical';
+        return 'metric-unknown';
+    }
+
+
+    // ========================================
+    // Table Statistics Modal
+    // ========================================
+
+    showTableModal = false;
+    selectedDatabaseName = '';
+    tableStats: any = null;
+    tableStatsLoading = false;
+    tableSortColumn = 'tableName';
+    tableSortDirection: 'asc' | 'desc' = 'asc';
+
+    openTableModal(databaseName: string): void {
+        this.selectedDatabaseName = databaseName;
+        this.showTableModal = true;
+        this.tableStatsLoading = true;
+        this.tableStats = null;
+
+        this.systemHealthService.getTableStatistics(databaseName)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (stats: any) => {
+                    this.tableStats = stats;
+                    this.tableStatsLoading = false;
+                },
+                error: (err: any) => {
+                    this.tableStats = { errorMessage: 'Failed to load table statistics' };
+                    this.tableStatsLoading = false;
+                }
+            });
+    }
+
+    closeTableModal(): void {
+        this.showTableModal = false;
+        this.selectedDatabaseName = '';
+        this.tableStats = null;
+    }
+
+    sortTables(column: string): void {
+        if (this.tableSortColumn === column) {
+            this.tableSortDirection = this.tableSortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            this.tableSortColumn = column;
+            this.tableSortDirection = 'asc';
+        }
+    }
+
+    getSortedTables(): any[] {
+        if (!this.tableStats?.tables) return [];
+        return [...this.tableStats.tables].sort((a, b) => {
+            const aVal = a[this.tableSortColumn];
+            const bVal = b[this.tableSortColumn];
+            const cmp = aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+            return this.tableSortDirection === 'asc' ? cmp : -cmp;
+        });
+    }
+
+    formatRowCount(count: number): string {
+        if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
+        if (count >= 1000) return `${(count / 1000).toFixed(1)}K`;
+        return count?.toString() || '0';
+    }
 }
