@@ -643,7 +643,7 @@ namespace Foundation.Controllers.WebAPI
 
                 var response = await _monitoredAppsService.MakeAuthenticatedRequestAsync(
                     appName, 
-                    "api/SystemHealth/authenticated-users",
+                    "api/SystemHealth/users",
                     userObjectGuid);
 
                 if (response.IsSuccessStatusCode)

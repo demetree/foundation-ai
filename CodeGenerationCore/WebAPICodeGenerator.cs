@@ -1234,12 +1234,12 @@ namespace Foundation.CodeGeneration
         /// 
         /// This returns a row count of {plural} filtered by the parameters provided.  Its query is similar to the Get{plural} method, but it only returns the count of rows that would be returned.
         ///
-        /// The rate limit is 2 per second per user.
+        /// The rate limit is 10 per second per user.
         /// 
         /// </summary>");
 
             sb.AppendLine("\t\t[HttpGet]");
-            sb.AppendLine("\t\t[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]");
+            sb.AppendLine("\t\t[RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]");
 
             sb.AppendLine("\t\t[Route(\"api/" + pluralForRouting + "/RowCount\")]");
 

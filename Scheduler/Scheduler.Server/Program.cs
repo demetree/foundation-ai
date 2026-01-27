@@ -381,6 +381,11 @@ namespace Foundation.Scheduler
                 builder.Services.AddSingleton<Foundation.Logger>(logger);
 
                 //
+                // Monitored Application Service (for multi-app health monitoring)
+                //
+                builder.Services.AddSingleton<Foundation.Services.IMonitoredApplicationService, Foundation.Services.MonitoredApplicationService>();
+
+                //
                 // Database Health Providers (for System Health dashboard)
                 //
                 builder.Services.AddSingleton<Foundation.Services.IDatabaseHealthProvider>(

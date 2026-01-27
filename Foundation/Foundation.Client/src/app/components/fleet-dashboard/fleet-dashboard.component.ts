@@ -238,6 +238,30 @@ export class FleetDashboardComponent implements OnInit, OnDestroy {
                     console.error('Failed to load authenticated users:', err);
                 }
             });
+
+        // Also load application business metrics (filtered to the selected 'self' app)
+        this.systemHealthService.getApplicationMetrics()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (metrics: ApplicationMetricsResponse) => {
+                    // Filter to only show metrics for the currently selected app (the 'self' app's logical name)
+                    // The aggregated endpoint returns ALL apps, but in the Real-Time view we only want THIS app's metrics
+                    if (this.selectedRealtimeApp && metrics.applications) {
+                        const appName = this.selectedRealtimeApp.name;
+                        const filteredApps = metrics.applications.filter(app =>
+                            app.applicationName.toLowerCase() === appName.toLowerCase());
+                        this.appMetrics = {
+                            ...metrics,
+                            applications: filteredApps
+                        };
+                    } else {
+                        this.appMetrics = metrics;
+                    }
+                },
+                error: (err: Error) => {
+                    console.error('Failed to load application metrics:', err);
+                }
+            });
     }
 
     private loadRemoteHealth(appName: string): void {
