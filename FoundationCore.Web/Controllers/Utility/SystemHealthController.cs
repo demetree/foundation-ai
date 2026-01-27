@@ -358,8 +358,9 @@ namespace Foundation.Controllers.WebAPI
                 var uptimeMs = uptime.TotalMilliseconds;
                 if (uptimeMs > 0)
                 {
-                    // Divide by processor count to get per-core average
+                    // Divide by processor count to get per-core average, clamp to 0-100%
                     cpuPercent = Math.Round((totalCpuTime / uptimeMs / Environment.ProcessorCount) * 100, 2);
+                    cpuPercent = Math.Min(100, Math.Max(0, cpuPercent));
                 }
             }
             catch

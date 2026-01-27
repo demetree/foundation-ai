@@ -137,6 +137,7 @@ export interface TelemetrySummaryResponse {
         uptimeSeconds?: number;
         memoryWorkingSetMB?: number;
         memoryGcHeapMB?: number;
+        cpuPercent?: number;
         machineName?: string;
     }[];
     lastCollectionRun?: {

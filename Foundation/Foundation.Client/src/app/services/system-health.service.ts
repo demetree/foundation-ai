@@ -50,6 +50,10 @@ export interface ApplicationMetrics {
         is64Bit: boolean;
         dotNetVersion: string;
     };
+    cpu?: {
+        percent: number;
+        processorCount: number;
+    };
 }
 
 export interface DatabaseStatus {

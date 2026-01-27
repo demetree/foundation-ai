@@ -184,6 +184,47 @@
     </div>
 
 
+
+    <!-- CPU Card -->
+    <div class="col-md-6 col-lg-4">
+      <div class="card health-card h-100 border-0 shadow-sm">
+        <div class="card-header bg-transparent border-0 d-flex align-items-center">
+          <div class="stat-circle bg-danger-soft me-3">
+            <i class="fas fa-microchip fa-lg text-danger"></i>
+          </div>
+          <div>
+            <h5 class="mb-0">CPU</h5>
+            <small class="text-muted">Processor utilization</small>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="metric-row">
+            <span class="metric-label"><i class="fas fa-tachometer-alt me-2"></i>Usage</span>
+            <span class="metric-value fw-bold" [ngClass]="{
+                  'text-success' : (healthStatus.application?.cpu?.percent || 0) < 50,
+                    'text-warning': (healthStatus.application?.cpu?.percent || 0) >= 50 && (healthStatus.application?.cpu?.percent || 0) < 80,
+                    'text-danger': (healthStatus.application?.cpu?.percent || 0) >= 80
+                }">
+              {{ formatCpu(healthStatus.application?.cpu?.percent) }}
+            </span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label"><i class="fas fa-microchip me-2"></i>Processors</span>
+            <span class="metric-value">{{ healthStatus.application?.cpu?.processorCount || '-' }}</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label"><i class="fas fa-stream me-2"></i>Threads</span>
+            <span class="metric-value">{{ healthStatus.application?.process?.threadCount || '-' }}</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label"><i class="fas fa-link me-2"></i>Handles</span>
+            <span class="metric-value">{{ healthStatus.application?.process?.handleCount || '-' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
     <!-- Thread Pool Card -->
     <div class="col-md-6 col-lg-4">
       <div class="card health-card h-100 border-0 shadow-sm">
@@ -267,8 +308,64 @@
     </div>
 
 
+    <!-- Authenticated Users Card -->
+    <div class="col-md-6 col-lg-4" *ngIf="showUsersPanel">
+      <div class="card health-card h-100 border-0 shadow-sm">
+        <div class="card-header bg-transparent border-0 d-flex align-items-center">
+          <div class="stat-circle bg-info-soft me-3">
+            <i class="fas fa-users fa-lg text-info"></i>
+          </div>
+          <div>
+            <h5 class="mb-0">Authenticated Users</h5>
+            <small class="text-muted">Active sessions</small>
+          </div>
+          <span class="ms-auto badge bg-info" *ngIf="authenticatedUsers">
+            {{ authenticatedUsers.totalCount }}
+          </span>
+        </div>
+        <div class="card-body">
+          <div *ngIf="usersLoading" class="text-center py-3">
+            <i class="fas fa-spinner fa-spin"></i> Loading...
+          </div>
+          <div *ngIf="!usersLoading && authenticatedUsers">
+            <div *ngIf="authenticatedUsers.errorMessage" class="text-danger small">
+              <i class="fas fa-exclamation-triangle me-1"></i>{{ authenticatedUsers.errorMessage }}
+            </div>
+            <div *ngIf="authenticatedUsers.sessions?.length === 0" class="text-muted text-center py-2">
+              <i class="fas fa-info-circle me-1"></i>No active sessions
+            </div>
+            <div *ngFor="let session of authenticatedUsers.sessions?.slice(0, 5); let last = last" [class.mb-2]="!last"
+                 [class.border-bottom]="!last" [class.pb-2]="!last">
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="fw-bold small">
+                  <i class="fas fa-user me-1 text-muted"></i>{{ session.displayName || session.username }}
+                </span>
+              </div>
+              <div class="small text-muted">
+                <span *ngIf="session.ipAddress" title="IP Address">
+                  <i class="fas fa-network-wired me-1"></i>{{
+            session.ipAddress
+                  }}
+                </span>
+                <span *ngIf="session.userAgent" class="ms-2" title="Browser">
+                  <i class="fas fa-globe me-1"></i>{{
+            session.userAgent
+                  }}
+                </span>
+              </div>
+              <div class="small text-muted" *ngIf="session.email">{{ session.email }}</div>
+            </div>
+            <div *ngIf="(authenticatedUsers?.sessions?.length ?? 0) > 5" class="text-muted small mt-2 text-center">
+              +{{ authenticatedUsers.sessions.length - 5 }} more users
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
     <!-- Disk Space Card(s) -->
-    <div class="col-md-6 col-lg-8">
+    <div class="col-md-6 col-lg-12">
       <div class="card health-card h-100 border-0 shadow-sm">
         <div class="card-header bg-transparent border-0 d-flex align-items-center">
           <div class="stat-circle bg-secondary-soft me-3">
@@ -310,64 +407,10 @@
     </div>
 
 
-    <!-- Authenticated Users Card -->
-    <div class="col-md-6 col-lg-4" *ngIf="showUsersPanel">
-      <div class="card health-card h-100 border-0 shadow-sm">
-        <div class="card-header bg-transparent border-0 d-flex align-items-center">
-          <div class="stat-circle bg-info-soft me-3">
-            <i class="fas fa-users fa-lg text-info"></i>
-          </div>
-          <div>
-            <h5 class="mb-0">Authenticated Users</h5>
-            <small class="text-muted">Active sessions</small>
-          </div>
-          <span class="ms-auto badge bg-info" *ngIf="authenticatedUsers">
-            {{ authenticatedUsers.totalCount }}
-          </span>
-        </div>
-        <div class="card-body">
-          <div *ngIf="usersLoading" class="text-center py-3">
-            <i class="fas fa-spinner fa-spin"></i> Loading...
-          </div>
-          <div *ngIf="!usersLoading && authenticatedUsers">
-            <div *ngIf="authenticatedUsers.errorMessage" class="text-danger small">
-              <i class="fas fa-exclamation-triangle me-1"></i>{{ authenticatedUsers.errorMessage }}
-            </div>
-            <div *ngIf="authenticatedUsers.sessions?.length === 0" class="text-muted text-center py-2">
-              <i class="fas fa-info-circle me-1"></i>No active sessions
-            </div>
-            <div *ngFor="let session of authenticatedUsers.sessions?.slice(0, 5); let last = last" [class.mb-2]="!last"
-                 [class.border-bottom]="!last" [class.pb-2]="!last">
-              <div class="d-flex justify-content-between align-items-center">
-                <span class="fw-bold small">
-                  <i class="fas fa-user me-1 text-muted"></i>{{ session.displayName || session.username }}
-                </span>
-              </div>
-              <div class="small text-muted">
-                <span *ngIf="session.ipAddress" title="IP Address">
-                  <i class="fas fa-network-wired me-1"></i>{{
-                  session.ipAddress
-                  }}
-                </span>
-                <span *ngIf="session.userAgent" class="ms-2" title="Browser">
-                  <i class="fas fa-globe me-1"></i>{{
-                  session.userAgent
-                  }}
-                </span>
-              </div>
-              <div class="small text-muted" *ngIf="session.email">{{ session.email }}</div>
-            </div>
-            <div *ngIf="(authenticatedUsers?.sessions?.length ?? 0) > 5" class="text-muted small mt-2 text-center">
-              +{{ authenticatedUsers.sessions.length - 5 }} more users
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
 
 
     <!-- Application Metrics Card -->
-    <div class="col-md-6 col-lg-8" *ngIf="showMetricsPanel && appMetrics?.applications?.length">
+    <div class="col-md-6 col-lg-12" *ngIf="showMetricsPanel && appMetrics?.applications?.length">
       <div class="card health-card h-100 border-0 shadow-sm">
         <div class="card-header bg-transparent border-0 d-flex align-items-center">
           <div class="stat-circle bg-success-soft me-3">

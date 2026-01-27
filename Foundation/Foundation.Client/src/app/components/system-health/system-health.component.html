@@ -13,8 +13,8 @@
       <div class="header-stats d-flex align-items-center gap-2">
         <!-- Overall status indicator -->
         <span class="badge badge-glass" [class.badge-success]="getOverallStatus() === 'healthy'"
-              [class.badge-warning]="getOverallStatus() === 'warning'"
-              [class.badge-danger]="getOverallStatus() === 'critical' || getOverallStatus() === 'unavailable'">
+          [class.badge-warning]="getOverallStatus() === 'warning'"
+          [class.badge-danger]="getOverallStatus() === 'critical' || getOverallStatus() === 'unavailable'">
           <i class="fas" [ngClass]="getStatusIcon(getOverallStatus())"></i>
           {{ getOverallStatus() | titlecase }}
         </span>
@@ -27,13 +27,13 @@
         <!-- Auto-refresh toggle -->
         <div class="btn-group" ngbDropdown>
           <button class="btn btn-sm" [class.btn-success]="autoRefreshEnabled"
-                  [class.btn-outline-light]="!autoRefreshEnabled" (click)="toggleAutoRefresh()"
-                  [title]="autoRefreshEnabled ? 'Auto-refresh ON' : 'Enable auto-refresh'">
+            [class.btn-outline-light]="!autoRefreshEnabled" (click)="toggleAutoRefresh()"
+            [title]="autoRefreshEnabled ? 'Auto-refresh ON' : 'Enable auto-refresh'">
             <i class="fas fa-sync-alt" [class.fa-spin]="autoRefreshEnabled"></i>
             <span class="ms-1" *ngIf="autoRefreshEnabled">{{ autoRefreshCountdown }}s</span>
           </button>
           <button type="button" class="btn btn-sm dropdown-toggle dropdown-toggle-split"
-                  [class.btn-success]="autoRefreshEnabled" [class.btn-outline-light]="!autoRefreshEnabled" ngbDropdownToggle>
+            [class.btn-success]="autoRefreshEnabled" [class.btn-outline-light]="!autoRefreshEnabled" ngbDropdownToggle>
           </button>
           <div ngbDropdownMenu>
             <button ngbDropdownItem (click)="setAutoRefreshInterval(10)" [class.active]="autoRefreshInterval === 10">
@@ -92,7 +92,7 @@
 
   <!-- Application Unavailable State -->
   <div *ngIf="!loading && applications.length > 0 && !applications[selectedAppIndex]?.isAvailable"
-       class="alert alert-warning mt-4">
+    class="alert alert-warning mt-4">
     <i class="fas fa-plug me-2"></i>
     <strong>{{ applications[selectedAppIndex].name }}</strong> is currently unavailable.
     <span *ngIf="applications[selectedAppIndex].error" class="ms-2 text-muted">
@@ -159,7 +159,7 @@
             <span class="metric-label"><i class="fas fa-chart-pie me-2"></i>Working Set</span>
             <span class="metric-value fw-bold">
               {{
- formatBytes(healthStatus.application.memory.workingSetMB || 0)
+              formatBytes(healthStatus.application.memory.workingSetMB || 0)
               }}
             </span>
           </div>
@@ -178,6 +178,46 @@
               healthStatus.application.memory.gen2Collections
               }}
             </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- CPU Card -->
+    <div class="col-md-6 col-lg-4">
+      <div class="card health-card h-100 border-0 shadow-sm">
+        <div class="card-header bg-transparent border-0 d-flex align-items-center">
+          <div class="stat-circle bg-danger-soft me-3">
+            <i class="fas fa-microchip fa-lg text-danger"></i>
+          </div>
+          <div>
+            <h5 class="mb-0">CPU</h5>
+            <small class="text-muted">Processor utilization</small>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="metric-row">
+            <span class="metric-label"><i class="fas fa-tachometer-alt me-2"></i>Usage</span>
+            <span class="metric-value fw-bold" [ngClass]="{
+                  'text-success' : (healthStatus.application?.cpu?.percent || 0) < 50,
+                    'text-warning': (healthStatus.application?.cpu?.percent || 0) >= 50 && (healthStatus.application?.cpu?.percent || 0) < 80,
+                    'text-danger': (healthStatus.application?.cpu?.percent || 0) >= 80
+                }">
+              {{ formatCpu(healthStatus.application?.cpu?.percent) }}
+            </span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label"><i class="fas fa-microchip me-2"></i>Processors</span>
+            <span class="metric-value">{{ healthStatus.application?.cpu?.processorCount || '-' }}</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label"><i class="fas fa-stream me-2"></i>Threads</span>
+            <span class="metric-value">{{ healthStatus.application?.process?.threadCount || '-' }}</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label"><i class="fas fa-link me-2"></i>Handles</span>
+            <span class="metric-value">{{ healthStatus.application?.process?.handleCount || '-' }}</span>
           </div>
         </div>
       </div>
@@ -267,49 +307,6 @@
     </div>
 
 
-    <!-- Disk Space Card(s) -->
-    <div class="col-md-6 col-lg-8">
-      <div class="card health-card h-100 border-0 shadow-sm">
-        <div class="card-header bg-transparent border-0 d-flex align-items-center">
-          <div class="stat-circle bg-secondary-soft me-3">
-            <i class="fas fa-hdd fa-lg text-secondary"></i>
-          </div>
-          <div>
-            <h5 class="mb-0">Disk Space</h5>
-            <small class="text-muted">{{ healthStatus.disk.applicationPath }}</small>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="row g-3">
-            <div class="col-md-6" *ngFor="let drive of healthStatus.disk?.drives">
-              <div class="drive-card p-3 rounded" [class.app-drive]="drive.isApplicationDrive">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <span class="fw-bold">
-                    <i class="fas fa-hdd me-2"></i>{{ drive.name }}
-                    <span *ngIf="drive.label" class="text-muted">({{ drive.label }})</span>
-                    <span *ngIf="drive.isApplicationDrive" class="badge bg-primary ms-2">App</span>
-                  </span>
-                  <span class="badge" [ngClass]="getStatusClass(drive.status)">
-                    {{ drive.status }}
-                  </span>
-                </div>
-                <div class="progress mb-2" style="height: 8px;">
-                  <div class="progress-bar" [ngClass]="getDriveStatusClass(drive)" [style.width.%]="drive.usedPercent"
-                       role="progressbar">
-                  </div>
-                </div>
-                <div class="d-flex justify-content-between small text-muted">
-                  <span>{{ drive.usedGB }} GB used</span>
-                  <span>{{ drive.freeGB }} GB free of {{ drive.totalGB }} GB</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-
     <!-- Authenticated Users Card -->
     <div class="col-md-6 col-lg-4" *ngIf="showUsersPanel">
       <div class="card health-card h-100 border-0 shadow-sm">
@@ -374,8 +371,54 @@
     </div>
 
 
+
+
+    <!-- Disk Space Card(s) -->
+    <div class="col-md-6 col-lg-12">
+      <div class="card health-card h-100 border-0 shadow-sm">
+        <div class="card-header bg-transparent border-0 d-flex align-items-center">
+          <div class="stat-circle bg-secondary-soft me-3">
+            <i class="fas fa-hdd fa-lg text-secondary"></i>
+          </div>
+          <div>
+            <h5 class="mb-0">Disk Space</h5>
+            <small class="text-muted">{{ healthStatus.disk.applicationPath }}</small>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-6" *ngFor="let drive of healthStatus.disk?.drives">
+              <div class="drive-card p-3 rounded" [class.app-drive]="drive.isApplicationDrive">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="fw-bold">
+                    <i class="fas fa-hdd me-2"></i>{{ drive.name }}
+                    <span *ngIf="drive.label" class="text-muted">({{ drive.label }})</span>
+                    <span *ngIf="drive.isApplicationDrive" class="badge bg-primary ms-2">App</span>
+                  </span>
+                  <span class="badge" [ngClass]="getStatusClass(drive.status)">
+                    {{ drive.status }}
+                  </span>
+                </div>
+                <div class="progress mb-2" style="height: 8px;">
+                  <div class="progress-bar" [ngClass]="getDriveStatusClass(drive)" [style.width.%]="drive.usedPercent"
+                       role="progressbar">
+                  </div>
+                </div>
+                <div class="d-flex justify-content-between small text-muted">
+                  <span>{{ drive.usedGB }} GB used</span>
+                  <span>{{ drive.freeGB }} GB free of {{ drive.totalGB }} GB</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
     <!-- Application Metrics Card -->
-    <div class="col-md-6 col-lg-8" *ngIf="showMetricsPanel && appMetrics?.applications?.length">
+    <div class="col-md-6 col-lg-12" *ngIf="showMetricsPanel && appMetrics?.applications?.length">
       <div class="card health-card h-100 border-0 shadow-sm">
         <div class="card-header bg-transparent border-0 d-flex align-items-center">
           <div class="stat-circle bg-success-soft me-3">
@@ -415,7 +458,7 @@
 
 <!-- Table Statistics Modal -->
 <div class="modal fade" [class.show]="showTableModal" [style.display]="showTableModal ? 'block' : 'none'" tabindex="-1"
-     role="dialog" (click)="closeTableModal()">
+  role="dialog" (click)="closeTableModal()">
   <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document" (click)="$event.stopPropagation()">
     <div class="modal-content">
       <div class="modal-header">
@@ -462,17 +505,17 @@
                 <th class="sortable" (click)="sortTables('tableName')">
                   Table Name
                   <i class="fas ms-1"
-                     [ngClass]="tableSortColumn === 'tableName' ? (tableSortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort'"></i>
+                    [ngClass]="tableSortColumn === 'tableName' ? (tableSortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort'"></i>
                 </th>
                 <th class="sortable text-end" (click)="sortTables('rowCount')">
                   Rows
                   <i class="fas ms-1"
-                     [ngClass]="tableSortColumn === 'rowCount' ? (tableSortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort'"></i>
+                    [ngClass]="tableSortColumn === 'rowCount' ? (tableSortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort'"></i>
                 </th>
                 <th class="sortable text-end" *ngIf="tableStats.sizeAvailable" (click)="sortTables('sizeMB')">
                   Size (MB)
                   <i class="fas ms-1"
-                     [ngClass]="tableSortColumn === 'sizeMB' ? (tableSortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort'"></i>
+                    [ngClass]="tableSortColumn === 'sizeMB' ? (tableSortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort'"></i>
                 </th>
               </tr>
             </thead>
