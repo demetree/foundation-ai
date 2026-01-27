@@ -189,6 +189,29 @@
             </div>
         </div>
 
+        <!-- Application Metrics Grid -->
+        <div class="section" *ngIf="appMetrics?.applications?.length">
+            <h5 class="section-title">
+                <i class="fas fa-chart-bar me-2"></i>Application Metrics
+            </h5>
+            <div class="app-grid">
+                <div *ngFor="let app of (appMetrics?.applications || [])" class="app-card metrics-card">
+                    <div class="app-header">
+                        <span class="app-name">{{ app.applicationName }}</span>
+                        <span class="badge bg-info-subtle text-info">{{ app.metrics.length }} metrics</span>
+                    </div>
+                    <div class="app-details">
+                        <div *ngFor="let metric of app.metrics" class="stat-row">
+                            <span class="stat-label">{{ metric.name }}:</span>
+                            <span class="stat-value" [ngClass]="getMetricStateClass(metric.state)">
+                                {{ metric.value }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Last Collection Run -->
         <div class="section" *ngIf="summary.lastCollectionRun">
             <h5 class="section-title">

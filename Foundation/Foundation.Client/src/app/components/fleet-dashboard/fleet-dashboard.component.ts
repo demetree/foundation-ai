@@ -145,6 +145,18 @@ export class FleetDashboardComponent implements OnInit, OnDestroy {
                     console.error('Fleet overview error:', err);
                 }
             });
+
+        // Also load application business metrics for the overview
+        this.systemHealthService.getApplicationMetrics()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (metrics: ApplicationMetricsResponse) => {
+                    this.appMetrics = metrics;
+                },
+                error: (err: Error) => {
+                    console.error('Failed to load application metrics:', err);
+                }
+            });
     }
 
     getOnlineCount(): number {
