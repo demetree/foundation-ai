@@ -13,8 +13,8 @@
       <div class="header-stats d-flex align-items-center gap-2">
         <!-- Overall status indicator -->
         <span class="badge badge-glass" [class.badge-success]="getOverallStatus() === 'healthy'"
-          [class.badge-warning]="getOverallStatus() === 'warning'"
-          [class.badge-danger]="getOverallStatus() === 'critical' || getOverallStatus() === 'unavailable'">
+              [class.badge-warning]="getOverallStatus() === 'warning'"
+              [class.badge-danger]="getOverallStatus() === 'critical' || getOverallStatus() === 'unavailable'">
           <i class="fas" [ngClass]="getStatusIcon(getOverallStatus())"></i>
           {{ getOverallStatus() | titlecase }}
         </span>
@@ -27,13 +27,13 @@
         <!-- Auto-refresh toggle -->
         <div class="btn-group" ngbDropdown>
           <button class="btn btn-sm" [class.btn-success]="autoRefreshEnabled"
-            [class.btn-outline-light]="!autoRefreshEnabled" (click)="toggleAutoRefresh()"
-            [title]="autoRefreshEnabled ? 'Auto-refresh ON' : 'Enable auto-refresh'">
+                  [class.btn-outline-light]="!autoRefreshEnabled" (click)="toggleAutoRefresh()"
+                  [title]="autoRefreshEnabled ? 'Auto-refresh ON' : 'Enable auto-refresh'">
             <i class="fas fa-sync-alt" [class.fa-spin]="autoRefreshEnabled"></i>
             <span class="ms-1" *ngIf="autoRefreshEnabled">{{ autoRefreshCountdown }}s</span>
           </button>
           <button type="button" class="btn btn-sm dropdown-toggle dropdown-toggle-split"
-            [class.btn-success]="autoRefreshEnabled" [class.btn-outline-light]="!autoRefreshEnabled" ngbDropdownToggle>
+                  [class.btn-success]="autoRefreshEnabled" [class.btn-outline-light]="!autoRefreshEnabled" ngbDropdownToggle>
           </button>
           <div ngbDropdownMenu>
             <button ngbDropdownItem (click)="setAutoRefreshInterval(10)" [class.active]="autoRefreshInterval === 10">
@@ -92,11 +92,11 @@
 
   <!-- Application Unavailable State -->
   <div *ngIf="!loading && applications.length > 0 && !applications[selectedAppIndex]?.isAvailable"
-    class="alert alert-warning mt-4">
+       class="alert alert-warning mt-4">
     <i class="fas fa-plug me-2"></i>
-    <strong>{{ applications[selectedAppIndex]?.name }}</strong> is currently unavailable.
-    <span *ngIf="applications[selectedAppIndex]?.error" class="ms-2 text-muted">
-      ({{ applications[selectedAppIndex]?.error }})
+    <strong>{{ applications[selectedAppIndex].name }}</strong> is currently unavailable.
+    <span *ngIf="applications[selectedAppIndex].error" class="ms-2 text-muted">
+      ({{ applications[selectedAppIndex].error }})
     </span>
   </div>
 
@@ -113,29 +113,29 @@
           </div>
           <div>
             <h5 class="mb-0">Application</h5>
-            <small class="text-muted">{{ healthStatus.application?.process?.name }}</small>
+            <small class="text-muted">{{ healthStatus.application.process.name }}</small>
           </div>
-          <span class="ms-auto badge" [ngClass]="getStatusClass(healthStatus.application?.status || '')">
-            <i class="fas" [ngClass]="getStatusIcon(healthStatus.application?.status || '')"></i>
-            {{ healthStatus.application?.status }}
+          <span class="ms-auto badge" [ngClass]="getStatusClass(healthStatus.application.status || '')">
+            <i class="fas" [ngClass]="getStatusIcon(healthStatus.application.status || '')"></i>
+            {{ healthStatus.application.status }}
           </span>
         </div>
         <div class="card-body">
           <div class="metric-row">
             <span class="metric-label"><i class="fas fa-clock me-2"></i>Uptime</span>
-            <span class="metric-value">{{ healthStatus.application?.uptime?.display }}</span>
+            <span class="metric-value">{{ healthStatus.application.uptime.display }}</span>
           </div>
           <div class="metric-row">
             <span class="metric-label"><i class="fas fa-microchip me-2"></i>Process ID</span>
-            <span class="metric-value">{{ healthStatus.application?.process?.id }}</span>
+            <span class="metric-value">{{ healthStatus.application.process.id }}</span>
           </div>
           <div class="metric-row">
             <span class="metric-label"><i class="fas fa-code-branch me-2"></i>.NET Version</span>
-            <span class="metric-value">{{ healthStatus.application?.environment?.dotNetVersion }}</span>
+            <span class="metric-value">{{ healthStatus.application.environment.dotNetVersion }}</span>
           </div>
           <div class="metric-row">
             <span class="metric-label"><i class="fas fa-desktop me-2"></i>Machine</span>
-            <span class="metric-value">{{ healthStatus.application?.environment?.machineName }}</span>
+            <span class="metric-value">{{ healthStatus.application.environment.machineName }}</span>
           </div>
         </div>
       </div>
@@ -157,21 +157,27 @@
         <div class="card-body">
           <div class="metric-row">
             <span class="metric-label"><i class="fas fa-chart-pie me-2"></i>Working Set</span>
-            <span class="metric-value fw-bold">{{ formatBytes(healthStatus.application?.memory?.workingSetMB || 0)
-              }}</span>
+            <span class="metric-value fw-bold">
+              {{
+ formatBytes(healthStatus.application.memory.workingSetMB || 0)
+              }}
+            </span>
           </div>
           <div class="metric-row">
             <span class="metric-label"><i class="fas fa-layer-group me-2"></i>GC Heap</span>
-            <span class="metric-value">{{ formatBytes(healthStatus.application?.memory?.gcHeapMB || 0) }}</span>
+            <span class="metric-value">{{ formatBytes(healthStatus.application.memory.gcHeapMB || 0) }}</span>
           </div>
           <div class="metric-row">
             <span class="metric-label"><i class="fas fa-recycle me-2"></i>GC Gen0</span>
-            <span class="metric-value">{{ healthStatus.application?.memory?.gen0Collections }}</span>
+            <span class="metric-value">{{ healthStatus.application.memory.gen0Collections }}</span>
           </div>
           <div class="metric-row">
             <span class="metric-label"><i class="fas fa-recycle me-2"></i>GC Gen1/Gen2</span>
-            <span class="metric-value">{{ healthStatus.application?.memory?.gen1Collections }} / {{
-              healthStatus.application?.memory?.gen2Collections }}</span>
+            <span class="metric-value">
+              {{ healthStatus.application.memory.gen1Collections }} / {{
+              healthStatus.application.memory.gen2Collections
+              }}
+            </span>
           </div>
         </div>
       </div>
@@ -193,19 +199,19 @@
         <div class="card-body">
           <div class="metric-row">
             <span class="metric-label"><i class="fas fa-bolt me-2"></i>Workers In Use</span>
-            <span class="metric-value fw-bold">{{ healthStatus.threadPool?.workerThreads?.inUse }}</span>
+            <span class="metric-value fw-bold">{{ healthStatus.threadPool.workerThreads.inUse }}</span>
           </div>
           <div class="metric-row">
             <span class="metric-label"><i class="fas fa-check me-2"></i>Workers Available</span>
-            <span class="metric-value">{{ healthStatus.threadPool?.workerThreads?.available }}</span>
+            <span class="metric-value">{{ healthStatus.threadPool.workerThreads.available }}</span>
           </div>
           <div class="metric-row">
             <span class="metric-label"><i class="fas fa-bolt me-2"></i>IO In Use</span>
-            <span class="metric-value">{{ healthStatus.threadPool?.completionPortThreads?.inUse }}</span>
+            <span class="metric-value">{{ healthStatus.threadPool.completionPortThreads.inUse }}</span>
           </div>
           <div class="metric-row">
             <span class="metric-label"><i class="fas fa-check me-2"></i>IO Available</span>
-            <span class="metric-value">{{ healthStatus.threadPool?.completionPortThreads?.available }}</span>
+            <span class="metric-value">{{ healthStatus.threadPool.completionPortThreads.available }}</span>
           </div>
         </div>
       </div>
@@ -221,13 +227,13 @@
           </div>
           <div>
             <h5 class="mb-0">Databases</h5>
-            <small class="text-muted">{{ healthStatus.database?.databases?.length || 0 }} connection(s)</small>
+            <small class="text-muted">{{ healthStatus.database.databases.length || 0 }} connection(s)</small>
           </div>
         </div>
         <div class="card-body">
           <!-- Iterate over each database -->
           <div *ngFor="let db of healthStatus.database?.databases; let last = last" class="database-item"
-            [class.mb-3]="!last" [class.border-bottom]="!last" [class.pb-3]="!last">
+               [class.mb-3]="!last" [class.border-bottom]="!last" [class.pb-3]="!last">
             <div class="d-flex justify-content-between align-items-center mb-1">
               <span class="fw-bold">{{ db.name }}</span>
               <span class="badge" [ngClass]="db.isConnected ? 'bg-success' : 'bg-danger'">
@@ -248,7 +254,7 @@
               <i class="fas fa-exclamation-triangle me-1"></i>{{ db.errorMessage }}
             </div>
             <button *ngIf="db.isConnected" class="btn btn-sm btn-outline-secondary mt-2 w-100"
-              (click)="openTableModal(db.name)">
+                    (click)="openTableModal(db.name)">
               <i class="fas fa-table me-1"></i>View Tables
             </button>
           </div>
@@ -289,7 +295,7 @@
                 </div>
                 <div class="progress mb-2" style="height: 8px;">
                   <div class="progress-bar" [ngClass]="getDriveStatusClass(drive)" [style.width.%]="drive.usedPercent"
-                    role="progressbar">
+                       role="progressbar">
                   </div>
                 </div>
                 <div class="d-flex justify-content-between small text-muted">
@@ -331,20 +337,23 @@
               <i class="fas fa-info-circle me-1"></i>No active sessions
             </div>
             <div *ngFor="let session of authenticatedUsers.sessions?.slice(0, 5); let last = last" [class.mb-2]="!last"
-              [class.border-bottom]="!last" [class.pb-2]="!last">
+                 [class.border-bottom]="!last" [class.pb-2]="!last">
               <div class="d-flex justify-content-between align-items-center">
                 <span class="fw-bold small">
                   <i class="fas fa-user me-1 text-muted"></i>{{ session.displayName || session.username }}
                 </span>
-                <div class="d-flex align-items-center gap-2">
-                  <span class="badge bg-secondary small" *ngIf="session.loginMethod">{{ session.loginMethod }}</span>
-                </div>
               </div>
               <div class="small text-muted">
-                <span *ngIf="session.ipAddress" title="IP Address"><i class="fas fa-network-wired me-1"></i>{{
-                  session.ipAddress }}</span>
-                <span *ngIf="session.userAgent" class="ms-2" title="Browser"><i class="fas fa-globe me-1"></i>{{
-                  session.userAgent }}</span>
+                <span *ngIf="session.ipAddress" title="IP Address">
+                  <i class="fas fa-network-wired me-1"></i>{{
+                  session.ipAddress
+                  }}
+                </span>
+                <span *ngIf="session.userAgent" class="ms-2" title="Browser">
+                  <i class="fas fa-globe me-1"></i>{{
+                  session.userAgent
+                  }}
+                </span>
               </div>
               <div class="small text-muted" *ngIf="session.email">{{ session.email }}</div>
             </div>
@@ -381,7 +390,7 @@
               <div class="row g-2">
                 <div class="col-sm-6 col-md-4 col-lg-3" *ngFor="let metric of app.metrics">
                   <div class="metric-card p-2 rounded text-center" [ngClass]="getMetricStateClass(metric.state)"
-                    [title]="metric.description || ''">
+                       [title]="metric.description || ''">
                     <div class="metric-value fw-bold">{{ metric.value }}</div>
                     <div class="metric-name small text-muted">{{ metric.name }}</div>
                   </div>
@@ -398,7 +407,7 @@
 
 <!-- Table Statistics Modal -->
 <div class="modal fade" [class.show]="showTableModal" [style.display]="showTableModal ? 'block' : 'none'" tabindex="-1"
-  role="dialog" (click)="closeTableModal()">
+     role="dialog" (click)="closeTableModal()">
   <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document" (click)="$event.stopPropagation()">
     <div class="modal-content">
       <div class="modal-header">
@@ -445,17 +454,17 @@
                 <th class="sortable" (click)="sortTables('tableName')">
                   Table Name
                   <i class="fas ms-1"
-                    [ngClass]="tableSortColumn === 'tableName' ? (tableSortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort'"></i>
+                     [ngClass]="tableSortColumn === 'tableName' ? (tableSortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort'"></i>
                 </th>
                 <th class="sortable text-end" (click)="sortTables('rowCount')">
                   Rows
                   <i class="fas ms-1"
-                    [ngClass]="tableSortColumn === 'rowCount' ? (tableSortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort'"></i>
+                     [ngClass]="tableSortColumn === 'rowCount' ? (tableSortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort'"></i>
                 </th>
                 <th class="sortable text-end" *ngIf="tableStats.sizeAvailable" (click)="sortTables('sizeMB')">
                   Size (MB)
                   <i class="fas ms-1"
-                    [ngClass]="tableSortColumn === 'sizeMB' ? (tableSortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort'"></i>
+                     [ngClass]="tableSortColumn === 'sizeMB' ? (tableSortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort'"></i>
                 </th>
               </tr>
             </thead>
