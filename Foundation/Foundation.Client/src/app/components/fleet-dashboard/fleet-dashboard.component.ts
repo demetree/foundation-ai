@@ -301,6 +301,28 @@ export class FleetDashboardComponent implements OnInit, OnDestroy {
                     // Silent fail for users - not critical
                 }
             });
+
+        // Also load application business metrics (filtered to the remote app)
+        this.systemHealthService.getApplicationMetrics()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (metrics: ApplicationMetricsResponse) => {
+                    // Filter to only show metrics for the remote app
+                    if (metrics.applications) {
+                        const filteredApps = metrics.applications.filter(app =>
+                            app.applicationName.toLowerCase() === appName.toLowerCase());
+                        this.appMetrics = {
+                            ...metrics,
+                            applications: filteredApps
+                        };
+                    } else {
+                        this.appMetrics = metrics;
+                    }
+                },
+                error: (err: Error) => {
+                    console.error('Failed to load application metrics:', err);
+                }
+            });
     }
 
     private loadFallbackSnapshot(appName: string): void {
@@ -532,7 +554,13 @@ export class FleetDashboardComponent implements OnInit, OnDestroy {
         this.tableStatsLoading = true;
         this.tableStats = null;
 
-        this.systemHealthService.getTableStatistics(databaseName)
+        // For remote apps (not self), pass the appName to proxy to that system
+        // Otherwise, query local database directly
+        const appName = this.selectedRealtimeApp?.isSelf === false
+            ? this.selectedRealtimeApp.name
+            : undefined;
+
+        this.systemHealthService.getTableStatistics(databaseName, appName)
             .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: (stats: any) => {

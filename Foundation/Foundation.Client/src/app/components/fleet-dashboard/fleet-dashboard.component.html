@@ -1,4 +1,4 @@
-<!-- Fleet Dashboard - Unified Operational Hub -->
+<!-- Foundation Systems Dashboard - Unified Operational Hub -->
 <div class="fleet-dashboard">
 
     <!-- Premium Header -->
@@ -7,12 +7,12 @@
             class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3 border-0 bg-transparent">
             <div class="header-left">
                 <h3 class="page-title mb-0 fw-bold text-white">
-                    <i class="fas fa-satellite-dish me-2"></i>Fleet Monitor
+                    <i class="fas fa-satellite-dish me-2"></i>Foundation Systems
                 </h3>
                 <small class="text-white-50">Unified operational hub for your cloud services</small>
             </div>
             <div class="header-stats d-flex align-items-center gap-2">
-                <!-- Fleet status summary -->
+                <!-- Systems status summary -->
                 <span class="badge badge-glass" *ngIf="summary">
                     <i class="fas fa-check-circle me-1" *ngIf="getOfflineCount() === 0"></i>
                     <i class="fas fa-exclamation-triangle me-1" *ngIf="getOfflineCount() > 0"></i>
@@ -69,7 +69,7 @@
     <ul class="nav nav-tabs main-tabs mt-3">
         <li class="nav-item">
             <a class="nav-link" [class.active]="activeMainTab === 'overview'" (click)="setMainTab('overview')">
-                <i class="fas fa-th-large me-2"></i>Fleet Overview
+                <i class="fas fa-th-large me-2"></i>Systems Overview
             </a>
         </li>
         <li class="nav-item">
@@ -90,7 +90,7 @@
         <div class="spinner-border text-primary" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>
-        <p class="mt-2 text-muted">Loading fleet data...</p>
+        <p class="mt-2 text-muted">Loading systems data...</p>
     </div>
 
 
@@ -101,7 +101,7 @@
 
 
     <!-- ================================================ -->
-    <!-- TAB 1: Fleet Overview -->
+    <!-- TAB 1: Systems Overview -->
     <!-- ================================================ -->
     <div class="tab-content" *ngIf="activeMainTab === 'overview' && !loading && summary">
 
