@@ -87,6 +87,8 @@ namespace Foundation.Services
         private static readonly ExpiringCache<string, byte[]> _satelliteTileMemoryCache = new ExpiringCache<string, byte[]>(43200, true, false);
         private static readonly ExpiringCache<string, byte[]> _nonSatelliteTileMemoryCache = new ExpiringCache<string, byte[]>(43200, true, false);
 
+        // Per-file locks to prevent concurrent read/write conflicts on the same cache file
+        private static readonly ConcurrentDictionary<string, SemaphoreSlim> _fileLocks = new ConcurrentDictionary<string, SemaphoreSlim>();
 
         private static readonly Random _random = new Random();
 
@@ -3389,38 +3391,56 @@ namespace Foundation.Services
             //
             if (System.IO.File.Exists(cacheFailureFilePath))
             {
-                FileInfo fileInfo = new FileInfo(cacheFailureFilePath);
-                if (fileInfo.LastWriteTimeUtc < DateTime.UtcNow.AddHours(-24))
+                // Use per-file lock to prevent concurrent access conflicts
+                var failureLock = _fileLocks.GetOrAdd(cacheFailureFilePath, _ => new SemaphoreSlim(1, 1));
+                await failureLock.WaitAsync().ConfigureAwait(false);
+                try
                 {
-                    fileInfo.Delete();
-
-                    if (_logger != null)
+                    // Re-check after acquiring lock
+                    if (!System.IO.File.Exists(cacheFailureFilePath))
                     {
-                        _logger.LogInformation($"Deleted expired failure file: {cacheFailureFilePath}");
-                    }
-                }
-                else
-                {
-                    string failureResponse = await System.IO.File.ReadAllTextAsync(cacheFailureFilePath).ConfigureAwait(false);
-                    if (int.TryParse(failureResponse, out int responseCode))
-                    {
-                        if (_logger != null)
-                        {
-                            _logger.LogTrace($"Returning cached failure for tile {z}/{x}/{y}: {responseCode}");
-                        }
-
-                        return (flowControl: false, value: new TileResponse(null, null, responseCode, "Cached failure response.", false));
+                        // File was deleted by another thread, continue to normal flow
                     }
                     else
                     {
-                        if (_logger != null)
+                        FileInfo fileInfo = new FileInfo(cacheFailureFilePath);
+                        if (fileInfo.LastWriteTimeUtc < DateTime.UtcNow.AddHours(-24))
                         {
-                            _logger.LogWarning($"Invalid failure code in {cacheFailureFilePath}: '{failureResponse}'");
-                        }
+                            fileInfo.Delete();
 
-                        System.IO.File.Delete(cacheFailureFilePath);
-                        return (flowControl: false, value: new TileResponse(null, null, 400, "Invalid cached failure code.", false));
+                            if (_logger != null)
+                            {
+                                _logger.LogInformation($"Deleted expired failure file: {cacheFailureFilePath}");
+                            }
+                        }
+                        else
+                        {
+                            string failureResponse = await System.IO.File.ReadAllTextAsync(cacheFailureFilePath).ConfigureAwait(false);
+                            if (int.TryParse(failureResponse, out int responseCode))
+                            {
+                                if (_logger != null)
+                                {
+                                    _logger.LogTrace($"Returning cached failure for tile {z}/{x}/{y}: {responseCode}");
+                                }
+
+                                return (flowControl: false, value: new TileResponse(null, null, responseCode, "Cached failure response.", false));
+                            }
+                            else
+                            {
+                                if (_logger != null)
+                                {
+                                    _logger.LogWarning($"Invalid failure code in {cacheFailureFilePath}: '{failureResponse}'");
+                                }
+
+                                System.IO.File.Delete(cacheFailureFilePath);
+                                return (flowControl: false, value: new TileResponse(null, null, 400, "Invalid cached failure code.", false));
+                            }
+                        }
                     }
+                }
+                finally
+                {
+                    failureLock.Release();
                 }
             }
 
@@ -3434,23 +3454,39 @@ namespace Foundation.Services
                     _logger.LogTrace($"Disk cache hit for non-satellite tile {cacheFileName}");
                 }
 
-                byte[] tileData = await System.IO.File.ReadAllBytesAsync(cacheFilePath).ConfigureAwait(false);
-                if (tileData == null || tileData.Length == 0)
+                // Use per-file lock to prevent concurrent read/write conflicts
+                var fileLock = _fileLocks.GetOrAdd(cacheFilePath, _ => new SemaphoreSlim(1, 1));
+                await fileLock.WaitAsync().ConfigureAwait(false);
+                try
                 {
-                    if (_logger != null)
+                    // Re-check file exists after acquiring lock (another thread may have deleted it)
+                    if (!System.IO.File.Exists(cacheFilePath))
                     {
-                        _logger.LogError($"Invalid tile data from cache: {cacheFilePath}");
+                        return (flowControl: true, value: default);
                     }
 
-                    return (flowControl: false, value: new TileResponse(null, null, 500, "Invalid tile data from cache.", false));
+                    byte[] tileData = await System.IO.File.ReadAllBytesAsync(cacheFilePath).ConfigureAwait(false);
+                    if (tileData == null || tileData.Length == 0)
+                    {
+                        if (_logger != null)
+                        {
+                            _logger.LogError($"Invalid tile data from cache: {cacheFilePath}");
+                        }
+
+                        return (flowControl: false, value: new TileResponse(null, null, 500, "Invalid tile data from cache.", false));
+                    }
+
+                    //
+                    // Put the data we read from the disk cache into the memory cache
+                    //
+                    memoryTileCache.Add(memoryCacheKey, tileData);
+
+                    return (flowControl: false, value: new TileResponse(tileData, GenerateETag(tileData), null, null, true));
                 }
-
-                //
-                // Put the data we read from the disk cache into the memory cache
-                //
-                memoryTileCache.Add(memoryCacheKey, tileData);
-
-                return (flowControl: false, value: new TileResponse(tileData, GenerateETag(tileData), null, null, true));
+                finally
+                {
+                    fileLock.Release();
+                }
             }
 
             return (flowControl: true, value: default);

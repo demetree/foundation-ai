@@ -226,13 +226,37 @@
         }
 
         .app-self-badge {
-            background: var(--bs-primary, #0d6efd);
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             color: #fff;
-            font-size: 0.65rem;
-            padding: 0.2rem 0.5rem;
-            border-radius: 0.25rem;
+            font-size: 0.6rem;
+            font-weight: 600;
+            padding: 0.25rem 0.6rem;
+            border-radius: 1rem;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.08em;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
+            margin-left: 0.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+
+            &::before {
+                content: '●';
+                font-size: 0.5rem;
+                animation: pulse-dot 2s ease-in-out infinite;
+            }
+        }
+
+        @keyframes pulse-dot {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
         }
     }
 
