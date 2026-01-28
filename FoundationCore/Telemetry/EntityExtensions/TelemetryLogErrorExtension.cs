@@ -31,6 +31,8 @@ namespace Foundation.Telemetry.Telemetry.Database
 			public String level { get; set; }
 			public String message { get; set; }
 			public String exception { get; set; }
+			[Required]
+			public Int32 occurrenceCount { get; set; }
 		}
 
 
@@ -65,7 +67,8 @@ namespace Foundation.Telemetry.Telemetry.Database
 				logTimestamp = this.logTimestamp,
 				level = this.level,
 				message = this.message,
-				exception = this.exception
+				exception = this.exception,
+				occurrenceCount = this.occurrenceCount
 			};
 		}
 
@@ -113,6 +116,7 @@ namespace Foundation.Telemetry.Telemetry.Database
 				level = this.level,
 				message = this.message,
 				exception = this.exception,
+				occurrenceCount = this.occurrenceCount,
 				telemetryApplication = this.telemetryApplication?.ToDTO(),
 				telemetrySnapshot = this.telemetrySnapshot?.ToDTO()
 			};
@@ -161,7 +165,8 @@ namespace Foundation.Telemetry.Telemetry.Database
 				logTimestamp = dto.logTimestamp,
 				level = dto.level,
 				message = dto.message,
-				exception = dto.exception
+				exception = dto.exception,
+				occurrenceCount = dto.occurrenceCount
 			};
 		}
 
@@ -186,6 +191,7 @@ namespace Foundation.Telemetry.Telemetry.Database
 			this.level = dto.level;
 			this.message = dto.message;
 			this.exception = dto.exception;
+			this.occurrenceCount = dto.occurrenceCount;
 		}
 
 
@@ -209,6 +215,7 @@ namespace Foundation.Telemetry.Telemetry.Database
 				level = this.level,
 				message = this.message,
 				exception = this.exception,
+				occurrenceCount = this.occurrenceCount,
 			 };
 		}
 
@@ -270,6 +277,7 @@ namespace Foundation.Telemetry.Telemetry.Database
 				level = telemetryLogError.level,
 				message = telemetryLogError.message,
 				exception = telemetryLogError.exception,
+				occurrenceCount = telemetryLogError.occurrenceCount,
 			 };
 		}
 
@@ -298,6 +306,7 @@ namespace Foundation.Telemetry.Telemetry.Database
 				level = telemetryLogError.level,
 				message = telemetryLogError.message,
 				exception = telemetryLogError.exception,
+				occurrenceCount = telemetryLogError.occurrenceCount,
 				telemetryApplication = TelemetryApplication.CreateMinimalAnonymous(telemetryLogError.telemetryApplication),
 				telemetrySnapshot = TelemetrySnapshot.CreateMinimalAnonymous(telemetryLogError.telemetrySnapshot)
 			 };

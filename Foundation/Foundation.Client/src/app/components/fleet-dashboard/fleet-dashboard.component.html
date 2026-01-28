@@ -142,6 +142,61 @@
       </div>
     </div>
 
+    <!-- Fleet Aggregates Row -->
+    <div class="summary-cards mt-3" *ngIf="fleetMetrics">
+      <div class="summary-card">
+        <div class="card-icon bg-info">
+          <i class="fas fa-memory"></i>
+        </div>
+        <div class="card-content">
+          <h4>{{ (fleetMetrics.system.totalMemoryMB / 1024).toFixed(1) }} GB</h4>
+          <p>Total Memory</p>
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <div class="card-icon" [ngClass]="{
+          'bg-success': fleetMetrics.system.avgCpuPercent < 50,
+          'bg-warning': fleetMetrics.system.avgCpuPercent >= 50 && fleetMetrics.system.avgCpuPercent < 80,
+          'bg-danger': fleetMetrics.system.avgCpuPercent >= 80
+        }">
+          <i class="fas fa-microchip"></i>
+        </div>
+        <div class="card-content">
+          <h4>{{ fleetMetrics.system.avgCpuPercent.toFixed(1) }}%</h4>
+          <p>Avg CPU</p>
+        </div>
+      </div>
+
+      <div class="summary-card" *ngIf="fleetMetrics.system.totalLogErrors > 0">
+        <div class="card-icon bg-warning">
+          <i class="fas fa-file-alt"></i>
+        </div>
+        <div class="card-content">
+          <h4>{{ fleetMetrics.system.totalLogErrors }}</h4>
+          <p>Log Errors</p>
+        </div>
+      </div>
+
+      <!-- Business metric aggregates -->
+      <ng-container *ngFor="let metric of fleetMetrics.metrics">
+        <div class="summary-card" *ngIf="metric.count > 0">
+          <div class="card-icon" [ngClass]="{
+            'bg-success': metric.worstState === 0,
+            'bg-warning': metric.worstState === 1,
+            'bg-danger': metric.worstState === 2,
+            'bg-secondary': metric.worstState === null
+          }">
+            <i class="fas fa-chart-bar"></i>
+          </div>
+          <div class="card-content">
+            <h4>{{ metric.total | number:'1.0-0' }}</h4>
+            <p>{{ metric.metricName }}</p>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+
     <!-- Application Cards Grid -->
     <h5 class="section-title">
       <i class="fas fa-server me-2"></i>Service Status
@@ -1194,6 +1249,21 @@
           <div class="section-card mb-3" *ngIf="selectedSnapshotDetail.logErrors?.length">
             <h6 class="section-title"><i class="fas fa-exclamation-triangle me-2 text-danger"></i>Log Errors ({{
               selectedSnapshotDetail.logErrors.length }})</h6>
+
+            <!-- Filter Controls -->
+            <div class="d-flex gap-2 mb-2 flex-wrap">
+              <input type="text" class="form-control form-control-sm" style="max-width: 250px;"
+                placeholder="Search messages..." [(ngModel)]="logErrorFilter">
+              <select class="form-select form-select-sm" style="max-width: 120px;" [(ngModel)]="logErrorLevelFilter">
+                <option value="ALL">All Levels</option>
+                <option value="ERROR">ERROR</option>
+                <option value="FATAL">FATAL</option>
+                <option value="CRITICAL">CRITICAL</option>
+              </select>
+              <small class="text-muted align-self-center">Showing {{ filteredLogErrors.length }} of {{
+                selectedSnapshotDetail.logErrors.length }}</small>
+            </div>
+
             <div class="table-responsive">
               <table class="table table-sm mb-0">
                 <thead>
@@ -1201,25 +1271,32 @@
                     <th>Time</th>
                     <th>Level</th>
                     <th>Message</th>
+                    <th>Count</th>
                     <th>File</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <ng-container *ngFor="let err of selectedSnapshotDetail.logErrors">
+                  <ng-container *ngFor="let err of filteredLogErrors">
                     <tr>
                       <td style="white-space: nowrap;">{{ err.logTimestamp | date:'short' }}</td>
                       <td>
                         <span class="badge bg-danger">{{ err.level }}</span>
                       </td>
                       <td>
-                        <span class="text-truncate d-inline-block" style="max-width: 300px;" [title]="err.message">
+                        <span class="text-truncate d-inline-block" style="max-width: 280px;" [title]="err.message">
                           {{ err.message }}
+                        </span>
+                      </td>
+                      <td>
+                        <span class="badge"
+                          [ngClass]="err.occurrenceCount > 1 ? 'bg-warning text-dark' : 'bg-secondary'">
+                          {{ err.occurrenceCount || 1 }}x
                         </span>
                       </td>
                       <td><small class="text-muted">{{ err.logFileName }}</small></td>
                     </tr>
                     <tr *ngIf="err.exception" class="exception-row">
-                      <td colspan="4" class="bg-dark text-light py-1 px-2">
+                      <td colspan="5" class="bg-dark text-light py-1 px-2">
                         <details>
                           <summary class="text-warning small">View Exception Stack</summary>
                           <pre class="mb-0 small mt-1 text-light"

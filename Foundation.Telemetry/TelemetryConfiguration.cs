@@ -37,6 +37,23 @@ namespace Foundation.Telemetry
         /// UTC time of day to run the data purge job. Default: 03:00:00 (3 AM UTC)
         /// </summary>
         public TimeSpan PurgeRunTimeUtc { get; set; } = TimeSpan.FromHours(3);
+
+        /// <summary>
+        /// Directory path for log files to scan for errors. 
+        /// If not set, uses first LogViewer folder or defaults to "Log"
+        /// </summary>
+        public string LogDirectory { get; set; }
+
+        /// <summary>
+        /// Maximum number of errors per collection window before marking app unhealthy. 
+        /// Set to 0 to disable threshold checking. Default: 10
+        /// </summary>
+        public int ErrorThresholdCount { get; set; } = 10;
+
+        /// <summary>
+        /// Time window in minutes for error threshold calculation. Default: 5
+        /// </summary>
+        public int ErrorThresholdWindowMinutes { get; set; } = 5;
     }
 
     /// <summary>

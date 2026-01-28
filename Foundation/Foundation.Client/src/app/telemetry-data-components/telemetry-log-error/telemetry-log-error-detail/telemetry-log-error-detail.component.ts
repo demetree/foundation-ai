@@ -44,6 +44,7 @@ interface TelemetryLogErrorFormValues {
   level: string | null,
   message: string | null,
   exception: string | null,
+  occurrenceCount: string,     // Stored as string for form input, converted to number on submit.
 };
 
 
@@ -79,6 +80,7 @@ export class TelemetryLogErrorDetailComponent implements OnInit, CanComponentDea
         level: [''],
         message: [''],
         exception: [''],
+        occurrenceCount: ['', Validators.required],
       });
 
 
@@ -391,6 +393,7 @@ export class TelemetryLogErrorDetailComponent implements OnInit, CanComponentDea
         level: '',
         message: '',
         exception: '',
+        occurrenceCount: '',
    }, { emitEvent: false});
 
     }
@@ -408,6 +411,7 @@ export class TelemetryLogErrorDetailComponent implements OnInit, CanComponentDea
         level: telemetryLogErrorData.level ?? '',
         message: telemetryLogErrorData.message ?? '',
         exception: telemetryLogErrorData.exception ?? '',
+        occurrenceCount: telemetryLogErrorData.occurrenceCount?.toString() ?? '',
       }, { emitEvent: false});
     }
 
@@ -475,6 +479,7 @@ export class TelemetryLogErrorDetailComponent implements OnInit, CanComponentDea
         level: formValue.level?.trim() || null,
         message: formValue.message?.trim() || null,
         exception: formValue.exception?.trim() || null,
+        occurrenceCount: Number(formValue.occurrenceCount),
    };
 
 

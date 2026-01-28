@@ -21,7 +21,8 @@ import {
     TelemetryCollectionRunDto,
     MemoryTrendPoint,
     CpuTrendPoint,
-    SnapshotDetailDto
+    SnapshotDetailDto,
+    FleetMetricsResponse
 } from '../../services/telemetry.service';
 import { SystemHealthService, SystemHealthStatus, AuthenticatedUsersInfo, ApplicationMetricsResponse } from '../../services/system-health.service';
 
@@ -72,6 +73,9 @@ export class FleetDashboardComponent implements OnInit, OnDestroy {
     recentSnapshots: TelemetrySnapshotDto[] = [];
     collectionRuns: TelemetryCollectionRunDto[] = [];
     memoryTrends: MemoryTrendPoint[] = [];
+
+    // Fleet aggregates
+    fleetMetrics: FleetMetricsResponse | null = null;
 
     // Filters
     selectedAppName: string = '';
@@ -126,6 +130,8 @@ export class FleetDashboardComponent implements OnInit, OnDestroy {
     // Snapshot detail modal
     selectedSnapshotDetail: SnapshotDetailDto | null = null;
     snapshotDetailLoading = false;
+    logErrorFilter = '';
+    logErrorLevelFilter = 'ALL';
 
     constructor(
         private http: HttpClient,
@@ -198,6 +204,18 @@ export class FleetDashboardComponent implements OnInit, OnDestroy {
                 },
                 error: (err: Error) => {
                     console.error('Failed to load application metrics:', err);
+                }
+            });
+
+        // Load fleet aggregates
+        this.telemetryService.getFleetMetrics()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (metrics) => {
+                    this.fleetMetrics = metrics;
+                },
+                error: (err: Error) => {
+                    console.error('Failed to load fleet metrics:', err);
                 }
             });
     }
@@ -819,5 +837,26 @@ export class FleetDashboardComponent implements OnInit, OnDestroy {
 
     closeSnapshotDetail(): void {
         this.selectedSnapshotDetail = null;
+        this.logErrorFilter = '';
+        this.logErrorLevelFilter = 'ALL';
+    }
+
+    get filteredLogErrors(): any[] {
+        if (!this.selectedSnapshotDetail?.logErrors) return [];
+
+        return this.selectedSnapshotDetail.logErrors.filter(err => {
+            // Filter by level
+            if (this.logErrorLevelFilter !== 'ALL' && err.level !== this.logErrorLevelFilter) {
+                return false;
+            }
+            // Filter by text search
+            if (this.logErrorFilter) {
+                const search = this.logErrorFilter.toLowerCase();
+                return (err.message?.toLowerCase().includes(search) ||
+                    err.exception?.toLowerCase().includes(search) ||
+                    err.logFileName?.toLowerCase().includes(search));
+            }
+            return true;
+        });
     }
 }

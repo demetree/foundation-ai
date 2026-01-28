@@ -185,7 +185,8 @@ namespace Foundation.Controllers.WebAPI
                             e.level,
                             e.message,
                             e.exception,
-                            e.logFileName
+                            e.logFileName,
+                            e.occurrenceCount
                         })
                     };
 
@@ -396,6 +397,139 @@ namespace Foundation.Controllers.WebAPI
             {
                 _logger.LogError(ex, "Error retrieving session trends");
                 return Problem("Failed to retrieve session trends");
+            }
+        }
+
+
+        //
+        // GET: api/Telemetry/trends/metrics
+        //
+        // Returns business metric trends for charting/sparklines
+        //
+        [HttpGet("trends/metrics")]
+        public async Task<IActionResult> GetMetricTrends(
+            [FromQuery] string appName = null,
+            [FromQuery] string metricName = null,
+            [FromQuery] int hours = 24,
+            [FromQuery] int limit = 100)
+        {
+            try
+            {
+                var startTime = DateTime.UtcNow.AddHours(-hours);
+
+                using (var context = new TelemetryContext())
+                {
+                    var query = context.TelemetryApplicationMetrics
+                        .Include(m => m.telemetrySnapshot)
+                            .ThenInclude(s => s.telemetryApplication)
+                        .Where(m => m.telemetrySnapshot.collectedAt >= startTime)
+                        .AsQueryable();
+
+                    if (!string.IsNullOrWhiteSpace(appName))
+                    {
+                        query = query.Where(m => m.telemetrySnapshot.telemetryApplication.name == appName);
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(metricName))
+                    {
+                        query = query.Where(m => m.metricName == metricName);
+                    }
+
+                    var data = await query
+                        .OrderByDescending(m => m.telemetrySnapshot.collectedAt)
+                        .Take(limit)
+                        .Select(m => new
+                        {
+                            timestamp = m.telemetrySnapshot.collectedAt,
+                            applicationName = m.telemetrySnapshot.telemetryApplication.name,
+                            metricName = m.metricName,
+                            value = m.numericValue,
+                            state = m.state
+                        })
+                        .ToListAsync()
+                        .ConfigureAwait(false);
+
+                    // Also return available metric names for the filter dropdown
+                    var availableMetrics = await context.TelemetryApplicationMetrics
+                        .Where(m => m.telemetrySnapshot.collectedAt >= startTime)
+                        .Select(m => m.metricName)
+                        .Distinct()
+                        .ToListAsync()
+                        .ConfigureAwait(false);
+
+                    return Ok(new { data, hours, count = data.Count, availableMetrics });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving metric trends");
+                return Problem("Failed to retrieve metric trends");
+            }
+        }
+
+
+        //
+        // GET: api/Telemetry/fleetMetrics
+        //
+        // Returns aggregated metrics across all applications for fleet overview
+        //
+        [HttpGet("fleetMetrics")]
+        public async Task<IActionResult> GetFleetMetrics()
+        {
+            try
+            {
+                using (var context = new TelemetryContext())
+                {
+                    // Get the latest snapshot for each application
+                    var latestSnapshots = await context.TelemetrySnapshots
+                        .Include(s => s.telemetryApplication)
+                        .Include(s => s.TelemetryApplicationMetrics)
+                        .Include(s => s.TelemetryLogErrors)
+                        .GroupBy(s => s.telemetryApplicationId)
+                        .Select(g => g.OrderByDescending(s => s.collectedAt).FirstOrDefault())
+                        .ToListAsync()
+                        .ConfigureAwait(false);
+
+                    // Aggregate numeric metrics by name
+                    var metricAggregates = latestSnapshots
+                        .SelectMany(s => s.TelemetryApplicationMetrics)
+                        .Where(m => m.numericValue.HasValue)
+                        .GroupBy(m => m.metricName)
+                        .Select(g => new
+                        {
+                            metricName = g.Key,
+                            total = g.Sum(m => m.numericValue ?? 0),
+                            average = g.Average(m => m.numericValue ?? 0),
+                            count = g.Count(),
+                            worstState = g.Max(m => m.state)
+                        })
+                        .ToList();
+
+                    // Aggregate system metrics
+                    var systemAggregates = new
+                    {
+                        applicationCount = latestSnapshots.Count,
+                        onlineCount = latestSnapshots.Count(s => s.isOnline),
+                        totalMemoryMB = latestSnapshots.Where(s => s.isOnline).Sum(s => s.memoryWorkingSetMB ?? 0),
+                        avgCpuPercent = latestSnapshots.Where(s => s.isOnline && s.cpuPercent.HasValue)
+                            .Select(s => s.cpuPercent.Value)
+                            .DefaultIfEmpty(0)
+                            .Average(),
+                        totalLogErrors = latestSnapshots.Sum(s => s.TelemetryLogErrors.Sum(e => e.occurrenceCount))
+                    };
+
+                    return Ok(new
+                    {
+                        system = systemAggregates,
+                        metrics = metricAggregates,
+                        timestamp = DateTime.UtcNow
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving fleet metrics");
+                return Problem("Failed to retrieve fleet metrics");
             }
         }
 

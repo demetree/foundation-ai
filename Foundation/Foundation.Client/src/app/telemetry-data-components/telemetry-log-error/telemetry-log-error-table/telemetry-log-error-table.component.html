@@ -55,6 +55,10 @@
                 Exception
                 <span *ngIf="sortColumn === 'exception'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('occurrenceCount')">
+                Occurrence  Count
+                <span *ngIf="sortColumn === 'occurrenceCount'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
 End of commented block for alternate definition option -->
           </tr>
         </thead>
@@ -133,6 +137,7 @@ End of commented block for alternate definition option -->
             <td class="text-truncate">{{telemetryLogError.level}}</td>
             <td class="text-truncate">{{telemetryLogError.message}}</td>
             <td class="text-truncate">{{telemetryLogError.exception}}</td>
+            <td class="text-truncate">{{telemetryLogError.occurrenceCount | bigNumberFormat : '1.0-2'}}</td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -296,6 +301,10 @@ End of commented block for alternate definition option -->
             <p class="telemetry-log-error-info" *ngIf="telemetryLogError.exception != null">
               <strong>Exception: </strong>
               {{telemetryLogError.exception}}
+            </p>
+            <p class="telemetry-log-error-info" *ngIf="telemetryLogError.occurrenceCount != null">
+              <strong>Occurrence Count: </strong>
+              {{telemetryLogError.occurrenceCount | bigNumberFormat : '1.0-2'}}
             </p>
             </div>
          </div>

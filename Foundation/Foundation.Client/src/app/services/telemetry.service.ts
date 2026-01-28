@@ -146,6 +146,7 @@ export interface LogErrorDto {
     message?: string;
     exception?: string;
     logFileName?: string;
+    occurrenceCount?: number;
 }
 
 // Error event types
@@ -231,6 +232,41 @@ export interface TelemetrySummaryResponse {
     };
 }
 
+// Fleet aggregation types
+export interface FleetMetricsResponse {
+    system: {
+        applicationCount: number;
+        onlineCount: number;
+        totalMemoryMB: number;
+        avgCpuPercent: number;
+        totalLogErrors: number;
+    };
+    metrics: {
+        metricName: string;
+        total: number;
+        average: number;
+        count: number;
+        worstState: number;
+    }[];
+    timestamp: Date;
+}
+
+// Metric trend types
+export interface MetricTrendPoint {
+    timestamp: Date;
+    applicationName: string;
+    metricName: string;
+    value: number;
+    state?: number;
+}
+
+export interface MetricTrendsResponse {
+    data: MetricTrendPoint[];
+    hours: number;
+    count: number;
+    availableMetrics: string[];
+}
+
 
 @Injectable({
     providedIn: 'root'
@@ -250,6 +286,30 @@ export class TelemetryService {
         return this.http.get<TelemetrySummaryResponse>(
             `${this.baseUrl}/summary`,
             { headers: this.authService.GetAuthenticationHeaders() }
+        );
+    }
+
+    /**
+     * Get aggregated fleet metrics across all applications
+     */
+    getFleetMetrics(): Observable<FleetMetricsResponse> {
+        return this.http.get<FleetMetricsResponse>(
+            `${this.baseUrl}/fleetMetrics`,
+            { headers: this.authService.GetAuthenticationHeaders() }
+        );
+    }
+
+    /**
+     * Get metric trends for sparklines/charts
+     */
+    getMetricTrends(appName?: string, metricName?: string, hours: number = 24, limit: number = 100): Observable<MetricTrendsResponse> {
+        let params = new HttpParams().set('hours', hours.toString()).set('limit', limit.toString());
+        if (appName) params = params.set('appName', appName);
+        if (metricName) params = params.set('metricName', metricName);
+
+        return this.http.get<MetricTrendsResponse>(
+            `${this.baseUrl}/trends/metrics`,
+            { headers: this.authService.GetAuthenticationHeaders(), params }
         );
     }
 

@@ -219,6 +219,7 @@ CREATE TABLE "TelemetryLogError"
 	"level" VARCHAR(50) NULL COLLATE NOCASE,
 	"message" TEXT NULL COLLATE NOCASE,
 	"exception" TEXT NULL COLLATE NOCASE,
+	"occurrenceCount" INTEGER NOT NULL DEFAULT 1,		-- For deduplication - how many identical errors
 	FOREIGN KEY ("telemetryApplicationId") REFERENCES "TelemetryApplication"("id"),		-- Foreign key to the TelemetryApplication table.
 	FOREIGN KEY ("telemetrySnapshotId") REFERENCES "TelemetrySnapshot"("id")		-- Foreign key to the TelemetrySnapshot table.
 );

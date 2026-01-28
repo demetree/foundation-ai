@@ -25,6 +25,8 @@ public partial class TelemetryLogError
 
     public string exception { get; set; }
 
+    public int occurrenceCount { get; set; }
+
     public virtual TelemetryApplication telemetryApplication { get; set; }
 
     public virtual TelemetrySnapshot telemetrySnapshot { get; set; }

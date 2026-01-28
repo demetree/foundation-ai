@@ -23,6 +23,30 @@ namespace Foundation.Telemetry
             // Register the collector service as singleton
             services.AddSingleton<TelemetryCollectorService>();
 
+            // Register log error provider for log file parsing
+            // Uses Telemetry:LogDirectory if set, otherwise falls back to first LogViewer folder
+            var logDirectory = configuration.GetValue<string>("Telemetry:LogDirectory");
+            if (string.IsNullOrEmpty(logDirectory))
+            {
+                // Fall back to first LogViewer folder if configured
+                var logFolders = configuration.GetSection("LogViewer:LogFolders").GetChildren();
+                foreach (var folder in logFolders)
+                {
+                    logDirectory = folder.GetValue<string>("Path");
+                    if (!string.IsNullOrEmpty(logDirectory))
+                        break;
+                }
+            }
+            
+            // Default to "Log" if nothing configured
+            logDirectory ??= "Log";
+
+            services.AddSingleton<ILogErrorProvider>(sp =>
+                new FileLogErrorProvider(
+                    sp.GetRequiredService<ILogger<FileLogErrorProvider>>(),
+                    logDirectory
+                ));
+
             return services;
         }
 

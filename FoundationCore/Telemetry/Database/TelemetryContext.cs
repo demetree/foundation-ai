@@ -35,13 +35,13 @@ public partial class TelemetryContext : DbContext
     {
         modelBuilder.Entity<TelemetryApplication>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Telemetr__3213E83FB22B7BEB");
+            entity.HasKey(e => e.id).HasName("PK__Telemetr__3213E83F85E01C88");
 
             entity.ToTable("TelemetryApplication", "Telemetry");
 
             entity.HasIndex(e => e.name, "I_TelemetryApplication_name");
 
-            entity.HasIndex(e => e.name, "UQ__Telemetr__72E12F1B8F3C6700").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__Telemetr__72E12F1B91FC91B5").IsUnique();
 
             entity.Property(e => e.name)
                 .IsRequired()
@@ -51,7 +51,7 @@ public partial class TelemetryContext : DbContext
 
         modelBuilder.Entity<TelemetryApplicationMetric>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Telemetr__3213E83F21D027CE");
+            entity.HasKey(e => e.id).HasName("PK__Telemetr__3213E83FD15C6BBB");
 
             entity.ToTable("TelemetryApplicationMetric", "Telemetry");
 
@@ -70,7 +70,7 @@ public partial class TelemetryContext : DbContext
 
         modelBuilder.Entity<TelemetryCollectionRun>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Telemetr__3213E83F88AEC8B3");
+            entity.HasKey(e => e.id).HasName("PK__Telemetr__3213E83FE759B25E");
 
             entity.ToTable("TelemetryCollectionRun", "Telemetry");
 
@@ -79,7 +79,7 @@ public partial class TelemetryContext : DbContext
 
         modelBuilder.Entity<TelemetryDatabaseHealth>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Telemetr__3213E83F62B6DCD3");
+            entity.HasKey(e => e.id).HasName("PK__Telemetr__3213E83F17B2E3B6");
 
             entity.ToTable("TelemetryDatabaseHealth", "Telemetry");
 
@@ -100,7 +100,7 @@ public partial class TelemetryContext : DbContext
 
         modelBuilder.Entity<TelemetryDiskHealth>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Telemetr__3213E83F96C652C0");
+            entity.HasKey(e => e.id).HasName("PK__Telemetr__3213E83F24830CC5");
 
             entity.ToTable("TelemetryDiskHealth", "Telemetry");
 
@@ -119,7 +119,7 @@ public partial class TelemetryContext : DbContext
 
         modelBuilder.Entity<TelemetryErrorEvent>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Telemetr__3213E83FF661ADC3");
+            entity.HasKey(e => e.id).HasName("PK__Telemetr__3213E83F0C6F95BF");
 
             entity.ToTable("TelemetryErrorEvent", "Telemetry");
 
@@ -143,7 +143,7 @@ public partial class TelemetryContext : DbContext
 
         modelBuilder.Entity<TelemetryLogError>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Telemetr__3213E83F3112FD4F");
+            entity.HasKey(e => e.id).HasName("PK__Telemetr__3213E83F6B79E150");
 
             entity.ToTable("TelemetryLogError", "Telemetry");
 
@@ -155,6 +155,7 @@ public partial class TelemetryContext : DbContext
 
             entity.Property(e => e.level).HasMaxLength(50);
             entity.Property(e => e.logFileName).HasMaxLength(250);
+            entity.Property(e => e.occurrenceCount).HasDefaultValue(1);
 
             entity.HasOne(d => d.telemetryApplication).WithMany(p => p.TelemetryLogErrors)
                 .HasForeignKey(d => d.telemetryApplicationId)
@@ -165,7 +166,7 @@ public partial class TelemetryContext : DbContext
 
         modelBuilder.Entity<TelemetrySessionSnapshot>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Telemetr__3213E83F4A85254A");
+            entity.HasKey(e => e.id).HasName("PK__Telemetr__3213E83FEA245300");
 
             entity.ToTable("TelemetrySessionSnapshot", "Telemetry");
 
@@ -178,7 +179,7 @@ public partial class TelemetryContext : DbContext
 
         modelBuilder.Entity<TelemetrySnapshot>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Telemetr__3213E83FD6F21CD4");
+            entity.HasKey(e => e.id).HasName("PK__Telemetr__3213E83F868ACD03");
 
             entity.ToTable("TelemetrySnapshot", "Telemetry");
 

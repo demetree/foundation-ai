@@ -172,6 +172,7 @@ export class TelemetryLogErrorTableComponent implements OnInit, OnChanges, After
     { key: 'level', label: 'Level', width: undefined },
     { key: 'message', label: 'Message', width: undefined },
     { key: 'exception', label: 'Exception', width: undefined },
+    { key: 'occurrenceCount', label: 'Occurrence Count', width: undefined },
 
     ];
 
@@ -321,6 +322,7 @@ export class TelemetryLogErrorTableComponent implements OnInit, OnChanges, After
                       'level',
                       'message',
                       'exception',
+                      'occurrenceCount',
         ];
 
         result = result.filter((telemetryLogError) =>

@@ -37,6 +37,7 @@ export class TelemetryLogErrorQueryParameters {
     level: string | null | undefined = null;
     message: string | null | undefined = null;
     exception: string | null | undefined = null;
+    occurrenceCount: bigint | number | null | undefined = null;
     pageSize: bigint | number | null | undefined = null;
     pageNumber: bigint | number | null | undefined = null;
     includeRelations: boolean | null | undefined = null;
@@ -57,6 +58,7 @@ export class TelemetryLogErrorSubmitData {
     level: string | null = null;
     message: string | null = null;
     exception: string | null = null;
+    occurrenceCount!: bigint | number;
 }
 
 
@@ -112,6 +114,7 @@ export class TelemetryLogErrorData {
     level!: string | null;
     message!: string | null;
     exception!: string | null;
+    occurrenceCount!: bigint | number;
     telemetryApplication: TelemetryApplicationData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     telemetrySnapshot: TelemetrySnapshotData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
 
@@ -269,6 +272,7 @@ export class TelemetryLogErrorService extends SecureEndpointBase {
         output.level = data.level;
         output.message = data.message;
         output.exception = data.exception;
+        output.occurrenceCount = data.occurrenceCount;
 
         return output;
     }

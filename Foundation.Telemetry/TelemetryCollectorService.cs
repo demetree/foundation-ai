@@ -194,6 +194,9 @@ namespace Foundation.Telemetry
                             {
                                 PopulateChildRecordsFromHealthData(context, snapshot, status.HealthData);
                             }
+
+                            // Check if error threshold exceeded and log warning
+                            CheckErrorThreshold(app.name, snapshot);
                         }
                         catch (Exception ex)
                         {
@@ -403,34 +406,60 @@ namespace Foundation.Telemetry
                     }
                 }
 
-                // Recent log errors - navigate to recentErrors.errors
+                // Recent log errors - navigate to recentErrors.errors (with deduplication)
                 if (healthJson.TryGetProperty("recentErrors", out var recentErrorsRoot)
                     && recentErrorsRoot.TryGetProperty("errors", out var errorsArray)
                     && errorsArray.ValueKind == JsonValueKind.Array)
                 {
+                    // Group errors by message+level to deduplicate
+                    var errorGroups = new Dictionary<string, (TelemetryLogError error, int count)>();
+
                     foreach (var err in errorsArray.EnumerateArray())
                     {
-                        var logError = new TelemetryLogError
-                        {
-                            telemetryApplicationId = snapshot.telemetryApplicationId,
-                            capturedAt = DateTime.UtcNow,
-                            logFileName = err.TryGetProperty("logFileName", out var fn) ? fn.GetString() : null,
-                            level = err.TryGetProperty("level", out var lvl) ? lvl.GetString() : "ERROR",
-                            message = err.TryGetProperty("message", out var msg) ? msg.GetString() : null,
-                            exception = err.TryGetProperty("exception", out var ex) ? ex.GetString() : null
-                        };
+                        var level = err.TryGetProperty("level", out var lvl) ? lvl.GetString() : "ERROR";
+                        var message = err.TryGetProperty("message", out var msg) ? msg.GetString() : null;
+                        
+                        // Create a deduplication key from level + message (truncated for grouping)
+                        var dedupKey = $"{level}|{(message?.Length > 200 ? message.Substring(0, 200) : message)}";
 
-                        // Parse log timestamp
-                        if (err.TryGetProperty("timestamp", out var ts) && ts.ValueKind != JsonValueKind.Null)
+                        if (errorGroups.TryGetValue(dedupKey, out var existing))
                         {
-                            try
-                            {
-                                logError.logTimestamp = ts.GetDateTime();
-                            }
-                            catch { /* ignore parse errors */ }
+                            // Increment count for existing error
+                            errorGroups[dedupKey] = (existing.error, existing.count + 1);
                         }
+                        else
+                        {
+                            // Create new error entry
+                            var logError = new TelemetryLogError
+                            {
+                                telemetryApplicationId = snapshot.telemetryApplicationId,
+                                capturedAt = DateTime.UtcNow,
+                                logFileName = err.TryGetProperty("logFileName", out var fn) ? fn.GetString() : null,
+                                level = level,
+                                message = message,
+                                exception = err.TryGetProperty("exception", out var ex) ? ex.GetString() : null,
+                                occurrenceCount = 1
+                            };
 
-                        snapshot.TelemetryLogErrors.Add(logError);
+                            // Parse log timestamp
+                            if (err.TryGetProperty("timestamp", out var ts) && ts.ValueKind != JsonValueKind.Null)
+                            {
+                                try
+                                {
+                                    logError.logTimestamp = ts.GetDateTime();
+                                }
+                                catch { /* ignore parse errors */ }
+                            }
+
+                            errorGroups[dedupKey] = (logError, 1);
+                        }
+                    }
+
+                    // Add deduplicated errors with their counts
+                    foreach (var group in errorGroups.Values)
+                    {
+                        group.error.occurrenceCount = group.count;
+                        snapshot.TelemetryLogErrors.Add(group.error);
                     }
                 }
             }
@@ -503,6 +532,25 @@ namespace Foundation.Telemetry
             {
                 var hours = minutes / 60;
                 return $"0 */{hours} * * *"; // Every X hours
+            }
+        }
+
+        /// <summary>
+        /// Check if error threshold is exceeded and log warning.
+        /// Does not modify data but provides operational alerting.
+        /// </summary>
+        private void CheckErrorThreshold(string appName, TelemetrySnapshot snapshot)
+        {
+            if (_config.ErrorThresholdCount <= 0) return; // Threshold check disabled
+
+            // Sum occurrence counts from log errors in this snapshot
+            var totalErrors = snapshot.TelemetryLogErrors?.Sum(e => e.occurrenceCount) ?? 0;
+
+            if (totalErrors >= _config.ErrorThresholdCount)
+            {
+                _logger.LogWarning(
+                    "Error threshold exceeded for {AppName}: {ErrorCount} errors (threshold: {Threshold}) in collection window",
+                    appName, totalErrors, _config.ErrorThresholdCount);
             }
         }
 

@@ -246,7 +246,9 @@ CREATE TABLE [Telemetry].[TelemetryLogError]
 	[logTimestamp] DATETIME2(7) NULL,
 	[level] NVARCHAR(50) NULL,
 	[message] NVARCHAR(MAX) NULL,
-	[exception] NVARCHAR(MAX) NULL
+	[exception] NVARCHAR(MAX) NULL,
+	[occurrenceCount] INT NOT NULL DEFAULT 1		-- For deduplication - how many identical errors
+
 	CONSTRAINT [FK_TelemetryLogError_TelemetryApplication_telemetryApplicationId] FOREIGN KEY ([telemetryApplicationId]) REFERENCES [Telemetry].[TelemetryApplication] ([id]),		-- Foreign key to the TelemetryApplication table.
 	CONSTRAINT [FK_TelemetryLogError_TelemetrySnapshot_telemetrySnapshotId] FOREIGN KEY ([telemetrySnapshotId]) REFERENCES [Telemetry].[TelemetrySnapshot] ([id])		-- Foreign key to the TelemetrySnapshot table.
 )

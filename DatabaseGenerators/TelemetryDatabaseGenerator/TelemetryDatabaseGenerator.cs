@@ -277,6 +277,7 @@ and correlated error events from audit logs and log files.";
             telemetryLogErrorTable.AddString50Field("level", true);
             telemetryLogErrorTable.AddTextField("message", true);
             telemetryLogErrorTable.AddTextField("exception", true);
+            telemetryLogErrorTable.AddIntField("occurrenceCount", false, 1).AddScriptComments("For deduplication - how many identical errors");
 
             #endregion
         }

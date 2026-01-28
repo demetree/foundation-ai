@@ -70,6 +70,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			string level = null,
 			string message = null,
 			string exception = null,
+			int? occurrenceCount = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			string anyStringContains = null,
@@ -146,6 +147,10 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			if (string.IsNullOrEmpty(exception) == false)
 			{
 				query = query.Where(tle => tle.exception == exception);
+			}
+			if (occurrenceCount.HasValue == true)
+			{
+				query = query.Where(tle => tle.occurrenceCount == occurrenceCount.Value);
 			}
 
 			query = query.OrderBy(tle => tle.logFileName).ThenBy(tle => tle.level);
@@ -231,6 +236,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			string level = null,
 			string message = null,
 			string exception = null,
+			int? occurrenceCount = null,
 			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
@@ -289,6 +295,10 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			if (exception != null)
 			{
 				query = query.Where(tle => tle.exception == exception);
+			}
+			if (occurrenceCount.HasValue == true)
+			{
+				query = query.Where(tle => tle.occurrenceCount == occurrenceCount.Value);
 			}
 
 			//
@@ -680,6 +690,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			string level = null,
 			string message = null,
 			string exception = null,
+			int? occurrenceCount = null,
 			string anyStringContains = null,
 			int? pageSize = null,
 			int? pageNumber = null,
@@ -754,6 +765,10 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			if (string.IsNullOrEmpty(exception) == false)
 			{
 				query = query.Where(tle => tle.exception == exception);
+			}
+			if (occurrenceCount.HasValue == true)
+			{
+				query = query.Where(tle => tle.occurrenceCount == occurrenceCount.Value);
 			}
 
 

@@ -44,6 +44,7 @@ interface TelemetryLogErrorFormValues {
   level: string | null,
   message: string | null,
   exception: string | null,
+  occurrenceCount: string,     // Stored as string for form input, converted to number on submit.
 };
 
 @Component({
@@ -82,6 +83,7 @@ export class TelemetryLogErrorAddEditComponent {
         level: [''],
         message: [''],
         exception: [''],
+        occurrenceCount: ['', Validators.required],
       });
 
   private modalRef: NgbModalRef | undefined;
@@ -226,6 +228,7 @@ export class TelemetryLogErrorAddEditComponent {
         level: formValue.level?.trim() || null,
         message: formValue.message?.trim() || null,
         exception: formValue.exception?.trim() || null,
+        occurrenceCount: Number(formValue.occurrenceCount),
    };
 
       if (this.isEditMode) {
@@ -356,6 +359,7 @@ export class TelemetryLogErrorAddEditComponent {
         level: '',
         message: '',
         exception: '',
+        occurrenceCount: '',
    }, { emitEvent: false});
 
     }
@@ -373,6 +377,7 @@ export class TelemetryLogErrorAddEditComponent {
         level: telemetryLogErrorData.level ?? '',
         message: telemetryLogErrorData.message ?? '',
         exception: telemetryLogErrorData.exception ?? '',
+        occurrenceCount: telemetryLogErrorData.occurrenceCount?.toString() ?? '',
       }, { emitEvent: false});
     }
 

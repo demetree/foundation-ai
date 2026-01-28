@@ -65,6 +65,13 @@
                 <label for="TelemetryLogError-exception" id="label-TelemetryLogError-exception">Exception</label>
                 <textarea id="TelemetryLogError-exception" formControlName="exception" placeholder="Enter Exception" class="form-control telemetry-log-error-input" [disabled]="!userIsTelemetryTelemetryLogErrorWriter()"></textarea>
             </div>
+            <div class="form-group" *ngIf="!isFieldHidden('occurrenceCount')">
+                <label for="TelemetryLogError-occurrenceCount" id="label-TelemetryLogError-occurrenceCount"><span class="text-danger">*</span>Occurrence Count</label>
+                <input type="number" id="TelemetryLogError-occurrenceCount" formControlName="occurrenceCount" placeholder="Enter Occurrence Count" class="form-control telemetry-log-error-input" [disabled]="!userIsTelemetryTelemetryLogErrorWriter()" aria-labelledby="label-occurrenceCount" />
+                <div *ngIf="telemetryLogErrorForm.get('occurrenceCount')?.invalid && telemetryLogErrorForm.get('occurrenceCount')?.touched" class="text-danger">
+                    Occurrence Count is required
+                </div>
+            </div>
          <div class="modal-footer telemetry-log-error-modal-footer">
             <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Telemetry Log Error changes and Close">Cancel</button>
             <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !telemetryLogErrorForm.valid || telemetryLogErrorForm.pristine  || userIsTelemetryTelemetryLogErrorWriter() == false " ngbTooltip="Save the Telemetry Log Error changes and Close">
