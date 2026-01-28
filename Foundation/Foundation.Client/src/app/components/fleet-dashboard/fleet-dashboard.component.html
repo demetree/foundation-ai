@@ -142,8 +142,28 @@
       </div>
     </div>
 
+    <!-- Fleet Aggregates Header with Controls -->
+    <div class="fleet-aggregates-header" *ngIf="fleetMetrics">
+      <h6 class="mb-0">
+        <i class="fas fa-chart-line me-2"></i>Fleet Aggregates
+        <span class="badge bg-secondary ms-2" *ngIf="lastRefreshTime">
+          Updated {{ getTimeSinceRefresh() }}
+        </span>
+      </h6>
+      <div class="d-flex align-items-center gap-2">
+        <select class="form-select form-select-sm sparkline-range-select" [(ngModel)]="sparklineHours"
+          (change)="onSparklineHoursChange(sparklineHours)">
+          <option *ngFor="let h of sparklineHourOptions" [value]="h">{{ h }}h</option>
+        </select>
+        <button class="btn btn-sm btn-outline-secondary" (click)="refreshSparklines()" [disabled]="refreshing"
+          title="Refresh sparklines">
+          <i class="fas" [ngClass]="refreshing ? 'fa-spinner fa-spin' : 'fa-sync-alt'"></i>
+        </button>
+      </div>
+    </div>
+
     <!-- Fleet Aggregates Row -->
-    <div class="summary-cards mt-3" *ngIf="fleetMetrics">
+    <div class="summary-cards" *ngIf="fleetMetrics">
       <div class="summary-card summary-card-with-sparkline">
         <div class="card-icon bg-info">
           <i class="fas fa-memory"></i>
@@ -174,6 +194,21 @@
         <!-- CPU Sparkline -->
         <div class="sparkline-container" *ngIf="cpuSparkline">
           <canvas baseChart [data]="cpuSparkline" [options]="sparklineOptions" [type]="lineChartType">
+          </canvas>
+        </div>
+      </div>
+
+      <!-- Disk Space Card with Sparkline -->
+      <div class="summary-card summary-card-with-sparkline">
+        <div class="card-icon bg-purple">
+          <i class="fas fa-hdd"></i>
+        </div>
+        <div class="card-content">
+          <h4><i class="fas fa-chart-area text-muted" style="font-size: 1rem;"></i></h4>
+          <p>Disk Free %</p>
+        </div>
+        <div class="sparkline-container" *ngIf="diskSparkline">
+          <canvas baseChart [data]="diskSparkline" [options]="sparklineOptions" [type]="lineChartType">
           </canvas>
         </div>
       </div>

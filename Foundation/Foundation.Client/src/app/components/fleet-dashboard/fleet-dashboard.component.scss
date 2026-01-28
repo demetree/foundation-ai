@@ -85,6 +85,30 @@
     margin-top: -1px;
 }
 
+// Fleet Aggregates Header with controls
+.fleet-aggregates-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 1.5rem 0 0.75rem 0;
+    padding: 0.5rem 0;
+
+    h6 {
+        font-weight: 600;
+        color: var(--bs-heading-color, #212529);
+    }
+
+    .sparkline-range-select {
+        width: auto;
+        min-width: 70px;
+    }
+}
+
+// Purple background for disk icon
+.bg-purple {
+    background: linear-gradient(135deg, #6f42c1 0%, #9163cb 100%);
+}
+
 // Summary Cards
 .summary-cards {
     display: grid;

@@ -141,9 +141,18 @@ export class FleetDashboardComponent implements OnInit, OnDestroy {
     metricTrends: Map<string, MetricTrendPoint[]> = new Map();
     metricSparklines: Map<string, ChartData<'line'>> = new Map();
 
-    // System metric sparklines (memory + CPU)
+    // System metric sparklines (memory + CPU + disk)
     memorySparkline: ChartData<'line'> | null = null;
     cpuSparkline: ChartData<'line'> | null = null;
+    diskSparkline: ChartData<'line'> | null = null;
+
+    // Sparkline time range controls
+    sparklineHours = 24;
+    sparklineHourOptions = [1, 6, 24];
+
+    // Last refresh tracking
+    lastRefreshTime: Date | null = null;
+    refreshing = false;
 
     // Snapshot detail modal
     selectedSnapshotDetail: SnapshotDetailDto | null = null;
@@ -248,7 +257,7 @@ export class FleetDashboardComponent implements OnInit, OnDestroy {
 
         // Load trends for each business metric
         this.fleetMetrics.metrics.forEach(metric => {
-            this.telemetryService.getMetricTrends(undefined, metric.metricName, 24, 50)
+            this.telemetryService.getMetricTrends(undefined, metric.metricName, this.sparklineHours, 50)
                 .pipe(takeUntil(this.destroy$))
                 .subscribe({
                     next: (response) => {
@@ -272,8 +281,34 @@ export class FleetDashboardComponent implements OnInit, OnDestroy {
                 });
         });
 
-        // Also load system metric sparklines (memory + CPU)
+        // Also load system metric sparklines (memory + CPU + disk)
         this.loadSystemSparklines();
+
+        // Track refresh time
+        this.lastRefreshTime = new Date();
+    }
+
+    /**
+     * Refresh all sparklines (called by refresh button or time range change)
+     */
+    refreshSparklines(): void {
+        this.refreshing = true;
+        // Clear existing data
+        this.metricSparklines.clear();
+        this.memorySparkline = null;
+        this.cpuSparkline = null;
+        this.diskSparkline = null;
+        // Reload
+        this.loadMetricSparklines();
+        setTimeout(() => this.refreshing = false, 1000);
+    }
+
+    /**
+     * Handle sparkline time range change
+     */
+    onSparklineHoursChange(hours: number): void {
+        this.sparklineHours = hours;
+        this.refreshSparklines();
     }
 
     /**
@@ -281,7 +316,7 @@ export class FleetDashboardComponent implements OnInit, OnDestroy {
      */
     loadSystemSparklines(): void {
         // Load memory trends
-        this.telemetryService.getMemoryTrends(undefined, 24)
+        this.telemetryService.getMemoryTrends(undefined, this.sparklineHours)
             .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: (response) => {
@@ -303,7 +338,7 @@ export class FleetDashboardComponent implements OnInit, OnDestroy {
             });
 
         // Load CPU trends
-        this.telemetryService.getCpuTrends(undefined, 24)
+        this.telemetryService.getCpuTrends(undefined, this.sparklineHours)
             .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: (response) => {
@@ -323,11 +358,44 @@ export class FleetDashboardComponent implements OnInit, OnDestroy {
                     console.error('Failed to load CPU trends:', err);
                 }
             });
+
+        // Load disk trends
+        this.telemetryService.getDiskTrends(undefined, this.sparklineHours)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (response) => {
+                    const sorted = [...response.data].sort((a, b) =>
+                        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+                    this.diskSparkline = {
+                        labels: sorted.map(() => ''),
+                        datasets: [{
+                            data: sorted.map(t => t.freePercent ?? 0),
+                            borderColor: '#6f42c1',
+                            backgroundColor: 'rgba(111, 66, 193, 0.1)',
+                            fill: true
+                        }]
+                    };
+                },
+                error: (err: Error) => {
+                    console.error('Failed to load disk trends:', err);
+                }
+            });
     }
 
     getOnlineCount(): number {
         if (!this.summary?.latestSnapshots) return 0;
         return this.summary.latestSnapshots.filter(s => s.isOnline).length;
+    }
+
+    /**
+     * Get human-readable time since last sparkline refresh
+     */
+    getTimeSinceRefresh(): string {
+        if (!this.lastRefreshTime) return '';
+        const seconds = Math.floor((new Date().getTime() - this.lastRefreshTime.getTime()) / 1000);
+        if (seconds < 60) return `${seconds}s ago`;
+        const minutes = Math.floor(seconds / 60);
+        return `${minutes}m ago`;
     }
 
     getOfflineCount(): number {
