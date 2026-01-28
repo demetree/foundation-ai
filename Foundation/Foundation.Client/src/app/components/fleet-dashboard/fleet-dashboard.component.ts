@@ -12,13 +12,15 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Subject, Subscription, interval, forkJoin, of } from 'rxjs';
 import { takeUntil, catchError } from 'rxjs/operators';
+import { ChartConfiguration, ChartData } from 'chart.js';
 import {
     TelemetryService,
     TelemetrySummaryResponse,
     TelemetrySnapshotDto,
     TelemetryApplicationDto,
     TelemetryCollectionRunDto,
-    MemoryTrendPoint
+    MemoryTrendPoint,
+    CpuTrendPoint
 } from '../../services/telemetry.service';
 import { SystemHealthService, SystemHealthStatus, AuthenticatedUsersInfo, ApplicationMetricsResponse } from '../../services/system-health.service';
 
@@ -83,6 +85,42 @@ export class FleetDashboardComponent implements OnInit, OnDestroy {
     // Historical sub-tabs
     activeHistoricalTab: 'overview' | 'snapshots' | 'runs' = 'overview';
 
+    // Chart data
+    cpuTrends: CpuTrendPoint[] = [];
+    trendLoading = false;
+
+    // Memory chart configuration
+    memoryChartData: ChartData<'line'> = { labels: [], datasets: [] };
+    cpuChartData: ChartData<'line'> = { labels: [], datasets: [] };
+    lineChartType = 'line' as const;
+    chartOptions: ChartConfiguration<'line'>['options'] = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: true,
+                position: 'bottom'
+            },
+            tooltip: {
+                mode: 'index',
+                intersect: false
+            }
+        },
+        scales: {
+            x: {
+                display: true,
+                title: { display: true, text: 'Time' }
+            },
+            y: {
+                display: true,
+                beginAtZero: true
+            }
+        },
+        elements: {
+            point: { radius: 2 },
+            line: { tension: 0.3 }
+        }
+    };
 
     constructor(
         private http: HttpClient,
@@ -391,6 +429,146 @@ export class FleetDashboardComponent implements OnInit, OnDestroy {
                     console.error('Historical data error:', err);
                 }
             });
+
+        // Load trend data separately for charts
+        this.loadTrendData();
+    }
+
+    loadTrendData(): void {
+        this.trendLoading = true;
+
+        forkJoin({
+            memory: this.telemetryService.getMemoryTrends(
+                this.selectedAppName || undefined,
+                this.selectedHours
+            ),
+            cpu: this.telemetryService.getCpuTrends(
+                this.selectedAppName || undefined,
+                this.selectedHours
+            )
+        })
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (result) => {
+                    this.memoryTrends = result.memory.data;
+                    this.cpuTrends = result.cpu.data;
+                    this.buildMemoryChart();
+                    this.buildCpuChart();
+                    this.trendLoading = false;
+                },
+                error: (err: Error) => {
+                    console.error('Trend data error:', err);
+                    this.trendLoading = false;
+                }
+            });
+    }
+
+    private buildMemoryChart(): void {
+        if (!this.memoryTrends.length) {
+            this.memoryChartData = { labels: [], datasets: [] };
+            return;
+        }
+
+        // Group by application
+        const appGroups = new Map<string, { timestamp: Date; value: number }[]>();
+        for (const point of this.memoryTrends) {
+            const app = point.applicationName;
+            if (!appGroups.has(app)) {
+                appGroups.set(app, []);
+            }
+            appGroups.get(app)!.push({
+                timestamp: new Date(point.timestamp),
+                value: point.workingSetMB || 0
+            });
+        }
+
+        // Generate unique labels (time points)
+        const allTimestamps = this.memoryTrends
+            .map(p => new Date(p.timestamp).getTime())
+            .filter((v, i, a) => a.indexOf(v) === i)
+            .sort((a, b) => a - b);
+
+        const labels = allTimestamps.map(t => {
+            const d = new Date(t);
+            return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        });
+
+        const colors = ['#4e79a7', '#f28e2c', '#e15759', '#76b7b2', '#59a14f', '#edc949'];
+        const datasets: ChartData<'line'>['datasets'] = [];
+        let colorIndex = 0;
+
+        appGroups.forEach((points, appName) => {
+            const data = allTimestamps.map(ts => {
+                const point = points.find(p => p.timestamp.getTime() === ts);
+                return point ? point.value : null;
+            });
+
+            datasets.push({
+                label: appName,
+                data: data,
+                borderColor: colors[colorIndex % colors.length],
+                backgroundColor: colors[colorIndex % colors.length] + '33',
+                fill: false,
+                spanGaps: true
+            });
+            colorIndex++;
+        });
+
+        this.memoryChartData = { labels, datasets };
+    }
+
+    private buildCpuChart(): void {
+        if (!this.cpuTrends.length) {
+            this.cpuChartData = { labels: [], datasets: [] };
+            return;
+        }
+
+        // Group by application
+        const appGroups = new Map<string, { timestamp: Date; value: number }[]>();
+        for (const point of this.cpuTrends) {
+            const app = point.applicationName;
+            if (!appGroups.has(app)) {
+                appGroups.set(app, []);
+            }
+            appGroups.get(app)!.push({
+                timestamp: new Date(point.timestamp),
+                value: point.cpuPercent || 0
+            });
+        }
+
+        // Generate unique labels (time points)
+        const allTimestamps = this.cpuTrends
+            .map(p => new Date(p.timestamp).getTime())
+            .filter((v, i, a) => a.indexOf(v) === i)
+            .sort((a, b) => a - b);
+
+        const labels = allTimestamps.map(t => {
+            const d = new Date(t);
+            return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        });
+
+        const colors = ['#e15759', '#4e79a7', '#f28e2c', '#76b7b2', '#59a14f', '#edc949'];
+        const datasets: ChartData<'line'>['datasets'] = [];
+        let colorIndex = 0;
+
+        appGroups.forEach((points, appName) => {
+            const data = allTimestamps.map(ts => {
+                const point = points.find(p => p.timestamp.getTime() === ts);
+                return point ? point.value : null;
+            });
+
+            datasets.push({
+                label: appName,
+                data: data,
+                borderColor: colors[colorIndex % colors.length],
+                backgroundColor: colors[colorIndex % colors.length] + '33',
+                fill: false,
+                spanGaps: true
+            });
+            colorIndex++;
+        });
+
+        this.cpuChartData = { labels, datasets };
     }
 
     onAppFilterChange(): void {

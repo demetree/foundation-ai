@@ -152,6 +152,54 @@ namespace Foundation.Controllers.WebAPI
 
 
         //
+        // GET: api/Telemetry/trends/cpu
+        //
+        // Returns CPU usage trend data for charting
+        //
+        [HttpGet("trends/cpu")]
+        public async Task<IActionResult> GetCpuTrends(
+            [FromQuery] string appName = null,
+            [FromQuery] int hours = 24)
+        {
+            try
+            {
+                var startTime = DateTime.UtcNow.AddHours(-hours);
+
+                using (var context = new TelemetryContext())
+                {
+                    var query = context.TelemetrySnapshots
+                        .Include(s => s.telemetryApplication)
+                        .Where(s => s.collectedAt >= startTime && s.isOnline && s.cpuPercent.HasValue)
+                        .AsQueryable();
+
+                    if (!string.IsNullOrWhiteSpace(appName))
+                    {
+                        query = query.Where(s => s.telemetryApplication.name == appName);
+                    }
+
+                    var data = await query
+                        .OrderBy(s => s.collectedAt)
+                        .Select(s => new
+                        {
+                            timestamp = s.collectedAt,
+                            applicationName = s.telemetryApplication.name,
+                            cpuPercent = s.cpuPercent
+                        })
+                        .ToListAsync()
+                        .ConfigureAwait(false);
+
+                    return Ok(new { data, hours, count = data.Count });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving CPU trends");
+                return Problem("Failed to retrieve CPU trends");
+            }
+        }
+
+
+        //
         // GET: api/Telemetry/trends/disk
         //
         // Returns disk usage trend data for charting

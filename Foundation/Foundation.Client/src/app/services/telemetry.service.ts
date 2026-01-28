@@ -44,6 +44,18 @@ export interface MemoryTrendsResponse {
     count: number;
 }
 
+export interface CpuTrendPoint {
+    timestamp: Date;
+    applicationName: string;
+    cpuPercent?: number;
+}
+
+export interface CpuTrendsResponse {
+    data: CpuTrendPoint[];
+    hours: number;
+    count: number;
+}
+
 export interface DiskTrendPoint {
     timestamp: Date;
     applicationName: string;
@@ -203,6 +215,19 @@ export class TelemetryService {
 
         return this.http.get<MemoryTrendsResponse>(
             `${this.baseUrl}/trends/memory`,
+            { headers: this.authService.GetAuthenticationHeaders(), params }
+        );
+    }
+
+    /**
+     * Get CPU usage trends for charting
+     */
+    getCpuTrends(appName?: string, hours: number = 24): Observable<CpuTrendsResponse> {
+        let params = new HttpParams().set('hours', hours.toString());
+        if (appName) params = params.set('appName', appName);
+
+        return this.http.get<CpuTrendsResponse>(
+            `${this.baseUrl}/trends/cpu`,
             { headers: this.authService.GetAuthenticationHeaders(), params }
         );
     }
