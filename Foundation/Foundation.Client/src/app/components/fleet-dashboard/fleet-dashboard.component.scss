@@ -186,8 +186,21 @@
 
     // Sparkline container for inline charts
     &.summary-card-with-sparkline {
-        flex-wrap: wrap;
-        position: relative;
+        flex-direction: column;
+        align-items: stretch;
+
+        .card-main {
+            display: flex;
+            align-items: center;
+        }
+
+        .card-icon {
+            flex-shrink: 0;
+        }
+
+        .card-content {
+            flex: 1;
+        }
     }
 
     .sparkline-container {
@@ -289,6 +302,36 @@
             }
         }
 
+        .header-badges {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .health-score-badge {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.35rem;
+            min-width: 2rem;
+            text-align: center;
+
+            &.health-good {
+                background: rgba(40, 167, 69, 0.15);
+                color: #198754;
+            }
+
+            &.health-warning {
+                background: rgba(255, 193, 7, 0.2);
+                color: #856404;
+            }
+
+            &.health-critical {
+                background: rgba(220, 53, 69, 0.15);
+                color: #dc3545;
+            }
+        }
+
         @keyframes pulse-dot {
 
             0%,
@@ -299,6 +342,18 @@
             50% {
                 opacity: 0.4;
             }
+        }
+    }
+
+    .app-sparkline {
+        height: 30px;
+        margin-top: 0.5rem;
+        border-top: 1px solid var(--bs-border-color, #dee2e6);
+        padding-top: 0.35rem;
+
+        canvas {
+            width: 100% !important;
+            height: 100% !important;
         }
     }
 

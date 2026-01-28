@@ -154,6 +154,10 @@ export class FleetDashboardComponent implements OnInit, OnDestroy {
     lastRefreshTime: Date | null = null;
     refreshing = false;
 
+    // Per-app sparklines and health scores
+    appSparklines: Map<string, ChartData<'line'>> = new Map();
+    appHealthScores: Map<string, number> = new Map();
+
     // Snapshot detail modal
     selectedSnapshotDetail: SnapshotDetailDto | null = null;
     snapshotDetailLoading = false;
@@ -214,6 +218,9 @@ export class FleetDashboardComponent implements OnInit, OnDestroy {
                     this.summary = summary;
                     this.loading = false;
                     this.lastUpdated = new Date();
+                    // Load per-app data
+                    this.loadAppSparklines();
+                    this.initHealthScores();
                 },
                 error: (err: Error) => {
                     this.error = 'Failed to load fleet overview';
@@ -380,6 +387,91 @@ export class FleetDashboardComponent implements OnInit, OnDestroy {
                     console.error('Failed to load disk trends:', err);
                 }
             });
+    }
+
+    /**
+     * Load per-app memory sparklines
+     */
+    loadAppSparklines(): void {
+        if (!this.summary?.applications) return;
+
+        this.summary.applications.forEach(app => {
+            this.telemetryService.getMemoryTrends(app.name, this.sparklineHours)
+                .pipe(takeUntil(this.destroy$))
+                .subscribe({
+                    next: (response) => {
+                        if (response.data.length > 0) {
+                            const sorted = [...response.data].sort((a, b) =>
+                                new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+                            this.appSparklines.set(app.name, {
+                                labels: sorted.map(() => ''),
+                                datasets: [{
+                                    data: sorted.map(t => t.workingSetMB ?? 0),
+                                    borderColor: '#0d6efd',
+                                    backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                                    fill: true
+                                }]
+                            });
+                        }
+                    },
+                    error: () => { /* silently skip apps with no data */ }
+                });
+        });
+    }
+
+    /**
+     * Calculate health score (0-100) for an app based on its metrics
+     */
+    calculateHealthScore(appName: string): number {
+        const snap = this.summary?.latestSnapshots?.find(s => s.applicationName === appName);
+        if (!snap) return 0;
+
+        let score = 100;
+
+        // Offline = 0 score
+        if (!snap.isOnline) return 0;
+
+        // CPU penalty (0-30 points)
+        const cpu = snap.cpuPercent ?? 0;
+        if (cpu >= 90) score -= 30;
+        else if (cpu >= 70) score -= 20;
+        else if (cpu >= 50) score -= 10;
+
+        // Memory penalty (0-30 points) - penalize if over 500MB
+        const mem = snap.memoryWorkingSetMB ?? 0;
+        if (mem >= 1000) score -= 30;
+        else if (mem >= 500) score -= 15;
+        else if (mem >= 250) score -= 5;
+
+        // Error penalty from fleet metrics (0-40 points)
+        if (this.fleetMetrics?.system?.totalLogErrors) {
+            const errors = this.fleetMetrics.system.totalLogErrors;
+            if (errors >= 50) score -= 40;
+            else if (errors >= 20) score -= 25;
+            else if (errors >= 5) score -= 10;
+        }
+
+        return Math.max(0, score);
+    }
+
+    /**
+     * Get health score color class
+     */
+    getHealthScoreClass(score: number): string {
+        if (score >= 80) return 'health-good';
+        if (score >= 50) return 'health-warning';
+        return 'health-critical';
+    }
+
+    /**
+     * Initialize health scores for all apps
+     */
+    initHealthScores(): void {
+        if (!this.summary?.applications) return;
+        this.summary.applications.forEach(app => {
+            const score = this.calculateHealthScore(app.name);
+            this.appHealthScores.set(app.name, score);
+        });
     }
 
     getOnlineCount(): number {
