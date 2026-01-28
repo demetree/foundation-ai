@@ -22,7 +22,8 @@ import {
     MemoryTrendPoint,
     CpuTrendPoint,
     SnapshotDetailDto,
-    FleetMetricsResponse
+    FleetMetricsResponse,
+    MetricTrendPoint
 } from '../../services/telemetry.service';
 import { SystemHealthService, SystemHealthStatus, AuthenticatedUsersInfo, ApplicationMetricsResponse } from '../../services/system-health.service';
 
@@ -127,6 +128,23 @@ export class FleetDashboardComponent implements OnInit, OnDestroy {
         }
     };
 
+    // Sparkline config (minimal, inline charts)
+    sparklineOptions: ChartConfiguration<'line'>['options'] = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { enabled: false } },
+        scales: { x: { display: false }, y: { display: false, beginAtZero: true } },
+        elements: { point: { radius: 0 }, line: { borderWidth: 2, tension: 0.4 } }
+    };
+
+    // Metric trend sparkline data
+    metricTrends: Map<string, MetricTrendPoint[]> = new Map();
+    metricSparklines: Map<string, ChartData<'line'>> = new Map();
+
+    // System metric sparklines (memory + CPU)
+    memorySparkline: ChartData<'line'> | null = null;
+    cpuSparkline: ChartData<'line'> | null = null;
+
     // Snapshot detail modal
     selectedSnapshotDetail: SnapshotDetailDto | null = null;
     snapshotDetailLoading = false;
@@ -213,9 +231,96 @@ export class FleetDashboardComponent implements OnInit, OnDestroy {
             .subscribe({
                 next: (metrics) => {
                     this.fleetMetrics = metrics;
+                    // Load sparklines for each metric
+                    this.loadMetricSparklines();
                 },
                 error: (err: Error) => {
                     console.error('Failed to load fleet metrics:', err);
+                }
+            });
+    }
+
+    /**
+     * Load metric trend data and build sparkline chart data
+     */
+    loadMetricSparklines(): void {
+        if (!this.fleetMetrics?.metrics) return;
+
+        // Load trends for each business metric
+        this.fleetMetrics.metrics.forEach(metric => {
+            this.telemetryService.getMetricTrends(undefined, metric.metricName, 24, 50)
+                .pipe(takeUntil(this.destroy$))
+                .subscribe({
+                    next: (response) => {
+                        this.metricTrends.set(metric.metricName, response.data);
+                        // Build sparkline chart data - reverse for chronological order
+                        const sorted = [...response.data].sort((a, b) =>
+                            new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+                        this.metricSparklines.set(metric.metricName, {
+                            labels: sorted.map(() => ''),
+                            datasets: [{
+                                data: sorted.map(t => t.value),
+                                borderColor: '#17a2b8',
+                                backgroundColor: 'rgba(23, 162, 184, 0.1)',
+                                fill: true
+                            }]
+                        });
+                    },
+                    error: (err: Error) => {
+                        console.error(`Failed to load trends for ${metric.metricName}:`, err);
+                    }
+                });
+        });
+
+        // Also load system metric sparklines (memory + CPU)
+        this.loadSystemSparklines();
+    }
+
+    /**
+     * Load memory and CPU trend sparklines
+     */
+    loadSystemSparklines(): void {
+        // Load memory trends
+        this.telemetryService.getMemoryTrends(undefined, 24)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (response) => {
+                    const sorted = [...response.data].sort((a, b) =>
+                        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+                    this.memorySparkline = {
+                        labels: sorted.map(() => ''),
+                        datasets: [{
+                            data: sorted.map(t => t.workingSetMB ?? 0),
+                            borderColor: '#28a745',
+                            backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                            fill: true
+                        }]
+                    };
+                },
+                error: (err: Error) => {
+                    console.error('Failed to load memory trends:', err);
+                }
+            });
+
+        // Load CPU trends
+        this.telemetryService.getCpuTrends(undefined, 24)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (response) => {
+                    const sorted = [...response.data].sort((a, b) =>
+                        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+                    this.cpuSparkline = {
+                        labels: sorted.map(() => ''),
+                        datasets: [{
+                            data: sorted.map(t => t.cpuPercent ?? 0),
+                            borderColor: '#ffc107',
+                            backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                            fill: true
+                        }]
+                    };
+                },
+                error: (err: Error) => {
+                    console.error('Failed to load CPU trends:', err);
                 }
             });
     }

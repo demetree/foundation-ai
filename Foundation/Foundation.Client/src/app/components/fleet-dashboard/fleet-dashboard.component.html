@@ -144,7 +144,7 @@
 
     <!-- Fleet Aggregates Row -->
     <div class="summary-cards mt-3" *ngIf="fleetMetrics">
-      <div class="summary-card">
+      <div class="summary-card summary-card-with-sparkline">
         <div class="card-icon bg-info">
           <i class="fas fa-memory"></i>
         </div>
@@ -152,9 +152,14 @@
           <h4>{{ (fleetMetrics.system.totalMemoryMB / 1024).toFixed(1) }} GB</h4>
           <p>Total Memory</p>
         </div>
+        <!-- Memory Sparkline -->
+        <div class="sparkline-container" *ngIf="memorySparkline">
+          <canvas baseChart [data]="memorySparkline" [options]="sparklineOptions" [type]="lineChartType">
+          </canvas>
+        </div>
       </div>
 
-      <div class="summary-card">
+      <div class="summary-card summary-card-with-sparkline">
         <div class="card-icon" [ngClass]="{
           'bg-success': fleetMetrics.system.avgCpuPercent < 50,
           'bg-warning': fleetMetrics.system.avgCpuPercent >= 50 && fleetMetrics.system.avgCpuPercent < 80,
@@ -165,6 +170,11 @@
         <div class="card-content">
           <h4>{{ fleetMetrics.system.avgCpuPercent.toFixed(1) }}%</h4>
           <p>Avg CPU</p>
+        </div>
+        <!-- CPU Sparkline -->
+        <div class="sparkline-container" *ngIf="cpuSparkline">
+          <canvas baseChart [data]="cpuSparkline" [options]="sparklineOptions" [type]="lineChartType">
+          </canvas>
         </div>
       </div>
 
@@ -178,9 +188,9 @@
         </div>
       </div>
 
-      <!-- Business metric aggregates -->
+      <!-- Business metric aggregates with sparklines -->
       <ng-container *ngFor="let metric of fleetMetrics.metrics">
-        <div class="summary-card" *ngIf="metric.count > 0">
+        <div class="summary-card summary-card-with-sparkline" *ngIf="metric.count > 0">
           <div class="card-icon" [ngClass]="{
             'bg-success': metric.worstState === 0,
             'bg-warning': metric.worstState === 1,
@@ -192,6 +202,12 @@
           <div class="card-content">
             <h4>{{ metric.total | number:'1.0-0' }}</h4>
             <p>{{ metric.metricName }}</p>
+          </div>
+          <!-- Sparkline chart -->
+          <div class="sparkline-container" *ngIf="metricSparklines.get(metric.metricName)">
+            <canvas baseChart [data]="metricSparklines.get(metric.metricName)!" [options]="sparklineOptions"
+              [type]="lineChartType">
+            </canvas>
           </div>
         </div>
       </ng-container>
