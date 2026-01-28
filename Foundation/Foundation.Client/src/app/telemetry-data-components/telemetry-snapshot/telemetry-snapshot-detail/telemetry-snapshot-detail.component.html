@@ -162,6 +162,23 @@
                             </div>
                             </ng-template>
                         </li>
+                      <li ngbNavItem *ngIf="telemetryApplicationMetricService.userIsTelemetryTelemetryApplicationMetricReader()">
+                            <button ngbNavLink>Telemetry Application Metrics
+                                <span class="badge bg-primary ms-2">
+                                    {{ (telemetrySnapshotData?.TelemetryApplicationMetricsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-telemetry-application-metric-table [queryParams]="{ telemetrySnapshotId: telemetrySnapshotData?.id }"></app-telemetry-application-metric-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-telemetry-application-metric-add-edit [preSeededData]="{ telemetrySnapshotId: telemetrySnapshotData?.id }" [hiddenFields]="['telemetrySnapshotId']"></app-telemetry-application-metric-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
                       <li ngbNavItem *ngIf="telemetryErrorEventService.userIsTelemetryTelemetryErrorEventReader()">
                             <button ngbNavLink>Telemetry Error Events
                                 <span class="badge bg-primary ms-2">

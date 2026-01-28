@@ -38,6 +38,7 @@ namespace Foundation.Controllers.WebAPI
         private readonly IMonitoredApplicationService _monitoredAppsService;
         private readonly IAuthenticatedUsersProvider _authenticatedUsersProvider;
         private readonly IEnumerable<IApplicationMetricsProvider> _metricsProviders;
+        private readonly ILogErrorProvider _logErrorProvider;
         private static readonly DateTime _startTime = DateTime.UtcNow;
 
         //
@@ -55,7 +56,8 @@ namespace Foundation.Controllers.WebAPI
             IMonitoredApplicationService monitoredAppsService = null,
             IAuthenticatedUsersProvider authenticatedUsersProvider = null,
             IEnumerable<IDatabaseHealthProvider> databaseProviders = null,
-            IEnumerable<IApplicationMetricsProvider> metricsProviders = null)
+            IEnumerable<IApplicationMetricsProvider> metricsProviders = null,
+            ILogErrorProvider logErrorProvider = null)
             : base("Auditor", "SystemHealth")
         {
             _logger = logger;
@@ -64,6 +66,7 @@ namespace Foundation.Controllers.WebAPI
             _authenticatedUsersProvider = authenticatedUsersProvider;
             _databaseProviders = databaseProviders ?? Array.Empty<IDatabaseHealthProvider>();
             _metricsProviders = metricsProviders ?? Array.Empty<IApplicationMetricsProvider>();
+            _logErrorProvider = logErrorProvider;
         }
 
 
@@ -101,7 +104,10 @@ namespace Foundation.Controllers.WebAPI
                     Application = GetApplicationMetrics(process),
                     Database = await GetDatabaseStatusesAsync().ConfigureAwait(false),
                     Disk = GetDiskMetrics(),
-                    ThreadPool = GetThreadPoolMetrics()
+                    ThreadPool = GetThreadPoolMetrics(),
+                    Sessions = await GetSessionSummaryAsync().ConfigureAwait(false),
+                    Metrics = await GetBusinessMetricsAsync().ConfigureAwait(false),
+                    RecentErrors = await GetRecentErrorsAsync().ConfigureAwait(false)
                 };
 
                 //
@@ -343,6 +349,45 @@ namespace Foundation.Controllers.WebAPI
 
 
         //
+        // GET: api/SystemHealth/recentErrors
+        //
+        // Returns log errors that occurred since the specified time.
+        // Used by telemetry collector for historical error capture.
+        //
+        [HttpGet("recentErrors")]
+        public async Task<IActionResult> GetRecentErrors([FromQuery] DateTime? sinceUtc = null)
+        {
+            try
+            {
+                var since = sinceUtc ?? DateTime.UtcNow.AddMinutes(-5);
+                
+                if (_logErrorProvider == null)
+                {
+                    return Ok(new RecentErrorsResponse
+                    {
+                        Since = since,
+                        LogDirectoryAvailable = false,
+                        ErrorMessage = "Log error provider not configured"
+                    });
+                }
+
+                var errors = await _logErrorProvider.GetRecentErrorsAsync(since).ConfigureAwait(false);
+
+                return Ok(new RecentErrorsResponse
+                {
+                    Errors = errors?.ToList() ?? new List<LogErrorEntry>(),
+                    Since = since
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting recent log errors");
+                return Problem("Failed to retrieve recent log errors");
+            }
+        }
+
+
+        //
         // Helper methods for gathering metrics
         //
 
@@ -552,6 +597,143 @@ namespace Foundation.Controllers.WebAPI
             else
             {
                 return $"{uptime.Minutes}m {uptime.Seconds}s";
+            }
+        }
+
+
+        /// <summary>
+        /// Get session summary for telemetry capture.
+        /// Returns aggregate counts suitable for TelemetrySessionSnapshot.
+        /// </summary>
+        private async Task<object> GetSessionSummaryAsync()
+        {
+            if (_authenticatedUsersProvider == null)
+            {
+                return new
+                {
+                    ActiveCount = 0,
+                    ExpiredCount = 0,
+                    OldestStart = (DateTime?)null,
+                    NewestStart = (DateTime?)null
+                };
+            }
+
+            try
+            {
+                var usersInfo = await _authenticatedUsersProvider.GetAuthenticatedUsersAsync().ConfigureAwait(false);
+                var sessions = usersInfo?.Sessions ?? new List<AuthenticatedUserSession>();
+
+                var activeSessions = sessions.Where(s => !s.IsExpired).ToList();
+                var expiredSessions = sessions.Where(s => s.IsExpired).ToList();
+
+                return new
+                {
+                    ActiveCount = activeSessions.Count,
+                    ExpiredCount = expiredSessions.Count,
+                    OldestStart = activeSessions.Any() ? activeSessions.Min(s => s.SessionStart) : (DateTime?)null,
+                    NewestStart = activeSessions.Any() ? activeSessions.Max(s => s.SessionStart) : (DateTime?)null
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to get session summary");
+                return new
+                {
+                    ActiveCount = 0,
+                    ExpiredCount = 0,
+                    OldestStart = (DateTime?)null,
+                    NewestStart = (DateTime?)null
+                };
+            }
+        }
+
+
+        /// <summary>
+        /// Get business metrics from all registered providers for telemetry capture.
+        /// Returns metrics suitable for TelemetryApplicationMetric storage.
+        /// </summary>
+        private async Task<object> GetBusinessMetricsAsync()
+        {
+            var applications = new List<object>();
+
+            foreach (var provider in _metricsProviders)
+            {
+                try
+                {
+                    var metrics = await provider.GetMetricsAsync().ConfigureAwait(false);
+                    var metricsList = metrics?.Select(m => new
+                    {
+                        Name = m.Name,
+                        Value = m.Value,
+                        State = (int)m.State,
+                        DataType = (int)m.DataType,
+                        NumericValue = ParseNumericValue(m.Value, m.DataType),
+                        Category = m.Category
+                    }).Cast<object>().ToList() ?? new List<object>();
+
+                    applications.Add(new
+                    {
+                        ApplicationName = provider.ApplicationName,
+                        Metrics = metricsList
+                    });
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to get business metrics from {Provider}", provider.ApplicationName);
+                }
+            }
+
+            return new { Applications = applications };
+        }
+
+
+        /// <summary>
+        /// Parse a numeric value from a metric string value.
+        /// </summary>
+        private static double? ParseNumericValue(string value, MetricDataType dataType)
+        {
+            if (string.IsNullOrEmpty(value)) return null;
+            if (dataType == MetricDataType.Text) return null;
+
+            // Remove formatting characters like commas, percent signs
+            var cleanValue = value.Replace(",", "").Replace("%", "").Trim();
+            if (double.TryParse(cleanValue, out var result))
+                return result;
+
+            return null;
+        }
+
+
+        /// <summary>
+        /// Get recent log errors for telemetry capture.
+        /// Returns errors from the last 5 minutes by default (matching telemetry collection interval).
+        /// </summary>
+        private async Task<object> GetRecentErrorsAsync()
+        {
+            if (_logErrorProvider == null)
+            {
+                return new { Errors = Array.Empty<object>(), Count = 0 };
+            }
+
+            try
+            {
+                var since = DateTime.UtcNow.AddMinutes(-5);
+                var errors = await _logErrorProvider.GetRecentErrorsAsync(since).ConfigureAwait(false);
+                var errorList = errors?.Select(e => new
+                {
+                    Timestamp = e.Timestamp,
+                    Level = e.Level,
+                    Message = e.Message,
+                    Exception = e.Exception,
+                    LogFileName = e.LogFileName
+                }).Cast<object>().ToList() ?? new List<object>();
+
+                return new { Errors = errorList, Count = errorList.Count, Since = since };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to get recent log errors");
+                return new { Errors = Array.Empty<object>(), Count = 0, Error = "Failed to retrieve" };
             }
         }
 

@@ -1,0 +1,76 @@
+<div class="add-telemetry-application-metric" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-telemetry-application-metric me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Telemetry Application Metric" 
+        *ngIf="userIsTelemetryTelemetryApplicationMetricWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #telemetryApplicationMetricModal let-modal>
+   <div class="modal-header bg-dark text-light telemetry-application-metric-modal-header">
+      <h5 class="modal-title mb-0" id="telemetryApplicationMetricModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Telemetry Application Metric' : 'Add Telemetry Application Metric' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body telemetry-application-metric-modal-body">
+      <form [formGroup]="telemetryApplicationMetricForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('telemetrySnapshotId')">
+                <label for="TelemetryApplicationMetric-telemetrySnapshotId" id="label-TelemetryApplicationMetric-telemetrySnapshotId"><span class="text-danger">*</span>Telemetry Snapshot</label>
+                <select id="TelemetryApplicationMetric-telemetrySnapshotId" formControlName="telemetrySnapshotId" class="form-select telemetry-application-metric-select" [disabled]="!userIsTelemetryTelemetryApplicationMetricWriter()">
+                    <option [ngValue]="null">Select Telemetry Snapshot</option>
+                    <option *ngFor="let telemetrySnapshot of telemetrySnapshots$ | async" [ngValue]="telemetrySnapshot.id">{{telemetrySnapshot.machineName}}</option>
+                </select>
+                <div *ngIf="telemetryApplicationMetricForm.get('telemetrySnapshotId')?.invalid && telemetryApplicationMetricForm.get('telemetrySnapshotId')?.touched" class="text-danger">
+                    Telemetry Snapshot is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('metricName')">
+                <label for="TelemetryApplicationMetric-metricName" id="label-TelemetryApplicationMetric-metricName"><span class="text-danger">*</span>Metric Name</label>
+                <input type="text" id="TelemetryApplicationMetric-metricName" formControlName="metricName" placeholder="Enter Metric Name" class="form-control telemetry-application-metric-input" [disabled]="!userIsTelemetryTelemetryApplicationMetricWriter()" aria-labelledby="label-metricName" />
+                <div *ngIf="telemetryApplicationMetricForm.get('metricName')?.invalid && telemetryApplicationMetricForm.get('metricName')?.touched" class="text-danger">
+                    Metric Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('metricValue')">
+                <label for="TelemetryApplicationMetric-metricValue" id="label-TelemetryApplicationMetric-metricValue">Metric Value</label>
+                <textarea id="TelemetryApplicationMetric-metricValue" formControlName="metricValue" placeholder="Enter Metric Value" class="form-control telemetry-application-metric-input" [disabled]="!userIsTelemetryTelemetryApplicationMetricWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('state')">
+                <label for="TelemetryApplicationMetric-state" id="label-TelemetryApplicationMetric-state">State</label>
+                <input type="number" id="TelemetryApplicationMetric-state" formControlName="state" placeholder="Enter State" class="form-control telemetry-application-metric-input" [disabled]="!userIsTelemetryTelemetryApplicationMetricWriter()" aria-labelledby="label-state" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('dataType')">
+                <label for="TelemetryApplicationMetric-dataType" id="label-TelemetryApplicationMetric-dataType">Data Type</label>
+                <input type="number" id="TelemetryApplicationMetric-dataType" formControlName="dataType" placeholder="Enter Data Type" class="form-control telemetry-application-metric-input" [disabled]="!userIsTelemetryTelemetryApplicationMetricWriter()" aria-labelledby="label-dataType" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('numericValue')">
+                <label for="TelemetryApplicationMetric-numericValue" id="label-TelemetryApplicationMetric-numericValue">Numeric Value</label>
+                <input type="number" id="TelemetryApplicationMetric-numericValue" formControlName="numericValue" placeholder="Enter Numeric Value" class="form-control telemetry-application-metric-input" [disabled]="!userIsTelemetryTelemetryApplicationMetricWriter()" aria-labelledby="label-numericValue" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('category')">
+                <label for="TelemetryApplicationMetric-category" id="label-TelemetryApplicationMetric-category">Category</label>
+                <input type="text" id="TelemetryApplicationMetric-category" formControlName="category" placeholder="Enter Category" class="form-control telemetry-application-metric-input" [disabled]="!userIsTelemetryTelemetryApplicationMetricWriter()" aria-labelledby="label-category" />
+            </div>
+         <div class="modal-footer telemetry-application-metric-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Telemetry Application Metric changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !telemetryApplicationMetricForm.valid || telemetryApplicationMetricForm.pristine  || userIsTelemetryTelemetryApplicationMetricWriter() == false " ngbTooltip="Save the Telemetry Application Metric changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Telemetry Application Metric' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

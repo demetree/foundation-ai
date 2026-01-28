@@ -20,7 +20,8 @@ import {
     TelemetryApplicationDto,
     TelemetryCollectionRunDto,
     MemoryTrendPoint,
-    CpuTrendPoint
+    CpuTrendPoint,
+    SnapshotDetailDto
 } from '../../services/telemetry.service';
 import { SystemHealthService, SystemHealthStatus, AuthenticatedUsersInfo, ApplicationMetricsResponse } from '../../services/system-health.service';
 
@@ -121,6 +122,10 @@ export class FleetDashboardComponent implements OnInit, OnDestroy {
             line: { tension: 0.3 }
         }
     };
+
+    // Snapshot detail modal
+    selectedSnapshotDetail: SnapshotDetailDto | null = null;
+    snapshotDetailLoading = false;
 
     constructor(
         private http: HttpClient,
@@ -793,5 +798,26 @@ export class FleetDashboardComponent implements OnInit, OnDestroy {
         if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
         if (count >= 1000) return `${(count / 1000).toFixed(1)}K`;
         return count?.toString() || '0';
+    }
+
+    // Snapshot detail modal methods
+    openSnapshotDetail(snapshotId: number): void {
+        this.snapshotDetailLoading = true;
+        this.telemetryService.getSnapshotDetail(snapshotId)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (detail) => {
+                    this.selectedSnapshotDetail = detail;
+                    this.snapshotDetailLoading = false;
+                },
+                error: (err: Error) => {
+                    console.error('Error loading snapshot detail:', err);
+                    this.snapshotDetailLoading = false;
+                }
+            });
+    }
+
+    closeSnapshotDetail(): void {
+        this.selectedSnapshotDetail = null;
     }
 }

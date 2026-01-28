@@ -10,6 +10,7 @@
 */
 import {Injectable} from '@angular/core';
 import {TelemetryApplicationService} from  './telemetry-application.service';
+import {TelemetryApplicationMetricService} from  './telemetry-application-metric.service';
 import {TelemetryCollectionRunService} from  './telemetry-collection-run.service';
 import {TelemetryDatabaseHealthService} from  './telemetry-database-health.service';
 import {TelemetryDiskHealthService} from  './telemetry-disk-health.service';
@@ -25,6 +26,7 @@ import {TelemetrySnapshotService} from  './telemetry-snapshot.service';
 export class TelemetryDataServiceManagerService  {
 
     constructor(public telemetryApplicationService: TelemetryApplicationService
+              , public telemetryApplicationMetricService: TelemetryApplicationMetricService
               , public telemetryCollectionRunService: TelemetryCollectionRunService
               , public telemetryDatabaseHealthService: TelemetryDatabaseHealthService
               , public telemetryDiskHealthService: TelemetryDiskHealthService
@@ -38,6 +40,7 @@ export class TelemetryDataServiceManagerService  {
     public ClearAllCaches() {
 
         this.telemetryApplicationService.ClearAllCaches();
+        this.telemetryApplicationMetricService.ClearAllCaches();
         this.telemetryCollectionRunService.ClearAllCaches();
         this.telemetryDatabaseHealthService.ClearAllCaches();
         this.telemetryDiskHealthService.ClearAllCaches();

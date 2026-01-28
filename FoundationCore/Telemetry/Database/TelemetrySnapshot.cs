@@ -37,6 +37,8 @@ public partial class TelemetrySnapshot
 
     public string statusJson { get; set; }
 
+    public virtual ICollection<TelemetryApplicationMetric> TelemetryApplicationMetrics { get; set; } = new List<TelemetryApplicationMetric>();
+
     public virtual ICollection<TelemetryDatabaseHealth> TelemetryDatabaseHealths { get; set; } = new List<TelemetryDatabaseHealth>();
 
     public virtual ICollection<TelemetryDiskHealth> TelemetryDiskHealths { get; set; } = new List<TelemetryDiskHealth>();

@@ -320,8 +320,10 @@ namespace Foundation.Telemetry
                 var healthJson = healthData as JsonElement? ??
                     JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(healthData));
 
-                // Database health records
-                if (healthJson.TryGetProperty("databases", out var databases) && databases.ValueKind == JsonValueKind.Array)
+                // Database health records - navigate to database.databases (case-insensitive)
+                if (healthJson.TryGetProperty("database", out var dbRoot) 
+                    && dbRoot.TryGetProperty("databases", out var databases) 
+                    && databases.ValueKind == JsonValueKind.Array)
                 {
                     foreach (var db in databases.EnumerateArray())
                     {
@@ -338,10 +340,12 @@ namespace Foundation.Telemetry
                     }
                 }
 
-                // Disk health records
-                if (healthJson.TryGetProperty("disks", out var disks) && disks.ValueKind == JsonValueKind.Array)
+                // Disk health records - navigate to disk.drives (case-insensitive)
+                if (healthJson.TryGetProperty("disk", out var diskRoot) 
+                    && diskRoot.TryGetProperty("drives", out var drives) 
+                    && drives.ValueKind == JsonValueKind.Array)
                 {
-                    foreach (var disk in disks.EnumerateArray())
+                    foreach (var disk in drives.EnumerateArray())
                     {
                         var diskHealth = new TelemetryDiskHealth
                         {
@@ -357,7 +361,7 @@ namespace Foundation.Telemetry
                     }
                 }
 
-                // Session snapshot
+                // Session snapshot - expects sessions object with activeCount, expiredCount
                 if (healthJson.TryGetProperty("sessions", out var sessions))
                 {
                     var sessionSnapshot = new TelemetrySessionSnapshot
@@ -371,6 +375,63 @@ namespace Foundation.Telemetry
                         sessionSnapshot.newestSessionStart = ns.GetDateTime();
                     
                     snapshot.TelemetrySessionSnapshots.Add(sessionSnapshot);
+                }
+
+                // Application business metrics - navigate to metrics.applications
+                if (healthJson.TryGetProperty("metrics", out var metricsRoot)
+                    && metricsRoot.TryGetProperty("applications", out var apps)
+                    && apps.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var app in apps.EnumerateArray())
+                    {
+                        if (app.TryGetProperty("metrics", out var metrics) && metrics.ValueKind == JsonValueKind.Array)
+                        {
+                            foreach (var metric in metrics.EnumerateArray())
+                            {
+                                var appMetric = new TelemetryApplicationMetric
+                                {
+                                    metricName = metric.TryGetProperty("name", out var n) ? n.GetString() : "Unknown",
+                                    metricValue = metric.TryGetProperty("value", out var v) ? v.GetString() : null,
+                                    state = metric.TryGetProperty("state", out var s) ? s.GetInt32() : null,
+                                    dataType = metric.TryGetProperty("dataType", out var dt) ? dt.GetInt32() : null,
+                                    numericValue = metric.TryGetProperty("numericValue", out var nv) && nv.ValueKind == JsonValueKind.Number ? nv.GetDouble() : null,
+                                    category = metric.TryGetProperty("category", out var c) ? c.GetString() : null
+                                };
+                                snapshot.TelemetryApplicationMetrics.Add(appMetric);
+                            }
+                        }
+                    }
+                }
+
+                // Recent log errors - navigate to recentErrors.errors
+                if (healthJson.TryGetProperty("recentErrors", out var recentErrorsRoot)
+                    && recentErrorsRoot.TryGetProperty("errors", out var errorsArray)
+                    && errorsArray.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var err in errorsArray.EnumerateArray())
+                    {
+                        var logError = new TelemetryLogError
+                        {
+                            telemetryApplicationId = snapshot.telemetryApplicationId,
+                            capturedAt = DateTime.UtcNow,
+                            logFileName = err.TryGetProperty("logFileName", out var fn) ? fn.GetString() : null,
+                            level = err.TryGetProperty("level", out var lvl) ? lvl.GetString() : "ERROR",
+                            message = err.TryGetProperty("message", out var msg) ? msg.GetString() : null,
+                            exception = err.TryGetProperty("exception", out var ex) ? ex.GetString() : null
+                        };
+
+                        // Parse log timestamp
+                        if (err.TryGetProperty("timestamp", out var ts) && ts.ValueKind != JsonValueKind.Null)
+                        {
+                            try
+                            {
+                                logError.logTimestamp = ts.GetDateTime();
+                            }
+                            catch { /* ignore parse errors */ }
+                        }
+
+                        snapshot.TelemetryLogErrors.Add(logError);
+                    }
                 }
             }
             catch (Exception ex)

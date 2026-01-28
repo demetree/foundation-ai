@@ -202,11 +202,11 @@ namespace Foundation.Security.Controllers.WebAPI
         /// 
         /// This returns a row count of SecurityOrganizations filtered by the parameters provided.  Its query is similar to the GetSecurityOrganizations method, but it only returns the count of rows that would be returned.
         ///
-        /// The rate limit is 2 per second per user.
+        /// The rate limit is 10 per second per user.
         /// 
         /// </summary>
 		[HttpGet]
-		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/SecurityOrganizations/RowCount")]
 		public async Task<IActionResult> GetRowCount(
 			int? securityTenantId = null,

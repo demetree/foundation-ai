@@ -20,6 +20,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[Telemetry].[TelemetryApplicationMetric]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[Telemetry].[TelemetryCollectionRun]",
          "ObjectType": 0
       },

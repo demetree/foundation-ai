@@ -21,6 +21,7 @@ import { TelemetryCollectionRunData } from './telemetry-collection-run.service';
 import { TelemetryDatabaseHealthService, TelemetryDatabaseHealthData } from './telemetry-database-health.service';
 import { TelemetryDiskHealthService, TelemetryDiskHealthData } from './telemetry-disk-health.service';
 import { TelemetrySessionSnapshotService, TelemetrySessionSnapshotData } from './telemetry-session-snapshot.service';
+import { TelemetryApplicationMetricService, TelemetryApplicationMetricData } from './telemetry-application-metric.service';
 import { TelemetryErrorEventService, TelemetryErrorEventData } from './telemetry-error-event.service';
 import { TelemetryLogErrorService, TelemetryLogErrorData } from './telemetry-log-error.service';
 
@@ -156,6 +157,11 @@ export class TelemetrySnapshotData {
     private _telemetrySessionSnapshotsSubject = new BehaviorSubject<TelemetrySessionSnapshotData[] | null>(null);
 
                 
+    private _telemetryApplicationMetrics: TelemetryApplicationMetricData[] | null = null;
+    private _telemetryApplicationMetricsPromise: Promise<TelemetryApplicationMetricData[]> | null  = null;
+    private _telemetryApplicationMetricsSubject = new BehaviorSubject<TelemetryApplicationMetricData[] | null>(null);
+
+                
     private _telemetryErrorEvents: TelemetryErrorEventData[] | null = null;
     private _telemetryErrorEventsPromise: Promise<TelemetryErrorEventData[]> | null  = null;
     private _telemetryErrorEventsSubject = new BehaviorSubject<TelemetryErrorEventData[] | null>(null);
@@ -224,6 +230,25 @@ export class TelemetrySnapshotData {
 
   
     public TelemetrySessionSnapshotsCount$ = TelemetrySessionSnapshotService.Instance.GetTelemetrySessionSnapshotsRowCount({telemetrySnapshotId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    public TelemetryApplicationMetrics$ = this._telemetryApplicationMetricsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._telemetryApplicationMetrics === null && this._telemetryApplicationMetricsPromise === null) {
+            this.loadTelemetryApplicationMetrics(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public TelemetryApplicationMetricsCount$ = TelemetryApplicationMetricService.Instance.GetTelemetryApplicationMetricsRowCount({telemetrySnapshotId: this.id,
       active: true,
       deleted: false
     });
@@ -317,6 +342,10 @@ export class TelemetrySnapshotData {
      this._telemetrySessionSnapshots = null;
      this._telemetrySessionSnapshotsPromise = null;
      this._telemetrySessionSnapshotsSubject.next(null);
+
+     this._telemetryApplicationMetrics = null;
+     this._telemetryApplicationMetricsPromise = null;
+     this._telemetryApplicationMetricsSubject.next(null);
 
      this._telemetryErrorEvents = null;
      this._telemetryErrorEventsPromise = null;
@@ -529,6 +558,71 @@ export class TelemetrySnapshotData {
 
     /**
      *
+     * Gets the TelemetryApplicationMetrics for this TelemetrySnapshot.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.telemetrySnapshot.TelemetryApplicationMetrics.then(telemetrySnapshots => { ... })
+     *   or
+     *   await this.telemetrySnapshot.telemetrySnapshots
+     *
+    */
+    public get TelemetryApplicationMetrics(): Promise<TelemetryApplicationMetricData[]> {
+        if (this._telemetryApplicationMetrics !== null) {
+            return Promise.resolve(this._telemetryApplicationMetrics);
+        }
+
+        if (this._telemetryApplicationMetricsPromise !== null) {
+            return this._telemetryApplicationMetricsPromise;
+        }
+
+        // Start the load
+        this.loadTelemetryApplicationMetrics();
+
+        return this._telemetryApplicationMetricsPromise!;
+    }
+
+
+
+    private loadTelemetryApplicationMetrics(): void {
+
+        this._telemetryApplicationMetricsPromise = lastValueFrom(
+            TelemetrySnapshotService.Instance.GetTelemetryApplicationMetricsForTelemetrySnapshot(this.id)
+        )
+        .then(TelemetryApplicationMetrics => {
+            this._telemetryApplicationMetrics = TelemetryApplicationMetrics ?? [];
+            this._telemetryApplicationMetricsSubject.next(this._telemetryApplicationMetrics);
+            return this._telemetryApplicationMetrics;
+         })
+        .catch(err => {
+            this._telemetryApplicationMetrics = [];
+            this._telemetryApplicationMetricsSubject.next(this._telemetryApplicationMetrics);
+            throw err;
+        })
+        .finally(() => {
+            this._telemetryApplicationMetricsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached TelemetryApplicationMetric. Call after mutations to force refresh.
+     */
+    public ClearTelemetryApplicationMetricsCache(): void {
+        this._telemetryApplicationMetrics = null;
+        this._telemetryApplicationMetricsPromise = null;
+        this._telemetryApplicationMetricsSubject.next(this._telemetryApplicationMetrics);      // Emit to observable
+    }
+
+    public get HasTelemetryApplicationMetrics(): Promise<boolean> {
+        return this.TelemetryApplicationMetrics.then(telemetryApplicationMetrics => telemetryApplicationMetrics.length > 0);
+    }
+
+
+    /**
+     *
      * Gets the TelemetryErrorEvents for this TelemetrySnapshot.
      *
      * If already loaded, returns cached array.
@@ -695,6 +789,7 @@ export class TelemetrySnapshotService extends SecureEndpointBase {
         private telemetryDatabaseHealthService: TelemetryDatabaseHealthService,
         private telemetryDiskHealthService: TelemetryDiskHealthService,
         private telemetrySessionSnapshotService: TelemetrySessionSnapshotService,
+        private telemetryApplicationMetricService: TelemetryApplicationMetricService,
         private telemetryErrorEventService: TelemetryErrorEventService,
         private telemetryLogErrorService: TelemetryLogErrorService,
         @Inject('BASE_URL') private baseUrl: string) {
@@ -1094,6 +1189,16 @@ export class TelemetrySnapshotService extends SecureEndpointBase {
     }
 
 
+    public GetTelemetryApplicationMetricsForTelemetrySnapshot(telemetrySnapshotId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<TelemetryApplicationMetricData[]> {
+        return this.telemetryApplicationMetricService.GetTelemetryApplicationMetricList({
+            telemetrySnapshotId: telemetrySnapshotId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
     public GetTelemetryErrorEventsForTelemetrySnapshot(telemetrySnapshotId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<TelemetryErrorEventData[]> {
         return this.telemetryErrorEventService.GetTelemetryErrorEventList({
             telemetrySnapshotId: telemetrySnapshotId,
@@ -1161,6 +1266,10 @@ export class TelemetrySnapshotService extends SecureEndpointBase {
     (revived as any)._telemetrySessionSnapshotsPromise = null;
     (revived as any)._telemetrySessionSnapshotsSubject = new BehaviorSubject<TelemetrySessionSnapshotData[] | null>(null);
 
+    (revived as any)._telemetryApplicationMetrics = null;
+    (revived as any)._telemetryApplicationMetricsPromise = null;
+    (revived as any)._telemetryApplicationMetricsSubject = new BehaviorSubject<TelemetryApplicationMetricData[] | null>(null);
+
     (revived as any)._telemetryErrorEvents = null;
     (revived as any)._telemetryErrorEventsPromise = null;
     (revived as any)._telemetryErrorEventsSubject = new BehaviorSubject<TelemetryErrorEventData[] | null>(null);
@@ -1223,6 +1332,22 @@ export class TelemetrySnapshotService extends SecureEndpointBase {
       );
 
     (revived as any).TelemetrySessionSnapshotsCount$ = TelemetrySessionSnapshotService.Instance.GetTelemetrySessionSnapshotsRowCount({telemetrySnapshotId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).TelemetryApplicationMetrics$ = (revived as any)._telemetryApplicationMetricsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._telemetryApplicationMetrics === null && (revived as any)._telemetryApplicationMetricsPromise === null) {
+                (revived as any).loadTelemetryApplicationMetrics();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).TelemetryApplicationMetricsCount$ = TelemetryApplicationMetricService.Instance.GetTelemetryApplicationMetricsRowCount({telemetrySnapshotId: (revived as any).id,
       active: true,
       deleted: false
     });

@@ -28,6 +28,7 @@ import { TelemetryCollectionRunService } from '../../../telemetry-data-services/
 import { TelemetryDatabaseHealthService } from '../../../telemetry-data-services/telemetry-database-health.service';
 import { TelemetryDiskHealthService } from '../../../telemetry-data-services/telemetry-disk-health.service';
 import { TelemetrySessionSnapshotService } from '../../../telemetry-data-services/telemetry-session-snapshot.service';
+import { TelemetryApplicationMetricService } from '../../../telemetry-data-services/telemetry-application-metric.service';
 import { TelemetryErrorEventService } from '../../../telemetry-data-services/telemetry-error-event.service';
 import { TelemetryLogErrorService } from '../../../telemetry-data-services/telemetry-log-error.service';
 import { AuthService } from '../../../services/auth.service';
@@ -115,6 +116,7 @@ export class TelemetrySnapshotDetailComponent implements OnInit, CanComponentDea
   public telemetryDatabaseHealths$ = this.telemetryDatabaseHealthService.GetTelemetryDatabaseHealthList();
   public telemetryDiskHealths$ = this.telemetryDiskHealthService.GetTelemetryDiskHealthList();
   public telemetrySessionSnapshots$ = this.telemetrySessionSnapshotService.GetTelemetrySessionSnapshotList();
+  public telemetryApplicationMetrics$ = this.telemetryApplicationMetricService.GetTelemetryApplicationMetricList();
   public telemetryErrorEvents$ = this.telemetryErrorEventService.GetTelemetryErrorEventList();
   public telemetryLogErrors$ = this.telemetryLogErrorService.GetTelemetryLogErrorList();
 
@@ -127,6 +129,7 @@ export class TelemetrySnapshotDetailComponent implements OnInit, CanComponentDea
     public telemetryDatabaseHealthService: TelemetryDatabaseHealthService,
     public telemetryDiskHealthService: TelemetryDiskHealthService,
     public telemetrySessionSnapshotService: TelemetrySessionSnapshotService,
+    public telemetryApplicationMetricService: TelemetryApplicationMetricService,
     public telemetryErrorEventService: TelemetryErrorEventService,
     public telemetryLogErrorService: TelemetryLogErrorService,
     private authService: AuthService,

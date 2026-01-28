@@ -103,6 +103,104 @@ namespace Foundation.Controllers.WebAPI
 
 
         //
+        // GET: api/Telemetry/snapshots/{id}
+        //
+        // Returns full snapshot detail with child records for drill-down modal
+        //
+        [HttpGet("snapshots/{id}")]
+        public async Task<IActionResult> GetSnapshotDetail(int id)
+        {
+            try
+            {
+                using (var context = new TelemetryContext())
+                {
+                    var snapshot = await context.TelemetrySnapshots
+                        .Include(s => s.telemetryApplication)
+                        .Include(s => s.TelemetryDatabaseHealths)
+                        .Include(s => s.TelemetryDiskHealths)
+                        .Include(s => s.TelemetrySessionSnapshots)
+                        .Include(s => s.TelemetryApplicationMetrics)
+                        .Include(s => s.TelemetryLogErrors)
+                        .FirstOrDefaultAsync(s => s.id == id)
+                        .ConfigureAwait(false);
+
+                    if (snapshot == null)
+                    {
+                        return NotFound(new { error = $"Snapshot {id} not found" });
+                    }
+
+                    var result = new
+                    {
+                        snapshot.id,
+                        applicationName = snapshot.telemetryApplication?.name,
+                        snapshot.collectedAt,
+                        snapshot.isOnline,
+                        snapshot.uptimeSeconds,
+                        snapshot.memoryWorkingSetMB,
+                        snapshot.memoryGcHeapMB,
+                        snapshot.cpuPercent,
+                        snapshot.threadPoolWorkerThreads,
+                        snapshot.threadPoolPendingWorkItems,
+                        snapshot.machineName,
+                        databases = snapshot.TelemetryDatabaseHealths.Select(d => new
+                        {
+                            d.databaseName,
+                            d.isConnected,
+                            d.status,
+                            d.server,
+                            d.provider,
+                            d.errorMessage
+                        }),
+                        disks = snapshot.TelemetryDiskHealths.Select(d => new
+                        {
+                            d.driveName,
+                            d.driveLabel,
+                            d.totalGB,
+                            d.freeGB,
+                            d.freePercent,
+                            d.status,
+                            d.isApplicationDrive
+                        }),
+                        sessions = snapshot.TelemetrySessionSnapshots.FirstOrDefault() != null
+                            ? new
+                            {
+                                snapshot.TelemetrySessionSnapshots.First().activeSessionCount,
+                                snapshot.TelemetrySessionSnapshots.First().expiredSessionCount,
+                                snapshot.TelemetrySessionSnapshots.First().oldestSessionStart,
+                                snapshot.TelemetrySessionSnapshots.First().newestSessionStart
+                            }
+                            : null,
+                        metrics = snapshot.TelemetryApplicationMetrics.Select(m => new
+                        {
+                            m.metricName,
+                            m.metricValue,
+                            m.state,
+                            m.dataType,
+                            m.numericValue,
+                            m.category
+                        }),
+                        logErrors = snapshot.TelemetryLogErrors.Select(e => new
+                        {
+                            e.logTimestamp,
+                            e.level,
+                            e.message,
+                            e.exception,
+                            e.logFileName
+                        })
+                    };
+
+                    return Ok(result);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving snapshot detail for id {SnapshotId}", id);
+                return Problem("Failed to retrieve snapshot detail");
+            }
+        }
+
+
+        //
         // GET: api/Telemetry/trends/memory
         //
         // Returns memory usage trend data for charting

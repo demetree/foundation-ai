@@ -203,11 +203,11 @@ namespace Foundation.Security.Controllers.WebAPI
         /// 
         /// This returns a row count of SecurityRoles filtered by the parameters provided.  Its query is similar to the GetSecurityRoles method, but it only returns the count of rows that would be returned.
         ///
-        /// The rate limit is 2 per second per user.
+        /// The rate limit is 10 per second per user.
         /// 
         /// </summary>
 		[HttpGet]
-		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/SecurityRoles/RowCount")]
 		public async Task<IActionResult> GetRowCount(
 			int? privilegeId = null,

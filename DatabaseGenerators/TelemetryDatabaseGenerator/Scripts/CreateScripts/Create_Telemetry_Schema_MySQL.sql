@@ -12,6 +12,7 @@ USE `Telemetry`;
 /* These drop table commands are here in a commented state as a convenience for situations where you may want to modify the tables in a schema.  They are ordered correctly to be able to delete all tables if executed as a batch, or at least in this order.  Be very careful with these. */
 -- DROP TABLE `TelemetryLogError`
 -- DROP TABLE `TelemetryErrorEvent`
+-- DROP TABLE `TelemetryApplicationMetric`
 -- DROP TABLE `TelemetrySessionSnapshot`
 -- DROP TABLE `TelemetryDiskHealth`
 -- DROP TABLE `TelemetryDatabaseHealth`
@@ -22,6 +23,7 @@ USE `Telemetry`;
 /* These disable table index commands are here in a commented state as a convenience for situations where you want to remove the indexes on a table for things like mass data loads, where indexes just slow things down.  The corresponding rebuild index commands are listed after the disable commands */
 -- ALTER INDEX ALL ON `TelemetryLogError` DISABLE
 -- ALTER INDEX ALL ON `TelemetryErrorEvent` DISABLE
+-- ALTER INDEX ALL ON `TelemetryApplicationMetric` DISABLE
 -- ALTER INDEX ALL ON `TelemetrySessionSnapshot` DISABLE
 -- ALTER INDEX ALL ON `TelemetryDiskHealth` DISABLE
 -- ALTER INDEX ALL ON `TelemetryDatabaseHealth` DISABLE
@@ -32,6 +34,7 @@ USE `Telemetry`;
 /* These rebuild table index commands are here in a commented state as a convenience for situations where you want to rebuild the indexes on a table after having removed them, or if you want to refresh them. */
 -- ALTER INDEX ALL ON `TelemetryLogError` REBUILD
 -- ALTER INDEX ALL ON `TelemetryErrorEvent` REBUILD
+-- ALTER INDEX ALL ON `TelemetryApplicationMetric` REBUILD
 -- ALTER INDEX ALL ON `TelemetrySessionSnapshot` REBUILD
 -- ALTER INDEX ALL ON `TelemetryDiskHealth` REBUILD
 -- ALTER INDEX ALL ON `TelemetryDatabaseHealth` REBUILD
@@ -143,6 +146,22 @@ CREATE TABLE `TelemetrySessionSnapshot`(
 );
 -- Index on the TelemetrySessionSnapshot table's telemetrySnapshotId field.
 CREATE INDEX `I_TelemetrySessionSnapshot_telemetrySnapshotId` ON `TelemetrySessionSnapshot` (`telemetrySnapshotId`);
+
+
+-- Application-specific business metrics captured per snapshot.
+CREATE TABLE `TelemetryApplicationMetric`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`telemetrySnapshotId` INT NOT NULL,		-- Link to the TelemetrySnapshot table.
+	`metricName` VARCHAR(100) NOT NULL,
+	`metricValue` VARCHAR(500) NULL,
+	`state` INT NULL,
+	`dataType` INT NULL,
+	`numericValue` DOUBLE NULL,
+	`category` VARCHAR(100) NULL,
+	FOREIGN KEY (`telemetrySnapshotId`) REFERENCES `TelemetrySnapshot`(`id`)		-- Foreign key to the TelemetrySnapshot table.
+);
+-- Index on the TelemetryApplicationMetric table's telemetrySnapshotId field.
+CREATE INDEX `I_TelemetryApplicationMetric_telemetrySnapshotId` ON `TelemetryApplicationMetric` (`telemetrySnapshotId`);
 
 
 -- Correlated error events copied from Auditor for forensic analysis.

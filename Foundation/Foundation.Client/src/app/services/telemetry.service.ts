@@ -85,6 +85,69 @@ export interface SessionTrendsResponse {
     count: number;
 }
 
+// Snapshot detail types for drill-down modal
+export interface DatabaseHealthDto {
+    databaseName: string;
+    isConnected: boolean;
+    status?: string;
+    server?: string;
+    provider?: string;
+    errorMessage?: string;
+}
+
+export interface DiskHealthDto {
+    driveName: string;
+    driveLabel?: string;
+    totalGB: number;
+    freeGB: number;
+    freePercent: number;
+    status?: string;
+    isApplicationDrive: boolean;
+}
+
+export interface SessionSnapshotDto {
+    activeSessionCount: number;
+    expiredSessionCount: number;
+    oldestSessionStart?: Date;
+    newestSessionStart?: Date;
+}
+
+export interface ApplicationMetricDto {
+    metricName: string;
+    metricValue?: string;
+    state?: number;  // 0=Normal, 1=Warning, 2=Critical
+    dataType?: number;  // 0=Text, 1=Number, 2=Percentage
+    numericValue?: number;
+    category?: string;
+}
+
+export interface SnapshotDetailDto {
+    id: number;
+    applicationName: string;
+    collectedAt: Date;
+    isOnline: boolean;
+    uptimeSeconds?: number;
+    memoryWorkingSetMB?: number;
+    memoryGcHeapMB?: number;
+    cpuPercent?: number;
+    threadPoolWorkerThreads?: number;
+    threadPoolPendingWorkItems?: number;
+    machineName?: string;
+    databases: DatabaseHealthDto[];
+    disks: DiskHealthDto[];
+    sessions?: SessionSnapshotDto;
+    metrics: ApplicationMetricDto[];
+    logErrors: LogErrorDto[];
+}
+
+export interface LogErrorDto {
+    logTimestamp?: Date;
+    level?: string;
+    message?: string;
+    exception?: string;
+    logFileName?: string;
+}
+
 // Error event types
 export interface TelemetryErrorEventDto {
     id: number;
@@ -203,6 +266,16 @@ export class TelemetryService {
         return this.http.get<TelemetrySnapshotsResponse>(
             `${this.baseUrl}/snapshots`,
             { headers: this.authService.GetAuthenticationHeaders(), params }
+        );
+    }
+
+    /**
+     * Get full snapshot detail with child records for drill-down modal
+     */
+    getSnapshotDetail(id: number): Observable<SnapshotDetailDto> {
+        return this.http.get<SnapshotDetailDto>(
+            `${this.baseUrl}/snapshots/${id}`,
+            { headers: this.authService.GetAuthenticationHeaders() }
         );
     }
 

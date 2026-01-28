@@ -202,6 +202,27 @@ and correlated error events from audit logs and log files.";
             telemetrySessionSnapshotTable.AddDateTimeField("oldestSessionStart", true);
             telemetrySessionSnapshotTable.AddDateTimeField("newestSessionStart", true);
 
+
+            //
+            // TelemetryApplicationMetric - Application-specific business metrics per snapshot
+            //
+            // Captures custom metrics from IApplicationMetricsProvider implementations.
+            // Examples: active jobs, pending appointments, background tasks, queue depths.
+            // Enables historical analysis of business-level health indicators.
+            //
+            Database.Table telemetryApplicationMetricTable = database.AddTable("TelemetryApplicationMetric");
+            telemetryApplicationMetricTable.comment = "Application-specific business metrics captured per snapshot.";
+            telemetryApplicationMetricTable.isWritable = true;
+            telemetryApplicationMetricTable.adminAccessNeededToWrite = true;
+            telemetryApplicationMetricTable.AddIdField();
+            telemetryApplicationMetricTable.AddForeignKeyField("telemetrySnapshotId", telemetrySnapshotTable, false);
+            telemetryApplicationMetricTable.AddString100Field("metricName", false);
+            telemetryApplicationMetricTable.AddString500Field("metricValue", true);
+            telemetryApplicationMetricTable.AddIntField("state", true); // 0=Normal, 1=Warning, 2=Critical
+            telemetryApplicationMetricTable.AddIntField("dataType", true); // 0=Text, 1=Number, 2=Percentage
+            telemetryApplicationMetricTable.AddDoubleField("numericValue", true);
+            telemetryApplicationMetricTable.AddString100Field("category", true);
+
             #endregion
 
 

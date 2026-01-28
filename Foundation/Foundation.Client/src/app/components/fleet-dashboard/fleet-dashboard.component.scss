@@ -497,3 +497,86 @@
     border-radius: 4px;
     font-size: 0.8125rem;
 }
+
+// Clickable rows
+.clickable-row {
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+
+    &:hover {
+        background-color: rgba(var(--bs-primary-rgb), 0.08) !important;
+    }
+}
+
+// Snapshot detail modal
+.snapshot-detail-modal {
+    .modal-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-bottom: none;
+
+        .modal-title {
+            font-weight: 600;
+        }
+
+        .text-muted {
+            color: rgba(255, 255, 255, 0.8) !important;
+        }
+
+        .btn-close {
+            filter: invert(1);
+        }
+    }
+
+    .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+
+        @media (max-width: 576px) {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    .metric-item {
+        text-align: center;
+        padding: 0.75rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+
+        .metric-label {
+            font-size: 0.75rem;
+            color: #6c757d;
+            margin-bottom: 0.25rem;
+        }
+
+        .metric-value {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #495057;
+        }
+    }
+
+    .section-card {
+        background: #fff;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 1rem;
+
+        .section-title {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.75rem;
+            font-size: 0.9rem;
+        }
+
+        .table {
+            font-size: 0.875rem;
+
+            th {
+                background: #f8f9fa;
+                font-weight: 600;
+            }
+        }
+    }
+}
