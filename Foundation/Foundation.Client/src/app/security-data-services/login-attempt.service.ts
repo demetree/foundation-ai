@@ -16,6 +16,7 @@ import { UtilityService } from '../utility-services/utility.service'
 import { AlertService } from '../services/alert.service';
 import { AuthService } from '../services/auth.service';
 import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
+import { SecurityUserData } from './security-user.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -35,6 +36,8 @@ export class LoginAttemptQueryParameters {
     ipAddress: string | null | undefined = null;
     userAgent: string | null | undefined = null;
     value: string | null | undefined = null;
+    success: boolean | null | undefined = null;
+    securityUserId: bigint | number | null | undefined = null;
     active: boolean | null | undefined = null;
     deleted: boolean | null | undefined = null;
     pageSize: bigint | number | null | undefined = null;
@@ -57,6 +60,8 @@ export class LoginAttemptSubmitData {
     ipAddress: string | null = null;
     userAgent: string | null = null;
     value: string | null = null;
+    success: boolean | null = null;
+    securityUserId: bigint | number | null = null;
     active!: boolean;
     deleted!: boolean;
 }
@@ -114,8 +119,11 @@ export class LoginAttemptData {
     ipAddress!: string | null;
     userAgent!: string | null;
     value!: string | null;
+    success!: boolean | null;
+    securityUserId!: bigint | number;
     active!: boolean;
     deleted!: boolean;
+    securityUser: SecurityUserData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
 
     //
     // Private lazy-loading caches for related collections
@@ -271,6 +279,8 @@ export class LoginAttemptService extends SecureEndpointBase {
         output.ipAddress = data.ipAddress;
         output.userAgent = data.userAgent;
         output.value = data.value;
+        output.success = data.success;
+        output.securityUserId = data.securityUserId;
         output.active = data.active;
         output.deleted = data.deleted;
 

@@ -8,7 +8,7 @@
    "OutputContextPath": null,
    "OutputPath": "Database",
    "PreserveCasingWithRegex": true,
-   "ProjectRootNamespace": "Foundation.Auditor",
+   "ProjectRootNamespace": "Foundation",
    "Schemas": null,
    "SelectedHandlebarsLanguage": 2,
    "SelectedToBeGenerated": 0,

@@ -839,36 +839,36 @@ namespace Foundation.Security
         }
 
 
-        internal static void CreateGoogleLoginAttemptRecord(GoogleAuthentication.GoogleUser user, string resource, string sessionId, string ipAddress, string userAgent)
+        internal static void CreateGoogleLoginAttemptRecord(GoogleAuthentication.GoogleUser user, string resource, string sessionId, string ipAddress, string userAgent, bool? success = null, int? securityUserId = null)
         {
             LoginAttempt la = new LoginAttempt();
 
             la.userName = user.name;
 
-            CompleteAndSaveLoginAttempt(la, resource, sessionId, ipAddress, userAgent);
+            CompleteAndSaveLoginAttempt(la, resource, sessionId, ipAddress, userAgent, success, securityUserId);
         }
 
 
-        internal static void CreateMicrosoftLoginAttemptRecord(MicrosoftAuthentication.MicrosoftUser user, string resource, string sessionId, string ipAddress, string userAgent)
+        internal static void CreateMicrosoftLoginAttemptRecord(MicrosoftAuthentication.MicrosoftUser user, string resource, string sessionId, string ipAddress, string userAgent, bool? success = null, int? securityUserId = null)
         {
             LoginAttempt la = new LoginAttempt();
 
             la.userName = user.name;
 
-            CompleteAndSaveLoginAttempt(la, resource, sessionId, ipAddress, userAgent);
+            CompleteAndSaveLoginAttempt(la, resource, sessionId, ipAddress, userAgent, success, securityUserId);
         }
 
 
-        internal static void CreateFacebookLoginAttemptRecord(FacebookAuthentication.FacebookUser user, string resource, string sessionId, string ipAddress, string userAgent)
+        internal static void CreateFacebookLoginAttemptRecord(FacebookAuthentication.FacebookUser user, string resource, string sessionId, string ipAddress, string userAgent, bool? success = null, int? securityUserId = null)
         {
             LoginAttempt la = new LoginAttempt();
 
             la.userName = user.name;
 
-            CompleteAndSaveLoginAttempt(la, resource, sessionId, ipAddress, userAgent);
+            CompleteAndSaveLoginAttempt(la, resource, sessionId, ipAddress, userAgent, success, securityUserId);
         }
 
-        private static void CompleteAndSaveLoginAttempt(LoginAttempt la, string resource, string sessionId, string ipAddress, string userAgent)
+        private static void CompleteAndSaveLoginAttempt(LoginAttempt la, string resource, string sessionId, string ipAddress, string userAgent, bool? success = null, int? securityUserId = null)
         {
             la.timeStamp = DateTime.UtcNow;
 
@@ -914,6 +914,8 @@ namespace Foundation.Security
 
             la.active = true;
             la.deleted = false;
+            la.success = success;
+            la.securityUserId = securityUserId;
 
             using (SecurityContext db = new SecurityContext())
             {
@@ -924,7 +926,7 @@ namespace Foundation.Security
         }
 
 
-        internal static void CreateLoginAttemptRecord(string userName, string password, string notes, string resource, string ipAddress, string userAgent)
+        internal static void CreateLoginAttemptRecord(string userName, string password, string notes, string resource, string ipAddress, string userAgent, bool? success = null, int? securityUserId = null)
         {
             LoginAttempt la = new LoginAttempt();
 
@@ -945,11 +947,11 @@ namespace Foundation.Security
 
             la.value = notes;
                 
-            CompleteAndSaveLoginAttempt(la, resource, null, ipAddress, userAgent);
+            CompleteAndSaveLoginAttempt(la, resource, null, ipAddress, userAgent, success, securityUserId);
         }
 
 
-        internal static void CreateLoginAttemptRecord(Models.AuthenticateViewModel model, string resource, string sessionId, string ipAddress, string userAgent)
+        internal static void CreateLoginAttemptRecord(Models.AuthenticateViewModel model, string resource, string sessionId, string ipAddress, string userAgent, bool? success = null, int? securityUserId = null)
         {
             LoginAttempt la = new LoginAttempt();
 
@@ -968,7 +970,7 @@ namespace Foundation.Security
                 la.passwordHash = model.Password.GetHashCode();
             }
 
-            CompleteAndSaveLoginAttempt(la, resource, sessionId, ipAddress, userAgent);
+            CompleteAndSaveLoginAttempt(la, resource, sessionId, ipAddress, userAgent, success, securityUserId);
         }
 
 #if WINDOWS

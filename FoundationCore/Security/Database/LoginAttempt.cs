@@ -25,7 +25,13 @@ public partial class LoginAttempt
 
     public string value { get; set; }
 
+    public bool? success { get; set; }
+
+    public int? securityUserId { get; set; }
+
     public bool active { get; set; }
 
     public bool deleted { get; set; }
+
+    public virtual SecurityUser securityUser { get; set; }
 }

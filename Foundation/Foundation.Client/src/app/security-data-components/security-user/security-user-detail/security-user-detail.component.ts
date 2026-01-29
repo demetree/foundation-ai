@@ -36,6 +36,7 @@ import { SecurityUserEventService } from '../../../security-data-services/securi
 import { SecurityUserPasswordResetTokenService } from '../../../security-data-services/security-user-password-reset-token.service';
 import { SecurityUserSecurityGroupService } from '../../../security-data-services/security-user-security-group.service';
 import { SecurityUserSecurityRoleService } from '../../../security-data-services/security-user-security-role.service';
+import { LoginAttemptService } from '../../../security-data-services/login-attempt.service';
 import { EntityDataTokenService } from '../../../security-data-services/entity-data-token.service';
 import { UserSessionService } from '../../../security-data-services/user-session.service';
 import { AuthService } from '../../../services/auth.service';
@@ -175,6 +176,7 @@ export class SecurityUserDetailComponent implements OnInit, CanComponentDeactiva
   public securityUserPasswordResetTokens$ = this.securityUserPasswordResetTokenService.GetSecurityUserPasswordResetTokenList();
   public securityUserSecurityGroups$ = this.securityUserSecurityGroupService.GetSecurityUserSecurityGroupList();
   public securityUserSecurityRoles$ = this.securityUserSecurityRoleService.GetSecurityUserSecurityRoleList();
+  public loginAttempts$ = this.loginAttemptService.GetLoginAttemptList();
   public entityDataTokens$ = this.entityDataTokenService.GetEntityDataTokenList();
   public userSessions$ = this.userSessionService.GetUserSessionList();
 
@@ -195,6 +197,7 @@ export class SecurityUserDetailComponent implements OnInit, CanComponentDeactiva
     public securityUserPasswordResetTokenService: SecurityUserPasswordResetTokenService,
     public securityUserSecurityGroupService: SecurityUserSecurityGroupService,
     public securityUserSecurityRoleService: SecurityUserSecurityRoleService,
+    public loginAttemptService: LoginAttemptService,
     public entityDataTokenService: EntityDataTokenService,
     public userSessionService: UserSessionService,
     private authService: AuthService,

@@ -347,6 +347,23 @@
                             </div>
                             </ng-template>
                         </li>
+                      <li ngbNavItem *ngIf="loginAttemptService.userIsSecurityLoginAttemptReader()">
+                            <button ngbNavLink>Login Attempts
+                                <span class="badge bg-primary ms-2">
+                                    {{ (securityUserData?.LoginAttemptsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-login-attempt-table [queryParams]="{ securityUserId: securityUserData?.id }"></app-login-attempt-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-login-attempt-add-edit [preSeededData]="{ securityUserId: securityUserData?.id }" [hiddenFields]="['securityUserId']"></app-login-attempt-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
                       <li ngbNavItem *ngIf="entityDataTokenService.userIsSecurityEntityDataTokenReader()">
                             <button ngbNavLink>Entity Data Tokens
                                 <span class="badge bg-primary ms-2">

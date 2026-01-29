@@ -52,6 +52,17 @@
                                 <label for="LoginAttempt-value" id="label-LoginAttempt-value">Value</label>
                                 <textarea id="LoginAttempt-value" formControlName="value" placeholder="Enter Value" class="form-control login-attempt-input" [disabled]="!userIsSecurityLoginAttemptWriter()"></textarea>
                             </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('success')">
+                                <input type="checkbox" id="LoginAttempt-success" formControlName="success" class="form-check-input" [disabled]="!userIsSecurityLoginAttemptWriter()" />
+                                <label for="LoginAttempt-success" class="form-check-label" id="label-LoginAttempt-success">Success</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('securityUserId')">
+                                <label for="LoginAttempt-securityUserId" id="label-LoginAttempt-securityUserId">Security User</label>
+                                <select id="LoginAttempt-securityUserId" formControlName="securityUserId" class="form-select login-attempt-select" [disabled]="!userIsSecurityLoginAttemptWriter()">
+                                    <option [ngValue]="null">Select Security User</option>
+                                    <option *ngFor="let securityUser of securityUsers$ | async" [ngValue]="securityUser.id">{{[securityUser.accountName] | filterAndJoin}}</option>
+                                </select>
+                            </div>
                             <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
                                 <input type="checkbox" id="LoginAttempt-active" formControlName="active" class="form-check-input" [disabled]="!userIsSecurityLoginAttemptWriter()" />
                                 <label for="LoginAttempt-active" class="form-check-label" id="label-LoginAttempt-active"><span class="text-danger">*</span>Active</label>

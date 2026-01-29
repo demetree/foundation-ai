@@ -23,6 +23,7 @@ import { NavigationService } from '../../../utility-services/navigation.service'
 import { CanComponentDeactivate } from '../../../guards/unsaved-changes.guard';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { LoginAttemptService, LoginAttemptData, LoginAttemptSubmitData } from '../../../security-data-services/login-attempt.service';
+import { SecurityUserService } from '../../../security-data-services/security-user.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -42,6 +43,8 @@ interface LoginAttemptFormValues {
   ipAddress: string | null,
   userAgent: string | null,
   value: string | null,
+  success: boolean | null,
+  securityUserId: number | bigint | null,       // For FK link number
   active: boolean,
   deleted: boolean,
 };
@@ -79,6 +82,8 @@ export class LoginAttemptDetailComponent implements OnInit, CanComponentDeactiva
         ipAddress: [''],
         userAgent: [''],
         value: [''],
+        success: [false],
+        securityUserId: [null],
         active: [true],
         deleted: [false],
       });
@@ -95,11 +100,13 @@ export class LoginAttemptDetailComponent implements OnInit, CanComponentDeactiva
   public isEditMode = true;   // Defaults to true (edit).  Gets set to false in ngOnInit if route is 'new'
 
   loginAttempts$ = this.loginAttemptService.GetLoginAttemptList();
+  public securityUsers$ = this.securityUserService.GetSecurityUserList();
 
   private destroy$ = new Subject<void>();
 
   constructor(
     public loginAttemptService: LoginAttemptService,
+    public securityUserService: SecurityUserService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,
@@ -389,6 +396,8 @@ export class LoginAttemptDetailComponent implements OnInit, CanComponentDeactiva
         ipAddress: '',
         userAgent: '',
         value: '',
+        success: false,
+        securityUserId: null,
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -408,6 +417,8 @@ export class LoginAttemptDetailComponent implements OnInit, CanComponentDeactiva
         ipAddress: loginAttemptData.ipAddress ?? '',
         userAgent: loginAttemptData.userAgent ?? '',
         value: loginAttemptData.value ?? '',
+        success: loginAttemptData.success ?? false,
+        securityUserId: loginAttemptData.securityUserId,
         active: loginAttemptData.active ?? true,
         deleted: loginAttemptData.deleted ?? false,
       }, { emitEvent: false});
@@ -477,6 +488,8 @@ export class LoginAttemptDetailComponent implements OnInit, CanComponentDeactiva
         ipAddress: formValue.ipAddress?.trim() || null,
         userAgent: formValue.userAgent?.trim() || null,
         value: formValue.value?.trim() || null,
+        success: formValue.success == true ? true : formValue.success == false ? false : null,
+        securityUserId: formValue.securityUserId ? Number(formValue.securityUserId) : null,
         active: !!formValue.active,
         deleted: !!formValue.deleted,
    };

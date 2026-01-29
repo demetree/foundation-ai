@@ -29,6 +29,7 @@ import { SecurityUserEventService, SecurityUserEventData } from './security-user
 import { SecurityUserPasswordResetTokenService, SecurityUserPasswordResetTokenData } from './security-user-password-reset-token.service';
 import { SecurityUserSecurityGroupService, SecurityUserSecurityGroupData } from './security-user-security-group.service';
 import { SecurityUserSecurityRoleService, SecurityUserSecurityRoleData } from './security-user-security-role.service';
+import { LoginAttemptService, LoginAttemptData } from './login-attempt.service';
 import { EntityDataTokenService, EntityDataTokenData } from './entity-data-token.service';
 import { UserSessionService, UserSessionData } from './user-session.service';
 
@@ -261,6 +262,11 @@ export class SecurityUserData {
     private _securityUserSecurityRolesSubject = new BehaviorSubject<SecurityUserSecurityRoleData[] | null>(null);
 
                 
+    private _loginAttempts: LoginAttemptData[] | null = null;
+    private _loginAttemptsPromise: Promise<LoginAttemptData[]> | null  = null;
+    private _loginAttemptsSubject = new BehaviorSubject<LoginAttemptData[] | null>(null);
+
+                
     private _entityDataTokens: EntityDataTokenData[] | null = null;
     private _entityDataTokensPromise: Promise<EntityDataTokenData[]> | null  = null;
     private _entityDataTokensSubject = new BehaviorSubject<EntityDataTokenData[] | null>(null);
@@ -430,6 +436,25 @@ export class SecurityUserData {
 
 
 
+    public LoginAttempts$ = this._loginAttemptsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._loginAttempts === null && this._loginAttemptsPromise === null) {
+            this.loadLoginAttempts(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public LoginAttemptsCount$ = LoginAttemptService.Instance.GetLoginAttemptsRowCount({securityUserId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
     public EntityDataTokens$ = this._entityDataTokensSubject.asObservable().pipe(
 
         // Trigger load on first subscription if not already loaded
@@ -537,6 +562,10 @@ export class SecurityUserData {
      this._securityUserSecurityRoles = null;
      this._securityUserSecurityRolesPromise = null;
      this._securityUserSecurityRolesSubject.next(null);
+
+     this._loginAttempts = null;
+     this._loginAttemptsPromise = null;
+     this._loginAttemptsSubject.next(null);
 
      this._entityDataTokens = null;
      this._entityDataTokensPromise = null;
@@ -1074,6 +1103,71 @@ export class SecurityUserData {
 
     /**
      *
+     * Gets the LoginAttempts for this SecurityUser.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.securityUser.LoginAttempts.then(securityUsers => { ... })
+     *   or
+     *   await this.securityUser.securityUsers
+     *
+    */
+    public get LoginAttempts(): Promise<LoginAttemptData[]> {
+        if (this._loginAttempts !== null) {
+            return Promise.resolve(this._loginAttempts);
+        }
+
+        if (this._loginAttemptsPromise !== null) {
+            return this._loginAttemptsPromise;
+        }
+
+        // Start the load
+        this.loadLoginAttempts();
+
+        return this._loginAttemptsPromise!;
+    }
+
+
+
+    private loadLoginAttempts(): void {
+
+        this._loginAttemptsPromise = lastValueFrom(
+            SecurityUserService.Instance.GetLoginAttemptsForSecurityUser(this.id)
+        )
+        .then(LoginAttempts => {
+            this._loginAttempts = LoginAttempts ?? [];
+            this._loginAttemptsSubject.next(this._loginAttempts);
+            return this._loginAttempts;
+         })
+        .catch(err => {
+            this._loginAttempts = [];
+            this._loginAttemptsSubject.next(this._loginAttempts);
+            throw err;
+        })
+        .finally(() => {
+            this._loginAttemptsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached LoginAttempt. Call after mutations to force refresh.
+     */
+    public ClearLoginAttemptsCache(): void {
+        this._loginAttempts = null;
+        this._loginAttemptsPromise = null;
+        this._loginAttemptsSubject.next(this._loginAttempts);      // Emit to observable
+    }
+
+    public get HasLoginAttempts(): Promise<boolean> {
+        return this.LoginAttempts.then(loginAttempts => loginAttempts.length > 0);
+    }
+
+
+    /**
+     *
      * Gets the EntityDataTokens for this SecurityUser.
      *
      * If already loaded, returns cached array.
@@ -1245,6 +1339,7 @@ export class SecurityUserService extends SecureEndpointBase {
         private securityUserPasswordResetTokenService: SecurityUserPasswordResetTokenService,
         private securityUserSecurityGroupService: SecurityUserSecurityGroupService,
         private securityUserSecurityRoleService: SecurityUserSecurityRoleService,
+        private loginAttemptService: LoginAttemptService,
         private entityDataTokenService: EntityDataTokenService,
         private userSessionService: UserSessionService,
         @Inject('BASE_URL') private baseUrl: string) {
@@ -1716,6 +1811,16 @@ export class SecurityUserService extends SecureEndpointBase {
     }
 
 
+    public GetLoginAttemptsForSecurityUser(securityUserId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<LoginAttemptData[]> {
+        return this.loginAttemptService.GetLoginAttemptList({
+            securityUserId: securityUserId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
     public GetEntityDataTokensForSecurityUser(securityUserId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<EntityDataTokenData[]> {
         return this.entityDataTokenService.GetEntityDataTokenList({
             securityUserId: securityUserId,
@@ -1806,6 +1911,10 @@ export class SecurityUserService extends SecureEndpointBase {
     (revived as any)._securityUserSecurityRoles = null;
     (revived as any)._securityUserSecurityRolesPromise = null;
     (revived as any)._securityUserSecurityRolesSubject = new BehaviorSubject<SecurityUserSecurityRoleData[] | null>(null);
+
+    (revived as any)._loginAttempts = null;
+    (revived as any)._loginAttemptsPromise = null;
+    (revived as any)._loginAttemptsSubject = new BehaviorSubject<LoginAttemptData[] | null>(null);
 
     (revived as any)._entityDataTokens = null;
     (revived as any)._entityDataTokensPromise = null;
@@ -1965,6 +2074,22 @@ export class SecurityUserService extends SecureEndpointBase {
       );
 
     (revived as any).SecurityUserSecurityRolesCount$ = SecurityUserSecurityRoleService.Instance.GetSecurityUserSecurityRolesRowCount({securityUserId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).LoginAttempts$ = (revived as any)._loginAttemptsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._loginAttempts === null && (revived as any)._loginAttemptsPromise === null) {
+                (revived as any).loadLoginAttempts();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).LoginAttemptsCount$ = LoginAttemptService.Instance.GetLoginAttemptsRowCount({securityUserId: (revived as any).id,
       active: true,
       deleted: false
     });

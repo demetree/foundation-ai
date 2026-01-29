@@ -503,6 +503,10 @@ INSERT INTO `SecurityUserEventType` ( `name`, `description` ) VALUES  ( 'AdminAc
 
 INSERT INTO `SecurityUserEventType` ( `name`, `description` ) VALUES  ( 'AccountUnlocked', 'Account Unlocked' );
 
+INSERT INTO `SecurityUserEventType` ( `name`, `description` ) VALUES  ( 'SessionRevoked', 'Session Revoked' );
+
+INSERT INTO `SecurityUserEventType` ( `name`, `description` ) VALUES  ( 'SessionRevokedWithAccountLock', 'Session Revoked With Account Lock' );
+
 
 CREATE TABLE `SecurityUserEvent`(
 	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
@@ -819,10 +823,15 @@ CREATE TABLE `LoginAttempt`(
 	`ipAddress` VARCHAR(50) NULL,
 	`userAgent` VARCHAR(250) NULL,
 	`value` TEXT NULL,
+	`success` BIT NULL,		-- null = unknown/pending, true = success, false = failure
+	`securityUserId` INT NULL,		-- Link to user if identified during login attempt
 	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
-	`deleted` BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
-
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY (`securityUserId`) REFERENCES `SecurityUser`(`id`)		-- Foreign key to the SecurityUser table.
 );
+-- Index on the LoginAttempt table's securityUserId field.
+CREATE INDEX `I_LoginAttempt_securityUserId` ON `LoginAttempt` (`securityUserId`);
+
 -- Index on the LoginAttempt table's active field.
 CREATE INDEX `I_LoginAttempt_active` ON `LoginAttempt` (`active`);
 

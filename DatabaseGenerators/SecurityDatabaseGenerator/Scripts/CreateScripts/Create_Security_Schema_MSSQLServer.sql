@@ -638,6 +638,12 @@ GO
 INSERT INTO [Security].[SecurityUserEventType] ( [name], [description] ) VALUES  ( 'AccountUnlocked', 'Account Unlocked' )
 GO
 
+INSERT INTO [Security].[SecurityUserEventType] ( [name], [description] ) VALUES  ( 'SessionRevoked', 'Session Revoked' )
+GO
+
+INSERT INTO [Security].[SecurityUserEventType] ( [name], [description] ) VALUES  ( 'SessionRevokedWithAccountLock', 'Session Revoked With Account Lock' )
+GO
+
 
 CREATE TABLE [Security].[SecurityUserEvent]
 (
@@ -1059,10 +1065,17 @@ CREATE TABLE [Security].[LoginAttempt]
 	[ipAddress] NVARCHAR(50) NULL,
 	[userAgent] NVARCHAR(250) NULL,
 	[value] NVARCHAR(MAX) NULL,
+	[success] BIT NULL,		-- null = unknown/pending, true = success, false = failure
+	[securityUserId] INT NULL,		-- Link to user if identified during login attempt
 	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
 
+	CONSTRAINT [FK_LoginAttempt_SecurityUser_securityUserId] FOREIGN KEY ([securityUserId]) REFERENCES [Security].[SecurityUser] ([id])		-- Foreign key to the SecurityUser table.
 )
+GO
+
+-- Index on the LoginAttempt table's securityUserId field.
+CREATE INDEX [I_LoginAttempt_securityUserId] ON [Security].[LoginAttempt] ([securityUserId])
 GO
 
 -- Index on the LoginAttempt table's active field.

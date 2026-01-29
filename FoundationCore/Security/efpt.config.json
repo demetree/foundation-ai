@@ -9,7 +9,7 @@
    "OutputContextPath": "",
    "OutputPath": "Security\\Database",
    "PreserveCasingWithRegex": true,
-   "ProjectRootNamespace": "Foundation.Security",
+   "ProjectRootNamespace": "Foundation",
    "Schemas": null,
    "SelectedHandlebarsLanguage": 2,
    "SelectedToBeGenerated": 0,

@@ -24,6 +24,7 @@ import { Subject, finalize } from 'rxjs';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { LoginAttemptService, LoginAttemptData, LoginAttemptSubmitData } from '../../../security-data-services/login-attempt.service';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
+import { SecurityUserService } from '../../../security-data-services/security-user.service';
 import { AuthService } from '../../../services/auth.service';
 
 //
@@ -42,6 +43,8 @@ interface LoginAttemptFormValues {
   ipAddress: string | null,
   userAgent: string | null,
   value: string | null,
+  success: boolean | null,
+  securityUserId: number | bigint | null,       // For FK link number
   active: boolean,
   deleted: boolean,
 };
@@ -82,6 +85,8 @@ export class LoginAttemptAddEditComponent {
         ipAddress: [''],
         userAgent: [''],
         value: [''],
+        success: [false],
+        securityUserId: [null],
         active: [true],
         deleted: [false],
       });
@@ -94,10 +99,12 @@ export class LoginAttemptAddEditComponent {
   public isSaving: boolean = false;
 
   loginAttempts$ = this.loginAttemptService.GetLoginAttemptList();
+  securityUsers$ = this.securityUserService.GetSecurityUserList();
 
   constructor(
     private modalService: NgbModal,
     private loginAttemptService: LoginAttemptService,
+    private securityUserService: SecurityUserService,
     private authService: AuthService,
     private alertService: AlertService,
     private router: Router,
@@ -224,6 +231,8 @@ export class LoginAttemptAddEditComponent {
         ipAddress: formValue.ipAddress?.trim() || null,
         userAgent: formValue.userAgent?.trim() || null,
         value: formValue.value?.trim() || null,
+        success: formValue.success == true ? true : formValue.success == false ? false : null,
+        securityUserId: formValue.securityUserId ? Number(formValue.securityUserId) : null,
         active: !!formValue.active,
         deleted: !!formValue.deleted,
    };
@@ -359,6 +368,8 @@ export class LoginAttemptAddEditComponent {
         ipAddress: '',
         userAgent: '',
         value: '',
+        success: false,
+        securityUserId: null,
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -378,6 +389,8 @@ export class LoginAttemptAddEditComponent {
         ipAddress: loginAttemptData.ipAddress ?? '',
         userAgent: loginAttemptData.userAgent ?? '',
         value: loginAttemptData.value ?? '',
+        success: loginAttemptData.success ?? false,
+        securityUserId: loginAttemptData.securityUserId,
         active: loginAttemptData.active ?? true,
         deleted: loginAttemptData.deleted ?? false,
       }, { emitEvent: false});

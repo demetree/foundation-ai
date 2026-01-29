@@ -65,3 +65,18 @@ GO
 CREATE INDEX [I_UserSession_securityUserId_isRevoked_active_deleted] ON [Security].[UserSession] ([securityUserId], [isRevoked], [active], [deleted])
 GO
 
+
+ALTER TABLE [Security].[LoginAttempt] ADD [success] BIT NULL			-- null = unknown/pending, true = success, false = failure
+GO
+
+ALTER TABLE [Security].[LoginAttempt] ADD [securityUserId] INT NULL		-- Link to user if identified during login attempt
+GO
+
+ALTER TABLE [Security].[LoginAttempt] ADD CONSTRAINT [FK_LoginAttempt_SecurityUser_securityUserId] FOREIGN KEY ([securityUserId]) REFERENCES [Security].[SecurityUser] ([id])		-- Foreign key to the SecurityUser table.
+GO
+
+-- Index on the LoginAttempt table's securityUserId field.
+CREATE INDEX [I_LoginAttempt_securityUserId] ON [Security].[LoginAttempt] ([securityUserId])
+GO
+
+

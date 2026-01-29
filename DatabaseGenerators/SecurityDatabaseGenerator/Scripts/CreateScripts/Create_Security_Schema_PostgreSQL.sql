@@ -596,6 +596,10 @@ INSERT INTO "Security"."SecurityUserEventType" ( "name", "description" ) VALUES 
 
 INSERT INTO "Security"."SecurityUserEventType" ( "name", "description" ) VALUES  ( 'AccountUnlocked', 'Account Unlocked' );
 
+INSERT INTO "Security"."SecurityUserEventType" ( "name", "description" ) VALUES  ( 'SessionRevoked', 'Session Revoked' );
+
+INSERT INTO "Security"."SecurityUserEventType" ( "name", "description" ) VALUES  ( 'SessionRevokedWithAccountLock', 'Session Revoked With Account Lock' );
+
 
 CREATE TABLE "Security"."SecurityUserEvent"
 (
@@ -982,10 +986,16 @@ CREATE TABLE "Security"."LoginAttempt"
 	"ipAddress" VARCHAR(50) NULL,
 	"userAgent" VARCHAR(250) NULL,
 	"value" TEXT NULL,
+	"success" BOOLEAN NULL,		-- null = unknown/pending, true = success, false = failure
+	"securityUserId" INT NULL,		-- Link to user if identified during login attempt
 	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
-	"deleted" BOOLEAN NOT NULL DEFAULT false		-- Soft deletion flag.
-
+	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
+	CONSTRAINT "securityUserId" FOREIGN KEY ("securityUserId") REFERENCES "Security"."SecurityUser"("id")		-- Foreign key to the SecurityUser table.
 );
+-- Index on the LoginAttempt table's securityUserId field.
+CREATE INDEX "I_LoginAttempt_securityUserId" ON "Security"."LoginAttempt" ("securityUserId")
+;
+
 -- Index on the LoginAttempt table's active field.
 CREATE INDEX "I_LoginAttempt_active" ON "Security"."LoginAttempt" ("active")
 ;

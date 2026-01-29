@@ -9,7 +9,7 @@
    "OutputContextPath": "",
    "OutputPath": "Telemetry\\Database",
    "PreserveCasingWithRegex": true,
-   "ProjectRootNamespace": "Foundation.Telemetry",
+   "ProjectRootNamespace": "Foundation",
    "Schemas": null,
    "SelectedHandlebarsLanguage": 2,
    "SelectedToBeGenerated": 0,

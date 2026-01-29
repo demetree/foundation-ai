@@ -69,6 +69,8 @@ namespace Foundation.Security.Controllers.WebAPI
 			string ipAddress = null,
 			string userAgent = null,
 			string value = null,
+			bool? success = null,
+			int? securityUserId = null,
 			bool? active = null,
 			bool? deleted = null,
 			int? pageSize = null,
@@ -143,6 +145,14 @@ namespace Foundation.Security.Controllers.WebAPI
 			{
 				query = query.Where(la => la.value == value);
 			}
+			if (success.HasValue == true)
+			{
+				query = query.Where(la => la.success == success.Value);
+			}
+			if (securityUserId.HasValue == true)
+			{
+				query = query.Where(la => la.securityUserId == securityUserId.Value);
+			}
 			if (userIsWriter == true)
 			{
 				if (active.HasValue == true)
@@ -178,6 +188,7 @@ namespace Foundation.Security.Controllers.WebAPI
 			
 			if (includeRelations == true)
 			{
+				query = query.Include(x => x.securityUser);
 				query = query.AsSplitQuery();
 			}
 
@@ -196,6 +207,21 @@ namespace Foundation.Security.Controllers.WebAPI
 			       || x.ipAddress.Contains(anyStringContains)
 			       || x.userAgent.Contains(anyStringContains)
 			       || x.value.Contains(anyStringContains)
+			       || (includeRelations == true && x.securityUser.accountName.Contains(anyStringContains))
+			       || (includeRelations == true && x.securityUser.password.Contains(anyStringContains))
+			       || (includeRelations == true && x.securityUser.firstName.Contains(anyStringContains))
+			       || (includeRelations == true && x.securityUser.middleName.Contains(anyStringContains))
+			       || (includeRelations == true && x.securityUser.lastName.Contains(anyStringContains))
+			       || (includeRelations == true && x.securityUser.emailAddress.Contains(anyStringContains))
+			       || (includeRelations == true && x.securityUser.cellPhoneNumber.Contains(anyStringContains))
+			       || (includeRelations == true && x.securityUser.phoneNumber.Contains(anyStringContains))
+			       || (includeRelations == true && x.securityUser.phoneExtension.Contains(anyStringContains))
+			       || (includeRelations == true && x.securityUser.description.Contains(anyStringContains))
+			       || (includeRelations == true && x.securityUser.authenticationDomain.Contains(anyStringContains))
+			       || (includeRelations == true && x.securityUser.alternateIdentifier.Contains(anyStringContains))
+			       || (includeRelations == true && x.securityUser.settings.Contains(anyStringContains))
+			       || (includeRelations == true && x.securityUser.authenticationToken.Contains(anyStringContains))
+			       || (includeRelations == true && x.securityUser.twoFactorToken.Contains(anyStringContains))
 			   );
 			}
 
@@ -246,6 +272,8 @@ namespace Foundation.Security.Controllers.WebAPI
 			string ipAddress = null,
 			string userAgent = null,
 			string value = null,
+			bool? success = null,
+			int? securityUserId = null,
 			bool? active = null,
 			bool? deleted = null,
 			string anyStringContains = null,
@@ -302,6 +330,14 @@ namespace Foundation.Security.Controllers.WebAPI
 			{
 				query = query.Where(la => la.value == value);
 			}
+			if (success.HasValue == true)
+			{
+				query = query.Where(la => la.success == success.Value);
+			}
+			if (securityUserId.HasValue == true)
+			{
+				query = query.Where(la => la.securityUserId == securityUserId.Value);
+			}
 			if (userIsWriter == true)
 			{
 				if (active.HasValue == true)
@@ -341,6 +377,21 @@ namespace Foundation.Security.Controllers.WebAPI
 			       || x.ipAddress.Contains(anyStringContains)
 			       || x.userAgent.Contains(anyStringContains)
 			       || x.value.Contains(anyStringContains)
+			       || x.securityUser.accountName.Contains(anyStringContains)
+			       || x.securityUser.password.Contains(anyStringContains)
+			       || x.securityUser.firstName.Contains(anyStringContains)
+			       || x.securityUser.middleName.Contains(anyStringContains)
+			       || x.securityUser.lastName.Contains(anyStringContains)
+			       || x.securityUser.emailAddress.Contains(anyStringContains)
+			       || x.securityUser.cellPhoneNumber.Contains(anyStringContains)
+			       || x.securityUser.phoneNumber.Contains(anyStringContains)
+			       || x.securityUser.phoneExtension.Contains(anyStringContains)
+			       || x.securityUser.description.Contains(anyStringContains)
+			       || x.securityUser.authenticationDomain.Contains(anyStringContains)
+			       || x.securityUser.alternateIdentifier.Contains(anyStringContains)
+			       || x.securityUser.settings.Contains(anyStringContains)
+			       || x.securityUser.authenticationToken.Contains(anyStringContains)
+			       || x.securityUser.twoFactorToken.Contains(anyStringContains)
 			   );
 			}
 
@@ -386,6 +437,7 @@ namespace Foundation.Security.Controllers.WebAPI
 
 				if (includeRelations == true)
 				{
+					query = query.Include(x => x.securityUser);
 					query = query.AsSplitQuery();
 				}
 
@@ -739,6 +791,8 @@ namespace Foundation.Security.Controllers.WebAPI
 			string ipAddress = null,
 			string userAgent = null,
 			string value = null,
+			bool? success = null,
+			int? securityUserId = null,
 			bool? active = null,
 			bool? deleted = null,
 			string anyStringContains = null,
@@ -811,6 +865,14 @@ namespace Foundation.Security.Controllers.WebAPI
 			{
 				query = query.Where(la => la.value == value);
 			}
+			if (success.HasValue == true)
+			{
+				query = query.Where(la => la.success == success.Value);
+			}
+			if (securityUserId.HasValue == true)
+			{
+				query = query.Where(la => la.securityUserId == securityUserId.Value);
+			}
 			if (userIsWriter == true)
 			{
 				if (active.HasValue == true)
@@ -851,6 +913,21 @@ namespace Foundation.Security.Controllers.WebAPI
 			       || x.ipAddress.Contains(anyStringContains)
 			       || x.userAgent.Contains(anyStringContains)
 			       || x.value.Contains(anyStringContains)
+			       || x.securityUser.accountName.Contains(anyStringContains)
+			       || x.securityUser.password.Contains(anyStringContains)
+			       || x.securityUser.firstName.Contains(anyStringContains)
+			       || x.securityUser.middleName.Contains(anyStringContains)
+			       || x.securityUser.lastName.Contains(anyStringContains)
+			       || x.securityUser.emailAddress.Contains(anyStringContains)
+			       || x.securityUser.cellPhoneNumber.Contains(anyStringContains)
+			       || x.securityUser.phoneNumber.Contains(anyStringContains)
+			       || x.securityUser.phoneExtension.Contains(anyStringContains)
+			       || x.securityUser.description.Contains(anyStringContains)
+			       || x.securityUser.authenticationDomain.Contains(anyStringContains)
+			       || x.securityUser.alternateIdentifier.Contains(anyStringContains)
+			       || x.securityUser.settings.Contains(anyStringContains)
+			       || x.securityUser.authenticationToken.Contains(anyStringContains)
+			       || x.securityUser.twoFactorToken.Contains(anyStringContains)
 			   );
 			}
 

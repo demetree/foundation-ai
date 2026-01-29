@@ -174,6 +174,8 @@ export class LoginAttemptTableComponent implements OnInit, OnChanges, AfterViewI
     { key: 'ipAddress', label: 'Ip Address', width: undefined },
     { key: 'userAgent', label: 'User Agent', width: undefined },
     { key: 'value', label: 'Value', width: undefined },
+    { key: 'success', label: 'Success', width: '120px', template: 'boolean' },
+    { key: 'securityUser.name', label: 'Security User', width: undefined, template: 'link', linkPath: ['/securityuser', 'securityUserId'] },
 
     ];
 
@@ -325,6 +327,8 @@ export class LoginAttemptTableComponent implements OnInit, OnChanges, AfterViewI
                       'ipAddress',
                       'userAgent',
                       'value',
+                      'success',
+                      'securityUser.name',
         ];
 
         result = result.filter((loginAttempt) =>

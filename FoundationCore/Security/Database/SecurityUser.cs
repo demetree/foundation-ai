@@ -89,6 +89,8 @@ public partial class SecurityUser
 
     public virtual ICollection<SecurityUser> InversereportsToSecurityUser { get; set; } = new List<SecurityUser>();
 
+    public virtual ICollection<LoginAttempt> LoginAttempts { get; set; } = new List<LoginAttempt>();
+
     public virtual ICollection<SecurityDepartmentUser> SecurityDepartmentUsers { get; set; } = new List<SecurityDepartmentUser>();
 
     public virtual ICollection<SecurityOrganizationUser> SecurityOrganizationUsers { get; set; } = new List<SecurityOrganizationUser>();

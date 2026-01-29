@@ -617,6 +617,8 @@ namespace Foundation.Security.Database
             loginAttemptTable.AddString50Field("ipAddress", true);
             loginAttemptTable.AddString250Field("userAgent", true);
             loginAttemptTable.AddTextField("value");
+            loginAttemptTable.AddBoolField("success", true).AddScriptComments("null = unknown/pending, true = success, false = failure");
+            loginAttemptTable.AddForeignKeyField("securityUserId", securityUserTable, true).AddScriptComments("Link to user if identified during login attempt");
             loginAttemptTable.AddControlFields(false);
             loginAttemptTable.AddSortSequence("timeStamp", true);
 

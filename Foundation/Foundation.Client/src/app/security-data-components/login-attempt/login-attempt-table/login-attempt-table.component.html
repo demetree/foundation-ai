@@ -55,6 +55,14 @@
                 Value
                 <span *ngIf="sortColumn === 'value'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('success')">
+                Success
+                <span *ngIf="sortColumn === 'success'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('securityUser.name')">
+                Security  User
+                <span *ngIf="sortColumn === 'securityUser.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
 End of commented block for alternate definition option -->
           </tr>
         </thead>
@@ -145,6 +153,8 @@ End of commented block for alternate definition option -->
             <td class="text-truncate">{{loginAttempt.ipAddress}}</td>
             <td class="text-truncate">{{loginAttempt.userAgent}}</td>
             <td class="text-truncate">{{loginAttempt.value}}</td>
+            <td class="text-truncate"><boolean-icon [value]="loginAttempt.success"/></td>
+            <td class="text-truncate"><a [routerLink]="['/securityuser', loginAttempt.securityUserId]" class="btn btn-link text-left" ngbTooltip="Open Security User details">{{loginAttempt.securityUser?.name}}</a></td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -262,6 +272,7 @@ End of commented block for alternate definition option -->
            <div class="card-header d-flex justify-content-between align-items-center">
              <div>
                <strong>{{loginAttempt.id}}</strong>
+               <small class="text-muted d-block">{{loginAttempt.securityUser?.name}}</small>
              </div>
              <div>
                 <button class="btn btn-sm"
@@ -322,6 +333,14 @@ End of commented block for alternate definition option -->
             <p class="login-attempt-info" *ngIf="loginAttempt.value != null">
               <strong>Value: </strong>
               {{loginAttempt.value}}
+            </p>
+            <p class="login-attempt-info" *ngIf="loginAttempt.success != null">
+              <strong>Success: </strong>
+              <boolean-icon [value]="loginAttempt.success"/>
+            </p>
+            <p class="login-attempt-info" *ngIf="loginAttempt.securityUserId != null">
+              <strong>Security User: </strong>
+              <a [routerLink]="['/securityuser', loginAttempt.securityUserId]" class="text-left p-0 m-0" ngbTooltip="Open Security User details">{{loginAttempt.securityUser?.name}}</a>
             </p>
             </div>
          </div>

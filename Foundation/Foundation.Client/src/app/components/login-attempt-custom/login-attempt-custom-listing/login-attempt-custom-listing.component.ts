@@ -385,17 +385,22 @@ export class LoginAttemptCustomListingComponent implements OnInit, OnDestroy {
     // Status helpers
     //
     isSuccess(attempt: LoginAttemptData): boolean {
-        // Check if the value field indicates success
-        // Common patterns: "Success", "OK", empty for success, or specific failure messages
+        // Use the success field if it's explicitly set (new records)
+        if (attempt.success === true) {
+            return true;
+        }
+        if (attempt.success === false) {
+            return false;
+        }
+
+        // Fallback to heuristic for historical data without success field
         const value = (attempt.value || '').toLowerCase();
         if (!value || value === 'success' || value === 'ok') {
             return true;
         }
-        // Check for common failure indicators
         if (value.includes('fail') || value.includes('error') || value.includes('invalid') || value.includes('denied')) {
             return false;
         }
-        // Default to success if unclear
         return true;
     }
 

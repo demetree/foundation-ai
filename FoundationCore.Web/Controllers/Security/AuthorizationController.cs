@@ -82,8 +82,6 @@ namespace Foundation.Security.Controllers.WebAPI
                 string username = request.Username;
                 string password = request.Password;
 
-                SecurityLogic.CreateLoginAttemptRecord(request.Username, request.Password, "Request For OIDC Password Grant", "/connect/token", GetClientIP(), Request.Headers.UserAgent);
-
                 //
                 // Validate user credentials
                 //
@@ -91,6 +89,8 @@ namespace Foundation.Security.Controllers.WebAPI
 
                 if (userValidationResult.validationSucceeded == false)
                 {
+                    // Log failed login attempt
+                    SecurityLogic.CreateLoginAttemptRecord(request.Username, request.Password, $"OIDC Password Grant Failed: {userValidationResult.errorMessage}", "/connect/token", GetClientIP(), Request.Headers.UserAgent, success: false, securityUserId: null);
                     return GetForbidResult(userValidationResult.errorMessage);
                 }
 
@@ -100,16 +100,19 @@ namespace Foundation.Security.Controllers.WebAPI
                 SecurityUser securityUser = await _userService.GetUserByUserNameAsync(username);
                 if (securityUser == null)
                 {
+                    SecurityLogic.CreateLoginAttemptRecord(request.Username, request.Password, "OIDC Password Grant Failed: User not found", "/connect/token", GetClientIP(), Request.Headers.UserAgent, success: false, securityUserId: null);
                     return GetForbidResult("The user does not exist.");
                 }
 
                 if (securityUser.active == false || securityUser.deleted == true)
                 {
+                    SecurityLogic.CreateLoginAttemptRecord(request.Username, request.Password, "OIDC Password Grant Failed: User inactive", "/connect/token", GetClientIP(), Request.Headers.UserAgent, success: false, securityUserId: securityUser.id);
                     return GetForbidResult("The user cannot login.");
                 }
 
                 if (securityUser.canLogin == false)
                 {
+                    SecurityLogic.CreateLoginAttemptRecord(request.Username, request.Password, "OIDC Password Grant Failed: User not permitted", "/connect/token", GetClientIP(), Request.Headers.UserAgent, success: false, securityUserId: securityUser.id);
                     return GetForbidResult("The user account is not permitted to login.");
                 }
 
@@ -135,6 +138,9 @@ namespace Foundation.Security.Controllers.WebAPI
                 {
                     AddSessionIdClaim(principal, sessionId);
                 }
+
+                // Log successful login attempt
+                SecurityLogic.CreateLoginAttemptRecord(request.Username, request.Password, "OIDC Password Grant Success", "/connect/token", GetClientIP(), Request.Headers.UserAgent, success: true, securityUserId: securityUser.id);
 
                 //
                 // This completes the sign in process
@@ -206,19 +212,19 @@ namespace Foundation.Security.Controllers.WebAPI
             }
             else if (request.GrantType == Constants.ExtensionGrantType)
             {
-                SecurityLogic.CreateLoginAttemptRecord(request.Username, request.Password, "Request For OIDC Extension Grant", "/connect/token", GetClientIP(), Request.Headers.UserAgent);
-
-
                 var provider = request["provider"].ToString()?.Trim().ToLower();
                 var password = request["password"].ToString();
 
+                // Log failed login attempts for extension grant
                 if (string.IsNullOrEmpty(request.Assertion))
                 {
+                    SecurityLogic.CreateLoginAttemptRecord(request.Username, request.Password, "OIDC Extension Grant Failed: Missing assertion", "/connect/token", GetClientIP(), Request.Headers.UserAgent, success: false, securityUserId: null);
                     return GetForbidResult("The mandatory 'assertion' parameter is missing.", Errors.InvalidRequest);
                 }
 
                 if (string.IsNullOrWhiteSpace(provider))
                 {
+                    SecurityLogic.CreateLoginAttemptRecord(request.Username, request.Password, "OIDC Extension Grant Failed: Missing provider", "/connect/token", GetClientIP(), Request.Headers.UserAgent, success: false, securityUserId: null);
                     return GetForbidResult("The mandatory 'provider' parameter is missing.", Errors.InvalidRequest);
                 }
 
@@ -226,6 +232,7 @@ namespace Foundation.Security.Controllers.WebAPI
 
                 if (validatorType == null || _services.GetService(validatorType) is not TokenValidator tokenValidator)
                 {
+                    SecurityLogic.CreateLoginAttemptRecord(request.Username, request.Password, $"OIDC Extension Grant Failed: Unsupported provider {provider}", "/connect/token", GetClientIP(), Request.Headers.UserAgent, success: false, securityUserId: null);
                     return GetForbidResult($"Unsupported provider \"{provider}\".", Errors.InvalidRequest);
                 }
 
@@ -233,6 +240,7 @@ namespace Foundation.Security.Controllers.WebAPI
 
                 if (tokenValidationResult.IsValid == false)
                 {
+                    SecurityLogic.CreateLoginAttemptRecord(request.Username, request.Password, $"OIDC Extension Grant Failed: Token validation failed - {tokenValidationResult.ErrorDescription}", "/connect/token", GetClientIP(), Request.Headers.UserAgent, success: false, securityUserId: null);
                     return GetForbidResult($"The user token failed validation. {tokenValidationResult.ErrorDescription}");
                 }
 
@@ -245,16 +253,19 @@ namespace Foundation.Security.Controllers.WebAPI
 
                 if (securityUser == null)
                 {
+                    SecurityLogic.CreateLoginAttemptRecord(request.Username, request.Password, "OIDC Extension Grant Failed: User not found", "/connect/token", GetClientIP(), Request.Headers.UserAgent, success: false, securityUserId: null);
                     return GetForbidResult("The refresh token is no longer valid.");
                 }
 
                 if (securityUser.active == false || securityUser.deleted == true)
                 {
+                    SecurityLogic.CreateLoginAttemptRecord(request.Username, request.Password, "OIDC Extension Grant Failed: User inactive", "/connect/token", GetClientIP(), Request.Headers.UserAgent, success: false, securityUserId: securityUser.id);
                     return GetForbidResult("The specified user account is disabled.");
                 }
 
                 if (securityUser.canLogin == false)
                 {
+                    SecurityLogic.CreateLoginAttemptRecord(request.Username, request.Password, "OIDC Extension Grant Failed: User not permitted", "/connect/token", GetClientIP(), Request.Headers.UserAgent, success: false, securityUserId: securityUser.id);
                     return GetForbidResult("The user account is not permitted to login.");
                 }
 
@@ -274,6 +285,9 @@ namespace Foundation.Security.Controllers.WebAPI
                     AddSessionIdClaim(principal, sessionId);
                 }
 
+                // Log successful login attempt
+                SecurityLogic.CreateLoginAttemptRecord(request.Username, request.Password, $"OIDC Extension Grant Success via {provider}", "/connect/token", GetClientIP(), Request.Headers.UserAgent, success: true, securityUserId: securityUser.id);
+
                 //
                 // This completes the sign in process
                 // 
@@ -281,7 +295,7 @@ namespace Foundation.Security.Controllers.WebAPI
             }
             else
             {
-                SecurityLogic.CreateLoginAttemptRecord(request.Username, request.Password, $"Request For unsupported grant type of {request.GrantType}", "/connect/token", GetClientIP(), Request.Headers.UserAgent);
+                SecurityLogic.CreateLoginAttemptRecord(request.Username, request.Password, $"OIDC Unsupported Grant Type: {request.GrantType}", "/connect/token", GetClientIP(), Request.Headers.UserAgent, success: false, securityUserId: null);
 
                 throw new InvalidOperationException($"The specified grant type \"{request.GrantType}\" is not supported.");
             }
