@@ -59,11 +59,6 @@
       </a>
     </li>
     <li class="nav-item">
-      <a routerLink="/auditevents" class="nav-link text-white" (click)="closeMobileMenu()">
-        <i class="fa-solid fa-clipboard-list me-2"></i>Audit Events
-      </a>
-    </li>
-    <li class="nav-item">
       <a routerLink="/tenants" class="nav-link text-white" (click)="closeMobileMenu()">
         <i class="fa-solid fa-building me-2"></i>Tenants
       </a>
@@ -74,8 +69,23 @@
       </a>
     </li>
     <li class="nav-item">
-      <a routerLink="/fleet" class="nav-link text-white" (click)="closeMobileMenu()">
-        <i class="fa-solid fa-satellite-dish me-2"></i>Foundation Systems
+      <a routerLink="/systems-dashboard" class="nav-link text-white" (click)="closeMobileMenu()">
+        <i class="fa-solid fa-satellite-dish me-2"></i>Systems
+      </a>
+    </li>
+    <li class="nav-item">
+      <a routerLink="/auditevents" class="nav-link text-white" (click)="closeMobileMenu()">
+        <i class="fa-solid fa-clipboard-list me-2"></i>Audit Events
+      </a>
+    </li>
+    <li class="nav-item">
+      <a routerLink="/logs" class="nav-link text-white" (click)="closeMobileMenu()">
+        <i class="fa-solid fa-file-alt me-2"></i>System Logs
+      </a>
+    </li>
+    <li class="nav-item">
+      <a routerLink="/loginattempts" class="nav-link text-white" (click)="closeMobileMenu()">
+        <i class="fa-solid fa-right-to-bracket me-2"></i>Login Attempts
       </a>
     </li>
   </ul>
@@ -104,11 +114,7 @@
                 <i class="fa-solid fa-users-rectangle me-2"></i>Security Groups
               </a>
             </li>
-            <li class="nav-item">
-              <a routerLink="/loginattempts" class="nav-link text-white-50" (click)="closeMobileMenu()">
-                <i class="fa-solid fa-right-to-bracket me-2"></i>Login Attempts
-              </a>
-            </li>
+
             <li class="nav-item">
               <a routerLink="/systemsettings" class="nav-link text-white-50" (click)="closeMobileMenu()">
                 <i class="fa-solid fa-sliders me-2"></i>System Settings

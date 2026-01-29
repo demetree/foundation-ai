@@ -28,7 +28,7 @@ import { AuditEventCustomListingComponent } from './components/audit-event-custo
 import { LogViewerListingComponent } from './components/log-viewer/log-viewer-listing/log-viewer-listing.component';
 import { SystemHealthComponent } from './components/system-health/system-health.component';
 import { TelemetryDashboardComponent } from './components/telemetry-dashboard/telemetry-dashboard.component';
-import { FleetDashboardComponent } from './components/fleet-dashboard/fleet-dashboard.component';
+import { SystemsDashboardComponent } from './components/systems-dashboard/systems-dashboard.component';
 
 
 //
@@ -209,9 +209,9 @@ const routes: Routes = [
   { path: 'tenant/:id', component: TenantCustomDetailComponent, canActivate: [AuthGuard], title: 'Tenant Detail' },
   { path: 'auditevents', component: AuditEventCustomListingComponent, canActivate: [AuthGuard], title: 'Audit Events' },
   { path: 'logs', component: LogViewerListingComponent, canActivate: [AuthGuard], title: 'System Logs' },
-  { path: 'fleet', component: FleetDashboardComponent, canActivate: [AuthGuard], title: 'Foundation Systems' },
+  { path: 'systems-dashboard', component: SystemsDashboardComponent, canActivate: [AuthGuard], title: 'Systems Dashboard' },
   { path: 'system-health', component: SystemHealthComponent, canActivate: [AuthGuard], title: 'System Health' },
-  { path: 'telemetry-dashboard', redirectTo: 'fleet', pathMatch: 'full' },
+  { path: 'telemetry-dashboard', component: TelemetryDashboardComponent, canActivate: [AuthGuard], title: 'Telemetry Dashboard' },
 
 
   //

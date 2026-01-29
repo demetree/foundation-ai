@@ -435,7 +435,7 @@ import { TelemetryService } from './services/telemetry.service';
 //
 // Fleet Dashboard Component (unified operational hub)
 //
-import { FleetDashboardComponent } from './components/fleet-dashboard/fleet-dashboard.component';
+import { SystemsDashboardComponent } from './components/systems-dashboard/systems-dashboard.component';
 
 //
 // Custom screens
@@ -757,7 +757,7 @@ TelemetrySnapshotTableComponent,
     //
     // Fleet Dashboard Component
     //
-    FleetDashboardComponent,
+    SystemsDashboardComponent,
 
     //
     // Custom components
@@ -849,6 +849,7 @@ TelemetrySnapshotTableComponent,
     InputDialogService,
     IntelligenceService,
     SystemHealthService,
+    TelemetryService,
 
     //
     // Beginning of provider declarations for Security Data Services

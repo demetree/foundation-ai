@@ -29,11 +29,11 @@ import { SystemHealthService, SystemHealthStatus, AuthenticatedUsersInfo, Applic
 
 
 @Component({
-    selector: 'app-fleet-dashboard',
-    templateUrl: './fleet-dashboard.component.html',
-    styleUrls: ['./fleet-dashboard.component.scss']
+    selector: 'app-systems-dashboard',
+    templateUrl: './systems-dashboard.component.html',
+    styleUrls: ['./systems-dashboard.component.scss']
 })
-export class FleetDashboardComponent implements OnInit, OnDestroy {
+export class SystemsDashboardComponent implements OnInit, OnDestroy {
 
     private destroy$ = new Subject<void>();
     private autoRefreshSubscription: Subscription | null = null;
