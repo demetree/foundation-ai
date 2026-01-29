@@ -12,7 +12,7 @@
 .premium-header {
     background: linear-gradient(135deg, #0d47a1 0%, #1976d2 50%, #42a5f5 100%);
     border-radius: 16px;
-    overflow: hidden;
+    overflow: visible; // Changed from hidden to allow dropdown menus to extend beyond header
 
     .card-header {
         padding: 1.5rem;

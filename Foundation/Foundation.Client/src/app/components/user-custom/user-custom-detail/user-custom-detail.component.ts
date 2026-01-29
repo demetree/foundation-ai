@@ -15,8 +15,11 @@ import { SecurityUserService, SecurityUserData, SecurityUserQueryParameters, Sec
 import { AuthService } from '../../../services/auth.service';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { NavigationService } from '../../../utility-services/navigation.service';
+import { ConfirmationService } from '../../../services/confirmation-service';
+import { InputDialogService } from '../../../services/input-dialog.service';
 import { UserCustomAddEditComponent } from '../user-custom-add-edit/user-custom-add-edit.component';
 import { UserImageUploadComponent } from '../user-image-upload/user-image-upload.component';
+import { AdminUserActionsService } from '../admin-user-actions.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { IntelligenceService } from '../../../services/intelligence.service';
 import { IntelligenceModalComponent } from '../../shared/intelligence-modal/intelligence-modal.component';
@@ -68,7 +71,10 @@ export class UserCustomDetailComponent implements OnInit, OnDestroy {
         private alertService: AlertService,
         private navigationService: NavigationService,
         private modalService: NgbModal,
-        private intelligenceService: IntelligenceService
+        private intelligenceService: IntelligenceService,
+        private confirmationService: ConfirmationService,
+        private inputDialogService: InputDialogService,
+        private adminUserActionsService: AdminUserActionsService
     ) { }
 
 
@@ -384,16 +390,87 @@ export class UserCustomDetailComponent implements OnInit, OnDestroy {
     // Smart Insight
     //
     public openSmartInsight(): void {
-    const modalRef = this.modalService.open(IntelligenceModalComponent, {
-        size: 'lg',
-        centered: true,
-        backdrop: 'static'
-    });
+        const modalRef = this.modalService.open(IntelligenceModalComponent, {
+            size: 'lg',
+            centered: true,
+            backdrop: 'static'
+        });
 
-    modalRef.componentInstance.context = {
-        entityType: 'User',
-        entityId: this.user!.id,
-        correlationId: this.user!.accountName
-    };
-}
+        modalRef.componentInstance.context = {
+            entityType: 'User',
+            entityId: this.user!.id,
+            correlationId: this.user!.accountName
+        };
+    }
+
+
+    //
+    // Password Actions - AI-assisted development January 2026
+    //
+    public async sendPasswordReset(): Promise<void> {
+        if (!this.user || this.actionInProgress) {
+            return;
+        }
+
+        const confirmed = await this.confirmationService.confirm(
+            'Send Password Reset',
+            `Send a password reset email to ${this.user.emailAddress ?? this.user.accountName}?`
+        );
+
+        if (confirmed !== true) {
+            return;
+        }
+
+        this.actionInProgress = true;
+
+        this.adminUserActionsService.sendPasswordReset(this.user.id).subscribe({
+            next: () => {
+                this.actionInProgress = false;
+                this.alertService.showMessage('Success', 'Password reset email sent', MessageSeverity.success);
+            },
+            error: () => {
+                this.actionInProgress = false;
+                this.alertService.showMessage('Error', 'Failed to send password reset email', MessageSeverity.error);
+            }
+        });
+    }
+
+
+    public async setTemporaryPassword(): Promise<void> {
+        if (!this.user || this.actionInProgress) {
+            return;
+        }
+
+        //
+        // Prompt for new password using styled dialog
+        //
+        const password = await this.inputDialogService.promptPassword(
+            'Set Temporary Password',
+            `Enter a temporary password for ${this.user.accountName}. The user will be required to change it on next login.`
+        );
+
+        if (password == null || password.trim() === '') {
+            return;
+        }
+
+        this.actionInProgress = true;
+
+        this.adminUserActionsService.setTemporaryPassword(this.user.id, password).subscribe({
+            next: () => {
+                this.actionInProgress = false;
+                this.alertService.showMessage('Success', 'Temporary password set. User must change on next login.', MessageSeverity.success);
+            },
+            error: (err) => {
+                this.actionInProgress = false;
+
+                let errorMsg = 'Failed to set password';
+
+                if (err.error && typeof err.error === 'string') {
+                    errorMsg = err.error;
+                }
+
+                this.alertService.showMessage('Error', errorMsg, MessageSeverity.error);
+            }
+        });
+    }
 }

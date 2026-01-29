@@ -44,6 +44,23 @@
                         style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
                         <i class="fa-solid fa-sparkles"></i>
                     </button>
+
+                    <!-- Password Actions Dropdown -->
+                    <div class="btn-group" ngbDropdown>
+                        <button class="btn btn-glass btn-sm me-2" ngbDropdownToggle ngbTooltip="Password Actions"
+                            [disabled]="actionInProgress">
+                            <i class="fa-solid fa-key"></i>
+                        </button>
+                        <div ngbDropdownMenu>
+                            <button ngbDropdownItem (click)="sendPasswordReset()">
+                                <i class="fa-solid fa-envelope me-2"></i>Send Reset Email
+                            </button>
+                            <button ngbDropdownItem (click)="setTemporaryPassword()">
+                                <i class="fa-solid fa-lock me-2"></i>Set Temporary Password
+                            </button>
+                        </div>
+                    </div>
+
                     <button class="btn btn-glass btn-sm" ngbTooltip="Edit User" (click)="editUser()">
                         <i class="fa-solid fa-pen-to-square"></i>
                     </button>
