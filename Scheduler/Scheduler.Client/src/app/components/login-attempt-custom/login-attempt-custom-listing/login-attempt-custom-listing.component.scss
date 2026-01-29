@@ -1,0 +1,284 @@
+//
+// Login Attempt Custom Listing - Premium Styles
+// AI-assisted development - January 2026
+//
+
+.page-container {
+    padding: 1.5rem;
+    background-color: #f8fafc;
+    min-height: calc(100vh - 60px);
+    width: 100%;
+}
+
+//
+// Premium Header - Security-themed purple/blue gradient
+//
+.premium-header {
+    background: linear-gradient(135deg, #4a148c 0%, #7b1fa2 50%, #9c27b0 100%);
+    border-radius: 16px;
+    color: white;
+    overflow: visible;
+
+    .card-header {
+        padding: 1.5rem 2rem;
+    }
+
+    .page-title {
+        font-size: 1.5rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .badge-glass {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-weight: 500;
+    }
+}
+
+//
+// Filter Card
+//
+.filter-card {
+    border-radius: 12px;
+    background: white;
+
+    .card-body {
+        padding: 1.25rem;
+    }
+
+    .form-label {
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+    }
+
+    .form-select,
+    .form-control {
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+        transition: all 0.2s ease;
+
+        &:focus {
+            border-color: #7b1fa2;
+            box-shadow: 0 0 0 0.2rem rgba(123, 31, 162, 0.15);
+        }
+    }
+}
+
+//
+// Login Attempt Table
+//
+.login-table {
+    table-layout: fixed;
+    width: 100%;
+
+    thead {
+        background: #f8f9fa;
+
+        th {
+            font-weight: 600;
+            color: #495057;
+            border-bottom: 2px solid #dee2e6;
+            padding: 0.875rem 0.75rem;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+
+            &.sortable {
+                cursor: pointer;
+                user-select: none;
+                transition: background-color 0.2s ease;
+
+                &:hover {
+                    background-color: #e9ecef;
+                }
+
+                i {
+                    margin-left: 0.25rem;
+                    font-size: 0.7rem;
+                    opacity: 0.6;
+                }
+            }
+        }
+    }
+
+    tbody {
+        td {
+            padding: 0.75rem;
+            vertical-align: middle;
+            border-bottom: 1px solid #f0f0f0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    }
+
+    .attempt-row {
+        cursor: pointer;
+
+        &:hover {
+            background-color: rgba(123, 31, 162, 0.04) !important;
+
+            td {
+                background-color: transparent;
+            }
+        }
+
+        &.expanded {
+            background-color: rgba(123, 31, 162, 0.06) !important;
+        }
+
+        &.failure-row {
+            background-color: rgba(220, 53, 69, 0.03);
+
+            &:hover {
+                background-color: rgba(220, 53, 69, 0.07) !important;
+            }
+        }
+    }
+
+    .expand-icon {
+        color: #6c757d;
+        transition: color 0.2s ease;
+    }
+
+    .user-name {
+        font-weight: 500;
+        color: #212529;
+    }
+
+    .ip-address {
+        font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+
+    .badge {
+        font-size: 0.75rem;
+    }
+}
+
+//
+// Detail Row (Expanded)
+//
+.detail-row {
+    background-color: #f8f9fa !important;
+
+    td {
+        padding: 0 !important;
+    }
+}
+
+.detail-content {
+    padding: 1.25rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-top: 2px solid #7b1fa2;
+    animation: slideDown 0.2s ease-out;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+
+    .detail-label {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #6c757d;
+        font-weight: 600;
+    }
+
+    .detail-value {
+        font-size: 0.9rem;
+        color: #212529;
+        word-break: break-word;
+
+        &.user-agent-full {
+            background: white;
+            padding: 0.75rem;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            font-family: monospace;
+            font-size: 0.8rem;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+    }
+}
+
+//
+// Pagination
+//
+.pagination {
+    .page-link {
+        border-radius: 6px;
+        margin: 0 2px;
+        border: 1px solid #dee2e6;
+        color: #495057;
+
+        &:hover {
+            background-color: #e9ecef;
+        }
+    }
+
+    .page-item.active .page-link {
+        background-color: #7b1fa2;
+        border-color: #7b1fa2;
+    }
+
+    .page-item.disabled .page-link {
+        color: #adb5bd;
+    }
+}
+
+//
+// Animations
+//
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+//
+// Responsive
+//
+@media (max-width: 992px) {
+    .page-container {
+        padding: 1rem;
+    }
+
+    .premium-header .card-header {
+        padding: 1rem;
+    }
+
+    .filter-card .row>div {
+        margin-bottom: 0.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .login-table {
+        font-size: 0.85rem;
+
+        th,
+        td {
+            padding: 0.5rem;
+        }
+    }
+
+    .detail-content {
+        padding: 1rem;
+    }
+}

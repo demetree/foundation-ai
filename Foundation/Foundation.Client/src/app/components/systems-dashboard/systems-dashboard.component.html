@@ -410,21 +410,21 @@
                 </div>
                 <div>
                   <h5 class="mb-0">Application</h5>
-                  <small class="text-muted">{{ healthStatus.application?.process?.name }}</small>
+                  <small class="text-muted">{{ healthStatus.application.process.name }}</small>
                 </div>
-                <span class="ms-auto badge" [ngClass]="getStatusClass(healthStatus.application?.status || '')">
-                  <i class="fas" [ngClass]="getStatusIcon(healthStatus.application?.status === 'Healthy')"></i>
-                  {{ healthStatus.application?.status }}
+                <span class="ms-auto badge" [ngClass]="getStatusClass(healthStatus.application.status || '')">
+                  <i class="fas" [ngClass]="getStatusIcon(healthStatus.application.status === 'Healthy')"></i>
+                  {{ healthStatus.application.status }}
                 </span>
               </div>
               <div class="card-body">
                 <div class="metric-row">
                   <span class="metric-label"><i class="fas fa-clock me-2"></i>Uptime</span>
-                  <span class="metric-value">{{ healthStatus.application?.uptime?.display }}</span>
+                  <span class="metric-value">{{ healthStatus.application.uptime.display }}</span>
                 </div>
                 <div class="metric-row">
                   <span class="metric-label"><i class="fas fa-microchip me-2"></i>Process ID</span>
-                  <span class="metric-value">{{ healthStatus.application?.process?.id }}</span>
+                  <span class="metric-value">{{ healthStatus.application.process.id }}</span>
                 </div>
                 <div class="metric-row">
                   <span class="metric-label">
@@ -433,7 +433,7 @@
                   </span>
                   <span class="metric-value">
                     {{
-                    healthStatus.application?.environment?.dotNetVersion
+                    healthStatus.application.environment.dotNetVersion
                     }}
                   </span>
                 </div>
@@ -441,7 +441,7 @@
                   <span class="metric-label"><i class="fas fa-desktop me-2"></i>Machine</span>
                   <span class="metric-value">
                     {{
-                    healthStatus.application?.environment?.machineName
+                    healthStatus.application.environment.machineName
                     }}
                   </span>
                 </div>
@@ -466,7 +466,7 @@
                   <span class="metric-label"><i class="fas fa-chart-pie me-2"></i>Working Set</span>
                   <span class="metric-value fw-bold">
                     {{
-                    formatMemory(healthStatus.application?.memory?.workingSetMB)
+                    formatMemory(healthStatus.application.memory.workingSetMB)
                     }}
                   </span>
                 </div>
@@ -474,7 +474,7 @@
                   <span class="metric-label"><i class="fas fa-layer-group me-2"></i>GC Heap</span>
                   <span class="metric-value">
                     {{
-                    formatMemory(healthStatus.application?.memory?.gcHeapMB)
+                    formatMemory(healthStatus.application.memory.gcHeapMB)
                     }}
                   </span>
                 </div>
@@ -482,15 +482,15 @@
                   <span class="metric-label"><i class="fas fa-recycle me-2"></i>GC Gen0</span>
                   <span class="metric-value">
                     {{
-                    healthStatus.application?.memory?.gen0Collections
+                    healthStatus.application.memory.gen0Collections
                     }}
                   </span>
                 </div>
                 <div class="metric-row">
                   <span class="metric-label"><i class="fas fa-recycle me-2"></i>GC Gen1/Gen2</span>
                   <span class="metric-value">
-                    {{ healthStatus.application?.memory?.gen1Collections }} /
-                    {{ healthStatus.application?.memory?.gen2Collections }}
+                    {{ healthStatus.application.memory.gen1Collections }} /
+                    {{ healthStatus.application.memory.gen2Collections }}
                   </span>
                 </div>
               </div>
@@ -513,18 +513,18 @@
                 <div class="metric-row">
                   <span class="metric-label"><i class="fas fa-tachometer-alt me-2"></i>Usage</span>
                   <span class="metric-value fw-bold" [ngClass]="{
-                              'text-success' : (healthStatus.application?.cpu?.percent || 0) < 50,
-                                            'text-warning': (healthStatus.application?.cpu?.percent || 0) >= 50 && (healthStatus.application?.cpu?.percent || 0) < 80,
-                                            'text-danger': (healthStatus.application?.cpu?.percent || 0) >= 80
+                              'text-success' : (healthStatus.application.cpu?.percent || 0) < 50,
+                                            'text-warning': (healthStatus.application.cpu?.percent || 0) >= 50 && (healthStatus.application.cpu?.percent || 0) < 80,
+                                            'text-danger': (healthStatus.application.cpu?.percent || 0) >= 80
                                         }">
-                    {{ formatCpu(healthStatus.application?.cpu?.percent) }}
+                    {{ formatCpu(healthStatus.application.cpu?.percent) }}
                   </span>
                 </div>
                 <div class="metric-row">
                   <span class="metric-label"><i class="fas fa-microchip me-2"></i>Processors</span>
                   <span class="metric-value">
                     {{
-                    healthStatus.application?.cpu?.processorCount || '-'
+                    healthStatus.application.cpu?.processorCount || '-'
                     }}
                   </span>
                 </div>
@@ -532,7 +532,7 @@
                   <span class="metric-label"><i class="fas fa-stream me-2"></i>Threads</span>
                   <span class="metric-value">
                     {{
-                    healthStatus.application?.process?.threadCount || '-'
+                    healthStatus.application.process.threadCount || '-'
                     }}
                   </span>
                 </div>
@@ -540,7 +540,7 @@
                   <span class="metric-label"><i class="fas fa-link me-2"></i>Handles</span>
                   <span class="metric-value">
                     {{
-                    healthStatus.application?.process?.handleCount || '-'
+                    healthStatus.application.process.handleCount || '-'
                     }}
                   </span>
                 </div>
@@ -565,7 +565,7 @@
                   <span class="metric-label"><i class="fas fa-bolt me-2"></i>Workers In Use</span>
                   <span class="metric-value fw-bold">
                     {{
-                    healthStatus.threadPool?.workerThreads?.inUse
+                    healthStatus.threadPool.workerThreads.inUse
                     }}
                   </span>
                 </div>
@@ -573,7 +573,7 @@
                   <span class="metric-label"><i class="fas fa-check me-2"></i>Workers Available</span>
                   <span class="metric-value">
                     {{
-                    healthStatus.threadPool?.workerThreads?.available
+                    healthStatus.threadPool.workerThreads.available
                     }}
                   </span>
                 </div>
@@ -581,7 +581,7 @@
                   <span class="metric-label"><i class="fas fa-bolt me-2"></i>IO In Use</span>
                   <span class="metric-value">
                     {{
-                    healthStatus.threadPool?.completionPortThreads?.inUse
+                    healthStatus.threadPool.completionPortThreads.inUse
                     }}
                   </span>
                 </div>
@@ -589,7 +589,7 @@
                   <span class="metric-label"><i class="fas fa-check me-2"></i>IO Available</span>
                   <span class="metric-value">
                     {{
-                    healthStatus.threadPool?.completionPortThreads?.available
+                    healthStatus.threadPool.completionPortThreads.available
                     }}
                   </span>
                 </div>
@@ -608,13 +608,13 @@
                 <div>
                   <h5 class="mb-0">Databases</h5>
                   <small class="text-muted">
-                    {{ healthStatus.database?.databases?.length || 0 }}
+                    {{ healthStatus.database.databases.length || 0 }}
                     connection(s)
                   </small>
                 </div>
               </div>
               <div class="card-body">
-                <div *ngFor="let db of healthStatus.database?.databases; let last = last" class="database-item"
+                <div *ngFor="let db of healthStatus.database.databases; let last = last" class="database-item"
                   [class.mb-3]="!last" [class.border-bottom]="!last" [class.pb-3]="!last">
                   <div class="d-flex justify-content-between align-items-center mb-1">
                     <span class="fw-bold">{{ db.name }}</span>
@@ -662,7 +662,7 @@
                   <small class="text-muted">Active sessions</small>
                 </div>
                 <span class="ms-auto badge bg-info">
-                  {{ authenticatedUsers?.totalCount }}
+                  {{ authenticatedUsers.totalCount }}
                 </span>
               </div>
               <div class="card-body">
@@ -690,8 +690,8 @@
                     </span>
                   </div>
                 </div>
-                <div *ngIf="(authenticatedUsers?.sessions?.length ?? 0) > 5" class="text-muted small mt-2 text-center">
-                  +{{ (authenticatedUsers?.sessions?.length ?? 0) - 5 }} more users
+                <div *ngIf="authenticatedUsers.sessions.length > 5" class="text-muted small mt-2 text-center">
+                  +{{ authenticatedUsers.sessions.length - 5 }} more users
                 </div>
               </div>
             </div>
@@ -707,7 +707,7 @@
                 </div>
                 <div>
                   <h5 class="mb-0">Disk Space</h5>
-                  <small class="text-muted">{{ healthStatus.disk?.applicationPath }}</small>
+                  <small class="text-muted">{{ healthStatus.disk.applicationPath }}</small>
                 </div>
               </div>
               <div class="card-body">
@@ -906,7 +906,7 @@
             <i class="fas fa-camera"></i>
           </div>
           <div class="card-content">
-            <h4>{{ summary.last24Hours?.totalSnapshots || 0 }}</h4>
+            <h4>{{ summary.last24Hours.totalSnapshots || 0 }}</h4>
             <p>Snapshots (24h)</p>
           </div>
         </div>
@@ -915,7 +915,7 @@
             <i class="fas fa-check"></i>
           </div>
           <div class="card-content">
-            <h4>{{ summary.last24Hours?.onlineCount || 0 }}</h4>
+            <h4>{{ summary.last24Hours.onlineCount || 0 }}</h4>
             <p>Online Readings</p>
           </div>
         </div>
@@ -924,7 +924,7 @@
             <i class="fas fa-memory"></i>
           </div>
           <div class="card-content">
-            <h4>{{ summary.last24Hours?.avgMemoryMB?.toFixed(0) }} MB</h4>
+            <h4>{{ summary.last24Hours.avgMemoryMB?.toFixed(0) }} MB</h4>
             <p>Avg Memory</p>
           </div>
         </div>
@@ -1254,11 +1254,11 @@
                     {{ disk.driveName }}
                     <span *ngIf="disk.isApplicationDrive" class="badge bg-primary ms-1">App</span>
                   </td>
-                  <td>{{ disk.totalGB?.toFixed(1) }} GB</td>
-                  <td>{{ disk.freeGB?.toFixed(1) }} GB</td>
+                  <td>{{ disk.totalGB.toFixed(1) }} GB</td>
+                  <td>{{ disk.freeGB.toFixed(1) }} GB</td>
                   <td [class.text-danger]="disk.freePercent < 10"
                     [class.text-warning]="disk.freePercent >= 10 && disk.freePercent < 20">
-                    {{ disk.freePercent?.toFixed(1) }}%
+                    {{ disk.freePercent.toFixed(1) }}%
                   </td>
                   <td>{{ disk.status || 'OK' }}</td>
                 </tr>

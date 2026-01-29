@@ -1,0 +1,280 @@
+<div class="page-container">
+
+    <!-- Premium Header -->
+    <div class="card mb-4 header-card premium-header shadow-lg border-0">
+        <div
+            class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3 border-0 bg-transparent">
+            <div class="header-left">
+                <h3 class="page-title mb-0 fw-bold text-white">
+                    <i class="fa-solid fa-right-to-bracket me-2"></i>Login Attempts
+                </h3>
+                <small class="text-white-50">Authentication activity monitoring</small>
+            </div>
+            <div class="header-stats d-flex align-items-center gap-2" *ngIf="!(isLoading$ | async)">
+                <span class="badge badge-glass" *ngIf="failureCount > 0" ngbTooltip="Failed attempts in current view">
+                    <i class="fa-solid fa-exclamation-triangle me-1"></i>{{ failureCount }} failures
+                </span>
+                <span class="badge badge-glass">
+                    <i class="fa-solid fa-database me-1"></i>{{ (loginAttempts$ | async)?.length || 0 }} attempts
+                </span>
+
+                <!-- Auto-refresh toggle -->
+                <div class="btn-group" ngbDropdown>
+                    <button class="btn btn-sm" [class.btn-success]="autoRefreshEnabled"
+                        [class.btn-outline-light]="!autoRefreshEnabled" (click)="toggleAutoRefresh()"
+                        [ngbTooltip]="autoRefreshEnabled ? 'Auto-refresh ON (click to disable)' : 'Enable auto-refresh'">
+                        <i class="fa-solid fa-sync-alt" [class.fa-spin]="autoRefreshEnabled"></i>
+                        <span class="ms-1" *ngIf="autoRefreshEnabled">{{ nextRefreshIn }}s</span>
+                    </button>
+                    <button type="button" class="btn btn-sm dropdown-toggle dropdown-toggle-split"
+                        [class.btn-success]="autoRefreshEnabled" [class.btn-outline-light]="!autoRefreshEnabled"
+                        ngbDropdownToggle>
+                    </button>
+                    <div ngbDropdownMenu>
+                        <button *ngFor="let opt of autoRefreshOptions" ngbDropdownItem
+                            [class.active]="autoRefreshInterval === opt" (click)="setAutoRefreshInterval(opt)">
+                            {{ formatAutoRefreshInterval(opt) }}
+                        </button>
+                    </div>
+                </div>
+
+                <button class="btn btn-sm btn-outline-light" (click)="applyFilters()" ngbTooltip="Refresh">
+                    <i class="fa-solid fa-refresh"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-light" (click)="exportToCsv()" ngbTooltip="Export to CSV">
+                    <i class="fa-solid fa-download"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Panel -->
+    <div class="card mb-4 shadow-sm border-0 filter-card">
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+
+                <!-- Time Preset -->
+                <div class="col-md-2">
+                    <label class="form-label small text-muted">Time Range</label>
+                    <select class="form-select" [(ngModel)]="selectedTimePreset" (change)="onTimePresetChange()">
+                        <option *ngFor="let preset of timePresets" [value]="preset.value">{{ preset.label }}</option>
+                    </select>
+                </div>
+
+                <!-- Custom Date Range (shown when 'custom' selected) -->
+                <ng-container *ngIf="selectedTimePreset === 'custom'">
+                    <div class="col-md-2">
+                        <label class="form-label small text-muted">Start Date</label>
+                        <input type="date" class="form-control" name="startDate" [(ngModel)]="customStartDate"
+                            (change)="applyFilters()">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small text-muted">End Date</label>
+                        <input type="date" class="form-control" name="endDate" [(ngModel)]="customEndDate"
+                            (change)="applyFilters()">
+                    </div>
+                </ng-container>
+
+                <!-- Status Filter -->
+                <div class="col-md-2">
+                    <label class="form-label small text-muted">Status</label>
+                    <select class="form-select" [(ngModel)]="statusFilter" (change)="applyFilters()">
+                        <option value="all">All</option>
+                        <option value="success">Success Only</option>
+                        <option value="failure">Failures Only</option>
+                    </select>
+                </div>
+
+                <!-- User Filter -->
+                <div class="col-md-2">
+                    <label class="form-label small text-muted">User</label>
+                    <input type="text" class="form-control" placeholder="Filter by user..." [(ngModel)]="userFilter"
+                        (keyup.enter)="applyFilters()">
+                </div>
+
+                <!-- Search with integrated action buttons -->
+                <div class="col-md-4">
+                    <label class="form-label small text-muted">Search</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Search all..." [(ngModel)]="searchText"
+                            (keyup.enter)="applyFilters()">
+                        <button class="btn btn-primary" (click)="applyFilters()" ngbTooltip="Search">
+                            <i class="fa-solid fa-search"></i>
+                        </button>
+                        <!-- Reset filters button - only visible when filters are active -->
+                        <button class="btn btn-outline-danger"
+                            *ngIf="statusFilter !== 'all' || userFilter || searchText || selectedTimePreset !== '24h'"
+                            (click)="clearFilters()" ngbTooltip="Reset filters to defaults">
+                            <i class="fa-solid fa-undo"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading$ | async" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="text-muted mt-3">Loading login attempts...</p>
+    </div>
+
+    <!-- Data Table -->
+    <div class="card shadow-sm border-0" *ngIf="!(isLoading$ | async)">
+        <div class="card-body p-0">
+
+            <!-- Empty State -->
+            <div *ngIf="(loginAttempts$ | async)?.length === 0" class="text-center py-5">
+                <i class="fa-solid fa-right-to-bracket fa-4x text-muted opacity-50 mb-3"></i>
+                <h5 class="text-muted">No Login Attempts Found</h5>
+                <p class="text-muted">Try adjusting your filters or selecting a different time range.</p>
+            </div>
+
+            <!-- Attempts Table -->
+            <div class="table-responsive" *ngIf="(loginAttempts$ | async)?.length">
+                <table class="table table-hover login-table mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;"></th>
+                            <th style="width: 120px;" class="sortable" (click)="sortBy('timeStamp')">
+                                Time <i class="fa-solid" [ngClass]="getSortIcon('timeStamp')"></i>
+                            </th>
+                            <th style="width: 80px;" class="text-center sortable" (click)="sortBy('value')">
+                                Status <i class="fa-solid" [ngClass]="getSortIcon('value')"></i>
+                            </th>
+                            <th style="width: 150px;" class="sortable" (click)="sortBy('userName')">
+                                User <i class="fa-solid" [ngClass]="getSortIcon('userName')"></i>
+                            </th>
+                            <th style="width: 130px;" class="sortable" (click)="sortBy('ipAddress')">
+                                IP Address <i class="fa-solid" [ngClass]="getSortIcon('ipAddress')"></i>
+                            </th>
+                            <th>Resource</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <ng-container *ngFor="let attempt of pagedAttempts; trackBy: trackByAttemptId">
+                            <!-- Main Row - click anywhere to expand -->
+                            <tr class="attempt-row" [class.expanded]="isExpanded(attempt)"
+                                [class.failure-row]="!isSuccess(attempt)" (click)="toggleExpand(attempt)"
+                                style="cursor: pointer;" title="Click to expand details">
+                                <td>
+                                    <span class="expand-icon">
+                                        <i class="fa-solid" [class.fa-chevron-right]="!isExpanded(attempt)"
+                                            [class.fa-chevron-down]="isExpanded(attempt)"></i>
+                                    </span>
+                                </td>
+                                <td>
+                                    <span [ngbTooltip]="formatFullDateTime(attempt.timeStamp)" container="body">
+                                        {{ formatRelativeTime(attempt.timeStamp) }}
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge" [class.bg-success]="isSuccess(attempt)"
+                                        [class.bg-danger]="!isSuccess(attempt)">
+                                        <i class="fa-solid" [class.fa-check]="isSuccess(attempt)"
+                                            [class.fa-times]="!isSuccess(attempt)"></i>
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="user-name">{{ attempt.userName || '—' }}</span>
+                                </td>
+                                <td>
+                                    <span class="ip-address">{{ attempt.ipAddress || '—' }}</span>
+                                </td>
+                                <td [ngbTooltip]="attempt.resource" container="body">
+                                    {{ truncateText(attempt.resource, 40) }}
+                                </td>
+                            </tr>
+
+                            <!-- Expanded Detail Row -->
+                            <tr *ngIf="isExpanded(attempt)" class="detail-row">
+                                <td colspan="6">
+                                    <div class="detail-content">
+                                        <div class="row g-3">
+                                            <div class="col-md-3">
+                                                <div class="detail-item">
+                                                    <span class="detail-label">Session ID</span>
+                                                    <span class="detail-value">{{ attempt.sessionId || '—' }}</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="detail-item">
+                                                    <span class="detail-label">IP Address</span>
+                                                    <span class="detail-value">{{ attempt.ipAddress || '—' }}</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="detail-item">
+                                                    <span class="detail-label">Resource</span>
+                                                    <span class="detail-value">{{ attempt.resource || '—' }}</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="detail-item">
+                                                    <span class="detail-label">Attempt ID</span>
+                                                    <span class="detail-value">#{{ attempt.id }}</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-12" *ngIf="attempt.userAgent">
+                                                <div class="detail-item">
+                                                    <span class="detail-label">User Agent</span>
+                                                    <span class="detail-value user-agent-full">{{ attempt.userAgent
+                                                        }}</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-12" *ngIf="attempt.value">
+                                                <div class="detail-item">
+                                                    <span class="detail-label">Result Details</span>
+                                                    <span class="detail-value">{{ attempt.value }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </ng-container>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="card-footer bg-white border-0 d-flex justify-content-between align-items-center"
+                *ngIf="totalPages > 1">
+                <div class="text-muted small">
+                    Showing {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize,
+                    (loginAttempts$ | async)?.length || 0) }}
+                    of {{ (loginAttempts$ | async)?.length || 0 }} attempts
+                </div>
+                <nav>
+                    <ul class="pagination pagination-sm mb-0">
+                        <li class="page-item" [class.disabled]="currentPage === 1">
+                            <button class="page-link" (click)="goToPage(1)">
+                                <i class="fa-solid fa-angles-left"></i>
+                            </button>
+                        </li>
+                        <li class="page-item" [class.disabled]="currentPage === 1">
+                            <button class="page-link" (click)="goToPage(currentPage - 1)">
+                                <i class="fa-solid fa-angle-left"></i>
+                            </button>
+                        </li>
+                        <li class="page-item active">
+                            <span class="page-link">{{ currentPage }} / {{ totalPages }}</span>
+                        </li>
+                        <li class="page-item" [class.disabled]="currentPage === totalPages">
+                            <button class="page-link" (click)="goToPage(currentPage + 1)">
+                                <i class="fa-solid fa-angle-right"></i>
+                            </button>
+                        </li>
+                        <li class="page-item" [class.disabled]="currentPage === totalPages">
+                            <button class="page-link" (click)="goToPage(totalPages)">
+                                <i class="fa-solid fa-angles-right"></i>
+                            </button>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>

@@ -40,7 +40,7 @@
                     <i class="fas fa-server"></i>
                 </div>
                 <div class="card-content">
-                    <h4>{{ summary.applications?.length || 0 }}</h4>
+                    <h4>{{ summary.applications.length || 0 }}</h4>
                     <p>Monitored Apps</p>
                 </div>
             </div>
@@ -58,17 +58,17 @@
                     <i class="fas fa-camera"></i>
                 </div>
                 <div class="card-content">
-                    <h4>{{ summary.last24Hours?.totalSnapshots || 0 }}</h4>
+                    <h4>{{ summary.last24Hours.totalSnapshots || 0 }}</h4>
                     <p>Snapshots (24h)</p>
                 </div>
             </div>
             <div class="summary-card">
                 <div class="card-icon"
-                    [ngClass]="{'bg-danger': (summary.last24Hours?.errorCount || 0) > 0, 'bg-success': (summary.last24Hours?.errorCount || 0) === 0}">
+                    [ngClass]="{'bg-danger': (summary.last24Hours.errorCount || 0) > 0, 'bg-success': (summary.last24Hours.errorCount || 0) === 0}">
                     <i class="fas fa-exclamation-triangle"></i>
                 </div>
                 <div class="card-content">
-                    <h4>{{ summary.last24Hours?.errorCount || 0 }}</h4>
+                    <h4>{{ summary.last24Hours.errorCount || 0 }}</h4>
                     <p>Errors (24h)</p>
                 </div>
             </div>

@@ -201,23 +201,23 @@
             <span class="metric-label"><i class="fas fa-tachometer-alt me-2"></i>Usage</span>
             <span class="metric-value fw-bold" [ngClass]="{
                   'text-success' : (healthStatus.application.cpu?.percent || 0) < 50,
-                    'text-warning': (healthStatus.application.cpu?.percent || 0) >= 50 && (healthStatus.application?.cpu?.percent || 0) < 80,
+                    'text-warning': (healthStatus.application.cpu?.percent || 0) >= 50 && (healthStatus.application.cpu?.percent || 0) < 80,
                     'text-danger': (healthStatus.application.cpu?.percent || 0) >= 80
                 }">
-              {{ formatCpu(healthStatus.application?.cpu?.percent) }}
+              {{ formatCpu(healthStatus.application.cpu?.percent) }}
             </span>
           </div>
           <div class="metric-row">
             <span class="metric-label"><i class="fas fa-microchip me-2"></i>Processors</span>
-            <span class="metric-value">{{ healthStatus.application?.cpu?.processorCount || '-' }}</span>
+            <span class="metric-value">{{ healthStatus.application.cpu?.processorCount || '-' }}</span>
           </div>
           <div class="metric-row">
             <span class="metric-label"><i class="fas fa-stream me-2"></i>Threads</span>
-            <span class="metric-value">{{ healthStatus.application?.process?.threadCount || '-' }}</span>
+            <span class="metric-value">{{ healthStatus.application.process.threadCount || '-' }}</span>
           </div>
           <div class="metric-row">
             <span class="metric-label"><i class="fas fa-link me-2"></i>Handles</span>
-            <span class="metric-value">{{ healthStatus.application?.process?.handleCount || '-' }}</span>
+            <span class="metric-value">{{ healthStatus.application.process.handleCount || '-' }}</span>
           </div>
         </div>
       </div>
