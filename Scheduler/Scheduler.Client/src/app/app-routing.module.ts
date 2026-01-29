@@ -75,11 +75,6 @@ import { ClientCustomListingComponent } from './components/client-custom/client-
 import { SchedulingTargetCustomListingComponent } from './components/scheduling-target-custom/scheduling-target-custom-listing/scheduling-target-custom-listing.component';
 import { SchedulingTargetCustomDetailComponent } from './components/scheduling-target-custom/scheduling-target-custom-detail/scheduling-target-custom-detail.component';
 
-//
-// Login Attempt custom listing
-//
-import { LoginAttemptCustomListingComponent } from './components/login-attempt-custom/login-attempt-custom-listing/login-attempt-custom-listing.component';
-
 
 
 //
@@ -560,11 +555,6 @@ const routes: Routes = [
 
 
   { path: 'system-health', component: SystemHealthComponent, canActivate: [AuthGuard], title: 'System Health' },
-
-  //
-  // Custom Login Attempt Listing - replaces the auto-generated version
-  //
-  { path: 'loginattempts', component: LoginAttemptCustomListingComponent, canActivate: [AuthGuard], title: 'Login Attempts' },
 
   //
   // Security Data Component references - Auto Generated.

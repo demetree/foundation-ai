@@ -191,11 +191,6 @@ import { SchedulingTargetCustomListingComponent } from './components/scheduling-
 import { SchedulingTargetCustomTableComponent } from './components/scheduling-target-custom/scheduling-target-custom-table/scheduling-target-custom-table.component';
 import { SchedulingTargetCustomDetailComponent } from './components/scheduling-target-custom/scheduling-target-custom-detail/scheduling-target-custom-detail.component';
 
-//
-// Login Attempt custom listing
-//
-import { LoginAttemptCustomListingComponent } from './components/login-attempt-custom/login-attempt-custom-listing/login-attempt-custom-listing.component';
-
 
 //
 // Custom services
@@ -1303,11 +1298,6 @@ import { VolunteerStatusTableComponent } from './scheduler-data-components/volun
     SchedulingTargetCustomListingComponent,
     SchedulingTargetCustomTableComponent,
     SchedulingTargetCustomDetailComponent,
-
-    //
-    // Login Attempt custom listing
-    //
-    LoginAttemptCustomListingComponent,
 
 
     //
