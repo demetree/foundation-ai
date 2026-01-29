@@ -148,6 +148,23 @@
                             </div>
                             </ng-template>
                         </li>
+                      <li ngbNavItem *ngIf="volunteerStatusService.userIsSchedulerVolunteerStatusReader()">
+                            <button ngbNavLink>Volunteer Statuses
+                                <span class="badge bg-primary ms-2">
+                                    {{ (iconData?.VolunteerStatusesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-volunteer-status-table [queryParams]="{ iconId: iconData?.id }"></app-volunteer-status-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-volunteer-status-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-volunteer-status-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
                       <li ngbNavItem *ngIf="contactTypeService.userIsSchedulerContactTypeReader()">
                             <button ngbNavLink>Contact Types
                                 <span class="badge bg-primary ms-2">
@@ -433,6 +450,40 @@
                                 </div>
                                 <div class="d-flex justify-content-end">
                                     <app-tribute-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-tribute-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="volunteerProfileService.userIsSchedulerVolunteerProfileReader()">
+                            <button ngbNavLink>Volunteer Profiles
+                                <span class="badge bg-primary ms-2">
+                                    {{ (iconData?.VolunteerProfilesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-volunteer-profile-table [queryParams]="{ iconId: iconData?.id }"></app-volunteer-profile-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-volunteer-profile-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-volunteer-profile-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="volunteerGroupService.userIsSchedulerVolunteerGroupReader()">
+                            <button ngbNavLink>Volunteer Groups
+                                <span class="badge bg-primary ms-2">
+                                    {{ (iconData?.VolunteerGroupsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-volunteer-group-table [queryParams]="{ iconId: iconData?.id }"></app-volunteer-group-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-volunteer-group-add-edit [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-volunteer-group-add-edit>
                                 </div>
                             </div>
                             </ng-template>

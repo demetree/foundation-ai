@@ -702,7 +702,7 @@ export class ModuleService extends SecureEndpointBase {
             const user = this.authService.currentUser;
 
             if (user != null) {
-                userIsSecurityModuleReader = user.readPermission >= 0;
+                userIsSecurityModuleReader = user.readPermission >= 1;
             } else {
                 userIsSecurityModuleReader = false;
             }
@@ -726,7 +726,7 @@ export class ModuleService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsSecurityModuleWriter = user.writePermission >= 0;
+            userIsSecurityModuleWriter = user.writePermission >= 150;
           } else {
             userIsSecurityModuleWriter = false;
           }      

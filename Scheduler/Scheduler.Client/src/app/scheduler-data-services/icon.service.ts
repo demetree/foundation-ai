@@ -21,6 +21,7 @@ import { PriorityService, PriorityData } from './priority.service';
 import { ContactMethodService, ContactMethodData } from './contact-method.service';
 import { InteractionTypeService, InteractionTypeData } from './interaction-type.service';
 import { TagService, TagData } from './tag.service';
+import { VolunteerStatusService, VolunteerStatusData } from './volunteer-status.service';
 import { ContactTypeService, ContactTypeData } from './contact-type.service';
 import { ContactService, ContactData } from './contact.service';
 import { RelationshipTypeService, RelationshipTypeData } from './relationship-type.service';
@@ -38,6 +39,8 @@ import { HouseholdService, HouseholdData } from './household.service';
 import { ConstituentJourneyStageService, ConstituentJourneyStageData } from './constituent-journey-stage.service';
 import { ConstituentService, ConstituentData } from './constituent.service';
 import { TributeService, TributeData } from './tribute.service';
+import { VolunteerProfileService, VolunteerProfileData } from './volunteer-profile.service';
+import { VolunteerGroupService, VolunteerGroupData } from './volunteer-group.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -154,6 +157,11 @@ export class IconData {
     private _tagsSubject = new BehaviorSubject<TagData[] | null>(null);
 
                 
+    private _volunteerStatuses: VolunteerStatusData[] | null = null;
+    private _volunteerStatusesPromise: Promise<VolunteerStatusData[]> | null  = null;
+    private _volunteerStatusesSubject = new BehaviorSubject<VolunteerStatusData[] | null>(null);
+
+                
     private _contactTypes: ContactTypeData[] | null = null;
     private _contactTypesPromise: Promise<ContactTypeData[]> | null  = null;
     private _contactTypesSubject = new BehaviorSubject<ContactTypeData[] | null>(null);
@@ -237,6 +245,16 @@ export class IconData {
     private _tributes: TributeData[] | null = null;
     private _tributesPromise: Promise<TributeData[]> | null  = null;
     private _tributesSubject = new BehaviorSubject<TributeData[] | null>(null);
+
+                
+    private _volunteerProfiles: VolunteerProfileData[] | null = null;
+    private _volunteerProfilesPromise: Promise<VolunteerProfileData[]> | null  = null;
+    private _volunteerProfilesSubject = new BehaviorSubject<VolunteerProfileData[] | null>(null);
+
+                
+    private _volunteerGroups: VolunteerGroupData[] | null = null;
+    private _volunteerGroupsPromise: Promise<VolunteerGroupData[]> | null  = null;
+    private _volunteerGroupsSubject = new BehaviorSubject<VolunteerGroupData[] | null>(null);
 
                 
 
@@ -335,6 +353,25 @@ export class IconData {
 
   
     public TagsCount$ = TagService.Instance.GetTagsRowCount({iconId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    public VolunteerStatuses$ = this._volunteerStatusesSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._volunteerStatuses === null && this._volunteerStatusesPromise === null) {
+            this.loadVolunteerStatuses(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public VolunteerStatusesCount$ = VolunteerStatusService.Instance.GetVolunteerStatusesRowCount({iconId: this.id,
       active: true,
       deleted: false
     });
@@ -664,6 +701,44 @@ export class IconData {
 
 
 
+    public VolunteerProfiles$ = this._volunteerProfilesSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._volunteerProfiles === null && this._volunteerProfilesPromise === null) {
+            this.loadVolunteerProfiles(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public VolunteerProfilesCount$ = VolunteerProfileService.Instance.GetVolunteerProfilesRowCount({iconId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    public VolunteerGroups$ = this._volunteerGroupsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._volunteerGroups === null && this._volunteerGroupsPromise === null) {
+            this.loadVolunteerGroups(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public VolunteerGroupsCount$ = VolunteerGroupService.Instance.GetVolunteerGroupsRowCount({iconId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
 
   //
   // Full reload — refreshes the entire object and clears all lazy caches 
@@ -721,6 +796,10 @@ export class IconData {
      this._tags = null;
      this._tagsPromise = null;
      this._tagsSubject.next(null);
+
+     this._volunteerStatuses = null;
+     this._volunteerStatusesPromise = null;
+     this._volunteerStatusesSubject.next(null);
 
      this._contactTypes = null;
      this._contactTypesPromise = null;
@@ -789,6 +868,14 @@ export class IconData {
      this._tributes = null;
      this._tributesPromise = null;
      this._tributesSubject.next(null);
+
+     this._volunteerProfiles = null;
+     this._volunteerProfilesPromise = null;
+     this._volunteerProfilesSubject.next(null);
+
+     this._volunteerGroups = null;
+     this._volunteerGroupsPromise = null;
+     this._volunteerGroupsSubject.next(null);
 
   }
 
@@ -1118,6 +1205,71 @@ export class IconData {
 
     public get HasTags(): Promise<boolean> {
         return this.Tags.then(tags => tags.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the VolunteerStatuses for this Icon.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.icon.VolunteerStatuses.then(icons => { ... })
+     *   or
+     *   await this.icon.icons
+     *
+    */
+    public get VolunteerStatuses(): Promise<VolunteerStatusData[]> {
+        if (this._volunteerStatuses !== null) {
+            return Promise.resolve(this._volunteerStatuses);
+        }
+
+        if (this._volunteerStatusesPromise !== null) {
+            return this._volunteerStatusesPromise;
+        }
+
+        // Start the load
+        this.loadVolunteerStatuses();
+
+        return this._volunteerStatusesPromise!;
+    }
+
+
+
+    private loadVolunteerStatuses(): void {
+
+        this._volunteerStatusesPromise = lastValueFrom(
+            IconService.Instance.GetVolunteerStatusesForIcon(this.id)
+        )
+        .then(VolunteerStatuses => {
+            this._volunteerStatuses = VolunteerStatuses ?? [];
+            this._volunteerStatusesSubject.next(this._volunteerStatuses);
+            return this._volunteerStatuses;
+         })
+        .catch(err => {
+            this._volunteerStatuses = [];
+            this._volunteerStatusesSubject.next(this._volunteerStatuses);
+            throw err;
+        })
+        .finally(() => {
+            this._volunteerStatusesPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached VolunteerStatus. Call after mutations to force refresh.
+     */
+    public ClearVolunteerStatusesCache(): void {
+        this._volunteerStatuses = null;
+        this._volunteerStatusesPromise = null;
+        this._volunteerStatusesSubject.next(this._volunteerStatuses);      // Emit to observable
+    }
+
+    public get HasVolunteerStatuses(): Promise<boolean> {
+        return this.VolunteerStatuses.then(volunteerStatuses => volunteerStatuses.length > 0);
     }
 
 
@@ -2226,6 +2378,136 @@ export class IconData {
     }
 
 
+    /**
+     *
+     * Gets the VolunteerProfiles for this Icon.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.icon.VolunteerProfiles.then(icons => { ... })
+     *   or
+     *   await this.icon.icons
+     *
+    */
+    public get VolunteerProfiles(): Promise<VolunteerProfileData[]> {
+        if (this._volunteerProfiles !== null) {
+            return Promise.resolve(this._volunteerProfiles);
+        }
+
+        if (this._volunteerProfilesPromise !== null) {
+            return this._volunteerProfilesPromise;
+        }
+
+        // Start the load
+        this.loadVolunteerProfiles();
+
+        return this._volunteerProfilesPromise!;
+    }
+
+
+
+    private loadVolunteerProfiles(): void {
+
+        this._volunteerProfilesPromise = lastValueFrom(
+            IconService.Instance.GetVolunteerProfilesForIcon(this.id)
+        )
+        .then(VolunteerProfiles => {
+            this._volunteerProfiles = VolunteerProfiles ?? [];
+            this._volunteerProfilesSubject.next(this._volunteerProfiles);
+            return this._volunteerProfiles;
+         })
+        .catch(err => {
+            this._volunteerProfiles = [];
+            this._volunteerProfilesSubject.next(this._volunteerProfiles);
+            throw err;
+        })
+        .finally(() => {
+            this._volunteerProfilesPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached VolunteerProfile. Call after mutations to force refresh.
+     */
+    public ClearVolunteerProfilesCache(): void {
+        this._volunteerProfiles = null;
+        this._volunteerProfilesPromise = null;
+        this._volunteerProfilesSubject.next(this._volunteerProfiles);      // Emit to observable
+    }
+
+    public get HasVolunteerProfiles(): Promise<boolean> {
+        return this.VolunteerProfiles.then(volunteerProfiles => volunteerProfiles.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the VolunteerGroups for this Icon.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.icon.VolunteerGroups.then(icons => { ... })
+     *   or
+     *   await this.icon.icons
+     *
+    */
+    public get VolunteerGroups(): Promise<VolunteerGroupData[]> {
+        if (this._volunteerGroups !== null) {
+            return Promise.resolve(this._volunteerGroups);
+        }
+
+        if (this._volunteerGroupsPromise !== null) {
+            return this._volunteerGroupsPromise;
+        }
+
+        // Start the load
+        this.loadVolunteerGroups();
+
+        return this._volunteerGroupsPromise!;
+    }
+
+
+
+    private loadVolunteerGroups(): void {
+
+        this._volunteerGroupsPromise = lastValueFrom(
+            IconService.Instance.GetVolunteerGroupsForIcon(this.id)
+        )
+        .then(VolunteerGroups => {
+            this._volunteerGroups = VolunteerGroups ?? [];
+            this._volunteerGroupsSubject.next(this._volunteerGroups);
+            return this._volunteerGroups;
+         })
+        .catch(err => {
+            this._volunteerGroups = [];
+            this._volunteerGroupsSubject.next(this._volunteerGroups);
+            throw err;
+        })
+        .finally(() => {
+            this._volunteerGroupsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached VolunteerGroup. Call after mutations to force refresh.
+     */
+    public ClearVolunteerGroupsCache(): void {
+        this._volunteerGroups = null;
+        this._volunteerGroupsPromise = null;
+        this._volunteerGroupsSubject.next(this._volunteerGroups);      // Emit to observable
+    }
+
+    public get HasVolunteerGroups(): Promise<boolean> {
+        return this.VolunteerGroups.then(volunteerGroups => volunteerGroups.length > 0);
+    }
+
+
 
 
     /**
@@ -2266,6 +2548,7 @@ export class IconService extends SecureEndpointBase {
         private contactMethodService: ContactMethodService,
         private interactionTypeService: InteractionTypeService,
         private tagService: TagService,
+        private volunteerStatusService: VolunteerStatusService,
         private contactTypeService: ContactTypeService,
         private contactService: ContactService,
         private relationshipTypeService: RelationshipTypeService,
@@ -2283,6 +2566,8 @@ export class IconService extends SecureEndpointBase {
         private constituentJourneyStageService: ConstituentJourneyStageService,
         private constituentService: ConstituentService,
         private tributeService: TributeService,
+        private volunteerProfileService: VolunteerProfileService,
+        private volunteerGroupService: VolunteerGroupService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
 
@@ -2691,6 +2976,16 @@ export class IconService extends SecureEndpointBase {
     }
 
 
+    public GetVolunteerStatusesForIcon(iconId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<VolunteerStatusData[]> {
+        return this.volunteerStatusService.GetVolunteerStatusList({
+            iconId: iconId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
     public GetContactTypesForIcon(iconId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<ContactTypeData[]> {
         return this.contactTypeService.GetContactTypeList({
             iconId: iconId,
@@ -2861,6 +3156,26 @@ export class IconService extends SecureEndpointBase {
     }
 
 
+    public GetVolunteerProfilesForIcon(iconId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<VolunteerProfileData[]> {
+        return this.volunteerProfileService.GetVolunteerProfileList({
+            iconId: iconId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
+    public GetVolunteerGroupsForIcon(iconId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<VolunteerGroupData[]> {
+        return this.volunteerGroupService.GetVolunteerGroupList({
+            iconId: iconId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
  /**
    *
    * Revives a plain object from the server into a full IconData instance.
@@ -2915,6 +3230,10 @@ export class IconService extends SecureEndpointBase {
     (revived as any)._tags = null;
     (revived as any)._tagsPromise = null;
     (revived as any)._tagsSubject = new BehaviorSubject<TagData[] | null>(null);
+
+    (revived as any)._volunteerStatuses = null;
+    (revived as any)._volunteerStatusesPromise = null;
+    (revived as any)._volunteerStatusesSubject = new BehaviorSubject<VolunteerStatusData[] | null>(null);
 
     (revived as any)._contactTypes = null;
     (revived as any)._contactTypesPromise = null;
@@ -2983,6 +3302,14 @@ export class IconService extends SecureEndpointBase {
     (revived as any)._tributes = null;
     (revived as any)._tributesPromise = null;
     (revived as any)._tributesSubject = new BehaviorSubject<TributeData[] | null>(null);
+
+    (revived as any)._volunteerProfiles = null;
+    (revived as any)._volunteerProfilesPromise = null;
+    (revived as any)._volunteerProfilesSubject = new BehaviorSubject<VolunteerProfileData[] | null>(null);
+
+    (revived as any)._volunteerGroups = null;
+    (revived as any)._volunteerGroupsPromise = null;
+    (revived as any)._volunteerGroupsSubject = new BehaviorSubject<VolunteerGroupData[] | null>(null);
 
 
     //
@@ -3070,6 +3397,22 @@ export class IconService extends SecureEndpointBase {
       );
 
     (revived as any).TagsCount$ = TagService.Instance.GetTagsRowCount({iconId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).VolunteerStatuses$ = (revived as any)._volunteerStatusesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._volunteerStatuses === null && (revived as any)._volunteerStatusesPromise === null) {
+                (revived as any).loadVolunteerStatuses();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).VolunteerStatusesCount$ = VolunteerStatusService.Instance.GetVolunteerStatusesRowCount({iconId: (revived as any).id,
       active: true,
       deleted: false
     });
@@ -3342,6 +3685,38 @@ export class IconService extends SecureEndpointBase {
       );
 
     (revived as any).TributesCount$ = TributeService.Instance.GetTributesRowCount({iconId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).VolunteerProfiles$ = (revived as any)._volunteerProfilesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._volunteerProfiles === null && (revived as any)._volunteerProfilesPromise === null) {
+                (revived as any).loadVolunteerProfiles();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).VolunteerProfilesCount$ = VolunteerProfileService.Instance.GetVolunteerProfilesRowCount({iconId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).VolunteerGroups$ = (revived as any)._volunteerGroupsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._volunteerGroups === null && (revived as any)._volunteerGroupsPromise === null) {
+                (revived as any).loadVolunteerGroups();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).VolunteerGroupsCount$ = VolunteerGroupService.Instance.GetVolunteerGroupsRowCount({iconId: (revived as any).id,
       active: true,
       deleted: false
     });

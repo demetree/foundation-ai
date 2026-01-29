@@ -1,0 +1,159 @@
+<div class="add-volunteer-profile" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-volunteer-profile me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Volunteer Profile" 
+        *ngIf="userIsSchedulerVolunteerProfileWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #volunteerProfileModal let-modal>
+   <div class="modal-header bg-dark text-light volunteer-profile-modal-header">
+      <h5 class="modal-title mb-0" id="volunteerProfileModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Volunteer Profile' : 'Add Volunteer Profile' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body volunteer-profile-modal-body">
+      <form [formGroup]="volunteerProfileForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('resourceId')">
+                <label for="VolunteerProfile-resourceId" id="label-VolunteerProfile-resourceId"><span class="text-danger">*</span>Resource</label>
+                <select id="VolunteerProfile-resourceId" formControlName="resourceId" class="form-select volunteer-profile-select" [disabled]="!userIsSchedulerVolunteerProfileWriter()">
+                    <option [ngValue]="null">Select Resource</option>
+                    <option *ngFor="let resource of resources$ | async" [ngValue]="resource.id">{{[resource.name] | filterAndJoin}}</option>
+                </select>
+                <div *ngIf="volunteerProfileForm.get('resourceId')?.invalid && volunteerProfileForm.get('resourceId')?.touched" class="text-danger">
+                    Resource is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('volunteerStatusId')">
+                <label for="VolunteerProfile-volunteerStatusId" id="label-VolunteerProfile-volunteerStatusId"><span class="text-danger">*</span>Volunteer Status</label>
+                <select id="VolunteerProfile-volunteerStatusId" formControlName="volunteerStatusId" class="form-select volunteer-profile-select" [disabled]="!userIsSchedulerVolunteerProfileWriter()">
+                    <option [ngValue]="null">Select Volunteer Status</option>
+                    <option *ngFor="let volunteerStatus of volunteerStatuses$ | async" [ngValue]="volunteerStatus.id">{{volunteerStatus.name}}</option>
+                </select>
+                <div *ngIf="volunteerProfileForm.get('volunteerStatusId')?.invalid && volunteerProfileForm.get('volunteerStatusId')?.touched" class="text-danger">
+                    Volunteer Status is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('onboardedDate')">
+                <label for="VolunteerProfile-onboardedDate" id="label-VolunteerProfile-onboardedDate">Onboarded Date</label>
+                <input type="date" id="VolunteerProfile-onboardedDate" formControlName="onboardedDate" placeholder="Enter Onboarded Date" class="form-control volunteer-profile-input" [disabled]="!userIsSchedulerVolunteerProfileWriter()" aria-labelledby="label-onboardedDate" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('inactiveSince')">
+                <label for="VolunteerProfile-inactiveSince" id="label-VolunteerProfile-inactiveSince">Inactive Since</label>
+                <input type="date" id="VolunteerProfile-inactiveSince" formControlName="inactiveSince" placeholder="Enter Inactive Since" class="form-control volunteer-profile-input" [disabled]="!userIsSchedulerVolunteerProfileWriter()" aria-labelledby="label-inactiveSince" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('totalHoursServed')">
+                <label for="VolunteerProfile-totalHoursServed" id="label-VolunteerProfile-totalHoursServed">Total Hours Served</label>
+                <input type="number" id="VolunteerProfile-totalHoursServed" formControlName="totalHoursServed" placeholder="Enter Total Hours Served" class="form-control volunteer-profile-input" [disabled]="!userIsSchedulerVolunteerProfileWriter()" aria-labelledby="label-totalHoursServed" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('lastActivityDate')">
+                <label for="VolunteerProfile-lastActivityDate" id="label-VolunteerProfile-lastActivityDate">Last Activity Date</label>
+                <input type="date" id="VolunteerProfile-lastActivityDate" formControlName="lastActivityDate" placeholder="Enter Last Activity Date" class="form-control volunteer-profile-input" [disabled]="!userIsSchedulerVolunteerProfileWriter()" aria-labelledby="label-lastActivityDate" />
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('backgroundCheckCompleted')">
+                <input type="checkbox" id="VolunteerProfile-backgroundCheckCompleted" formControlName="backgroundCheckCompleted" class="form-check-input" [disabled]="!userIsSchedulerVolunteerProfileWriter()" />
+                <label for="VolunteerProfile-backgroundCheckCompleted" class="form-check-label" id="label-VolunteerProfile-backgroundCheckCompleted"><span class="text-danger">*</span>Background Check Completed</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('backgroundCheckDate')">
+                <label for="VolunteerProfile-backgroundCheckDate" id="label-VolunteerProfile-backgroundCheckDate">Background Check Date</label>
+                <input type="date" id="VolunteerProfile-backgroundCheckDate" formControlName="backgroundCheckDate" placeholder="Enter Background Check Date" class="form-control volunteer-profile-input" [disabled]="!userIsSchedulerVolunteerProfileWriter()" aria-labelledby="label-backgroundCheckDate" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('backgroundCheckExpiry')">
+                <label for="VolunteerProfile-backgroundCheckExpiry" id="label-VolunteerProfile-backgroundCheckExpiry">Background Check Expiry</label>
+                <input type="date" id="VolunteerProfile-backgroundCheckExpiry" formControlName="backgroundCheckExpiry" placeholder="Enter Background Check Expiry" class="form-control volunteer-profile-input" [disabled]="!userIsSchedulerVolunteerProfileWriter()" aria-labelledby="label-backgroundCheckExpiry" />
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('confidentialityAgreementSigned')">
+                <input type="checkbox" id="VolunteerProfile-confidentialityAgreementSigned" formControlName="confidentialityAgreementSigned" class="form-check-input" [disabled]="!userIsSchedulerVolunteerProfileWriter()" />
+                <label for="VolunteerProfile-confidentialityAgreementSigned" class="form-check-label" id="label-VolunteerProfile-confidentialityAgreementSigned"><span class="text-danger">*</span>Confidentiality Agreement Signed</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('confidentialityAgreementDate')">
+                <label for="VolunteerProfile-confidentialityAgreementDate" id="label-VolunteerProfile-confidentialityAgreementDate">Confidentiality Agreement Date</label>
+                <input type="date" id="VolunteerProfile-confidentialityAgreementDate" formControlName="confidentialityAgreementDate" placeholder="Enter Confidentiality Agreement Date" class="form-control volunteer-profile-input" [disabled]="!userIsSchedulerVolunteerProfileWriter()" aria-labelledby="label-confidentialityAgreementDate" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('availabilityPreferences')">
+                <label for="VolunteerProfile-availabilityPreferences" id="label-VolunteerProfile-availabilityPreferences">Availability Preferences</label>
+                <textarea id="VolunteerProfile-availabilityPreferences" formControlName="availabilityPreferences" placeholder="Enter Availability Preferences" class="form-control volunteer-profile-input" [disabled]="!userIsSchedulerVolunteerProfileWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('interestsAndSkillsNotes')">
+                <label for="VolunteerProfile-interestsAndSkillsNotes" id="label-VolunteerProfile-interestsAndSkillsNotes">Interests And Skills Notes</label>
+                <textarea id="VolunteerProfile-interestsAndSkillsNotes" formControlName="interestsAndSkillsNotes" placeholder="Enter Interests And Skills Notes" class="form-control volunteer-profile-input" [disabled]="!userIsSchedulerVolunteerProfileWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('emergencyContactNotes')">
+                <label for="VolunteerProfile-emergencyContactNotes" id="label-VolunteerProfile-emergencyContactNotes">Emergency Contact Notes</label>
+                <textarea id="VolunteerProfile-emergencyContactNotes" formControlName="emergencyContactNotes" placeholder="Enter Emergency Contact Notes" class="form-control volunteer-profile-input" [disabled]="!userIsSchedulerVolunteerProfileWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('constituentId')">
+                <label for="VolunteerProfile-constituentId" id="label-VolunteerProfile-constituentId">Constituent</label>
+                <select id="VolunteerProfile-constituentId" formControlName="constituentId" class="form-select volunteer-profile-select" [disabled]="!userIsSchedulerVolunteerProfileWriter()">
+                    <option [ngValue]="null">Select Constituent</option>
+                    <option *ngFor="let constituent of constituents$ | async" [ngValue]="constituent.id">{{constituent.constituentNumber}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('iconId')">
+                <label for="VolunteerProfile-iconId" id="label-VolunteerProfile-iconId">Icon</label>
+                <select id="VolunteerProfile-iconId" formControlName="iconId" class="form-select volunteer-profile-select" [disabled]="!userIsSchedulerVolunteerProfileWriter()">
+                    <option [ngValue]="null">Select Icon</option>
+                    <option *ngFor="let icon of icons$ | async" [ngValue]="icon.id">{{icon.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('color')">
+                <label for="VolunteerProfile-color" id="label-VolunteerProfile-color">Color</label>
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="VolunteerProfile-color" 
+                        formControlName="color" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerVolunteerProfileWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="volunteerProfileForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('attributes')">
+                <label for="VolunteerProfile-attributes" id="label-VolunteerProfile-attributes">Attributes</label>
+                <textarea id="VolunteerProfile-attributes" formControlName="attributes" placeholder="Enter Attributes" class="form-control volunteer-profile-input" [disabled]="!userIsSchedulerVolunteerProfileWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="VolunteerProfile-versionNumber" id="label-VolunteerProfile-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="VolunteerProfile-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control volunteer-profile-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="VolunteerProfile-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerVolunteerProfileWriter()" />
+                <label for="VolunteerProfile-active" class="form-check-label" id="label-VolunteerProfile-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="VolunteerProfile-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerVolunteerProfileWriter()" />
+                <label for="VolunteerProfile-deleted" class="form-check-label" id="label-VolunteerProfile-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer volunteer-profile-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Volunteer Profile changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !volunteerProfileForm.valid || volunteerProfileForm.pristine  || userIsSchedulerVolunteerProfileWriter() == false " ngbTooltip="Save the Volunteer Profile changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Volunteer Profile' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

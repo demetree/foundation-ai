@@ -799,7 +799,7 @@ export class SecurityTenantService extends SecureEndpointBase {
             const user = this.authService.currentUser;
 
             if (user != null) {
-                userIsSecuritySecurityTenantReader = user.readPermission >= 0;
+                userIsSecuritySecurityTenantReader = user.readPermission >= 1;
             } else {
                 userIsSecuritySecurityTenantReader = false;
             }

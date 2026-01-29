@@ -48,6 +48,13 @@
                                     <option *ngFor="let crew of crews$ | async" [ngValue]="crew.id">{{[crew.name] | filterAndJoin}}</option>
                                 </select>
                             </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('volunteerGroupId')">
+                                <label for="EventResourceAssignment-volunteerGroupId" id="label-EventResourceAssignment-volunteerGroupId">Volunteer Group</label>
+                                <select id="EventResourceAssignment-volunteerGroupId" formControlName="volunteerGroupId" class="form-select event-resource-assignment-select" [disabled]="!userIsSchedulerEventResourceAssignmentWriter()">
+                                    <option [ngValue]="null">Select Volunteer Group</option>
+                                    <option *ngFor="let volunteerGroup of volunteerGroups$ | async" [ngValue]="volunteerGroup.id">{{[volunteerGroup.name] | filterAndJoin}}</option>
+                                </select>
+                            </div>
                             <div class="form-group" *ngIf="!isFieldHidden('assignmentRoleId')">
                                 <label for="EventResourceAssignment-assignmentRoleId" id="label-EventResourceAssignment-assignmentRoleId">Assignment Role</label>
                                 <select id="EventResourceAssignment-assignmentRoleId" formControlName="assignmentRoleId" class="form-select event-resource-assignment-select" [disabled]="!userIsSchedulerEventResourceAssignmentWriter()">
@@ -104,6 +111,48 @@
                             <div class="form-group" *ngIf="!isFieldHidden('actualNotes')">
                                 <label for="EventResourceAssignment-actualNotes" id="label-EventResourceAssignment-actualNotes">Actual Notes</label>
                                 <textarea id="EventResourceAssignment-actualNotes" formControlName="actualNotes" placeholder="Enter Actual Notes" class="form-control event-resource-assignment-input" [disabled]="!userIsSchedulerEventResourceAssignmentWriter()"></textarea>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isVolunteer')">
+                                <input type="checkbox" id="EventResourceAssignment-isVolunteer" formControlName="isVolunteer" class="form-check-input" [disabled]="!userIsSchedulerEventResourceAssignmentWriter()" />
+                                <label for="EventResourceAssignment-isVolunteer" class="form-check-label" id="label-EventResourceAssignment-isVolunteer"><span class="text-danger">*</span>Is Volunteer</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('reportedVolunteerHours')">
+                                <label for="EventResourceAssignment-reportedVolunteerHours" id="label-EventResourceAssignment-reportedVolunteerHours">Reported Volunteer Hours</label>
+                                <input type="number" id="EventResourceAssignment-reportedVolunteerHours" formControlName="reportedVolunteerHours" placeholder="Enter Reported Volunteer Hours" class="form-control event-resource-assignment-input" [disabled]="!userIsSchedulerEventResourceAssignmentWriter()" aria-labelledby="label-reportedVolunteerHours" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('approvedVolunteerHours')">
+                                <label for="EventResourceAssignment-approvedVolunteerHours" id="label-EventResourceAssignment-approvedVolunteerHours">Approved Volunteer Hours</label>
+                                <input type="number" id="EventResourceAssignment-approvedVolunteerHours" formControlName="approvedVolunteerHours" placeholder="Enter Approved Volunteer Hours" class="form-control event-resource-assignment-input" [disabled]="!userIsSchedulerEventResourceAssignmentWriter()" aria-labelledby="label-approvedVolunteerHours" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('hoursApprovedByContactId')">
+                                <label for="EventResourceAssignment-hoursApprovedByContactId" id="label-EventResourceAssignment-hoursApprovedByContactId">Hours Approved By Contact</label>
+                                <select id="EventResourceAssignment-hoursApprovedByContactId" formControlName="hoursApprovedByContactId" class="form-select event-resource-assignment-select" [disabled]="!userIsSchedulerEventResourceAssignmentWriter()">
+                                    <option [ngValue]="null">Select Contact</option>
+                                    <option *ngFor="let contact of contacts$ | async" [ngValue]="contact.id">{{contact.firstName}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('approvedDateTime')">
+                                <label for="EventResourceAssignment-approvedDateTime" id="label-EventResourceAssignment-approvedDateTime">Approved Date Time</label>
+                                <input type="datetime-local" id="EventResourceAssignment-approvedDateTime" formControlName="approvedDateTime" placeholder="Enter Approved Date Time" class="form-control event-resource-assignment-input" [disabled]="!userIsSchedulerEventResourceAssignmentWriter()" aria-labelledby="label-approvedDateTime" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('reimbursementAmount')">
+                                <label for="EventResourceAssignment-reimbursementAmount" id="label-EventResourceAssignment-reimbursementAmount">Reimbursement Amount</label>
+                                <input type="number" id="EventResourceAssignment-reimbursementAmount" formControlName="reimbursementAmount" placeholder="Enter Reimbursement Amount" class="form-control event-resource-assignment-input" [disabled]="!userIsSchedulerEventResourceAssignmentWriter()" aria-labelledby="label-reimbursementAmount" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('chargeTypeId')">
+                                <label for="EventResourceAssignment-chargeTypeId" id="label-EventResourceAssignment-chargeTypeId">Charge Type</label>
+                                <select id="EventResourceAssignment-chargeTypeId" formControlName="chargeTypeId" class="form-select event-resource-assignment-select" [disabled]="!userIsSchedulerEventResourceAssignmentWriter()">
+                                    <option [ngValue]="null">Select Charge Type</option>
+                                    <option *ngFor="let chargeType of chargeTypes$ | async" [ngValue]="chargeType.id">{{chargeType.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('reimbursementRequested')">
+                                <input type="checkbox" id="EventResourceAssignment-reimbursementRequested" formControlName="reimbursementRequested" class="form-check-input" [disabled]="!userIsSchedulerEventResourceAssignmentWriter()" />
+                                <label for="EventResourceAssignment-reimbursementRequested" class="form-check-label" id="label-EventResourceAssignment-reimbursementRequested"><span class="text-danger">*</span>Reimbursement Requested</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('volunteerNotes')">
+                                <label for="EventResourceAssignment-volunteerNotes" id="label-EventResourceAssignment-volunteerNotes">Volunteer Notes</label>
+                                <textarea id="EventResourceAssignment-volunteerNotes" formControlName="volunteerNotes" placeholder="Enter Volunteer Notes" class="form-control event-resource-assignment-input" [disabled]="!userIsSchedulerEventResourceAssignmentWriter()"></textarea>
                             </div>
                             <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
                                 <label for="EventResourceAssignment-versionNumber" id="label-EventResourceAssignment-versionNumber"><span class="text-danger">*</span>Version Number</label>

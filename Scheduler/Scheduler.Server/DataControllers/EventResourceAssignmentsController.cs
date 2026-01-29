@@ -70,6 +70,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			int? officeId = null,
 			int? resourceId = null,
 			int? crewId = null,
+			int? volunteerGroupId = null,
 			int? assignmentRoleId = null,
 			int? assignmentStatusId = null,
 			DateTime? assignmentStartDateTime = null,
@@ -82,6 +83,15 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			DateTime? actualStartDateTime = null,
 			DateTime? actualEndDateTime = null,
 			string actualNotes = null,
+			bool? isVolunteer = null,
+			float? reportedVolunteerHours = null,
+			float? approvedVolunteerHours = null,
+			int? hoursApprovedByContactId = null,
+			DateTime? approvedDateTime = null,
+			decimal? reimbursementAmount = null,
+			int? chargeTypeId = null,
+			bool? reimbursementRequested = null,
+			string volunteerNotes = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -154,6 +164,11 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				actualEndDateTime = actualEndDateTime.Value.ToUniversalTime();
 			}
 
+			if (approvedDateTime.HasValue == true && approvedDateTime.Value.Kind != DateTimeKind.Utc)
+			{
+				approvedDateTime = approvedDateTime.Value.ToUniversalTime();
+			}
+
 			IQueryable<Database.EventResourceAssignment> query = (from era in _context.EventResourceAssignments select era);
 
 			query = query.Where(x => x.tenantGuid == userTenantGuid);
@@ -173,6 +188,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (crewId.HasValue == true)
 			{
 				query = query.Where(era => era.crewId == crewId.Value);
+			}
+			if (volunteerGroupId.HasValue == true)
+			{
+				query = query.Where(era => era.volunteerGroupId == volunteerGroupId.Value);
 			}
 			if (assignmentRoleId.HasValue == true)
 			{
@@ -222,6 +241,42 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(era => era.actualNotes == actualNotes);
 			}
+			if (isVolunteer.HasValue == true)
+			{
+				query = query.Where(era => era.isVolunteer == isVolunteer.Value);
+			}
+			if (reportedVolunteerHours.HasValue == true)
+			{
+				query = query.Where(era => era.reportedVolunteerHours == reportedVolunteerHours.Value);
+			}
+			if (approvedVolunteerHours.HasValue == true)
+			{
+				query = query.Where(era => era.approvedVolunteerHours == approvedVolunteerHours.Value);
+			}
+			if (hoursApprovedByContactId.HasValue == true)
+			{
+				query = query.Where(era => era.hoursApprovedByContactId == hoursApprovedByContactId.Value);
+			}
+			if (approvedDateTime.HasValue == true)
+			{
+				query = query.Where(era => era.approvedDateTime == approvedDateTime.Value);
+			}
+			if (reimbursementAmount.HasValue == true)
+			{
+				query = query.Where(era => era.reimbursementAmount == reimbursementAmount.Value);
+			}
+			if (chargeTypeId.HasValue == true)
+			{
+				query = query.Where(era => era.chargeTypeId == chargeTypeId.Value);
+			}
+			if (reimbursementRequested.HasValue == true)
+			{
+				query = query.Where(era => era.reimbursementRequested == reimbursementRequested.Value);
+			}
+			if (string.IsNullOrEmpty(volunteerNotes) == false)
+			{
+				query = query.Where(era => era.volunteerNotes == volunteerNotes);
+			}
 			if (versionNumber.HasValue == true)
 			{
 				query = query.Where(era => era.versionNumber == versionNumber.Value);
@@ -267,10 +322,13 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Include(x => x.assignmentRole);
 				query = query.Include(x => x.assignmentStatus);
+				query = query.Include(x => x.chargeType);
 				query = query.Include(x => x.crew);
+				query = query.Include(x => x.hoursApprovedByContact);
 				query = query.Include(x => x.office);
 				query = query.Include(x => x.resource);
 				query = query.Include(x => x.scheduledEvent);
+				query = query.Include(x => x.volunteerGroup);
 				query = query.AsSplitQuery();
 			}
 
@@ -286,18 +344,40 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       x.notes.Contains(anyStringContains)
 			       || x.startLocation.Contains(anyStringContains)
 			       || x.actualNotes.Contains(anyStringContains)
+			       || x.volunteerNotes.Contains(anyStringContains)
 			       || (includeRelations == true && x.assignmentRole.name.Contains(anyStringContains))
 			       || (includeRelations == true && x.assignmentRole.description.Contains(anyStringContains))
 			       || (includeRelations == true && x.assignmentRole.color.Contains(anyStringContains))
 			       || (includeRelations == true && x.assignmentStatus.name.Contains(anyStringContains))
 			       || (includeRelations == true && x.assignmentStatus.description.Contains(anyStringContains))
 			       || (includeRelations == true && x.assignmentStatus.color.Contains(anyStringContains))
+			       || (includeRelations == true && x.chargeType.name.Contains(anyStringContains))
+			       || (includeRelations == true && x.chargeType.description.Contains(anyStringContains))
+			       || (includeRelations == true && x.chargeType.externalId.Contains(anyStringContains))
+			       || (includeRelations == true && x.chargeType.defaultDescription.Contains(anyStringContains))
+			       || (includeRelations == true && x.chargeType.color.Contains(anyStringContains))
 			       || (includeRelations == true && x.crew.name.Contains(anyStringContains))
 			       || (includeRelations == true && x.crew.description.Contains(anyStringContains))
 			       || (includeRelations == true && x.crew.notes.Contains(anyStringContains))
 			       || (includeRelations == true && x.crew.color.Contains(anyStringContains))
 			       || (includeRelations == true && x.crew.avatarFileName.Contains(anyStringContains))
 			       || (includeRelations == true && x.crew.avatarMimeType.Contains(anyStringContains))
+			       || (includeRelations == true && x.hoursApprovedByContact.firstName.Contains(anyStringContains))
+			       || (includeRelations == true && x.hoursApprovedByContact.middleName.Contains(anyStringContains))
+			       || (includeRelations == true && x.hoursApprovedByContact.lastName.Contains(anyStringContains))
+			       || (includeRelations == true && x.hoursApprovedByContact.title.Contains(anyStringContains))
+			       || (includeRelations == true && x.hoursApprovedByContact.company.Contains(anyStringContains))
+			       || (includeRelations == true && x.hoursApprovedByContact.email.Contains(anyStringContains))
+			       || (includeRelations == true && x.hoursApprovedByContact.phone.Contains(anyStringContains))
+			       || (includeRelations == true && x.hoursApprovedByContact.mobile.Contains(anyStringContains))
+			       || (includeRelations == true && x.hoursApprovedByContact.position.Contains(anyStringContains))
+			       || (includeRelations == true && x.hoursApprovedByContact.webSite.Contains(anyStringContains))
+			       || (includeRelations == true && x.hoursApprovedByContact.notes.Contains(anyStringContains))
+			       || (includeRelations == true && x.hoursApprovedByContact.attributes.Contains(anyStringContains))
+			       || (includeRelations == true && x.hoursApprovedByContact.color.Contains(anyStringContains))
+			       || (includeRelations == true && x.hoursApprovedByContact.avatarFileName.Contains(anyStringContains))
+			       || (includeRelations == true && x.hoursApprovedByContact.avatarMimeType.Contains(anyStringContains))
+			       || (includeRelations == true && x.hoursApprovedByContact.externalId.Contains(anyStringContains))
 			       || (includeRelations == true && x.office.name.Contains(anyStringContains))
 			       || (includeRelations == true && x.office.description.Contains(anyStringContains))
 			       || (includeRelations == true && x.office.addressLine1.Contains(anyStringContains))
@@ -327,6 +407,13 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || (includeRelations == true && x.scheduledEvent.color.Contains(anyStringContains))
 			       || (includeRelations == true && x.scheduledEvent.externalId.Contains(anyStringContains))
 			       || (includeRelations == true && x.scheduledEvent.attributes.Contains(anyStringContains))
+			       || (includeRelations == true && x.volunteerGroup.name.Contains(anyStringContains))
+			       || (includeRelations == true && x.volunteerGroup.description.Contains(anyStringContains))
+			       || (includeRelations == true && x.volunteerGroup.purpose.Contains(anyStringContains))
+			       || (includeRelations == true && x.volunteerGroup.color.Contains(anyStringContains))
+			       || (includeRelations == true && x.volunteerGroup.notes.Contains(anyStringContains))
+			       || (includeRelations == true && x.volunteerGroup.avatarFileName.Contains(anyStringContains))
+			       || (includeRelations == true && x.volunteerGroup.avatarMimeType.Contains(anyStringContains))
 			   );
 			}
 
@@ -362,17 +449,18 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         /// 
         /// This returns a row count of EventResourceAssignments filtered by the parameters provided.  Its query is similar to the GetEventResourceAssignments method, but it only returns the count of rows that would be returned.
         ///
-        /// The rate limit is 2 per second per user.
+        /// The rate limit is 10 per second per user.
         /// 
         /// </summary>
 		[HttpGet]
-		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/EventResourceAssignments/RowCount")]
 		public async Task<IActionResult> GetRowCount(
 			int? scheduledEventId = null,
 			int? officeId = null,
 			int? resourceId = null,
 			int? crewId = null,
+			int? volunteerGroupId = null,
 			int? assignmentRoleId = null,
 			int? assignmentStatusId = null,
 			DateTime? assignmentStartDateTime = null,
@@ -385,6 +473,15 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			DateTime? actualStartDateTime = null,
 			DateTime? actualEndDateTime = null,
 			string actualNotes = null,
+			bool? isVolunteer = null,
+			float? reportedVolunteerHours = null,
+			float? approvedVolunteerHours = null,
+			int? hoursApprovedByContactId = null,
+			DateTime? approvedDateTime = null,
+			decimal? reimbursementAmount = null,
+			int? chargeTypeId = null,
+			bool? reimbursementRequested = null,
+			string volunteerNotes = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -439,6 +536,11 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				actualEndDateTime = actualEndDateTime.Value.ToUniversalTime();
 			}
 
+			if (approvedDateTime.HasValue == true && approvedDateTime.Value.Kind != DateTimeKind.Utc)
+			{
+				approvedDateTime = approvedDateTime.Value.ToUniversalTime();
+			}
+
 			IQueryable<Database.EventResourceAssignment> query = (from era in _context.EventResourceAssignments select era);
 			query = query.Where(x => x.tenantGuid == userTenantGuid);
 			if (scheduledEventId.HasValue == true)
@@ -456,6 +558,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (crewId.HasValue == true)
 			{
 				query = query.Where(era => era.crewId == crewId.Value);
+			}
+			if (volunteerGroupId.HasValue == true)
+			{
+				query = query.Where(era => era.volunteerGroupId == volunteerGroupId.Value);
 			}
 			if (assignmentRoleId.HasValue == true)
 			{
@@ -505,6 +611,42 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(era => era.actualNotes == actualNotes);
 			}
+			if (isVolunteer.HasValue == true)
+			{
+				query = query.Where(era => era.isVolunteer == isVolunteer.Value);
+			}
+			if (reportedVolunteerHours.HasValue == true)
+			{
+				query = query.Where(era => era.reportedVolunteerHours == reportedVolunteerHours.Value);
+			}
+			if (approvedVolunteerHours.HasValue == true)
+			{
+				query = query.Where(era => era.approvedVolunteerHours == approvedVolunteerHours.Value);
+			}
+			if (hoursApprovedByContactId.HasValue == true)
+			{
+				query = query.Where(era => era.hoursApprovedByContactId == hoursApprovedByContactId.Value);
+			}
+			if (approvedDateTime.HasValue == true)
+			{
+				query = query.Where(era => era.approvedDateTime == approvedDateTime.Value);
+			}
+			if (reimbursementAmount.HasValue == true)
+			{
+				query = query.Where(era => era.reimbursementAmount == reimbursementAmount.Value);
+			}
+			if (chargeTypeId.HasValue == true)
+			{
+				query = query.Where(era => era.chargeTypeId == chargeTypeId.Value);
+			}
+			if (reimbursementRequested.HasValue == true)
+			{
+				query = query.Where(era => era.reimbursementRequested == reimbursementRequested.Value);
+			}
+			if (volunteerNotes != null)
+			{
+				query = query.Where(era => era.volunteerNotes == volunteerNotes);
+			}
 			if (versionNumber.HasValue == true)
 			{
 				query = query.Where(era => era.versionNumber == versionNumber.Value);
@@ -549,18 +691,40 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       x.notes.Contains(anyStringContains)
 			       || x.startLocation.Contains(anyStringContains)
 			       || x.actualNotes.Contains(anyStringContains)
+			       || x.volunteerNotes.Contains(anyStringContains)
 			       || x.assignmentRole.name.Contains(anyStringContains)
 			       || x.assignmentRole.description.Contains(anyStringContains)
 			       || x.assignmentRole.color.Contains(anyStringContains)
 			       || x.assignmentStatus.name.Contains(anyStringContains)
 			       || x.assignmentStatus.description.Contains(anyStringContains)
 			       || x.assignmentStatus.color.Contains(anyStringContains)
+			       || x.chargeType.name.Contains(anyStringContains)
+			       || x.chargeType.description.Contains(anyStringContains)
+			       || x.chargeType.externalId.Contains(anyStringContains)
+			       || x.chargeType.defaultDescription.Contains(anyStringContains)
+			       || x.chargeType.color.Contains(anyStringContains)
 			       || x.crew.name.Contains(anyStringContains)
 			       || x.crew.description.Contains(anyStringContains)
 			       || x.crew.notes.Contains(anyStringContains)
 			       || x.crew.color.Contains(anyStringContains)
 			       || x.crew.avatarFileName.Contains(anyStringContains)
 			       || x.crew.avatarMimeType.Contains(anyStringContains)
+			       || x.hoursApprovedByContact.firstName.Contains(anyStringContains)
+			       || x.hoursApprovedByContact.middleName.Contains(anyStringContains)
+			       || x.hoursApprovedByContact.lastName.Contains(anyStringContains)
+			       || x.hoursApprovedByContact.title.Contains(anyStringContains)
+			       || x.hoursApprovedByContact.company.Contains(anyStringContains)
+			       || x.hoursApprovedByContact.email.Contains(anyStringContains)
+			       || x.hoursApprovedByContact.phone.Contains(anyStringContains)
+			       || x.hoursApprovedByContact.mobile.Contains(anyStringContains)
+			       || x.hoursApprovedByContact.position.Contains(anyStringContains)
+			       || x.hoursApprovedByContact.webSite.Contains(anyStringContains)
+			       || x.hoursApprovedByContact.notes.Contains(anyStringContains)
+			       || x.hoursApprovedByContact.attributes.Contains(anyStringContains)
+			       || x.hoursApprovedByContact.color.Contains(anyStringContains)
+			       || x.hoursApprovedByContact.avatarFileName.Contains(anyStringContains)
+			       || x.hoursApprovedByContact.avatarMimeType.Contains(anyStringContains)
+			       || x.hoursApprovedByContact.externalId.Contains(anyStringContains)
 			       || x.office.name.Contains(anyStringContains)
 			       || x.office.description.Contains(anyStringContains)
 			       || x.office.addressLine1.Contains(anyStringContains)
@@ -590,6 +754,13 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.scheduledEvent.color.Contains(anyStringContains)
 			       || x.scheduledEvent.externalId.Contains(anyStringContains)
 			       || x.scheduledEvent.attributes.Contains(anyStringContains)
+			       || x.volunteerGroup.name.Contains(anyStringContains)
+			       || x.volunteerGroup.description.Contains(anyStringContains)
+			       || x.volunteerGroup.purpose.Contains(anyStringContains)
+			       || x.volunteerGroup.color.Contains(anyStringContains)
+			       || x.volunteerGroup.notes.Contains(anyStringContains)
+			       || x.volunteerGroup.avatarFileName.Contains(anyStringContains)
+			       || x.volunteerGroup.avatarMimeType.Contains(anyStringContains)
 			   );
 			}
 
@@ -654,10 +825,13 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				{
 					query = query.Include(x => x.assignmentRole);
 					query = query.Include(x => x.assignmentStatus);
+					query = query.Include(x => x.chargeType);
 					query = query.Include(x => x.crew);
+					query = query.Include(x => x.hoursApprovedByContact);
 					query = query.Include(x => x.office);
 					query = query.Include(x => x.resource);
 					query = query.Include(x => x.scheduledEvent);
+					query = query.Include(x => x.volunteerGroup);
 					query = query.AsSplitQuery();
 				}
 
@@ -853,6 +1027,11 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					eventResourceAssignment.actualEndDateTime = eventResourceAssignment.actualEndDateTime.Value.ToUniversalTime();
 				}
 
+				if (eventResourceAssignment.approvedDateTime.HasValue == true && eventResourceAssignment.approvedDateTime.Value.Kind != DateTimeKind.Utc)
+				{
+					eventResourceAssignment.approvedDateTime = eventResourceAssignment.approvedDateTime.Value.ToUniversalTime();
+				}
+
 				try
 				{
 				    EntityEntry<Database.EventResourceAssignment> attached = _context.Entry(existing);
@@ -985,6 +1164,11 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					eventResourceAssignment.actualEndDateTime = eventResourceAssignment.actualEndDateTime.Value.ToUniversalTime();
 				}
 
+				if (eventResourceAssignment.approvedDateTime.HasValue == true && eventResourceAssignment.approvedDateTime.Value.Kind != DateTimeKind.Utc)
+				{
+					eventResourceAssignment.approvedDateTime = eventResourceAssignment.approvedDateTime.Value.ToUniversalTime();
+				}
+
 				eventResourceAssignment.objectGuid = Guid.NewGuid();
 				eventResourceAssignment.versionNumber = 1;
 
@@ -1009,10 +1193,13 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					eventResourceAssignment.EventResourceAssignmentChangeHistories = null;
 					eventResourceAssignment.assignmentRole = null;
 					eventResourceAssignment.assignmentStatus = null;
+					eventResourceAssignment.chargeType = null;
 					eventResourceAssignment.crew = null;
+					eventResourceAssignment.hoursApprovedByContact = null;
 					eventResourceAssignment.office = null;
 					eventResourceAssignment.resource = null;
 					eventResourceAssignment.scheduledEvent = null;
+					eventResourceAssignment.volunteerGroup = null;
 
 
 				    EventResourceAssignmentChangeHistory eventResourceAssignmentChangeHistory = new EventResourceAssignmentChangeHistory();
@@ -1131,10 +1318,13 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				cloneOfExisting.EventResourceAssignmentChangeHistories = null;
 				cloneOfExisting.assignmentRole = null;
 				cloneOfExisting.assignmentStatus = null;
+				cloneOfExisting.chargeType = null;
 				cloneOfExisting.crew = null;
+				cloneOfExisting.hoursApprovedByContact = null;
 				cloneOfExisting.office = null;
 				cloneOfExisting.resource = null;
 				cloneOfExisting.scheduledEvent = null;
+				cloneOfExisting.volunteerGroup = null;
 
 				if (versionNumber >= eventResourceAssignment.versionNumber)
 				{
@@ -1167,6 +1357,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    eventResourceAssignment.officeId = oldEventResourceAssignment.officeId;
 				    eventResourceAssignment.resourceId = oldEventResourceAssignment.resourceId;
 				    eventResourceAssignment.crewId = oldEventResourceAssignment.crewId;
+				    eventResourceAssignment.volunteerGroupId = oldEventResourceAssignment.volunteerGroupId;
 				    eventResourceAssignment.assignmentRoleId = oldEventResourceAssignment.assignmentRoleId;
 				    eventResourceAssignment.assignmentStatusId = oldEventResourceAssignment.assignmentStatusId;
 				    eventResourceAssignment.assignmentStartDateTime = oldEventResourceAssignment.assignmentStartDateTime;
@@ -1179,6 +1370,15 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    eventResourceAssignment.actualStartDateTime = oldEventResourceAssignment.actualStartDateTime;
 				    eventResourceAssignment.actualEndDateTime = oldEventResourceAssignment.actualEndDateTime;
 				    eventResourceAssignment.actualNotes = oldEventResourceAssignment.actualNotes;
+				    eventResourceAssignment.isVolunteer = oldEventResourceAssignment.isVolunteer;
+				    eventResourceAssignment.reportedVolunteerHours = oldEventResourceAssignment.reportedVolunteerHours;
+				    eventResourceAssignment.approvedVolunteerHours = oldEventResourceAssignment.approvedVolunteerHours;
+				    eventResourceAssignment.hoursApprovedByContactId = oldEventResourceAssignment.hoursApprovedByContactId;
+				    eventResourceAssignment.approvedDateTime = oldEventResourceAssignment.approvedDateTime;
+				    eventResourceAssignment.reimbursementAmount = oldEventResourceAssignment.reimbursementAmount;
+				    eventResourceAssignment.chargeTypeId = oldEventResourceAssignment.chargeTypeId;
+				    eventResourceAssignment.reimbursementRequested = oldEventResourceAssignment.reimbursementRequested;
+				    eventResourceAssignment.volunteerNotes = oldEventResourceAssignment.volunteerNotes;
 				    eventResourceAssignment.objectGuid = oldEventResourceAssignment.objectGuid;
 				    eventResourceAssignment.active = oldEventResourceAssignment.active;
 				    eventResourceAssignment.deleted = oldEventResourceAssignment.deleted;
@@ -1603,6 +1803,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			int? officeId = null,
 			int? resourceId = null,
 			int? crewId = null,
+			int? volunteerGroupId = null,
 			int? assignmentRoleId = null,
 			int? assignmentStatusId = null,
 			DateTime? assignmentStartDateTime = null,
@@ -1615,6 +1816,15 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			DateTime? actualStartDateTime = null,
 			DateTime? actualEndDateTime = null,
 			string actualNotes = null,
+			bool? isVolunteer = null,
+			float? reportedVolunteerHours = null,
+			float? approvedVolunteerHours = null,
+			int? hoursApprovedByContactId = null,
+			DateTime? approvedDateTime = null,
+			decimal? reimbursementAmount = null,
+			int? chargeTypeId = null,
+			bool? reimbursementRequested = null,
+			string volunteerNotes = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -1684,6 +1894,11 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				actualEndDateTime = actualEndDateTime.Value.ToUniversalTime();
 			}
 
+			if (approvedDateTime.HasValue == true && approvedDateTime.Value.Kind != DateTimeKind.Utc)
+			{
+				approvedDateTime = approvedDateTime.Value.ToUniversalTime();
+			}
+
 			IQueryable<Database.EventResourceAssignment> query = (from era in _context.EventResourceAssignments select era);
 
 			query = query.Where(x => x.tenantGuid == userTenantGuid);
@@ -1703,6 +1918,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (crewId.HasValue == true)
 			{
 				query = query.Where(era => era.crewId == crewId.Value);
+			}
+			if (volunteerGroupId.HasValue == true)
+			{
+				query = query.Where(era => era.volunteerGroupId == volunteerGroupId.Value);
 			}
 			if (assignmentRoleId.HasValue == true)
 			{
@@ -1752,6 +1971,42 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(era => era.actualNotes == actualNotes);
 			}
+			if (isVolunteer.HasValue == true)
+			{
+				query = query.Where(era => era.isVolunteer == isVolunteer.Value);
+			}
+			if (reportedVolunteerHours.HasValue == true)
+			{
+				query = query.Where(era => era.reportedVolunteerHours == reportedVolunteerHours.Value);
+			}
+			if (approvedVolunteerHours.HasValue == true)
+			{
+				query = query.Where(era => era.approvedVolunteerHours == approvedVolunteerHours.Value);
+			}
+			if (hoursApprovedByContactId.HasValue == true)
+			{
+				query = query.Where(era => era.hoursApprovedByContactId == hoursApprovedByContactId.Value);
+			}
+			if (approvedDateTime.HasValue == true)
+			{
+				query = query.Where(era => era.approvedDateTime == approvedDateTime.Value);
+			}
+			if (reimbursementAmount.HasValue == true)
+			{
+				query = query.Where(era => era.reimbursementAmount == reimbursementAmount.Value);
+			}
+			if (chargeTypeId.HasValue == true)
+			{
+				query = query.Where(era => era.chargeTypeId == chargeTypeId.Value);
+			}
+			if (reimbursementRequested.HasValue == true)
+			{
+				query = query.Where(era => era.reimbursementRequested == reimbursementRequested.Value);
+			}
+			if (string.IsNullOrEmpty(volunteerNotes) == false)
+			{
+				query = query.Where(era => era.volunteerNotes == volunteerNotes);
+			}
 			if (versionNumber.HasValue == true)
 			{
 				query = query.Where(era => era.versionNumber == versionNumber.Value);
@@ -1797,18 +2052,40 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       x.notes.Contains(anyStringContains)
 			       || x.startLocation.Contains(anyStringContains)
 			       || x.actualNotes.Contains(anyStringContains)
+			       || x.volunteerNotes.Contains(anyStringContains)
 			       || x.assignmentRole.name.Contains(anyStringContains)
 			       || x.assignmentRole.description.Contains(anyStringContains)
 			       || x.assignmentRole.color.Contains(anyStringContains)
 			       || x.assignmentStatus.name.Contains(anyStringContains)
 			       || x.assignmentStatus.description.Contains(anyStringContains)
 			       || x.assignmentStatus.color.Contains(anyStringContains)
+			       || x.chargeType.name.Contains(anyStringContains)
+			       || x.chargeType.description.Contains(anyStringContains)
+			       || x.chargeType.externalId.Contains(anyStringContains)
+			       || x.chargeType.defaultDescription.Contains(anyStringContains)
+			       || x.chargeType.color.Contains(anyStringContains)
 			       || x.crew.name.Contains(anyStringContains)
 			       || x.crew.description.Contains(anyStringContains)
 			       || x.crew.notes.Contains(anyStringContains)
 			       || x.crew.color.Contains(anyStringContains)
 			       || x.crew.avatarFileName.Contains(anyStringContains)
 			       || x.crew.avatarMimeType.Contains(anyStringContains)
+			       || x.hoursApprovedByContact.firstName.Contains(anyStringContains)
+			       || x.hoursApprovedByContact.middleName.Contains(anyStringContains)
+			       || x.hoursApprovedByContact.lastName.Contains(anyStringContains)
+			       || x.hoursApprovedByContact.title.Contains(anyStringContains)
+			       || x.hoursApprovedByContact.company.Contains(anyStringContains)
+			       || x.hoursApprovedByContact.email.Contains(anyStringContains)
+			       || x.hoursApprovedByContact.phone.Contains(anyStringContains)
+			       || x.hoursApprovedByContact.mobile.Contains(anyStringContains)
+			       || x.hoursApprovedByContact.position.Contains(anyStringContains)
+			       || x.hoursApprovedByContact.webSite.Contains(anyStringContains)
+			       || x.hoursApprovedByContact.notes.Contains(anyStringContains)
+			       || x.hoursApprovedByContact.attributes.Contains(anyStringContains)
+			       || x.hoursApprovedByContact.color.Contains(anyStringContains)
+			       || x.hoursApprovedByContact.avatarFileName.Contains(anyStringContains)
+			       || x.hoursApprovedByContact.avatarMimeType.Contains(anyStringContains)
+			       || x.hoursApprovedByContact.externalId.Contains(anyStringContains)
 			       || x.office.name.Contains(anyStringContains)
 			       || x.office.description.Contains(anyStringContains)
 			       || x.office.addressLine1.Contains(anyStringContains)
@@ -1838,6 +2115,13 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.scheduledEvent.color.Contains(anyStringContains)
 			       || x.scheduledEvent.externalId.Contains(anyStringContains)
 			       || x.scheduledEvent.attributes.Contains(anyStringContains)
+			       || x.volunteerGroup.name.Contains(anyStringContains)
+			       || x.volunteerGroup.description.Contains(anyStringContains)
+			       || x.volunteerGroup.purpose.Contains(anyStringContains)
+			       || x.volunteerGroup.color.Contains(anyStringContains)
+			       || x.volunteerGroup.notes.Contains(anyStringContains)
+			       || x.volunteerGroup.avatarFileName.Contains(anyStringContains)
+			       || x.volunteerGroup.avatarMimeType.Contains(anyStringContains)
 			   );
 			}
 

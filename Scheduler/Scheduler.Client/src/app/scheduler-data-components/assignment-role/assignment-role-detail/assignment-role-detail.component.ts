@@ -27,6 +27,7 @@ import { IconService } from '../../../scheduler-data-services/icon.service';
 import { AssignmentRoleQualificationRequirementService } from '../../../scheduler-data-services/assignment-role-qualification-requirement.service';
 import { RateSheetService } from '../../../scheduler-data-services/rate-sheet.service';
 import { CrewMemberService } from '../../../scheduler-data-services/crew-member.service';
+import { VolunteerGroupMemberService } from '../../../scheduler-data-services/volunteer-group-member.service';
 import { EventResourceAssignmentService } from '../../../scheduler-data-services/event-resource-assignment.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
@@ -98,6 +99,7 @@ export class AssignmentRoleDetailComponent implements OnInit, CanComponentDeacti
   public assignmentRoleQualificationRequirements$ = this.assignmentRoleQualificationRequirementService.GetAssignmentRoleQualificationRequirementList();
   public rateSheets$ = this.rateSheetService.GetRateSheetList();
   public crewMembers$ = this.crewMemberService.GetCrewMemberList();
+  public volunteerGroupMembers$ = this.volunteerGroupMemberService.GetVolunteerGroupMemberList();
   public eventResourceAssignments$ = this.eventResourceAssignmentService.GetEventResourceAssignmentList();
 
   private destroy$ = new Subject<void>();
@@ -108,6 +110,7 @@ export class AssignmentRoleDetailComponent implements OnInit, CanComponentDeacti
     public assignmentRoleQualificationRequirementService: AssignmentRoleQualificationRequirementService,
     public rateSheetService: RateSheetService,
     public crewMemberService: CrewMemberService,
+    public volunteerGroupMemberService: VolunteerGroupMemberService,
     public eventResourceAssignmentService: EventResourceAssignmentService,
     private authService: AuthService,
     private route: ActivatedRoute,

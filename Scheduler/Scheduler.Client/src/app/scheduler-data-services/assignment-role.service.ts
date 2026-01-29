@@ -20,6 +20,7 @@ import { IconData } from './icon.service';
 import { AssignmentRoleQualificationRequirementService, AssignmentRoleQualificationRequirementData } from './assignment-role-qualification-requirement.service';
 import { RateSheetService, RateSheetData } from './rate-sheet.service';
 import { CrewMemberService, CrewMemberData } from './crew-member.service';
+import { VolunteerGroupMemberService, VolunteerGroupMemberData } from './volunteer-group-member.service';
 import { EventResourceAssignmentService, EventResourceAssignmentData } from './event-resource-assignment.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
@@ -134,6 +135,11 @@ export class AssignmentRoleData {
     private _crewMembersSubject = new BehaviorSubject<CrewMemberData[] | null>(null);
 
                 
+    private _volunteerGroupMembers: VolunteerGroupMemberData[] | null = null;
+    private _volunteerGroupMembersPromise: Promise<VolunteerGroupMemberData[]> | null  = null;
+    private _volunteerGroupMembersSubject = new BehaviorSubject<VolunteerGroupMemberData[] | null>(null);
+
+                
     private _eventResourceAssignments: EventResourceAssignmentData[] | null = null;
     private _eventResourceAssignmentsPromise: Promise<EventResourceAssignmentData[]> | null  = null;
     private _eventResourceAssignmentsSubject = new BehaviorSubject<EventResourceAssignmentData[] | null>(null);
@@ -197,6 +203,25 @@ export class AssignmentRoleData {
 
   
     public CrewMembersCount$ = CrewMemberService.Instance.GetCrewMembersRowCount({assignmentRoleId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    public VolunteerGroupMembers$ = this._volunteerGroupMembersSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._volunteerGroupMembers === null && this._volunteerGroupMembersPromise === null) {
+            this.loadVolunteerGroupMembers(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public VolunteerGroupMembersCount$ = VolunteerGroupMemberService.Instance.GetVolunteerGroupMembersRowCount({assignmentRoleId: this.id,
       active: true,
       deleted: false
     });
@@ -271,6 +296,10 @@ export class AssignmentRoleData {
      this._crewMembers = null;
      this._crewMembersPromise = null;
      this._crewMembersSubject.next(null);
+
+     this._volunteerGroupMembers = null;
+     this._volunteerGroupMembersPromise = null;
+     this._volunteerGroupMembersSubject.next(null);
 
      this._eventResourceAssignments = null;
      this._eventResourceAssignmentsPromise = null;
@@ -479,6 +508,71 @@ export class AssignmentRoleData {
 
     /**
      *
+     * Gets the VolunteerGroupMembers for this AssignmentRole.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.assignmentRole.VolunteerGroupMembers.then(assignmentRoles => { ... })
+     *   or
+     *   await this.assignmentRole.assignmentRoles
+     *
+    */
+    public get VolunteerGroupMembers(): Promise<VolunteerGroupMemberData[]> {
+        if (this._volunteerGroupMembers !== null) {
+            return Promise.resolve(this._volunteerGroupMembers);
+        }
+
+        if (this._volunteerGroupMembersPromise !== null) {
+            return this._volunteerGroupMembersPromise;
+        }
+
+        // Start the load
+        this.loadVolunteerGroupMembers();
+
+        return this._volunteerGroupMembersPromise!;
+    }
+
+
+
+    private loadVolunteerGroupMembers(): void {
+
+        this._volunteerGroupMembersPromise = lastValueFrom(
+            AssignmentRoleService.Instance.GetVolunteerGroupMembersForAssignmentRole(this.id)
+        )
+        .then(VolunteerGroupMembers => {
+            this._volunteerGroupMembers = VolunteerGroupMembers ?? [];
+            this._volunteerGroupMembersSubject.next(this._volunteerGroupMembers);
+            return this._volunteerGroupMembers;
+         })
+        .catch(err => {
+            this._volunteerGroupMembers = [];
+            this._volunteerGroupMembersSubject.next(this._volunteerGroupMembers);
+            throw err;
+        })
+        .finally(() => {
+            this._volunteerGroupMembersPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached VolunteerGroupMember. Call after mutations to force refresh.
+     */
+    public ClearVolunteerGroupMembersCache(): void {
+        this._volunteerGroupMembers = null;
+        this._volunteerGroupMembersPromise = null;
+        this._volunteerGroupMembersSubject.next(this._volunteerGroupMembers);      // Emit to observable
+    }
+
+    public get HasVolunteerGroupMembers(): Promise<boolean> {
+        return this.VolunteerGroupMembers.then(volunteerGroupMembers => volunteerGroupMembers.length > 0);
+    }
+
+
+    /**
+     *
      * Gets the EventResourceAssignments for this AssignmentRole.
      *
      * If already loaded, returns cached array.
@@ -580,6 +674,7 @@ export class AssignmentRoleService extends SecureEndpointBase {
         private assignmentRoleQualificationRequirementService: AssignmentRoleQualificationRequirementService,
         private rateSheetService: RateSheetService,
         private crewMemberService: CrewMemberService,
+        private volunteerGroupMemberService: VolunteerGroupMemberService,
         private eventResourceAssignmentService: EventResourceAssignmentService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
@@ -971,6 +1066,16 @@ export class AssignmentRoleService extends SecureEndpointBase {
     }
 
 
+    public GetVolunteerGroupMembersForAssignmentRole(assignmentRoleId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<VolunteerGroupMemberData[]> {
+        return this.volunteerGroupMemberService.GetVolunteerGroupMemberList({
+            assignmentRoleId: assignmentRoleId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
     public GetEventResourceAssignmentsForAssignmentRole(assignmentRoleId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<EventResourceAssignmentData[]> {
         return this.eventResourceAssignmentService.GetEventResourceAssignmentList({
             assignmentRoleId: assignmentRoleId,
@@ -1027,6 +1132,10 @@ export class AssignmentRoleService extends SecureEndpointBase {
     (revived as any)._crewMembers = null;
     (revived as any)._crewMembersPromise = null;
     (revived as any)._crewMembersSubject = new BehaviorSubject<CrewMemberData[] | null>(null);
+
+    (revived as any)._volunteerGroupMembers = null;
+    (revived as any)._volunteerGroupMembersPromise = null;
+    (revived as any)._volunteerGroupMembersSubject = new BehaviorSubject<VolunteerGroupMemberData[] | null>(null);
 
     (revived as any)._eventResourceAssignments = null;
     (revived as any)._eventResourceAssignmentsPromise = null;
@@ -1086,6 +1195,22 @@ export class AssignmentRoleService extends SecureEndpointBase {
       );
 
     (revived as any).CrewMembersCount$ = CrewMemberService.Instance.GetCrewMembersRowCount({assignmentRoleId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).VolunteerGroupMembers$ = (revived as any)._volunteerGroupMembersSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._volunteerGroupMembers === null && (revived as any)._volunteerGroupMembersPromise === null) {
+                (revived as any).loadVolunteerGroupMembers();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).VolunteerGroupMembersCount$ = VolunteerGroupMemberService.Instance.GetVolunteerGroupMembersRowCount({assignmentRoleId: (revived as any).id,
       active: true,
       deleted: false
     });

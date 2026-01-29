@@ -33,6 +33,7 @@ import { PledgeService } from '../../../scheduler-data-services/pledge.service';
 import { TributeService } from '../../../scheduler-data-services/tribute.service';
 import { GiftService } from '../../../scheduler-data-services/gift.service';
 import { SoftCreditService } from '../../../scheduler-data-services/soft-credit.service';
+import { VolunteerProfileService } from '../../../scheduler-data-services/volunteer-profile.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -149,6 +150,7 @@ export class ConstituentDetailComponent implements OnInit, CanComponentDeactivat
   public tributes$ = this.tributeService.GetTributeList();
   public gifts$ = this.giftService.GetGiftList();
   public softCredits$ = this.softCreditService.GetSoftCreditList();
+  public volunteerProfiles$ = this.volunteerProfileService.GetVolunteerProfileList();
 
   private destroy$ = new Subject<void>();
 
@@ -164,6 +166,7 @@ export class ConstituentDetailComponent implements OnInit, CanComponentDeactivat
     public tributeService: TributeService,
     public giftService: GiftService,
     public softCreditService: SoftCreditService,
+    public volunteerProfileService: VolunteerProfileService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,

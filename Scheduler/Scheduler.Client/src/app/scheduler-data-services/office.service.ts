@@ -29,8 +29,9 @@ import { ResourceService, ResourceData } from './resource.service';
 import { RateSheetService, RateSheetData } from './rate-sheet.service';
 import { CrewService, CrewData } from './crew.service';
 import { ScheduledEventService, ScheduledEventData } from './scheduled-event.service';
-import { EventResourceAssignmentService, EventResourceAssignmentData } from './event-resource-assignment.service';
 import { GiftService, GiftData } from './gift.service';
+import { VolunteerGroupService, VolunteerGroupData } from './volunteer-group.service';
+import { EventResourceAssignmentService, EventResourceAssignmentData } from './event-resource-assignment.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -249,14 +250,19 @@ export class OfficeData {
     private _scheduledEventsSubject = new BehaviorSubject<ScheduledEventData[] | null>(null);
 
                 
-    private _eventResourceAssignments: EventResourceAssignmentData[] | null = null;
-    private _eventResourceAssignmentsPromise: Promise<EventResourceAssignmentData[]> | null  = null;
-    private _eventResourceAssignmentsSubject = new BehaviorSubject<EventResourceAssignmentData[] | null>(null);
-
-                
     private _gifts: GiftData[] | null = null;
     private _giftsPromise: Promise<GiftData[]> | null  = null;
     private _giftsSubject = new BehaviorSubject<GiftData[] | null>(null);
+
+                
+    private _volunteerGroups: VolunteerGroupData[] | null = null;
+    private _volunteerGroupsPromise: Promise<VolunteerGroupData[]> | null  = null;
+    private _volunteerGroupsSubject = new BehaviorSubject<VolunteerGroupData[] | null>(null);
+
+                
+    private _eventResourceAssignments: EventResourceAssignmentData[] | null = null;
+    private _eventResourceAssignmentsPromise: Promise<EventResourceAssignmentData[]> | null  = null;
+    private _eventResourceAssignmentsSubject = new BehaviorSubject<EventResourceAssignmentData[] | null>(null);
 
                 
 
@@ -427,25 +433,6 @@ export class OfficeData {
 
 
 
-    public EventResourceAssignments$ = this._eventResourceAssignmentsSubject.asObservable().pipe(
-
-        // Trigger load on first subscription if not already loaded
-        tap(() => {
-          if (this._eventResourceAssignments === null && this._eventResourceAssignmentsPromise === null) {
-            this.loadEventResourceAssignments(); // Private method to start fetch
-          }
-        }),
-        shareReplay(1) // Cache last emit
-    );
-
-  
-    public EventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({officeId: this.id,
-      active: true,
-      deleted: false
-    });
-
-
-
     public Gifts$ = this._giftsSubject.asObservable().pipe(
 
         // Trigger load on first subscription if not already loaded
@@ -459,6 +446,44 @@ export class OfficeData {
 
   
     public GiftsCount$ = GiftService.Instance.GetGiftsRowCount({officeId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    public VolunteerGroups$ = this._volunteerGroupsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._volunteerGroups === null && this._volunteerGroupsPromise === null) {
+            this.loadVolunteerGroups(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public VolunteerGroupsCount$ = VolunteerGroupService.Instance.GetVolunteerGroupsRowCount({officeId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    public EventResourceAssignments$ = this._eventResourceAssignmentsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._eventResourceAssignments === null && this._eventResourceAssignmentsPromise === null) {
+            this.loadEventResourceAssignments(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public EventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({officeId: this.id,
       active: true,
       deleted: false
     });
@@ -535,13 +560,17 @@ export class OfficeData {
      this._scheduledEventsPromise = null;
      this._scheduledEventsSubject.next(null);
 
-     this._eventResourceAssignments = null;
-     this._eventResourceAssignmentsPromise = null;
-     this._eventResourceAssignmentsSubject.next(null);
-
      this._gifts = null;
      this._giftsPromise = null;
      this._giftsSubject.next(null);
+
+     this._volunteerGroups = null;
+     this._volunteerGroupsPromise = null;
+     this._volunteerGroupsSubject.next(null);
+
+     this._eventResourceAssignments = null;
+     this._eventResourceAssignmentsPromise = null;
+     this._eventResourceAssignmentsSubject.next(null);
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -1074,71 +1103,6 @@ export class OfficeData {
 
     /**
      *
-     * Gets the EventResourceAssignments for this Office.
-     *
-     * If already loaded, returns cached array.
-     *
-     * If not, fetches from server and caches the result.
-     * 
-     * Usage in components:
-     *   this.office.EventResourceAssignments.then(offices => { ... })
-     *   or
-     *   await this.office.offices
-     *
-    */
-    public get EventResourceAssignments(): Promise<EventResourceAssignmentData[]> {
-        if (this._eventResourceAssignments !== null) {
-            return Promise.resolve(this._eventResourceAssignments);
-        }
-
-        if (this._eventResourceAssignmentsPromise !== null) {
-            return this._eventResourceAssignmentsPromise;
-        }
-
-        // Start the load
-        this.loadEventResourceAssignments();
-
-        return this._eventResourceAssignmentsPromise!;
-    }
-
-
-
-    private loadEventResourceAssignments(): void {
-
-        this._eventResourceAssignmentsPromise = lastValueFrom(
-            OfficeService.Instance.GetEventResourceAssignmentsForOffice(this.id)
-        )
-        .then(EventResourceAssignments => {
-            this._eventResourceAssignments = EventResourceAssignments ?? [];
-            this._eventResourceAssignmentsSubject.next(this._eventResourceAssignments);
-            return this._eventResourceAssignments;
-         })
-        .catch(err => {
-            this._eventResourceAssignments = [];
-            this._eventResourceAssignmentsSubject.next(this._eventResourceAssignments);
-            throw err;
-        })
-        .finally(() => {
-            this._eventResourceAssignmentsPromise = null; // Allow retry if needed
-        });
-    }
-
-    /**
-     * Clears the cached EventResourceAssignment. Call after mutations to force refresh.
-     */
-    public ClearEventResourceAssignmentsCache(): void {
-        this._eventResourceAssignments = null;
-        this._eventResourceAssignmentsPromise = null;
-        this._eventResourceAssignmentsSubject.next(this._eventResourceAssignments);      // Emit to observable
-    }
-
-    public get HasEventResourceAssignments(): Promise<boolean> {
-        return this.EventResourceAssignments.then(eventResourceAssignments => eventResourceAssignments.length > 0);
-    }
-
-
-    /**
-     *
      * Gets the Gifts for this Office.
      *
      * If already loaded, returns cached array.
@@ -1199,6 +1163,136 @@ export class OfficeData {
 
     public get HasGifts(): Promise<boolean> {
         return this.Gifts.then(gifts => gifts.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the VolunteerGroups for this Office.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.office.VolunteerGroups.then(offices => { ... })
+     *   or
+     *   await this.office.offices
+     *
+    */
+    public get VolunteerGroups(): Promise<VolunteerGroupData[]> {
+        if (this._volunteerGroups !== null) {
+            return Promise.resolve(this._volunteerGroups);
+        }
+
+        if (this._volunteerGroupsPromise !== null) {
+            return this._volunteerGroupsPromise;
+        }
+
+        // Start the load
+        this.loadVolunteerGroups();
+
+        return this._volunteerGroupsPromise!;
+    }
+
+
+
+    private loadVolunteerGroups(): void {
+
+        this._volunteerGroupsPromise = lastValueFrom(
+            OfficeService.Instance.GetVolunteerGroupsForOffice(this.id)
+        )
+        .then(VolunteerGroups => {
+            this._volunteerGroups = VolunteerGroups ?? [];
+            this._volunteerGroupsSubject.next(this._volunteerGroups);
+            return this._volunteerGroups;
+         })
+        .catch(err => {
+            this._volunteerGroups = [];
+            this._volunteerGroupsSubject.next(this._volunteerGroups);
+            throw err;
+        })
+        .finally(() => {
+            this._volunteerGroupsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached VolunteerGroup. Call after mutations to force refresh.
+     */
+    public ClearVolunteerGroupsCache(): void {
+        this._volunteerGroups = null;
+        this._volunteerGroupsPromise = null;
+        this._volunteerGroupsSubject.next(this._volunteerGroups);      // Emit to observable
+    }
+
+    public get HasVolunteerGroups(): Promise<boolean> {
+        return this.VolunteerGroups.then(volunteerGroups => volunteerGroups.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the EventResourceAssignments for this Office.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.office.EventResourceAssignments.then(offices => { ... })
+     *   or
+     *   await this.office.offices
+     *
+    */
+    public get EventResourceAssignments(): Promise<EventResourceAssignmentData[]> {
+        if (this._eventResourceAssignments !== null) {
+            return Promise.resolve(this._eventResourceAssignments);
+        }
+
+        if (this._eventResourceAssignmentsPromise !== null) {
+            return this._eventResourceAssignmentsPromise;
+        }
+
+        // Start the load
+        this.loadEventResourceAssignments();
+
+        return this._eventResourceAssignmentsPromise!;
+    }
+
+
+
+    private loadEventResourceAssignments(): void {
+
+        this._eventResourceAssignmentsPromise = lastValueFrom(
+            OfficeService.Instance.GetEventResourceAssignmentsForOffice(this.id)
+        )
+        .then(EventResourceAssignments => {
+            this._eventResourceAssignments = EventResourceAssignments ?? [];
+            this._eventResourceAssignmentsSubject.next(this._eventResourceAssignments);
+            return this._eventResourceAssignments;
+         })
+        .catch(err => {
+            this._eventResourceAssignments = [];
+            this._eventResourceAssignmentsSubject.next(this._eventResourceAssignments);
+            throw err;
+        })
+        .finally(() => {
+            this._eventResourceAssignmentsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached EventResourceAssignment. Call after mutations to force refresh.
+     */
+    public ClearEventResourceAssignmentsCache(): void {
+        this._eventResourceAssignments = null;
+        this._eventResourceAssignmentsPromise = null;
+        this._eventResourceAssignmentsSubject.next(this._eventResourceAssignments);      // Emit to observable
+    }
+
+    public get HasEventResourceAssignments(): Promise<boolean> {
+        return this.EventResourceAssignments.then(eventResourceAssignments => eventResourceAssignments.length > 0);
     }
 
 
@@ -1288,8 +1382,9 @@ export class OfficeService extends SecureEndpointBase {
         private rateSheetService: RateSheetService,
         private crewService: CrewService,
         private scheduledEventService: ScheduledEventService,
-        private eventResourceAssignmentService: EventResourceAssignmentService,
         private giftService: GiftService,
+        private volunteerGroupService: VolunteerGroupService,
+        private eventResourceAssignmentService: EventResourceAssignmentService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
 
@@ -1851,8 +1946,8 @@ export class OfficeService extends SecureEndpointBase {
     }
 
 
-    public GetEventResourceAssignmentsForOffice(officeId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<EventResourceAssignmentData[]> {
-        return this.eventResourceAssignmentService.GetEventResourceAssignmentList({
+    public GetGiftsForOffice(officeId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<GiftData[]> {
+        return this.giftService.GetGiftList({
             officeId: officeId,
             active: active,
             deleted: deleted,
@@ -1861,8 +1956,18 @@ export class OfficeService extends SecureEndpointBase {
     }
 
 
-    public GetGiftsForOffice(officeId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<GiftData[]> {
-        return this.giftService.GetGiftList({
+    public GetVolunteerGroupsForOffice(officeId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<VolunteerGroupData[]> {
+        return this.volunteerGroupService.GetVolunteerGroupList({
+            officeId: officeId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
+    public GetEventResourceAssignmentsForOffice(officeId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<EventResourceAssignmentData[]> {
+        return this.eventResourceAssignmentService.GetEventResourceAssignmentList({
             officeId: officeId,
             active: active,
             deleted: deleted,
@@ -1938,13 +2043,17 @@ export class OfficeService extends SecureEndpointBase {
     (revived as any)._scheduledEventsPromise = null;
     (revived as any)._scheduledEventsSubject = new BehaviorSubject<ScheduledEventData[] | null>(null);
 
-    (revived as any)._eventResourceAssignments = null;
-    (revived as any)._eventResourceAssignmentsPromise = null;
-    (revived as any)._eventResourceAssignmentsSubject = new BehaviorSubject<EventResourceAssignmentData[] | null>(null);
-
     (revived as any)._gifts = null;
     (revived as any)._giftsPromise = null;
     (revived as any)._giftsSubject = new BehaviorSubject<GiftData[] | null>(null);
+
+    (revived as any)._volunteerGroups = null;
+    (revived as any)._volunteerGroupsPromise = null;
+    (revived as any)._volunteerGroupsSubject = new BehaviorSubject<VolunteerGroupData[] | null>(null);
+
+    (revived as any)._eventResourceAssignments = null;
+    (revived as any)._eventResourceAssignmentsPromise = null;
+    (revived as any)._eventResourceAssignmentsSubject = new BehaviorSubject<EventResourceAssignmentData[] | null>(null);
 
 
     //
@@ -2086,22 +2195,6 @@ export class OfficeService extends SecureEndpointBase {
 
 
 
-    (revived as any).EventResourceAssignments$ = (revived as any)._eventResourceAssignmentsSubject.asObservable().pipe(
-        tap(() => {
-              if ((revived as any)._eventResourceAssignments === null && (revived as any)._eventResourceAssignmentsPromise === null) {
-                (revived as any).loadEventResourceAssignments();        // Need to cast to any to invoke private load method
-              }
-        }),
-        shareReplay(1)
-      );
-
-    (revived as any).EventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({officeId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
-
-
     (revived as any).Gifts$ = (revived as any)._giftsSubject.asObservable().pipe(
         tap(() => {
               if ((revived as any)._gifts === null && (revived as any)._giftsPromise === null) {
@@ -2112,6 +2205,38 @@ export class OfficeService extends SecureEndpointBase {
       );
 
     (revived as any).GiftsCount$ = GiftService.Instance.GetGiftsRowCount({officeId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).VolunteerGroups$ = (revived as any)._volunteerGroupsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._volunteerGroups === null && (revived as any)._volunteerGroupsPromise === null) {
+                (revived as any).loadVolunteerGroups();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).VolunteerGroupsCount$ = VolunteerGroupService.Instance.GetVolunteerGroupsRowCount({officeId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).EventResourceAssignments$ = (revived as any)._eventResourceAssignmentsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._eventResourceAssignments === null && (revived as any)._eventResourceAssignmentsPromise === null) {
+                (revived as any).loadEventResourceAssignments();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).EventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({officeId: (revived as any).id,
       active: true,
       deleted: false
     });

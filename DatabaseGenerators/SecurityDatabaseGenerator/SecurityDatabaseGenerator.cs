@@ -6,6 +6,13 @@ namespace Foundation.Security.Database
 {
     public class SecurityDatabaseGenerator : DatabaseGenerator
     {
+        private const int SECURITY_READER_PERMISSION_LEVEL = 1;
+        private const int SECURITY_USER_WRITER_PERMISSION_LEVEL = 50;
+        private const int SECURITY_TENANT_WRITER_PERMISSION_LEVEL = 100;
+        private const int SECURITY_MASTER_CONFIG_WRITER_PERMISSION_LEVEL = 150;
+        private const int SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL = 255;
+
+
         public SecurityDatabaseGenerator() : base("Security", "Security")
         {
             this.database.SetSchemaName("Security");
@@ -16,7 +23,7 @@ namespace Foundation.Security.Database
              * 
              */
             Database.Table securityTenantTable = database.AddTable("SecurityTenant");
-            securityTenantTable.SetMinimumPermissionLevels(0, 100);
+            securityTenantTable.SetMinimumPermissionLevels(SECURITY_READER_PERMISSION_LEVEL, SECURITY_TENANT_WRITER_PERMISSION_LEVEL);
             securityTenantTable.displayNameForTable = "Tenant";
             securityTenantTable.adminAccessNeededToWrite = true;
             securityTenantTable.AddIdField();
@@ -30,7 +37,7 @@ namespace Foundation.Security.Database
 
 
             Database.Table securityOrganizationTable = database.AddTable("SecurityOrganization");
-            securityOrganizationTable.SetMinimumPermissionLevels(0, 50);
+            securityOrganizationTable.SetMinimumPermissionLevels(SECURITY_READER_PERMISSION_LEVEL, SECURITY_TENANT_WRITER_PERMISSION_LEVEL);
             securityOrganizationTable.displayNameForTable = "Organization";
             securityOrganizationTable.adminAccessNeededToWrite = true;
             securityOrganizationTable.AddIdField();
@@ -48,7 +55,7 @@ namespace Foundation.Security.Database
 
 
             Database.Table securityDepartmentTable = database.AddTable("SecurityDepartment");
-            securityDepartmentTable.SetMinimumPermissionLevels(0, 50);
+            securityDepartmentTable.SetMinimumPermissionLevels(SECURITY_READER_PERMISSION_LEVEL, SECURITY_TENANT_WRITER_PERMISSION_LEVEL);
             securityDepartmentTable.displayNameForTable = "Department";
             securityDepartmentTable.adminAccessNeededToWrite = true;
             securityDepartmentTable.AddIdField();
@@ -65,7 +72,7 @@ namespace Foundation.Security.Database
 
 
             Database.Table securityTeamTable = database.AddTable("SecurityTeam");
-            securityTeamTable.SetMinimumPermissionLevels(0, 50);
+            securityTeamTable.SetMinimumPermissionLevels(SECURITY_READER_PERMISSION_LEVEL, SECURITY_TENANT_WRITER_PERMISSION_LEVEL);
             securityTeamTable.displayNameForTable = "Team";
             securityTeamTable.adminAccessNeededToWrite = true;
             securityTeamTable.AddIdField();
@@ -82,7 +89,7 @@ namespace Foundation.Security.Database
 
 
             Database.Table securityUserTitleTable = database.AddTable("SecurityUserTitle");
-            securityUserTitleTable.SetMinimumPermissionLevels(0, 50);
+            securityUserTitleTable.SetMinimumPermissionLevels(SECURITY_READER_PERMISSION_LEVEL, SECURITY_MASTER_CONFIG_WRITER_PERMISSION_LEVEL);
             securityUserTitleTable.displayNameForTable = "User Title";
             securityUserTitleTable.adminAccessNeededToWrite = true;
             securityUserTitleTable.AddIdField();
@@ -97,6 +104,7 @@ namespace Foundation.Security.Database
 
 
             Database.Table securityUserTable = database.AddTable("SecurityUser");
+            securityUserTable.SetMinimumPermissionLevels(SECURITY_READER_PERMISSION_LEVEL, SECURITY_USER_WRITER_PERMISSION_LEVEL);
             securityUserTable.displayNameForTable = "User";
             securityUserTable.AddIdField();
             Database.Table.Field accountNameField = securityUserTable.AddString250Field("accountName", false);
@@ -178,7 +186,7 @@ namespace Foundation.Security.Database
 
 
             //
-            // Add the admin user with all the possible access for Adminstrator UI purposes.
+            // Add the admin user with all the possible access for Administrator UI purposes.
             //
             // Password is to be changed after creation, or account locked.  default password is 'Admin'
             //
@@ -192,8 +200,8 @@ namespace Foundation.Security.Database
                                                                { "lastName", "Account" },
                                                                { "password", "$HASH$V1000$10000$7lx52j0Z5CjBUyu8L84pOmsOo+jNH/pVZ1VlI4EBjAftRag+" },    // The default password is 'Admin'
                                                                { "description", "System Aministrator account.  Refer to generator for default password." },
-                                                               { "readPermissionLevel", "255" },
-                                                               { "writePermissionLevel", "255" },
+                                                               { "readPermissionLevel", SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL.ToString() },
+                                                               { "writePermissionLevel", SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL.ToString() },
                                                                { "objectGuid", "4099226f-cc2f-46d2-9725-29de861c4fa9" },
                                                             });
 
@@ -214,8 +222,8 @@ namespace Foundation.Security.Database
                                                                { "lastName", "Account" },
                                                                { "password", "$HASH$V1000$10000$WeuGAJrhrIJWnWZIdyAQKvBEiFM0iMLiS+NJW8ws0YjSCbPq" },    // The default password is the object guid ('d80632a7-b1ff-47cb-9ecd-87f4a4a22763-Service2026!^#');
                                                                { "description", "System Service account for job/worker connection purposes.  Refer to generator for default password." },
-                                                               { "readPermissionLevel", "255" },
-                                                               { "writePermissionLevel", "255" },
+                                                               { "readPermissionLevel", SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL.ToString() },
+                                                               { "writePermissionLevel", SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL.ToString() },
                                                                { "objectGuid", "d80632a7-b1ff-47cb-9ecd-87f4a4a22763" },
                                                             });
 
@@ -227,6 +235,7 @@ namespace Foundation.Security.Database
             //
             Database.Table securityTenantUserTable = database.AddTable("SecurityTenantUser");
             securityTenantUserTable.displayNameForTable = "TenantUser";
+            securityTenantUserTable.SetMinimumPermissionLevels(SECURITY_READER_PERMISSION_LEVEL, SECURITY_USER_WRITER_PERMISSION_LEVEL);
             securityTenantUserTable.AddIdField();
             securityTenantUserTable.AddForeignKeyField("securityTenantId", securityTenantTable, false);
             securityTenantUserTable.AddForeignKeyField("securityUserId", securityUserTable, false);
@@ -243,6 +252,7 @@ namespace Foundation.Security.Database
 
             Database.Table securityOrganizationUserTable = database.AddTable("SecurityOrganizationUser");
             securityOrganizationUserTable.displayNameForTable = "OrganizationUser";
+            securityOrganizationUserTable.SetMinimumPermissionLevels(SECURITY_READER_PERMISSION_LEVEL, SECURITY_USER_WRITER_PERMISSION_LEVEL);
             securityOrganizationUserTable.AddIdField();
             securityOrganizationUserTable.AddForeignKeyField("securityOrganizationId", securityOrganizationTable, false);
             securityOrganizationUserTable.AddForeignKeyField("securityUserId", securityUserTable, false);
@@ -262,6 +272,7 @@ namespace Foundation.Security.Database
 
             Database.Table securityDepartmentUserTable = database.AddTable("SecurityDepartmentUser");
             securityDepartmentUserTable.displayNameForTable = "DepartmentUser";
+            securityDepartmentUserTable.SetMinimumPermissionLevels(SECURITY_READER_PERMISSION_LEVEL, SECURITY_USER_WRITER_PERMISSION_LEVEL);
             securityDepartmentUserTable.AddIdField();
             securityDepartmentUserTable.AddForeignKeyField("securityDepartmentId", securityDepartmentTable, false);
             securityDepartmentUserTable.AddForeignKeyField("securityUserId", securityUserTable, false);
@@ -279,6 +290,7 @@ namespace Foundation.Security.Database
 
 
             Database.Table securityTeamUserTable = database.AddTable("SecurityTeamUser");
+            securityTeamUserTable.SetMinimumPermissionLevels(SECURITY_READER_PERMISSION_LEVEL, SECURITY_USER_WRITER_PERMISSION_LEVEL);
             securityTeamUserTable.displayNameForTable = "TeamUser";
             securityTeamUserTable.AddIdField();
             securityTeamUserTable.AddForeignKeyField("securityTeamId", securityTeamTable, false);
@@ -298,8 +310,9 @@ namespace Foundation.Security.Database
 
 
             Database.Table securityUserEventTypeTable = database.AddTable("SecurityUserEventType");
+            securityUserEventTypeTable.SetMinimumPermissionLevels(SECURITY_READER_PERMISSION_LEVEL, SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
             securityUserEventTypeTable.displayNameForTable = "User Event Type";
-            securityUserEventTypeTable.isWritable = false;              // this table can't be written to by anybody.
+            securityUserEventTypeTable.isWritable = false;              // this table can NEVER be written to by anybody.  It is a cornerstone set of system values that should never change.
 
             securityUserEventTypeTable.AddIdField();
             securityUserEventTypeTable.AddNameAndDescriptionFields(true, true);
@@ -361,6 +374,7 @@ namespace Foundation.Security.Database
 
 
             Database.Table securityUserEventTable = database.AddTable("SecurityUserEvent");
+            securityUserEventTable.SetMinimumPermissionLevels(SECURITY_READER_PERMISSION_LEVEL, SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
             securityUserEventTable.displayNameForTable = "User Event";
             securityUserEventTable.AddIdField();
             securityUserEventTable.AddForeignKeyField("securityUserId", securityUserTable, false);
@@ -378,6 +392,7 @@ namespace Foundation.Security.Database
 
 
             Database.Table securityUserPasswordResetTokenTable = database.AddTable("SecurityUserPasswordResetToken");
+            securityUserPasswordResetTokenTable.SetMinimumPermissionLevels(SECURITY_READER_PERMISSION_LEVEL, SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
             securityUserPasswordResetTokenTable.displayNameForTable = "User Password Reset Token";
             securityUserPasswordResetTokenTable.AddIdField();
             securityUserPasswordResetTokenTable.AddForeignKeyField("securityUserId", securityUserTable, false, true);
@@ -398,6 +413,7 @@ namespace Foundation.Security.Database
 
 
             Database.Table securityGroupTable = database.AddTable("SecurityGroup");
+            securityGroupTable.SetMinimumPermissionLevels(SECURITY_READER_PERMISSION_LEVEL, SECURITY_MASTER_CONFIG_WRITER_PERMISSION_LEVEL);
             securityGroupTable.displayNameForTable = "Group";
             securityGroupTable.AddIdField();
             securityGroupTable.AddNameAndDescriptionFields(true, true);
@@ -412,6 +428,7 @@ namespace Foundation.Security.Database
 
 
             Database.Table securityUserSecurityGroupTable = database.AddTable("SecurityUserSecurityGroup");
+            securityUserSecurityGroupTable.SetMinimumPermissionLevels(SECURITY_READER_PERMISSION_LEVEL, SECURITY_USER_WRITER_PERMISSION_LEVEL);
             securityUserSecurityGroupTable.displayNameForTable = "User Group";
             securityUserSecurityGroupTable.AddIdField();
             securityUserSecurityGroupTable.AddForeignKeyField("securityUserId", securityUserTable, false);
@@ -428,7 +445,8 @@ namespace Foundation.Security.Database
 
 
             Database.Table privilegeTable = database.AddTable("Privilege");
-            privilegeTable.isWritable = false;          // this table can't be edited by anybody
+            privilegeTable.SetMinimumPermissionLevels(SECURITY_READER_PERMISSION_LEVEL, SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            privilegeTable.isWritable = false;          // this table can't be edited by anybody.  It is system level master data.
             privilegeTable.AddIdField();
             privilegeTable.AddNameAndDescriptionFields(true, true);
 
@@ -453,7 +471,7 @@ namespace Foundation.Security.Database
 
 
             Database.Table securityRoleTable = database.AddTable("SecurityRole");
-            securityOrganizationTable.SetMinimumPermissionLevels(0, 100);
+            securityOrganizationTable.SetMinimumPermissionLevels(SECURITY_READER_PERMISSION_LEVEL, SECURITY_MASTER_CONFIG_WRITER_PERMISSION_LEVEL);
             securityRoleTable.AddIdField();
             securityRoleTable.AddForeignKeyField("privilegeId", privilegeTable, false);
             securityRoleTable.AddNameAndDescriptionFields(true, true);
@@ -467,6 +485,7 @@ namespace Foundation.Security.Database
 
 
             Database.Table securityUserSecurityRoleTable = database.AddTable("SecurityUserSecurityRole");
+            securityUserSecurityRoleTable.SetMinimumPermissionLevels(SECURITY_READER_PERMISSION_LEVEL, SECURITY_USER_WRITER_PERMISSION_LEVEL);
             securityUserSecurityRoleTable.displayNameForTable = "User Security Role";
             securityUserSecurityRoleTable.AddIdField();
             Database.Table.Field userSecurityRoleUserIdField = securityUserSecurityRoleTable.AddForeignKeyField("securityUserId", securityUserTable, false);
@@ -506,6 +525,7 @@ namespace Foundation.Security.Database
 
 
             Database.Table securityGroupSecurityRoleTable = database.AddTable("SecurityGroupSecurityRole");
+            securityGroupSecurityRoleTable.SetMinimumPermissionLevels(SECURITY_READER_PERMISSION_LEVEL, SECURITY_MASTER_CONFIG_WRITER_PERMISSION_LEVEL);
             securityGroupSecurityRoleTable.displayNameForTable = "Group Security Role";
             securityGroupSecurityRoleTable.AddIdField();
             Database.Table.Field groupSecurityRoleUserIdField = securityGroupSecurityRoleTable.AddForeignKeyField("securityGroupId", securityGroupTable, false);
@@ -535,7 +555,10 @@ namespace Foundation.Security.Database
             securityGroupSecurityRoleRoleIdActiveDeletedIndex.AddField("active");
             securityGroupSecurityRoleRoleIdActiveDeletedIndex.AddField("deleted");
 
+
+
             Database.Table moduleTable = database.AddTable("Module");
+            moduleTable.SetMinimumPermissionLevels(SECURITY_READER_PERMISSION_LEVEL, SECURITY_MASTER_CONFIG_WRITER_PERMISSION_LEVEL);
             moduleTable.AddIdField();
             moduleTable.AddNameAndDescriptionFields(true, true);
             moduleTable.AddControlFields(false);
@@ -547,6 +570,7 @@ namespace Foundation.Security.Database
 
 
             Database.Table moduleSecurityRoleTable = database.AddTable("ModuleSecurityRole");
+            moduleSecurityRoleTable.SetMinimumPermissionLevels(SECURITY_READER_PERMISSION_LEVEL, SECURITY_MASTER_CONFIG_WRITER_PERMISSION_LEVEL);
             moduleSecurityRoleTable.AddIdField();
             Database.Table.Field moduleSecurityRoleModuleIdField = moduleSecurityRoleTable.AddForeignKeyField("moduleId", moduleTable, false);
 
@@ -569,7 +593,7 @@ namespace Foundation.Security.Database
 
 
             Database.Table systemSettingTable = database.AddTable("SystemSetting");
-            systemSettingTable.SetMinimumPermissionLevels(0, 100);
+            systemSettingTable.SetMinimumPermissionLevels(SECURITY_READER_PERMISSION_LEVEL, SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
             systemSettingTable.AddIdField();
             systemSettingTable.AddNameAndDescriptionFields(true, true);
             systemSettingTable.AddTextField("value");
@@ -583,7 +607,7 @@ namespace Foundation.Security.Database
 
 
             Database.Table loginAttemptTable = database.AddTable("LoginAttempt");
-            loginAttemptTable.SetMinimumPermissionLevels(0, 100);
+            loginAttemptTable.SetMinimumPermissionLevels(SECURITY_READER_PERMISSION_LEVEL, SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);       // can't edit login attempts..
             loginAttemptTable.AddIdField();
             loginAttemptTable.AddDateTimeField("timeStamp", false);
             loginAttemptTable.AddString250Field("userName", true);
@@ -604,7 +628,7 @@ namespace Foundation.Security.Database
 
 
             Database.Table entityDataTokenTable = database.AddTable("EntityDataToken");
-            entityDataTokenTable.SetMinimumPermissionLevels(0, 100);
+            entityDataTokenTable.SetMinimumPermissionLevels(SECURITY_READER_PERMISSION_LEVEL, SECURITY_USER_WRITER_PERMISSION_LEVEL);
             entityDataTokenTable.AddIdField();
             entityDataTokenTable.AddForeignKeyField("securityUserId", securityUserTable, false);
             entityDataTokenTable.AddForeignKeyField("moduleId", moduleTable, false);
@@ -659,7 +683,7 @@ namespace Foundation.Security.Database
 
 
             Database.Table entityDataTokenEventTable = database.AddTable("EntityDataTokenEvent");
-            entityDataTokenEventTable.SetMinimumPermissionLevels(0, 100);
+            entityDataTokenEventTable.SetMinimumPermissionLevels(SECURITY_READER_PERMISSION_LEVEL, SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
             entityDataTokenEventTable.AddIdField();
             entityDataTokenEventTable.AddForeignKeyField("entityDataTokenId", entityDataTokenTable, false);
             entityDataTokenEventTable.AddForeignKeyField("entityDataTokenEventTypeId", entityDataTokenEventTypeTable, false);
@@ -680,7 +704,7 @@ namespace Foundation.Security.Database
              * 
              */
             Database.Table oauthTokenTable = database.AddTable("OAUTHToken");
-            oauthTokenTable.SetMinimumPermissionLevels(0, 100);
+            oauthTokenTable.SetMinimumPermissionLevels(SECURITY_READER_PERMISSION_LEVEL, SECURITY_USER_WRITER_PERMISSION_LEVEL);
             oauthTokenTable.AddIdField();
             oauthTokenTable.AddString250Field("token", false).CreateIndex();
             oauthTokenTable.AddDateTimeField("expiryDateTime", false).CreateIndex();
@@ -701,7 +725,7 @@ namespace Foundation.Security.Database
              * 
              */
             Database.Table userSessionTable = database.AddTable("UserSession");
-            userSessionTable.SetMinimumPermissionLevels(0, 100);
+            userSessionTable.SetMinimumPermissionLevels(SECURITY_READER_PERMISSION_LEVEL, SECURITY_USER_WRITER_PERMISSION_LEVEL);
             userSessionTable.displayNameForTable = "User Session";
             userSessionTable.AddIdField();
             userSessionTable.AddForeignKeyField("securityUserId", securityUserTable, false);
@@ -779,19 +803,21 @@ Data in this table is to be exclusively managed by the Data Visibility sync proc
 This will ensure that the Security system's configuration controls the Data Visibility setup in module schemas like this one.";
 
             organizationTable.isWritable = false;
+            organizationTable.SetMinimumPermissionLevels(SECURITY_READER_PERMISSION_LEVEL, SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
             organizationTable.AddIdField();
             organizationTable.AddGuidField("tenantGuid", false).CreateIndex();
             organizationTable.AddNameAndDescriptionFields(false, true);
             organizationTable.AddUniqueConstraint("tenantGuid", "name");        // each tenant can only have one org with the same name
             organizationTable.AddControlFields(true);
 
-            Database.Table.Index organizationIdActiveDeletedIndex = organizationTable.CreateIndex("I_Sorganization_id_active_deleted");
+            Database.Table.Index organizationIdActiveDeletedIndex = organizationTable.CreateIndex("I_Organization_id_active_deleted");
             organizationIdActiveDeletedIndex.AddField("id");
             organizationIdActiveDeletedIndex.AddField("active");
             organizationIdActiveDeletedIndex.AddField("deleted");
 
 
             Database.Table userTitleTable = database.AddTable("UserTitle");
+            userTitleTable.SetMinimumPermissionLevels(SECURITY_READER_PERMISSION_LEVEL, SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
             userTitleTable.comment = @"This is the local shadow copy of the Security system's SecurityUserTitle table, and is a part of the Data Visibility system.  
 
 Data in this table is to be exclusively managed by the Data Visibility sync process.  
@@ -822,7 +848,7 @@ This will ensure that the Security system's configuration controls the Data Visi
 **NOTE THAT THE OBJECT GUID FIELD ON THIS TABLE DOES NOT HAVE TO BE UNIQUE **
 ";
 
-
+            userTable.SetMinimumPermissionLevels(SECURITY_READER_PERMISSION_LEVEL, SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
             userTable.isWritable = false;
             userTable.AddIdField();
             userTable.AddGuidField("tenantGuid", false).CreateIndex();
@@ -862,6 +888,7 @@ Data in this table is to be exclusively managed by the Data Visibility sync proc
 
 This will ensure that the Security system's configuration controls the Data Visibility setup in module schemas like this one.";
 
+            organizationUserTable.SetMinimumPermissionLevels(SECURITY_READER_PERMISSION_LEVEL, SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
             organizationUserTable.isWritable = false;
             organizationUserTable.AddIdField();
             organizationUserTable.AddGuidField("tenantGuid", false).AddScriptComments("The tenant for this record.").CreateIndex();
@@ -890,6 +917,7 @@ Data in this table is to be exclusively managed by the Data Visibility sync proc
 
 This will ensure that the Security system's configuration controls the Data Visibility setup in module schemas like this one.";
 
+            departmentTable.SetMinimumPermissionLevels(SECURITY_READER_PERMISSION_LEVEL, SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
             departmentTable.isWritable = false;
             departmentTable.adminAccessNeededToWrite = true;
             departmentTable.AddIdField();
@@ -914,6 +942,7 @@ Data in this table is to be exclusively managed by the Data Visibility sync proc
 This will ensure that the Security system's configuration controls the Data Visibility setup in module schemas like this one.";
 
 
+            departmentUserTable.SetMinimumPermissionLevels(SECURITY_READER_PERMISSION_LEVEL, SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
             departmentUserTable.isWritable = false;
             departmentUserTable.AddIdField();
             departmentUserTable.AddGuidField("tenantGuid", false).AddScriptComments("The tenant for this record.").CreateIndex();
@@ -944,6 +973,7 @@ Data in this table is to be exclusively managed by the Data Visibility sync proc
 This will ensure that the Security system's configuration controls the Data Visibility setup in module schemas like this one.";
 
 
+            teamTable.SetMinimumPermissionLevels(SECURITY_READER_PERMISSION_LEVEL, SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
             teamTable.isWritable = false;
             teamTable.adminAccessNeededToWrite = true;
             teamTable.AddIdField();
@@ -967,6 +997,7 @@ Data in this table is to be exclusively managed by the Data Visibility sync proc
 
 This will ensure that the Security system's configuration controls the Data Visibility setup in module schemas like this one.";
 
+            teamUserTable.SetMinimumPermissionLevels(SECURITY_READER_PERMISSION_LEVEL, SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
             teamUserTable.isWritable = false;
             teamUserTable.AddIdField();
             teamUserTable.AddGuidField("tenantGuid", false).AddScriptComments("The tenant for this record.").CreateIndex();
@@ -1058,7 +1089,7 @@ This will ensure that the Security system's configuration controls the Data Visi
             notificationTypeTable.comment = @"This table defines the types of notifications that are available.  It is part of the Foundation Notification system.";
 
             notificationTypeTable.isWritable = false;
-            notificationTypeTable.SetMinimumPermissionLevels(100, 100);
+            notificationTypeTable.SetMinimumPermissionLevels(SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL, SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
             notificationTypeTable.AddIdField();
             notificationTypeTable.AddNameAndDescriptionFields(true, true);
             notificationTypeTable.AddControlFields();
@@ -1092,8 +1123,8 @@ This will ensure that the Security system's configuration controls the Data Visi
             //
             Database.Table notificationTable = database.AddTable("Notification");
             notificationTable.comment = @"This table store Notifications.  It is part of the Foundation Notification system.";
-            notificationTable.minimumReadPermissionLevel = 50;
-            notificationTable.minimumWritePermissionLevel = 50;
+            notificationTable.minimumReadPermissionLevel = SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL;
+            notificationTable.minimumWritePermissionLevel = SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL;
             notificationTable.adminAccessNeededToWrite = true;
             notificationTable.AddIdField();
             notificationTable.AddMultiTenantSupport();
@@ -1119,8 +1150,8 @@ This will ensure that the Security system's configuration controls the Data Visi
 
             Database.Table notificationAttachmentTable = database.AddTable("NotificationAttachment");
             notificationAttachmentTable.comment = @"This table stores attachments for notifications.  It is part of the Foundation Notification system.";
-            notificationAttachmentTable.minimumReadPermissionLevel = 50;
-            notificationAttachmentTable.minimumWritePermissionLevel = 50;
+            notificationAttachmentTable.minimumReadPermissionLevel = SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL;
+            notificationAttachmentTable.minimumWritePermissionLevel = SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL;
             notificationAttachmentTable.adminAccessNeededToWrite = true;
             notificationAttachmentTable.AddIdField();
             notificationAttachmentTable.AddMultiTenantSupport();
@@ -1141,8 +1172,8 @@ This will ensure that the Security system's configuration controls the Data Visi
 
             Database.Table notificationDistributionTable = database.AddTable("NotificationDistribution");
             notificationDistributionTable.comment = @"This table defines the distribution for a notification.  It is part of the Foundation Notification system.";
-            notificationDistributionTable.minimumReadPermissionLevel = 50;
-            notificationDistributionTable.minimumWritePermissionLevel = 50;
+            notificationDistributionTable.minimumReadPermissionLevel = SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL;
+            notificationDistributionTable.minimumWritePermissionLevel = SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL;
             notificationDistributionTable.adminAccessNeededToWrite = true;
             notificationDistributionTable.AddIdField();
             notificationDistributionTable.AddMultiTenantSupport();
@@ -1182,7 +1213,7 @@ This will ensure that the Security system's configuration controls the Data Visi
 
 It is part of the Foundation's Conversation/Messaging system.";
             conversationTypeTable.isWritable = false;
-            conversationTypeTable.SetMinimumPermissionLevels(100, 100);
+            conversationTypeTable.SetMinimumPermissionLevels(SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL, SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
             conversationTypeTable.AddIdField();
             conversationTypeTable.AddNameAndDescriptionFields(true, true);
             conversationTypeTable.AddControlFields();
@@ -1209,8 +1240,8 @@ It is part of the Foundation's Conversation/Messaging system.";
             //
             Database.Table conversationTable = database.AddTable("Conversation");
             conversationTable.comment = "This is the main Conversation table.  It is part of the Foundation's Conversation/Messaging system.";
-            conversationTable.minimumReadPermissionLevel = 50;
-            conversationTable.minimumWritePermissionLevel = 50;
+            conversationTable.minimumReadPermissionLevel = SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL;
+            conversationTable.minimumWritePermissionLevel = SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL;
             conversationTable.adminAccessNeededToWrite = true;
 
             conversationTable.AddIdField();
@@ -1235,8 +1266,8 @@ It is part of the Foundation's Conversation/Messaging system.";
 
             Database.Table conversationUserTable = database.AddTable("ConversationUser");
             conversationUserTable.comment = "This is the ConversationUser table.  It tracks the users that belong to a conversation.  It is part of the Foundation's Conversation/Messaging system.";
-            conversationUserTable.minimumReadPermissionLevel = 50;
-            conversationUserTable.minimumWritePermissionLevel = 50;
+            conversationUserTable.minimumReadPermissionLevel = SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL;
+            conversationUserTable.minimumWritePermissionLevel = SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL;
             conversationUserTable.adminAccessNeededToWrite = true;
             conversationUserTable.AddIdField();
             conversationUserTable.AddMultiTenantSupport();
@@ -1254,8 +1285,8 @@ It is part of the Foundation's Conversation/Messaging system.";
 
             Database.Table conversationMessageTable = database.AddTable("ConversationMessage");
             conversationMessageTable.comment = "This is the ConversationMessage table.  It tracks the messages that belong to a conversation.  It is part of the Foundation's Conversation/Messaging system.";
-            conversationMessageTable.minimumReadPermissionLevel = 50;
-            conversationMessageTable.minimumWritePermissionLevel = 50;
+            conversationMessageTable.minimumReadPermissionLevel = SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL;
+            conversationMessageTable.minimumWritePermissionLevel = SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL;
             conversationMessageTable.adminAccessNeededToWrite = true;
             conversationMessageTable.AddIdField();
             conversationMessageTable.AddMultiTenantSupport();
@@ -1279,8 +1310,8 @@ It is part of the Foundation's Conversation/Messaging system.";
 
             Database.Table conversationMessageAttachmentTable = database.AddTable("ConversationMessageAttachment");
             conversationMessageAttachmentTable.comment = "This is the ConversationMessageAttachment table.  It tracks the attachments that belong to a message in a conversation.  It is part of the Foundation's Conversation/Messaging system.";
-            conversationMessageAttachmentTable.minimumReadPermissionLevel = 50;
-            conversationMessageAttachmentTable.minimumWritePermissionLevel = 50;
+            conversationMessageAttachmentTable.minimumReadPermissionLevel = SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL;
+            conversationMessageAttachmentTable.minimumWritePermissionLevel = SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL;
             conversationMessageAttachmentTable.adminAccessNeededToWrite = true;
             conversationMessageAttachmentTable.AddIdField();
             conversationMessageAttachmentTable.AddMultiTenantSupport();
@@ -1300,8 +1331,8 @@ It is part of the Foundation's Conversation/Messaging system.";
 
             Database.Table conversationMessageUserTable = database.AddTable("ConversationMessageUser");
             conversationMessageUserTable.comment = "This is the ConversationMessageUser table.  It tracks the users that belong to a message in a conversation.  It is part of the Foundation's Conversation/Messaging system.";
-            conversationMessageUserTable.minimumReadPermissionLevel = 50;
-            conversationMessageUserTable.minimumWritePermissionLevel = 50;
+            conversationMessageUserTable.minimumReadPermissionLevel = SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL;
+            conversationMessageUserTable.minimumWritePermissionLevel = SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL;
             conversationMessageUserTable.adminAccessNeededToWrite = true;
             conversationMessageUserTable.AddIdField();
             conversationMessageUserTable.AddMultiTenantSupport();

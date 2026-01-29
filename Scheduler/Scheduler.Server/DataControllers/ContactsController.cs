@@ -380,11 +380,11 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         /// 
         /// This returns a row count of Contacts filtered by the parameters provided.  Its query is similar to the GetContacts method, but it only returns the count of rows that would be returned.
         ///
-        /// The rate limit is 2 per second per user.
+        /// The rate limit is 10 per second per user.
         /// 
         /// </summary>
 		[HttpGet]
-		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/Contacts/RowCount")]
 		public async Task<IActionResult> GetRowCount(
 			int? contactTypeId = null,
@@ -1208,6 +1208,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					contact.ContactInteractioncontacts = null;
 					contact.ContactInteractioninitiatingContacts = null;
 					contact.ContactTags = null;
+					contact.EventResourceAssignments = null;
 					contact.NotificationSubscriptions = null;
 					contact.OfficeContacts = null;
 					contact.ResourceContacts = null;
@@ -1352,6 +1353,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				cloneOfExisting.ContactInteractioncontacts = null;
 				cloneOfExisting.ContactInteractioninitiatingContacts = null;
 				cloneOfExisting.ContactTags = null;
+				cloneOfExisting.EventResourceAssignments = null;
 				cloneOfExisting.NotificationSubscriptions = null;
 				cloneOfExisting.OfficeContacts = null;
 				cloneOfExisting.ResourceContacts = null;

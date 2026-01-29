@@ -77,6 +77,8 @@ public partial class Constituent
 
     public virtual ICollection<Tribute> Tributes { get; set; } = new List<Tribute>();
 
+    public virtual ICollection<VolunteerProfile> VolunteerProfiles { get; set; } = new List<VolunteerProfile>();
+
     public virtual Client client { get; set; }
 
     public virtual ConstituentJourneyStage constituentJourneyStage { get; set; }

@@ -29,8 +29,8 @@ namespace Foundation.Security.Controllers.WebAPI
     /// </summary>
 	public partial class SecurityOrganizationUsersController : SecureWebAPIController
 	{
-		public const int READ_PERMISSION_LEVEL_REQUIRED = 0;
-		public const int WRITE_PERMISSION_LEVEL_REQUIRED = 0;
+		public const int READ_PERMISSION_LEVEL_REQUIRED = 1;
+		public const int WRITE_PERMISSION_LEVEL_REQUIRED = 50;
 
 		private SecurityContext _context;
 
@@ -86,7 +86,7 @@ namespace Foundation.Security.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
-			bool userIsWriter = await UserCanWriteAsync(securityUser, 0, cancellationToken);
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 50, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 
 			if (pageNumber.HasValue == true &&
@@ -257,7 +257,7 @@ namespace Foundation.Security.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
-			bool userIsWriter = await UserCanWriteAsync(securityUser, 0, cancellationToken);
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 50, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 
 			IQueryable<Database.SecurityOrganizationUser> query = (from sou in _context.SecurityOrganizationUsers select sou);
@@ -371,7 +371,7 @@ namespace Foundation.Security.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
-			bool userIsWriter = await UserCanWriteAsync(securityUser, 0, cancellationToken);
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 50, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 
 			try
@@ -460,7 +460,7 @@ namespace Foundation.Security.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
-			bool userIsWriter = await UserCanWriteAsync(securityUser, 0, cancellationToken);
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 50, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 			IQueryable<Database.SecurityOrganizationUser> query = (from x in _context.SecurityOrganizationUsers
 				where
@@ -709,7 +709,7 @@ namespace Foundation.Security.Controllers.WebAPI
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
-			bool userIsWriter = await UserCanWriteAsync(securityUser, 0, cancellationToken);
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 50, cancellationToken);
 
 			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
 

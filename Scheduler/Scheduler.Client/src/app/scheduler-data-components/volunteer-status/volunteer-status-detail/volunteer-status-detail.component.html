@@ -1,0 +1,151 @@
+<div class="container-fluid p-1 m-0 volunteer-status-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="volunteer-status-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Volunteer Status</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Volunteer Status' : 'Add Volunteer Status'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerVolunteerStatusReader()">
+                <div class="col m-2 volunteer-status-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="volunteerStatusForm" (ngSubmit)="submitForm()" class="volunteer-status-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="VolunteerStatus-name" id="label-VolunteerStatus-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="VolunteerStatus-name" formControlName="name" placeholder="Enter Name" class="form-control volunteer-status-input" [disabled]="!userIsSchedulerVolunteerStatusWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="volunteerStatusForm.get('name')?.invalid && volunteerStatusForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="VolunteerStatus-description" id="label-VolunteerStatus-description"><span class="text-danger">*</span>Description</label>
+                                <textarea id="VolunteerStatus-description" formControlName="description" placeholder="Enter Description" class="form-control volunteer-status-input" [disabled]="!userIsSchedulerVolunteerStatusWriter()"></textarea>
+                                <div *ngIf="volunteerStatusForm.get('description')?.invalid && volunteerStatusForm.get('description')?.touched" class="text-danger">
+                                    Description is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                                <label for="VolunteerStatus-sequence" id="label-VolunteerStatus-sequence">Sequence</label>
+                                <input type="number" id="VolunteerStatus-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control volunteer-status-input" [disabled]="!userIsSchedulerVolunteerStatusWriter()" aria-labelledby="label-sequence" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('color')">
+                                <label for="VolunteerStatus-color" id="label-VolunteerStatus-color">Color</label>
+                                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="VolunteerStatus-color" 
+                        formControlName="color" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerVolunteerStatusWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="volunteerStatusForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('iconId')">
+                                <label for="VolunteerStatus-iconId" id="label-VolunteerStatus-iconId">Icon</label>
+                                <select id="VolunteerStatus-iconId" formControlName="iconId" class="form-select volunteer-status-select" [disabled]="!userIsSchedulerVolunteerStatusWriter()">
+                                    <option [ngValue]="null">Select Icon</option>
+                                    <option *ngFor="let icon of icons$ | async" [ngValue]="icon.id">{{icon.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isActive')">
+                                <input type="checkbox" id="VolunteerStatus-isActive" formControlName="isActive" class="form-check-input" [disabled]="!userIsSchedulerVolunteerStatusWriter()" />
+                                <label for="VolunteerStatus-isActive" class="form-check-label" id="label-VolunteerStatus-isActive">Is Active</label>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('preventsScheduling')">
+                                <input type="checkbox" id="VolunteerStatus-preventsScheduling" formControlName="preventsScheduling" class="form-check-input" [disabled]="!userIsSchedulerVolunteerStatusWriter()" />
+                                <label for="VolunteerStatus-preventsScheduling" class="form-check-label" id="label-VolunteerStatus-preventsScheduling"><span class="text-danger">*</span>Prevents Scheduling</label>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('requiresApproval')">
+                                <input type="checkbox" id="VolunteerStatus-requiresApproval" formControlName="requiresApproval" class="form-check-input" [disabled]="!userIsSchedulerVolunteerStatusWriter()" />
+                                <label for="VolunteerStatus-requiresApproval" class="form-check-label" id="label-VolunteerStatus-requiresApproval"><span class="text-danger">*</span>Requires Approval</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="VolunteerStatus-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerVolunteerStatusWriter()" />
+                                <label for="VolunteerStatus-active" class="form-check-label" id="label-VolunteerStatus-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="VolunteerStatus-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerVolunteerStatusWriter()" />
+                                <label for="VolunteerStatus-deleted" class="form-check-label" id="label-VolunteerStatus-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="volunteer-status-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="volunteerStatusForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Volunteer Status">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !volunteerStatusForm.valid || !volunteerStatusForm.dirty || volunteerStatusForm.pristine  || userIsSchedulerVolunteerStatusWriter() == false " ngbTooltip="Save the Volunteer Status changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Volunteer Status' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerVolunteerStatusReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 volunteer-status-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="volunteerProfileService.userIsSchedulerVolunteerProfileReader()">
+                            <button ngbNavLink>Volunteer Profiles
+                                <span class="badge bg-primary ms-2">
+                                    {{ (volunteerStatusData?.VolunteerProfilesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-volunteer-profile-table [queryParams]="{ volunteerStatusId: volunteerStatusData?.id }"></app-volunteer-profile-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-volunteer-profile-add-edit [preSeededData]="{ volunteerStatusId: volunteerStatusData?.id }" [hiddenFields]="['volunteerStatusId']"></app-volunteer-profile-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="volunteerGroupService.userIsSchedulerVolunteerGroupReader()">
+                            <button ngbNavLink>Volunteer Groups
+                                <span class="badge bg-primary ms-2">
+                                    {{ (volunteerStatusData?.VolunteerGroupsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-volunteer-group-table [queryParams]="{ volunteerStatusId: volunteerStatusData?.id }"></app-volunteer-group-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-volunteer-group-add-edit [preSeededData]="{ volunteerStatusId: volunteerStatusData?.id }" [hiddenFields]="['volunteerStatusId']"></app-volunteer-group-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

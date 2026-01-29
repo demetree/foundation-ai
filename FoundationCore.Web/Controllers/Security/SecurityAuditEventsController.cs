@@ -13,8 +13,8 @@ namespace Foundation.Security.Controllers.WebAPI
 {
     public class SecurityAuditEventsController : SecureWebAPIController
     {
-        public const int READ_PERMISSION_LEVEL_REQUIRED = 0;
-        public const int WRITE_PERMISSION_LEVEL_REQUIRED = 0;
+        public const int READ_PERMISSION_LEVEL_REQUIRED = 1;
+        public const int WRITE_PERMISSION_LEVEL_REQUIRED = 50;
 
         //
         // This is a minimal copy implementation of the Auditor.AuditEvent WebAPI class.  It's here in the security module to allow the users screen to read the audit events for a user.

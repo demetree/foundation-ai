@@ -1,0 +1,97 @@
+<div class="add-volunteer-group-member" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-volunteer-group-member me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Volunteer Group Member" 
+        *ngIf="userIsSchedulerVolunteerGroupMemberWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #volunteerGroupMemberModal let-modal>
+   <div class="modal-header bg-dark text-light volunteer-group-member-modal-header">
+      <h5 class="modal-title mb-0" id="volunteerGroupMemberModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Volunteer Group Member' : 'Add Volunteer Group Member' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body volunteer-group-member-modal-body">
+      <form [formGroup]="volunteerGroupMemberForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('volunteerGroupId')">
+                <label for="VolunteerGroupMember-volunteerGroupId" id="label-VolunteerGroupMember-volunteerGroupId"><span class="text-danger">*</span>Volunteer Group</label>
+                <select id="VolunteerGroupMember-volunteerGroupId" formControlName="volunteerGroupId" class="form-select volunteer-group-member-select" [disabled]="!userIsSchedulerVolunteerGroupMemberWriter()">
+                    <option [ngValue]="null">Select Volunteer Group</option>
+                    <option *ngFor="let volunteerGroup of volunteerGroups$ | async" [ngValue]="volunteerGroup.id">{{[volunteerGroup.name] | filterAndJoin}}</option>
+                </select>
+                <div *ngIf="volunteerGroupMemberForm.get('volunteerGroupId')?.invalid && volunteerGroupMemberForm.get('volunteerGroupId')?.touched" class="text-danger">
+                    Volunteer Group is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('resourceId')">
+                <label for="VolunteerGroupMember-resourceId" id="label-VolunteerGroupMember-resourceId"><span class="text-danger">*</span>Resource</label>
+                <select id="VolunteerGroupMember-resourceId" formControlName="resourceId" class="form-select volunteer-group-member-select" [disabled]="!userIsSchedulerVolunteerGroupMemberWriter()">
+                    <option [ngValue]="null">Select Resource</option>
+                    <option *ngFor="let resource of resources$ | async" [ngValue]="resource.id">{{[resource.name] | filterAndJoin}}</option>
+                </select>
+                <div *ngIf="volunteerGroupMemberForm.get('resourceId')?.invalid && volunteerGroupMemberForm.get('resourceId')?.touched" class="text-danger">
+                    Resource is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('assignmentRoleId')">
+                <label for="VolunteerGroupMember-assignmentRoleId" id="label-VolunteerGroupMember-assignmentRoleId">Assignment Role</label>
+                <select id="VolunteerGroupMember-assignmentRoleId" formControlName="assignmentRoleId" class="form-select volunteer-group-member-select" [disabled]="!userIsSchedulerVolunteerGroupMemberWriter()">
+                    <option [ngValue]="null">Select Assignment Role</option>
+                    <option *ngFor="let assignmentRole of assignmentRoles$ | async" [ngValue]="assignmentRole.id">{{assignmentRole.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                <label for="VolunteerGroupMember-sequence" id="label-VolunteerGroupMember-sequence"><span class="text-danger">*</span>Sequence</label>
+                <input type="number" id="VolunteerGroupMember-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control volunteer-group-member-input" [disabled]="!userIsSchedulerVolunteerGroupMemberWriter()" aria-labelledby="label-sequence" />
+                <div *ngIf="volunteerGroupMemberForm.get('sequence')?.invalid && volunteerGroupMemberForm.get('sequence')?.touched" class="text-danger">
+                    Sequence is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('joinedDate')">
+                <label for="VolunteerGroupMember-joinedDate" id="label-VolunteerGroupMember-joinedDate">Joined Date</label>
+                <input type="date" id="VolunteerGroupMember-joinedDate" formControlName="joinedDate" placeholder="Enter Joined Date" class="form-control volunteer-group-member-input" [disabled]="!userIsSchedulerVolunteerGroupMemberWriter()" aria-labelledby="label-joinedDate" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('leftDate')">
+                <label for="VolunteerGroupMember-leftDate" id="label-VolunteerGroupMember-leftDate">Left Date</label>
+                <input type="date" id="VolunteerGroupMember-leftDate" formControlName="leftDate" placeholder="Enter Left Date" class="form-control volunteer-group-member-input" [disabled]="!userIsSchedulerVolunteerGroupMemberWriter()" aria-labelledby="label-leftDate" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('notes')">
+                <label for="VolunteerGroupMember-notes" id="label-VolunteerGroupMember-notes">Notes</label>
+                <textarea id="VolunteerGroupMember-notes" formControlName="notes" placeholder="Enter Notes" class="form-control volunteer-group-member-input" [disabled]="!userIsSchedulerVolunteerGroupMemberWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="VolunteerGroupMember-versionNumber" id="label-VolunteerGroupMember-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="VolunteerGroupMember-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control volunteer-group-member-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="VolunteerGroupMember-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerVolunteerGroupMemberWriter()" />
+                <label for="VolunteerGroupMember-active" class="form-check-label" id="label-VolunteerGroupMember-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="VolunteerGroupMember-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerVolunteerGroupMemberWriter()" />
+                <label for="VolunteerGroupMember-deleted" class="form-check-label" id="label-VolunteerGroupMember-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer volunteer-group-member-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Volunteer Group Member changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !volunteerGroupMemberForm.valid || volunteerGroupMemberForm.pristine  || userIsSchedulerVolunteerGroupMemberWriter() == false " ngbTooltip="Save the Volunteer Group Member changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Volunteer Group Member' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

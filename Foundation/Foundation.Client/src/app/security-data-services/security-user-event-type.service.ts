@@ -599,7 +599,7 @@ export class SecurityUserEventTypeService extends SecureEndpointBase {
             const user = this.authService.currentUser;
 
             if (user != null) {
-                userIsSecuritySecurityUserEventTypeReader = user.readPermission >= 0;
+                userIsSecuritySecurityUserEventTypeReader = user.readPermission >= 1;
             } else {
                 userIsSecuritySecurityUserEventTypeReader = false;
             }
@@ -623,7 +623,7 @@ export class SecurityUserEventTypeService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsSecuritySecurityUserEventTypeWriter = user.writePermission >= 0;
+            userIsSecuritySecurityUserEventTypeWriter = user.writePermission >= 255;
           } else {
             userIsSecuritySecurityUserEventTypeWriter = false;
           }      

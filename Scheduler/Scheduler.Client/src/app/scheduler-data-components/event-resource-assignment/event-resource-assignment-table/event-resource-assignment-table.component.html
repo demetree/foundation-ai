@@ -39,6 +39,10 @@
                 Crew
                 <span *ngIf="sortColumn === 'crew.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('volunteerGroup.name')">
+                Volunteer  Group
+                <span *ngIf="sortColumn === 'volunteerGroup.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
             <th class="sortable" scope="col" (click)="sortBy('assignmentRole.name')">
                 Assignment  Role
                 <span *ngIf="sortColumn === 'assignmentRole.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
@@ -86,6 +90,42 @@
             <th class="sortable" scope="col" (click)="sortBy('actualNotes')">
                 Actual  Notes
                 <span *ngIf="sortColumn === 'actualNotes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('isVolunteer')">
+                Is  Volunteer
+                <span *ngIf="sortColumn === 'isVolunteer'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('reportedVolunteerHours')">
+                Reported  Volunteer  Hours
+                <span *ngIf="sortColumn === 'reportedVolunteerHours'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('approvedVolunteerHours')">
+                Approved  Volunteer  Hours
+                <span *ngIf="sortColumn === 'approvedVolunteerHours'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('hoursApprovedByContact.name')">
+                Hours  Approved  By  Contact
+                <span *ngIf="sortColumn === 'hoursApprovedByContact.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('approvedDateTime')">
+                Approved  Date  Time
+                <span *ngIf="sortColumn === 'approvedDateTime'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('reimbursementAmount')">
+                Reimbursement  Amount
+                <span *ngIf="sortColumn === 'reimbursementAmount'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('chargeType.name')">
+                Charge  Type
+                <span *ngIf="sortColumn === 'chargeType.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('reimbursementRequested')">
+                Reimbursement  Requested
+                <span *ngIf="sortColumn === 'reimbursementRequested'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('volunteerNotes')">
+                Volunteer  Notes
+                <span *ngIf="sortColumn === 'volunteerNotes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
 End of commented block for alternate definition option -->
           </tr>
@@ -173,6 +213,7 @@ End of commented block for alternate definition option -->
             <td class="text-truncate"><a [routerLink]="['/office', eventResourceAssignment.officeId]" class="btn btn-link text-left" ngbTooltip="Open Office details">{{eventResourceAssignment.office?.name}}</a></td>
             <td class="text-truncate"><a [routerLink]="['/resource', eventResourceAssignment.resourceId]" class="btn btn-link text-left" ngbTooltip="Open Resource details">{{eventResourceAssignment.resource?.name}}</a></td>
             <td class="text-truncate"><a [routerLink]="['/crew', eventResourceAssignment.crewId]" class="btn btn-link text-left" ngbTooltip="Open Crew details">{{eventResourceAssignment.crew?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/volunteergroup', eventResourceAssignment.volunteerGroupId]" class="btn btn-link text-left" ngbTooltip="Open Volunteer Group details">{{eventResourceAssignment.volunteerGroup?.name}}</a></td>
             <td class="text-truncate"><a [routerLink]="['/assignmentrole', eventResourceAssignment.assignmentRoleId]" class="btn btn-link text-left" ngbTooltip="Open Assignment Role details">{{eventResourceAssignment.assignmentRole?.name}}</a></td>
             <td class="text-truncate"><a [routerLink]="['/assignmentstatus', eventResourceAssignment.assignmentStatusId]" class="btn btn-link text-left" ngbTooltip="Open Assignment Status details">{{eventResourceAssignment.assignmentStatus?.name}}</a></td>
             <td class="text-truncate"><a [routerLink]="['/eventresourceassignment', eventResourceAssignment.id]" class="btn btn-link text-left" ngbTooltip="Open Event Resource Assignment details">{{eventResourceAssignment.assignmentStartDateTime | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</a></td>
@@ -185,6 +226,15 @@ End of commented block for alternate definition option -->
             <td class="text-truncate">{{eventResourceAssignment.actualStartDateTime | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
             <td class="text-truncate">{{eventResourceAssignment.actualEndDateTime | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
             <td class="text-truncate">{{eventResourceAssignment.actualNotes}}</td>
+            <td class="text-truncate"><boolean-icon [value]="eventResourceAssignment.isVolunteer"/></td>
+            <td class="text-truncate">{{eventResourceAssignment.reportedVolunteerHours | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{eventResourceAssignment.approvedVolunteerHours | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate"><a [routerLink]="['/contact', eventResourceAssignment.hoursApprovedByContactId]" class="btn btn-link text-left" ngbTooltip="Open Contact details">{{eventResourceAssignment.hoursApprovedByContact?.name}}</a></td>
+            <td class="text-truncate">{{eventResourceAssignment.approvedDateTime | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate">{{eventResourceAssignment.reimbursementAmount | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate"><a [routerLink]="['/chargetype', eventResourceAssignment.chargeTypeId]" class="btn btn-link text-left" ngbTooltip="Open Charge Type details">{{eventResourceAssignment.chargeType?.name}}</a></td>
+            <td class="text-truncate"><boolean-icon [value]="eventResourceAssignment.reimbursementRequested"/></td>
+            <td class="text-truncate">{{eventResourceAssignment.volunteerNotes}}</td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -348,6 +398,10 @@ End of commented block for alternate definition option -->
               <strong>Crew: </strong>
               <a [routerLink]="['/crew', eventResourceAssignment.crewId]" class="text-left p-0 m-0" ngbTooltip="Open Crew details">{{eventResourceAssignment.crew?.name}}</a>
             </p>
+            <p class="event-resource-assignment-info" *ngIf="eventResourceAssignment.volunteerGroupId != null">
+              <strong>Volunteer Group: </strong>
+              <a [routerLink]="['/volunteergroup', eventResourceAssignment.volunteerGroupId]" class="text-left p-0 m-0" ngbTooltip="Open Volunteer Group details">{{eventResourceAssignment.volunteerGroup?.name}}</a>
+            </p>
             <p class="event-resource-assignment-info" *ngIf="eventResourceAssignment.assignmentRoleId != null">
               <strong>Assignment Role: </strong>
               <a [routerLink]="['/assignmentrole', eventResourceAssignment.assignmentRoleId]" class="text-left p-0 m-0" ngbTooltip="Open Assignment Role details">{{eventResourceAssignment.assignmentRole?.name}}</a>
@@ -395,6 +449,42 @@ End of commented block for alternate definition option -->
             <p class="event-resource-assignment-info" *ngIf="eventResourceAssignment.actualNotes != null">
               <strong>Actual Notes: </strong>
               {{eventResourceAssignment.actualNotes}}
+            </p>
+            <p class="event-resource-assignment-info" *ngIf="eventResourceAssignment.isVolunteer != null">
+              <strong>Is Volunteer: </strong>
+              <boolean-icon [value]="eventResourceAssignment.isVolunteer"/>
+            </p>
+            <p class="event-resource-assignment-info" *ngIf="eventResourceAssignment.reportedVolunteerHours != null">
+              <strong>Reported Volunteer Hours: </strong>
+              {{eventResourceAssignment.reportedVolunteerHours | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="event-resource-assignment-info" *ngIf="eventResourceAssignment.approvedVolunteerHours != null">
+              <strong>Approved Volunteer Hours: </strong>
+              {{eventResourceAssignment.approvedVolunteerHours | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="event-resource-assignment-info" *ngIf="eventResourceAssignment.hoursApprovedByContactId != null">
+              <strong>Hours Approved By Contact: </strong>
+              <a [routerLink]="['/contact', eventResourceAssignment.hoursApprovedByContactId]" class="text-left p-0 m-0" ngbTooltip="Open Contact details">{{eventResourceAssignment.hoursApprovedByContact?.name}}</a>
+            </p>
+            <p class="event-resource-assignment-info" *ngIf="eventResourceAssignment.approvedDateTime != null">
+              <strong>Approved Date Time: </strong>
+              {{eventResourceAssignment.approvedDateTime | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="event-resource-assignment-info" *ngIf="eventResourceAssignment.reimbursementAmount != null">
+              <strong>Reimbursement Amount: </strong>
+              {{eventResourceAssignment.reimbursementAmount | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="event-resource-assignment-info" *ngIf="eventResourceAssignment.chargeTypeId != null">
+              <strong>Charge Type: </strong>
+              <a [routerLink]="['/chargetype', eventResourceAssignment.chargeTypeId]" class="text-left p-0 m-0" ngbTooltip="Open Charge Type details">{{eventResourceAssignment.chargeType?.name}}</a>
+            </p>
+            <p class="event-resource-assignment-info" *ngIf="eventResourceAssignment.reimbursementRequested != null">
+              <strong>Reimbursement Requested: </strong>
+              <boolean-icon [value]="eventResourceAssignment.reimbursementRequested"/>
+            </p>
+            <p class="event-resource-assignment-info" *ngIf="eventResourceAssignment.volunteerNotes != null">
+              <strong>Volunteer Notes: </strong>
+              {{eventResourceAssignment.volunteerNotes}}
             </p>
             </div>
          </div>

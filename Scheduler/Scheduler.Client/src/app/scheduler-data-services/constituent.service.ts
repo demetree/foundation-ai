@@ -26,6 +26,7 @@ import { PledgeService, PledgeData } from './pledge.service';
 import { TributeService, TributeData } from './tribute.service';
 import { GiftService, GiftData } from './gift.service';
 import { SoftCreditService, SoftCreditData } from './soft-credit.service';
+import { VolunteerProfileService, VolunteerProfileData } from './volunteer-profile.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -231,6 +232,11 @@ export class ConstituentData {
     private _softCreditsSubject = new BehaviorSubject<SoftCreditData[] | null>(null);
 
                 
+    private _volunteerProfiles: VolunteerProfileData[] | null = null;
+    private _volunteerProfilesPromise: Promise<VolunteerProfileData[]> | null  = null;
+    private _volunteerProfilesSubject = new BehaviorSubject<VolunteerProfileData[] | null>(null);
+
+                
 
 
     //
@@ -341,6 +347,25 @@ export class ConstituentData {
 
 
 
+    public VolunteerProfiles$ = this._volunteerProfilesSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._volunteerProfiles === null && this._volunteerProfilesPromise === null) {
+            this.loadVolunteerProfiles(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public VolunteerProfilesCount$ = VolunteerProfileService.Instance.GetVolunteerProfilesRowCount({constituentId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
 
   //
   // Full reload — refreshes the entire object and clears all lazy caches 
@@ -398,6 +423,10 @@ export class ConstituentData {
      this._softCredits = null;
      this._softCreditsPromise = null;
      this._softCreditsSubject.next(null);
+
+     this._volunteerProfiles = null;
+     this._volunteerProfilesPromise = null;
+     this._volunteerProfilesSubject.next(null);
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -733,6 +762,71 @@ export class ConstituentData {
     }
 
 
+    /**
+     *
+     * Gets the VolunteerProfiles for this Constituent.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.constituent.VolunteerProfiles.then(constituents => { ... })
+     *   or
+     *   await this.constituent.constituents
+     *
+    */
+    public get VolunteerProfiles(): Promise<VolunteerProfileData[]> {
+        if (this._volunteerProfiles !== null) {
+            return Promise.resolve(this._volunteerProfiles);
+        }
+
+        if (this._volunteerProfilesPromise !== null) {
+            return this._volunteerProfilesPromise;
+        }
+
+        // Start the load
+        this.loadVolunteerProfiles();
+
+        return this._volunteerProfilesPromise!;
+    }
+
+
+
+    private loadVolunteerProfiles(): void {
+
+        this._volunteerProfilesPromise = lastValueFrom(
+            ConstituentService.Instance.GetVolunteerProfilesForConstituent(this.id)
+        )
+        .then(VolunteerProfiles => {
+            this._volunteerProfiles = VolunteerProfiles ?? [];
+            this._volunteerProfilesSubject.next(this._volunteerProfiles);
+            return this._volunteerProfiles;
+         })
+        .catch(err => {
+            this._volunteerProfiles = [];
+            this._volunteerProfilesSubject.next(this._volunteerProfiles);
+            throw err;
+        })
+        .finally(() => {
+            this._volunteerProfilesPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached VolunteerProfile. Call after mutations to force refresh.
+     */
+    public ClearVolunteerProfilesCache(): void {
+        this._volunteerProfiles = null;
+        this._volunteerProfilesPromise = null;
+        this._volunteerProfilesSubject.next(this._volunteerProfiles);      // Emit to observable
+    }
+
+    public get HasVolunteerProfiles(): Promise<boolean> {
+        return this.VolunteerProfiles.then(volunteerProfiles => volunteerProfiles.length > 0);
+    }
+
+
 
 
     //
@@ -816,6 +910,7 @@ export class ConstituentService extends SecureEndpointBase {
         private tributeService: TributeService,
         private giftService: GiftService,
         private softCreditService: SoftCreditService,
+        private volunteerProfileService: VolunteerProfileService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
 
@@ -1348,6 +1443,16 @@ export class ConstituentService extends SecureEndpointBase {
     }
 
 
+    public GetVolunteerProfilesForConstituent(constituentId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<VolunteerProfileData[]> {
+        return this.volunteerProfileService.GetVolunteerProfileList({
+            constituentId: constituentId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
  /**
    *
    * Revives a plain object from the server into a full ConstituentData instance.
@@ -1402,6 +1507,10 @@ export class ConstituentService extends SecureEndpointBase {
     (revived as any)._softCredits = null;
     (revived as any)._softCreditsPromise = null;
     (revived as any)._softCreditsSubject = new BehaviorSubject<SoftCreditData[] | null>(null);
+
+    (revived as any)._volunteerProfiles = null;
+    (revived as any)._volunteerProfilesPromise = null;
+    (revived as any)._volunteerProfilesSubject = new BehaviorSubject<VolunteerProfileData[] | null>(null);
 
 
     //
@@ -1489,6 +1598,22 @@ export class ConstituentService extends SecureEndpointBase {
       );
 
     (revived as any).SoftCreditsCount$ = SoftCreditService.Instance.GetSoftCreditsRowCount({constituentId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).VolunteerProfiles$ = (revived as any)._volunteerProfilesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._volunteerProfiles === null && (revived as any)._volunteerProfilesPromise === null) {
+                (revived as any).loadVolunteerProfiles();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).VolunteerProfilesCount$ = VolunteerProfileService.Instance.GetVolunteerProfilesRowCount({constituentId: (revived as any).id,
       active: true,
       deleted: false
     });

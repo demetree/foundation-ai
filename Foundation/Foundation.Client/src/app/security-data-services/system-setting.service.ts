@@ -516,7 +516,7 @@ export class SystemSettingService extends SecureEndpointBase {
             const user = this.authService.currentUser;
 
             if (user != null) {
-                userIsSecuritySystemSettingReader = user.readPermission >= 0;
+                userIsSecuritySystemSettingReader = user.readPermission >= 1;
             } else {
                 userIsSecuritySystemSettingReader = false;
             }
@@ -540,7 +540,7 @@ export class SystemSettingService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsSecuritySystemSettingWriter = user.writePermission >= 100;
+            userIsSecuritySystemSettingWriter = user.writePermission >= 255;
           } else {
             userIsSecuritySystemSettingWriter = false;
           }      

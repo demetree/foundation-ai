@@ -19,6 +19,8 @@ public partial class EventResourceAssignment
 
     public int? crewId { get; set; }
 
+    public int? volunteerGroupId { get; set; }
+
     public int? assignmentRoleId { get; set; }
 
     public int assignmentStatusId { get; set; }
@@ -43,6 +45,24 @@ public partial class EventResourceAssignment
 
     public string actualNotes { get; set; }
 
+    public bool isVolunteer { get; set; }
+
+    public float? reportedVolunteerHours { get; set; }
+
+    public float? approvedVolunteerHours { get; set; }
+
+    public int? hoursApprovedByContactId { get; set; }
+
+    public DateTime? approvedDateTime { get; set; }
+
+    public decimal? reimbursementAmount { get; set; }
+
+    public int? chargeTypeId { get; set; }
+
+    public bool reimbursementRequested { get; set; }
+
+    public string volunteerNotes { get; set; }
+
     public int versionNumber { get; set; }
 
     public Guid objectGuid { get; set; }
@@ -57,11 +77,17 @@ public partial class EventResourceAssignment
 
     public virtual AssignmentStatus assignmentStatus { get; set; }
 
+    public virtual ChargeType chargeType { get; set; }
+
     public virtual Crew crew { get; set; }
+
+    public virtual Contact hoursApprovedByContact { get; set; }
 
     public virtual Office office { get; set; }
 
     public virtual Resource resource { get; set; }
 
     public virtual ScheduledEvent scheduledEvent { get; set; }
+
+    public virtual VolunteerGroup volunteerGroup { get; set; }
 }

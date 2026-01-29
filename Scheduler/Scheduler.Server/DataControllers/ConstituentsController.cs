@@ -408,11 +408,11 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         /// 
         /// This returns a row count of Constituents filtered by the parameters provided.  Its query is similar to the GetConstituents method, but it only returns the count of rows that would be returned.
         ///
-        /// The rate limit is 2 per second per user.
+        /// The rate limit is 10 per second per user.
         /// 
         /// </summary>
 		[HttpGet]
-		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/Constituents/RowCount")]
 		public async Task<IActionResult> GetRowCount(
 			int? contactId = null,
@@ -1191,6 +1191,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					constituent.Pledges = null;
 					constituent.SoftCredits = null;
 					constituent.Tributes = null;
+					constituent.VolunteerProfiles = null;
 					constituent.client = null;
 					constituent.constituentJourneyStage = null;
 					constituent.contact = null;
@@ -1328,6 +1329,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				cloneOfExisting.Pledges = null;
 				cloneOfExisting.SoftCredits = null;
 				cloneOfExisting.Tributes = null;
+				cloneOfExisting.VolunteerProfiles = null;
 				cloneOfExisting.client = null;
 				cloneOfExisting.constituentJourneyStage = null;
 				cloneOfExisting.contact = null;

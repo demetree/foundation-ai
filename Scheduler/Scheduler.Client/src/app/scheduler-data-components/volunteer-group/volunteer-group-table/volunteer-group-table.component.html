@@ -1,0 +1,377 @@
+<app-volunteer-group-add-edit [showAddButton]="false"></app-volunteer-group-add-edit>
+<div class="row" *ngIf="userIsSchedulerVolunteerGroupReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerVolunteerGroupWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerVolunteerGroupWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('name')">
+                Name
+                <span *ngIf="sortColumn === 'name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('description')">
+                Description
+                <span *ngIf="sortColumn === 'description'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('purpose')">
+                Purpose
+                <span *ngIf="sortColumn === 'purpose'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('office.name')">
+                Office
+                <span *ngIf="sortColumn === 'office.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('volunteerStatus.name')">
+                Volunteer  Status
+                <span *ngIf="sortColumn === 'volunteerStatus.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('maxMembers')">
+                Max  Members
+                <span *ngIf="sortColumn === 'maxMembers'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('icon.name')">
+                Icon
+                <span *ngIf="sortColumn === 'icon.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('color')">
+                Color
+                <span *ngIf="sortColumn === 'color'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('notes')">
+                Notes
+                <span *ngIf="sortColumn === 'notes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('avatarFileName')">
+                Avatar  File  Name
+                <span *ngIf="sortColumn === 'avatarFileName'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('avatarSize')">
+                Avatar  Size
+                <span *ngIf="sortColumn === 'avatarSize'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('avatarData')">
+                Avatar  Data
+                <span *ngIf="sortColumn === 'avatarData'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('avatarMimeType')">
+                Avatar  Mime  Type
+                <span *ngIf="sortColumn === 'avatarMimeType'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let volunteerGroup of filteredVolunteerGroups; trackBy: getVolunteerGroupId"
+              [ngClass]="{
+                 'row-inactive': volunteerGroup.active == false,
+                 'row-deleted': volunteerGroup.deleted == true 
+                 }">
+            <td class="header-action-button" *ngIf="userIsSchedulerVolunteerGroupWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleEdit(volunteerGroup)"
+                      ngbTooltip="Edit" 
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsSchedulerVolunteerGroupWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleDelete(volunteerGroup)"
+                      ngbTooltip="Delete" 
+                      placement="top"
+                      *ngIf="volunteerGroup.deleted == false">
+                <i class="fa fa-trash"></i>
+              </button>
+              <button class="btn btn-sm"
+                      (click)="handleUndelete(volunteerGroup)"
+                      ngbTooltip="Undelete" 
+                      placement="top"
+                      *ngIf="volunteerGroup.deleted == true">
+                <i class="fa fa-trash-arrow-up"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(volunteerGroup, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(volunteerGroup, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(volunteerGroup, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(volunteerGroup, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(volunteerGroup, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(volunteerGroup, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(volunteerGroup, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(volunteerGroup, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/volunteergroup', volunteerGroup.id]" class="btn btn-link text-left" ngbTooltip="Open Volunteer Group details">{{volunteerGroup.name}}</a></td>
+            <td class="text-truncate">{{volunteerGroup.description}}</td>
+            <td class="text-truncate">{{volunteerGroup.purpose}}</td>
+            <td class="text-truncate"><a [routerLink]="['/office', volunteerGroup.officeId]" class="btn btn-link text-left" ngbTooltip="Open Office details">{{volunteerGroup.office?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/volunteerstatus', volunteerGroup.volunteerStatusId]" class="btn btn-link text-left" ngbTooltip="Open Volunteer Status details">{{volunteerGroup.volunteerStatus?.name}}</a></td>
+            <td class="text-truncate">{{volunteerGroup.maxMembers | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate"><a [routerLink]="['/icon', volunteerGroup.iconId]" class="btn btn-link text-left" ngbTooltip="Open Icon details">{{volunteerGroup.icon?.name}}</a></td>
+            <td class="text-truncate">{{volunteerGroup.color}}</td>
+            <td class="text-truncate">{{volunteerGroup.notes}}</td>
+            <td class="text-truncate">{{volunteerGroup.avatarFileName}}</td>
+            <td class="text-truncate">{{volunteerGroup.avatarSize | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{volunteerGroup.avatarData}}</td>
+            <td class="text-truncate">{{volunteerGroup.avatarMimeType}}</td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let volunteerGroup of filteredVolunteerGroups; trackBy: getVolunteerGroupId" class="card my-2"
+              [ngClass]="{
+                 'row-inactive': volunteerGroup.active == false,
+                 'row-deleted': volunteerGroup.deleted == true 
+                 }">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(volunteerGroup, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(volunteerGroup, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(volunteerGroup, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(volunteerGroup, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(volunteerGroup, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(volunteerGroup, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(volunteerGroup, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(volunteerGroup, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(volunteerGroup, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(volunteerGroup, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(volunteerGroup, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(volunteerGroup, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(volunteerGroup, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/volunteergroup', volunteerGroup.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(volunteerGroup)" *ngIf="userIsSchedulerVolunteerGroupWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(volunteerGroup)" *ngIf="userIsSchedulerVolunteerGroupWriter() && volunteerGroup.deleted == false" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+            <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(volunteerGroup)" *ngIf="userIsSchedulerVolunteerGroupWriter() && volunteerGroup.deleted == true" ngbTooltip="Undelete">
+              <i class="fa fa-trash-arrow-upp"></i> UnDelete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{volunteerGroup.name}}</strong>
+               <small class="text-muted d-block">{{volunteerGroup.office?.name}}</small>
+             </div>
+             <div>
+                <button class="btn btn-sm"
+                        [routerLink]="['/volunteergroup', volunteerGroup.id]"
+                        ngbTooltip="Volunteer Group Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="btn btn-sm"
+                        (click)="handleEdit(volunteerGroup)"
+                        ngbTooltip="Edit Volunteer Group">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleDelete(volunteerGroup)"
+                      ngbTooltip="Delete Volunteer Group" 
+                      placement="top"
+                      *ngIf="volunteerGroup.deleted == false">
+                  <i class="fa fa-trash"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleUndelete(volunteerGroup)"
+                      ngbTooltip="Undelete Volunteer Group" 
+                      placement="top"
+                      *ngIf="volunteerGroup.deleted == true">
+                 <i class="fa fa-trash-arrow-up"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="volunteer-group-info" *ngIf="volunteerGroup.name != null">
+              <strong>Name: </strong>
+              {{volunteerGroup.name}}
+            </p>
+            <p class="volunteer-group-info" *ngIf="volunteerGroup.description != null">
+              <strong>Description: </strong>
+              {{volunteerGroup.description}}
+            </p>
+            <p class="volunteer-group-info" *ngIf="volunteerGroup.purpose != null">
+              <strong>Purpose: </strong>
+              {{volunteerGroup.purpose}}
+            </p>
+            <p class="volunteer-group-info" *ngIf="volunteerGroup.officeId != null">
+              <strong>Office: </strong>
+              <a [routerLink]="['/office', volunteerGroup.officeId]" class="text-left p-0 m-0" ngbTooltip="Open Office details">{{volunteerGroup.office?.name}}</a>
+            </p>
+            <p class="volunteer-group-info" *ngIf="volunteerGroup.volunteerStatusId != null">
+              <strong>Volunteer Status: </strong>
+              <a [routerLink]="['/volunteerstatus', volunteerGroup.volunteerStatusId]" class="text-left p-0 m-0" ngbTooltip="Open Volunteer Status details">{{volunteerGroup.volunteerStatus?.name}}</a>
+            </p>
+            <p class="volunteer-group-info" *ngIf="volunteerGroup.maxMembers != null">
+              <strong>Max Members: </strong>
+              {{volunteerGroup.maxMembers | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="volunteer-group-info" *ngIf="volunteerGroup.iconId != null">
+              <strong>Icon: </strong>
+              <a [routerLink]="['/icon', volunteerGroup.iconId]" class="text-left p-0 m-0" ngbTooltip="Open Icon details">{{volunteerGroup.icon?.name}}</a>
+            </p>
+            <p class="volunteer-group-info" *ngIf="volunteerGroup.color != null">
+              <strong>Color: </strong>
+              {{volunteerGroup.color}}
+            </p>
+            <p class="volunteer-group-info" *ngIf="volunteerGroup.notes != null">
+              <strong>Notes: </strong>
+              {{volunteerGroup.notes}}
+            </p>
+            <p class="volunteer-group-info" *ngIf="volunteerGroup.avatarFileName != null">
+              <strong>Avatar File Name: </strong>
+              {{volunteerGroup.avatarFileName}}
+            </p>
+            <p class="volunteer-group-info" *ngIf="volunteerGroup.avatarSize != null">
+              <strong>Avatar Size: </strong>
+              {{volunteerGroup.avatarSize | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="volunteer-group-info" *ngIf="volunteerGroup.avatarData != null">
+              <strong>Avatar Data: </strong>
+              {{volunteerGroup.avatarData}}
+            </p>
+            <p class="volunteer-group-info" *ngIf="volunteerGroup.avatarMimeType != null">
+              <strong>Avatar Mime Type: </strong>
+              {{volunteerGroup.avatarMimeType}}
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+   </div>
+</div>

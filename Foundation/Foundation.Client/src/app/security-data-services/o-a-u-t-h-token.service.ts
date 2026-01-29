@@ -516,7 +516,7 @@ export class OAUTHTokenService extends SecureEndpointBase {
             const user = this.authService.currentUser;
 
             if (user != null) {
-                userIsSecurityOAUTHTokenReader = user.readPermission >= 0;
+                userIsSecurityOAUTHTokenReader = user.readPermission >= 1;
             } else {
                 userIsSecurityOAUTHTokenReader = false;
             }
@@ -540,7 +540,7 @@ export class OAUTHTokenService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsSecurityOAUTHTokenWriter = user.writePermission >= 100;
+            userIsSecurityOAUTHTokenWriter = user.writePermission >= 50;
           } else {
             userIsSecurityOAUTHTokenWriter = false;
           }      

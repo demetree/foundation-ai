@@ -172,6 +172,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || (includeRelations == true && x.eventResourceAssignment.notes.Contains(anyStringContains))
 			       || (includeRelations == true && x.eventResourceAssignment.startLocation.Contains(anyStringContains))
 			       || (includeRelations == true && x.eventResourceAssignment.actualNotes.Contains(anyStringContains))
+			       || (includeRelations == true && x.eventResourceAssignment.volunteerNotes.Contains(anyStringContains))
 			   );
 			}
 
@@ -207,11 +208,11 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         /// 
         /// This returns a row count of EventResourceAssignmentChangeHistories filtered by the parameters provided.  Its query is similar to the GetEventResourceAssignmentChangeHistories method, but it only returns the count of rows that would be returned.
         ///
-        /// The rate limit is 2 per second per user.
+        /// The rate limit is 10 per second per user.
         /// 
         /// </summary>
 		[HttpGet]
-		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/EventResourceAssignmentChangeHistories/RowCount")]
 		public async Task<IActionResult> GetRowCount(
 			int? eventResourceAssignmentId = null,
@@ -289,6 +290,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.eventResourceAssignment.notes.Contains(anyStringContains)
 			       || x.eventResourceAssignment.startLocation.Contains(anyStringContains)
 			       || x.eventResourceAssignment.actualNotes.Contains(anyStringContains)
+			       || x.eventResourceAssignment.volunteerNotes.Contains(anyStringContains)
 			   );
 			}
 
@@ -799,6 +801,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.eventResourceAssignment.notes.Contains(anyStringContains)
 			       || x.eventResourceAssignment.startLocation.Contains(anyStringContains)
 			       || x.eventResourceAssignment.actualNotes.Contains(anyStringContains)
+			       || x.eventResourceAssignment.volunteerNotes.Contains(anyStringContains)
 			   );
 			}
 

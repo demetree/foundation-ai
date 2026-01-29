@@ -21,6 +21,7 @@ import { CurrencyData } from './currency.service';
 import { ChargeTypeChangeHistoryService, ChargeTypeChangeHistoryData } from './charge-type-change-history.service';
 import { ScheduledEventTemplateChargeService, ScheduledEventTemplateChargeData } from './scheduled-event-template-charge.service';
 import { EventChargeService, EventChargeData } from './event-charge.service';
+import { EventResourceAssignmentService, EventResourceAssignmentData } from './event-resource-assignment.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -176,6 +177,11 @@ export class ChargeTypeData {
     private _eventChargesSubject = new BehaviorSubject<EventChargeData[] | null>(null);
 
                 
+    private _eventResourceAssignments: EventResourceAssignmentData[] | null = null;
+    private _eventResourceAssignmentsPromise: Promise<EventResourceAssignmentData[]> | null  = null;
+    private _eventResourceAssignmentsSubject = new BehaviorSubject<EventResourceAssignmentData[] | null>(null);
+
+                
 
 
     //
@@ -249,6 +255,25 @@ export class ChargeTypeData {
 
 
 
+    public EventResourceAssignments$ = this._eventResourceAssignmentsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._eventResourceAssignments === null && this._eventResourceAssignmentsPromise === null) {
+            this.loadEventResourceAssignments(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public EventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({chargeTypeId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
 
   //
   // Full reload — refreshes the entire object and clears all lazy caches 
@@ -298,6 +323,10 @@ export class ChargeTypeData {
      this._eventCharges = null;
      this._eventChargesPromise = null;
      this._eventChargesSubject.next(null);
+
+     this._eventResourceAssignments = null;
+     this._eventResourceAssignmentsPromise = null;
+     this._eventResourceAssignmentsSubject.next(null);
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -503,6 +532,71 @@ export class ChargeTypeData {
     }
 
 
+    /**
+     *
+     * Gets the EventResourceAssignments for this ChargeType.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.chargeType.EventResourceAssignments.then(chargeTypes => { ... })
+     *   or
+     *   await this.chargeType.chargeTypes
+     *
+    */
+    public get EventResourceAssignments(): Promise<EventResourceAssignmentData[]> {
+        if (this._eventResourceAssignments !== null) {
+            return Promise.resolve(this._eventResourceAssignments);
+        }
+
+        if (this._eventResourceAssignmentsPromise !== null) {
+            return this._eventResourceAssignmentsPromise;
+        }
+
+        // Start the load
+        this.loadEventResourceAssignments();
+
+        return this._eventResourceAssignmentsPromise!;
+    }
+
+
+
+    private loadEventResourceAssignments(): void {
+
+        this._eventResourceAssignmentsPromise = lastValueFrom(
+            ChargeTypeService.Instance.GetEventResourceAssignmentsForChargeType(this.id)
+        )
+        .then(EventResourceAssignments => {
+            this._eventResourceAssignments = EventResourceAssignments ?? [];
+            this._eventResourceAssignmentsSubject.next(this._eventResourceAssignments);
+            return this._eventResourceAssignments;
+         })
+        .catch(err => {
+            this._eventResourceAssignments = [];
+            this._eventResourceAssignmentsSubject.next(this._eventResourceAssignments);
+            throw err;
+        })
+        .finally(() => {
+            this._eventResourceAssignmentsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached EventResourceAssignment. Call after mutations to force refresh.
+     */
+    public ClearEventResourceAssignmentsCache(): void {
+        this._eventResourceAssignments = null;
+        this._eventResourceAssignmentsPromise = null;
+        this._eventResourceAssignmentsSubject.next(this._eventResourceAssignments);      // Emit to observable
+    }
+
+    public get HasEventResourceAssignments(): Promise<boolean> {
+        return this.EventResourceAssignments.then(eventResourceAssignments => eventResourceAssignments.length > 0);
+    }
+
+
 
 
     //
@@ -584,6 +678,7 @@ export class ChargeTypeService extends SecureEndpointBase {
         private chargeTypeChangeHistoryService: ChargeTypeChangeHistoryService,
         private scheduledEventTemplateChargeService: ScheduledEventTemplateChargeService,
         private eventChargeService: EventChargeService,
+        private eventResourceAssignmentService: EventResourceAssignmentService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
 
@@ -1083,6 +1178,16 @@ export class ChargeTypeService extends SecureEndpointBase {
     }
 
 
+    public GetEventResourceAssignmentsForChargeType(chargeTypeId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<EventResourceAssignmentData[]> {
+        return this.eventResourceAssignmentService.GetEventResourceAssignmentList({
+            chargeTypeId: chargeTypeId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
  /**
    *
    * Revives a plain object from the server into a full ChargeTypeData instance.
@@ -1129,6 +1234,10 @@ export class ChargeTypeService extends SecureEndpointBase {
     (revived as any)._eventCharges = null;
     (revived as any)._eventChargesPromise = null;
     (revived as any)._eventChargesSubject = new BehaviorSubject<EventChargeData[] | null>(null);
+
+    (revived as any)._eventResourceAssignments = null;
+    (revived as any)._eventResourceAssignmentsPromise = null;
+    (revived as any)._eventResourceAssignmentsSubject = new BehaviorSubject<EventResourceAssignmentData[] | null>(null);
 
 
     //
@@ -1184,6 +1293,22 @@ export class ChargeTypeService extends SecureEndpointBase {
       );
 
     (revived as any).EventChargesCount$ = EventChargeService.Instance.GetEventChargesRowCount({chargeTypeId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).EventResourceAssignments$ = (revived as any)._eventResourceAssignmentsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._eventResourceAssignments === null && (revived as any)._eventResourceAssignmentsPromise === null) {
+                (revived as any).loadEventResourceAssignments();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).EventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({chargeTypeId: (revived as any).id,
       active: true,
       deleted: false
     });

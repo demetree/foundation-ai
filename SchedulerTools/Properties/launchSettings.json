@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "SchedulerTools": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

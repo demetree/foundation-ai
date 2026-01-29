@@ -72,7 +72,7 @@ namespace Foundation.Scheduler.CodeGeneration
                     case ConsoleKey.NumPad3:
 
                         //
-                        // This creates a petty harbour tenant, and configures the scheduler database to have an instance for Petty Harbour usage
+                        // This creates a Petty Harbour tenant, and configures the scheduler database to have an instance for Petty Harbour usage
                         //
                         ConfigurePettyHarbour();
 
@@ -1151,6 +1151,7 @@ namespace Foundation.Scheduler.CodeGeneration
                 var config = new ConfigurationBuilder()
                     .SetBasePath(Directory.GetCurrentDirectory())
                     .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                    .AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: true)
                     .Build();
 
                 var deploymentPaths = config.GetSection("DeploymentPaths").Get<Dictionary<string, string>>();

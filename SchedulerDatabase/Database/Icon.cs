@@ -64,4 +64,10 @@ public partial class Icon
     public virtual ICollection<Tag> Tags { get; set; } = new List<Tag>();
 
     public virtual ICollection<Tribute> Tributes { get; set; } = new List<Tribute>();
+
+    public virtual ICollection<VolunteerGroup> VolunteerGroups { get; set; } = new List<VolunteerGroup>();
+
+    public virtual ICollection<VolunteerProfile> VolunteerProfiles { get; set; } = new List<VolunteerProfile>();
+
+    public virtual ICollection<VolunteerStatus> VolunteerStatuses { get; set; } = new List<VolunteerStatus>();
 }

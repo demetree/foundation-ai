@@ -304,23 +304,6 @@
                             </div>
                             </ng-template>
                         </li>
-                      <li ngbNavItem *ngIf="eventResourceAssignmentService.userIsSchedulerEventResourceAssignmentReader()">
-                            <button ngbNavLink>Event Resource Assignments
-                                <span class="badge bg-primary ms-2">
-                                    {{ (resourceData?.EventResourceAssignmentsCount$ | async) ?? '-' }}
-                                </span>
-                            </button>
-                            <ng-template ngbNavContent>
-                            <div class="d-flex flex-column gap-3 p-0">
-                                <div class="flex-grow-1">
-                                    <app-event-resource-assignment-table [queryParams]="{ resourceId: resourceData?.id }"></app-event-resource-assignment-table>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <app-event-resource-assignment-add-edit [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-event-resource-assignment-add-edit>
-                                </div>
-                            </div>
-                            </ng-template>
-                        </li>
                       <li ngbNavItem *ngIf="notificationSubscriptionService.userIsSchedulerNotificationSubscriptionReader()">
                             <button ngbNavLink>Notification Subscriptions
                                 <span class="badge bg-primary ms-2">
@@ -334,6 +317,57 @@
                                 </div>
                                 <div class="d-flex justify-content-end">
                                     <app-notification-subscription-add-edit [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-notification-subscription-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="volunteerProfileService.userIsSchedulerVolunteerProfileReader()">
+                            <button ngbNavLink>Volunteer Profiles
+                                <span class="badge bg-primary ms-2">
+                                    {{ (resourceData?.VolunteerProfilesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-volunteer-profile-table [queryParams]="{ resourceId: resourceData?.id }"></app-volunteer-profile-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-volunteer-profile-add-edit [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-volunteer-profile-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="volunteerGroupMemberService.userIsSchedulerVolunteerGroupMemberReader()">
+                            <button ngbNavLink>Volunteer Group Members
+                                <span class="badge bg-primary ms-2">
+                                    {{ (resourceData?.VolunteerGroupMembersCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-volunteer-group-member-table [queryParams]="{ resourceId: resourceData?.id }"></app-volunteer-group-member-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-volunteer-group-member-add-edit [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-volunteer-group-member-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="eventResourceAssignmentService.userIsSchedulerEventResourceAssignmentReader()">
+                            <button ngbNavLink>Event Resource Assignments
+                                <span class="badge bg-primary ms-2">
+                                    {{ (resourceData?.EventResourceAssignmentsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-event-resource-assignment-table [queryParams]="{ resourceId: resourceData?.id }"></app-event-resource-assignment-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-event-resource-assignment-add-edit [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-event-resource-assignment-add-edit>
                                 </div>
                             </div>
                             </ng-template>

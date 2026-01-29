@@ -85,6 +85,8 @@ public partial class Office
 
     public virtual ICollection<SchedulingTarget> SchedulingTargets { get; set; } = new List<SchedulingTarget>();
 
+    public virtual ICollection<VolunteerGroup> VolunteerGroups { get; set; } = new List<VolunteerGroup>();
+
     public virtual Country country { get; set; }
 
     public virtual Currency currency { get; set; }

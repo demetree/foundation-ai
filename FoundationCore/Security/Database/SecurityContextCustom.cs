@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
+using static Foundation.DatabaseUtility.DBContextExtensions;
 
 namespace Foundation.Security.Database
 {
@@ -14,11 +16,25 @@ namespace Foundation.Security.Database
     /// </summary>
     public partial class SecurityContext : DbContext
     {
+        public DbContextConfiguration _configuration;
+        public DbContextConfiguration Configuration
+        {
+            get
+            {
+                if (_configuration == null)
+                {
+                    _configuration = new DbContextConfiguration(this);
+                }
+
+                return _configuration;
+            }
+        }
+
         int commandTimeoutSeconds = 30;
 
         public SecurityContext()
         {
-
+            this.ChangeTracker.LazyLoadingEnabled = false;
         }
 
         public SecurityContext(int commandTimeoutSeconds)
@@ -60,6 +76,41 @@ namespace Foundation.Security.Database
             }
 
             return;
+        }
+
+
+
+        // Custom constructor for SQL logging with custom ILogger to write to
+        public SecurityContext(ILogger logger, LogLevel level)
+            : base(CreateOptionsWithDebugLogging(logger, level))
+        {
+        }
+
+
+        private static DbContextOptions<SecurityContext> CreateOptionsWithDebugLogging(ILogger logger, LogLevel level)
+        {
+            var optionsBuilder = new DbContextOptionsBuilder<SecurityContext>();
+
+            var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
+                                                    .AddJsonFile("appsettings.json");
+
+            // Check for a custom or standard environment variable
+            if (Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") == "Development" ||
+                Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+            {
+                builder.AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: true);
+            }
+
+            builder.Build();
+
+            IConfigurationRoot configuration = builder.Build();
+            var connectionString = configuration.GetConnectionString("Security");
+
+            optionsBuilder.UseSqlServer(connectionString)
+                          .EnableSensitiveDataLogging()
+                          .LogTo((message) => logger.LogInformation(message), level);       // all messages logged to our logger at the info level
+
+            return optionsBuilder.Options;
         }
 
         public bool DoesDatabaseStoreDateWithTimeZone()

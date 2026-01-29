@@ -10,6 +10,14 @@ CREATE DATABASE `Scheduler`;
 USE `Scheduler`;
 
 /* These drop table commands are here in a commented state as a convenience for situations where you may want to modify the tables in a schema.  They are ordered correctly to be able to delete all tables if executed as a batch, or at least in this order.  Be very careful with these. */
+-- DROP TABLE `EventResourceAssignmentChangeHistory`
+-- DROP TABLE `EventResourceAssignment`
+-- DROP TABLE `VolunteerGroupMemberChangeHistory`
+-- DROP TABLE `VolunteerGroupMember`
+-- DROP TABLE `VolunteerGroupChangeHistory`
+-- DROP TABLE `VolunteerGroup`
+-- DROP TABLE `VolunteerProfileChangeHistory`
+-- DROP TABLE `VolunteerProfile`
 -- DROP TABLE `SoftCreditChangeHistory`
 -- DROP TABLE `SoftCredit`
 -- DROP TABLE `GiftChangeHistory`
@@ -37,8 +45,6 @@ USE `Scheduler`;
 -- DROP TABLE `NotificationSubscriptionChangeHistory`
 -- DROP TABLE `NotificationSubscription`
 -- DROP TABLE `NotificationType`
--- DROP TABLE `EventResourceAssignmentChangeHistory`
--- DROP TABLE `EventResourceAssignment`
 -- DROP TABLE `RecurrenceExceptionChangeHistory`
 -- DROP TABLE `RecurrenceException`
 -- DROP TABLE `ScheduledEventQualificationRequirementChangeHistory`
@@ -123,6 +129,7 @@ USE `Scheduler`;
 -- DROP TABLE `ContactChangeHistory`
 -- DROP TABLE `Contact`
 -- DROP TABLE `ContactType`
+-- DROP TABLE `VolunteerStatus`
 -- DROP TABLE `StateProvince`
 -- DROP TABLE `Country`
 -- DROP TABLE `TimeZone`
@@ -137,9 +144,20 @@ USE `Scheduler`;
 -- DROP TABLE `ResourceType`
 -- DROP TABLE `Salutation`
 -- DROP TABLE `Icon`
+-- DROP TABLE `AttributeDefinitionChangeHistory`
 -- DROP TABLE `AttributeDefinition`
+-- DROP TABLE `AttributeDefinitionEntity`
+-- DROP TABLE `AttributeDefinitionType`
 
 /* These disable table index commands are here in a commented state as a convenience for situations where you want to remove the indexes on a table for things like mass data loads, where indexes just slow things down.  The corresponding rebuild index commands are listed after the disable commands */
+-- ALTER INDEX ALL ON `EventResourceAssignmentChangeHistory` DISABLE
+-- ALTER INDEX ALL ON `EventResourceAssignment` DISABLE
+-- ALTER INDEX ALL ON `VolunteerGroupMemberChangeHistory` DISABLE
+-- ALTER INDEX ALL ON `VolunteerGroupMember` DISABLE
+-- ALTER INDEX ALL ON `VolunteerGroupChangeHistory` DISABLE
+-- ALTER INDEX ALL ON `VolunteerGroup` DISABLE
+-- ALTER INDEX ALL ON `VolunteerProfileChangeHistory` DISABLE
+-- ALTER INDEX ALL ON `VolunteerProfile` DISABLE
 -- ALTER INDEX ALL ON `SoftCreditChangeHistory` DISABLE
 -- ALTER INDEX ALL ON `SoftCredit` DISABLE
 -- ALTER INDEX ALL ON `GiftChangeHistory` DISABLE
@@ -167,8 +185,6 @@ USE `Scheduler`;
 -- ALTER INDEX ALL ON `NotificationSubscriptionChangeHistory` DISABLE
 -- ALTER INDEX ALL ON `NotificationSubscription` DISABLE
 -- ALTER INDEX ALL ON `NotificationType` DISABLE
--- ALTER INDEX ALL ON `EventResourceAssignmentChangeHistory` DISABLE
--- ALTER INDEX ALL ON `EventResourceAssignment` DISABLE
 -- ALTER INDEX ALL ON `RecurrenceExceptionChangeHistory` DISABLE
 -- ALTER INDEX ALL ON `RecurrenceException` DISABLE
 -- ALTER INDEX ALL ON `ScheduledEventQualificationRequirementChangeHistory` DISABLE
@@ -253,6 +269,7 @@ USE `Scheduler`;
 -- ALTER INDEX ALL ON `ContactChangeHistory` DISABLE
 -- ALTER INDEX ALL ON `Contact` DISABLE
 -- ALTER INDEX ALL ON `ContactType` DISABLE
+-- ALTER INDEX ALL ON `VolunteerStatus` DISABLE
 -- ALTER INDEX ALL ON `StateProvince` DISABLE
 -- ALTER INDEX ALL ON `Country` DISABLE
 -- ALTER INDEX ALL ON `TimeZone` DISABLE
@@ -267,9 +284,20 @@ USE `Scheduler`;
 -- ALTER INDEX ALL ON `ResourceType` DISABLE
 -- ALTER INDEX ALL ON `Salutation` DISABLE
 -- ALTER INDEX ALL ON `Icon` DISABLE
+-- ALTER INDEX ALL ON `AttributeDefinitionChangeHistory` DISABLE
 -- ALTER INDEX ALL ON `AttributeDefinition` DISABLE
+-- ALTER INDEX ALL ON `AttributeDefinitionEntity` DISABLE
+-- ALTER INDEX ALL ON `AttributeDefinitionType` DISABLE
 
 /* These rebuild table index commands are here in a commented state as a convenience for situations where you want to rebuild the indexes on a table after having removed them, or if you want to refresh them. */
+-- ALTER INDEX ALL ON `EventResourceAssignmentChangeHistory` REBUILD
+-- ALTER INDEX ALL ON `EventResourceAssignment` REBUILD
+-- ALTER INDEX ALL ON `VolunteerGroupMemberChangeHistory` REBUILD
+-- ALTER INDEX ALL ON `VolunteerGroupMember` REBUILD
+-- ALTER INDEX ALL ON `VolunteerGroupChangeHistory` REBUILD
+-- ALTER INDEX ALL ON `VolunteerGroup` REBUILD
+-- ALTER INDEX ALL ON `VolunteerProfileChangeHistory` REBUILD
+-- ALTER INDEX ALL ON `VolunteerProfile` REBUILD
 -- ALTER INDEX ALL ON `SoftCreditChangeHistory` REBUILD
 -- ALTER INDEX ALL ON `SoftCredit` REBUILD
 -- ALTER INDEX ALL ON `GiftChangeHistory` REBUILD
@@ -297,8 +325,6 @@ USE `Scheduler`;
 -- ALTER INDEX ALL ON `NotificationSubscriptionChangeHistory` REBUILD
 -- ALTER INDEX ALL ON `NotificationSubscription` REBUILD
 -- ALTER INDEX ALL ON `NotificationType` REBUILD
--- ALTER INDEX ALL ON `EventResourceAssignmentChangeHistory` REBUILD
--- ALTER INDEX ALL ON `EventResourceAssignment` REBUILD
 -- ALTER INDEX ALL ON `RecurrenceExceptionChangeHistory` REBUILD
 -- ALTER INDEX ALL ON `RecurrenceException` REBUILD
 -- ALTER INDEX ALL ON `ScheduledEventQualificationRequirementChangeHistory` REBUILD
@@ -383,6 +409,7 @@ USE `Scheduler`;
 -- ALTER INDEX ALL ON `ContactChangeHistory` REBUILD
 -- ALTER INDEX ALL ON `Contact` REBUILD
 -- ALTER INDEX ALL ON `ContactType` REBUILD
+-- ALTER INDEX ALL ON `VolunteerStatus` REBUILD
 -- ALTER INDEX ALL ON `StateProvince` REBUILD
 -- ALTER INDEX ALL ON `Country` REBUILD
 -- ALTER INDEX ALL ON `TimeZone` REBUILD
@@ -397,35 +424,126 @@ USE `Scheduler`;
 -- ALTER INDEX ALL ON `ResourceType` REBUILD
 -- ALTER INDEX ALL ON `Salutation` REBUILD
 -- ALTER INDEX ALL ON `Icon` REBUILD
+-- ALTER INDEX ALL ON `AttributeDefinitionChangeHistory` REBUILD
 -- ALTER INDEX ALL ON `AttributeDefinition` REBUILD
+-- ALTER INDEX ALL ON `AttributeDefinitionEntity` REBUILD
+-- ALTER INDEX ALL ON `AttributeDefinitionType` REBUILD
+
+-- Master list of available attribute data types.
+CREATE TABLE `AttributeDefinitionType`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`name` VARCHAR(100) NOT NULL UNIQUE,
+	`description` VARCHAR(500) NOT NULL,
+	`sequence` INT NULL,		-- Sequence to use for sorting.
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+);
+-- Index on the AttributeDefinitionType table's name field.
+CREATE INDEX `I_AttributeDefinitionType_name` ON `AttributeDefinitionType` (`name`);
+
+-- Index on the AttributeDefinitionType table's active field.
+CREATE INDEX `I_AttributeDefinitionType_active` ON `AttributeDefinitionType` (`active`);
+
+-- Index on the AttributeDefinitionType table's deleted field.
+CREATE INDEX `I_AttributeDefinitionType_deleted` ON `AttributeDefinitionType` (`deleted`);
+
+INSERT INTO `AttributeDefinitionType` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'Text', 'Single line text', 1, 'd1a1b2c3-1111-2222-3333-444455556661' );
+
+INSERT INTO `AttributeDefinitionType` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'Number', 'Numeric value', 2, 'd1a1b2c3-1111-2222-3333-444455556662' );
+
+INSERT INTO `AttributeDefinitionType` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'Date', 'Date value (no time)', 3, 'd1a1b2c3-1111-2222-3333-444455556663' );
+
+INSERT INTO `AttributeDefinitionType` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'Boolean', 'True/False checkbox', 4, 'd1a1b2c3-1111-2222-3333-444455556664' );
+
+INSERT INTO `AttributeDefinitionType` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'Select', 'Dropdown selection', 5, 'd1a1b2c3-1111-2222-3333-444455556665' );
+
+
+-- Master list of entities that support custom attributes.
+CREATE TABLE `AttributeDefinitionEntity`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`name` VARCHAR(100) NOT NULL UNIQUE,
+	`description` VARCHAR(500) NOT NULL,
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+);
+-- Index on the AttributeDefinitionEntity table's name field.
+CREATE INDEX `I_AttributeDefinitionEntity_name` ON `AttributeDefinitionEntity` (`name`);
+
+-- Index on the AttributeDefinitionEntity table's active field.
+CREATE INDEX `I_AttributeDefinitionEntity_active` ON `AttributeDefinitionEntity` (`active`);
+
+-- Index on the AttributeDefinitionEntity table's deleted field.
+CREATE INDEX `I_AttributeDefinitionEntity_deleted` ON `AttributeDefinitionEntity` (`deleted`);
+
+INSERT INTO `AttributeDefinitionEntity` ( `name`, `description`, `objectGuid` ) VALUES  ( 'Contact', 'Contact Records', 'e2a1b2c3-1111-2222-3333-444455556661' );
+
+INSERT INTO `AttributeDefinitionEntity` ( `name`, `description`, `objectGuid` ) VALUES  ( 'Constituent', 'Constituent Records', 'e2a1b2c3-1111-2222-3333-444455556662' );
+
 
 -- Definitions for custom attributes on various entities (Contact, Constituent, etc.)
 CREATE TABLE `AttributeDefinition`(
 	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
 	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
-	`entityName` VARCHAR(100) NULL,		-- The name of the entity this attribute applies to (e.g., 'Contact', 'Constituent')
+	`attributeDefinitionEntityId` INT NULL,		-- The entity this attribute applies to (e.g., Contact)
 	`key` VARCHAR(100) NULL,		-- The JSON key for the attribute
 	`label` VARCHAR(250) NULL,		-- The human-readable label for the attribute
-	`type` VARCHAR(50) NULL,		-- Data type: Text, Number, Date, Boolean, Select, MultiSelect, etc.
+	`attributeDefinitionTypeId` INT NULL,		-- Data type: Text, Number, Date, etc.
 	`options` TEXT NULL,		-- JSON options for Select/MultiSelect types
 	`isRequired` BIT NOT NULL DEFAULT 0,
 	`sequence` INT NULL,		-- Sequence to use for sorting.
+	`versionNumber` INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
 	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
 	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
-	UNIQUE `UC_AttributeDefinition_tenantGuid_entityName_key_Unique`( `tenantGuid`, `entityName`, `key` ) 		-- Uniqueness enforced on the AttributeDefinition table's tenantGuid and entityName and key fields.
+	FOREIGN KEY (`attributeDefinitionEntityId`) REFERENCES `AttributeDefinitionEntity`(`id`),		-- Foreign key to the AttributeDefinitionEntity table.
+	FOREIGN KEY (`attributeDefinitionTypeId`) REFERENCES `AttributeDefinitionType`(`id`),		-- Foreign key to the AttributeDefinitionType table.
+	UNIQUE `UC_AttributeDefinition_tenantGuid_attributeDefinitionEntityId_key_Unique`( `tenantGuid`, `attributeDefinitionEntityId`, `key` ) 		-- Uniqueness enforced on the AttributeDefinition table's tenantGuid and attributeDefinitionEntityId and key fields.
 );
 -- Index on the AttributeDefinition table's tenantGuid field.
 CREATE INDEX `I_AttributeDefinition_tenantGuid` ON `AttributeDefinition` (`tenantGuid`);
 
--- Index on the AttributeDefinition table's tenantGuid,entityName fields.
-CREATE INDEX `I_AttributeDefinition_tenantGuid_entityName` ON `AttributeDefinition` (`tenantGuid`, `entityName`);
+-- Index on the AttributeDefinition table's tenantGuid,attributeDefinitionEntityId fields.
+CREATE INDEX `I_AttributeDefinition_tenantGuid_attributeDefinitionEntityId` ON `AttributeDefinition` (`tenantGuid`, `attributeDefinitionEntityId`);
+
+-- Index on the AttributeDefinition table's tenantGuid,attributeDefinitionTypeId fields.
+CREATE INDEX `I_AttributeDefinition_tenantGuid_attributeDefinitionTypeId` ON `AttributeDefinition` (`tenantGuid`, `attributeDefinitionTypeId`);
 
 -- Index on the AttributeDefinition table's tenantGuid,active fields.
 CREATE INDEX `I_AttributeDefinition_tenantGuid_active` ON `AttributeDefinition` (`tenantGuid`, `active`);
 
 -- Index on the AttributeDefinition table's tenantGuid,deleted fields.
 CREATE INDEX `I_AttributeDefinition_tenantGuid_deleted` ON `AttributeDefinition` (`tenantGuid`, `deleted`);
+
+
+-- The change history for records from the AttributeDefinition table.
+CREATE TABLE `AttributeDefinitionChangeHistory`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`attributeDefinitionId` INT NOT NULL,		-- Link to the AttributeDefinition table.
+	`versionNumber` INT NOT NULL,		-- This is the version number that is being historized.
+	`timeStamp` DATETIME NOT NULL,		-- The time that the record version was created.
+	`userId` INT NOT NULL,
+	`data` TEXT NOT NULL,		-- This stores the JSON representing the object's historical state.
+	FOREIGN KEY (`attributeDefinitionId`) REFERENCES `AttributeDefinition`(`id`)		-- Foreign key to the AttributeDefinition table.
+);
+-- Index on the AttributeDefinitionChangeHistory table's tenantGuid field.
+CREATE INDEX `I_AttributeDefinitionChangeHistory_tenantGuid` ON `AttributeDefinitionChangeHistory` (`tenantGuid`);
+
+-- Index on the AttributeDefinitionChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX `I_AttributeDefinitionChangeHistory_tenantGuid_versionNumber` ON `AttributeDefinitionChangeHistory` (`tenantGuid`, `versionNumber`);
+
+-- Index on the AttributeDefinitionChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX `I_AttributeDefinitionChangeHistory_tenantGuid_timeStamp` ON `AttributeDefinitionChangeHistory` (`tenantGuid`, `timeStamp`);
+
+-- Index on the AttributeDefinitionChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX `I_AttributeDefinitionChangeHistory_tenantGuid_userId` ON `AttributeDefinitionChangeHistory` (`tenantGuid`, `userId`);
+
+-- Index on the AttributeDefinitionChangeHistory table's tenantGuid,attributeDefinitionId fields.
+CREATE INDEX `I_AttributeDefinitionChangeHistory_tenantGuid_attributeDefinitio` ON `AttributeDefinitionChangeHistory` (`tenantGuid`, `attributeDefinitionId`, `versionNumber`, `timeStamp`, `userId`);
 
 
 -- List of icons to use on user interfaces.  Not tenant editable.
@@ -1206,6 +1324,49 @@ INSERT INTO `StateProvince` ( `name`, `description`, `abbreviation`, `sequence`,
 INSERT INTO `StateProvince` ( `name`, `description`, `abbreviation`, `sequence`, `countryId`, `objectGuid` ) VALUES  ( 'Other', 'Other', 'Other', 99, ( SELECT id FROM `Country` WHERE `name` = 'USA' LIMIT 1 ), '4ab041c0-9479-4a65-ba56-cbb70d82de75' );
 
 
+/*
+Master list of volunteer lifecycle/status values.
+Examples: Prospect, Active, On Leave, Inactive, Not Re-invited.
+Used to track engagement level and control visibility/assignment rules.
+*/
+CREATE TABLE `VolunteerStatus`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`name` VARCHAR(100) NOT NULL UNIQUE,
+	`description` VARCHAR(500) NOT NULL,
+	`sequence` INT NULL,		-- Sequence to use for sorting.
+	`color` VARCHAR(10) NULL,		-- Suggested UI color for this status
+	`iconId` INT NULL,		-- Optional icon for visual distinction
+	`isActive` BIT NULL DEFAULT 1,		-- Whether volunteers in this status are generally schedulable
+	`preventsScheduling` BIT NOT NULL DEFAULT 0,		-- Hard block: cannot be assigned to events
+	`requiresApproval` BIT NOT NULL DEFAULT 0,		-- New assignments need coordinator approval
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY (`iconId`) REFERENCES `Icon`(`id`)		-- Foreign key to the Icon table.
+);
+-- Index on the VolunteerStatus table's name field.
+CREATE INDEX `I_VolunteerStatus_name` ON `VolunteerStatus` (`name`);
+
+-- Index on the VolunteerStatus table's iconId field.
+CREATE INDEX `I_VolunteerStatus_iconId` ON `VolunteerStatus` (`iconId`);
+
+-- Index on the VolunteerStatus table's active field.
+CREATE INDEX `I_VolunteerStatus_active` ON `VolunteerStatus` (`active`);
+
+-- Index on the VolunteerStatus table's deleted field.
+CREATE INDEX `I_VolunteerStatus_deleted` ON `VolunteerStatus` (`deleted`);
+
+INSERT INTO `VolunteerStatus` ( `name`, `description`, `sequence`, `color`, `isActive`, `preventsScheduling`, `objectGuid` ) VALUES  ( 'Prospect / Interested', 'Has expressed interest but not yet onboarded', 10, '#9E9E9E', 0, 1, 'a1111111-2222-3333-4444-555555555001' );
+
+INSERT INTO `VolunteerStatus` ( `name`, `description`, `sequence`, `color`, `isActive`, `preventsScheduling`, `objectGuid` ) VALUES  ( 'Active', 'Fully onboarded and available for assignments', 20, '#4CAF50', 1, 0, 'a1111111-2222-3333-4444-555555555002' );
+
+INSERT INTO `VolunteerStatus` ( `name`, `description`, `sequence`, `color`, `isActive`, `preventsScheduling`, `objectGuid` ) VALUES  ( 'On Hiatus / Leave', 'Temporary break (maternity, travel, etc.)', 30, '#FF9800', 0, 1, 'a1111111-2222-3333-4444-555555555003' );
+
+INSERT INTO `VolunteerStatus` ( `name`, `description`, `sequence`, `color`, `isActive`, `preventsScheduling`, `objectGuid` ) VALUES  ( 'Inactive', 'No longer participating, but record retained', 40, '#757575', 0, 1, 'a1111111-2222-3333-4444-555555555004' );
+
+INSERT INTO `VolunteerStatus` ( `name`, `description`, `sequence`, `color`, `isActive`, `preventsScheduling`, `objectGuid` ) VALUES  ( 'Not Re-invited', 'Previous issues; do not contact or schedule', 50, '#F44336', 0, 1, 'a1111111-2222-3333-4444-555555555005' );
+
+
 -- Master list of office types.  Used for categorizing offices.  Not tenant specific
 CREATE TABLE `ContactType`(
 	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
@@ -1597,7 +1758,7 @@ CREATE TABLE `Office`(
 	`latitude` DOUBLE NULL,		-- Optional latitude position
 	`longitude` DOUBLE NULL,		-- Optional longitude position
 	`notes` TEXT NULL,
-	`externalId` VARCHAR(100) NULL,		-- Optional reference to an ID in an external system (e.g., Basecamp Project ID)
+	`externalId` VARCHAR(100) NULL,		-- Optional reference to an ID in an external system 
 	`color` VARCHAR(10) NULL,		-- Override of Target Type Hex color for UI display
 	`attributes` TEXT NULL,		-- to store arbitrary JSON
 	`avatarFileName` VARCHAR(250) NULL,		-- Part of the binary data field setup
@@ -1857,7 +2018,7 @@ CREATE TABLE `Client`(
 	`latitude` DOUBLE NULL,		-- Optional latitude position
 	`longitude` DOUBLE NULL,		-- Optional longitude position
 	`notes` TEXT NULL,
-	`externalId` VARCHAR(100) NULL,		-- Optional reference to an ID in an external system (e.g., Basecamp Project ID)
+	`externalId` VARCHAR(100) NULL,		-- Optional reference to an ID in an external system
 	`color` VARCHAR(10) NULL,		-- Override of Target Type Hex color for UI display
 	`attributes` TEXT NULL,		-- to store arbitrary JSON
 	`avatarFileName` VARCHAR(250) NULL,		-- Part of the binary data field setup
@@ -2400,7 +2561,7 @@ CREATE TABLE `SchedulingTarget`(
 	`timeZoneId` INT NOT NULL,		-- Link to the TimeZone table.
 	`calendarId` INT NULL,		-- An optional default calendar for this scheduling target.
 	`notes` TEXT NULL,
-	`externalId` VARCHAR(100) NULL,		-- Optional reference to an ID in an external system (e.g., Basecamp Project ID)
+	`externalId` VARCHAR(100) NULL,		-- Optional reference to an ID in an external system
 	`color` VARCHAR(10) NULL,		-- Override of Target Type Hex color for UI display
 	`attributes` TEXT NULL,		-- to store arbitrary JSON
 	`avatarFileName` VARCHAR(250) NULL,		-- Part of the binary data field setup
@@ -2880,7 +3041,7 @@ CREATE TABLE `Resource`(
 	`timeZoneId` INT NOT NULL,		-- Link to the TimeZone table.
 	`targetWeeklyWorkHours` FLOAT NULL,
 	`notes` TEXT NULL,
-	`externalId` VARCHAR(100) NULL,		-- Optional reference to an ID in an external system (e.g., Equipment.id from Basecamp)
+	`externalId` VARCHAR(100) NULL,		-- Optional reference to an ID in an external system
 	`color` VARCHAR(10) NULL,		-- Hex color for UI display
 	`attributes` TEXT NULL,		-- to store arbitrary JSON
 	`avatarFileName` VARCHAR(250) NULL,		-- Part of the binary data field setup
@@ -3631,7 +3792,7 @@ You attach the specific Crew/Resource to Event B.
 CREATE TABLE `ScheduledEvent`(
 	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
 	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
-	`officeId` INT NULL,		-- Snapshot of office that the first resource assigned to this event belongs to.  This should NOT be updated if a resource moves to a different office post event assignment.  It should only change if there was an original entry error that needs to be corrected.
+	`officeId` INT NULL,		-- Snapshot of office that the first resource assigned to this event belongs to.  This should NOT be updated if a resource moves to a different office post-event assignment.  It should only change if there was an original entry error that needs to be corrected.
 	`clientId` INT NULL,		-- Snapshot of client that this event belongs to.  It should be that of the scheduling target.  It should only change if there was an original entry error that needs to be corrected.
 	`scheduledEventTemplateId` INT NULL,		-- Optional template/type of this scheduled event.
 	`recurrenceRuleId` INT NULL,		-- Optional recurrence pattern for this event series
@@ -4202,98 +4363,6 @@ CREATE INDEX `I_RecurrenceExceptionChangeHistory_tenantGuid_userId` ON `Recurren
 
 -- Index on the RecurrenceExceptionChangeHistory table's tenantGuid,recurrenceExceptionId fields.
 CREATE INDEX `I_RecurrenceExceptionChangeHistory_tenantGuid_recurrenceExceptio` ON `RecurrenceExceptionChangeHistory` (`tenantGuid`, `recurrenceExceptionId`, `versionNumber`, `timeStamp`, `userId`);
-
-
--- Links resources (or entire crews) to events.  Supports partial assignments and role designation.  - If crewId is non-NULL → this row represents assignment of the whole crew - If resourceId is non-NULL and crewId is NULL → individual resource assignment - assignmentStart/End NULL → uses full event duration
-CREATE TABLE `EventResourceAssignment`(
-	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
-	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
-	`scheduledEventId` INT NOT NULL,		-- Link to the ScheduledEvent table.
-	`officeId` INT NULL,		-- Snapshot of office resource assigned to this event belongs to at the time of assignment.  This should never change, and should NOT be updated if a resource moves to a different office post event assignment.
-	`resourceId` INT NULL,		-- Required for individual assignments; should be NULL when crewId is used
-	`crewId` INT NULL,		-- Optional – when set, assigns the entire crew as a unit
-	`assignmentRoleId` INT NULL,		-- Optional role for this assignment (individual or crew member default)
-	`assignmentStatusId` INT NOT NULL DEFAULT 1,		-- NULL = Planned, non-NULL links to AssignmentStatus master table
-	`assignmentStartDateTime` DATETIME NULL,		-- NULL = starts at event start
-	`assignmentEndDateTime` DATETIME NULL,		-- NULL = ends at event end
-	`notes` TEXT NULL,
-	`isTravelRequired` BIT NULL,		-- Whether or not travel is required for the assignment
-	`travelDurationMinutes` INT NULL DEFAULT 0,		-- Time required to get to the site
-	`distanceKilometers` FLOAT NULL DEFAULT 0,		-- Useful for expense calculation
-	`startLocation` VARCHAR(100) NULL,
-	`actualStartDateTime` DATETIME NULL,
-	`actualEndDateTime` DATETIME NULL,
-	`actualNotes` TEXT NULL,
-	`versionNumber` INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
-	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
-	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
-	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
-	FOREIGN KEY (`scheduledEventId`) REFERENCES `ScheduledEvent`(`id`),		-- Foreign key to the ScheduledEvent table.
-	FOREIGN KEY (`officeId`) REFERENCES `Office`(`id`),		-- Foreign key to the Office table.
-	FOREIGN KEY (`resourceId`) REFERENCES `Resource`(`id`),		-- Foreign key to the Resource table.
-	FOREIGN KEY (`crewId`) REFERENCES `Crew`(`id`),		-- Foreign key to the Crew table.
-	FOREIGN KEY (`assignmentRoleId`) REFERENCES `AssignmentRole`(`id`),		-- Foreign key to the AssignmentRole table.
-	FOREIGN KEY (`assignmentStatusId`) REFERENCES `AssignmentStatus`(`id`)		-- Foreign key to the AssignmentStatus table.
-);
--- Index on the EventResourceAssignment table's tenantGuid field.
-CREATE INDEX `I_EventResourceAssignment_tenantGuid` ON `EventResourceAssignment` (`tenantGuid`);
-
--- Index on the EventResourceAssignment table's tenantGuid,scheduledEventId fields.
-CREATE INDEX `I_EventResourceAssignment_tenantGuid_scheduledEventId` ON `EventResourceAssignment` (`tenantGuid`, `scheduledEventId`);
-
--- Index on the EventResourceAssignment table's tenantGuid,officeId fields.
-CREATE INDEX `I_EventResourceAssignment_tenantGuid_officeId` ON `EventResourceAssignment` (`tenantGuid`, `officeId`);
-
--- Index on the EventResourceAssignment table's tenantGuid,resourceId fields.
-CREATE INDEX `I_EventResourceAssignment_tenantGuid_resourceId` ON `EventResourceAssignment` (`tenantGuid`, `resourceId`);
-
--- Index on the EventResourceAssignment table's tenantGuid,crewId fields.
-CREATE INDEX `I_EventResourceAssignment_tenantGuid_crewId` ON `EventResourceAssignment` (`tenantGuid`, `crewId`);
-
--- Index on the EventResourceAssignment table's tenantGuid,assignmentRoleId fields.
-CREATE INDEX `I_EventResourceAssignment_tenantGuid_assignmentRoleId` ON `EventResourceAssignment` (`tenantGuid`, `assignmentRoleId`);
-
--- Index on the EventResourceAssignment table's tenantGuid,assignmentStatusId fields.
-CREATE INDEX `I_EventResourceAssignment_tenantGuid_assignmentStatusId` ON `EventResourceAssignment` (`tenantGuid`, `assignmentStatusId`);
-
--- Index on the EventResourceAssignment table's tenantGuid,active fields.
-CREATE INDEX `I_EventResourceAssignment_tenantGuid_active` ON `EventResourceAssignment` (`tenantGuid`, `active`);
-
--- Index on the EventResourceAssignment table's tenantGuid,deleted fields.
-CREATE INDEX `I_EventResourceAssignment_tenantGuid_deleted` ON `EventResourceAssignment` (`tenantGuid`, `deleted`);
-
--- Index on the EventResourceAssignment table's tenantGuid,resourceId,assignmentStartDateTime,assignmentEndDateTime fields.
-CREATE INDEX `I_EventResourceAssignment_tenantGuid_resourceId_assignmentStartD` ON `EventResourceAssignment` (`tenantGuid`, `resourceId`, `assignmentStartDateTime`, `assignmentEndDateTime`);
-
--- Index on the EventResourceAssignment table's tenantGuid,crewId,assignmentStartDateTime,assignmentEndDateTime fields.
-CREATE INDEX `I_EventResourceAssignment_tenantGuid_crewId_assignmentStartDateT` ON `EventResourceAssignment` (`tenantGuid`, `crewId`, `assignmentStartDateTime`, `assignmentEndDateTime`);
-
-
--- The change history for records from the EventResourceAssignment table.
-CREATE TABLE `EventResourceAssignmentChangeHistory`(
-	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
-	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
-	`eventResourceAssignmentId` INT NOT NULL,		-- Link to the EventResourceAssignment table.
-	`versionNumber` INT NOT NULL,		-- This is the version number that is being historized.
-	`timeStamp` DATETIME NOT NULL,		-- The time that the record version was created.
-	`userId` INT NOT NULL,
-	`data` TEXT NOT NULL,		-- This stores the JSON representing the object's historical state.
-	FOREIGN KEY (`eventResourceAssignmentId`) REFERENCES `EventResourceAssignment`(`id`)		-- Foreign key to the EventResourceAssignment table.
-);
--- Index on the EventResourceAssignmentChangeHistory table's tenantGuid field.
-CREATE INDEX `I_EventResourceAssignmentChangeHistory_tenantGuid` ON `EventResourceAssignmentChangeHistory` (`tenantGuid`);
-
--- Index on the EventResourceAssignmentChangeHistory table's tenantGuid,versionNumber fields.
-CREATE INDEX `I_EventResourceAssignmentChangeHistory_tenantGuid_versionNumber` ON `EventResourceAssignmentChangeHistory` (`tenantGuid`, `versionNumber`);
-
--- Index on the EventResourceAssignmentChangeHistory table's tenantGuid,timeStamp fields.
-CREATE INDEX `I_EventResourceAssignmentChangeHistory_tenantGuid_timeStamp` ON `EventResourceAssignmentChangeHistory` (`tenantGuid`, `timeStamp`);
-
--- Index on the EventResourceAssignmentChangeHistory table's tenantGuid,userId fields.
-CREATE INDEX `I_EventResourceAssignmentChangeHistory_tenantGuid_userId` ON `EventResourceAssignmentChangeHistory` (`tenantGuid`, `userId`);
-
--- Index on the EventResourceAssignmentChangeHistory table's tenantGuid,eventResourceAssignmentId fields.
-CREATE INDEX `I_EventResourceAssignmentChangeHistory_tenantGuid_eventResourceA` ON `EventResourceAssignmentChangeHistory` (`tenantGuid`, `eventResourceAssignmentId`, `versionNumber`, `timeStamp`, `userId`);
 
 
 -- Master list of notification types
@@ -5295,5 +5364,359 @@ CREATE INDEX `I_SoftCreditChangeHistory_tenantGuid_userId` ON `SoftCreditChangeH
 
 -- Index on the SoftCreditChangeHistory table's tenantGuid,softCreditId fields.
 CREATE INDEX `I_SoftCreditChangeHistory_tenantGuid_softCreditId` ON `SoftCreditChangeHistory` (`tenantGuid`, `softCreditId`, `versionNumber`, `timeStamp`, `userId`);
+
+
+/*
+Volunteer-specific extended profile.
+One-to-one with Resource — allows volunteers to be scheduled just like paid resources
+while carrying volunteer-specific metadata, hours tracking, preferences, etc.
+*/
+CREATE TABLE `VolunteerProfile`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`resourceId` INT NOT NULL,		-- The Resource this volunteer profile belongs to (1:1)
+	`volunteerStatusId` INT NOT NULL,		-- Current lifecycle status of this volunteer
+	`onboardedDate` DATE NULL,		-- Date volunteer was approved/onboarded
+	`inactiveSince` DATE NULL,		-- If inactive, when they went inactive
+	`totalHoursServed` FLOAT NULL DEFAULT 0,		-- Cached/rolled-up lifetime volunteer hours
+	`lastActivityDate` DATE NULL,		-- Most recent event/assignment end date
+	`backgroundCheckCompleted` BIT NOT NULL DEFAULT 0,
+	`backgroundCheckDate` DATE NULL,
+	`backgroundCheckExpiry` DATE NULL,
+	`confidentialityAgreementSigned` BIT NOT NULL DEFAULT 0,
+	`confidentialityAgreementDate` DATE NULL,
+	`availabilityPreferences` TEXT NULL,		-- Free text or structured JSON: e.g. 'prefers weekends', 'no evenings after 8pm'
+	`interestsAndSkillsNotes` TEXT NULL,		-- Self-reported interests, hobbies, or extra skills
+	`emergencyContactNotes` TEXT NULL,		-- Any special emergency instructions or notes
+	`constituentId` INT NULL,		-- Optional link to fundraising/constituent record if relevant
+	`iconId` INT NULL,		-- Optional override icon for volunteer-specific UI
+	`color` VARCHAR(10) NULL,		-- Optional override color
+	`attributes` TEXT NULL,		-- Arbitrary JSON for future extension
+	`versionNumber` INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY (`resourceId`) REFERENCES `Resource`(`id`),		-- Foreign key to the Resource table.
+	FOREIGN KEY (`volunteerStatusId`) REFERENCES `VolunteerStatus`(`id`),		-- Foreign key to the VolunteerStatus table.
+	FOREIGN KEY (`constituentId`) REFERENCES `Constituent`(`id`),		-- Foreign key to the Constituent table.
+	FOREIGN KEY (`iconId`) REFERENCES `Icon`(`id`),		-- Foreign key to the Icon table.
+	UNIQUE `UC_VolunteerProfile_tenantGuid_resourceId_Unique`( `tenantGuid`, `resourceId` ) 		-- Uniqueness enforced on the VolunteerProfile table's tenantGuid and resourceId fields.
+);
+-- Index on the VolunteerProfile table's tenantGuid field.
+CREATE INDEX `I_VolunteerProfile_tenantGuid` ON `VolunteerProfile` (`tenantGuid`);
+
+-- Index on the VolunteerProfile table's tenantGuid,resourceId fields.
+CREATE INDEX `I_VolunteerProfile_tenantGuid_resourceId` ON `VolunteerProfile` (`tenantGuid`, `resourceId`);
+
+-- Index on the VolunteerProfile table's tenantGuid,volunteerStatusId fields.
+CREATE INDEX `I_VolunteerProfile_tenantGuid_volunteerStatusId` ON `VolunteerProfile` (`tenantGuid`, `volunteerStatusId`);
+
+-- Index on the VolunteerProfile table's tenantGuid,constituentId fields.
+CREATE INDEX `I_VolunteerProfile_tenantGuid_constituentId` ON `VolunteerProfile` (`tenantGuid`, `constituentId`);
+
+-- Index on the VolunteerProfile table's tenantGuid,iconId fields.
+CREATE INDEX `I_VolunteerProfile_tenantGuid_iconId` ON `VolunteerProfile` (`tenantGuid`, `iconId`);
+
+-- Index on the VolunteerProfile table's tenantGuid,active fields.
+CREATE INDEX `I_VolunteerProfile_tenantGuid_active` ON `VolunteerProfile` (`tenantGuid`, `active`);
+
+-- Index on the VolunteerProfile table's tenantGuid,deleted fields.
+CREATE INDEX `I_VolunteerProfile_tenantGuid_deleted` ON `VolunteerProfile` (`tenantGuid`, `deleted`);
+
+
+-- The change history for records from the VolunteerProfile table.
+CREATE TABLE `VolunteerProfileChangeHistory`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`volunteerProfileId` INT NOT NULL,		-- Link to the VolunteerProfile table.
+	`versionNumber` INT NOT NULL,		-- This is the version number that is being historized.
+	`timeStamp` DATETIME NOT NULL,		-- The time that the record version was created.
+	`userId` INT NOT NULL,
+	`data` TEXT NOT NULL,		-- This stores the JSON representing the object's historical state.
+	FOREIGN KEY (`volunteerProfileId`) REFERENCES `VolunteerProfile`(`id`)		-- Foreign key to the VolunteerProfile table.
+);
+-- Index on the VolunteerProfileChangeHistory table's tenantGuid field.
+CREATE INDEX `I_VolunteerProfileChangeHistory_tenantGuid` ON `VolunteerProfileChangeHistory` (`tenantGuid`);
+
+-- Index on the VolunteerProfileChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX `I_VolunteerProfileChangeHistory_tenantGuid_versionNumber` ON `VolunteerProfileChangeHistory` (`tenantGuid`, `versionNumber`);
+
+-- Index on the VolunteerProfileChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX `I_VolunteerProfileChangeHistory_tenantGuid_timeStamp` ON `VolunteerProfileChangeHistory` (`tenantGuid`, `timeStamp`);
+
+-- Index on the VolunteerProfileChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX `I_VolunteerProfileChangeHistory_tenantGuid_userId` ON `VolunteerProfileChangeHistory` (`tenantGuid`, `userId`);
+
+-- Index on the VolunteerProfileChangeHistory table's tenantGuid,volunteerProfileId fields.
+CREATE INDEX `I_VolunteerProfileChangeHistory_tenantGuid_volunteerProfileId` ON `VolunteerProfileChangeHistory` (`tenantGuid`, `volunteerProfileId`, `versionNumber`, `timeStamp`, `userId`);
+
+
+/*
+Named, persistent groups of volunteers that are often scheduled together.
+Examples: 'Saturday Soup Kitchen Team', 'Festival Setup Crew', 'Board of Directors Helpers'.
+Similar to Crew table but volunteer-specific with lighter structure and volunteer-oriented metadata.
+*/
+CREATE TABLE `VolunteerGroup`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`name` VARCHAR(100) NOT NULL,
+	`description` VARCHAR(500) NULL,
+	`purpose` TEXT NULL,		-- What this group is mainly used for (e.g. 'Food distribution', 'Event setup & teardown')
+	`officeId` INT NULL,		-- Optional office/branch this volunteer group is associated with
+	`volunteerStatusId` INT NULL,		-- Minimum status required for members (e.g. Active only)
+	`maxMembers` INT NULL,		-- Optional soft cap on group size
+	`iconId` INT NULL,		-- Icon for UI display (e.g. group of people, soup bowl, hammer)
+	`color` VARCHAR(10) NULL,		-- Suggested color for calendar/events
+	`notes` TEXT NULL,
+	`avatarFileName` VARCHAR(250) NULL,		-- Part of the binary data field setup
+	`avatarSize` BIGINT NULL,		-- Part of the binary data field setup
+	`avatarData` BLOB NULL,		-- Part of the binary data field setup
+	`avatarMimeType` VARCHAR(100) NULL,		-- Part of the binary data field setup
+	`versionNumber` INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY (`officeId`) REFERENCES `Office`(`id`),		-- Foreign key to the Office table.
+	FOREIGN KEY (`volunteerStatusId`) REFERENCES `VolunteerStatus`(`id`),		-- Foreign key to the VolunteerStatus table.
+	FOREIGN KEY (`iconId`) REFERENCES `Icon`(`id`),		-- Foreign key to the Icon table.
+	UNIQUE `UC_VolunteerGroup_tenantGuid_name_Unique`( `tenantGuid`, `name` ) 		-- Uniqueness enforced on the VolunteerGroup table's tenantGuid and name fields.
+);
+-- Index on the VolunteerGroup table's tenantGuid field.
+CREATE INDEX `I_VolunteerGroup_tenantGuid` ON `VolunteerGroup` (`tenantGuid`);
+
+-- Index on the VolunteerGroup table's tenantGuid,name fields.
+CREATE INDEX `I_VolunteerGroup_tenantGuid_name` ON `VolunteerGroup` (`tenantGuid`, `name`);
+
+-- Index on the VolunteerGroup table's tenantGuid,officeId fields.
+CREATE INDEX `I_VolunteerGroup_tenantGuid_officeId` ON `VolunteerGroup` (`tenantGuid`, `officeId`);
+
+-- Index on the VolunteerGroup table's tenantGuid,volunteerStatusId fields.
+CREATE INDEX `I_VolunteerGroup_tenantGuid_volunteerStatusId` ON `VolunteerGroup` (`tenantGuid`, `volunteerStatusId`);
+
+-- Index on the VolunteerGroup table's tenantGuid,iconId fields.
+CREATE INDEX `I_VolunteerGroup_tenantGuid_iconId` ON `VolunteerGroup` (`tenantGuid`, `iconId`);
+
+-- Index on the VolunteerGroup table's tenantGuid,active fields.
+CREATE INDEX `I_VolunteerGroup_tenantGuid_active` ON `VolunteerGroup` (`tenantGuid`, `active`);
+
+-- Index on the VolunteerGroup table's tenantGuid,deleted fields.
+CREATE INDEX `I_VolunteerGroup_tenantGuid_deleted` ON `VolunteerGroup` (`tenantGuid`, `deleted`);
+
+
+-- The change history for records from the VolunteerGroup table.
+CREATE TABLE `VolunteerGroupChangeHistory`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`volunteerGroupId` INT NOT NULL,		-- Link to the VolunteerGroup table.
+	`versionNumber` INT NOT NULL,		-- This is the version number that is being historized.
+	`timeStamp` DATETIME NOT NULL,		-- The time that the record version was created.
+	`userId` INT NOT NULL,
+	`data` TEXT NOT NULL,		-- This stores the JSON representing the object's historical state.
+	FOREIGN KEY (`volunteerGroupId`) REFERENCES `VolunteerGroup`(`id`)		-- Foreign key to the VolunteerGroup table.
+);
+-- Index on the VolunteerGroupChangeHistory table's tenantGuid field.
+CREATE INDEX `I_VolunteerGroupChangeHistory_tenantGuid` ON `VolunteerGroupChangeHistory` (`tenantGuid`);
+
+-- Index on the VolunteerGroupChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX `I_VolunteerGroupChangeHistory_tenantGuid_versionNumber` ON `VolunteerGroupChangeHistory` (`tenantGuid`, `versionNumber`);
+
+-- Index on the VolunteerGroupChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX `I_VolunteerGroupChangeHistory_tenantGuid_timeStamp` ON `VolunteerGroupChangeHistory` (`tenantGuid`, `timeStamp`);
+
+-- Index on the VolunteerGroupChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX `I_VolunteerGroupChangeHistory_tenantGuid_userId` ON `VolunteerGroupChangeHistory` (`tenantGuid`, `userId`);
+
+-- Index on the VolunteerGroupChangeHistory table's tenantGuid,volunteerGroupId fields.
+CREATE INDEX `I_VolunteerGroupChangeHistory_tenantGuid_volunteerGroupId` ON `VolunteerGroupChangeHistory` (`tenantGuid`, `volunteerGroupId`, `versionNumber`, `timeStamp`, `userId`);
+
+
+/*
+Membership in a VolunteerGroup.
+Links Resources (volunteers) to groups, with optional default role and sequence.
+*/
+CREATE TABLE `VolunteerGroupMember`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`volunteerGroupId` INT NOT NULL,		-- Link to the VolunteerGroup table.
+	`resourceId` INT NOT NULL,		-- The volunteer (Resource) in this group
+	`assignmentRoleId` INT NULL,		-- Default role this person plays in the group (e.g. 'Team Lead', 'Driver')
+	`sequence` INT NOT NULL DEFAULT 1,		-- Display/order position within the group
+	`joinedDate` DATE NULL,
+	`leftDate` DATE NULL,		-- If they left the group
+	`notes` TEXT NULL,		-- e.g. 'Prefers kitchen duties', 'Only available 1st Saturday'
+	`versionNumber` INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY (`volunteerGroupId`) REFERENCES `VolunteerGroup`(`id`),		-- Foreign key to the VolunteerGroup table.
+	FOREIGN KEY (`resourceId`) REFERENCES `Resource`(`id`),		-- Foreign key to the Resource table.
+	FOREIGN KEY (`assignmentRoleId`) REFERENCES `AssignmentRole`(`id`),		-- Foreign key to the AssignmentRole table.
+	UNIQUE `UC_VolunteerGroupMember_tenantGuid_volunteerGroupId_resourceId_Unique`( `tenantGuid`, `volunteerGroupId`, `resourceId` ) 		-- Uniqueness enforced on the VolunteerGroupMember table's tenantGuid and volunteerGroupId and resourceId fields.
+);
+-- Index on the VolunteerGroupMember table's tenantGuid field.
+CREATE INDEX `I_VolunteerGroupMember_tenantGuid` ON `VolunteerGroupMember` (`tenantGuid`);
+
+-- Index on the VolunteerGroupMember table's tenantGuid,volunteerGroupId fields.
+CREATE INDEX `I_VolunteerGroupMember_tenantGuid_volunteerGroupId` ON `VolunteerGroupMember` (`tenantGuid`, `volunteerGroupId`);
+
+-- Index on the VolunteerGroupMember table's tenantGuid,resourceId fields.
+CREATE INDEX `I_VolunteerGroupMember_tenantGuid_resourceId` ON `VolunteerGroupMember` (`tenantGuid`, `resourceId`);
+
+-- Index on the VolunteerGroupMember table's tenantGuid,assignmentRoleId fields.
+CREATE INDEX `I_VolunteerGroupMember_tenantGuid_assignmentRoleId` ON `VolunteerGroupMember` (`tenantGuid`, `assignmentRoleId`);
+
+-- Index on the VolunteerGroupMember table's tenantGuid,active fields.
+CREATE INDEX `I_VolunteerGroupMember_tenantGuid_active` ON `VolunteerGroupMember` (`tenantGuid`, `active`);
+
+-- Index on the VolunteerGroupMember table's tenantGuid,deleted fields.
+CREATE INDEX `I_VolunteerGroupMember_tenantGuid_deleted` ON `VolunteerGroupMember` (`tenantGuid`, `deleted`);
+
+
+-- The change history for records from the VolunteerGroupMember table.
+CREATE TABLE `VolunteerGroupMemberChangeHistory`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`volunteerGroupMemberId` INT NOT NULL,		-- Link to the VolunteerGroupMember table.
+	`versionNumber` INT NOT NULL,		-- This is the version number that is being historized.
+	`timeStamp` DATETIME NOT NULL,		-- The time that the record version was created.
+	`userId` INT NOT NULL,
+	`data` TEXT NOT NULL,		-- This stores the JSON representing the object's historical state.
+	FOREIGN KEY (`volunteerGroupMemberId`) REFERENCES `VolunteerGroupMember`(`id`)		-- Foreign key to the VolunteerGroupMember table.
+);
+-- Index on the VolunteerGroupMemberChangeHistory table's tenantGuid field.
+CREATE INDEX `I_VolunteerGroupMemberChangeHistory_tenantGuid` ON `VolunteerGroupMemberChangeHistory` (`tenantGuid`);
+
+-- Index on the VolunteerGroupMemberChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX `I_VolunteerGroupMemberChangeHistory_tenantGuid_versionNumber` ON `VolunteerGroupMemberChangeHistory` (`tenantGuid`, `versionNumber`);
+
+-- Index on the VolunteerGroupMemberChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX `I_VolunteerGroupMemberChangeHistory_tenantGuid_timeStamp` ON `VolunteerGroupMemberChangeHistory` (`tenantGuid`, `timeStamp`);
+
+-- Index on the VolunteerGroupMemberChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX `I_VolunteerGroupMemberChangeHistory_tenantGuid_userId` ON `VolunteerGroupMemberChangeHistory` (`tenantGuid`, `userId`);
+
+-- Index on the VolunteerGroupMemberChangeHistory table's tenantGuid,volunteerGroupMemberId fields.
+CREATE INDEX `I_VolunteerGroupMemberChangeHistory_tenantGuid_volunteerGroupMem` ON `VolunteerGroupMemberChangeHistory` (`tenantGuid`, `volunteerGroupMemberId`, `versionNumber`, `timeStamp`, `userId`);
+
+
+-- Links resources, crews, or volunteer groups o events.  Supports partial assignments and role designation.  - If crewId is non-NULL → this row represents assignment of the whole crew - If resourceId is non-NULL and crewId is NULL → individual resource assignment - assignmentStart/End NULL → uses full event duration.  only one of crewId, volunteerGroupId, resourceId should be populated per row (business rule in app layer).
+CREATE TABLE `EventResourceAssignment`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`scheduledEventId` INT NOT NULL,		-- Link to the ScheduledEvent table.
+	`officeId` INT NULL,		-- Snapshot of office resource assigned to this event belongs to at the time of assignment.  This should never change, and should NOT be updated if a resource moves to a different office post-event assignment.
+	`resourceId` INT NULL,		-- Required for individual assignments; should be NULL when crewId is used
+	`crewId` INT NULL,		-- Optional – when set, assigns the entire crew as a unit
+	`volunteerGroupId` INT NULL,		-- Optional: assign an entire VolunteerGroup instead of/in addition to individual resources or Crew
+	`assignmentRoleId` INT NULL,		-- Optional role for this assignment (individual or crew member default)
+	`assignmentStatusId` INT NOT NULL DEFAULT 1,		-- NULL = Planned, non-NULL links to AssignmentStatus master table
+	`assignmentStartDateTime` DATETIME NULL,		-- NULL = starts at event start
+	`assignmentEndDateTime` DATETIME NULL,		-- NULL = ends at event end
+	`notes` TEXT NULL,
+	`isTravelRequired` BIT NULL,		-- Whether or not travel is required for the assignment
+	`travelDurationMinutes` INT NULL DEFAULT 0,		-- Time required to get to the site
+	`distanceKilometers` FLOAT NULL DEFAULT 0,		-- Useful for expense calculation
+	`startLocation` VARCHAR(100) NULL,
+	`actualStartDateTime` DATETIME NULL,
+	`actualEndDateTime` DATETIME NULL,
+	`actualNotes` TEXT NULL,
+	`isVolunteer` BIT NOT NULL DEFAULT 0,/*
+True = this is a volunteer (unpaid) assignment.
+Used to:
+- Exclude from payroll/wage calculations
+- Include in volunteer hours totals
+- Apply different approval/reminder workflows
+- Filter volunteer-specific reports
+*/
+	`reportedVolunteerHours` FLOAT NULL,		-- Hours the volunteer self-reported (or coordinator entered) for this assignment
+	`approvedVolunteerHours` FLOAT NULL,		-- Approved/confirmed hours (may differ from reported if adjustments needed)
+	`hoursApprovedByContactId` INT NULL,		-- Contact (usually staff/coordinator) who approved the hours
+	`approvedDateTime` DATETIME NULL,		-- When the hours were approved
+	`reimbursementAmount` DECIMAL(11,2) NULL,		-- Optional: mileage, parking, meals, etc. — not a wage
+	`chargeTypeId` INT NULL,		-- Optional: links to an expense-type ChargeType for the reimbursement (e.g. 'Mileage Reimbursement')
+	`reimbursementRequested` BIT NOT NULL DEFAULT 0,		-- Volunteer has flagged that they want/need reimbursement
+	`volunteerNotes` TEXT NULL,		-- Volunteer-specific notes for this assignment (e.g. 'Prefers morning shifts next time', 'Brought own tools')
+	`versionNumber` INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY (`scheduledEventId`) REFERENCES `ScheduledEvent`(`id`),		-- Foreign key to the ScheduledEvent table.
+	FOREIGN KEY (`officeId`) REFERENCES `Office`(`id`),		-- Foreign key to the Office table.
+	FOREIGN KEY (`resourceId`) REFERENCES `Resource`(`id`),		-- Foreign key to the Resource table.
+	FOREIGN KEY (`crewId`) REFERENCES `Crew`(`id`),		-- Foreign key to the Crew table.
+	FOREIGN KEY (`volunteerGroupId`) REFERENCES `VolunteerGroup`(`id`),		-- Foreign key to the VolunteerGroup table.
+	FOREIGN KEY (`assignmentRoleId`) REFERENCES `AssignmentRole`(`id`),		-- Foreign key to the AssignmentRole table.
+	FOREIGN KEY (`assignmentStatusId`) REFERENCES `AssignmentStatus`(`id`),		-- Foreign key to the AssignmentStatus table.
+	FOREIGN KEY (`hoursApprovedByContactId`) REFERENCES `Contact`(`id`),		-- Foreign key to the Contact table.
+	FOREIGN KEY (`chargeTypeId`) REFERENCES `ChargeType`(`id`)		-- Foreign key to the ChargeType table.
+);
+-- Index on the EventResourceAssignment table's tenantGuid field.
+CREATE INDEX `I_EventResourceAssignment_tenantGuid` ON `EventResourceAssignment` (`tenantGuid`);
+
+-- Index on the EventResourceAssignment table's tenantGuid,scheduledEventId fields.
+CREATE INDEX `I_EventResourceAssignment_tenantGuid_scheduledEventId` ON `EventResourceAssignment` (`tenantGuid`, `scheduledEventId`);
+
+-- Index on the EventResourceAssignment table's tenantGuid,officeId fields.
+CREATE INDEX `I_EventResourceAssignment_tenantGuid_officeId` ON `EventResourceAssignment` (`tenantGuid`, `officeId`);
+
+-- Index on the EventResourceAssignment table's tenantGuid,resourceId fields.
+CREATE INDEX `I_EventResourceAssignment_tenantGuid_resourceId` ON `EventResourceAssignment` (`tenantGuid`, `resourceId`);
+
+-- Index on the EventResourceAssignment table's tenantGuid,crewId fields.
+CREATE INDEX `I_EventResourceAssignment_tenantGuid_crewId` ON `EventResourceAssignment` (`tenantGuid`, `crewId`);
+
+-- Index on the EventResourceAssignment table's tenantGuid,volunteerGroupId fields.
+CREATE INDEX `I_EventResourceAssignment_tenantGuid_volunteerGroupId` ON `EventResourceAssignment` (`tenantGuid`, `volunteerGroupId`);
+
+-- Index on the EventResourceAssignment table's tenantGuid,assignmentRoleId fields.
+CREATE INDEX `I_EventResourceAssignment_tenantGuid_assignmentRoleId` ON `EventResourceAssignment` (`tenantGuid`, `assignmentRoleId`);
+
+-- Index on the EventResourceAssignment table's tenantGuid,assignmentStatusId fields.
+CREATE INDEX `I_EventResourceAssignment_tenantGuid_assignmentStatusId` ON `EventResourceAssignment` (`tenantGuid`, `assignmentStatusId`);
+
+-- Index on the EventResourceAssignment table's tenantGuid,hoursApprovedByContactId fields.
+CREATE INDEX `I_EventResourceAssignment_tenantGuid_hoursApprovedByContactId` ON `EventResourceAssignment` (`tenantGuid`, `hoursApprovedByContactId`);
+
+-- Index on the EventResourceAssignment table's tenantGuid,chargeTypeId fields.
+CREATE INDEX `I_EventResourceAssignment_tenantGuid_chargeTypeId` ON `EventResourceAssignment` (`tenantGuid`, `chargeTypeId`);
+
+-- Index on the EventResourceAssignment table's tenantGuid,active fields.
+CREATE INDEX `I_EventResourceAssignment_tenantGuid_active` ON `EventResourceAssignment` (`tenantGuid`, `active`);
+
+-- Index on the EventResourceAssignment table's tenantGuid,deleted fields.
+CREATE INDEX `I_EventResourceAssignment_tenantGuid_deleted` ON `EventResourceAssignment` (`tenantGuid`, `deleted`);
+
+-- Index on the EventResourceAssignment table's tenantGuid,resourceId,assignmentStartDateTime,assignmentEndDateTime fields.
+CREATE INDEX `I_EventResourceAssignment_tenantGuid_resourceId_assignmentStartD` ON `EventResourceAssignment` (`tenantGuid`, `resourceId`, `assignmentStartDateTime`, `assignmentEndDateTime`);
+
+-- Index on the EventResourceAssignment table's tenantGuid,crewId,assignmentStartDateTime,assignmentEndDateTime fields.
+CREATE INDEX `I_EventResourceAssignment_tenantGuid_crewId_assignmentStartDateT` ON `EventResourceAssignment` (`tenantGuid`, `crewId`, `assignmentStartDateTime`, `assignmentEndDateTime`);
+
+
+-- The change history for records from the EventResourceAssignment table.
+CREATE TABLE `EventResourceAssignmentChangeHistory`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`eventResourceAssignmentId` INT NOT NULL,		-- Link to the EventResourceAssignment table.
+	`versionNumber` INT NOT NULL,		-- This is the version number that is being historized.
+	`timeStamp` DATETIME NOT NULL,		-- The time that the record version was created.
+	`userId` INT NOT NULL,
+	`data` TEXT NOT NULL,		-- This stores the JSON representing the object's historical state.
+	FOREIGN KEY (`eventResourceAssignmentId`) REFERENCES `EventResourceAssignment`(`id`)		-- Foreign key to the EventResourceAssignment table.
+);
+-- Index on the EventResourceAssignmentChangeHistory table's tenantGuid field.
+CREATE INDEX `I_EventResourceAssignmentChangeHistory_tenantGuid` ON `EventResourceAssignmentChangeHistory` (`tenantGuid`);
+
+-- Index on the EventResourceAssignmentChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX `I_EventResourceAssignmentChangeHistory_tenantGuid_versionNumber` ON `EventResourceAssignmentChangeHistory` (`tenantGuid`, `versionNumber`);
+
+-- Index on the EventResourceAssignmentChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX `I_EventResourceAssignmentChangeHistory_tenantGuid_timeStamp` ON `EventResourceAssignmentChangeHistory` (`tenantGuid`, `timeStamp`);
+
+-- Index on the EventResourceAssignmentChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX `I_EventResourceAssignmentChangeHistory_tenantGuid_userId` ON `EventResourceAssignmentChangeHistory` (`tenantGuid`, `userId`);
+
+-- Index on the EventResourceAssignmentChangeHistory table's tenantGuid,eventResourceAssignmentId fields.
+CREATE INDEX `I_EventResourceAssignmentChangeHistory_tenantGuid_eventResourceA` ON `EventResourceAssignmentChangeHistory` (`tenantGuid`, `eventResourceAssignmentId`, `versionNumber`, `timeStamp`, `userId`);
 
 

@@ -140,6 +140,13 @@ import {TimeZoneService} from  './time-zone.service';
 import {TributeService} from  './tribute.service';
 import {TributeChangeHistoryService} from  './tribute-change-history.service';
 import {TributeTypeService} from  './tribute-type.service';
+import {VolunteerGroupService} from  './volunteer-group.service';
+import {VolunteerGroupChangeHistoryService} from  './volunteer-group-change-history.service';
+import {VolunteerGroupMemberService} from  './volunteer-group-member.service';
+import {VolunteerGroupMemberChangeHistoryService} from  './volunteer-group-member-change-history.service';
+import {VolunteerProfileService} from  './volunteer-profile.service';
+import {VolunteerProfileChangeHistoryService} from  './volunteer-profile-change-history.service';
+import {VolunteerStatusService} from  './volunteer-status.service';
 
 
 @Injectable({
@@ -278,6 +285,13 @@ export class SchedulerDataServiceManagerService  {
               , public tributeService: TributeService
               , public tributeChangeHistoryService: TributeChangeHistoryService
               , public tributeTypeService: TributeTypeService
+              , public volunteerGroupService: VolunteerGroupService
+              , public volunteerGroupChangeHistoryService: VolunteerGroupChangeHistoryService
+              , public volunteerGroupMemberService: VolunteerGroupMemberService
+              , public volunteerGroupMemberChangeHistoryService: VolunteerGroupMemberChangeHistoryService
+              , public volunteerProfileService: VolunteerProfileService
+              , public volunteerProfileChangeHistoryService: VolunteerProfileChangeHistoryService
+              , public volunteerStatusService: VolunteerStatusService
 ) { }  
 
 
@@ -414,5 +428,12 @@ export class SchedulerDataServiceManagerService  {
         this.tributeService.ClearAllCaches();
         this.tributeChangeHistoryService.ClearAllCaches();
         this.tributeTypeService.ClearAllCaches();
+        this.volunteerGroupService.ClearAllCaches();
+        this.volunteerGroupChangeHistoryService.ClearAllCaches();
+        this.volunteerGroupMemberService.ClearAllCaches();
+        this.volunteerGroupMemberChangeHistoryService.ClearAllCaches();
+        this.volunteerProfileService.ClearAllCaches();
+        this.volunteerProfileChangeHistoryService.ClearAllCaches();
+        this.volunteerStatusService.ClearAllCaches();
     }
 }

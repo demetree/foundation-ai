@@ -556,7 +556,7 @@ export class UserSessionService extends SecureEndpointBase {
             const user = this.authService.currentUser;
 
             if (user != null) {
-                userIsSecurityUserSessionReader = user.readPermission >= 0;
+                userIsSecurityUserSessionReader = user.readPermission >= 1;
             } else {
                 userIsSecurityUserSessionReader = false;
             }
@@ -580,7 +580,7 @@ export class UserSessionService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsSecurityUserSessionWriter = user.writePermission >= 100;
+            userIsSecurityUserSessionWriter = user.writePermission >= 50;
           } else {
             userIsSecurityUserSessionWriter = false;
           }      

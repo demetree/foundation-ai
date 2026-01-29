@@ -83,7 +83,7 @@ namespace Foundation.Security.Controllers.WebAPI
             }
 
             //
-            // Createa URL-safe Base64 string
+            // Create URL-safe Base64 string
             //
             string token = Convert.ToBase64String(randomBytes)
                               .Replace('+', '-') // URL safe

@@ -29,8 +29,10 @@ import { ResourceShiftService, ResourceShiftData } from './resource-shift.servic
 import { CrewMemberService, CrewMemberData } from './crew-member.service';
 import { ScheduledEventService, ScheduledEventData } from './scheduled-event.service';
 import { EventChargeService, EventChargeData } from './event-charge.service';
-import { EventResourceAssignmentService, EventResourceAssignmentData } from './event-resource-assignment.service';
 import { NotificationSubscriptionService, NotificationSubscriptionData } from './notification-subscription.service';
+import { VolunteerProfileService, VolunteerProfileData } from './volunteer-profile.service';
+import { VolunteerGroupMemberService, VolunteerGroupMemberData } from './volunteer-group-member.service';
+import { EventResourceAssignmentService, EventResourceAssignmentData } from './event-resource-assignment.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -229,14 +231,24 @@ export class ResourceData {
     private _eventChargesSubject = new BehaviorSubject<EventChargeData[] | null>(null);
 
                 
-    private _eventResourceAssignments: EventResourceAssignmentData[] | null = null;
-    private _eventResourceAssignmentsPromise: Promise<EventResourceAssignmentData[]> | null  = null;
-    private _eventResourceAssignmentsSubject = new BehaviorSubject<EventResourceAssignmentData[] | null>(null);
-
-                
     private _notificationSubscriptions: NotificationSubscriptionData[] | null = null;
     private _notificationSubscriptionsPromise: Promise<NotificationSubscriptionData[]> | null  = null;
     private _notificationSubscriptionsSubject = new BehaviorSubject<NotificationSubscriptionData[] | null>(null);
+
+                
+    private _volunteerProfiles: VolunteerProfileData[] | null = null;
+    private _volunteerProfilesPromise: Promise<VolunteerProfileData[]> | null  = null;
+    private _volunteerProfilesSubject = new BehaviorSubject<VolunteerProfileData[] | null>(null);
+
+                
+    private _volunteerGroupMembers: VolunteerGroupMemberData[] | null = null;
+    private _volunteerGroupMembersPromise: Promise<VolunteerGroupMemberData[]> | null  = null;
+    private _volunteerGroupMembersSubject = new BehaviorSubject<VolunteerGroupMemberData[] | null>(null);
+
+                
+    private _eventResourceAssignments: EventResourceAssignmentData[] | null = null;
+    private _eventResourceAssignmentsPromise: Promise<EventResourceAssignmentData[]> | null  = null;
+    private _eventResourceAssignmentsSubject = new BehaviorSubject<EventResourceAssignmentData[] | null>(null);
 
                 
 
@@ -426,25 +438,6 @@ export class ResourceData {
 
 
 
-    public EventResourceAssignments$ = this._eventResourceAssignmentsSubject.asObservable().pipe(
-
-        // Trigger load on first subscription if not already loaded
-        tap(() => {
-          if (this._eventResourceAssignments === null && this._eventResourceAssignmentsPromise === null) {
-            this.loadEventResourceAssignments(); // Private method to start fetch
-          }
-        }),
-        shareReplay(1) // Cache last emit
-    );
-
-  
-    public EventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({resourceId: this.id,
-      active: true,
-      deleted: false
-    });
-
-
-
     public NotificationSubscriptions$ = this._notificationSubscriptionsSubject.asObservable().pipe(
 
         // Trigger load on first subscription if not already loaded
@@ -458,6 +451,63 @@ export class ResourceData {
 
   
     public NotificationSubscriptionsCount$ = NotificationSubscriptionService.Instance.GetNotificationSubscriptionsRowCount({resourceId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    public VolunteerProfiles$ = this._volunteerProfilesSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._volunteerProfiles === null && this._volunteerProfilesPromise === null) {
+            this.loadVolunteerProfiles(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public VolunteerProfilesCount$ = VolunteerProfileService.Instance.GetVolunteerProfilesRowCount({resourceId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    public VolunteerGroupMembers$ = this._volunteerGroupMembersSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._volunteerGroupMembers === null && this._volunteerGroupMembersPromise === null) {
+            this.loadVolunteerGroupMembers(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public VolunteerGroupMembersCount$ = VolunteerGroupMemberService.Instance.GetVolunteerGroupMembersRowCount({resourceId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    public EventResourceAssignments$ = this._eventResourceAssignmentsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._eventResourceAssignments === null && this._eventResourceAssignmentsPromise === null) {
+            this.loadEventResourceAssignments(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public EventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({resourceId: this.id,
       active: true,
       deleted: false
     });
@@ -538,13 +588,21 @@ export class ResourceData {
      this._eventChargesPromise = null;
      this._eventChargesSubject.next(null);
 
-     this._eventResourceAssignments = null;
-     this._eventResourceAssignmentsPromise = null;
-     this._eventResourceAssignmentsSubject.next(null);
-
      this._notificationSubscriptions = null;
      this._notificationSubscriptionsPromise = null;
      this._notificationSubscriptionsSubject.next(null);
+
+     this._volunteerProfiles = null;
+     this._volunteerProfilesPromise = null;
+     this._volunteerProfilesSubject.next(null);
+
+     this._volunteerGroupMembers = null;
+     this._volunteerGroupMembersPromise = null;
+     this._volunteerGroupMembersSubject.next(null);
+
+     this._eventResourceAssignments = null;
+     this._eventResourceAssignmentsPromise = null;
+     this._eventResourceAssignmentsSubject.next(null);
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -1142,71 +1200,6 @@ export class ResourceData {
 
     /**
      *
-     * Gets the EventResourceAssignments for this Resource.
-     *
-     * If already loaded, returns cached array.
-     *
-     * If not, fetches from server and caches the result.
-     * 
-     * Usage in components:
-     *   this.resource.EventResourceAssignments.then(resources => { ... })
-     *   or
-     *   await this.resource.resources
-     *
-    */
-    public get EventResourceAssignments(): Promise<EventResourceAssignmentData[]> {
-        if (this._eventResourceAssignments !== null) {
-            return Promise.resolve(this._eventResourceAssignments);
-        }
-
-        if (this._eventResourceAssignmentsPromise !== null) {
-            return this._eventResourceAssignmentsPromise;
-        }
-
-        // Start the load
-        this.loadEventResourceAssignments();
-
-        return this._eventResourceAssignmentsPromise!;
-    }
-
-
-
-    private loadEventResourceAssignments(): void {
-
-        this._eventResourceAssignmentsPromise = lastValueFrom(
-            ResourceService.Instance.GetEventResourceAssignmentsForResource(this.id)
-        )
-        .then(EventResourceAssignments => {
-            this._eventResourceAssignments = EventResourceAssignments ?? [];
-            this._eventResourceAssignmentsSubject.next(this._eventResourceAssignments);
-            return this._eventResourceAssignments;
-         })
-        .catch(err => {
-            this._eventResourceAssignments = [];
-            this._eventResourceAssignmentsSubject.next(this._eventResourceAssignments);
-            throw err;
-        })
-        .finally(() => {
-            this._eventResourceAssignmentsPromise = null; // Allow retry if needed
-        });
-    }
-
-    /**
-     * Clears the cached EventResourceAssignment. Call after mutations to force refresh.
-     */
-    public ClearEventResourceAssignmentsCache(): void {
-        this._eventResourceAssignments = null;
-        this._eventResourceAssignmentsPromise = null;
-        this._eventResourceAssignmentsSubject.next(this._eventResourceAssignments);      // Emit to observable
-    }
-
-    public get HasEventResourceAssignments(): Promise<boolean> {
-        return this.EventResourceAssignments.then(eventResourceAssignments => eventResourceAssignments.length > 0);
-    }
-
-
-    /**
-     *
      * Gets the NotificationSubscriptions for this Resource.
      *
      * If already loaded, returns cached array.
@@ -1267,6 +1260,201 @@ export class ResourceData {
 
     public get HasNotificationSubscriptions(): Promise<boolean> {
         return this.NotificationSubscriptions.then(notificationSubscriptions => notificationSubscriptions.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the VolunteerProfiles for this Resource.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.resource.VolunteerProfiles.then(resources => { ... })
+     *   or
+     *   await this.resource.resources
+     *
+    */
+    public get VolunteerProfiles(): Promise<VolunteerProfileData[]> {
+        if (this._volunteerProfiles !== null) {
+            return Promise.resolve(this._volunteerProfiles);
+        }
+
+        if (this._volunteerProfilesPromise !== null) {
+            return this._volunteerProfilesPromise;
+        }
+
+        // Start the load
+        this.loadVolunteerProfiles();
+
+        return this._volunteerProfilesPromise!;
+    }
+
+
+
+    private loadVolunteerProfiles(): void {
+
+        this._volunteerProfilesPromise = lastValueFrom(
+            ResourceService.Instance.GetVolunteerProfilesForResource(this.id)
+        )
+        .then(VolunteerProfiles => {
+            this._volunteerProfiles = VolunteerProfiles ?? [];
+            this._volunteerProfilesSubject.next(this._volunteerProfiles);
+            return this._volunteerProfiles;
+         })
+        .catch(err => {
+            this._volunteerProfiles = [];
+            this._volunteerProfilesSubject.next(this._volunteerProfiles);
+            throw err;
+        })
+        .finally(() => {
+            this._volunteerProfilesPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached VolunteerProfile. Call after mutations to force refresh.
+     */
+    public ClearVolunteerProfilesCache(): void {
+        this._volunteerProfiles = null;
+        this._volunteerProfilesPromise = null;
+        this._volunteerProfilesSubject.next(this._volunteerProfiles);      // Emit to observable
+    }
+
+    public get HasVolunteerProfiles(): Promise<boolean> {
+        return this.VolunteerProfiles.then(volunteerProfiles => volunteerProfiles.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the VolunteerGroupMembers for this Resource.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.resource.VolunteerGroupMembers.then(resources => { ... })
+     *   or
+     *   await this.resource.resources
+     *
+    */
+    public get VolunteerGroupMembers(): Promise<VolunteerGroupMemberData[]> {
+        if (this._volunteerGroupMembers !== null) {
+            return Promise.resolve(this._volunteerGroupMembers);
+        }
+
+        if (this._volunteerGroupMembersPromise !== null) {
+            return this._volunteerGroupMembersPromise;
+        }
+
+        // Start the load
+        this.loadVolunteerGroupMembers();
+
+        return this._volunteerGroupMembersPromise!;
+    }
+
+
+
+    private loadVolunteerGroupMembers(): void {
+
+        this._volunteerGroupMembersPromise = lastValueFrom(
+            ResourceService.Instance.GetVolunteerGroupMembersForResource(this.id)
+        )
+        .then(VolunteerGroupMembers => {
+            this._volunteerGroupMembers = VolunteerGroupMembers ?? [];
+            this._volunteerGroupMembersSubject.next(this._volunteerGroupMembers);
+            return this._volunteerGroupMembers;
+         })
+        .catch(err => {
+            this._volunteerGroupMembers = [];
+            this._volunteerGroupMembersSubject.next(this._volunteerGroupMembers);
+            throw err;
+        })
+        .finally(() => {
+            this._volunteerGroupMembersPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached VolunteerGroupMember. Call after mutations to force refresh.
+     */
+    public ClearVolunteerGroupMembersCache(): void {
+        this._volunteerGroupMembers = null;
+        this._volunteerGroupMembersPromise = null;
+        this._volunteerGroupMembersSubject.next(this._volunteerGroupMembers);      // Emit to observable
+    }
+
+    public get HasVolunteerGroupMembers(): Promise<boolean> {
+        return this.VolunteerGroupMembers.then(volunteerGroupMembers => volunteerGroupMembers.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the EventResourceAssignments for this Resource.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.resource.EventResourceAssignments.then(resources => { ... })
+     *   or
+     *   await this.resource.resources
+     *
+    */
+    public get EventResourceAssignments(): Promise<EventResourceAssignmentData[]> {
+        if (this._eventResourceAssignments !== null) {
+            return Promise.resolve(this._eventResourceAssignments);
+        }
+
+        if (this._eventResourceAssignmentsPromise !== null) {
+            return this._eventResourceAssignmentsPromise;
+        }
+
+        // Start the load
+        this.loadEventResourceAssignments();
+
+        return this._eventResourceAssignmentsPromise!;
+    }
+
+
+
+    private loadEventResourceAssignments(): void {
+
+        this._eventResourceAssignmentsPromise = lastValueFrom(
+            ResourceService.Instance.GetEventResourceAssignmentsForResource(this.id)
+        )
+        .then(EventResourceAssignments => {
+            this._eventResourceAssignments = EventResourceAssignments ?? [];
+            this._eventResourceAssignmentsSubject.next(this._eventResourceAssignments);
+            return this._eventResourceAssignments;
+         })
+        .catch(err => {
+            this._eventResourceAssignments = [];
+            this._eventResourceAssignmentsSubject.next(this._eventResourceAssignments);
+            throw err;
+        })
+        .finally(() => {
+            this._eventResourceAssignmentsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached EventResourceAssignment. Call after mutations to force refresh.
+     */
+    public ClearEventResourceAssignmentsCache(): void {
+        this._eventResourceAssignments = null;
+        this._eventResourceAssignmentsPromise = null;
+        this._eventResourceAssignmentsSubject.next(this._eventResourceAssignments);      // Emit to observable
+    }
+
+    public get HasEventResourceAssignments(): Promise<boolean> {
+        return this.EventResourceAssignments.then(eventResourceAssignments => eventResourceAssignments.length > 0);
     }
 
 
@@ -1357,8 +1545,10 @@ export class ResourceService extends SecureEndpointBase {
         private crewMemberService: CrewMemberService,
         private scheduledEventService: ScheduledEventService,
         private eventChargeService: EventChargeService,
-        private eventResourceAssignmentService: EventResourceAssignmentService,
         private notificationSubscriptionService: NotificationSubscriptionService,
+        private volunteerProfileService: VolunteerProfileService,
+        private volunteerGroupMemberService: VolunteerGroupMemberService,
+        private eventResourceAssignmentService: EventResourceAssignmentService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
 
@@ -1922,8 +2112,8 @@ export class ResourceService extends SecureEndpointBase {
     }
 
 
-    public GetEventResourceAssignmentsForResource(resourceId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<EventResourceAssignmentData[]> {
-        return this.eventResourceAssignmentService.GetEventResourceAssignmentList({
+    public GetNotificationSubscriptionsForResource(resourceId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<NotificationSubscriptionData[]> {
+        return this.notificationSubscriptionService.GetNotificationSubscriptionList({
             resourceId: resourceId,
             active: active,
             deleted: deleted,
@@ -1932,8 +2122,28 @@ export class ResourceService extends SecureEndpointBase {
     }
 
 
-    public GetNotificationSubscriptionsForResource(resourceId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<NotificationSubscriptionData[]> {
-        return this.notificationSubscriptionService.GetNotificationSubscriptionList({
+    public GetVolunteerProfilesForResource(resourceId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<VolunteerProfileData[]> {
+        return this.volunteerProfileService.GetVolunteerProfileList({
+            resourceId: resourceId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
+    public GetVolunteerGroupMembersForResource(resourceId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<VolunteerGroupMemberData[]> {
+        return this.volunteerGroupMemberService.GetVolunteerGroupMemberList({
+            resourceId: resourceId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
+    public GetEventResourceAssignmentsForResource(resourceId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<EventResourceAssignmentData[]> {
+        return this.eventResourceAssignmentService.GetEventResourceAssignmentList({
             resourceId: resourceId,
             active: active,
             deleted: deleted,
@@ -2013,13 +2223,21 @@ export class ResourceService extends SecureEndpointBase {
     (revived as any)._eventChargesPromise = null;
     (revived as any)._eventChargesSubject = new BehaviorSubject<EventChargeData[] | null>(null);
 
-    (revived as any)._eventResourceAssignments = null;
-    (revived as any)._eventResourceAssignmentsPromise = null;
-    (revived as any)._eventResourceAssignmentsSubject = new BehaviorSubject<EventResourceAssignmentData[] | null>(null);
-
     (revived as any)._notificationSubscriptions = null;
     (revived as any)._notificationSubscriptionsPromise = null;
     (revived as any)._notificationSubscriptionsSubject = new BehaviorSubject<NotificationSubscriptionData[] | null>(null);
+
+    (revived as any)._volunteerProfiles = null;
+    (revived as any)._volunteerProfilesPromise = null;
+    (revived as any)._volunteerProfilesSubject = new BehaviorSubject<VolunteerProfileData[] | null>(null);
+
+    (revived as any)._volunteerGroupMembers = null;
+    (revived as any)._volunteerGroupMembersPromise = null;
+    (revived as any)._volunteerGroupMembersSubject = new BehaviorSubject<VolunteerGroupMemberData[] | null>(null);
+
+    (revived as any)._eventResourceAssignments = null;
+    (revived as any)._eventResourceAssignmentsPromise = null;
+    (revived as any)._eventResourceAssignmentsSubject = new BehaviorSubject<EventResourceAssignmentData[] | null>(null);
 
 
     //
@@ -2177,22 +2395,6 @@ export class ResourceService extends SecureEndpointBase {
 
 
 
-    (revived as any).EventResourceAssignments$ = (revived as any)._eventResourceAssignmentsSubject.asObservable().pipe(
-        tap(() => {
-              if ((revived as any)._eventResourceAssignments === null && (revived as any)._eventResourceAssignmentsPromise === null) {
-                (revived as any).loadEventResourceAssignments();        // Need to cast to any to invoke private load method
-              }
-        }),
-        shareReplay(1)
-      );
-
-    (revived as any).EventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({resourceId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
-
-
-
     (revived as any).NotificationSubscriptions$ = (revived as any)._notificationSubscriptionsSubject.asObservable().pipe(
         tap(() => {
               if ((revived as any)._notificationSubscriptions === null && (revived as any)._notificationSubscriptionsPromise === null) {
@@ -2203,6 +2405,54 @@ export class ResourceService extends SecureEndpointBase {
       );
 
     (revived as any).NotificationSubscriptionsCount$ = NotificationSubscriptionService.Instance.GetNotificationSubscriptionsRowCount({resourceId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).VolunteerProfiles$ = (revived as any)._volunteerProfilesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._volunteerProfiles === null && (revived as any)._volunteerProfilesPromise === null) {
+                (revived as any).loadVolunteerProfiles();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).VolunteerProfilesCount$ = VolunteerProfileService.Instance.GetVolunteerProfilesRowCount({resourceId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).VolunteerGroupMembers$ = (revived as any)._volunteerGroupMembersSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._volunteerGroupMembers === null && (revived as any)._volunteerGroupMembersPromise === null) {
+                (revived as any).loadVolunteerGroupMembers();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).VolunteerGroupMembersCount$ = VolunteerGroupMemberService.Instance.GetVolunteerGroupMembersRowCount({resourceId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).EventResourceAssignments$ = (revived as any)._eventResourceAssignmentsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._eventResourceAssignments === null && (revived as any)._eventResourceAssignmentsPromise === null) {
+                (revived as any).loadEventResourceAssignments();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).EventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({resourceId: (revived as any).id,
       active: true,
       deleted: false
     });

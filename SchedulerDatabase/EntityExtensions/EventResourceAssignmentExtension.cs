@@ -286,6 +286,7 @@ namespace Foundation.Scheduler.Database
 			public Int32? officeId { get; set; }
 			public Int32? resourceId { get; set; }
 			public Int32? crewId { get; set; }
+			public Int32? volunteerGroupId { get; set; }
 			public Int32? assignmentRoleId { get; set; }
 			[Required]
 			public Int32 assignmentStatusId { get; set; }
@@ -299,6 +300,17 @@ namespace Foundation.Scheduler.Database
 			public DateTime? actualStartDateTime { get; set; }
 			public DateTime? actualEndDateTime { get; set; }
 			public String actualNotes { get; set; }
+			[Required]
+			public Boolean isVolunteer { get; set; }
+			public Single? reportedVolunteerHours { get; set; }
+			public Single? approvedVolunteerHours { get; set; }
+			public Int32? hoursApprovedByContactId { get; set; }
+			public DateTime? approvedDateTime { get; set; }
+			public Decimal? reimbursementAmount { get; set; }
+			public Int32? chargeTypeId { get; set; }
+			[Required]
+			public Boolean reimbursementRequested { get; set; }
+			public String volunteerNotes { get; set; }
 			public Int32 versionNumber { get; set; }
 			[Required]
 			public Guid objectGuid { get; set; }
@@ -316,10 +328,13 @@ namespace Foundation.Scheduler.Database
 		{
 			public AssignmentRole.AssignmentRoleDTO assignmentRole { get; set; }
 			public AssignmentStatus.AssignmentStatusDTO assignmentStatus { get; set; }
+			public ChargeType.ChargeTypeDTO chargeType { get; set; }
 			public Crew.CrewDTO crew { get; set; }
+			public Contact.ContactDTO hoursApprovedByContact { get; set; }
 			public Office.OfficeDTO office { get; set; }
 			public Resource.ResourceDTO resource { get; set; }
 			public ScheduledEvent.ScheduledEventDTO scheduledEvent { get; set; }
+			public VolunteerGroup.VolunteerGroupDTO volunteerGroup { get; set; }
 		}
 
 
@@ -339,6 +354,7 @@ namespace Foundation.Scheduler.Database
 				officeId = this.officeId,
 				resourceId = this.resourceId,
 				crewId = this.crewId,
+				volunteerGroupId = this.volunteerGroupId,
 				assignmentRoleId = this.assignmentRoleId,
 				assignmentStatusId = this.assignmentStatusId,
 				assignmentStartDateTime = this.assignmentStartDateTime,
@@ -351,6 +367,15 @@ namespace Foundation.Scheduler.Database
 				actualStartDateTime = this.actualStartDateTime,
 				actualEndDateTime = this.actualEndDateTime,
 				actualNotes = this.actualNotes,
+				isVolunteer = this.isVolunteer,
+				reportedVolunteerHours = this.reportedVolunteerHours,
+				approvedVolunteerHours = this.approvedVolunteerHours,
+				hoursApprovedByContactId = this.hoursApprovedByContactId,
+				approvedDateTime = this.approvedDateTime,
+				reimbursementAmount = this.reimbursementAmount,
+				chargeTypeId = this.chargeTypeId,
+				reimbursementRequested = this.reimbursementRequested,
+				volunteerNotes = this.volunteerNotes,
 				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -398,6 +423,7 @@ namespace Foundation.Scheduler.Database
 				officeId = this.officeId,
 				resourceId = this.resourceId,
 				crewId = this.crewId,
+				volunteerGroupId = this.volunteerGroupId,
 				assignmentRoleId = this.assignmentRoleId,
 				assignmentStatusId = this.assignmentStatusId,
 				assignmentStartDateTime = this.assignmentStartDateTime,
@@ -410,16 +436,28 @@ namespace Foundation.Scheduler.Database
 				actualStartDateTime = this.actualStartDateTime,
 				actualEndDateTime = this.actualEndDateTime,
 				actualNotes = this.actualNotes,
+				isVolunteer = this.isVolunteer,
+				reportedVolunteerHours = this.reportedVolunteerHours,
+				approvedVolunteerHours = this.approvedVolunteerHours,
+				hoursApprovedByContactId = this.hoursApprovedByContactId,
+				approvedDateTime = this.approvedDateTime,
+				reimbursementAmount = this.reimbursementAmount,
+				chargeTypeId = this.chargeTypeId,
+				reimbursementRequested = this.reimbursementRequested,
+				volunteerNotes = this.volunteerNotes,
 				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted,
 				assignmentRole = this.assignmentRole?.ToDTO(),
 				assignmentStatus = this.assignmentStatus?.ToDTO(),
+				chargeType = this.chargeType?.ToDTO(),
 				crew = this.crew?.ToDTO(),
+				hoursApprovedByContact = this.hoursApprovedByContact?.ToDTO(),
 				office = this.office?.ToDTO(),
 				resource = this.resource?.ToDTO(),
-				scheduledEvent = this.scheduledEvent?.ToDTO()
+				scheduledEvent = this.scheduledEvent?.ToDTO(),
+				volunteerGroup = this.volunteerGroup?.ToDTO()
 			};
 		}
 
@@ -463,6 +501,7 @@ namespace Foundation.Scheduler.Database
 				officeId = dto.officeId,
 				resourceId = dto.resourceId,
 				crewId = dto.crewId,
+				volunteerGroupId = dto.volunteerGroupId,
 				assignmentRoleId = dto.assignmentRoleId,
 				assignmentStatusId = dto.assignmentStatusId,
 				assignmentStartDateTime = dto.assignmentStartDateTime,
@@ -475,6 +514,15 @@ namespace Foundation.Scheduler.Database
 				actualStartDateTime = dto.actualStartDateTime,
 				actualEndDateTime = dto.actualEndDateTime,
 				actualNotes = dto.actualNotes,
+				isVolunteer = dto.isVolunteer,
+				reportedVolunteerHours = dto.reportedVolunteerHours,
+				approvedVolunteerHours = dto.approvedVolunteerHours,
+				hoursApprovedByContactId = dto.hoursApprovedByContactId,
+				approvedDateTime = dto.approvedDateTime,
+				reimbursementAmount = dto.reimbursementAmount,
+				chargeTypeId = dto.chargeTypeId,
+				reimbursementRequested = dto.reimbursementRequested,
+				volunteerNotes = dto.volunteerNotes,
 				versionNumber = dto.versionNumber,
 				objectGuid = dto.objectGuid,
 				active = dto.active ?? true,
@@ -499,6 +547,7 @@ namespace Foundation.Scheduler.Database
 			this.officeId = dto.officeId;
 			this.resourceId = dto.resourceId;
 			this.crewId = dto.crewId;
+			this.volunteerGroupId = dto.volunteerGroupId;
 			this.assignmentRoleId = dto.assignmentRoleId;
 			this.assignmentStatusId = dto.assignmentStatusId;
 			this.assignmentStartDateTime = dto.assignmentStartDateTime;
@@ -511,6 +560,15 @@ namespace Foundation.Scheduler.Database
 			this.actualStartDateTime = dto.actualStartDateTime;
 			this.actualEndDateTime = dto.actualEndDateTime;
 			this.actualNotes = dto.actualNotes;
+			this.isVolunteer = dto.isVolunteer;
+			this.reportedVolunteerHours = dto.reportedVolunteerHours;
+			this.approvedVolunteerHours = dto.approvedVolunteerHours;
+			this.hoursApprovedByContactId = dto.hoursApprovedByContactId;
+			this.approvedDateTime = dto.approvedDateTime;
+			this.reimbursementAmount = dto.reimbursementAmount;
+			this.chargeTypeId = dto.chargeTypeId;
+			this.reimbursementRequested = dto.reimbursementRequested;
+			this.volunteerNotes = dto.volunteerNotes;
 			this.versionNumber = dto.versionNumber;
 			this.objectGuid = dto.objectGuid;
 			if (dto.active.HasValue == true)
@@ -541,6 +599,7 @@ namespace Foundation.Scheduler.Database
 				officeId = this.officeId,
 				resourceId = this.resourceId,
 				crewId = this.crewId,
+				volunteerGroupId = this.volunteerGroupId,
 				assignmentRoleId = this.assignmentRoleId,
 				assignmentStatusId = this.assignmentStatusId,
 				assignmentStartDateTime = this.assignmentStartDateTime,
@@ -553,6 +612,15 @@ namespace Foundation.Scheduler.Database
 				actualStartDateTime = this.actualStartDateTime,
 				actualEndDateTime = this.actualEndDateTime,
 				actualNotes = this.actualNotes,
+				isVolunteer = this.isVolunteer,
+				reportedVolunteerHours = this.reportedVolunteerHours,
+				approvedVolunteerHours = this.approvedVolunteerHours,
+				hoursApprovedByContactId = this.hoursApprovedByContactId,
+				approvedDateTime = this.approvedDateTime,
+				reimbursementAmount = this.reimbursementAmount,
+				chargeTypeId = this.chargeTypeId,
+				reimbursementRequested = this.reimbursementRequested,
+				volunteerNotes = this.volunteerNotes,
 				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -614,6 +682,7 @@ namespace Foundation.Scheduler.Database
 				officeId = eventResourceAssignment.officeId,
 				resourceId = eventResourceAssignment.resourceId,
 				crewId = eventResourceAssignment.crewId,
+				volunteerGroupId = eventResourceAssignment.volunteerGroupId,
 				assignmentRoleId = eventResourceAssignment.assignmentRoleId,
 				assignmentStatusId = eventResourceAssignment.assignmentStatusId,
 				assignmentStartDateTime = eventResourceAssignment.assignmentStartDateTime,
@@ -626,6 +695,15 @@ namespace Foundation.Scheduler.Database
 				actualStartDateTime = eventResourceAssignment.actualStartDateTime,
 				actualEndDateTime = eventResourceAssignment.actualEndDateTime,
 				actualNotes = eventResourceAssignment.actualNotes,
+				isVolunteer = eventResourceAssignment.isVolunteer,
+				reportedVolunteerHours = eventResourceAssignment.reportedVolunteerHours,
+				approvedVolunteerHours = eventResourceAssignment.approvedVolunteerHours,
+				hoursApprovedByContactId = eventResourceAssignment.hoursApprovedByContactId,
+				approvedDateTime = eventResourceAssignment.approvedDateTime,
+				reimbursementAmount = eventResourceAssignment.reimbursementAmount,
+				chargeTypeId = eventResourceAssignment.chargeTypeId,
+				reimbursementRequested = eventResourceAssignment.reimbursementRequested,
+				volunteerNotes = eventResourceAssignment.volunteerNotes,
 				versionNumber = eventResourceAssignment.versionNumber,
 				objectGuid = eventResourceAssignment.objectGuid,
 				active = eventResourceAssignment.active,
@@ -654,6 +732,7 @@ namespace Foundation.Scheduler.Database
 				officeId = eventResourceAssignment.officeId,
 				resourceId = eventResourceAssignment.resourceId,
 				crewId = eventResourceAssignment.crewId,
+				volunteerGroupId = eventResourceAssignment.volunteerGroupId,
 				assignmentRoleId = eventResourceAssignment.assignmentRoleId,
 				assignmentStatusId = eventResourceAssignment.assignmentStatusId,
 				assignmentStartDateTime = eventResourceAssignment.assignmentStartDateTime,
@@ -666,16 +745,28 @@ namespace Foundation.Scheduler.Database
 				actualStartDateTime = eventResourceAssignment.actualStartDateTime,
 				actualEndDateTime = eventResourceAssignment.actualEndDateTime,
 				actualNotes = eventResourceAssignment.actualNotes,
+				isVolunteer = eventResourceAssignment.isVolunteer,
+				reportedVolunteerHours = eventResourceAssignment.reportedVolunteerHours,
+				approvedVolunteerHours = eventResourceAssignment.approvedVolunteerHours,
+				hoursApprovedByContactId = eventResourceAssignment.hoursApprovedByContactId,
+				approvedDateTime = eventResourceAssignment.approvedDateTime,
+				reimbursementAmount = eventResourceAssignment.reimbursementAmount,
+				chargeTypeId = eventResourceAssignment.chargeTypeId,
+				reimbursementRequested = eventResourceAssignment.reimbursementRequested,
+				volunteerNotes = eventResourceAssignment.volunteerNotes,
 				versionNumber = eventResourceAssignment.versionNumber,
 				objectGuid = eventResourceAssignment.objectGuid,
 				active = eventResourceAssignment.active,
 				deleted = eventResourceAssignment.deleted,
 				assignmentRole = AssignmentRole.CreateMinimalAnonymous(eventResourceAssignment.assignmentRole),
 				assignmentStatus = AssignmentStatus.CreateMinimalAnonymous(eventResourceAssignment.assignmentStatus),
+				chargeType = ChargeType.CreateMinimalAnonymous(eventResourceAssignment.chargeType),
 				crew = Crew.CreateMinimalAnonymous(eventResourceAssignment.crew),
+				hoursApprovedByContact = Contact.CreateMinimalAnonymous(eventResourceAssignment.hoursApprovedByContact),
 				office = Office.CreateMinimalAnonymous(eventResourceAssignment.office),
 				resource = Resource.CreateMinimalAnonymous(eventResourceAssignment.resource),
-				scheduledEvent = ScheduledEvent.CreateMinimalAnonymous(eventResourceAssignment.scheduledEvent)
+				scheduledEvent = ScheduledEvent.CreateMinimalAnonymous(eventResourceAssignment.scheduledEvent),
+				volunteerGroup = VolunteerGroup.CreateMinimalAnonymous(eventResourceAssignment.volunteerGroup)
 			 };
 		}
 

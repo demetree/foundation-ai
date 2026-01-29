@@ -28,6 +28,7 @@ import { PriorityService } from '../../../scheduler-data-services/priority.servi
 import { ContactMethodService } from '../../../scheduler-data-services/contact-method.service';
 import { InteractionTypeService } from '../../../scheduler-data-services/interaction-type.service';
 import { TagService } from '../../../scheduler-data-services/tag.service';
+import { VolunteerStatusService } from '../../../scheduler-data-services/volunteer-status.service';
 import { ContactTypeService } from '../../../scheduler-data-services/contact-type.service';
 import { ContactService } from '../../../scheduler-data-services/contact.service';
 import { RelationshipTypeService } from '../../../scheduler-data-services/relationship-type.service';
@@ -45,6 +46,8 @@ import { HouseholdService } from '../../../scheduler-data-services/household.ser
 import { ConstituentJourneyStageService } from '../../../scheduler-data-services/constituent-journey-stage.service';
 import { ConstituentService } from '../../../scheduler-data-services/constituent.service';
 import { TributeService } from '../../../scheduler-data-services/tribute.service';
+import { VolunteerProfileService } from '../../../scheduler-data-services/volunteer-profile.service';
+import { VolunteerGroupService } from '../../../scheduler-data-services/volunteer-group.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -112,6 +115,7 @@ export class IconDetailComponent implements OnInit, CanComponentDeactivate {
   public contactMethods$ = this.contactMethodService.GetContactMethodList();
   public interactionTypes$ = this.interactionTypeService.GetInteractionTypeList();
   public tags$ = this.tagService.GetTagList();
+  public volunteerStatuses$ = this.volunteerStatusService.GetVolunteerStatusList();
   public contactTypes$ = this.contactTypeService.GetContactTypeList();
   public contacts$ = this.contactService.GetContactList();
   public relationshipTypes$ = this.relationshipTypeService.GetRelationshipTypeList();
@@ -129,6 +133,8 @@ export class IconDetailComponent implements OnInit, CanComponentDeactivate {
   public constituentJourneyStages$ = this.constituentJourneyStageService.GetConstituentJourneyStageList();
   public constituents$ = this.constituentService.GetConstituentList();
   public tributes$ = this.tributeService.GetTributeList();
+  public volunteerProfiles$ = this.volunteerProfileService.GetVolunteerProfileList();
+  public volunteerGroups$ = this.volunteerGroupService.GetVolunteerGroupList();
 
   private destroy$ = new Subject<void>();
 
@@ -139,6 +145,7 @@ export class IconDetailComponent implements OnInit, CanComponentDeactivate {
     public contactMethodService: ContactMethodService,
     public interactionTypeService: InteractionTypeService,
     public tagService: TagService,
+    public volunteerStatusService: VolunteerStatusService,
     public contactTypeService: ContactTypeService,
     public contactService: ContactService,
     public relationshipTypeService: RelationshipTypeService,
@@ -156,6 +163,8 @@ export class IconDetailComponent implements OnInit, CanComponentDeactivate {
     public constituentJourneyStageService: ConstituentJourneyStageService,
     public constituentService: ConstituentService,
     public tributeService: TributeService,
+    public volunteerProfileService: VolunteerProfileService,
+    public volunteerGroupService: VolunteerGroupService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,

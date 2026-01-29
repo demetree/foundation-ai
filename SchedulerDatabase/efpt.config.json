@@ -538,6 +538,34 @@
       {
          "Name": "[Scheduler].[TributeType]",
          "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[VolunteerGroup]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[VolunteerGroupChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[VolunteerGroupMember]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[VolunteerGroupMemberChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[VolunteerProfile]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[VolunteerProfileChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[VolunteerStatus]",
+         "ObjectType": 0
       }
    ],
    "UiHint": null,

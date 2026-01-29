@@ -1,0 +1,422 @@
+<app-volunteer-profile-add-edit [showAddButton]="false"></app-volunteer-profile-add-edit>
+<div class="row" *ngIf="userIsSchedulerVolunteerProfileReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerVolunteerProfileWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerVolunteerProfileWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('resource.name')">
+                Resource
+                <span *ngIf="sortColumn === 'resource.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('volunteerStatus.name')">
+                Volunteer  Status
+                <span *ngIf="sortColumn === 'volunteerStatus.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('onboardedDate')">
+                Onboarded  Date
+                <span *ngIf="sortColumn === 'onboardedDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('inactiveSince')">
+                Inactive  Since
+                <span *ngIf="sortColumn === 'inactiveSince'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('totalHoursServed')">
+                Total  Hours  Served
+                <span *ngIf="sortColumn === 'totalHoursServed'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('lastActivityDate')">
+                Last  Activity  Date
+                <span *ngIf="sortColumn === 'lastActivityDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('backgroundCheckCompleted')">
+                Background  Check  Completed
+                <span *ngIf="sortColumn === 'backgroundCheckCompleted'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('backgroundCheckDate')">
+                Background  Check  Date
+                <span *ngIf="sortColumn === 'backgroundCheckDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('backgroundCheckExpiry')">
+                Background  Check  Expiry
+                <span *ngIf="sortColumn === 'backgroundCheckExpiry'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('confidentialityAgreementSigned')">
+                Confidentiality  Agreement  Signed
+                <span *ngIf="sortColumn === 'confidentialityAgreementSigned'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('confidentialityAgreementDate')">
+                Confidentiality  Agreement  Date
+                <span *ngIf="sortColumn === 'confidentialityAgreementDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('availabilityPreferences')">
+                Availability  Preferences
+                <span *ngIf="sortColumn === 'availabilityPreferences'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('interestsAndSkillsNotes')">
+                Interests  And  Skills  Notes
+                <span *ngIf="sortColumn === 'interestsAndSkillsNotes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('emergencyContactNotes')">
+                Emergency  Contact  Notes
+                <span *ngIf="sortColumn === 'emergencyContactNotes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('constituent.name')">
+                Constituent
+                <span *ngIf="sortColumn === 'constituent.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('icon.name')">
+                Icon
+                <span *ngIf="sortColumn === 'icon.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('color')">
+                Color
+                <span *ngIf="sortColumn === 'color'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('attributes')">
+                Attributes
+                <span *ngIf="sortColumn === 'attributes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let volunteerProfile of filteredVolunteerProfiles; trackBy: getVolunteerProfileId"
+              [ngClass]="{
+                 'row-inactive': volunteerProfile.active == false,
+                 'row-deleted': volunteerProfile.deleted == true 
+                 }">
+            <td class="header-action-button" *ngIf="userIsSchedulerVolunteerProfileWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleEdit(volunteerProfile)"
+                      ngbTooltip="Edit" 
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsSchedulerVolunteerProfileWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleDelete(volunteerProfile)"
+                      ngbTooltip="Delete" 
+                      placement="top"
+                      *ngIf="volunteerProfile.deleted == false">
+                <i class="fa fa-trash"></i>
+              </button>
+              <button class="btn btn-sm"
+                      (click)="handleUndelete(volunteerProfile)"
+                      ngbTooltip="Undelete" 
+                      placement="top"
+                      *ngIf="volunteerProfile.deleted == true">
+                <i class="fa fa-trash-arrow-up"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(volunteerProfile, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(volunteerProfile, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(volunteerProfile, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(volunteerProfile, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(volunteerProfile, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(volunteerProfile, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(volunteerProfile, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(volunteerProfile, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/resource', volunteerProfile.resourceId]" class="btn btn-link text-left" ngbTooltip="Open Resource details">{{volunteerProfile.resource?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/volunteerstatus', volunteerProfile.volunteerStatusId]" class="btn btn-link text-left" ngbTooltip="Open Volunteer Status details">{{volunteerProfile.volunteerStatus?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/volunteerprofile', volunteerProfile.id]" class="btn btn-link text-left" ngbTooltip="Open Volunteer Profile details">{{volunteerProfile.onboardedDate | date:'YYYY-MM-dd'}}</a></td>
+            <td class="text-truncate">{{volunteerProfile.inactiveSince | date:'YYYY-MM-dd'}}</td>
+            <td class="text-truncate">{{volunteerProfile.totalHoursServed | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{volunteerProfile.lastActivityDate | date:'YYYY-MM-dd'}}</td>
+            <td class="text-truncate"><boolean-icon [value]="volunteerProfile.backgroundCheckCompleted"/></td>
+            <td class="text-truncate">{{volunteerProfile.backgroundCheckDate | date:'YYYY-MM-dd'}}</td>
+            <td class="text-truncate">{{volunteerProfile.backgroundCheckExpiry | date:'YYYY-MM-dd'}}</td>
+            <td class="text-truncate"><boolean-icon [value]="volunteerProfile.confidentialityAgreementSigned"/></td>
+            <td class="text-truncate">{{volunteerProfile.confidentialityAgreementDate | date:'YYYY-MM-dd'}}</td>
+            <td class="text-truncate">{{volunteerProfile.availabilityPreferences}}</td>
+            <td class="text-truncate">{{volunteerProfile.interestsAndSkillsNotes}}</td>
+            <td class="text-truncate">{{volunteerProfile.emergencyContactNotes}}</td>
+            <td class="text-truncate"><a [routerLink]="['/constituent', volunteerProfile.constituentId]" class="btn btn-link text-left" ngbTooltip="Open Constituent details">{{volunteerProfile.constituent?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/icon', volunteerProfile.iconId]" class="btn btn-link text-left" ngbTooltip="Open Icon details">{{volunteerProfile.icon?.name}}</a></td>
+            <td class="text-truncate">{{volunteerProfile.color}}</td>
+            <td class="text-truncate">{{volunteerProfile.attributes}}</td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let volunteerProfile of filteredVolunteerProfiles; trackBy: getVolunteerProfileId" class="card my-2"
+              [ngClass]="{
+                 'row-inactive': volunteerProfile.active == false,
+                 'row-deleted': volunteerProfile.deleted == true 
+                 }">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(volunteerProfile, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(volunteerProfile, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(volunteerProfile, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(volunteerProfile, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(volunteerProfile, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(volunteerProfile, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(volunteerProfile, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(volunteerProfile, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(volunteerProfile, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(volunteerProfile, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(volunteerProfile, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(volunteerProfile, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(volunteerProfile, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/volunteerprofile', volunteerProfile.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(volunteerProfile)" *ngIf="userIsSchedulerVolunteerProfileWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(volunteerProfile)" *ngIf="userIsSchedulerVolunteerProfileWriter() && volunteerProfile.deleted == false" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+            <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(volunteerProfile)" *ngIf="userIsSchedulerVolunteerProfileWriter() && volunteerProfile.deleted == true" ngbTooltip="Undelete">
+              <i class="fa fa-trash-arrow-upp"></i> UnDelete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{volunteerProfile.id}}</strong>
+               <small class="text-muted d-block">{{volunteerProfile.resource?.name}}</small>
+             </div>
+             <div>
+                <button class="btn btn-sm"
+                        [routerLink]="['/volunteerprofile', volunteerProfile.id]"
+                        ngbTooltip="Volunteer Profile Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="btn btn-sm"
+                        (click)="handleEdit(volunteerProfile)"
+                        ngbTooltip="Edit Volunteer Profile">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleDelete(volunteerProfile)"
+                      ngbTooltip="Delete Volunteer Profile" 
+                      placement="top"
+                      *ngIf="volunteerProfile.deleted == false">
+                  <i class="fa fa-trash"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleUndelete(volunteerProfile)"
+                      ngbTooltip="Undelete Volunteer Profile" 
+                      placement="top"
+                      *ngIf="volunteerProfile.deleted == true">
+                 <i class="fa fa-trash-arrow-up"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="volunteer-profile-info" *ngIf="volunteerProfile.resourceId != null">
+              <strong>Resource: </strong>
+              <a [routerLink]="['/resource', volunteerProfile.resourceId]" class="text-left p-0 m-0" ngbTooltip="Open Resource details">{{volunteerProfile.resource?.name}}</a>
+            </p>
+            <p class="volunteer-profile-info" *ngIf="volunteerProfile.volunteerStatusId != null">
+              <strong>Volunteer Status: </strong>
+              <a [routerLink]="['/volunteerstatus', volunteerProfile.volunteerStatusId]" class="text-left p-0 m-0" ngbTooltip="Open Volunteer Status details">{{volunteerProfile.volunteerStatus?.name}}</a>
+            </p>
+            <p class="volunteer-profile-info" *ngIf="volunteerProfile.onboardedDate != null">
+              <strong>Onboarded Date: </strong>
+              {{volunteerProfile.onboardedDate | date:'YYYY-MM-dd'}}
+            </p>
+            <p class="volunteer-profile-info" *ngIf="volunteerProfile.inactiveSince != null">
+              <strong>Inactive Since: </strong>
+              {{volunteerProfile.inactiveSince | date:'YYYY-MM-dd'}}
+            </p>
+            <p class="volunteer-profile-info" *ngIf="volunteerProfile.totalHoursServed != null">
+              <strong>Total Hours Served: </strong>
+              {{volunteerProfile.totalHoursServed | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="volunteer-profile-info" *ngIf="volunteerProfile.lastActivityDate != null">
+              <strong>Last Activity Date: </strong>
+              {{volunteerProfile.lastActivityDate | date:'YYYY-MM-dd'}}
+            </p>
+            <p class="volunteer-profile-info" *ngIf="volunteerProfile.backgroundCheckCompleted != null">
+              <strong>Background Check Completed: </strong>
+              <boolean-icon [value]="volunteerProfile.backgroundCheckCompleted"/>
+            </p>
+            <p class="volunteer-profile-info" *ngIf="volunteerProfile.backgroundCheckDate != null">
+              <strong>Background Check Date: </strong>
+              {{volunteerProfile.backgroundCheckDate | date:'YYYY-MM-dd'}}
+            </p>
+            <p class="volunteer-profile-info" *ngIf="volunteerProfile.backgroundCheckExpiry != null">
+              <strong>Background Check Expiry: </strong>
+              {{volunteerProfile.backgroundCheckExpiry | date:'YYYY-MM-dd'}}
+            </p>
+            <p class="volunteer-profile-info" *ngIf="volunteerProfile.confidentialityAgreementSigned != null">
+              <strong>Confidentiality Agreement Signed: </strong>
+              <boolean-icon [value]="volunteerProfile.confidentialityAgreementSigned"/>
+            </p>
+            <p class="volunteer-profile-info" *ngIf="volunteerProfile.confidentialityAgreementDate != null">
+              <strong>Confidentiality Agreement Date: </strong>
+              {{volunteerProfile.confidentialityAgreementDate | date:'YYYY-MM-dd'}}
+            </p>
+            <p class="volunteer-profile-info" *ngIf="volunteerProfile.availabilityPreferences != null">
+              <strong>Availability Preferences: </strong>
+              {{volunteerProfile.availabilityPreferences}}
+            </p>
+            <p class="volunteer-profile-info" *ngIf="volunteerProfile.interestsAndSkillsNotes != null">
+              <strong>Interests And Skills Notes: </strong>
+              {{volunteerProfile.interestsAndSkillsNotes}}
+            </p>
+            <p class="volunteer-profile-info" *ngIf="volunteerProfile.emergencyContactNotes != null">
+              <strong>Emergency Contact Notes: </strong>
+              {{volunteerProfile.emergencyContactNotes}}
+            </p>
+            <p class="volunteer-profile-info" *ngIf="volunteerProfile.constituentId != null">
+              <strong>Constituent: </strong>
+              <a [routerLink]="['/constituent', volunteerProfile.constituentId]" class="text-left p-0 m-0" ngbTooltip="Open Constituent details">{{volunteerProfile.constituent?.name}}</a>
+            </p>
+            <p class="volunteer-profile-info" *ngIf="volunteerProfile.iconId != null">
+              <strong>Icon: </strong>
+              <a [routerLink]="['/icon', volunteerProfile.iconId]" class="text-left p-0 m-0" ngbTooltip="Open Icon details">{{volunteerProfile.icon?.name}}</a>
+            </p>
+            <p class="volunteer-profile-info" *ngIf="volunteerProfile.color != null">
+              <strong>Color: </strong>
+              {{volunteerProfile.color}}
+            </p>
+            <p class="volunteer-profile-info" *ngIf="volunteerProfile.attributes != null">
+              <strong>Attributes: </strong>
+              {{volunteerProfile.attributes}}
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+   </div>
+</div>

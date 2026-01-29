@@ -111,11 +111,10 @@ namespace Foundation.Tools
             {
                 var builder = new ConfigurationBuilder()
                     .SetBasePath(Directory.GetCurrentDirectory())
-                    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-                
-                // Add development settings if they exist
-                 builder.AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: true);
-                    
+                    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                    .AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: true);
+
+                   
                 var config = builder.Build();
 
                 var deploymentPaths = config.GetSection("DeploymentPaths").Get<Dictionary<string, string>>();

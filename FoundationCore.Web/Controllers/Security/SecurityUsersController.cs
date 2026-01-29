@@ -492,7 +492,7 @@ namespace Foundation.Security.Controllers.WebAPI
             bool userIsWriter = await UserCanWriteAsync(user, 0, cancellationToken);
             bool userIsAdmin = await UserCanAdministerAsync(user, cancellationToken);
 
-            SecurityUser existing = await (from x in _context.SecurityUsers where x.id == id select x).FirstOrDefaultAsync(cancellationToken);
+            SecurityUser existingSecurityUser = await (from x in _context.SecurityUsers where x.id == id select x).FirstOrDefaultAsync(cancellationToken);
 
 
             //
@@ -501,7 +501,7 @@ namespace Foundation.Security.Controllers.WebAPI
             SecurityUser securityUserToReturn = null;
             //end custom
 
-            if (existing == null)
+            if (existingSecurityUser == null)
             {
                 await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for Security.User PUT", id.ToString(), new Exception("No Security.User entity could be find with the primary key provided."));
                 return NotFound();
@@ -512,59 +512,67 @@ namespace Foundation.Security.Controllers.WebAPI
             // 
             if (securityUserDTO.objectGuid == Guid.Empty)
             {
-                securityUserDTO.objectGuid = existing.objectGuid;
+                securityUserDTO.objectGuid = existingSecurityUser.objectGuid;
             }
-            else if (securityUserDTO.objectGuid != existing.objectGuid)
+            else if (securityUserDTO.objectGuid != existingSecurityUser.objectGuid)
             {
-                await CreateAuditEventAsync(AuditEngine.AuditType.Error, $"Attempt was made to change object guid on a SecurityUser record.  This is not allowed.  The User is " + user.accountName, existing.id.ToString());
+                await CreateAuditEventAsync(AuditEngine.AuditType.Error, $"Attempt was made to change object guid on a SecurityUser record.  This is not allowed.  The User is " + user.accountName, existingSecurityUser.id.ToString());
                 return Problem("Invalid Operation.");
             }
 
 
-            SecurityUser cloneOfExisting = (SecurityUser)_context.Entry(existing).GetDatabaseValues().ToObject();
-
-            //
-            // Create a new SecurityUser object using the data from the existing record, updated with what is in the DTO.
-            //
-            Database.SecurityUser securityUser = (Database.SecurityUser)_context.Entry(existing).GetDatabaseValues().ToObject();
-            securityUser.ApplyDTO(securityUserDTO);
-
-
-            // Is user who is not an admin trying to delete, or to work on a deleted record, or to delete a record by flipping it's deleted flag to true?
-            if (userIsAdmin == false && (securityUser.deleted == true || existing.deleted == true))
-            {
-                // we're not recording state here because it is not being changed.
-                CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, "Attempt to delete a record or work on a deleted Security.SecurityUser record.", id.ToString());
-                DestroySessionAndAuthentication();
-                return Unauthorized();
-            }
 
             /* start of custom bit */
             //
             // if a non null password is provided, then use it.  Otherwise, if null is provided, then we assume that the current password should be kept.
             //
-            if (securityUser.password != null && securityUser.password.Trim().Length > 0)
+            // Note that some of the the Angular DTOs for security have no password field, so this field coming in as null is expected and by design,
+            // and we can't clobber the password value with null because it comes in that way..
+            //
+            if (securityUserDTO.password != null && securityUserDTO.password.Trim().Length > 0)
             {
                 //
                 // A password was provided.  Secure it and update the object.
                 //
                 try
                 {
-                    ValidatePasswordStrength(securityUser.password);
+                    ValidatePasswordStrength(securityUserDTO.password);
                 }
                 catch (Exception ex)
                 {
                     return BadRequest(ex.Message);
                 }
 
-                securityUser.password = SecurityLogic.SecurePasswordHasher.Hash(securityUser.password);
+                //
+                // Has he password and put it into the DTO
+                //
+                securityUserDTO.password = SecurityLogic.SecurePasswordHasher.Hash(securityUserDTO.password);
             }
             else
             {
                 //
-                // No password provided, so keep the current one 
+                // No password provided, so keep the current one  (note this is a hashed value)
                 //
-                securityUser.password = existing.password;
+                securityUserDTO.password = existingSecurityUser.password;
+            }
+
+
+            SecurityUser cloneOfExisting = (SecurityUser)_context.Entry(existingSecurityUser).GetDatabaseValues().ToObject();
+
+            //
+            // Create a new SecurityUser object using the data from the existing record, updated with what is in the DTO.
+            //
+            Database.SecurityUser securityUser = (Database.SecurityUser)_context.Entry(existingSecurityUser).GetDatabaseValues().ToObject();
+            securityUser.ApplyDTO(securityUserDTO);
+
+
+            // Is user who is not an admin trying to delete, or to work on a deleted record, or to delete a record by flipping it's deleted flag to true?
+            if (userIsAdmin == false && (securityUser.deleted == true || existingSecurityUser.deleted == true))
+            {
+                // we're not recording state here because it is not being changed.
+                CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, "Attempt to delete a record or work on a deleted Security.SecurityUser record.", id.ToString());
+                DestroySessionAndAuthentication();
+                return Unauthorized();
             }
 
 
@@ -696,11 +704,15 @@ namespace Foundation.Security.Controllers.WebAPI
             //
 
 
-            var attached = _context.Entry(existing);
+            var attached = _context.Entry(existingSecurityUser);
             attached.CurrentValues.SetValues(securityUser);
 
             try
             {
+
+                //
+                // Write the changes to the security user 
+                //
                 await _context.SaveChangesAsync(cancellationToken);
 
                 //
@@ -711,7 +723,7 @@ namespace Foundation.Security.Controllers.WebAPI
 
 
                 //
-                // Blow away the related fields for serialization, especially the reports to user which could make a circulare reference bad data is in the database.
+                // Blow away the related fields for serialization, especially the reports to user which could make a circular reference bad data is in the database.
                 //
                 securityUser.reportsToSecurityUser = null;
                 securityUser.securityTeam = null;
@@ -747,7 +759,9 @@ namespace Foundation.Security.Controllers.WebAPI
                 //
                 // Because we removed some data for the serializing, load the record again and clobber the password for the return object
                 //
-                securityUserToReturn = await (from x in _context.SecurityUsers where x.id == id select x).FirstOrDefaultAsync(cancellationToken);
+                securityUserToReturn = await (from x in _context.SecurityUsers where x.id == id select x)
+                                            .AsNoTracking()         // This is key!  we do not want any changes made to this to be saved - specifically the password nullification
+                                            .FirstOrDefaultAsync(cancellationToken);
                 securityUserToReturn.password = null;
 
 
@@ -1543,7 +1557,7 @@ namespace Foundation.Security.Controllers.WebAPI
                 return Unauthorized();
             }
 
-            var user = await _context.SecurityUsers.FindAsync(new object[] { id }, cancellationToken);
+            SecurityUser user = await _context.SecurityUsers.FindAsync(new object[] { id }, cancellationToken);
             if (user == null)
             {
                 return NotFound();
@@ -1584,6 +1598,17 @@ namespace Foundation.Security.Controllers.WebAPI
 
                 await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, $"User image updated for: {user.accountName}");
 
+
+                //
+                // Create a SecurityUserEvent to track user image changing
+                //
+                string displayName = $"{user.firstName} {user.lastName}".Trim();
+                await CreateSecurityUserEventAsync(
+                    id,
+                    "User Deleted",
+                    $"User image updated for {displayName} ({user.accountName}) by '{user?.accountName ?? "Unknown"}'",
+                    cancellationToken);
+
                 return Ok(new { message = "Image uploaded successfully", imageSize = imageBytes.Length });
             }
             catch (FormatException)
@@ -1618,6 +1643,17 @@ namespace Foundation.Security.Controllers.WebAPI
             await _context.SaveChangesAsync(cancellationToken);
 
             await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, $"User image removed for: {user.accountName}");
+
+
+            //
+            // Create a SecurityUserEvent to track user image changing
+            //
+            string displayName = $"{user.firstName} {user.lastName}".Trim();
+            await CreateSecurityUserEventAsync(
+                id,
+                "User Deleted",
+                $"User image deleted for {displayName} ({user.accountName}) by '{user?.accountName ?? "Unknown"}'",
+                cancellationToken);
 
             return Ok(new { message = "Image removed successfully" });
         }
@@ -2042,7 +2078,7 @@ namespace Foundation.Security.Controllers.WebAPI
                         if (foundCount > 1)
                         {
                             //
-                            // Update the record to break the circular refernce moving forward
+                            // Update the record to break the circular reference moving forward
                             //
                             using (SecurityContext transactionDb = new SecurityContext())
                             {
@@ -2101,61 +2137,119 @@ namespace Foundation.Security.Controllers.WebAPI
 
             // Name changes
             if (before.firstName != after.firstName)
+            {
                 changes.Add($"First name: '{before.firstName ?? "(empty)"}' → '{after.firstName ?? "(empty)"}'");
+            }
+
+
             if (before.middleName != after.middleName)
+            {
                 changes.Add($"Middle name: '{before.middleName ?? "(empty)"}' → '{after.middleName ?? "(empty)"}'");
+            }
+
+
             if (before.lastName != after.lastName)
+            {
                 changes.Add($"Last name: '{before.lastName ?? "(empty)"}' → '{after.lastName ?? "(empty)"}'");
+            }
 
             // Contact info
             if (before.emailAddress != after.emailAddress)
+            {
                 changes.Add($"Email: '{before.emailAddress ?? "(empty)"}' → '{after.emailAddress ?? "(empty)"}'");
+            }
+
+
             if (before.cellPhoneNumber != after.cellPhoneNumber)
+            {
                 changes.Add($"Cell phone changed");
+            }
+
             if (before.phoneNumber != after.phoneNumber)
+            {
                 changes.Add($"Phone number changed");
+            }
 
             // Account status
             if (before.active != after.active)
+            {
                 changes.Add(after.active ? "Account activated" : "Account deactivated");
+            }
+
             if (before.deleted != after.deleted)
+            {
                 changes.Add(after.deleted ? "Account deleted" : "Account restored");
+            }
+
             if (before.accountName != after.accountName)
+            {
                 changes.Add($"Account name: '{before.accountName}' → '{after.accountName}'");
+            }
 
             // Authentication
             if (before.activeDirectoryAccount != after.activeDirectoryAccount)
+            {
                 changes.Add(after.activeDirectoryAccount ? "Switched to AD authentication" : "Switched to local authentication");
+            }
+
+
             if (before.authenticationDomain != after.authenticationDomain)
+            {
                 changes.Add($"Auth domain: '{before.authenticationDomain ?? "(none)"}' → '{after.authenticationDomain ?? "(none)"}'");
+            }
+
 
             // Organization hierarchy
             if (before.securityTenantId != after.securityTenantId)
+            {
                 changes.Add("Tenant assignment changed");
+            }
+
             if (before.securityOrganizationId != after.securityOrganizationId)
+            {
                 changes.Add("Organization assignment changed");
+            }
+
+
             if (before.securityDepartmentId != after.securityDepartmentId)
+            {
                 changes.Add("Department assignment changed");
+            }
+
             if (before.securityTeamId != after.securityTeamId)
+            {
                 changes.Add("Team assignment changed");
+            }
+
             if (before.reportsToSecurityUserId != after.reportsToSecurityUserId)
+            {
                 changes.Add("Manager (reports to) changed");
+            }
 
             // Password change (we can't see the actual password, but we know if it changed)
             if (before.password != after.password && !string.IsNullOrEmpty(after.password))
+            {
                 changes.Add("Password updated");
+            }
 
             // Description
             if (before.description != after.description)
+            {
                 changes.Add("Description updated");
+            }
 
             // Image
             bool beforeHasImage = before.image != null && before.image.Length > 0;
             bool afterHasImage = after.image != null && after.image.Length > 0;
+
             if (beforeHasImage != afterHasImage)
+            {
                 changes.Add(afterHasImage ? "Profile image added" : "Profile image removed");
+            }
             else if (beforeHasImage && afterHasImage && !before.image.SequenceEqual(after.image))
+            {
                 changes.Add("Profile image updated");
+            }
 
             return changes.Count > 0
                 ? string.Join("; ", changes)
@@ -2171,17 +2265,15 @@ namespace Foundation.Security.Controllers.WebAPI
         /// - "User Created", "User Modified", "User Deleted"
         /// 
         /// </summary>
-        private async Task CreateSecurityUserEventAsync(
-            int targetUserId,
-            string eventTypeName,
-            string comments,
-            CancellationToken cancellationToken = default)
+        private async Task CreateSecurityUserEventAsync(int targetUserId,
+                                                        string eventTypeName,
+                                                        string comments,
+                                                        CancellationToken cancellationToken = default)
         {
             try
             {
                 // Look up the event type by name, or create it if it doesn't exist
-                var eventType = await _context.SecurityUserEventTypes
-                    .FirstOrDefaultAsync(t => t.name == eventTypeName, cancellationToken);
+                var eventType = await _context.SecurityUserEventTypes.FirstOrDefaultAsync(t => t.name == eventTypeName, cancellationToken);
 
                 if (eventType == null)
                 {
@@ -2191,11 +2283,12 @@ namespace Foundation.Security.Controllers.WebAPI
                         name = eventTypeName,
                         description = $"Auto-created event type for {eventTypeName}"
                     };
+
                     _context.SecurityUserEventTypes.Add(eventType);
                     await _context.SaveChangesAsync(cancellationToken);
                 }
 
-                var userEvent = new SecurityUserEvent
+                SecurityUserEvent userEvent = new SecurityUserEvent
                 {
                     securityUserId = targetUserId,
                     securityUserEventTypeId = eventType.id,

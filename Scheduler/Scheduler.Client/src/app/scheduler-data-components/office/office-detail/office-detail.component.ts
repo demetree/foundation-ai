@@ -36,8 +36,9 @@ import { ResourceService } from '../../../scheduler-data-services/resource.servi
 import { RateSheetService } from '../../../scheduler-data-services/rate-sheet.service';
 import { CrewService } from '../../../scheduler-data-services/crew.service';
 import { ScheduledEventService } from '../../../scheduler-data-services/scheduled-event.service';
-import { EventResourceAssignmentService } from '../../../scheduler-data-services/event-resource-assignment.service';
 import { GiftService } from '../../../scheduler-data-services/gift.service';
+import { VolunteerGroupService } from '../../../scheduler-data-services/volunteer-group.service';
+import { EventResourceAssignmentService } from '../../../scheduler-data-services/event-resource-assignment.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -155,8 +156,9 @@ export class OfficeDetailComponent implements OnInit, CanComponentDeactivate {
   public rateSheets$ = this.rateSheetService.GetRateSheetList();
   public crews$ = this.crewService.GetCrewList();
   public scheduledEvents$ = this.scheduledEventService.GetScheduledEventList();
-  public eventResourceAssignments$ = this.eventResourceAssignmentService.GetEventResourceAssignmentList();
   public gifts$ = this.giftService.GetGiftList();
+  public volunteerGroups$ = this.volunteerGroupService.GetVolunteerGroupList();
+  public eventResourceAssignments$ = this.eventResourceAssignmentService.GetEventResourceAssignmentList();
 
   private destroy$ = new Subject<void>();
 
@@ -175,8 +177,9 @@ export class OfficeDetailComponent implements OnInit, CanComponentDeactivate {
     public rateSheetService: RateSheetService,
     public crewService: CrewService,
     public scheduledEventService: ScheduledEventService,
-    public eventResourceAssignmentService: EventResourceAssignmentService,
     public giftService: GiftService,
+    public volunteerGroupService: VolunteerGroupService,
+    public eventResourceAssignmentService: EventResourceAssignmentService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,

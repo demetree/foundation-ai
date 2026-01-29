@@ -18,6 +18,14 @@ CREATE SCHEMA [Scheduler]
 GO
 
 /* These drop table commands are here in a commented state as a convenience for situations where you may want to modify the tables in a schema.  They are ordered correctly to be able to delete all tables if executed as a batch, or at least in this order.  Be very careful with these. */
+-- DROP TABLE [Scheduler].[EventResourceAssignmentChangeHistory]
+-- DROP TABLE [Scheduler].[EventResourceAssignment]
+-- DROP TABLE [Scheduler].[VolunteerGroupMemberChangeHistory]
+-- DROP TABLE [Scheduler].[VolunteerGroupMember]
+-- DROP TABLE [Scheduler].[VolunteerGroupChangeHistory]
+-- DROP TABLE [Scheduler].[VolunteerGroup]
+-- DROP TABLE [Scheduler].[VolunteerProfileChangeHistory]
+-- DROP TABLE [Scheduler].[VolunteerProfile]
 -- DROP TABLE [Scheduler].[SoftCreditChangeHistory]
 -- DROP TABLE [Scheduler].[SoftCredit]
 -- DROP TABLE [Scheduler].[GiftChangeHistory]
@@ -45,8 +53,6 @@ GO
 -- DROP TABLE [Scheduler].[NotificationSubscriptionChangeHistory]
 -- DROP TABLE [Scheduler].[NotificationSubscription]
 -- DROP TABLE [Scheduler].[NotificationType]
--- DROP TABLE [Scheduler].[EventResourceAssignmentChangeHistory]
--- DROP TABLE [Scheduler].[EventResourceAssignment]
 -- DROP TABLE [Scheduler].[RecurrenceExceptionChangeHistory]
 -- DROP TABLE [Scheduler].[RecurrenceException]
 -- DROP TABLE [Scheduler].[ScheduledEventQualificationRequirementChangeHistory]
@@ -131,6 +137,7 @@ GO
 -- DROP TABLE [Scheduler].[ContactChangeHistory]
 -- DROP TABLE [Scheduler].[Contact]
 -- DROP TABLE [Scheduler].[ContactType]
+-- DROP TABLE [Scheduler].[VolunteerStatus]
 -- DROP TABLE [Scheduler].[StateProvince]
 -- DROP TABLE [Scheduler].[Country]
 -- DROP TABLE [Scheduler].[TimeZone]
@@ -145,9 +152,20 @@ GO
 -- DROP TABLE [Scheduler].[ResourceType]
 -- DROP TABLE [Scheduler].[Salutation]
 -- DROP TABLE [Scheduler].[Icon]
+-- DROP TABLE [Scheduler].[AttributeDefinitionChangeHistory]
 -- DROP TABLE [Scheduler].[AttributeDefinition]
+-- DROP TABLE [Scheduler].[AttributeDefinitionEntity]
+-- DROP TABLE [Scheduler].[AttributeDefinitionType]
 
 /* These disable table index commands are here in a commented state as a convenience for situations where you want to remove the indexes on a table for things like mass data loads, where indexes just slow things down.  The corresponding rebuild index commands are listed after the disable commands */
+-- ALTER INDEX ALL ON [Scheduler].[EventResourceAssignmentChangeHistory] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[EventResourceAssignment] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[VolunteerGroupMemberChangeHistory] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[VolunteerGroupMember] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[VolunteerGroupChangeHistory] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[VolunteerGroup] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[VolunteerProfileChangeHistory] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[VolunteerProfile] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[SoftCreditChangeHistory] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[SoftCredit] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[GiftChangeHistory] DISABLE
@@ -175,8 +193,6 @@ GO
 -- ALTER INDEX ALL ON [Scheduler].[NotificationSubscriptionChangeHistory] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[NotificationSubscription] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[NotificationType] DISABLE
--- ALTER INDEX ALL ON [Scheduler].[EventResourceAssignmentChangeHistory] DISABLE
--- ALTER INDEX ALL ON [Scheduler].[EventResourceAssignment] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[RecurrenceExceptionChangeHistory] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[RecurrenceException] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[ScheduledEventQualificationRequirementChangeHistory] DISABLE
@@ -261,6 +277,7 @@ GO
 -- ALTER INDEX ALL ON [Scheduler].[ContactChangeHistory] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[Contact] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[ContactType] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[VolunteerStatus] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[StateProvince] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[Country] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[TimeZone] DISABLE
@@ -275,9 +292,20 @@ GO
 -- ALTER INDEX ALL ON [Scheduler].[ResourceType] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[Salutation] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[Icon] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[AttributeDefinitionChangeHistory] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[AttributeDefinition] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[AttributeDefinitionEntity] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[AttributeDefinitionType] DISABLE
 
 /* These rebuild table index commands are here in a commented state as a convenience for situations where you want to rebuild the indexes on a table after having removed them, or if you want to refresh them. */
+-- ALTER INDEX ALL ON [Scheduler].[EventResourceAssignmentChangeHistory] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[EventResourceAssignment] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[VolunteerGroupMemberChangeHistory] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[VolunteerGroupMember] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[VolunteerGroupChangeHistory] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[VolunteerGroup] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[VolunteerProfileChangeHistory] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[VolunteerProfile] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[SoftCreditChangeHistory] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[SoftCredit] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[GiftChangeHistory] REBUILD
@@ -305,8 +333,6 @@ GO
 -- ALTER INDEX ALL ON [Scheduler].[NotificationSubscriptionChangeHistory] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[NotificationSubscription] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[NotificationType] REBUILD
--- ALTER INDEX ALL ON [Scheduler].[EventResourceAssignmentChangeHistory] REBUILD
--- ALTER INDEX ALL ON [Scheduler].[EventResourceAssignment] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[RecurrenceExceptionChangeHistory] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[RecurrenceException] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[ScheduledEventQualificationRequirementChangeHistory] REBUILD
@@ -391,6 +417,7 @@ GO
 -- ALTER INDEX ALL ON [Scheduler].[ContactChangeHistory] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[Contact] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[ContactType] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[VolunteerStatus] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[StateProvince] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[Country] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[TimeZone] REBUILD
@@ -405,25 +432,105 @@ GO
 -- ALTER INDEX ALL ON [Scheduler].[ResourceType] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[Salutation] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[Icon] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[AttributeDefinitionChangeHistory] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[AttributeDefinition] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[AttributeDefinitionEntity] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[AttributeDefinitionType] REBUILD
+
+-- Master list of available attribute data types.
+CREATE TABLE [Scheduler].[AttributeDefinitionType]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[name] NVARCHAR(100) NOT NULL UNIQUE,
+	[description] NVARCHAR(500) NOT NULL,
+	[sequence] INT NULL,		-- Sequence to use for sorting.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+)
+GO
+
+-- Index on the AttributeDefinitionType table's name field.
+CREATE INDEX [I_AttributeDefinitionType_name] ON [Scheduler].[AttributeDefinitionType] ([name])
+GO
+
+-- Index on the AttributeDefinitionType table's active field.
+CREATE INDEX [I_AttributeDefinitionType_active] ON [Scheduler].[AttributeDefinitionType] ([active])
+GO
+
+-- Index on the AttributeDefinitionType table's deleted field.
+CREATE INDEX [I_AttributeDefinitionType_deleted] ON [Scheduler].[AttributeDefinitionType] ([deleted])
+GO
+
+INSERT INTO [Scheduler].[AttributeDefinitionType] ( [name], [description], [sequence], [objectGuid] ) VALUES  ( 'Text', 'Single line text', 1, 'd1a1b2c3-1111-2222-3333-444455556661' )
+GO
+
+INSERT INTO [Scheduler].[AttributeDefinitionType] ( [name], [description], [sequence], [objectGuid] ) VALUES  ( 'Number', 'Numeric value', 2, 'd1a1b2c3-1111-2222-3333-444455556662' )
+GO
+
+INSERT INTO [Scheduler].[AttributeDefinitionType] ( [name], [description], [sequence], [objectGuid] ) VALUES  ( 'Date', 'Date value (no time)', 3, 'd1a1b2c3-1111-2222-3333-444455556663' )
+GO
+
+INSERT INTO [Scheduler].[AttributeDefinitionType] ( [name], [description], [sequence], [objectGuid] ) VALUES  ( 'Boolean', 'True/False checkbox', 4, 'd1a1b2c3-1111-2222-3333-444455556664' )
+GO
+
+INSERT INTO [Scheduler].[AttributeDefinitionType] ( [name], [description], [sequence], [objectGuid] ) VALUES  ( 'Select', 'Dropdown selection', 5, 'd1a1b2c3-1111-2222-3333-444455556665' )
+GO
+
+
+-- Master list of entities that support custom attributes.
+CREATE TABLE [Scheduler].[AttributeDefinitionEntity]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[name] NVARCHAR(100) NOT NULL UNIQUE,
+	[description] NVARCHAR(500) NOT NULL,
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+)
+GO
+
+-- Index on the AttributeDefinitionEntity table's name field.
+CREATE INDEX [I_AttributeDefinitionEntity_name] ON [Scheduler].[AttributeDefinitionEntity] ([name])
+GO
+
+-- Index on the AttributeDefinitionEntity table's active field.
+CREATE INDEX [I_AttributeDefinitionEntity_active] ON [Scheduler].[AttributeDefinitionEntity] ([active])
+GO
+
+-- Index on the AttributeDefinitionEntity table's deleted field.
+CREATE INDEX [I_AttributeDefinitionEntity_deleted] ON [Scheduler].[AttributeDefinitionEntity] ([deleted])
+GO
+
+INSERT INTO [Scheduler].[AttributeDefinitionEntity] ( [name], [description], [objectGuid] ) VALUES  ( 'Contact', 'Contact Records', 'e2a1b2c3-1111-2222-3333-444455556661' )
+GO
+
+INSERT INTO [Scheduler].[AttributeDefinitionEntity] ( [name], [description], [objectGuid] ) VALUES  ( 'Constituent', 'Constituent Records', 'e2a1b2c3-1111-2222-3333-444455556662' )
+GO
+
 
 -- Definitions for custom attributes on various entities (Contact, Constituent, etc.)
 CREATE TABLE [Scheduler].[AttributeDefinition]
 (
 	[id] INT IDENTITY PRIMARY KEY NOT NULL,
 	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
-	[entityName] NVARCHAR(100) NULL,		-- The name of the entity this attribute applies to (e.g., 'Contact', 'Constituent')
+	[attributeDefinitionEntityId] INT NULL,		-- The entity this attribute applies to (e.g., Contact)
 	[key] NVARCHAR(100) NULL,		-- The JSON key for the attribute
 	[label] NVARCHAR(250) NULL,		-- The human-readable label for the attribute
-	[type] NVARCHAR(50) NULL,		-- Data type: Text, Number, Date, Boolean, Select, MultiSelect, etc.
+	[attributeDefinitionTypeId] INT NULL,		-- Data type: Text, Number, Date, etc.
 	[options] NVARCHAR(MAX) NULL,		-- JSON options for Select/MultiSelect types
 	[isRequired] BIT NOT NULL DEFAULT 0,
 	[sequence] INT NULL,		-- Sequence to use for sorting.
+	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
 	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
 	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
 
-	CONSTRAINT [UC_AttributeDefinition_tenantGuid_entityName_key] UNIQUE ( [tenantGuid], [entityName], [key]) 		-- Uniqueness enforced on the AttributeDefinition table's tenantGuid and entityName and key fields.
+	CONSTRAINT [FK_AttributeDefinition_AttributeDefinitionEntity_attributeDefinitionEntityId] FOREIGN KEY ([attributeDefinitionEntityId]) REFERENCES [Scheduler].[AttributeDefinitionEntity] ([id]),		-- Foreign key to the AttributeDefinitionEntity table.
+	CONSTRAINT [FK_AttributeDefinition_AttributeDefinitionType_attributeDefinitionTypeId] FOREIGN KEY ([attributeDefinitionTypeId]) REFERENCES [Scheduler].[AttributeDefinitionType] ([id]),		-- Foreign key to the AttributeDefinitionType table.
+	CONSTRAINT [UC_AttributeDefinition_tenantGuid_attributeDefinitionEntityId_key] UNIQUE ( [tenantGuid], [attributeDefinitionEntityId], [key]) 		-- Uniqueness enforced on the AttributeDefinition table's tenantGuid and attributeDefinitionEntityId and key fields.
 )
 GO
 
@@ -431,8 +538,12 @@ GO
 CREATE INDEX [I_AttributeDefinition_tenantGuid] ON [Scheduler].[AttributeDefinition] ([tenantGuid])
 GO
 
--- Index on the AttributeDefinition table's tenantGuid,entityName fields.
-CREATE INDEX [I_AttributeDefinition_tenantGuid_entityName] ON [Scheduler].[AttributeDefinition] ([tenantGuid], [entityName])
+-- Index on the AttributeDefinition table's tenantGuid,attributeDefinitionEntityId fields.
+CREATE INDEX [I_AttributeDefinition_tenantGuid_attributeDefinitionEntityId] ON [Scheduler].[AttributeDefinition] ([tenantGuid], [attributeDefinitionEntityId])
+GO
+
+-- Index on the AttributeDefinition table's tenantGuid,attributeDefinitionTypeId fields.
+CREATE INDEX [I_AttributeDefinition_tenantGuid_attributeDefinitionTypeId] ON [Scheduler].[AttributeDefinition] ([tenantGuid], [attributeDefinitionTypeId])
 GO
 
 -- Index on the AttributeDefinition table's tenantGuid,active fields.
@@ -441,6 +552,42 @@ GO
 
 -- Index on the AttributeDefinition table's tenantGuid,deleted fields.
 CREATE INDEX [I_AttributeDefinition_tenantGuid_deleted] ON [Scheduler].[AttributeDefinition] ([tenantGuid], [deleted])
+GO
+
+
+-- The change history for records from the AttributeDefinition table.
+CREATE TABLE [Scheduler].[AttributeDefinitionChangeHistory]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[attributeDefinitionId] INT NOT NULL,		-- Link to the AttributeDefinition table.
+	[versionNumber] INT NOT NULL,		-- This is the version number that is being historized.
+	[timeStamp] DATETIME2(7) NOT NULL,		-- The time that the record version was created.
+	[userId] INT NOT NULL,
+	[data] NVARCHAR(MAX) NOT NULL		-- This stores the JSON representing the object's historical state.
+
+	CONSTRAINT [FK_AttributeDefinitionChangeHistory_AttributeDefinition_attributeDefinitionId] FOREIGN KEY ([attributeDefinitionId]) REFERENCES [Scheduler].[AttributeDefinition] ([id])		-- Foreign key to the AttributeDefinition table.
+)
+GO
+
+-- Index on the AttributeDefinitionChangeHistory table's tenantGuid field.
+CREATE INDEX [I_AttributeDefinitionChangeHistory_tenantGuid] ON [Scheduler].[AttributeDefinitionChangeHistory] ([tenantGuid])
+GO
+
+-- Index on the AttributeDefinitionChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX [I_AttributeDefinitionChangeHistory_tenantGuid_versionNumber] ON [Scheduler].[AttributeDefinitionChangeHistory] ([tenantGuid], [versionNumber])
+GO
+
+-- Index on the AttributeDefinitionChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX [I_AttributeDefinitionChangeHistory_tenantGuid_timeStamp] ON [Scheduler].[AttributeDefinitionChangeHistory] ([tenantGuid], [timeStamp])
+GO
+
+-- Index on the AttributeDefinitionChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX [I_AttributeDefinitionChangeHistory_tenantGuid_userId] ON [Scheduler].[AttributeDefinitionChangeHistory] ([tenantGuid], [userId])
+GO
+
+-- Index on the AttributeDefinitionChangeHistory table's tenantGuid,attributeDefinitionId fields.
+CREATE INDEX [I_AttributeDefinitionChangeHistory_tenantGuid_attributeDefinitionId] ON [Scheduler].[AttributeDefinitionChangeHistory] ([tenantGuid], [attributeDefinitionId]) INCLUDE ( versionNumber, timeStamp, userId )
 GO
 
 
@@ -1520,6 +1667,62 @@ INSERT INTO [Scheduler].[StateProvince] ( [name], [description], [abbreviation],
 GO
 
 
+/*
+Master list of volunteer lifecycle/status values.
+Examples: Prospect, Active, On Leave, Inactive, Not Re-invited.
+Used to track engagement level and control visibility/assignment rules.
+*/
+CREATE TABLE [Scheduler].[VolunteerStatus]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[name] NVARCHAR(100) NOT NULL UNIQUE,
+	[description] NVARCHAR(500) NOT NULL,
+	[sequence] INT NULL,		-- Sequence to use for sorting.
+	[color] NVARCHAR(10) NULL,		-- Suggested UI color for this status
+	[iconId] INT NULL,		-- Optional icon for visual distinction
+	[isActive] BIT NULL DEFAULT 1,		-- Whether volunteers in this status are generally schedulable
+	[preventsScheduling] BIT NOT NULL DEFAULT 0,		-- Hard block: cannot be assigned to events
+	[requiresApproval] BIT NOT NULL DEFAULT 0,		-- New assignments need coordinator approval
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_VolunteerStatus_Icon_iconId] FOREIGN KEY ([iconId]) REFERENCES [Scheduler].[Icon] ([id])		-- Foreign key to the Icon table.
+)
+GO
+
+-- Index on the VolunteerStatus table's name field.
+CREATE INDEX [I_VolunteerStatus_name] ON [Scheduler].[VolunteerStatus] ([name])
+GO
+
+-- Index on the VolunteerStatus table's iconId field.
+CREATE INDEX [I_VolunteerStatus_iconId] ON [Scheduler].[VolunteerStatus] ([iconId])
+GO
+
+-- Index on the VolunteerStatus table's active field.
+CREATE INDEX [I_VolunteerStatus_active] ON [Scheduler].[VolunteerStatus] ([active])
+GO
+
+-- Index on the VolunteerStatus table's deleted field.
+CREATE INDEX [I_VolunteerStatus_deleted] ON [Scheduler].[VolunteerStatus] ([deleted])
+GO
+
+INSERT INTO [Scheduler].[VolunteerStatus] ( [name], [description], [sequence], [color], [isActive], [preventsScheduling], [objectGuid] ) VALUES  ( 'Prospect / Interested', 'Has expressed interest but not yet onboarded', 10, '#9E9E9E', 0, 1, 'a1111111-2222-3333-4444-555555555001' )
+GO
+
+INSERT INTO [Scheduler].[VolunteerStatus] ( [name], [description], [sequence], [color], [isActive], [preventsScheduling], [objectGuid] ) VALUES  ( 'Active', 'Fully onboarded and available for assignments', 20, '#4CAF50', 1, 0, 'a1111111-2222-3333-4444-555555555002' )
+GO
+
+INSERT INTO [Scheduler].[VolunteerStatus] ( [name], [description], [sequence], [color], [isActive], [preventsScheduling], [objectGuid] ) VALUES  ( 'On Hiatus / Leave', 'Temporary break (maternity, travel, etc.)', 30, '#FF9800', 0, 1, 'a1111111-2222-3333-4444-555555555003' )
+GO
+
+INSERT INTO [Scheduler].[VolunteerStatus] ( [name], [description], [sequence], [color], [isActive], [preventsScheduling], [objectGuid] ) VALUES  ( 'Inactive', 'No longer participating, but record retained', 40, '#757575', 0, 1, 'a1111111-2222-3333-4444-555555555004' )
+GO
+
+INSERT INTO [Scheduler].[VolunteerStatus] ( [name], [description], [sequence], [color], [isActive], [preventsScheduling], [objectGuid] ) VALUES  ( 'Not Re-invited', 'Previous issues; do not contact or schedule', 50, '#F44336', 0, 1, 'a1111111-2222-3333-4444-555555555005' )
+GO
+
+
 -- Master list of office types.  Used for categorizing offices.  Not tenant specific
 CREATE TABLE [Scheduler].[ContactType]
 (
@@ -2032,7 +2235,7 @@ CREATE TABLE [Scheduler].[Office]
 	[latitude] FLOAT NULL,		-- Optional latitude position
 	[longitude] FLOAT NULL,		-- Optional longitude position
 	[notes] NVARCHAR(MAX) NULL,
-	[externalId] NVARCHAR(100) NULL,		-- Optional reference to an ID in an external system (e.g., Basecamp Project ID)
+	[externalId] NVARCHAR(100) NULL,		-- Optional reference to an ID in an external system 
 	[color] NVARCHAR(10) NULL,		-- Override of Target Type Hex color for UI display
 	[attributes] NVARCHAR(MAX) NULL,		-- to store arbitrary JSON
 	[avatarFileName] NVARCHAR(250) NULL,		-- Part of the binary data field setup
@@ -2364,7 +2567,7 @@ CREATE TABLE [Scheduler].[Client]
 	[latitude] FLOAT NULL,		-- Optional latitude position
 	[longitude] FLOAT NULL,		-- Optional longitude position
 	[notes] NVARCHAR(MAX) NULL,
-	[externalId] NVARCHAR(100) NULL,		-- Optional reference to an ID in an external system (e.g., Basecamp Project ID)
+	[externalId] NVARCHAR(100) NULL,		-- Optional reference to an ID in an external system
 	[color] NVARCHAR(10) NULL,		-- Override of Target Type Hex color for UI display
 	[attributes] NVARCHAR(MAX) NULL,		-- to store arbitrary JSON
 	[avatarFileName] NVARCHAR(250) NULL,		-- Part of the binary data field setup
@@ -3069,7 +3272,7 @@ CREATE TABLE [Scheduler].[SchedulingTarget]
 	[timeZoneId] INT NOT NULL,		-- Link to the TimeZone table.
 	[calendarId] INT NULL,		-- An optional default calendar for this scheduling target.
 	[notes] NVARCHAR(MAX) NULL,
-	[externalId] NVARCHAR(100) NULL,		-- Optional reference to an ID in an external system (e.g., Basecamp Project ID)
+	[externalId] NVARCHAR(100) NULL,		-- Optional reference to an ID in an external system
 	[color] NVARCHAR(10) NULL,		-- Override of Target Type Hex color for UI display
 	[attributes] NVARCHAR(MAX) NULL,		-- to store arbitrary JSON
 	[avatarFileName] NVARCHAR(250) NULL,		-- Part of the binary data field setup
@@ -3690,7 +3893,7 @@ CREATE TABLE [Scheduler].[Resource]
 	[timeZoneId] INT NOT NULL,		-- Link to the TimeZone table.
 	[targetWeeklyWorkHours] REAL NULL,
 	[notes] NVARCHAR(MAX) NULL,
-	[externalId] NVARCHAR(100) NULL,		-- Optional reference to an ID in an external system (e.g., Equipment.id from Basecamp)
+	[externalId] NVARCHAR(100) NULL,		-- Optional reference to an ID in an external system
 	[color] NVARCHAR(10) NULL,		-- Hex color for UI display
 	[attributes] NVARCHAR(MAX) NULL,		-- to store arbitrary JSON
 	[avatarFileName] NVARCHAR(250) NULL,		-- Part of the binary data field setup
@@ -4654,7 +4857,7 @@ CREATE TABLE [Scheduler].[ScheduledEvent]
 (
 	[id] INT IDENTITY PRIMARY KEY NOT NULL,
 	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
-	[officeId] INT NULL,		-- Snapshot of office that the first resource assigned to this event belongs to.  This should NOT be updated if a resource moves to a different office post event assignment.  It should only change if there was an original entry error that needs to be corrected.
+	[officeId] INT NULL,		-- Snapshot of office that the first resource assigned to this event belongs to.  This should NOT be updated if a resource moves to a different office post-event assignment.  It should only change if there was an original entry error that needs to be corrected.
 	[clientId] INT NULL,		-- Snapshot of client that this event belongs to.  It should be that of the scheduling target.  It should only change if there was an original entry error that needs to be corrected.
 	[scheduledEventTemplateId] INT NULL,		-- Optional template/type of this scheduled event.
 	[recurrenceRuleId] INT NULL,		-- Optional recurrence pattern for this event series
@@ -5384,122 +5587,6 @@ GO
 
 -- Index on the RecurrenceExceptionChangeHistory table's tenantGuid,recurrenceExceptionId fields.
 CREATE INDEX [I_RecurrenceExceptionChangeHistory_tenantGuid_recurrenceExceptionId] ON [Scheduler].[RecurrenceExceptionChangeHistory] ([tenantGuid], [recurrenceExceptionId]) INCLUDE ( versionNumber, timeStamp, userId )
-GO
-
-
--- Links resources (or entire crews) to events.  Supports partial assignments and role designation.  - If crewId is non-NULL → this row represents assignment of the whole crew - If resourceId is non-NULL and crewId is NULL → individual resource assignment - assignmentStart/End NULL → uses full event duration
-CREATE TABLE [Scheduler].[EventResourceAssignment]
-(
-	[id] INT IDENTITY PRIMARY KEY NOT NULL,
-	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
-	[scheduledEventId] INT NOT NULL,		-- Link to the ScheduledEvent table.
-	[officeId] INT NULL,		-- Snapshot of office resource assigned to this event belongs to at the time of assignment.  This should never change, and should NOT be updated if a resource moves to a different office post event assignment.
-	[resourceId] INT NULL,		-- Required for individual assignments; should be NULL when crewId is used
-	[crewId] INT NULL,		-- Optional – when set, assigns the entire crew as a unit
-	[assignmentRoleId] INT NULL,		-- Optional role for this assignment (individual or crew member default)
-	[assignmentStatusId] INT NOT NULL DEFAULT 1,		-- NULL = Planned, non-NULL links to AssignmentStatus master table
-	[assignmentStartDateTime] DATETIME2(7) NULL,		-- NULL = starts at event start
-	[assignmentEndDateTime] DATETIME2(7) NULL,		-- NULL = ends at event end
-	[notes] NVARCHAR(MAX) NULL,
-	[isTravelRequired] BIT NULL,		-- Whether or not travel is required for the assignment
-	[travelDurationMinutes] INT NULL DEFAULT 0,		-- Time required to get to the site
-	[distanceKilometers] REAL NULL DEFAULT 0,		-- Useful for expense calculation
-	[startLocation] NVARCHAR(100) NULL,
-	[actualStartDateTime] DATETIME2(7) NULL,
-	[actualEndDateTime] DATETIME2(7) NULL,
-	[actualNotes] NVARCHAR(MAX) NULL,
-	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
-	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
-	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
-	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
-
-	CONSTRAINT [FK_EventResourceAssignment_ScheduledEvent_scheduledEventId] FOREIGN KEY ([scheduledEventId]) REFERENCES [Scheduler].[ScheduledEvent] ([id]),		-- Foreign key to the ScheduledEvent table.
-	CONSTRAINT [FK_EventResourceAssignment_Office_officeId] FOREIGN KEY ([officeId]) REFERENCES [Scheduler].[Office] ([id]),		-- Foreign key to the Office table.
-	CONSTRAINT [FK_EventResourceAssignment_Resource_resourceId] FOREIGN KEY ([resourceId]) REFERENCES [Scheduler].[Resource] ([id]),		-- Foreign key to the Resource table.
-	CONSTRAINT [FK_EventResourceAssignment_Crew_crewId] FOREIGN KEY ([crewId]) REFERENCES [Scheduler].[Crew] ([id]),		-- Foreign key to the Crew table.
-	CONSTRAINT [FK_EventResourceAssignment_AssignmentRole_assignmentRoleId] FOREIGN KEY ([assignmentRoleId]) REFERENCES [Scheduler].[AssignmentRole] ([id]),		-- Foreign key to the AssignmentRole table.
-	CONSTRAINT [FK_EventResourceAssignment_AssignmentStatus_assignmentStatusId] FOREIGN KEY ([assignmentStatusId]) REFERENCES [Scheduler].[AssignmentStatus] ([id])		-- Foreign key to the AssignmentStatus table.
-)
-GO
-
--- Index on the EventResourceAssignment table's tenantGuid field.
-CREATE INDEX [I_EventResourceAssignment_tenantGuid] ON [Scheduler].[EventResourceAssignment] ([tenantGuid])
-GO
-
--- Index on the EventResourceAssignment table's tenantGuid,scheduledEventId fields.
-CREATE INDEX [I_EventResourceAssignment_tenantGuid_scheduledEventId] ON [Scheduler].[EventResourceAssignment] ([tenantGuid], [scheduledEventId])
-GO
-
--- Index on the EventResourceAssignment table's tenantGuid,officeId fields.
-CREATE INDEX [I_EventResourceAssignment_tenantGuid_officeId] ON [Scheduler].[EventResourceAssignment] ([tenantGuid], [officeId])
-GO
-
--- Index on the EventResourceAssignment table's tenantGuid,resourceId fields.
-CREATE INDEX [I_EventResourceAssignment_tenantGuid_resourceId] ON [Scheduler].[EventResourceAssignment] ([tenantGuid], [resourceId])
-GO
-
--- Index on the EventResourceAssignment table's tenantGuid,crewId fields.
-CREATE INDEX [I_EventResourceAssignment_tenantGuid_crewId] ON [Scheduler].[EventResourceAssignment] ([tenantGuid], [crewId])
-GO
-
--- Index on the EventResourceAssignment table's tenantGuid,assignmentRoleId fields.
-CREATE INDEX [I_EventResourceAssignment_tenantGuid_assignmentRoleId] ON [Scheduler].[EventResourceAssignment] ([tenantGuid], [assignmentRoleId])
-GO
-
--- Index on the EventResourceAssignment table's tenantGuid,assignmentStatusId fields.
-CREATE INDEX [I_EventResourceAssignment_tenantGuid_assignmentStatusId] ON [Scheduler].[EventResourceAssignment] ([tenantGuid], [assignmentStatusId])
-GO
-
--- Index on the EventResourceAssignment table's tenantGuid,active fields.
-CREATE INDEX [I_EventResourceAssignment_tenantGuid_active] ON [Scheduler].[EventResourceAssignment] ([tenantGuid], [active])
-GO
-
--- Index on the EventResourceAssignment table's tenantGuid,deleted fields.
-CREATE INDEX [I_EventResourceAssignment_tenantGuid_deleted] ON [Scheduler].[EventResourceAssignment] ([tenantGuid], [deleted])
-GO
-
--- Index on the EventResourceAssignment table's tenantGuid,resourceId,assignmentStartDateTime,assignmentEndDateTime fields.
-CREATE INDEX [I_EventResourceAssignment_tenantGuid_resourceId_assignmentStartDateTime_assignmentEndDateTime] ON [Scheduler].[EventResourceAssignment] ([tenantGuid], [resourceId], [assignmentStartDateTime], [assignmentEndDateTime])
-GO
-
--- Index on the EventResourceAssignment table's tenantGuid,crewId,assignmentStartDateTime,assignmentEndDateTime fields.
-CREATE INDEX [I_EventResourceAssignment_tenantGuid_crewId_assignmentStartDateTime_assignmentEndDateTime] ON [Scheduler].[EventResourceAssignment] ([tenantGuid], [crewId], [assignmentStartDateTime], [assignmentEndDateTime])
-GO
-
-
--- The change history for records from the EventResourceAssignment table.
-CREATE TABLE [Scheduler].[EventResourceAssignmentChangeHistory]
-(
-	[id] INT IDENTITY PRIMARY KEY NOT NULL,
-	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
-	[eventResourceAssignmentId] INT NOT NULL,		-- Link to the EventResourceAssignment table.
-	[versionNumber] INT NOT NULL,		-- This is the version number that is being historized.
-	[timeStamp] DATETIME2(7) NOT NULL,		-- The time that the record version was created.
-	[userId] INT NOT NULL,
-	[data] NVARCHAR(MAX) NOT NULL		-- This stores the JSON representing the object's historical state.
-
-	CONSTRAINT [FK_EventResourceAssignmentChangeHistory_EventResourceAssignment_eventResourceAssignmentId] FOREIGN KEY ([eventResourceAssignmentId]) REFERENCES [Scheduler].[EventResourceAssignment] ([id])		-- Foreign key to the EventResourceAssignment table.
-)
-GO
-
--- Index on the EventResourceAssignmentChangeHistory table's tenantGuid field.
-CREATE INDEX [I_EventResourceAssignmentChangeHistory_tenantGuid] ON [Scheduler].[EventResourceAssignmentChangeHistory] ([tenantGuid])
-GO
-
--- Index on the EventResourceAssignmentChangeHistory table's tenantGuid,versionNumber fields.
-CREATE INDEX [I_EventResourceAssignmentChangeHistory_tenantGuid_versionNumber] ON [Scheduler].[EventResourceAssignmentChangeHistory] ([tenantGuid], [versionNumber])
-GO
-
--- Index on the EventResourceAssignmentChangeHistory table's tenantGuid,timeStamp fields.
-CREATE INDEX [I_EventResourceAssignmentChangeHistory_tenantGuid_timeStamp] ON [Scheduler].[EventResourceAssignmentChangeHistory] ([tenantGuid], [timeStamp])
-GO
-
--- Index on the EventResourceAssignmentChangeHistory table's tenantGuid,userId fields.
-CREATE INDEX [I_EventResourceAssignmentChangeHistory_tenantGuid_userId] ON [Scheduler].[EventResourceAssignmentChangeHistory] ([tenantGuid], [userId])
-GO
-
--- Index on the EventResourceAssignmentChangeHistory table's tenantGuid,eventResourceAssignmentId fields.
-CREATE INDEX [I_EventResourceAssignmentChangeHistory_tenantGuid_eventResourceAssignmentId] ON [Scheduler].[EventResourceAssignmentChangeHistory] ([tenantGuid], [eventResourceAssignmentId]) INCLUDE ( versionNumber, timeStamp, userId )
 GO
 
 
@@ -6769,6 +6856,446 @@ GO
 
 -- Index on the SoftCreditChangeHistory table's tenantGuid,softCreditId fields.
 CREATE INDEX [I_SoftCreditChangeHistory_tenantGuid_softCreditId] ON [Scheduler].[SoftCreditChangeHistory] ([tenantGuid], [softCreditId]) INCLUDE ( versionNumber, timeStamp, userId )
+GO
+
+
+/*
+Volunteer-specific extended profile.
+One-to-one with Resource — allows volunteers to be scheduled just like paid resources
+while carrying volunteer-specific metadata, hours tracking, preferences, etc.
+*/
+CREATE TABLE [Scheduler].[VolunteerProfile]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[resourceId] INT NOT NULL,		-- The Resource this volunteer profile belongs to (1:1)
+	[volunteerStatusId] INT NOT NULL,		-- Current lifecycle status of this volunteer
+	[onboardedDate] DATE NULL,		-- Date volunteer was approved/onboarded
+	[inactiveSince] DATE NULL,		-- If inactive, when they went inactive
+	[totalHoursServed] REAL NULL DEFAULT 0,		-- Cached/rolled-up lifetime volunteer hours
+	[lastActivityDate] DATE NULL,		-- Most recent event/assignment end date
+	[backgroundCheckCompleted] BIT NOT NULL DEFAULT 0,
+	[backgroundCheckDate] DATE NULL,
+	[backgroundCheckExpiry] DATE NULL,
+	[confidentialityAgreementSigned] BIT NOT NULL DEFAULT 0,
+	[confidentialityAgreementDate] DATE NULL,
+	[availabilityPreferences] NVARCHAR(MAX) NULL,		-- Free text or structured JSON: e.g. 'prefers weekends', 'no evenings after 8pm'
+	[interestsAndSkillsNotes] NVARCHAR(MAX) NULL,		-- Self-reported interests, hobbies, or extra skills
+	[emergencyContactNotes] NVARCHAR(MAX) NULL,		-- Any special emergency instructions or notes
+	[constituentId] INT NULL,		-- Optional link to fundraising/constituent record if relevant
+	[iconId] INT NULL,		-- Optional override icon for volunteer-specific UI
+	[color] NVARCHAR(10) NULL,		-- Optional override color
+	[attributes] NVARCHAR(MAX) NULL,		-- Arbitrary JSON for future extension
+	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_VolunteerProfile_Resource_resourceId] FOREIGN KEY ([resourceId]) REFERENCES [Scheduler].[Resource] ([id]),		-- Foreign key to the Resource table.
+	CONSTRAINT [FK_VolunteerProfile_VolunteerStatus_volunteerStatusId] FOREIGN KEY ([volunteerStatusId]) REFERENCES [Scheduler].[VolunteerStatus] ([id]),		-- Foreign key to the VolunteerStatus table.
+	CONSTRAINT [FK_VolunteerProfile_Constituent_constituentId] FOREIGN KEY ([constituentId]) REFERENCES [Scheduler].[Constituent] ([id]),		-- Foreign key to the Constituent table.
+	CONSTRAINT [FK_VolunteerProfile_Icon_iconId] FOREIGN KEY ([iconId]) REFERENCES [Scheduler].[Icon] ([id]),		-- Foreign key to the Icon table.
+	CONSTRAINT [UC_VolunteerProfile_tenantGuid_resourceId] UNIQUE ( [tenantGuid], [resourceId]) 		-- Uniqueness enforced on the VolunteerProfile table's tenantGuid and resourceId fields.
+)
+GO
+
+-- Index on the VolunteerProfile table's tenantGuid field.
+CREATE INDEX [I_VolunteerProfile_tenantGuid] ON [Scheduler].[VolunteerProfile] ([tenantGuid])
+GO
+
+-- Index on the VolunteerProfile table's tenantGuid,resourceId fields.
+CREATE INDEX [I_VolunteerProfile_tenantGuid_resourceId] ON [Scheduler].[VolunteerProfile] ([tenantGuid], [resourceId])
+GO
+
+-- Index on the VolunteerProfile table's tenantGuid,volunteerStatusId fields.
+CREATE INDEX [I_VolunteerProfile_tenantGuid_volunteerStatusId] ON [Scheduler].[VolunteerProfile] ([tenantGuid], [volunteerStatusId])
+GO
+
+-- Index on the VolunteerProfile table's tenantGuid,constituentId fields.
+CREATE INDEX [I_VolunteerProfile_tenantGuid_constituentId] ON [Scheduler].[VolunteerProfile] ([tenantGuid], [constituentId])
+GO
+
+-- Index on the VolunteerProfile table's tenantGuid,iconId fields.
+CREATE INDEX [I_VolunteerProfile_tenantGuid_iconId] ON [Scheduler].[VolunteerProfile] ([tenantGuid], [iconId])
+GO
+
+-- Index on the VolunteerProfile table's tenantGuid,active fields.
+CREATE INDEX [I_VolunteerProfile_tenantGuid_active] ON [Scheduler].[VolunteerProfile] ([tenantGuid], [active])
+GO
+
+-- Index on the VolunteerProfile table's tenantGuid,deleted fields.
+CREATE INDEX [I_VolunteerProfile_tenantGuid_deleted] ON [Scheduler].[VolunteerProfile] ([tenantGuid], [deleted])
+GO
+
+
+-- The change history for records from the VolunteerProfile table.
+CREATE TABLE [Scheduler].[VolunteerProfileChangeHistory]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[volunteerProfileId] INT NOT NULL,		-- Link to the VolunteerProfile table.
+	[versionNumber] INT NOT NULL,		-- This is the version number that is being historized.
+	[timeStamp] DATETIME2(7) NOT NULL,		-- The time that the record version was created.
+	[userId] INT NOT NULL,
+	[data] NVARCHAR(MAX) NOT NULL		-- This stores the JSON representing the object's historical state.
+
+	CONSTRAINT [FK_VolunteerProfileChangeHistory_VolunteerProfile_volunteerProfileId] FOREIGN KEY ([volunteerProfileId]) REFERENCES [Scheduler].[VolunteerProfile] ([id])		-- Foreign key to the VolunteerProfile table.
+)
+GO
+
+-- Index on the VolunteerProfileChangeHistory table's tenantGuid field.
+CREATE INDEX [I_VolunteerProfileChangeHistory_tenantGuid] ON [Scheduler].[VolunteerProfileChangeHistory] ([tenantGuid])
+GO
+
+-- Index on the VolunteerProfileChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX [I_VolunteerProfileChangeHistory_tenantGuid_versionNumber] ON [Scheduler].[VolunteerProfileChangeHistory] ([tenantGuid], [versionNumber])
+GO
+
+-- Index on the VolunteerProfileChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX [I_VolunteerProfileChangeHistory_tenantGuid_timeStamp] ON [Scheduler].[VolunteerProfileChangeHistory] ([tenantGuid], [timeStamp])
+GO
+
+-- Index on the VolunteerProfileChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX [I_VolunteerProfileChangeHistory_tenantGuid_userId] ON [Scheduler].[VolunteerProfileChangeHistory] ([tenantGuid], [userId])
+GO
+
+-- Index on the VolunteerProfileChangeHistory table's tenantGuid,volunteerProfileId fields.
+CREATE INDEX [I_VolunteerProfileChangeHistory_tenantGuid_volunteerProfileId] ON [Scheduler].[VolunteerProfileChangeHistory] ([tenantGuid], [volunteerProfileId]) INCLUDE ( versionNumber, timeStamp, userId )
+GO
+
+
+/*
+Named, persistent groups of volunteers that are often scheduled together.
+Examples: 'Saturday Soup Kitchen Team', 'Festival Setup Crew', 'Board of Directors Helpers'.
+Similar to Crew table but volunteer-specific with lighter structure and volunteer-oriented metadata.
+*/
+CREATE TABLE [Scheduler].[VolunteerGroup]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[name] NVARCHAR(100) NOT NULL,
+	[description] NVARCHAR(500) NULL,
+	[purpose] NVARCHAR(MAX) NULL,		-- What this group is mainly used for (e.g. 'Food distribution', 'Event setup & teardown')
+	[officeId] INT NULL,		-- Optional office/branch this volunteer group is associated with
+	[volunteerStatusId] INT NULL,		-- Minimum status required for members (e.g. Active only)
+	[maxMembers] INT NULL,		-- Optional soft cap on group size
+	[iconId] INT NULL,		-- Icon for UI display (e.g. group of people, soup bowl, hammer)
+	[color] NVARCHAR(10) NULL,		-- Suggested color for calendar/events
+	[notes] NVARCHAR(MAX) NULL,
+	[avatarFileName] NVARCHAR(250) NULL,		-- Part of the binary data field setup
+	[avatarSize] BIGINT NULL,		-- Part of the binary data field setup
+	[avatarData] VARBINARY(MAX) NULL,		-- Part of the binary data field setup
+	[avatarMimeType] NVARCHAR(100) NULL,		-- Part of the binary data field setup
+	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_VolunteerGroup_Office_officeId] FOREIGN KEY ([officeId]) REFERENCES [Scheduler].[Office] ([id]),		-- Foreign key to the Office table.
+	CONSTRAINT [FK_VolunteerGroup_VolunteerStatus_volunteerStatusId] FOREIGN KEY ([volunteerStatusId]) REFERENCES [Scheduler].[VolunteerStatus] ([id]),		-- Foreign key to the VolunteerStatus table.
+	CONSTRAINT [FK_VolunteerGroup_Icon_iconId] FOREIGN KEY ([iconId]) REFERENCES [Scheduler].[Icon] ([id]),		-- Foreign key to the Icon table.
+	CONSTRAINT [UC_VolunteerGroup_tenantGuid_name] UNIQUE ( [tenantGuid], [name]) 		-- Uniqueness enforced on the VolunteerGroup table's tenantGuid and name fields.
+)
+GO
+
+-- Index on the VolunteerGroup table's tenantGuid field.
+CREATE INDEX [I_VolunteerGroup_tenantGuid] ON [Scheduler].[VolunteerGroup] ([tenantGuid])
+GO
+
+-- Index on the VolunteerGroup table's tenantGuid,name fields.
+CREATE INDEX [I_VolunteerGroup_tenantGuid_name] ON [Scheduler].[VolunteerGroup] ([tenantGuid], [name])
+GO
+
+-- Index on the VolunteerGroup table's tenantGuid,officeId fields.
+CREATE INDEX [I_VolunteerGroup_tenantGuid_officeId] ON [Scheduler].[VolunteerGroup] ([tenantGuid], [officeId])
+GO
+
+-- Index on the VolunteerGroup table's tenantGuid,volunteerStatusId fields.
+CREATE INDEX [I_VolunteerGroup_tenantGuid_volunteerStatusId] ON [Scheduler].[VolunteerGroup] ([tenantGuid], [volunteerStatusId])
+GO
+
+-- Index on the VolunteerGroup table's tenantGuid,iconId fields.
+CREATE INDEX [I_VolunteerGroup_tenantGuid_iconId] ON [Scheduler].[VolunteerGroup] ([tenantGuid], [iconId])
+GO
+
+-- Index on the VolunteerGroup table's tenantGuid,active fields.
+CREATE INDEX [I_VolunteerGroup_tenantGuid_active] ON [Scheduler].[VolunteerGroup] ([tenantGuid], [active])
+GO
+
+-- Index on the VolunteerGroup table's tenantGuid,deleted fields.
+CREATE INDEX [I_VolunteerGroup_tenantGuid_deleted] ON [Scheduler].[VolunteerGroup] ([tenantGuid], [deleted])
+GO
+
+
+-- The change history for records from the VolunteerGroup table.
+CREATE TABLE [Scheduler].[VolunteerGroupChangeHistory]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[volunteerGroupId] INT NOT NULL,		-- Link to the VolunteerGroup table.
+	[versionNumber] INT NOT NULL,		-- This is the version number that is being historized.
+	[timeStamp] DATETIME2(7) NOT NULL,		-- The time that the record version was created.
+	[userId] INT NOT NULL,
+	[data] NVARCHAR(MAX) NOT NULL		-- This stores the JSON representing the object's historical state.
+
+	CONSTRAINT [FK_VolunteerGroupChangeHistory_VolunteerGroup_volunteerGroupId] FOREIGN KEY ([volunteerGroupId]) REFERENCES [Scheduler].[VolunteerGroup] ([id])		-- Foreign key to the VolunteerGroup table.
+)
+GO
+
+-- Index on the VolunteerGroupChangeHistory table's tenantGuid field.
+CREATE INDEX [I_VolunteerGroupChangeHistory_tenantGuid] ON [Scheduler].[VolunteerGroupChangeHistory] ([tenantGuid])
+GO
+
+-- Index on the VolunteerGroupChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX [I_VolunteerGroupChangeHistory_tenantGuid_versionNumber] ON [Scheduler].[VolunteerGroupChangeHistory] ([tenantGuid], [versionNumber])
+GO
+
+-- Index on the VolunteerGroupChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX [I_VolunteerGroupChangeHistory_tenantGuid_timeStamp] ON [Scheduler].[VolunteerGroupChangeHistory] ([tenantGuid], [timeStamp])
+GO
+
+-- Index on the VolunteerGroupChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX [I_VolunteerGroupChangeHistory_tenantGuid_userId] ON [Scheduler].[VolunteerGroupChangeHistory] ([tenantGuid], [userId])
+GO
+
+-- Index on the VolunteerGroupChangeHistory table's tenantGuid,volunteerGroupId fields.
+CREATE INDEX [I_VolunteerGroupChangeHistory_tenantGuid_volunteerGroupId] ON [Scheduler].[VolunteerGroupChangeHistory] ([tenantGuid], [volunteerGroupId]) INCLUDE ( versionNumber, timeStamp, userId )
+GO
+
+
+/*
+Membership in a VolunteerGroup.
+Links Resources (volunteers) to groups, with optional default role and sequence.
+*/
+CREATE TABLE [Scheduler].[VolunteerGroupMember]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[volunteerGroupId] INT NOT NULL,		-- Link to the VolunteerGroup table.
+	[resourceId] INT NOT NULL,		-- The volunteer (Resource) in this group
+	[assignmentRoleId] INT NULL,		-- Default role this person plays in the group (e.g. 'Team Lead', 'Driver')
+	[sequence] INT NOT NULL DEFAULT 1,		-- Display/order position within the group
+	[joinedDate] DATE NULL,
+	[leftDate] DATE NULL,		-- If they left the group
+	[notes] NVARCHAR(MAX) NULL,		-- e.g. 'Prefers kitchen duties', 'Only available 1st Saturday'
+	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_VolunteerGroupMember_VolunteerGroup_volunteerGroupId] FOREIGN KEY ([volunteerGroupId]) REFERENCES [Scheduler].[VolunteerGroup] ([id]),		-- Foreign key to the VolunteerGroup table.
+	CONSTRAINT [FK_VolunteerGroupMember_Resource_resourceId] FOREIGN KEY ([resourceId]) REFERENCES [Scheduler].[Resource] ([id]),		-- Foreign key to the Resource table.
+	CONSTRAINT [FK_VolunteerGroupMember_AssignmentRole_assignmentRoleId] FOREIGN KEY ([assignmentRoleId]) REFERENCES [Scheduler].[AssignmentRole] ([id]),		-- Foreign key to the AssignmentRole table.
+	CONSTRAINT [UC_VolunteerGroupMember_tenantGuid_volunteerGroupId_resourceId] UNIQUE ( [tenantGuid], [volunteerGroupId], [resourceId]) 		-- Uniqueness enforced on the VolunteerGroupMember table's tenantGuid and volunteerGroupId and resourceId fields.
+)
+GO
+
+-- Index on the VolunteerGroupMember table's tenantGuid field.
+CREATE INDEX [I_VolunteerGroupMember_tenantGuid] ON [Scheduler].[VolunteerGroupMember] ([tenantGuid])
+GO
+
+-- Index on the VolunteerGroupMember table's tenantGuid,volunteerGroupId fields.
+CREATE INDEX [I_VolunteerGroupMember_tenantGuid_volunteerGroupId] ON [Scheduler].[VolunteerGroupMember] ([tenantGuid], [volunteerGroupId])
+GO
+
+-- Index on the VolunteerGroupMember table's tenantGuid,resourceId fields.
+CREATE INDEX [I_VolunteerGroupMember_tenantGuid_resourceId] ON [Scheduler].[VolunteerGroupMember] ([tenantGuid], [resourceId])
+GO
+
+-- Index on the VolunteerGroupMember table's tenantGuid,assignmentRoleId fields.
+CREATE INDEX [I_VolunteerGroupMember_tenantGuid_assignmentRoleId] ON [Scheduler].[VolunteerGroupMember] ([tenantGuid], [assignmentRoleId])
+GO
+
+-- Index on the VolunteerGroupMember table's tenantGuid,active fields.
+CREATE INDEX [I_VolunteerGroupMember_tenantGuid_active] ON [Scheduler].[VolunteerGroupMember] ([tenantGuid], [active])
+GO
+
+-- Index on the VolunteerGroupMember table's tenantGuid,deleted fields.
+CREATE INDEX [I_VolunteerGroupMember_tenantGuid_deleted] ON [Scheduler].[VolunteerGroupMember] ([tenantGuid], [deleted])
+GO
+
+
+-- The change history for records from the VolunteerGroupMember table.
+CREATE TABLE [Scheduler].[VolunteerGroupMemberChangeHistory]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[volunteerGroupMemberId] INT NOT NULL,		-- Link to the VolunteerGroupMember table.
+	[versionNumber] INT NOT NULL,		-- This is the version number that is being historized.
+	[timeStamp] DATETIME2(7) NOT NULL,		-- The time that the record version was created.
+	[userId] INT NOT NULL,
+	[data] NVARCHAR(MAX) NOT NULL		-- This stores the JSON representing the object's historical state.
+
+	CONSTRAINT [FK_VolunteerGroupMemberChangeHistory_VolunteerGroupMember_volunteerGroupMemberId] FOREIGN KEY ([volunteerGroupMemberId]) REFERENCES [Scheduler].[VolunteerGroupMember] ([id])		-- Foreign key to the VolunteerGroupMember table.
+)
+GO
+
+-- Index on the VolunteerGroupMemberChangeHistory table's tenantGuid field.
+CREATE INDEX [I_VolunteerGroupMemberChangeHistory_tenantGuid] ON [Scheduler].[VolunteerGroupMemberChangeHistory] ([tenantGuid])
+GO
+
+-- Index on the VolunteerGroupMemberChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX [I_VolunteerGroupMemberChangeHistory_tenantGuid_versionNumber] ON [Scheduler].[VolunteerGroupMemberChangeHistory] ([tenantGuid], [versionNumber])
+GO
+
+-- Index on the VolunteerGroupMemberChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX [I_VolunteerGroupMemberChangeHistory_tenantGuid_timeStamp] ON [Scheduler].[VolunteerGroupMemberChangeHistory] ([tenantGuid], [timeStamp])
+GO
+
+-- Index on the VolunteerGroupMemberChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX [I_VolunteerGroupMemberChangeHistory_tenantGuid_userId] ON [Scheduler].[VolunteerGroupMemberChangeHistory] ([tenantGuid], [userId])
+GO
+
+-- Index on the VolunteerGroupMemberChangeHistory table's tenantGuid,volunteerGroupMemberId fields.
+CREATE INDEX [I_VolunteerGroupMemberChangeHistory_tenantGuid_volunteerGroupMemberId] ON [Scheduler].[VolunteerGroupMemberChangeHistory] ([tenantGuid], [volunteerGroupMemberId]) INCLUDE ( versionNumber, timeStamp, userId )
+GO
+
+
+-- Links resources, crews, or volunteer groups o events.  Supports partial assignments and role designation.  - If crewId is non-NULL → this row represents assignment of the whole crew - If resourceId is non-NULL and crewId is NULL → individual resource assignment - assignmentStart/End NULL → uses full event duration.  only one of crewId, volunteerGroupId, resourceId should be populated per row (business rule in app layer).
+CREATE TABLE [Scheduler].[EventResourceAssignment]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[scheduledEventId] INT NOT NULL,		-- Link to the ScheduledEvent table.
+	[officeId] INT NULL,		-- Snapshot of office resource assigned to this event belongs to at the time of assignment.  This should never change, and should NOT be updated if a resource moves to a different office post-event assignment.
+	[resourceId] INT NULL,		-- Required for individual assignments; should be NULL when crewId is used
+	[crewId] INT NULL,		-- Optional – when set, assigns the entire crew as a unit
+	[volunteerGroupId] INT NULL,		-- Optional: assign an entire VolunteerGroup instead of/in addition to individual resources or Crew
+	[assignmentRoleId] INT NULL,		-- Optional role for this assignment (individual or crew member default)
+	[assignmentStatusId] INT NOT NULL DEFAULT 1,		-- NULL = Planned, non-NULL links to AssignmentStatus master table
+	[assignmentStartDateTime] DATETIME2(7) NULL,		-- NULL = starts at event start
+	[assignmentEndDateTime] DATETIME2(7) NULL,		-- NULL = ends at event end
+	[notes] NVARCHAR(MAX) NULL,
+	[isTravelRequired] BIT NULL,		-- Whether or not travel is required for the assignment
+	[travelDurationMinutes] INT NULL DEFAULT 0,		-- Time required to get to the site
+	[distanceKilometers] REAL NULL DEFAULT 0,		-- Useful for expense calculation
+	[startLocation] NVARCHAR(100) NULL,
+	[actualStartDateTime] DATETIME2(7) NULL,
+	[actualEndDateTime] DATETIME2(7) NULL,
+	[actualNotes] NVARCHAR(MAX) NULL,
+	[isVolunteer] BIT NOT NULL DEFAULT 0,/*
+True = this is a volunteer (unpaid) assignment.
+Used to:
+- Exclude from payroll/wage calculations
+- Include in volunteer hours totals
+- Apply different approval/reminder workflows
+- Filter volunteer-specific reports
+*/
+	[reportedVolunteerHours] REAL NULL,		-- Hours the volunteer self-reported (or coordinator entered) for this assignment
+	[approvedVolunteerHours] REAL NULL,		-- Approved/confirmed hours (may differ from reported if adjustments needed)
+	[hoursApprovedByContactId] INT NULL,		-- Contact (usually staff/coordinator) who approved the hours
+	[approvedDateTime] DATETIME2(7) NULL,		-- When the hours were approved
+	[reimbursementAmount] MONEY NULL,		-- Optional: mileage, parking, meals, etc. — not a wage
+	[chargeTypeId] INT NULL,		-- Optional: links to an expense-type ChargeType for the reimbursement (e.g. 'Mileage Reimbursement')
+	[reimbursementRequested] BIT NOT NULL DEFAULT 0,		-- Volunteer has flagged that they want/need reimbursement
+	[volunteerNotes] NVARCHAR(MAX) NULL,		-- Volunteer-specific notes for this assignment (e.g. 'Prefers morning shifts next time', 'Brought own tools')
+	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_EventResourceAssignment_ScheduledEvent_scheduledEventId] FOREIGN KEY ([scheduledEventId]) REFERENCES [Scheduler].[ScheduledEvent] ([id]),		-- Foreign key to the ScheduledEvent table.
+	CONSTRAINT [FK_EventResourceAssignment_Office_officeId] FOREIGN KEY ([officeId]) REFERENCES [Scheduler].[Office] ([id]),		-- Foreign key to the Office table.
+	CONSTRAINT [FK_EventResourceAssignment_Resource_resourceId] FOREIGN KEY ([resourceId]) REFERENCES [Scheduler].[Resource] ([id]),		-- Foreign key to the Resource table.
+	CONSTRAINT [FK_EventResourceAssignment_Crew_crewId] FOREIGN KEY ([crewId]) REFERENCES [Scheduler].[Crew] ([id]),		-- Foreign key to the Crew table.
+	CONSTRAINT [FK_EventResourceAssignment_VolunteerGroup_volunteerGroupId] FOREIGN KEY ([volunteerGroupId]) REFERENCES [Scheduler].[VolunteerGroup] ([id]),		-- Foreign key to the VolunteerGroup table.
+	CONSTRAINT [FK_EventResourceAssignment_AssignmentRole_assignmentRoleId] FOREIGN KEY ([assignmentRoleId]) REFERENCES [Scheduler].[AssignmentRole] ([id]),		-- Foreign key to the AssignmentRole table.
+	CONSTRAINT [FK_EventResourceAssignment_AssignmentStatus_assignmentStatusId] FOREIGN KEY ([assignmentStatusId]) REFERENCES [Scheduler].[AssignmentStatus] ([id]),		-- Foreign key to the AssignmentStatus table.
+	CONSTRAINT [FK_EventResourceAssignment_Contact_hoursApprovedByContactId] FOREIGN KEY ([hoursApprovedByContactId]) REFERENCES [Scheduler].[Contact] ([id]),		-- Foreign key to the Contact table.
+	CONSTRAINT [FK_EventResourceAssignment_ChargeType_chargeTypeId] FOREIGN KEY ([chargeTypeId]) REFERENCES [Scheduler].[ChargeType] ([id])		-- Foreign key to the ChargeType table.
+)
+GO
+
+-- Index on the EventResourceAssignment table's tenantGuid field.
+CREATE INDEX [I_EventResourceAssignment_tenantGuid] ON [Scheduler].[EventResourceAssignment] ([tenantGuid])
+GO
+
+-- Index on the EventResourceAssignment table's tenantGuid,scheduledEventId fields.
+CREATE INDEX [I_EventResourceAssignment_tenantGuid_scheduledEventId] ON [Scheduler].[EventResourceAssignment] ([tenantGuid], [scheduledEventId])
+GO
+
+-- Index on the EventResourceAssignment table's tenantGuid,officeId fields.
+CREATE INDEX [I_EventResourceAssignment_tenantGuid_officeId] ON [Scheduler].[EventResourceAssignment] ([tenantGuid], [officeId])
+GO
+
+-- Index on the EventResourceAssignment table's tenantGuid,resourceId fields.
+CREATE INDEX [I_EventResourceAssignment_tenantGuid_resourceId] ON [Scheduler].[EventResourceAssignment] ([tenantGuid], [resourceId])
+GO
+
+-- Index on the EventResourceAssignment table's tenantGuid,crewId fields.
+CREATE INDEX [I_EventResourceAssignment_tenantGuid_crewId] ON [Scheduler].[EventResourceAssignment] ([tenantGuid], [crewId])
+GO
+
+-- Index on the EventResourceAssignment table's tenantGuid,volunteerGroupId fields.
+CREATE INDEX [I_EventResourceAssignment_tenantGuid_volunteerGroupId] ON [Scheduler].[EventResourceAssignment] ([tenantGuid], [volunteerGroupId])
+GO
+
+-- Index on the EventResourceAssignment table's tenantGuid,assignmentRoleId fields.
+CREATE INDEX [I_EventResourceAssignment_tenantGuid_assignmentRoleId] ON [Scheduler].[EventResourceAssignment] ([tenantGuid], [assignmentRoleId])
+GO
+
+-- Index on the EventResourceAssignment table's tenantGuid,assignmentStatusId fields.
+CREATE INDEX [I_EventResourceAssignment_tenantGuid_assignmentStatusId] ON [Scheduler].[EventResourceAssignment] ([tenantGuid], [assignmentStatusId])
+GO
+
+-- Index on the EventResourceAssignment table's tenantGuid,hoursApprovedByContactId fields.
+CREATE INDEX [I_EventResourceAssignment_tenantGuid_hoursApprovedByContactId] ON [Scheduler].[EventResourceAssignment] ([tenantGuid], [hoursApprovedByContactId])
+GO
+
+-- Index on the EventResourceAssignment table's tenantGuid,chargeTypeId fields.
+CREATE INDEX [I_EventResourceAssignment_tenantGuid_chargeTypeId] ON [Scheduler].[EventResourceAssignment] ([tenantGuid], [chargeTypeId])
+GO
+
+-- Index on the EventResourceAssignment table's tenantGuid,active fields.
+CREATE INDEX [I_EventResourceAssignment_tenantGuid_active] ON [Scheduler].[EventResourceAssignment] ([tenantGuid], [active])
+GO
+
+-- Index on the EventResourceAssignment table's tenantGuid,deleted fields.
+CREATE INDEX [I_EventResourceAssignment_tenantGuid_deleted] ON [Scheduler].[EventResourceAssignment] ([tenantGuid], [deleted])
+GO
+
+-- Index on the EventResourceAssignment table's tenantGuid,resourceId,assignmentStartDateTime,assignmentEndDateTime fields.
+CREATE INDEX [I_EventResourceAssignment_tenantGuid_resourceId_assignmentStartDateTime_assignmentEndDateTime] ON [Scheduler].[EventResourceAssignment] ([tenantGuid], [resourceId], [assignmentStartDateTime], [assignmentEndDateTime])
+GO
+
+-- Index on the EventResourceAssignment table's tenantGuid,crewId,assignmentStartDateTime,assignmentEndDateTime fields.
+CREATE INDEX [I_EventResourceAssignment_tenantGuid_crewId_assignmentStartDateTime_assignmentEndDateTime] ON [Scheduler].[EventResourceAssignment] ([tenantGuid], [crewId], [assignmentStartDateTime], [assignmentEndDateTime])
+GO
+
+
+-- The change history for records from the EventResourceAssignment table.
+CREATE TABLE [Scheduler].[EventResourceAssignmentChangeHistory]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[eventResourceAssignmentId] INT NOT NULL,		-- Link to the EventResourceAssignment table.
+	[versionNumber] INT NOT NULL,		-- This is the version number that is being historized.
+	[timeStamp] DATETIME2(7) NOT NULL,		-- The time that the record version was created.
+	[userId] INT NOT NULL,
+	[data] NVARCHAR(MAX) NOT NULL		-- This stores the JSON representing the object's historical state.
+
+	CONSTRAINT [FK_EventResourceAssignmentChangeHistory_EventResourceAssignment_eventResourceAssignmentId] FOREIGN KEY ([eventResourceAssignmentId]) REFERENCES [Scheduler].[EventResourceAssignment] ([id])		-- Foreign key to the EventResourceAssignment table.
+)
+GO
+
+-- Index on the EventResourceAssignmentChangeHistory table's tenantGuid field.
+CREATE INDEX [I_EventResourceAssignmentChangeHistory_tenantGuid] ON [Scheduler].[EventResourceAssignmentChangeHistory] ([tenantGuid])
+GO
+
+-- Index on the EventResourceAssignmentChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX [I_EventResourceAssignmentChangeHistory_tenantGuid_versionNumber] ON [Scheduler].[EventResourceAssignmentChangeHistory] ([tenantGuid], [versionNumber])
+GO
+
+-- Index on the EventResourceAssignmentChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX [I_EventResourceAssignmentChangeHistory_tenantGuid_timeStamp] ON [Scheduler].[EventResourceAssignmentChangeHistory] ([tenantGuid], [timeStamp])
+GO
+
+-- Index on the EventResourceAssignmentChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX [I_EventResourceAssignmentChangeHistory_tenantGuid_userId] ON [Scheduler].[EventResourceAssignmentChangeHistory] ([tenantGuid], [userId])
+GO
+
+-- Index on the EventResourceAssignmentChangeHistory table's tenantGuid,eventResourceAssignmentId fields.
+CREATE INDEX [I_EventResourceAssignmentChangeHistory_tenantGuid_eventResourceAssignmentId] ON [Scheduler].[EventResourceAssignmentChangeHistory] ([tenantGuid], [eventResourceAssignmentId]) INCLUDE ( versionNumber, timeStamp, userId )
 GO
 
 

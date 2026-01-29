@@ -536,7 +536,7 @@ export class LoginAttemptService extends SecureEndpointBase {
             const user = this.authService.currentUser;
 
             if (user != null) {
-                userIsSecurityLoginAttemptReader = user.readPermission >= 0;
+                userIsSecurityLoginAttemptReader = user.readPermission >= 1;
             } else {
                 userIsSecurityLoginAttemptReader = false;
             }
@@ -560,7 +560,7 @@ export class LoginAttemptService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsSecurityLoginAttemptWriter = user.writePermission >= 100;
+            userIsSecurityLoginAttemptWriter = user.writePermission >= 255;
           } else {
             userIsSecurityLoginAttemptWriter = false;
           }      

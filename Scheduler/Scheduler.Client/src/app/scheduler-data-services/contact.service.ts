@@ -31,6 +31,7 @@ import { ResourceContactService, ResourceContactData } from './resource-contact.
 import { ContactInteractionService, ContactInteractionData } from './contact-interaction.service';
 import { NotificationSubscriptionService, NotificationSubscriptionData } from './notification-subscription.service';
 import { ConstituentService, ConstituentData } from './constituent.service';
+import { EventResourceAssignmentService, EventResourceAssignmentData } from './event-resource-assignment.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -270,6 +271,10 @@ export class ContactData {
     private _constituentsSubject = new BehaviorSubject<ConstituentData[] | null>(null);
 
                 
+    private _eventResourceAssignmentHoursApprovedByContacts: EventResourceAssignmentData[] | null = null;
+    private _eventResourceAssignmentHoursApprovedByContactsPromise: Promise<EventResourceAssignmentData[]> | null  = null;
+    private _eventResourceAssignmentHoursApprovedByContactsSubject = new BehaviorSubject<EventResourceAssignmentData[] | null>(null);
+                    
 
 
     //
@@ -512,6 +517,24 @@ export class ContactData {
 
 
 
+    public EventResourceAssignmentHoursApprovedByContacts$ = this._eventResourceAssignmentHoursApprovedByContactsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._eventResourceAssignmentHoursApprovedByContacts === null && this._eventResourceAssignmentHoursApprovedByContactsPromise === null) {
+            this.loadEventResourceAssignmentHoursApprovedByContacts(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public EventResourceAssignmentHoursApprovedByContactsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({hoursApprovedByContactId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
 
   //
   // Full reload — refreshes the entire object and clears all lazy caches 
@@ -597,6 +620,10 @@ export class ContactData {
      this._constituents = null;
      this._constituentsPromise = null;
      this._constituentsSubject.next(null);
+
+     this._eventResourceAssignmentHoursApprovedByContacts = null;
+     this._eventResourceAssignmentHoursApprovedByContactsPromise = null;
+     this._eventResourceAssignmentHoursApprovedByContactsSubject.next(null);
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -1387,6 +1414,71 @@ export class ContactData {
     }
 
 
+    /**
+     *
+     * Gets the EventResourceAssignmentHoursApprovedByContacts for this Contact.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.contact.EventResourceAssignmentHoursApprovedByContacts.then(hoursApprovedByContacts => { ... })
+     *   or
+     *   await this.contact.hoursApprovedByContacts
+     *
+    */
+    public get EventResourceAssignmentHoursApprovedByContacts(): Promise<EventResourceAssignmentData[]> {
+        if (this._eventResourceAssignmentHoursApprovedByContacts !== null) {
+            return Promise.resolve(this._eventResourceAssignmentHoursApprovedByContacts);
+        }
+
+        if (this._eventResourceAssignmentHoursApprovedByContactsPromise !== null) {
+            return this._eventResourceAssignmentHoursApprovedByContactsPromise;
+        }
+
+        // Start the load
+        this.loadEventResourceAssignmentHoursApprovedByContacts();
+
+        return this._eventResourceAssignmentHoursApprovedByContactsPromise!;
+    }
+
+
+
+    private loadEventResourceAssignmentHoursApprovedByContacts(): void {
+
+        this._eventResourceAssignmentHoursApprovedByContactsPromise = lastValueFrom(
+            ContactService.Instance.GetEventResourceAssignmentHoursApprovedByContactsForContact(this.id)
+        )
+        .then(EventResourceAssignmentHoursApprovedByContacts => {
+            this._eventResourceAssignmentHoursApprovedByContacts = EventResourceAssignmentHoursApprovedByContacts ?? [];
+            this._eventResourceAssignmentHoursApprovedByContactsSubject.next(this._eventResourceAssignmentHoursApprovedByContacts);
+            return this._eventResourceAssignmentHoursApprovedByContacts;
+         })
+        .catch(err => {
+            this._eventResourceAssignmentHoursApprovedByContacts = [];
+            this._eventResourceAssignmentHoursApprovedByContactsSubject.next(this._eventResourceAssignmentHoursApprovedByContacts);
+            throw err;
+        })
+        .finally(() => {
+            this._eventResourceAssignmentHoursApprovedByContactsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached EventResourceAssignmentHoursApprovedByContact. Call after mutations to force refresh.
+     */
+    public ClearEventResourceAssignmentHoursApprovedByContactsCache(): void {
+        this._eventResourceAssignmentHoursApprovedByContacts = null;
+        this._eventResourceAssignmentHoursApprovedByContactsPromise = null;
+        this._eventResourceAssignmentHoursApprovedByContactsSubject.next(this._eventResourceAssignmentHoursApprovedByContacts);      // Emit to observable
+    }
+
+    public get HasEventResourceAssignmentHoursApprovedByContacts(): Promise<boolean> {
+        return this.EventResourceAssignmentHoursApprovedByContacts.then(eventResourceAssignmentHoursApprovedByContacts => eventResourceAssignmentHoursApprovedByContacts.length > 0);
+    }
+
+
 
 
     //
@@ -1475,6 +1567,7 @@ export class ContactService extends SecureEndpointBase {
         private contactInteractionService: ContactInteractionService,
         private notificationSubscriptionService: NotificationSubscriptionService,
         private constituentService: ConstituentService,
+        private eventResourceAssignmentService: EventResourceAssignmentService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
 
@@ -2077,6 +2170,16 @@ export class ContactService extends SecureEndpointBase {
     }
 
 
+    public GetEventResourceAssignmentHoursApprovedByContactsForContact(contactId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<EventResourceAssignmentData[]> {
+        return this.eventResourceAssignmentService.GetEventResourceAssignmentList({
+            hoursApprovedByContactId: contactId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
  /**
    *
    * Revives a plain object from the server into a full ContactData instance.
@@ -2151,6 +2254,10 @@ export class ContactService extends SecureEndpointBase {
     (revived as any)._constituents = null;
     (revived as any)._constituentsPromise = null;
     (revived as any)._constituentsSubject = new BehaviorSubject<ConstituentData[] | null>(null);
+
+    (revived as any)._eventResourceAssignments = null;
+    (revived as any)._eventResourceAssignmentsPromise = null;
+    (revived as any)._eventResourceAssignmentsSubject = new BehaviorSubject<EventResourceAssignmentData[] | null>(null);
 
 
     //
@@ -2318,6 +2425,22 @@ export class ContactService extends SecureEndpointBase {
       );
 
     (revived as any).ConstituentsCount$ = ConstituentService.Instance.GetConstituentsRowCount({contactId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).EventResourceAssignments$ = (revived as any)._eventResourceAssignmentsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._eventResourceAssignments === null && (revived as any)._eventResourceAssignmentsPromise === null) {
+                (revived as any).loadEventResourceAssignments();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).EventResourceAssignmentsCount$ = EventResourceAssignmentService.Instance.GetEventResourceAssignmentsRowCount({contactId: (revived as any).id,
       active: true,
       deleted: false
     });

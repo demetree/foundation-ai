@@ -599,7 +599,7 @@ export class PrivilegeService extends SecureEndpointBase {
             const user = this.authService.currentUser;
 
             if (user != null) {
-                userIsSecurityPrivilegeReader = user.readPermission >= 0;
+                userIsSecurityPrivilegeReader = user.readPermission >= 1;
             } else {
                 userIsSecurityPrivilegeReader = false;
             }
@@ -623,7 +623,7 @@ export class PrivilegeService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsSecurityPrivilegeWriter = user.writePermission >= 0;
+            userIsSecurityPrivilegeWriter = user.writePermission >= 255;
           } else {
             userIsSecurityPrivilegeWriter = false;
           }      

@@ -445,6 +445,20 @@ import { TributeChangeHistoryListingComponent } from './scheduler-data-component
 import { TributeChangeHistoryDetailComponent } from './scheduler-data-components/tribute-change-history/tribute-change-history-detail/tribute-change-history-detail.component';
 import { TributeTypeListingComponent } from './scheduler-data-components/tribute-type/tribute-type-listing/tribute-type-listing.component';
 import { TributeTypeDetailComponent } from './scheduler-data-components/tribute-type/tribute-type-detail/tribute-type-detail.component';
+import { VolunteerGroupListingComponent } from './scheduler-data-components/volunteer-group/volunteer-group-listing/volunteer-group-listing.component';
+import { VolunteerGroupDetailComponent } from './scheduler-data-components/volunteer-group/volunteer-group-detail/volunteer-group-detail.component';
+import { VolunteerGroupChangeHistoryListingComponent } from './scheduler-data-components/volunteer-group-change-history/volunteer-group-change-history-listing/volunteer-group-change-history-listing.component';
+import { VolunteerGroupChangeHistoryDetailComponent } from './scheduler-data-components/volunteer-group-change-history/volunteer-group-change-history-detail/volunteer-group-change-history-detail.component';
+import { VolunteerGroupMemberListingComponent } from './scheduler-data-components/volunteer-group-member/volunteer-group-member-listing/volunteer-group-member-listing.component';
+import { VolunteerGroupMemberDetailComponent } from './scheduler-data-components/volunteer-group-member/volunteer-group-member-detail/volunteer-group-member-detail.component';
+import { VolunteerGroupMemberChangeHistoryListingComponent } from './scheduler-data-components/volunteer-group-member-change-history/volunteer-group-member-change-history-listing/volunteer-group-member-change-history-listing.component';
+import { VolunteerGroupMemberChangeHistoryDetailComponent } from './scheduler-data-components/volunteer-group-member-change-history/volunteer-group-member-change-history-detail/volunteer-group-member-change-history-detail.component';
+import { VolunteerProfileListingComponent } from './scheduler-data-components/volunteer-profile/volunteer-profile-listing/volunteer-profile-listing.component';
+import { VolunteerProfileDetailComponent } from './scheduler-data-components/volunteer-profile/volunteer-profile-detail/volunteer-profile-detail.component';
+import { VolunteerProfileChangeHistoryListingComponent } from './scheduler-data-components/volunteer-profile-change-history/volunteer-profile-change-history-listing/volunteer-profile-change-history-listing.component';
+import { VolunteerProfileChangeHistoryDetailComponent } from './scheduler-data-components/volunteer-profile-change-history/volunteer-profile-change-history-detail/volunteer-profile-change-history-detail.component';
+import { VolunteerStatusListingComponent } from './scheduler-data-components/volunteer-status/volunteer-status-listing/volunteer-status-listing.component';
+import { VolunteerStatusDetailComponent } from './scheduler-data-components/volunteer-status/volunteer-status-detail/volunteer-status-detail.component';
 //
 // End of imports for Scheduler Data Components
 //
@@ -1314,6 +1328,41 @@ const routes: Routes = [
   {path: 'tributetypes/:tributeTypeId', component: TributeTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Tribute Type' },
   {path: 'tributetype/:tributeTypeId', component: TributeTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Tribute Type' },
   {path: 'tributetype',  redirectTo: 'tributetypes'},
+  {path: 'volunteergroups', component: VolunteerGroupListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Volunteer Groups' },
+  {path: 'volunteergroups/new', component: VolunteerGroupDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Volunteer Group' },
+  {path: 'volunteergroups/:volunteerGroupId', component: VolunteerGroupDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Volunteer Group' },
+  {path: 'volunteergroup/:volunteerGroupId', component: VolunteerGroupDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Volunteer Group' },
+  {path: 'volunteergroup',  redirectTo: 'volunteergroups'},
+  {path: 'volunteergroupchangehistories', component: VolunteerGroupChangeHistoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Volunteer Group Change Histories' },
+  {path: 'volunteergroupchangehistories/new', component: VolunteerGroupChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Volunteer Group Change History' },
+  {path: 'volunteergroupchangehistories/:volunteerGroupChangeHistoryId', component: VolunteerGroupChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Volunteer Group Change History' },
+  {path: 'volunteergroupchangehistory/:volunteerGroupChangeHistoryId', component: VolunteerGroupChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Volunteer Group Change History' },
+  {path: 'volunteergroupchangehistory',  redirectTo: 'volunteergroupchangehistories'},
+  {path: 'volunteergroupmembers', component: VolunteerGroupMemberListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Volunteer Group Members' },
+  {path: 'volunteergroupmembers/new', component: VolunteerGroupMemberDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Volunteer Group Member' },
+  {path: 'volunteergroupmembers/:volunteerGroupMemberId', component: VolunteerGroupMemberDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Volunteer Group Member' },
+  {path: 'volunteergroupmember/:volunteerGroupMemberId', component: VolunteerGroupMemberDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Volunteer Group Member' },
+  {path: 'volunteergroupmember',  redirectTo: 'volunteergroupmembers'},
+  {path: 'volunteergroupmemberchangehistories', component: VolunteerGroupMemberChangeHistoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Volunteer Group Member Change Histories' },
+  {path: 'volunteergroupmemberchangehistories/new', component: VolunteerGroupMemberChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Volunteer Group Member Change History' },
+  {path: 'volunteergroupmemberchangehistories/:volunteerGroupMemberChangeHistoryId', component: VolunteerGroupMemberChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Volunteer Group Member Change History' },
+  {path: 'volunteergroupmemberchangehistory/:volunteerGroupMemberChangeHistoryId', component: VolunteerGroupMemberChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Volunteer Group Member Change History' },
+  {path: 'volunteergroupmemberchangehistory',  redirectTo: 'volunteergroupmemberchangehistories'},
+  {path: 'volunteerprofiles', component: VolunteerProfileListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Volunteer Profiles' },
+  {path: 'volunteerprofiles/new', component: VolunteerProfileDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Volunteer Profile' },
+  {path: 'volunteerprofiles/:volunteerProfileId', component: VolunteerProfileDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Volunteer Profile' },
+  {path: 'volunteerprofile/:volunteerProfileId', component: VolunteerProfileDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Volunteer Profile' },
+  {path: 'volunteerprofile',  redirectTo: 'volunteerprofiles'},
+  {path: 'volunteerprofilechangehistories', component: VolunteerProfileChangeHistoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Volunteer Profile Change Histories' },
+  {path: 'volunteerprofilechangehistories/new', component: VolunteerProfileChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Volunteer Profile Change History' },
+  {path: 'volunteerprofilechangehistories/:volunteerProfileChangeHistoryId', component: VolunteerProfileChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Volunteer Profile Change History' },
+  {path: 'volunteerprofilechangehistory/:volunteerProfileChangeHistoryId', component: VolunteerProfileChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Volunteer Profile Change History' },
+  {path: 'volunteerprofilechangehistory',  redirectTo: 'volunteerprofilechangehistories'},
+  {path: 'volunteerstatuses', component: VolunteerStatusListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Volunteer Statuses' },
+  {path: 'volunteerstatuses/new', component: VolunteerStatusDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Volunteer Status' },
+  {path: 'volunteerstatuses/:volunteerStatusId', component: VolunteerStatusDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Volunteer Status' },
+  {path: 'volunteerstatus/:volunteerStatusId', component: VolunteerStatusDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Volunteer Status' },
+  {path: 'volunteerstatus',  redirectTo: 'volunteerstatuses'},
 //
   // End of routes for Scheduler Data Components
   //

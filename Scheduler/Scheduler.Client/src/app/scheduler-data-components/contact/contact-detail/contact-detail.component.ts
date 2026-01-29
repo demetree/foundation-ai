@@ -38,6 +38,7 @@ import { ResourceContactService } from '../../../scheduler-data-services/resourc
 import { ContactInteractionService } from '../../../scheduler-data-services/contact-interaction.service';
 import { NotificationSubscriptionService } from '../../../scheduler-data-services/notification-subscription.service';
 import { ConstituentService } from '../../../scheduler-data-services/constituent.service';
+import { EventResourceAssignmentService } from '../../../scheduler-data-services/event-resource-assignment.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -159,6 +160,7 @@ export class ContactDetailComponent implements OnInit, CanComponentDeactivate {
   public contactInteractions$ = this.contactInteractionService.GetContactInteractionList();
   public notificationSubscriptions$ = this.notificationSubscriptionService.GetNotificationSubscriptionList();
   public constituents$ = this.constituentService.GetConstituentList();
+  public eventResourceAssignments$ = this.eventResourceAssignmentService.GetEventResourceAssignmentList();
 
   private destroy$ = new Subject<void>();
 
@@ -179,6 +181,7 @@ export class ContactDetailComponent implements OnInit, CanComponentDeactivate {
     public contactInteractionService: ContactInteractionService,
     public notificationSubscriptionService: NotificationSubscriptionService,
     public constituentService: ConstituentService,
+    public eventResourceAssignmentService: EventResourceAssignmentService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,

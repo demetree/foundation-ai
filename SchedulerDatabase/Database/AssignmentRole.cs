@@ -35,5 +35,7 @@ public partial class AssignmentRole
 
     public virtual ICollection<RateSheet> RateSheets { get; set; } = new List<RateSheet>();
 
+    public virtual ICollection<VolunteerGroupMember> VolunteerGroupMembers { get; set; } = new List<VolunteerGroupMember>();
+
     public virtual Icon icon { get; set; }
 }

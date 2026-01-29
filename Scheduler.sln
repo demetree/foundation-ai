@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 18
-VisualStudioVersion = 18.0.11222.15
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36804.6 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Foundation Projects", "Foundation Projects", "{588B8AE4-0A65-4ADD-A0F1-5F608420F380}"
 EndProject
@@ -59,8 +59,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelemetryDatabaseGenerator", "DatabaseGenerators\TelemetryDatabaseGenerator\TelemetryDatabaseGenerator.csproj", "{13AADC88-4397-A29F-8B14-03DEC0AFB1C6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foundation.Telemetry", "Foundation.Telemetry\Foundation.Telemetry.csproj", "{57A8B5A6-B0FD-479F-AC1D-4AE2B60E27E7}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FoundationCore", "FoundationCore", "{64B7866F-B143-7DD7-C20E-B7096C09B9CC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

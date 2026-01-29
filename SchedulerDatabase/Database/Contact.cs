@@ -83,6 +83,8 @@ public partial class Contact
 
     public virtual ICollection<ContactTag> ContactTags { get; set; } = new List<ContactTag>();
 
+    public virtual ICollection<EventResourceAssignment> EventResourceAssignments { get; set; } = new List<EventResourceAssignment>();
+
     public virtual ICollection<NotificationSubscription> NotificationSubscriptions { get; set; } = new List<NotificationSubscription>();
 
     public virtual ICollection<OfficeContact> OfficeContacts { get; set; } = new List<OfficeContact>();

@@ -520,7 +520,7 @@ export class SecurityGroupSecurityRoleService extends SecureEndpointBase {
             const user = this.authService.currentUser;
 
             if (user != null) {
-                userIsSecuritySecurityGroupSecurityRoleReader = user.readPermission >= 0;
+                userIsSecuritySecurityGroupSecurityRoleReader = user.readPermission >= 1;
             } else {
                 userIsSecuritySecurityGroupSecurityRoleReader = false;
             }
@@ -544,7 +544,7 @@ export class SecurityGroupSecurityRoleService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsSecuritySecurityGroupSecurityRoleWriter = user.writePermission >= 0;
+            userIsSecuritySecurityGroupSecurityRoleWriter = user.writePermission >= 150;
           } else {
             userIsSecuritySecurityGroupSecurityRoleWriter = false;
           }      

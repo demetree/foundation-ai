@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "Scheduler and Foundation",
+    "Projects": [
+      {
+        "Path": "Foundation\\Foundation.Server\\Foundation.Server.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "Scheduler\\Scheduler.Server\\Scheduler.Server.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

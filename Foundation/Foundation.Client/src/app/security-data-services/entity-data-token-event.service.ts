@@ -524,7 +524,7 @@ export class EntityDataTokenEventService extends SecureEndpointBase {
             const user = this.authService.currentUser;
 
             if (user != null) {
-                userIsSecurityEntityDataTokenEventReader = user.readPermission >= 0;
+                userIsSecurityEntityDataTokenEventReader = user.readPermission >= 1;
             } else {
                 userIsSecurityEntityDataTokenEventReader = false;
             }
@@ -548,7 +548,7 @@ export class EntityDataTokenEventService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsSecurityEntityDataTokenEventWriter = user.writePermission >= 100;
+            userIsSecurityEntityDataTokenEventWriter = user.writePermission >= 255;
           } else {
             userIsSecurityEntityDataTokenEventWriter = false;
           }      

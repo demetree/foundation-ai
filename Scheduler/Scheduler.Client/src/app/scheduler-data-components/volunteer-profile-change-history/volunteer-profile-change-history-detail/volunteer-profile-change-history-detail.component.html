@@ -1,0 +1,75 @@
+<div class="container-fluid p-1 m-0 volunteer-profile-change-history-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="volunteer-profile-change-history-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Volunteer Profile Change History</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Volunteer Profile Change History' : 'Add Volunteer Profile Change History'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerVolunteerProfileChangeHistoryReader()">
+                <div class="col m-2 volunteer-profile-change-history-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="volunteerProfileChangeHistoryForm" (ngSubmit)="submitForm()" class="volunteer-profile-change-history-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('volunteerProfileId')">
+                                <label for="VolunteerProfileChangeHistory-volunteerProfileId" id="label-VolunteerProfileChangeHistory-volunteerProfileId"><span class="text-danger">*</span>Volunteer Profile</label>
+                                <select id="VolunteerProfileChangeHistory-volunteerProfileId" formControlName="volunteerProfileId" class="form-select volunteer-profile-change-history-select" [disabled]="!userIsSchedulerVolunteerProfileChangeHistoryWriter()">
+                                    <option [ngValue]="null">Select Volunteer Profile</option>
+                                    <option *ngFor="let volunteerProfile of volunteerProfiles$ | async" [ngValue]="volunteerProfile.id">{{volunteerProfile.availabilityPreferences}}</option>
+                                </select>
+                                <div *ngIf="volunteerProfileChangeHistoryForm.get('volunteerProfileId')?.invalid && volunteerProfileChangeHistoryForm.get('volunteerProfileId')?.touched" class="text-danger">
+                                    Volunteer Profile is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="VolunteerProfileChangeHistory-versionNumber" id="label-VolunteerProfileChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="VolunteerProfileChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control volunteer-profile-change-history-input" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                                <label for="VolunteerProfileChangeHistory-timeStamp" id="label-VolunteerProfileChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                                <input type="datetime-local" id="VolunteerProfileChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control volunteer-profile-change-history-input" [disabled]="!userIsSchedulerVolunteerProfileChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                                <div *ngIf="volunteerProfileChangeHistoryForm.get('timeStamp')?.invalid && volunteerProfileChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                                    Time Stamp is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="VolunteerProfileChangeHistory-userId" id="label-VolunteerProfileChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="VolunteerProfileChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control volunteer-profile-change-history-input" [disabled]="!userIsSchedulerVolunteerProfileChangeHistoryWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="volunteerProfileChangeHistoryForm.get('userId')?.invalid && volunteerProfileChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                                <label for="VolunteerProfileChangeHistory-data" id="label-VolunteerProfileChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                                <textarea id="VolunteerProfileChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control volunteer-profile-change-history-input" [disabled]="!userIsSchedulerVolunteerProfileChangeHistoryWriter()"></textarea>
+                                <div *ngIf="volunteerProfileChangeHistoryForm.get('data')?.invalid && volunteerProfileChangeHistoryForm.get('data')?.touched" class="text-danger">
+                                    Data is required
+                                </div>
+                            </div>
+                            <div class="volunteer-profile-change-history-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="volunteerProfileChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Volunteer Profile Change History">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !volunteerProfileChangeHistoryForm.valid || !volunteerProfileChangeHistoryForm.dirty || volunteerProfileChangeHistoryForm.pristine  || userIsSchedulerVolunteerProfileChangeHistoryWriter() == false " ngbTooltip="Save the Volunteer Profile Change History changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Volunteer Profile Change History' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

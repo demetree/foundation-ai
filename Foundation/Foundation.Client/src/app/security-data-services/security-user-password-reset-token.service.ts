@@ -534,7 +534,7 @@ export class SecurityUserPasswordResetTokenService extends SecureEndpointBase {
             const user = this.authService.currentUser;
 
             if (user != null) {
-                userIsSecuritySecurityUserPasswordResetTokenReader = user.readPermission >= 0;
+                userIsSecuritySecurityUserPasswordResetTokenReader = user.readPermission >= 1;
             } else {
                 userIsSecuritySecurityUserPasswordResetTokenReader = false;
             }
@@ -558,7 +558,7 @@ export class SecurityUserPasswordResetTokenService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsSecuritySecurityUserPasswordResetTokenWriter = user.writePermission >= 0;
+            userIsSecuritySecurityUserPasswordResetTokenWriter = user.writePermission >= 255;
           } else {
             userIsSecuritySecurityUserPasswordResetTokenWriter = false;
           }      

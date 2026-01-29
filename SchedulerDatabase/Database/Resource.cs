@@ -71,6 +71,10 @@ public partial class Resource
 
     public virtual ICollection<ScheduledEvent> ScheduledEvents { get; set; } = new List<ScheduledEvent>();
 
+    public virtual ICollection<VolunteerGroupMember> VolunteerGroupMembers { get; set; } = new List<VolunteerGroupMember>();
+
+    public virtual ICollection<VolunteerProfile> VolunteerProfiles { get; set; } = new List<VolunteerProfile>();
+
     public virtual Office office { get; set; }
 
     public virtual ResourceType resourceType { get; set; }

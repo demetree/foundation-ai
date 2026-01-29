@@ -20,8 +20,11 @@ import { ScheduledEventData } from './scheduled-event.service';
 import { OfficeData } from './office.service';
 import { ResourceData } from './resource.service';
 import { CrewData } from './crew.service';
+import { VolunteerGroupData } from './volunteer-group.service';
 import { AssignmentRoleData } from './assignment-role.service';
 import { AssignmentStatusData } from './assignment-status.service';
+import { ContactData } from './contact.service';
+import { ChargeTypeData } from './charge-type.service';
 import { EventResourceAssignmentChangeHistoryService, EventResourceAssignmentChangeHistoryData } from './event-resource-assignment-change-history.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
@@ -38,6 +41,7 @@ export class EventResourceAssignmentQueryParameters {
     officeId: bigint | number | null | undefined = null;
     resourceId: bigint | number | null | undefined = null;
     crewId: bigint | number | null | undefined = null;
+    volunteerGroupId: bigint | number | null | undefined = null;
     assignmentRoleId: bigint | number | null | undefined = null;
     assignmentStatusId: bigint | number | null | undefined = null;
     assignmentStartDateTime: string | null | undefined = null;        // ISO 8601
@@ -50,6 +54,15 @@ export class EventResourceAssignmentQueryParameters {
     actualStartDateTime: string | null | undefined = null;        // ISO 8601
     actualEndDateTime: string | null | undefined = null;        // ISO 8601
     actualNotes: string | null | undefined = null;
+    isVolunteer: boolean | null | undefined = null;
+    reportedVolunteerHours: number | null | undefined = null;
+    approvedVolunteerHours: number | null | undefined = null;
+    hoursApprovedByContactId: bigint | number | null | undefined = null;
+    approvedDateTime: string | null | undefined = null;        // ISO 8601
+    reimbursementAmount: number | null | undefined = null;
+    chargeTypeId: bigint | number | null | undefined = null;
+    reimbursementRequested: boolean | null | undefined = null;
+    volunteerNotes: string | null | undefined = null;
     versionNumber: bigint | number | null | undefined = null;
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
@@ -70,6 +83,7 @@ export class EventResourceAssignmentSubmitData {
     officeId: bigint | number | null = null;
     resourceId: bigint | number | null = null;
     crewId: bigint | number | null = null;
+    volunteerGroupId: bigint | number | null = null;
     assignmentRoleId: bigint | number | null = null;
     assignmentStatusId!: bigint | number;
     assignmentStartDateTime: string | null = null;     // ISO 8601
@@ -82,6 +96,15 @@ export class EventResourceAssignmentSubmitData {
     actualStartDateTime: string | null = null;     // ISO 8601
     actualEndDateTime: string | null = null;     // ISO 8601
     actualNotes: string | null = null;
+    isVolunteer!: boolean;
+    reportedVolunteerHours: number | null = null;
+    approvedVolunteerHours: number | null = null;
+    hoursApprovedByContactId: bigint | number | null = null;
+    approvedDateTime: string | null = null;     // ISO 8601
+    reimbursementAmount: number | null = null;
+    chargeTypeId: bigint | number | null = null;
+    reimbursementRequested!: boolean;
+    volunteerNotes: string | null = null;
     versionNumber!: bigint | number;
     active!: boolean;
     deleted!: boolean;
@@ -156,6 +179,7 @@ export class EventResourceAssignmentData {
     officeId!: bigint | number;
     resourceId!: bigint | number;
     crewId!: bigint | number;
+    volunteerGroupId!: bigint | number;
     assignmentRoleId!: bigint | number;
     assignmentStatusId!: bigint | number;
     assignmentStartDateTime!: string | null;   // ISO 8601
@@ -168,16 +192,28 @@ export class EventResourceAssignmentData {
     actualStartDateTime!: string | null;   // ISO 8601
     actualEndDateTime!: string | null;   // ISO 8601
     actualNotes!: string | null;
+    isVolunteer!: boolean;
+    reportedVolunteerHours!: number | null;
+    approvedVolunteerHours!: number | null;
+    hoursApprovedByContactId!: bigint | number;
+    approvedDateTime!: string | null;   // ISO 8601
+    reimbursementAmount!: number | null;
+    chargeTypeId!: bigint | number;
+    reimbursementRequested!: boolean;
+    volunteerNotes!: string | null;
     versionNumber!: bigint | number;
     objectGuid!: string;
     active!: boolean;
     deleted!: boolean;
     assignmentRole: AssignmentRoleData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     assignmentStatus: AssignmentStatusData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
+    chargeType: ChargeTypeData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     crew: CrewData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     office: OfficeData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     resource: ResourceData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     scheduledEvent: ScheduledEventData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
+    volunteerGroup: VolunteerGroupData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
+    hoursApprovedByContact: ContactData | null | undefined = null;            // Navigation property with non-standard field name (populated when includeRelations=true)
 
     //
     // Private lazy-loading caches for related collections
@@ -478,6 +514,7 @@ export class EventResourceAssignmentService extends SecureEndpointBase {
         output.officeId = data.officeId;
         output.resourceId = data.resourceId;
         output.crewId = data.crewId;
+        output.volunteerGroupId = data.volunteerGroupId;
         output.assignmentRoleId = data.assignmentRoleId;
         output.assignmentStatusId = data.assignmentStatusId;
         output.assignmentStartDateTime = data.assignmentStartDateTime;
@@ -490,6 +527,15 @@ export class EventResourceAssignmentService extends SecureEndpointBase {
         output.actualStartDateTime = data.actualStartDateTime;
         output.actualEndDateTime = data.actualEndDateTime;
         output.actualNotes = data.actualNotes;
+        output.isVolunteer = data.isVolunteer;
+        output.reportedVolunteerHours = data.reportedVolunteerHours;
+        output.approvedVolunteerHours = data.approvedVolunteerHours;
+        output.hoursApprovedByContactId = data.hoursApprovedByContactId;
+        output.approvedDateTime = data.approvedDateTime;
+        output.reimbursementAmount = data.reimbursementAmount;
+        output.chargeTypeId = data.chargeTypeId;
+        output.reimbursementRequested = data.reimbursementRequested;
+        output.volunteerNotes = data.volunteerNotes;
         output.versionNumber = data.versionNumber;
         output.active = data.active;
         output.deleted = data.deleted;

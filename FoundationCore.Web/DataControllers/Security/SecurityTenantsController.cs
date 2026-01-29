@@ -29,7 +29,7 @@ namespace Foundation.Security.Controllers.WebAPI
     /// </summary>
 	public partial class SecurityTenantsController : SecureWebAPIController
 	{
-		public const int READ_PERMISSION_LEVEL_REQUIRED = 0;
+		public const int READ_PERMISSION_LEVEL_REQUIRED = 1;
 		public const int WRITE_PERMISSION_LEVEL_REQUIRED = 100;
 
 		private SecurityContext _context;

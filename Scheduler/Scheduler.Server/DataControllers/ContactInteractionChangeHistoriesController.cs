@@ -207,11 +207,11 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         /// 
         /// This returns a row count of ContactInteractionChangeHistories filtered by the parameters provided.  Its query is similar to the GetContactInteractionChangeHistories method, but it only returns the count of rows that would be returned.
         ///
-        /// The rate limit is 2 per second per user.
+        /// The rate limit is 10 per second per user.
         /// 
         /// </summary>
 		[HttpGet]
-		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/ContactInteractionChangeHistories/RowCount")]
 		public async Task<IActionResult> GetRowCount(
 			int? contactInteractionId = null,

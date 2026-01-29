@@ -27,8 +27,11 @@ import { ScheduledEventService } from '../../../scheduler-data-services/schedule
 import { OfficeService } from '../../../scheduler-data-services/office.service';
 import { ResourceService } from '../../../scheduler-data-services/resource.service';
 import { CrewService } from '../../../scheduler-data-services/crew.service';
+import { VolunteerGroupService } from '../../../scheduler-data-services/volunteer-group.service';
 import { AssignmentRoleService } from '../../../scheduler-data-services/assignment-role.service';
 import { AssignmentStatusService } from '../../../scheduler-data-services/assignment-status.service';
+import { ContactService } from '../../../scheduler-data-services/contact.service';
+import { ChargeTypeService } from '../../../scheduler-data-services/charge-type.service';
 import { EventResourceAssignmentChangeHistoryService } from '../../../scheduler-data-services/event-resource-assignment-change-history.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
@@ -45,6 +48,7 @@ interface EventResourceAssignmentFormValues {
   officeId: number | bigint | null,       // For FK link number
   resourceId: number | bigint | null,       // For FK link number
   crewId: number | bigint | null,       // For FK link number
+  volunteerGroupId: number | bigint | null,       // For FK link number
   assignmentRoleId: number | bigint | null,       // For FK link number
   assignmentStatusId: number | bigint,       // For FK link number
   assignmentStartDateTime: string | null,
@@ -57,6 +61,15 @@ interface EventResourceAssignmentFormValues {
   actualStartDateTime: string | null,
   actualEndDateTime: string | null,
   actualNotes: string | null,
+  isVolunteer: boolean,
+  reportedVolunteerHours: string | null,     // Stored as string for form input, converted to number on submit.
+  approvedVolunteerHours: string | null,     // Stored as string for form input, converted to number on submit.
+  hoursApprovedByContactId: number | bigint | null,       // For FK link number
+  approvedDateTime: string | null,
+  reimbursementAmount: string | null,     // Stored as string for form input, converted to number on submit.
+  chargeTypeId: number | bigint | null,       // For FK link number
+  reimbursementRequested: boolean,
+  volunteerNotes: string | null,
   versionNumber: string,     // Stored as string for form input, converted to number on submit.
   active: boolean,
   deleted: boolean,
@@ -91,6 +104,7 @@ export class EventResourceAssignmentDetailComponent implements OnInit, CanCompon
         officeId: [null],
         resourceId: [null],
         crewId: [null],
+        volunteerGroupId: [null],
         assignmentRoleId: [null],
         assignmentStatusId: [null, Validators.required],
         assignmentStartDateTime: [''],
@@ -103,6 +117,15 @@ export class EventResourceAssignmentDetailComponent implements OnInit, CanCompon
         actualStartDateTime: [''],
         actualEndDateTime: [''],
         actualNotes: [''],
+        isVolunteer: [false],
+        reportedVolunteerHours: [''],
+        approvedVolunteerHours: [''],
+        hoursApprovedByContactId: [null],
+        approvedDateTime: [''],
+        reimbursementAmount: [''],
+        chargeTypeId: [null],
+        reimbursementRequested: [false],
+        volunteerNotes: [''],
         versionNumber: [''],
         active: [true],
         deleted: [false],
@@ -124,8 +147,11 @@ export class EventResourceAssignmentDetailComponent implements OnInit, CanCompon
   public offices$ = this.officeService.GetOfficeList();
   public resources$ = this.resourceService.GetResourceList();
   public crews$ = this.crewService.GetCrewList();
+  public volunteerGroups$ = this.volunteerGroupService.GetVolunteerGroupList();
   public assignmentRoles$ = this.assignmentRoleService.GetAssignmentRoleList();
   public assignmentStatuses$ = this.assignmentStatusService.GetAssignmentStatusList();
+  public contacts$ = this.contactService.GetContactList();
+  public chargeTypes$ = this.chargeTypeService.GetChargeTypeList();
   public eventResourceAssignmentChangeHistories$ = this.eventResourceAssignmentChangeHistoryService.GetEventResourceAssignmentChangeHistoryList();
 
   private destroy$ = new Subject<void>();
@@ -136,8 +162,11 @@ export class EventResourceAssignmentDetailComponent implements OnInit, CanCompon
     public officeService: OfficeService,
     public resourceService: ResourceService,
     public crewService: CrewService,
+    public volunteerGroupService: VolunteerGroupService,
     public assignmentRoleService: AssignmentRoleService,
     public assignmentStatusService: AssignmentStatusService,
+    public contactService: ContactService,
+    public chargeTypeService: ChargeTypeService,
     public eventResourceAssignmentChangeHistoryService: EventResourceAssignmentChangeHistoryService,
     private authService: AuthService,
     private route: ActivatedRoute,
@@ -424,6 +453,7 @@ export class EventResourceAssignmentDetailComponent implements OnInit, CanCompon
         officeId: null,
         resourceId: null,
         crewId: null,
+        volunteerGroupId: null,
         assignmentRoleId: null,
         assignmentStatusId: null,
         assignmentStartDateTime: '',
@@ -436,6 +466,15 @@ export class EventResourceAssignmentDetailComponent implements OnInit, CanCompon
         actualStartDateTime: '',
         actualEndDateTime: '',
         actualNotes: '',
+        isVolunteer: false,
+        reportedVolunteerHours: '',
+        approvedVolunteerHours: '',
+        hoursApprovedByContactId: null,
+        approvedDateTime: '',
+        reimbursementAmount: '',
+        chargeTypeId: null,
+        reimbursementRequested: false,
+        volunteerNotes: '',
         versionNumber: '',
         active: true,
         deleted: false,
@@ -452,6 +491,7 @@ export class EventResourceAssignmentDetailComponent implements OnInit, CanCompon
         officeId: eventResourceAssignmentData.officeId,
         resourceId: eventResourceAssignmentData.resourceId,
         crewId: eventResourceAssignmentData.crewId,
+        volunteerGroupId: eventResourceAssignmentData.volunteerGroupId,
         assignmentRoleId: eventResourceAssignmentData.assignmentRoleId,
         assignmentStatusId: eventResourceAssignmentData.assignmentStatusId,
         assignmentStartDateTime: isoUtcStringToDateTimeLocal(eventResourceAssignmentData.assignmentStartDateTime) ?? '',
@@ -464,6 +504,15 @@ export class EventResourceAssignmentDetailComponent implements OnInit, CanCompon
         actualStartDateTime: isoUtcStringToDateTimeLocal(eventResourceAssignmentData.actualStartDateTime) ?? '',
         actualEndDateTime: isoUtcStringToDateTimeLocal(eventResourceAssignmentData.actualEndDateTime) ?? '',
         actualNotes: eventResourceAssignmentData.actualNotes ?? '',
+        isVolunteer: eventResourceAssignmentData.isVolunteer ?? false,
+        reportedVolunteerHours: eventResourceAssignmentData.reportedVolunteerHours?.toString() ?? '',
+        approvedVolunteerHours: eventResourceAssignmentData.approvedVolunteerHours?.toString() ?? '',
+        hoursApprovedByContactId: eventResourceAssignmentData.hoursApprovedByContactId,
+        approvedDateTime: isoUtcStringToDateTimeLocal(eventResourceAssignmentData.approvedDateTime) ?? '',
+        reimbursementAmount: eventResourceAssignmentData.reimbursementAmount?.toString() ?? '',
+        chargeTypeId: eventResourceAssignmentData.chargeTypeId,
+        reimbursementRequested: eventResourceAssignmentData.reimbursementRequested ?? false,
+        volunteerNotes: eventResourceAssignmentData.volunteerNotes ?? '',
         versionNumber: eventResourceAssignmentData.versionNumber?.toString() ?? '',
         active: eventResourceAssignmentData.active ?? true,
         deleted: eventResourceAssignmentData.deleted ?? false,
@@ -530,6 +579,7 @@ export class EventResourceAssignmentDetailComponent implements OnInit, CanCompon
         officeId: formValue.officeId ? Number(formValue.officeId) : null,
         resourceId: formValue.resourceId ? Number(formValue.resourceId) : null,
         crewId: formValue.crewId ? Number(formValue.crewId) : null,
+        volunteerGroupId: formValue.volunteerGroupId ? Number(formValue.volunteerGroupId) : null,
         assignmentRoleId: formValue.assignmentRoleId ? Number(formValue.assignmentRoleId) : null,
         assignmentStatusId: Number(formValue.assignmentStatusId),
         assignmentStartDateTime: formValue.assignmentStartDateTime ? dateTimeLocalToIsoUtc(formValue.assignmentStartDateTime.trim()) : null,
@@ -542,6 +592,15 @@ export class EventResourceAssignmentDetailComponent implements OnInit, CanCompon
         actualStartDateTime: formValue.actualStartDateTime ? dateTimeLocalToIsoUtc(formValue.actualStartDateTime.trim()) : null,
         actualEndDateTime: formValue.actualEndDateTime ? dateTimeLocalToIsoUtc(formValue.actualEndDateTime.trim()) : null,
         actualNotes: formValue.actualNotes?.trim() || null,
+        isVolunteer: !!formValue.isVolunteer,
+        reportedVolunteerHours: formValue.reportedVolunteerHours ? Number(formValue.reportedVolunteerHours) : null,
+        approvedVolunteerHours: formValue.approvedVolunteerHours ? Number(formValue.approvedVolunteerHours) : null,
+        hoursApprovedByContactId: formValue.hoursApprovedByContactId ? Number(formValue.hoursApprovedByContactId) : null,
+        approvedDateTime: formValue.approvedDateTime ? dateTimeLocalToIsoUtc(formValue.approvedDateTime.trim()) : null,
+        reimbursementAmount: formValue.reimbursementAmount ? Number(formValue.reimbursementAmount) : null,
+        chargeTypeId: formValue.chargeTypeId ? Number(formValue.chargeTypeId) : null,
+        reimbursementRequested: !!formValue.reimbursementRequested,
+        volunteerNotes: formValue.volunteerNotes?.trim() || null,
         versionNumber: this.eventResourceAssignmentData?.versionNumber ?? 0,
         active: !!formValue.active,
         deleted: !!formValue.deleted,

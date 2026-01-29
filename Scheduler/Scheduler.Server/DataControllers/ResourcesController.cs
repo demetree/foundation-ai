@@ -341,11 +341,11 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         /// 
         /// This returns a row count of Resources filtered by the parameters provided.  Its query is similar to the GetResources method, but it only returns the count of rows that would be returned.
         ///
-        /// The rate limit is 2 per second per user.
+        /// The rate limit is 10 per second per user.
         /// 
         /// </summary>
 		[HttpGet]
-		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/Resources/RowCount")]
 		public async Task<IActionResult> GetRowCount(
 			string name = null,
@@ -1063,6 +1063,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					resource.ResourceQualifications = null;
 					resource.ResourceShifts = null;
 					resource.ScheduledEvents = null;
+					resource.VolunteerGroupMembers = null;
+					resource.VolunteerProfiles = null;
 					resource.office = null;
 					resource.resourceType = null;
 					resource.shiftPattern = null;
@@ -1205,6 +1207,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				cloneOfExisting.ResourceQualifications = null;
 				cloneOfExisting.ResourceShifts = null;
 				cloneOfExisting.ScheduledEvents = null;
+				cloneOfExisting.VolunteerGroupMembers = null;
+				cloneOfExisting.VolunteerProfiles = null;
 				cloneOfExisting.office = null;
 				cloneOfExisting.resourceType = null;
 				cloneOfExisting.shiftPattern = null;
