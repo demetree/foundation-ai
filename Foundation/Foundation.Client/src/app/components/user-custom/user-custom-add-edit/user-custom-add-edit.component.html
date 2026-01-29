@@ -56,6 +56,29 @@
                         <i class="fa-solid fa-user me-2"></i>Personal Information
                     </h5>
 
+                    <!-- Profile Image Section (Edit Mode Only) -->
+                    <div class="profile-image-section mb-4" *ngIf="isEditMode && currentUser">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="avatar-circle-edit" (click)="openImageUpload()"
+                                ngbTooltip="Click to change photo">
+                                <img *ngIf="hasUserImage()" [src]="getUserImageUrl()" class="avatar-img"
+                                    alt="User photo">
+                                <span *ngIf="!hasUserImage()" class="avatar-initials">{{ getUserInitials() }}</span>
+                                <div class="avatar-overlay">
+                                    <i class="fa-solid fa-camera"></i>
+                                </div>
+                            </div>
+                            <div class="profile-image-info">
+                                <button type="button" class="btn btn-outline-primary btn-sm"
+                                    (click)="openImageUpload()">
+                                    <i class="fa-solid fa-camera me-1"></i>
+                                    {{ hasUserImage() ? 'Change Photo' : 'Add Photo' }}
+                                </button>
+                                <small class="text-muted d-block mt-1">JPG, PNG or GIF • Max 5MB</small>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="row g-3">
                         <div class="col-md-4">
                             <label for="firstName" class="form-label">First Name</label>

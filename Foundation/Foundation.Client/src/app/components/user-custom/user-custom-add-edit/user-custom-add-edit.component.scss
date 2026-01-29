@@ -128,6 +128,84 @@
     }
 }
 
+//
+// Profile Image Section - AI-assisted development January 2026
+//
+.profile-image-section {
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.05) 0%, rgba(32, 201, 151, 0.05) 100%);
+    border: 1px solid rgba(40, 167, 69, 0.15);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+}
+
+.avatar-circle-edit {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.25);
+
+    .avatar-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .avatar-initials {
+        color: white;
+        font-size: 1.5rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .avatar-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+
+        i {
+            color: white;
+            font-size: 1.25rem;
+        }
+    }
+
+    &:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 20px rgba(40, 167, 69, 0.35);
+
+        .avatar-overlay {
+            opacity: 1;
+        }
+    }
+}
+
+.profile-image-info {
+    .btn-outline-primary {
+        border-color: #28a745;
+        color: #28a745;
+        font-weight: 500;
+
+        &:hover {
+            background-color: #28a745;
+            border-color: #28a745;
+            color: white;
+        }
+    }
+}
+
 @keyframes fadeIn {
     from {
         opacity: 0;

@@ -16,6 +16,7 @@ import { SecurityDepartmentService, SecurityDepartmentData } from '../../../secu
 import { SecurityTeamService, SecurityTeamData } from '../../../security-data-services/security-team.service';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
 import { AdminCreateUserRequest } from '../../../models/create-user-model';
+import { UserImageUploadComponent } from '../user-image-upload/user-image-upload.component';
 
 @Component({
     selector: 'app-user-custom-add-edit',
@@ -442,5 +443,70 @@ export class UserCustomAddEditComponent implements OnInit, OnDestroy {
             return parts.length > 0 ? parts.join(' ') : this.currentUser.accountName;
         }
         return '';
+    }
+
+
+    //
+    // Image helpers - AI-assisted development January 2026
+    //
+    hasUserImage(): boolean {
+        return this.currentUser?.image != null && this.currentUser.image.length > 0;
+    }
+
+
+    getUserImageUrl(): string {
+        if (this.currentUser?.image) {
+            return 'data:image/png;base64,' + this.currentUser.image;
+        }
+        return '';
+    }
+
+
+    getUserInitials(): string {
+        if (!this.currentUser) {
+            return '?';
+        }
+
+        const first = this.currentUser.firstName?.charAt(0) ?? '';
+        const last = this.currentUser.lastName?.charAt(0) ?? '';
+
+        if (first || last) {
+            return (first + last).toUpperCase();
+        }
+
+        return this.currentUser.accountName?.charAt(0)?.toUpperCase() ?? '?';
+    }
+
+
+    openImageUpload(): void {
+        if (!this.currentUser) {
+            return;
+        }
+
+        const modalRef = this.modalService.open(UserImageUploadComponent, {
+            size: 'md',
+            centered: true
+        });
+
+        modalRef.componentInstance.user = this.currentUser;
+
+        modalRef.result.then(
+            (result) => {
+                //
+                // On success, reload the user data to get the updated image
+                //
+                if (result === true && this.currentUser) {
+                    this.securityUserService.GetSecurityUser(this.currentUser.id, true).subscribe({
+                        next: (updatedUser) => {
+                            if (updatedUser) {
+                                this.currentUser = updatedUser;
+                                this.userForm.patchValue({ image: updatedUser.image });
+                            }
+                        }
+                    });
+                }
+            },
+            () => { }
+        );
     }
 }
