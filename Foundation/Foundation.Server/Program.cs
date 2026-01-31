@@ -404,7 +404,9 @@ namespace Foundation.Server
                 //
                 // Validate the database schemas are correct before we start.  These will throw if there is a problem.
                 //
+                await ValidateAuditorSchema(logger).ConfigureAwait(false);
                 await ValidateSecuritySchema(logger).ConfigureAwait(false);
+                await ValidateTelemetrySchema(logger).ConfigureAwait(false);
 
                 //
                 // Auto-seed missing SecurityUserEventType records for easier upgrades
@@ -413,7 +415,7 @@ namespace Foundation.Server
                     msg => logger.LogError(msg)
                 ).ConfigureAwait(false);
 
-                await ValidateAuditorSchema(logger).ConfigureAwait(false);
+                
 
 
                 //
@@ -421,10 +423,12 @@ namespace Foundation.Server
                 //
                 using (var securityContext = new SecurityContext())
                 using (var auditorContext = new AuditorContext())
+                using (var telemetryContext = new TelemetryContext())
                 {
                     LogDatabaseStatistics(logger,
                         ("Security", securityContext),
-                        ("Auditor", auditorContext)
+                        ("Auditor", auditorContext),
+                        ("Telemetry", telemetryContext)
                     );
                 }
 
@@ -486,7 +490,6 @@ namespace Foundation.Server
                 throw;
             }
 
-
             foundationLogger.LogInformation("Completed validation of Security database schema.");
         }
 
@@ -526,6 +529,45 @@ namespace Foundation.Server
 
             foundationLogger.LogInformation("Completed validation of Auditor database schema.");
         }
+
+
+        private static async Task ValidateTelemetrySchema(Logger foundationLogger)
+        {
+            foundationLogger.LogInformation("About to validate Telemetry database schema.");
+
+            try
+            {
+                await using TelemetryContext validationContext = new TelemetryContext();
+
+                DatabaseSchemaValidator<TelemetryContext> schemaValidator = new DatabaseSchemaValidator<TelemetryContext>(validationContext, foundationLogger);
+
+                DatabaseSchemaValidator<TelemetryContext>.DatabaseSchemaValidatorResult schemaValidationResult = await schemaValidator.ValidateSchemaAsync("Telemetry").ConfigureAwait(false);
+
+                if (schemaValidationResult.IsValid == false)
+                {
+                    foundationLogger.LogCritical("Telemetry database schema validation failed:");
+                    foreach (var mismatch in schemaValidationResult.Mismatches)
+                    {
+                        foundationLogger.LogCritical(mismatch);
+                    }
+
+                    throw new InvalidOperationException("Telemetry database schema is out of sync with EF context.");
+                }
+                else
+                {
+                    foundationLogger.LogInformation("Telemetry database schema validation passed.");
+                }
+            }
+            catch (Exception ex)
+            {
+                foundationLogger.LogCritical(ex, "An error occurred during Telemetry database schema validation.");
+                throw;
+            }
+
+
+            foundationLogger.LogInformation("Completed validation of Telemetry database schema.");
+        }
+
 
 
         private static Logger SetupLogger(IConfigurationRoot config)

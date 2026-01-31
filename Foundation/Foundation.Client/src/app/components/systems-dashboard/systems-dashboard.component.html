@@ -145,10 +145,10 @@
       </div>
     </div>
 
-    <!-- Fleet Aggregates Header with Controls -->
+    <!-- Aggregates Header with Controls -->
     <div class="fleet-aggregates-header" *ngIf="fleetMetrics">
       <h6 class="mb-0">
-        <i class="fas fa-chart-line me-2"></i>Fleet Aggregates
+        <i class="fas fa-chart-line me-2"></i>All Systemss
         <span class="badge bg-secondary ms-2" *ngIf="lastRefreshTime">
           Updated {{ getTimeSinceRefresh() }}
         </span>
@@ -278,15 +278,20 @@
         </div>
       </div>
       <!-- Business metric aggregates with sparklines -->
+      
+    </div>
+
+
+    <div class="summary-cards" *ngIf="fleetMetrics">
       <ng-container *ngFor="let metric of fleetMetrics.metrics; trackBy: trackByMetricName">
         <div class="summary-card summary-card-with-sparkline" *ngIf="metric.count > 0">
           <div class="card-main">
             <div class="card-icon" [ngClass]="{
-              'bg-success': metric.worstState === 0,
-              'bg-warning': metric.worstState === 1,
-              'bg-danger': metric.worstState === 2,
-              'bg-secondary': metric.worstState === null
-            }">
+        'bg-success': metric.worstState === 0,
+        'bg-warning': metric.worstState === 1,
+        'bg-danger': metric.worstState === 2,
+        'bg-secondary': metric.worstState === null
+      }">
               <i class="fas fa-chart-bar"></i>
             </div>
             <div class="card-content">
@@ -297,11 +302,12 @@
           <!-- Sparkline chart -->
           <div class="sparkline-container" *ngIf="metricSparklines.get(metric.metricName)">
             <canvas baseChart [data]="metricSparklines.get(metric.metricName)!" [options]="sparklineOptions"
-              [type]="lineChartType">
+                    [type]="lineChartType">
             </canvas>
           </div>
         </div>
       </ng-container>
+
     </div>
 
     <!-- Application Cards Grid -->
