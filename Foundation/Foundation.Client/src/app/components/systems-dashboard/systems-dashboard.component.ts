@@ -43,6 +43,7 @@ export class SystemsDashboardComponent implements OnInit, OnDestroy {
 
     // Loading states
     loading = true;
+    initialLoadComplete = false;  // Track if initial load is done (to avoid spinner during refresh)
     error: string | null = null;
 
     // Fleet Overview data (from telemetry summary)
@@ -102,6 +103,7 @@ export class SystemsDashboardComponent implements OnInit, OnDestroy {
     chartOptions: ChartConfiguration<'line'>['options'] = {
         responsive: true,
         maintainAspectRatio: false,
+        animation: false,  // Disable animation on data updates to prevent flicker
         plugins: {
             legend: {
                 display: true,
@@ -132,6 +134,7 @@ export class SystemsDashboardComponent implements OnInit, OnDestroy {
     sparklineOptions: ChartConfiguration<'line'>['options'] = {
         responsive: true,
         maintainAspectRatio: false,
+        animation: false,  // Disable animation on data updates to prevent flicker
         plugins: { legend: { display: false }, tooltip: { enabled: false } },
         scales: { x: { display: false }, y: { display: false, beginAtZero: true } },
         elements: { point: { radius: 0 }, line: { borderWidth: 2, tension: 0.4 } }
@@ -208,7 +211,12 @@ export class SystemsDashboardComponent implements OnInit, OnDestroy {
     // ========================================
 
     loadFleetOverview(): void {
-        this.loading = true;
+        //
+        // Only show loading spinner on initial load, not during refresh
+        //
+        if (!this.initialLoadComplete) {
+            this.loading = true;
+        }
         this.error = null;
 
         this.telemetryService.getSummary()
@@ -217,6 +225,7 @@ export class SystemsDashboardComponent implements OnInit, OnDestroy {
                 next: (summary) => {
                     this.summary = summary;
                     this.loading = false;
+                    this.initialLoadComplete = true;
                     this.lastUpdated = new Date();
                     // Load per-app data
                     this.loadAppSparklines();
@@ -533,12 +542,19 @@ export class SystemsDashboardComponent implements OnInit, OnDestroy {
             return;
         }
 
-        this.realtimeLoading = true;
+        //
+        // Only show loading spinner and clear data on initial load (when no healthStatus exists)
+        // During refresh, keep existing data visible to avoid flicker
+        //
+        const isInitialLoad = !this.healthStatus && !this.selectedSnapshot;
+        if (isInitialLoad) {
+            this.realtimeLoading = true;
+            this.healthStatus = null;
+            this.authenticatedUsers = null;
+            this.selectedSnapshot = null;
+        }
         this.loading = false;
         this.error = null;
-        this.healthStatus = null;
-        this.authenticatedUsers = null;
-        this.selectedSnapshot = null;
 
         // If this is 'self' (current server), use local SystemHealthService
         if (this.selectedRealtimeApp.isSelf) {
@@ -686,7 +702,12 @@ export class SystemsDashboardComponent implements OnInit, OnDestroy {
     // ========================================
 
     loadHistoricalData(): void {
-        this.loading = true;
+        //
+        // Only show loading spinner on initial load, not during refresh
+        //
+        if (!this.initialLoadComplete) {
+            this.loading = true;
+        }
         this.error = null;
 
         const startDate = new Date();
@@ -1123,5 +1144,42 @@ export class SystemsDashboardComponent implements OnInit, OnDestroy {
             }
             return true;
         });
+    }
+
+
+    // ========================================
+    // TrackBy Functions (for *ngFor performance)
+    // ========================================
+
+    trackByAppName(index: number, app: { name: string }): string {
+        return app.name;
+    }
+
+    trackByMetricName(index: number, metric: { metricName: string }): string {
+        return metric.metricName;
+    }
+
+    trackBySnapshotApp(index: number, snap: { applicationName: string }): string {
+        return snap.applicationName;
+    }
+
+    trackByDbName(index: number, db: { name: string }): string {
+        return db.name;
+    }
+
+    trackBySessionUsername(index: number, session: { username: string }): string {
+        return session.username;
+    }
+
+    trackByDriveName(index: number, drive: { name: string }): string {
+        return drive.name;
+    }
+
+    trackByRunId(index: number, run: { id: number }): number {
+        return run.id;
+    }
+
+    trackByIndex(index: number): number {
+        return index;
     }
 }

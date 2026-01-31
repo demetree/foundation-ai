@@ -36,6 +36,9 @@
                   [class.btn-success]="autoRefreshEnabled" [class.btn-outline-light]="!autoRefreshEnabled" ngbDropdownToggle>
           </button>
           <div ngbDropdownMenu>
+            <button ngbDropdownItem (click)="setAutoRefreshInterval(1)" [class.active]="autoRefreshInterval === 1">
+              1 seconds
+            </button>
             <button ngbDropdownItem (click)="setAutoRefreshInterval(10)" [class.active]="autoRefreshInterval === 10">
               10 seconds
             </button>

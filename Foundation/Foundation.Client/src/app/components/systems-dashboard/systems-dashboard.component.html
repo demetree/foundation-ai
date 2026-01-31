@@ -232,7 +232,7 @@
         </div>
       </div>
       <!-- Business metric aggregates with sparklines -->
-      <ng-container *ngFor="let metric of fleetMetrics.metrics">
+      <ng-container *ngFor="let metric of fleetMetrics.metrics; trackBy: trackByMetricName">
         <div class="summary-card summary-card-with-sparkline" *ngIf="metric.count > 0">
           <div class="card-main">
             <div class="card-icon" [ngClass]="{
@@ -263,7 +263,8 @@
       <i class="fas fa-server me-2"></i>Service Status
     </h5>
     <div class="app-grid">
-      <div *ngFor="let app of summary.applications" class="app-card" [ngClass]="getAppStatusClass(app)">
+      <div *ngFor="let app of summary.applications; trackBy: trackByAppName" class="app-card"
+        [ngClass]="getAppStatusClass(app)">
         <div class="app-header">
           <span class="app-name">{{ app.name }}</span>
           <div class="header-badges">
@@ -278,7 +279,7 @@
 
         <!-- Show latest snapshot data -->
         <div class="app-details" *ngIf="summary.latestSnapshots">
-          <ng-container *ngFor="let snap of summary.latestSnapshots">
+          <ng-container *ngFor="let snap of summary.latestSnapshots; trackBy: trackBySnapshotApp">
             <ng-container *ngIf="snap.applicationName === app.name">
               <div class="stat-row">
                 <span class="stat-label">Status:</span>
@@ -325,13 +326,13 @@
         <i class="fas fa-chart-bar me-2"></i>Application Metrics
       </h5>
       <div class="app-grid">
-        <div *ngFor="let app of (appMetrics?.applications || [])" class="app-card metrics-card">
+        <div *ngFor="let app of (appMetrics?.applications || []); trackBy: trackByIndex" class="app-card metrics-card">
           <div class="app-header">
             <span class="app-name">{{ app.applicationName }}</span>
             <span class="badge bg-info-subtle text-info">{{ app.metrics.length }} metrics</span>
           </div>
           <div class="app-details">
-            <div *ngFor="let metric of app.metrics" class="stat-row">
+            <div *ngFor="let metric of app.metrics; trackBy: trackByIndex" class="stat-row">
               <span class="stat-label">{{ metric.name }}:</span>
               <span class="stat-value" [ngClass]="getMetricStateClass(metric.state)">
                 {{ metric.value }}
@@ -381,7 +382,7 @@
           <i class="fas fa-server me-2"></i>Select System to Monitor
         </h5>
         <div class="app-grid app-selector-grid">
-          <div *ngFor="let app of summary?.applications || []" class="app-card clickable"
+          <div *ngFor="let app of summary?.applications || []; trackBy: trackByAppName" class="app-card clickable"
             [class.selected]="selectedRealtimeApp?.name === app.name" [ngClass]="getAppStatusClass(app)"
             (click)="selectRealtimeApp(app)">
             <div class="app-header">
@@ -617,8 +618,8 @@
                 </div>
               </div>
               <div class="card-body">
-                <div *ngFor="let db of healthStatus.database.databases; let last = last" class="database-item"
-                  [class.mb-3]="!last" [class.border-bottom]="!last" [class.pb-3]="!last">
+                <div *ngFor="let db of healthStatus.database.databases; let last = last; trackBy: trackByDbName"
+                  class="database-item" [class.mb-3]="!last" [class.border-bottom]="!last" [class.pb-3]="!last">
                   <div class="d-flex justify-content-between align-items-center mb-1">
                     <span class="fw-bold">{{ db.name }}</span>
                     <span class="badge" [ngClass]="db.isConnected ? 'bg-success' : 'bg-danger'">
@@ -672,7 +673,8 @@
                 <div *ngIf="authenticatedUsers?.sessions?.length === 0" class="text-muted text-center py-2">
                   <i class="fas fa-info-circle me-1"></i>No active sessions
                 </div>
-                <div *ngFor="let session of authenticatedUsers?.sessions?.slice(0, 5); let last = last"
+                <div
+                  *ngFor="let session of authenticatedUsers?.sessions?.slice(0, 5); let last = last; trackBy: trackBySessionUsername"
                   [class.mb-2]="!last" [class.border-bottom]="!last" [class.pb-2]="!last">
                   <div class="d-flex justify-content-between align-items-center">
                     <span class="fw-bold small">
@@ -715,7 +717,7 @@
               </div>
               <div class="card-body">
                 <div class="row g-3">
-                  <div class="col-md-6" *ngFor="let drive of healthStatus.disk?.drives">
+                  <div class="col-md-6" *ngFor="let drive of healthStatus.disk?.drives; trackBy: trackByDriveName">
                     <div class="drive-card p-3 rounded" [class.app-drive]="drive.isApplicationDrive">
                       <div class="d-flex justify-content-between align-items-center mb-2">
                         <span class="fw-bold">
@@ -1015,7 +1017,8 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let snap of recentSnapshots" class="clickable-row" (click)="openSnapshotDetail(snap.id)">
+            <tr *ngFor="let snap of recentSnapshots; trackBy: trackByIndex" class="clickable-row"
+              (click)="openSnapshotDetail(snap.id)">
               <td>{{ formatRelativeTime(snap.collectedAt) }}</td>
               <td>{{ snap.applicationName }}</td>
               <td>
@@ -1052,7 +1055,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let run of collectionRuns">
+            <tr *ngFor="let run of collectionRuns; trackBy: trackByRunId">
               <td>{{ formatRelativeTime(run.startTime) }}</td>
               <td>{{ formatDuration(run.durationMs) }}</td>
               <td>{{ run.applicationsPolled }}</td>
