@@ -347,6 +347,60 @@ namespace Foundation.Controllers.WebAPI
 
 
         //
+        // GET: api/Telemetry/trends/network
+        //
+        // Returns network utilization trend data for sparklines
+        //
+        [HttpGet("trends/network")]
+        public async Task<IActionResult> GetNetworkTrends(
+            [FromQuery] string appName = null,
+            [FromQuery] int hours = 24)
+        {
+            try
+            {
+                DateTime startTime = DateTime.UtcNow.AddHours(-hours);
+
+                await using (TelemetryContext context = new TelemetryContext())
+                {
+                    IQueryable<TelemetryNetworkHealth> query = context.TelemetryNetworkHealths
+                                                                       .Include(n => n.telemetrySnapshot)
+                                                                           .ThenInclude(s => s.telemetryApplication)
+                                                                       .Where(n => n.telemetrySnapshot.collectedAt >= startTime && n.isActive)
+                                                                       .AsQueryable();
+
+                    if (!string.IsNullOrWhiteSpace(appName))
+                    {
+                        query = query.Where(n => n.telemetrySnapshot.telemetryApplication.name == appName);
+                    }
+
+                    var data = await query
+                        .OrderBy(n => n.telemetrySnapshot.collectedAt)
+                        .Select(n => new
+                        {
+                            timestamp = n.telemetrySnapshot.collectedAt,
+                            applicationName = n.telemetrySnapshot.telemetryApplication.name,
+                            interfaceName = n.interfaceName,
+                            linkSpeedMbps = n.linkSpeedMbps,
+                            bytesSentPerSecond = n.bytesSentPerSecond,
+                            bytesReceivedPerSecond = n.bytesReceivedPerSecond,
+                            utilizationPercent = n.utilizationPercent,
+                            status = n.status
+                        })
+                        .ToListAsync()
+                        .ConfigureAwait(false);
+
+                    return Ok(new { data, hours, count = data.Count });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving network trends");
+                return Problem("Failed to retrieve network trends");
+            }
+        }
+
+
+        //
         // GET: api/Telemetry/trends/systemMemory
         //
         // Returns system-wide memory percentage trend data for sparklines

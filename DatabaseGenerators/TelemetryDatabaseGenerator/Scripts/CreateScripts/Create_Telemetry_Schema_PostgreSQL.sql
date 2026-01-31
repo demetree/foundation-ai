@@ -26,6 +26,7 @@ CREATE SCHEMA "Telemetry"
 -- DROP TABLE "Telemetry"."TelemetryErrorEvent"
 -- DROP TABLE "Telemetry"."TelemetryApplicationMetric"
 -- DROP TABLE "Telemetry"."TelemetrySessionSnapshot"
+-- DROP TABLE "Telemetry"."TelemetryNetworkHealth"
 -- DROP TABLE "Telemetry"."TelemetryDiskHealth"
 -- DROP TABLE "Telemetry"."TelemetryDatabaseHealth"
 -- DROP TABLE "Telemetry"."TelemetrySnapshot"
@@ -37,6 +38,7 @@ CREATE SCHEMA "Telemetry"
 -- ALTER INDEX ALL ON "TelemetryErrorEvent" DISABLE
 -- ALTER INDEX ALL ON "TelemetryApplicationMetric" DISABLE
 -- ALTER INDEX ALL ON "TelemetrySessionSnapshot" DISABLE
+-- ALTER INDEX ALL ON "TelemetryNetworkHealth" DISABLE
 -- ALTER INDEX ALL ON "TelemetryDiskHealth" DISABLE
 -- ALTER INDEX ALL ON "TelemetryDatabaseHealth" DISABLE
 -- ALTER INDEX ALL ON "TelemetrySnapshot" DISABLE
@@ -48,6 +50,7 @@ CREATE SCHEMA "Telemetry"
 -- ALTER INDEX ALL ON "TelemetryErrorEvent" REBUILD
 -- ALTER INDEX ALL ON "TelemetryApplicationMetric" REBUILD
 -- ALTER INDEX ALL ON "TelemetrySessionSnapshot" REBUILD
+-- ALTER INDEX ALL ON "TelemetryNetworkHealth" REBUILD
 -- ALTER INDEX ALL ON "TelemetryDiskHealth" REBUILD
 -- ALTER INDEX ALL ON "TelemetryDatabaseHealth" REBUILD
 -- ALTER INDEX ALL ON "TelemetrySnapshot" REBUILD
@@ -160,6 +163,28 @@ CREATE TABLE "Telemetry"."TelemetryDiskHealth"
 );
 -- Index on the TelemetryDiskHealth table's telemetrySnapshotId field.
 CREATE INDEX "I_TelemetryDiskHealth_telemetrySnapshotId" ON "Telemetry"."TelemetryDiskHealth" ("telemetrySnapshotId")
+;
+
+
+-- Network interface utilization metrics per snapshot.
+CREATE TABLE "Telemetry"."TelemetryNetworkHealth"
+(
+	"id" SERIAL PRIMARY KEY NOT NULL,
+	"telemetrySnapshotId" INT NOT NULL,		-- Link to the TelemetrySnapshot table.
+	"interfaceName" VARCHAR(100) NOT NULL,
+	"interfaceDescription" VARCHAR(250) NULL,
+	"linkSpeedMbps" DOUBLE PRECISION NULL,
+	"bytesSentTotal" BIGINT NULL,
+	"bytesReceivedTotal" BIGINT NULL,
+	"bytesSentPerSecond" DOUBLE PRECISION NULL,
+	"bytesReceivedPerSecond" DOUBLE PRECISION NULL,
+	"utilizationPercent" DOUBLE PRECISION NULL,
+	"status" VARCHAR(50) NULL,
+	"isActive" BOOLEAN NOT NULL DEFAULT true,
+	CONSTRAINT "telemetrySnapshotId" FOREIGN KEY ("telemetrySnapshotId") REFERENCES "Telemetry"."TelemetrySnapshot"("id")		-- Foreign key to the TelemetrySnapshot table.
+);
+-- Index on the TelemetryNetworkHealth table's telemetrySnapshotId field.
+CREATE INDEX "I_TelemetryNetworkHealth_telemetrySnapshotId" ON "Telemetry"."TelemetryNetworkHealth" ("telemetrySnapshotId")
 ;
 
 

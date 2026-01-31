@@ -194,6 +194,31 @@ and correlated error events from audit logs and log files.";
 
 
             //
+            // TelemetryNetworkHealth - Network interface metrics per snapshot
+            //
+            // Child table capturing network utilization for each active interface.
+            // Enables tracking of bandwidth consumption trends and saturation warnings.
+            //
+            // AI-Generated: Added January 2026 for network utilization monitoring
+            //
+            Database.Table telemetryNetworkHealthTable = database.AddTable("TelemetryNetworkHealth");
+            telemetryNetworkHealthTable.comment = "Network interface utilization metrics per snapshot.";
+            telemetryNetworkHealthTable.isWritable = true;
+            telemetryNetworkHealthTable.adminAccessNeededToWrite = true;
+            telemetryNetworkHealthTable.AddIdField();
+            telemetryNetworkHealthTable.AddForeignKeyField("telemetrySnapshotId", telemetrySnapshotTable, false);
+            telemetryNetworkHealthTable.AddString100Field("interfaceName", false);
+            telemetryNetworkHealthTable.AddString250Field("interfaceDescription", true);
+            telemetryNetworkHealthTable.AddDoubleField("linkSpeedMbps", true);
+            telemetryNetworkHealthTable.AddLongField("bytesSentTotal", true);
+            telemetryNetworkHealthTable.AddLongField("bytesReceivedTotal", true);
+            telemetryNetworkHealthTable.AddDoubleField("bytesSentPerSecond", true);
+            telemetryNetworkHealthTable.AddDoubleField("bytesReceivedPerSecond", true);
+            telemetryNetworkHealthTable.AddDoubleField("utilizationPercent", true);
+            telemetryNetworkHealthTable.AddString50Field("status", true);
+            telemetryNetworkHealthTable.AddBoolField("isActive", false, true);
+
+            //
             // TelemetrySessionSnapshot - Active user session counts per snapshot
             //
             // Captures the number of active user sessions at each collection point.

@@ -53,6 +53,8 @@ public partial class TelemetrySnapshot
 
     public virtual ICollection<TelemetryLogError> TelemetryLogErrors { get; set; } = new List<TelemetryLogError>();
 
+    public virtual ICollection<TelemetryNetworkHealth> TelemetryNetworkHealths { get; set; } = new List<TelemetryNetworkHealth>();
+
     public virtual ICollection<TelemetrySessionSnapshot> TelemetrySessionSnapshots { get; set; } = new List<TelemetrySessionSnapshot>();
 
     public virtual TelemetryApplication telemetryApplication { get; set; }

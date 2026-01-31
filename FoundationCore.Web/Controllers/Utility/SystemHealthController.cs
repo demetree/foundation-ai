@@ -12,6 +12,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Net.Http;
+using System.Net.NetworkInformation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -103,6 +104,7 @@ namespace Foundation.Controllers.WebAPI
                     Application = GetApplicationMetrics(process),
                     Database = await GetDatabaseStatusesAsync().ConfigureAwait(false),
                     Disk = GetDiskMetrics(),
+                    Network = GetNetworkMetrics(),
                     ThreadPool = GetThreadPoolMetrics(),
                     Sessions = await GetSessionSummaryAsync().ConfigureAwait(false),
                     Metrics = await GetBusinessMetricsAsync().ConfigureAwait(false),
@@ -263,6 +265,26 @@ namespace Foundation.Controllers.WebAPI
             {
                 _logger.LogError(ex, "Error getting disk metrics");
                 return Problem("Failed to retrieve disk metrics");
+            }
+        }
+
+
+        //
+        // GET: api/SystemHealth/network
+        //
+        // Returns network interface utilization metrics
+        //
+        [HttpGet("network")]
+        public IActionResult GetNetwork()
+        {
+            try
+            {
+                return Ok(GetNetworkMetrics());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting network metrics");
+                return Problem("Failed to retrieve network metrics");
             }
         }
 
@@ -562,6 +584,69 @@ namespace Foundation.Controllers.WebAPI
             {
                 Drives = drives,
                 ApplicationPath = AppDomain.CurrentDomain.BaseDirectory
+            };
+        }
+
+
+        /// <summary>
+        /// Get network interface metrics for monitoring.
+        /// Returns statistics for each active (non-loopback, non-tunnel) interface.
+        /// </summary>
+        private object GetNetworkMetrics()
+        {
+            List<object> interfaces = new List<object>();
+
+            try
+            {
+                foreach (NetworkInterface nic in NetworkInterface.GetAllNetworkInterfaces())
+                {
+                    //
+                    // Skip loopback, tunnel, and down interfaces
+                    //
+                    if (nic.NetworkInterfaceType == NetworkInterfaceType.Loopback ||
+                        nic.NetworkInterfaceType == NetworkInterfaceType.Tunnel ||
+                        nic.OperationalStatus != OperationalStatus.Up)
+                    {
+                        continue;
+                    }
+
+                    try
+                    {
+                        IPv4InterfaceStatistics stats = nic.GetIPv4Statistics();
+                        long linkSpeedBps = nic.Speed;  // bits per second
+                        double linkSpeedMbps = linkSpeedBps > 0 ? linkSpeedBps / 1_000_000.0 : 0;
+
+                        interfaces.Add(new
+                        {
+                            Name = nic.Name,
+                            Description = nic.Description,
+                            LinkSpeedMbps = Math.Round(linkSpeedMbps, 2),
+                            BytesSentTotal = stats.BytesSent,
+                            BytesReceivedTotal = stats.BytesReceived,
+                            //
+                            // Throughput rates calculated by collector using delta between samples
+                            //
+                            BytesSentPerSecond = 0.0,
+                            BytesReceivedPerSecond = 0.0,
+                            UtilizationPercent = 0.0,
+                            Status = "Healthy",
+                            IsActive = true
+                        });
+                    }
+                    catch
+                    {
+                        // Skip interfaces that can't provide statistics
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Error getting network interface information");
+            }
+
+            return new
+            {
+                Interfaces = interfaces
             };
         }
 

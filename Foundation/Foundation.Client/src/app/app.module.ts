@@ -164,6 +164,7 @@ import { TelemetryDatabaseHealthService } from './telemetry-data-services/teleme
 import { TelemetryDiskHealthService } from './telemetry-data-services/telemetry-disk-health.service';
 import { TelemetryErrorEventService } from './telemetry-data-services/telemetry-error-event.service';
 import { TelemetryLogErrorService } from './telemetry-data-services/telemetry-log-error.service';
+import { TelemetryNetworkHealthService } from './telemetry-data-services/telemetry-network-health.service';
 import { TelemetrySessionSnapshotService } from './telemetry-data-services/telemetry-session-snapshot.service';
 import { TelemetrySnapshotService } from './telemetry-data-services/telemetry-snapshot.service';
 //
@@ -395,6 +396,10 @@ import { TelemetryLogErrorListingComponent } from './telemetry-data-components/t
 import { TelemetryLogErrorAddEditComponent } from './telemetry-data-components/telemetry-log-error/telemetry-log-error-add-edit/telemetry-log-error-add-edit.component';
 import { TelemetryLogErrorDetailComponent } from './telemetry-data-components/telemetry-log-error/telemetry-log-error-detail/telemetry-log-error-detail.component';
 import { TelemetryLogErrorTableComponent } from './telemetry-data-components/telemetry-log-error/telemetry-log-error-table/telemetry-log-error-table.component';
+import { TelemetryNetworkHealthListingComponent } from './telemetry-data-components/telemetry-network-health/telemetry-network-health-listing/telemetry-network-health-listing.component';
+import { TelemetryNetworkHealthAddEditComponent } from './telemetry-data-components/telemetry-network-health/telemetry-network-health-add-edit/telemetry-network-health-add-edit.component';
+import { TelemetryNetworkHealthDetailComponent } from './telemetry-data-components/telemetry-network-health/telemetry-network-health-detail/telemetry-network-health-detail.component';
+import { TelemetryNetworkHealthTableComponent } from './telemetry-data-components/telemetry-network-health/telemetry-network-health-table/telemetry-network-health-table.component';
 import { TelemetrySessionSnapshotListingComponent } from './telemetry-data-components/telemetry-session-snapshot/telemetry-session-snapshot-listing/telemetry-session-snapshot-listing.component';
 import { TelemetrySessionSnapshotAddEditComponent } from './telemetry-data-components/telemetry-session-snapshot/telemetry-session-snapshot-add-edit/telemetry-session-snapshot-add-edit.component';
 import { TelemetrySessionSnapshotDetailComponent } from './telemetry-data-components/telemetry-session-snapshot/telemetry-session-snapshot-detail/telemetry-session-snapshot-detail.component';
@@ -725,6 +730,10 @@ TelemetryLogErrorListingComponent,
 TelemetryLogErrorAddEditComponent,
 TelemetryLogErrorDetailComponent,
 TelemetryLogErrorTableComponent,
+TelemetryNetworkHealthListingComponent,
+TelemetryNetworkHealthAddEditComponent,
+TelemetryNetworkHealthDetailComponent,
+TelemetryNetworkHealthTableComponent,
 TelemetrySessionSnapshotListingComponent,
 TelemetrySessionSnapshotAddEditComponent,
 TelemetrySessionSnapshotDetailComponent,
@@ -935,6 +944,7 @@ TelemetryDatabaseHealthService,
 TelemetryDiskHealthService,
 TelemetryErrorEventService,
 TelemetryLogErrorService,
+TelemetryNetworkHealthService,
 TelemetrySessionSnapshotService,
 TelemetrySnapshotService,
 //

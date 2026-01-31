@@ -150,6 +150,7 @@ export class SystemsDashboardComponent implements OnInit, OnDestroy {
     memorySparkline: ChartData<'line'> | null = null;
     cpuSparkline: ChartData<'line'> | null = null;
     diskSparkline: ChartData<'line'> | null = null;
+    networkSparkline: ChartData<'line'> | null = null;
     systemMemorySparkline: ChartData<'line'> | null = null;
     systemCpuSparkline: ChartData<'line'> | null = null;
 
@@ -442,6 +443,28 @@ export class SystemsDashboardComponent implements OnInit, OnDestroy {
                 },
                 error: (err: Error) => {
                     console.error('Failed to load system CPU trends:', err);
+                }
+            });
+
+        // Load network utilization trends
+        this.telemetryService.getNetworkTrends(undefined, this.sparklineHours)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (response) => {
+                    const sorted = [...response.data].sort((a, b) =>
+                        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+                    this.networkSparkline = {
+                        labels: sorted.map(() => ''),
+                        datasets: [{
+                            data: sorted.map(t => t.utilizationPercent ?? 0),
+                            borderColor: '#fd7e14',
+                            backgroundColor: 'rgba(253, 126, 20, 0.1)',
+                            fill: true
+                        }]
+                    };
+                },
+                error: (err: Error) => {
+                    console.error('Failed to load network trends:', err);
                 }
             });
     }

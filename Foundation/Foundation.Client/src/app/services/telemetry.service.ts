@@ -74,6 +74,23 @@ export interface DiskTrendsResponse {
     count: number;
 }
 
+export interface NetworkTrendPoint {
+    timestamp: Date;
+    applicationName: string;
+    interfaceName: string;
+    linkSpeedMbps?: number;
+    bytesSentPerSecond?: number;
+    bytesReceivedPerSecond?: number;
+    utilizationPercent?: number;
+    status?: string;
+}
+
+export interface NetworkTrendsResponse {
+    data: NetworkTrendPoint[];
+    hours: number;
+    count: number;
+}
+
 export interface SystemMemoryTrendPoint {
     timestamp: Date;
     applicationName: string;
@@ -406,6 +423,19 @@ export class TelemetryService {
 
         return this.http.get<DiskTrendsResponse>(
             `${this.baseUrl}/trends/disk`,
+            { headers: this.authService.GetAuthenticationHeaders(), params }
+        );
+    }
+
+    /**
+     * Get network utilization trends for sparklines
+     */
+    getNetworkTrends(appName?: string, hours: number = 24): Observable<NetworkTrendsResponse> {
+        let params = new HttpParams().set('hours', hours.toString());
+        if (appName) params = params.set('appName', appName);
+
+        return this.http.get<NetworkTrendsResponse>(
+            `${this.baseUrl}/trends/network`,
             { headers: this.authService.GetAuthenticationHeaders(), params }
         );
     }

@@ -27,6 +27,7 @@ import { TelemetryApplicationService } from '../../../telemetry-data-services/te
 import { TelemetryCollectionRunService } from '../../../telemetry-data-services/telemetry-collection-run.service';
 import { TelemetryDatabaseHealthService } from '../../../telemetry-data-services/telemetry-database-health.service';
 import { TelemetryDiskHealthService } from '../../../telemetry-data-services/telemetry-disk-health.service';
+import { TelemetryNetworkHealthService } from '../../../telemetry-data-services/telemetry-network-health.service';
 import { TelemetrySessionSnapshotService } from '../../../telemetry-data-services/telemetry-session-snapshot.service';
 import { TelemetryApplicationMetricService } from '../../../telemetry-data-services/telemetry-application-metric.service';
 import { TelemetryErrorEventService } from '../../../telemetry-data-services/telemetry-error-event.service';
@@ -121,6 +122,7 @@ export class TelemetrySnapshotDetailComponent implements OnInit, CanComponentDea
   public telemetryCollectionRuns$ = this.telemetryCollectionRunService.GetTelemetryCollectionRunList();
   public telemetryDatabaseHealths$ = this.telemetryDatabaseHealthService.GetTelemetryDatabaseHealthList();
   public telemetryDiskHealths$ = this.telemetryDiskHealthService.GetTelemetryDiskHealthList();
+  public telemetryNetworkHealths$ = this.telemetryNetworkHealthService.GetTelemetryNetworkHealthList();
   public telemetrySessionSnapshots$ = this.telemetrySessionSnapshotService.GetTelemetrySessionSnapshotList();
   public telemetryApplicationMetrics$ = this.telemetryApplicationMetricService.GetTelemetryApplicationMetricList();
   public telemetryErrorEvents$ = this.telemetryErrorEventService.GetTelemetryErrorEventList();
@@ -134,6 +136,7 @@ export class TelemetrySnapshotDetailComponent implements OnInit, CanComponentDea
     public telemetryCollectionRunService: TelemetryCollectionRunService,
     public telemetryDatabaseHealthService: TelemetryDatabaseHealthService,
     public telemetryDiskHealthService: TelemetryDiskHealthService,
+    public telemetryNetworkHealthService: TelemetryNetworkHealthService,
     public telemetrySessionSnapshotService: TelemetrySessionSnapshotService,
     public telemetryApplicationMetricService: TelemetryApplicationMetricService,
     public telemetryErrorEventService: TelemetryErrorEventService,

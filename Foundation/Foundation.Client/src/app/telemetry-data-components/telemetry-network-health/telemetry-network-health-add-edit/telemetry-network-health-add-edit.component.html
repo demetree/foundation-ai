@@ -1,0 +1,92 @@
+<div class="add-telemetry-network-health" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-telemetry-network-health me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Telemetry Network Health" 
+        *ngIf="userIsTelemetryTelemetryNetworkHealthWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #telemetryNetworkHealthModal let-modal>
+   <div class="modal-header bg-dark text-light telemetry-network-health-modal-header">
+      <h5 class="modal-title mb-0" id="telemetryNetworkHealthModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Telemetry Network Health' : 'Add Telemetry Network Health' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body telemetry-network-health-modal-body">
+      <form [formGroup]="telemetryNetworkHealthForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('telemetrySnapshotId')">
+                <label for="TelemetryNetworkHealth-telemetrySnapshotId" id="label-TelemetryNetworkHealth-telemetrySnapshotId"><span class="text-danger">*</span>Telemetry Snapshot</label>
+                <select id="TelemetryNetworkHealth-telemetrySnapshotId" formControlName="telemetrySnapshotId" class="form-select telemetry-network-health-select" [disabled]="!userIsTelemetryTelemetryNetworkHealthWriter()">
+                    <option [ngValue]="null">Select Telemetry Snapshot</option>
+                    <option *ngFor="let telemetrySnapshot of telemetrySnapshots$ | async" [ngValue]="telemetrySnapshot.id">{{telemetrySnapshot.machineName}}</option>
+                </select>
+                <div *ngIf="telemetryNetworkHealthForm.get('telemetrySnapshotId')?.invalid && telemetryNetworkHealthForm.get('telemetrySnapshotId')?.touched" class="text-danger">
+                    Telemetry Snapshot is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('interfaceName')">
+                <label for="TelemetryNetworkHealth-interfaceName" id="label-TelemetryNetworkHealth-interfaceName"><span class="text-danger">*</span>Interface Name</label>
+                <input type="text" id="TelemetryNetworkHealth-interfaceName" formControlName="interfaceName" placeholder="Enter Interface Name" class="form-control telemetry-network-health-input" [disabled]="!userIsTelemetryTelemetryNetworkHealthWriter()" aria-labelledby="label-interfaceName" />
+                <div *ngIf="telemetryNetworkHealthForm.get('interfaceName')?.invalid && telemetryNetworkHealthForm.get('interfaceName')?.touched" class="text-danger">
+                    Interface Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('interfaceDescription')">
+                <label for="TelemetryNetworkHealth-interfaceDescription" id="label-TelemetryNetworkHealth-interfaceDescription">Interface Description</label>
+                <input type="text" id="TelemetryNetworkHealth-interfaceDescription" formControlName="interfaceDescription" placeholder="Enter Interface Description" class="form-control telemetry-network-health-input" [disabled]="!userIsTelemetryTelemetryNetworkHealthWriter()" aria-labelledby="label-interfaceDescription" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('linkSpeedMbps')">
+                <label for="TelemetryNetworkHealth-linkSpeedMbps" id="label-TelemetryNetworkHealth-linkSpeedMbps">Link Speed Mbps</label>
+                <input type="number" id="TelemetryNetworkHealth-linkSpeedMbps" formControlName="linkSpeedMbps" placeholder="Enter Link Speed Mbps" class="form-control telemetry-network-health-input" [disabled]="!userIsTelemetryTelemetryNetworkHealthWriter()" aria-labelledby="label-linkSpeedMbps" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('bytesSentTotal')">
+                <label for="TelemetryNetworkHealth-bytesSentTotal" id="label-TelemetryNetworkHealth-bytesSentTotal">Bytes Sent Total</label>
+                <input type="number" id="TelemetryNetworkHealth-bytesSentTotal" formControlName="bytesSentTotal" placeholder="Enter Bytes Sent Total" class="form-control telemetry-network-health-input" [disabled]="!userIsTelemetryTelemetryNetworkHealthWriter()" aria-labelledby="label-bytesSentTotal" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('bytesReceivedTotal')">
+                <label for="TelemetryNetworkHealth-bytesReceivedTotal" id="label-TelemetryNetworkHealth-bytesReceivedTotal">Bytes Received Total</label>
+                <input type="number" id="TelemetryNetworkHealth-bytesReceivedTotal" formControlName="bytesReceivedTotal" placeholder="Enter Bytes Received Total" class="form-control telemetry-network-health-input" [disabled]="!userIsTelemetryTelemetryNetworkHealthWriter()" aria-labelledby="label-bytesReceivedTotal" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('bytesSentPerSecond')">
+                <label for="TelemetryNetworkHealth-bytesSentPerSecond" id="label-TelemetryNetworkHealth-bytesSentPerSecond">Bytes Sent Per Second</label>
+                <input type="number" id="TelemetryNetworkHealth-bytesSentPerSecond" formControlName="bytesSentPerSecond" placeholder="Enter Bytes Sent Per Second" class="form-control telemetry-network-health-input" [disabled]="!userIsTelemetryTelemetryNetworkHealthWriter()" aria-labelledby="label-bytesSentPerSecond" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('bytesReceivedPerSecond')">
+                <label for="TelemetryNetworkHealth-bytesReceivedPerSecond" id="label-TelemetryNetworkHealth-bytesReceivedPerSecond">Bytes Received Per Second</label>
+                <input type="number" id="TelemetryNetworkHealth-bytesReceivedPerSecond" formControlName="bytesReceivedPerSecond" placeholder="Enter Bytes Received Per Second" class="form-control telemetry-network-health-input" [disabled]="!userIsTelemetryTelemetryNetworkHealthWriter()" aria-labelledby="label-bytesReceivedPerSecond" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('utilizationPercent')">
+                <label for="TelemetryNetworkHealth-utilizationPercent" id="label-TelemetryNetworkHealth-utilizationPercent">Utilization Percent</label>
+                <input type="number" id="TelemetryNetworkHealth-utilizationPercent" formControlName="utilizationPercent" placeholder="Enter Utilization Percent" class="form-control telemetry-network-health-input" [disabled]="!userIsTelemetryTelemetryNetworkHealthWriter()" aria-labelledby="label-utilizationPercent" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('status')">
+                <label for="TelemetryNetworkHealth-status" id="label-TelemetryNetworkHealth-status">Status</label>
+                <input type="text" id="TelemetryNetworkHealth-status" formControlName="status" placeholder="Enter Status" class="form-control telemetry-network-health-input" [disabled]="!userIsTelemetryTelemetryNetworkHealthWriter()" aria-labelledby="label-status" />
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isActive')">
+                <input type="checkbox" id="TelemetryNetworkHealth-isActive" formControlName="isActive" class="form-check-input" [disabled]="!userIsTelemetryTelemetryNetworkHealthWriter()" />
+                <label for="TelemetryNetworkHealth-isActive" class="form-check-label" id="label-TelemetryNetworkHealth-isActive"><span class="text-danger">*</span>Is Active</label>
+            </div>
+         <div class="modal-footer telemetry-network-health-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Telemetry Network Health changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !telemetryNetworkHealthForm.valid || telemetryNetworkHealthForm.pristine  || userIsTelemetryTelemetryNetworkHealthWriter() == false " ngbTooltip="Save the Telemetry Network Health changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Telemetry Network Health' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

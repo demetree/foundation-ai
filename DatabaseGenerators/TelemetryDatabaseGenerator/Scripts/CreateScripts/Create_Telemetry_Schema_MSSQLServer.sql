@@ -22,6 +22,7 @@ GO
 -- DROP TABLE [Telemetry].[TelemetryErrorEvent]
 -- DROP TABLE [Telemetry].[TelemetryApplicationMetric]
 -- DROP TABLE [Telemetry].[TelemetrySessionSnapshot]
+-- DROP TABLE [Telemetry].[TelemetryNetworkHealth]
 -- DROP TABLE [Telemetry].[TelemetryDiskHealth]
 -- DROP TABLE [Telemetry].[TelemetryDatabaseHealth]
 -- DROP TABLE [Telemetry].[TelemetrySnapshot]
@@ -33,6 +34,7 @@ GO
 -- ALTER INDEX ALL ON [Telemetry].[TelemetryErrorEvent] DISABLE
 -- ALTER INDEX ALL ON [Telemetry].[TelemetryApplicationMetric] DISABLE
 -- ALTER INDEX ALL ON [Telemetry].[TelemetrySessionSnapshot] DISABLE
+-- ALTER INDEX ALL ON [Telemetry].[TelemetryNetworkHealth] DISABLE
 -- ALTER INDEX ALL ON [Telemetry].[TelemetryDiskHealth] DISABLE
 -- ALTER INDEX ALL ON [Telemetry].[TelemetryDatabaseHealth] DISABLE
 -- ALTER INDEX ALL ON [Telemetry].[TelemetrySnapshot] DISABLE
@@ -44,6 +46,7 @@ GO
 -- ALTER INDEX ALL ON [Telemetry].[TelemetryErrorEvent] REBUILD
 -- ALTER INDEX ALL ON [Telemetry].[TelemetryApplicationMetric] REBUILD
 -- ALTER INDEX ALL ON [Telemetry].[TelemetrySessionSnapshot] REBUILD
+-- ALTER INDEX ALL ON [Telemetry].[TelemetryNetworkHealth] REBUILD
 -- ALTER INDEX ALL ON [Telemetry].[TelemetryDiskHealth] REBUILD
 -- ALTER INDEX ALL ON [Telemetry].[TelemetryDatabaseHealth] REBUILD
 -- ALTER INDEX ALL ON [Telemetry].[TelemetrySnapshot] REBUILD
@@ -166,6 +169,30 @@ GO
 
 -- Index on the TelemetryDiskHealth table's telemetrySnapshotId field.
 CREATE INDEX [I_TelemetryDiskHealth_telemetrySnapshotId] ON [Telemetry].[TelemetryDiskHealth] ([telemetrySnapshotId])
+GO
+
+
+-- Network interface utilization metrics per snapshot.
+CREATE TABLE [Telemetry].[TelemetryNetworkHealth]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[telemetrySnapshotId] INT NOT NULL,		-- Link to the TelemetrySnapshot table.
+	[interfaceName] NVARCHAR(100) NOT NULL,
+	[interfaceDescription] NVARCHAR(250) NULL,
+	[linkSpeedMbps] FLOAT NULL,
+	[bytesSentTotal] BIGINT NULL,
+	[bytesReceivedTotal] BIGINT NULL,
+	[bytesSentPerSecond] FLOAT NULL,
+	[bytesReceivedPerSecond] FLOAT NULL,
+	[utilizationPercent] FLOAT NULL,
+	[status] NVARCHAR(50) NULL,
+	[isActive] BIT NOT NULL DEFAULT 1
+	CONSTRAINT [FK_TelemetryNetworkHealth_TelemetrySnapshot_telemetrySnapshotId] FOREIGN KEY ([telemetrySnapshotId]) REFERENCES [Telemetry].[TelemetrySnapshot] ([id])		-- Foreign key to the TelemetrySnapshot table.
+)
+GO
+
+-- Index on the TelemetryNetworkHealth table's telemetrySnapshotId field.
+CREATE INDEX [I_TelemetryNetworkHealth_telemetrySnapshotId] ON [Telemetry].[TelemetryNetworkHealth] ([telemetrySnapshotId])
 GO
 
 

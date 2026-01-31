@@ -268,6 +268,23 @@
         </div>
       </div>
 
+      <!-- Network Utilization Card with Sparkline -->
+      <div class="summary-card summary-card-with-sparkline">
+        <div class="card-main">
+          <div class="card-icon bg-orange">
+            <i class="fas fa-network-wired"></i>
+          </div>
+          <div class="card-content">
+            <h4><i class="fas fa-chart-area text-muted" style="font-size: 1rem;"></i></h4>
+            <p>Network %</p>
+          </div>
+        </div>
+        <div class="sparkline-container" *ngIf="networkSparkline">
+          <canvas baseChart [data]="networkSparkline" [options]="sparklineOptions" [type]="lineChartType">
+          </canvas>
+        </div>
+      </div>
+
       <div class="summary-card" *ngIf="fleetMetrics.system.totalLogErrors > 0">
         <div class="card-icon bg-warning">
           <i class="fas fa-file-alt"></i>

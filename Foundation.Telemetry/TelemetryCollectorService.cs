@@ -371,6 +371,33 @@ namespace Foundation.Telemetry
                     }
                 }
 
+                // Network health records - navigate to network.interfaces
+                if (healthJson.TryGetProperty("network", out var networkRoot) 
+                    && networkRoot.TryGetProperty("interfaces", out var interfaces) 
+                    && interfaces.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var nic in interfaces.EnumerateArray())
+                    {
+                        var networkHealth = new TelemetryNetworkHealth
+                        {
+                            interfaceName = nic.TryGetProperty("name", out var n) ? n.GetString() : "Unknown",
+                            interfaceDescription = nic.TryGetProperty("description", out var d) ? d.GetString() : null,
+                            linkSpeedMbps = nic.TryGetProperty("linkSpeedMbps", out var ls) ? ls.GetDouble() : 0,
+                            bytesSentTotal = nic.TryGetProperty("bytesSentTotal", out var bs) ? bs.GetInt64() : 0,
+                            bytesReceivedTotal = nic.TryGetProperty("bytesReceivedTotal", out var br) ? br.GetInt64() : 0,
+                            bytesSentPerSecond = nic.TryGetProperty("bytesSentPerSecond", out var bss) ? bss.GetDouble() : 0,
+                            bytesReceivedPerSecond = nic.TryGetProperty("bytesReceivedPerSecond", out var brs) ? brs.GetDouble() : 0,
+                            utilizationPercent = nic.TryGetProperty("utilizationPercent", out var up) ? up.GetDouble() : 0,
+                            status = nic.TryGetProperty("status", out var st) ? st.GetString() : null,
+                            isActive = nic.TryGetProperty("isActive", out var ia) && ia.GetBoolean()
+                        };
+                        snapshot.TelemetryNetworkHealths.Add(networkHealth);
+                    }
+
+                    // Calculate throughput by comparing with previous snapshot (if available)
+                    CalculateNetworkThroughput(context, snapshot);
+                }
+
                 // Session snapshot - expects sessions object with activeCount, expiredCount
                 if (healthJson.TryGetProperty("sessions", out var sessions))
                 {
@@ -558,6 +585,92 @@ namespace Foundation.Telemetry
                 _logger.LogWarning(
                     "Error threshold exceeded for {AppName}: {ErrorCount} errors (threshold: {Threshold}) in collection window",
                     appName, totalErrors, _config.ErrorThresholdCount);
+            }
+        }
+
+        /// <summary>
+        /// Calculate network throughput rates by comparing current counters with previous snapshot.
+        /// Updates bytesSentPerSecond, bytesReceivedPerSecond, and utilizationPercent.
+        /// </summary>
+        private void CalculateNetworkThroughput(TelemetryContext context, TelemetrySnapshot currentSnapshot)
+        {
+            try
+            {
+                //
+                // Get the previous snapshot for this application to calculate deltas
+                //
+                var previousSnapshot = context.TelemetrySnapshots
+                    .Where(s => s.telemetryApplicationId == currentSnapshot.telemetryApplicationId
+                             && s.id != currentSnapshot.id)
+                    .OrderByDescending(s => s.collectedAt)
+                    .Include(s => s.TelemetryNetworkHealths)
+                    .FirstOrDefault();
+
+                if (previousSnapshot == null || previousSnapshot.TelemetryNetworkHealths == null || !previousSnapshot.TelemetryNetworkHealths.Any())
+                {
+                    return;
+                }
+
+                double elapsedSeconds = (currentSnapshot.collectedAt - previousSnapshot.collectedAt).TotalSeconds;
+                if (elapsedSeconds <= 0)
+                {
+                    return;
+                }
+
+                foreach (var currentNic in currentSnapshot.TelemetryNetworkHealths)
+                {
+                    var previousNic = previousSnapshot.TelemetryNetworkHealths
+                        .FirstOrDefault(p => p.interfaceName == currentNic.interfaceName);
+
+                    if (previousNic != null)
+                    {
+                        //
+                        // Calculate bytes per second (handle counter wraparound gracefully)
+                        //
+                        long sentDelta = currentNic.bytesSentTotal >= previousNic.bytesSentTotal
+                            ? currentNic.bytesSentTotal.GetValueOrDefault() - previousNic.bytesSentTotal.GetValueOrDefault()
+                            : currentNic.bytesSentTotal.GetValueOrDefault();
+
+                        long receivedDelta = currentNic.bytesReceivedTotal >= previousNic.bytesReceivedTotal
+                            ? currentNic.bytesReceivedTotal.GetValueOrDefault() - previousNic.bytesReceivedTotal.GetValueOrDefault()
+                            : currentNic.bytesReceivedTotal.GetValueOrDefault();
+
+                        currentNic.bytesSentPerSecond = Math.Round(sentDelta / elapsedSeconds, 2);
+                        currentNic.bytesReceivedPerSecond = Math.Round(receivedDelta / elapsedSeconds, 2);
+
+                        //
+                        // Calculate utilization percentage (combined send+receive vs link capacity)
+                        //
+                        if (currentNic.linkSpeedMbps > 0)
+                        {
+                            double linkSpeedBytesPerSecond = currentNic.linkSpeedMbps.GetValueOrDefault() * 125000; // Mbps to bytes/sec
+                            double totalBytesPerSecond = currentNic.bytesSentPerSecond.GetValueOrDefault() 
+                                                       + currentNic.bytesReceivedPerSecond.GetValueOrDefault();
+                            double utilization = (totalBytesPerSecond / linkSpeedBytesPerSecond) * 100;
+                            currentNic.utilizationPercent = Math.Min(100, Math.Round(utilization, 2));
+
+                            //
+                            // Set status based on utilization thresholds
+                            //
+                            if (currentNic.utilizationPercent >= 90)
+                            {
+                                currentNic.status = "Critical";
+                            }
+                            else if (currentNic.utilizationPercent >= 70)
+                            {
+                                currentNic.status = "Warning";
+                            }
+                            else
+                            {
+                                currentNic.status = "Healthy";
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to calculate network throughput");
             }
         }
 

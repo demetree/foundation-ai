@@ -20,6 +20,7 @@ import { TelemetryApplicationData } from './telemetry-application.service';
 import { TelemetryCollectionRunData } from './telemetry-collection-run.service';
 import { TelemetryDatabaseHealthService, TelemetryDatabaseHealthData } from './telemetry-database-health.service';
 import { TelemetryDiskHealthService, TelemetryDiskHealthData } from './telemetry-disk-health.service';
+import { TelemetryNetworkHealthService, TelemetryNetworkHealthData } from './telemetry-network-health.service';
 import { TelemetrySessionSnapshotService, TelemetrySessionSnapshotData } from './telemetry-session-snapshot.service';
 import { TelemetryApplicationMetricService, TelemetryApplicationMetricData } from './telemetry-application-metric.service';
 import { TelemetryErrorEventService, TelemetryErrorEventData } from './telemetry-error-event.service';
@@ -161,6 +162,11 @@ export class TelemetrySnapshotData {
     private _telemetryDiskHealthsSubject = new BehaviorSubject<TelemetryDiskHealthData[] | null>(null);
 
                 
+    private _telemetryNetworkHealths: TelemetryNetworkHealthData[] | null = null;
+    private _telemetryNetworkHealthsPromise: Promise<TelemetryNetworkHealthData[]> | null  = null;
+    private _telemetryNetworkHealthsSubject = new BehaviorSubject<TelemetryNetworkHealthData[] | null>(null);
+
+                
     private _telemetrySessionSnapshots: TelemetrySessionSnapshotData[] | null = null;
     private _telemetrySessionSnapshotsPromise: Promise<TelemetrySessionSnapshotData[]> | null  = null;
     private _telemetrySessionSnapshotsSubject = new BehaviorSubject<TelemetrySessionSnapshotData[] | null>(null);
@@ -220,6 +226,25 @@ export class TelemetrySnapshotData {
 
   
     public TelemetryDiskHealthsCount$ = TelemetryDiskHealthService.Instance.GetTelemetryDiskHealthsRowCount({telemetrySnapshotId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    public TelemetryNetworkHealths$ = this._telemetryNetworkHealthsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._telemetryNetworkHealths === null && this._telemetryNetworkHealthsPromise === null) {
+            this.loadTelemetryNetworkHealths(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public TelemetryNetworkHealthsCount$ = TelemetryNetworkHealthService.Instance.GetTelemetryNetworkHealthsRowCount({telemetrySnapshotId: this.id,
       active: true,
       deleted: false
     });
@@ -347,6 +372,10 @@ export class TelemetrySnapshotData {
      this._telemetryDiskHealths = null;
      this._telemetryDiskHealthsPromise = null;
      this._telemetryDiskHealthsSubject.next(null);
+
+     this._telemetryNetworkHealths = null;
+     this._telemetryNetworkHealthsPromise = null;
+     this._telemetryNetworkHealthsSubject.next(null);
 
      this._telemetrySessionSnapshots = null;
      this._telemetrySessionSnapshotsPromise = null;
@@ -497,6 +526,71 @@ export class TelemetrySnapshotData {
 
     public get HasTelemetryDiskHealths(): Promise<boolean> {
         return this.TelemetryDiskHealths.then(telemetryDiskHealths => telemetryDiskHealths.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the TelemetryNetworkHealths for this TelemetrySnapshot.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.telemetrySnapshot.TelemetryNetworkHealths.then(telemetrySnapshots => { ... })
+     *   or
+     *   await this.telemetrySnapshot.telemetrySnapshots
+     *
+    */
+    public get TelemetryNetworkHealths(): Promise<TelemetryNetworkHealthData[]> {
+        if (this._telemetryNetworkHealths !== null) {
+            return Promise.resolve(this._telemetryNetworkHealths);
+        }
+
+        if (this._telemetryNetworkHealthsPromise !== null) {
+            return this._telemetryNetworkHealthsPromise;
+        }
+
+        // Start the load
+        this.loadTelemetryNetworkHealths();
+
+        return this._telemetryNetworkHealthsPromise!;
+    }
+
+
+
+    private loadTelemetryNetworkHealths(): void {
+
+        this._telemetryNetworkHealthsPromise = lastValueFrom(
+            TelemetrySnapshotService.Instance.GetTelemetryNetworkHealthsForTelemetrySnapshot(this.id)
+        )
+        .then(TelemetryNetworkHealths => {
+            this._telemetryNetworkHealths = TelemetryNetworkHealths ?? [];
+            this._telemetryNetworkHealthsSubject.next(this._telemetryNetworkHealths);
+            return this._telemetryNetworkHealths;
+         })
+        .catch(err => {
+            this._telemetryNetworkHealths = [];
+            this._telemetryNetworkHealthsSubject.next(this._telemetryNetworkHealths);
+            throw err;
+        })
+        .finally(() => {
+            this._telemetryNetworkHealthsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached TelemetryNetworkHealth. Call after mutations to force refresh.
+     */
+    public ClearTelemetryNetworkHealthsCache(): void {
+        this._telemetryNetworkHealths = null;
+        this._telemetryNetworkHealthsPromise = null;
+        this._telemetryNetworkHealthsSubject.next(this._telemetryNetworkHealths);      // Emit to observable
+    }
+
+    public get HasTelemetryNetworkHealths(): Promise<boolean> {
+        return this.TelemetryNetworkHealths.then(telemetryNetworkHealths => telemetryNetworkHealths.length > 0);
     }
 
 
@@ -797,6 +891,7 @@ export class TelemetrySnapshotService extends SecureEndpointBase {
         private utilityService: UtilityService,
         private telemetryDatabaseHealthService: TelemetryDatabaseHealthService,
         private telemetryDiskHealthService: TelemetryDiskHealthService,
+        private telemetryNetworkHealthService: TelemetryNetworkHealthService,
         private telemetrySessionSnapshotService: TelemetrySessionSnapshotService,
         private telemetryApplicationMetricService: TelemetryApplicationMetricService,
         private telemetryErrorEventService: TelemetryErrorEventService,
@@ -1191,6 +1286,16 @@ export class TelemetrySnapshotService extends SecureEndpointBase {
     }
 
 
+    public GetTelemetryNetworkHealthsForTelemetrySnapshot(telemetrySnapshotId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<TelemetryNetworkHealthData[]> {
+        return this.telemetryNetworkHealthService.GetTelemetryNetworkHealthList({
+            telemetrySnapshotId: telemetrySnapshotId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
     public GetTelemetrySessionSnapshotsForTelemetrySnapshot(telemetrySnapshotId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<TelemetrySessionSnapshotData[]> {
         return this.telemetrySessionSnapshotService.GetTelemetrySessionSnapshotList({
             telemetrySnapshotId: telemetrySnapshotId,
@@ -1274,6 +1379,10 @@ export class TelemetrySnapshotService extends SecureEndpointBase {
     (revived as any)._telemetryDiskHealthsPromise = null;
     (revived as any)._telemetryDiskHealthsSubject = new BehaviorSubject<TelemetryDiskHealthData[] | null>(null);
 
+    (revived as any)._telemetryNetworkHealths = null;
+    (revived as any)._telemetryNetworkHealthsPromise = null;
+    (revived as any)._telemetryNetworkHealthsSubject = new BehaviorSubject<TelemetryNetworkHealthData[] | null>(null);
+
     (revived as any)._telemetrySessionSnapshots = null;
     (revived as any)._telemetrySessionSnapshotsPromise = null;
     (revived as any)._telemetrySessionSnapshotsSubject = new BehaviorSubject<TelemetrySessionSnapshotData[] | null>(null);
@@ -1328,6 +1437,22 @@ export class TelemetrySnapshotService extends SecureEndpointBase {
       );
 
     (revived as any).TelemetryDiskHealthsCount$ = TelemetryDiskHealthService.Instance.GetTelemetryDiskHealthsRowCount({telemetrySnapshotId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).TelemetryNetworkHealths$ = (revived as any)._telemetryNetworkHealthsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._telemetryNetworkHealths === null && (revived as any)._telemetryNetworkHealthsPromise === null) {
+                (revived as any).loadTelemetryNetworkHealths();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).TelemetryNetworkHealthsCount$ = TelemetryNetworkHealthService.Instance.GetTelemetryNetworkHealthsRowCount({telemetrySnapshotId: (revived as any).id,
       active: true,
       deleted: false
     });

@@ -14,6 +14,7 @@ USE `Telemetry`;
 -- DROP TABLE `TelemetryErrorEvent`
 -- DROP TABLE `TelemetryApplicationMetric`
 -- DROP TABLE `TelemetrySessionSnapshot`
+-- DROP TABLE `TelemetryNetworkHealth`
 -- DROP TABLE `TelemetryDiskHealth`
 -- DROP TABLE `TelemetryDatabaseHealth`
 -- DROP TABLE `TelemetrySnapshot`
@@ -25,6 +26,7 @@ USE `Telemetry`;
 -- ALTER INDEX ALL ON `TelemetryErrorEvent` DISABLE
 -- ALTER INDEX ALL ON `TelemetryApplicationMetric` DISABLE
 -- ALTER INDEX ALL ON `TelemetrySessionSnapshot` DISABLE
+-- ALTER INDEX ALL ON `TelemetryNetworkHealth` DISABLE
 -- ALTER INDEX ALL ON `TelemetryDiskHealth` DISABLE
 -- ALTER INDEX ALL ON `TelemetryDatabaseHealth` DISABLE
 -- ALTER INDEX ALL ON `TelemetrySnapshot` DISABLE
@@ -36,6 +38,7 @@ USE `Telemetry`;
 -- ALTER INDEX ALL ON `TelemetryErrorEvent` REBUILD
 -- ALTER INDEX ALL ON `TelemetryApplicationMetric` REBUILD
 -- ALTER INDEX ALL ON `TelemetrySessionSnapshot` REBUILD
+-- ALTER INDEX ALL ON `TelemetryNetworkHealth` REBUILD
 -- ALTER INDEX ALL ON `TelemetryDiskHealth` REBUILD
 -- ALTER INDEX ALL ON `TelemetryDatabaseHealth` REBUILD
 -- ALTER INDEX ALL ON `TelemetrySnapshot` REBUILD
@@ -136,6 +139,26 @@ CREATE TABLE `TelemetryDiskHealth`(
 );
 -- Index on the TelemetryDiskHealth table's telemetrySnapshotId field.
 CREATE INDEX `I_TelemetryDiskHealth_telemetrySnapshotId` ON `TelemetryDiskHealth` (`telemetrySnapshotId`);
+
+
+-- Network interface utilization metrics per snapshot.
+CREATE TABLE `TelemetryNetworkHealth`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`telemetrySnapshotId` INT NOT NULL,		-- Link to the TelemetrySnapshot table.
+	`interfaceName` VARCHAR(100) NOT NULL,
+	`interfaceDescription` VARCHAR(250) NULL,
+	`linkSpeedMbps` DOUBLE NULL,
+	`bytesSentTotal` BIGINT NULL,
+	`bytesReceivedTotal` BIGINT NULL,
+	`bytesSentPerSecond` DOUBLE NULL,
+	`bytesReceivedPerSecond` DOUBLE NULL,
+	`utilizationPercent` DOUBLE NULL,
+	`status` VARCHAR(50) NULL,
+	`isActive` BIT NOT NULL DEFAULT 1,
+	FOREIGN KEY (`telemetrySnapshotId`) REFERENCES `TelemetrySnapshot`(`id`)		-- Foreign key to the TelemetrySnapshot table.
+);
+-- Index on the TelemetryNetworkHealth table's telemetrySnapshotId field.
+CREATE INDEX `I_TelemetryNetworkHealth_telemetrySnapshotId` ON `TelemetryNetworkHealth` (`telemetrySnapshotId`);
 
 
 -- Active user session counts per collection cycle.

@@ -154,6 +154,8 @@ import { TelemetryErrorEventListingComponent } from './telemetry-data-components
 import { TelemetryErrorEventDetailComponent } from './telemetry-data-components/telemetry-error-event/telemetry-error-event-detail/telemetry-error-event-detail.component';
 import { TelemetryLogErrorListingComponent } from './telemetry-data-components/telemetry-log-error/telemetry-log-error-listing/telemetry-log-error-listing.component';
 import { TelemetryLogErrorDetailComponent } from './telemetry-data-components/telemetry-log-error/telemetry-log-error-detail/telemetry-log-error-detail.component';
+import { TelemetryNetworkHealthListingComponent } from './telemetry-data-components/telemetry-network-health/telemetry-network-health-listing/telemetry-network-health-listing.component';
+import { TelemetryNetworkHealthDetailComponent } from './telemetry-data-components/telemetry-network-health/telemetry-network-health-detail/telemetry-network-health-detail.component';
 import { TelemetrySessionSnapshotListingComponent } from './telemetry-data-components/telemetry-session-snapshot/telemetry-session-snapshot-listing/telemetry-session-snapshot-listing.component';
 import { TelemetrySessionSnapshotDetailComponent } from './telemetry-data-components/telemetry-session-snapshot/telemetry-session-snapshot-detail/telemetry-session-snapshot-detail.component';
 import { TelemetrySnapshotListingComponent } from './telemetry-data-components/telemetry-snapshot/telemetry-snapshot-listing/telemetry-snapshot-listing.component';
@@ -514,6 +516,11 @@ const routes: Routes = [
   {path: 'telemetrylogerrors/:telemetryLogErrorId', component: TelemetryLogErrorDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Telemetry Log Error' },
   {path: 'telemetrylogerror/:telemetryLogErrorId', component: TelemetryLogErrorDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Telemetry Log Error' },
   {path: 'telemetrylogerror',  redirectTo: 'telemetrylogerrors'},
+  {path: 'telemetrynetworkhealths', component: TelemetryNetworkHealthListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Telemetry Network Healths' },
+  {path: 'telemetrynetworkhealths/new', component: TelemetryNetworkHealthDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Telemetry Network Health' },
+  {path: 'telemetrynetworkhealths/:telemetryNetworkHealthId', component: TelemetryNetworkHealthDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Telemetry Network Health' },
+  {path: 'telemetrynetworkhealth/:telemetryNetworkHealthId', component: TelemetryNetworkHealthDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Telemetry Network Health' },
+  {path: 'telemetrynetworkhealth',  redirectTo: 'telemetrynetworkhealths'},
   {path: 'telemetrysessionsnapshots', component: TelemetrySessionSnapshotListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Telemetry Session Snapshots' },
   {path: 'telemetrysessionsnapshots/new', component: TelemetrySessionSnapshotDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Telemetry Session Snapshot' },
   {path: 'telemetrysessionsnapshots/:telemetrySessionSnapshotId', component: TelemetrySessionSnapshotDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Telemetry Session Snapshot' },

@@ -16,6 +16,7 @@ import {TelemetryDatabaseHealthService} from  './telemetry-database-health.servi
 import {TelemetryDiskHealthService} from  './telemetry-disk-health.service';
 import {TelemetryErrorEventService} from  './telemetry-error-event.service';
 import {TelemetryLogErrorService} from  './telemetry-log-error.service';
+import {TelemetryNetworkHealthService} from  './telemetry-network-health.service';
 import {TelemetrySessionSnapshotService} from  './telemetry-session-snapshot.service';
 import {TelemetrySnapshotService} from  './telemetry-snapshot.service';
 
@@ -32,6 +33,7 @@ export class TelemetryDataServiceManagerService  {
               , public telemetryDiskHealthService: TelemetryDiskHealthService
               , public telemetryErrorEventService: TelemetryErrorEventService
               , public telemetryLogErrorService: TelemetryLogErrorService
+              , public telemetryNetworkHealthService: TelemetryNetworkHealthService
               , public telemetrySessionSnapshotService: TelemetrySessionSnapshotService
               , public telemetrySnapshotService: TelemetrySnapshotService
 ) { }  
@@ -46,6 +48,7 @@ export class TelemetryDataServiceManagerService  {
         this.telemetryDiskHealthService.ClearAllCaches();
         this.telemetryErrorEventService.ClearAllCaches();
         this.telemetryLogErrorService.ClearAllCaches();
+        this.telemetryNetworkHealthService.ClearAllCaches();
         this.telemetrySessionSnapshotService.ClearAllCaches();
         this.telemetrySnapshotService.ClearAllCaches();
     }

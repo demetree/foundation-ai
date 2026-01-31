@@ -44,6 +44,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[Telemetry].[TelemetryNetworkHealth]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[Telemetry].[TelemetrySessionSnapshot]",
          "ObjectType": 0
       },
