@@ -15,7 +15,7 @@ using Foundation.Auditor;
 using Foundation.Controllers;
 using Foundation.Security.Database;
 using static Foundation.Auditor.AuditEngine;
-using Foundation.Telemetry.Telemetry.Database;
+using Foundation.Telemetry.Database;
 
 namespace Foundation.Telemetry.Controllers.WebAPI
 {
@@ -111,7 +111,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 				endTime = endTime.Value.ToUniversalTime();
 			}
 
-			IQueryable<Telemetry.Database.TelemetryCollectionRun> query = (from tcr in _context.TelemetryCollectionRuns select tcr);
+			IQueryable<Database.TelemetryCollectionRun> query = (from tcr in _context.TelemetryCollectionRuns select tcr);
 			if (startTime.HasValue == true)
 			{
 				query = query.Where(tcr => tcr.startTime == startTime.Value);
@@ -161,11 +161,11 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 
 			query = query.AsNoTracking();
 			
-			List<Telemetry.Database.TelemetryCollectionRun> materialized = await query.ToListAsync(cancellationToken);
+			List<Database.TelemetryCollectionRun> materialized = await query.ToListAsync(cancellationToken);
 
 			// Convert all the date properties to be of kind UTC.
 			bool databaseStoresDateWithTimeZone = _context.DoesDatabaseStoreDateWithTimeZone();
-			foreach (Telemetry.Database.TelemetryCollectionRun telemetryCollectionRun in materialized)
+			foreach (Database.TelemetryCollectionRun telemetryCollectionRun in materialized)
 			{
 			    Foundation.DateTimeUtility.ConvertAllDateTimePropertiesToUTC(telemetryCollectionRun, databaseStoresDateWithTimeZone);
 			}
@@ -229,7 +229,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 				endTime = endTime.Value.ToUniversalTime();
 			}
 
-			IQueryable<Telemetry.Database.TelemetryCollectionRun> query = (from tcr in _context.TelemetryCollectionRuns select tcr);
+			IQueryable<Database.TelemetryCollectionRun> query = (from tcr in _context.TelemetryCollectionRuns select tcr);
 			if (startTime.HasValue == true)
 			{
 				query = query.Where(tcr => tcr.startTime == startTime.Value);
@@ -297,7 +297,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 
 			try
 			{
-				IQueryable<Telemetry.Database.TelemetryCollectionRun> query = (from tcr in _context.TelemetryCollectionRuns where
+				IQueryable<Database.TelemetryCollectionRun> query = (from tcr in _context.TelemetryCollectionRuns where
 				(tcr.id == id)
 					select tcr);
 
@@ -306,7 +306,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 					query = query.AsSplitQuery();
 				}
 
-				Telemetry.Database.TelemetryCollectionRun materialized = await query.FirstOrDefaultAsync(cancellationToken);
+				Database.TelemetryCollectionRun materialized = await query.FirstOrDefaultAsync(cancellationToken);
 
 				if (materialized != null)
 				{
@@ -354,7 +354,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		[HttpPost]
 		[HttpPut]
-		public async Task<IActionResult> PutTelemetryCollectionRun(int id, [FromBody]Telemetry.Database.TelemetryCollectionRun.TelemetryCollectionRunDTO telemetryCollectionRunDTO, CancellationToken cancellationToken = default)
+		public async Task<IActionResult> PutTelemetryCollectionRun(int id, [FromBody]Database.TelemetryCollectionRun.TelemetryCollectionRunDTO telemetryCollectionRunDTO, CancellationToken cancellationToken = default)
 		{
 			if (telemetryCollectionRunDTO == null)
 			{
@@ -380,13 +380,13 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 0, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
-			IQueryable<Telemetry.Database.TelemetryCollectionRun> query = (from x in _context.TelemetryCollectionRuns
+			IQueryable<Database.TelemetryCollectionRun> query = (from x in _context.TelemetryCollectionRuns
 				where
 				(x.id == id)
 				select x);
 
 
-			Telemetry.Database.TelemetryCollectionRun existing = await query.FirstOrDefaultAsync(cancellationToken);
+			Database.TelemetryCollectionRun existing = await query.FirstOrDefaultAsync(cancellationToken);
 
 			if (existing == null)
 			{
@@ -395,12 +395,12 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			}
 
 			// Copy the existing object so it can be serialized as-is in the audit and history logs.
-			Telemetry.Database.TelemetryCollectionRun cloneOfExisting = (Telemetry.Database.TelemetryCollectionRun)_context.Entry(existing).GetDatabaseValues().ToObject();
+			Database.TelemetryCollectionRun cloneOfExisting = (Database.TelemetryCollectionRun)_context.Entry(existing).GetDatabaseValues().ToObject();
 
 			//
 			// Create a new TelemetryCollectionRun object using the data from the existing record, updated with what is in the DTO.
 			//
-			Telemetry.Database.TelemetryCollectionRun telemetryCollectionRun = (Telemetry.Database.TelemetryCollectionRun)_context.Entry(existing).GetDatabaseValues().ToObject();
+			Database.TelemetryCollectionRun telemetryCollectionRun = (Database.TelemetryCollectionRun)_context.Entry(existing).GetDatabaseValues().ToObject();
 			telemetryCollectionRun.ApplyDTO(telemetryCollectionRunDTO);
 
 
@@ -414,7 +414,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 				telemetryCollectionRun.endTime = telemetryCollectionRun.endTime.Value.ToUniversalTime();
 			}
 
-			EntityEntry<Telemetry.Database.TelemetryCollectionRun> attached = _context.Entry(existing);
+			EntityEntry<Database.TelemetryCollectionRun> attached = _context.Entry(existing);
 			attached.CurrentValues.SetValues(telemetryCollectionRun);
 
 			try
@@ -425,12 +425,12 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 					"Telemetry.TelemetryCollectionRun entity successfully updated.",
 					true,
 					id.ToString(),
-					JsonSerializer.Serialize(Telemetry.Database.TelemetryCollectionRun.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Telemetry.Database.TelemetryCollectionRun.CreateAnonymousWithFirstLevelSubObjects(telemetryCollectionRun)),
+					JsonSerializer.Serialize(Database.TelemetryCollectionRun.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+					JsonSerializer.Serialize(Database.TelemetryCollectionRun.CreateAnonymousWithFirstLevelSubObjects(telemetryCollectionRun)),
 					null);
 
 
-				return Ok(Telemetry.Database.TelemetryCollectionRun.CreateAnonymous(telemetryCollectionRun));
+				return Ok(Database.TelemetryCollectionRun.CreateAnonymous(telemetryCollectionRun));
 			}
 			catch (Exception ex)
 			{
@@ -438,8 +438,8 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 					"Telemetry.TelemetryCollectionRun entity update failed",
 					false,
 					id.ToString(),
-					JsonSerializer.Serialize(Telemetry.Database.TelemetryCollectionRun.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Telemetry.Database.TelemetryCollectionRun.CreateAnonymousWithFirstLevelSubObjects(telemetryCollectionRun)),
+					JsonSerializer.Serialize(Database.TelemetryCollectionRun.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+					JsonSerializer.Serialize(Database.TelemetryCollectionRun.CreateAnonymousWithFirstLevelSubObjects(telemetryCollectionRun)),
 					ex);
 
 				return Problem(ex.Message);
@@ -457,7 +457,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 		[HttpPost]
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/TelemetryCollectionRun", Name = "TelemetryCollectionRun")]
-		public async Task<IActionResult> PostTelemetryCollectionRun([FromBody]Telemetry.Database.TelemetryCollectionRun.TelemetryCollectionRunDTO telemetryCollectionRunDTO, CancellationToken cancellationToken = default)
+		public async Task<IActionResult> PostTelemetryCollectionRun([FromBody]Database.TelemetryCollectionRun.TelemetryCollectionRunDTO telemetryCollectionRunDTO, CancellationToken cancellationToken = default)
 		{
 			if (telemetryCollectionRunDTO == null)
 			{
@@ -479,7 +479,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			//
 			// Create a new TelemetryCollectionRun object using the data from the DTO
 			//
-			Telemetry.Database.TelemetryCollectionRun telemetryCollectionRun = Telemetry.Database.TelemetryCollectionRun.FromDTO(telemetryCollectionRunDTO);
+			Database.TelemetryCollectionRun telemetryCollectionRun = Database.TelemetryCollectionRun.FromDTO(telemetryCollectionRunDTO);
 
 			try
 			{
@@ -501,7 +501,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 					true,
 					telemetryCollectionRun.id.ToString(),
 					"",
-					JsonSerializer.Serialize(Telemetry.Database.TelemetryCollectionRun.CreateAnonymousWithFirstLevelSubObjects(telemetryCollectionRun)),
+					JsonSerializer.Serialize(Database.TelemetryCollectionRun.CreateAnonymousWithFirstLevelSubObjects(telemetryCollectionRun)),
 					null);
 
 			}
@@ -515,7 +515,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 
 			BackgroundJob.Enqueue(() => SecurityLogic.AddToUserMostRecents(securityUser.id, "TelemetryCollectionRun", telemetryCollectionRun.id, telemetryCollectionRun.id.ToString()));
 
-			return CreatedAtRoute("TelemetryCollectionRun", new { id = telemetryCollectionRun.id }, Telemetry.Database.TelemetryCollectionRun.CreateAnonymousWithFirstLevelSubObjects(telemetryCollectionRun));
+			return CreatedAtRoute("TelemetryCollectionRun", new { id = telemetryCollectionRun.id }, Database.TelemetryCollectionRun.CreateAnonymousWithFirstLevelSubObjects(telemetryCollectionRun));
 		}
 
 
@@ -543,20 +543,20 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
-			IQueryable<Telemetry.Database.TelemetryCollectionRun> query = (from x in _context.TelemetryCollectionRuns
+			IQueryable<Database.TelemetryCollectionRun> query = (from x in _context.TelemetryCollectionRuns
 				where
 				(x.id == id)
 				select x);
 
 
-			Telemetry.Database.TelemetryCollectionRun telemetryCollectionRun = await query.FirstOrDefaultAsync(cancellationToken);
+			Database.TelemetryCollectionRun telemetryCollectionRun = await query.FirstOrDefaultAsync(cancellationToken);
 
 			if (telemetryCollectionRun == null)
 			{
 				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for Telemetry.TelemetryCollectionRun DELETE", id.ToString(), new Exception("No Telemetry.TelemetryCollectionRun entity could be find with the primary key provided."));
 				return NotFound();
 			}
-			Telemetry.Database.TelemetryCollectionRun cloneOfExisting = (Telemetry.Database.TelemetryCollectionRun)_context.Entry(telemetryCollectionRun).GetDatabaseValues().ToObject();
+			Database.TelemetryCollectionRun cloneOfExisting = (Database.TelemetryCollectionRun)_context.Entry(telemetryCollectionRun).GetDatabaseValues().ToObject();
 
 
 			try
@@ -568,8 +568,8 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 					"Telemetry.TelemetryCollectionRun entity successfully deleted.",
 					true,
 					id.ToString(),
-					JsonSerializer.Serialize(Telemetry.Database.TelemetryCollectionRun.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Telemetry.Database.TelemetryCollectionRun.CreateAnonymousWithFirstLevelSubObjects(telemetryCollectionRun)),
+					JsonSerializer.Serialize(Database.TelemetryCollectionRun.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+					JsonSerializer.Serialize(Database.TelemetryCollectionRun.CreateAnonymousWithFirstLevelSubObjects(telemetryCollectionRun)),
 					null);
 
 			}
@@ -579,8 +579,8 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 					"Telemetry.TelemetryCollectionRun entity delete failed.",
 					false,
 					id.ToString(),
-					JsonSerializer.Serialize(Telemetry.Database.TelemetryCollectionRun.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Telemetry.Database.TelemetryCollectionRun.CreateAnonymousWithFirstLevelSubObjects(telemetryCollectionRun)),
+					JsonSerializer.Serialize(Database.TelemetryCollectionRun.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+					JsonSerializer.Serialize(Database.TelemetryCollectionRun.CreateAnonymousWithFirstLevelSubObjects(telemetryCollectionRun)),
 					ex);
 
 				return Problem(ex.Message);
@@ -649,7 +649,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 				endTime = endTime.Value.ToUniversalTime();
 			}
 
-			IQueryable<Telemetry.Database.TelemetryCollectionRun> query = (from tcr in _context.TelemetryCollectionRuns select tcr);
+			IQueryable<Database.TelemetryCollectionRun> query = (from tcr in _context.TelemetryCollectionRuns select tcr);
 			if (startTime.HasValue == true)
 			{
 				query = query.Where(tcr => tcr.startTime == startTime.Value);
@@ -691,7 +691,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			{
 			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
 			}
-			return Ok(await (from queryData in query select Telemetry.Database.TelemetryCollectionRun.CreateMinimalAnonymous(queryData)).ToListAsync(cancellationToken));
+			return Ok(await (from queryData in query select Database.TelemetryCollectionRun.CreateMinimalAnonymous(queryData)).ToListAsync(cancellationToken));
 		}
 
 

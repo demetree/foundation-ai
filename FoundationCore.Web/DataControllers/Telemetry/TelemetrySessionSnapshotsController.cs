@@ -15,7 +15,7 @@ using Foundation.Auditor;
 using Foundation.Controllers;
 using Foundation.Security.Database;
 using static Foundation.Auditor.AuditEngine;
-using Foundation.Telemetry.Telemetry.Database;
+using Foundation.Telemetry.Database;
 
 namespace Foundation.Telemetry.Controllers.WebAPI
 {
@@ -111,7 +111,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 				newestSessionStart = newestSessionStart.Value.ToUniversalTime();
 			}
 
-			IQueryable<Telemetry.Database.TelemetrySessionSnapshot> query = (from tss in _context.TelemetrySessionSnapshots select tss);
+			IQueryable<Database.TelemetrySessionSnapshot> query = (from tss in _context.TelemetrySessionSnapshots select tss);
 			if (telemetrySnapshotId.HasValue == true)
 			{
 				query = query.Where(tss => tss.telemetrySnapshotId == telemetrySnapshotId.Value);
@@ -164,11 +164,11 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 
 			query = query.AsNoTracking();
 			
-			List<Telemetry.Database.TelemetrySessionSnapshot> materialized = await query.ToListAsync(cancellationToken);
+			List<Database.TelemetrySessionSnapshot> materialized = await query.ToListAsync(cancellationToken);
 
 			// Convert all the date properties to be of kind UTC.
 			bool databaseStoresDateWithTimeZone = _context.DoesDatabaseStoreDateWithTimeZone();
-			foreach (Telemetry.Database.TelemetrySessionSnapshot telemetrySessionSnapshot in materialized)
+			foreach (Database.TelemetrySessionSnapshot telemetrySessionSnapshot in materialized)
 			{
 			    Foundation.DateTimeUtility.ConvertAllDateTimePropertiesToUTC(telemetrySessionSnapshot, databaseStoresDateWithTimeZone);
 			}
@@ -232,7 +232,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 				newestSessionStart = newestSessionStart.Value.ToUniversalTime();
 			}
 
-			IQueryable<Telemetry.Database.TelemetrySessionSnapshot> query = (from tss in _context.TelemetrySessionSnapshots select tss);
+			IQueryable<Database.TelemetrySessionSnapshot> query = (from tss in _context.TelemetrySessionSnapshots select tss);
 			if (telemetrySnapshotId.HasValue == true)
 			{
 				query = query.Where(tss => tss.telemetrySnapshotId == telemetrySnapshotId.Value);
@@ -302,7 +302,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 
 			try
 			{
-				IQueryable<Telemetry.Database.TelemetrySessionSnapshot> query = (from tss in _context.TelemetrySessionSnapshots where
+				IQueryable<Database.TelemetrySessionSnapshot> query = (from tss in _context.TelemetrySessionSnapshots where
 				(tss.id == id)
 					select tss);
 
@@ -312,7 +312,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 					query = query.AsSplitQuery();
 				}
 
-				Telemetry.Database.TelemetrySessionSnapshot materialized = await query.FirstOrDefaultAsync(cancellationToken);
+				Database.TelemetrySessionSnapshot materialized = await query.FirstOrDefaultAsync(cancellationToken);
 
 				if (materialized != null)
 				{
@@ -360,7 +360,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		[HttpPost]
 		[HttpPut]
-		public async Task<IActionResult> PutTelemetrySessionSnapshot(int id, [FromBody]Telemetry.Database.TelemetrySessionSnapshot.TelemetrySessionSnapshotDTO telemetrySessionSnapshotDTO, CancellationToken cancellationToken = default)
+		public async Task<IActionResult> PutTelemetrySessionSnapshot(int id, [FromBody]Database.TelemetrySessionSnapshot.TelemetrySessionSnapshotDTO telemetrySessionSnapshotDTO, CancellationToken cancellationToken = default)
 		{
 			if (telemetrySessionSnapshotDTO == null)
 			{
@@ -386,13 +386,13 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 0, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
-			IQueryable<Telemetry.Database.TelemetrySessionSnapshot> query = (from x in _context.TelemetrySessionSnapshots
+			IQueryable<Database.TelemetrySessionSnapshot> query = (from x in _context.TelemetrySessionSnapshots
 				where
 				(x.id == id)
 				select x);
 
 
-			Telemetry.Database.TelemetrySessionSnapshot existing = await query.FirstOrDefaultAsync(cancellationToken);
+			Database.TelemetrySessionSnapshot existing = await query.FirstOrDefaultAsync(cancellationToken);
 
 			if (existing == null)
 			{
@@ -401,12 +401,12 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			}
 
 			// Copy the existing object so it can be serialized as-is in the audit and history logs.
-			Telemetry.Database.TelemetrySessionSnapshot cloneOfExisting = (Telemetry.Database.TelemetrySessionSnapshot)_context.Entry(existing).GetDatabaseValues().ToObject();
+			Database.TelemetrySessionSnapshot cloneOfExisting = (Database.TelemetrySessionSnapshot)_context.Entry(existing).GetDatabaseValues().ToObject();
 
 			//
 			// Create a new TelemetrySessionSnapshot object using the data from the existing record, updated with what is in the DTO.
 			//
-			Telemetry.Database.TelemetrySessionSnapshot telemetrySessionSnapshot = (Telemetry.Database.TelemetrySessionSnapshot)_context.Entry(existing).GetDatabaseValues().ToObject();
+			Database.TelemetrySessionSnapshot telemetrySessionSnapshot = (Database.TelemetrySessionSnapshot)_context.Entry(existing).GetDatabaseValues().ToObject();
 			telemetrySessionSnapshot.ApplyDTO(telemetrySessionSnapshotDTO);
 
 
@@ -420,7 +420,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 				telemetrySessionSnapshot.newestSessionStart = telemetrySessionSnapshot.newestSessionStart.Value.ToUniversalTime();
 			}
 
-			EntityEntry<Telemetry.Database.TelemetrySessionSnapshot> attached = _context.Entry(existing);
+			EntityEntry<Database.TelemetrySessionSnapshot> attached = _context.Entry(existing);
 			attached.CurrentValues.SetValues(telemetrySessionSnapshot);
 
 			try
@@ -431,12 +431,12 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 					"Telemetry.TelemetrySessionSnapshot entity successfully updated.",
 					true,
 					id.ToString(),
-					JsonSerializer.Serialize(Telemetry.Database.TelemetrySessionSnapshot.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Telemetry.Database.TelemetrySessionSnapshot.CreateAnonymousWithFirstLevelSubObjects(telemetrySessionSnapshot)),
+					JsonSerializer.Serialize(Database.TelemetrySessionSnapshot.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+					JsonSerializer.Serialize(Database.TelemetrySessionSnapshot.CreateAnonymousWithFirstLevelSubObjects(telemetrySessionSnapshot)),
 					null);
 
 
-				return Ok(Telemetry.Database.TelemetrySessionSnapshot.CreateAnonymous(telemetrySessionSnapshot));
+				return Ok(Database.TelemetrySessionSnapshot.CreateAnonymous(telemetrySessionSnapshot));
 			}
 			catch (Exception ex)
 			{
@@ -444,8 +444,8 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 					"Telemetry.TelemetrySessionSnapshot entity update failed",
 					false,
 					id.ToString(),
-					JsonSerializer.Serialize(Telemetry.Database.TelemetrySessionSnapshot.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Telemetry.Database.TelemetrySessionSnapshot.CreateAnonymousWithFirstLevelSubObjects(telemetrySessionSnapshot)),
+					JsonSerializer.Serialize(Database.TelemetrySessionSnapshot.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+					JsonSerializer.Serialize(Database.TelemetrySessionSnapshot.CreateAnonymousWithFirstLevelSubObjects(telemetrySessionSnapshot)),
 					ex);
 
 				return Problem(ex.Message);
@@ -463,7 +463,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 		[HttpPost]
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/TelemetrySessionSnapshot", Name = "TelemetrySessionSnapshot")]
-		public async Task<IActionResult> PostTelemetrySessionSnapshot([FromBody]Telemetry.Database.TelemetrySessionSnapshot.TelemetrySessionSnapshotDTO telemetrySessionSnapshotDTO, CancellationToken cancellationToken = default)
+		public async Task<IActionResult> PostTelemetrySessionSnapshot([FromBody]Database.TelemetrySessionSnapshot.TelemetrySessionSnapshotDTO telemetrySessionSnapshotDTO, CancellationToken cancellationToken = default)
 		{
 			if (telemetrySessionSnapshotDTO == null)
 			{
@@ -485,7 +485,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			//
 			// Create a new TelemetrySessionSnapshot object using the data from the DTO
 			//
-			Telemetry.Database.TelemetrySessionSnapshot telemetrySessionSnapshot = Telemetry.Database.TelemetrySessionSnapshot.FromDTO(telemetrySessionSnapshotDTO);
+			Database.TelemetrySessionSnapshot telemetrySessionSnapshot = Database.TelemetrySessionSnapshot.FromDTO(telemetrySessionSnapshotDTO);
 
 			try
 			{
@@ -507,7 +507,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 					true,
 					telemetrySessionSnapshot.id.ToString(),
 					"",
-					JsonSerializer.Serialize(Telemetry.Database.TelemetrySessionSnapshot.CreateAnonymousWithFirstLevelSubObjects(telemetrySessionSnapshot)),
+					JsonSerializer.Serialize(Database.TelemetrySessionSnapshot.CreateAnonymousWithFirstLevelSubObjects(telemetrySessionSnapshot)),
 					null);
 
 			}
@@ -521,7 +521,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 
 			BackgroundJob.Enqueue(() => SecurityLogic.AddToUserMostRecents(securityUser.id, "TelemetrySessionSnapshot", telemetrySessionSnapshot.id, telemetrySessionSnapshot.id.ToString()));
 
-			return CreatedAtRoute("TelemetrySessionSnapshot", new { id = telemetrySessionSnapshot.id }, Telemetry.Database.TelemetrySessionSnapshot.CreateAnonymousWithFirstLevelSubObjects(telemetrySessionSnapshot));
+			return CreatedAtRoute("TelemetrySessionSnapshot", new { id = telemetrySessionSnapshot.id }, Database.TelemetrySessionSnapshot.CreateAnonymousWithFirstLevelSubObjects(telemetrySessionSnapshot));
 		}
 
 
@@ -549,20 +549,20 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
-			IQueryable<Telemetry.Database.TelemetrySessionSnapshot> query = (from x in _context.TelemetrySessionSnapshots
+			IQueryable<Database.TelemetrySessionSnapshot> query = (from x in _context.TelemetrySessionSnapshots
 				where
 				(x.id == id)
 				select x);
 
 
-			Telemetry.Database.TelemetrySessionSnapshot telemetrySessionSnapshot = await query.FirstOrDefaultAsync(cancellationToken);
+			Database.TelemetrySessionSnapshot telemetrySessionSnapshot = await query.FirstOrDefaultAsync(cancellationToken);
 
 			if (telemetrySessionSnapshot == null)
 			{
 				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for Telemetry.TelemetrySessionSnapshot DELETE", id.ToString(), new Exception("No Telemetry.TelemetrySessionSnapshot entity could be find with the primary key provided."));
 				return NotFound();
 			}
-			Telemetry.Database.TelemetrySessionSnapshot cloneOfExisting = (Telemetry.Database.TelemetrySessionSnapshot)_context.Entry(telemetrySessionSnapshot).GetDatabaseValues().ToObject();
+			Database.TelemetrySessionSnapshot cloneOfExisting = (Database.TelemetrySessionSnapshot)_context.Entry(telemetrySessionSnapshot).GetDatabaseValues().ToObject();
 
 
 			try
@@ -574,8 +574,8 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 					"Telemetry.TelemetrySessionSnapshot entity successfully deleted.",
 					true,
 					id.ToString(),
-					JsonSerializer.Serialize(Telemetry.Database.TelemetrySessionSnapshot.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Telemetry.Database.TelemetrySessionSnapshot.CreateAnonymousWithFirstLevelSubObjects(telemetrySessionSnapshot)),
+					JsonSerializer.Serialize(Database.TelemetrySessionSnapshot.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+					JsonSerializer.Serialize(Database.TelemetrySessionSnapshot.CreateAnonymousWithFirstLevelSubObjects(telemetrySessionSnapshot)),
 					null);
 
 			}
@@ -585,8 +585,8 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 					"Telemetry.TelemetrySessionSnapshot entity delete failed.",
 					false,
 					id.ToString(),
-					JsonSerializer.Serialize(Telemetry.Database.TelemetrySessionSnapshot.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Telemetry.Database.TelemetrySessionSnapshot.CreateAnonymousWithFirstLevelSubObjects(telemetrySessionSnapshot)),
+					JsonSerializer.Serialize(Database.TelemetrySessionSnapshot.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+					JsonSerializer.Serialize(Database.TelemetrySessionSnapshot.CreateAnonymousWithFirstLevelSubObjects(telemetrySessionSnapshot)),
 					ex);
 
 				return Problem(ex.Message);
@@ -655,7 +655,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 				newestSessionStart = newestSessionStart.Value.ToUniversalTime();
 			}
 
-			IQueryable<Telemetry.Database.TelemetrySessionSnapshot> query = (from tss in _context.TelemetrySessionSnapshots select tss);
+			IQueryable<Database.TelemetrySessionSnapshot> query = (from tss in _context.TelemetrySessionSnapshots select tss);
 			if (telemetrySnapshotId.HasValue == true)
 			{
 				query = query.Where(tss => tss.telemetrySnapshotId == telemetrySnapshotId.Value);
@@ -699,7 +699,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			{
 			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
 			}
-			return Ok(await (from queryData in query select Telemetry.Database.TelemetrySessionSnapshot.CreateMinimalAnonymous(queryData)).ToListAsync(cancellationToken));
+			return Ok(await (from queryData in query select Database.TelemetrySessionSnapshot.CreateMinimalAnonymous(queryData)).ToListAsync(cancellationToken));
 		}
 
 

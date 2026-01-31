@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 using System;
 using System.IO;
 
-namespace Foundation.Telemetry.Telemetry.Database
+namespace Foundation.Telemetry.Database
 {
 
     /// <summry>

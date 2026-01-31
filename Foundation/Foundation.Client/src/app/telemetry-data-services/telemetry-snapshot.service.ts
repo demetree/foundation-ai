@@ -42,6 +42,7 @@ export class TelemetrySnapshotQueryParameters {
     uptimeSeconds: bigint | number | null | undefined = null;
     memoryWorkingSetMB: number | null | undefined = null;
     memoryGcHeapMB: number | null | undefined = null;
+    memoryPercent: number | null | undefined = null;
     cpuPercent: number | null | undefined = null;
     threadPoolWorkerThreads: bigint | number | null | undefined = null;
     threadPoolCompletionPortThreads: bigint | number | null | undefined = null;
@@ -68,6 +69,7 @@ export class TelemetrySnapshotSubmitData {
     uptimeSeconds: bigint | number | null = null;
     memoryWorkingSetMB: number | null = null;
     memoryGcHeapMB: number | null = null;
+    memoryPercent: number | null = null;
     cpuPercent: number | null = null;
     threadPoolWorkerThreads: bigint | number | null = null;
     threadPoolCompletionPortThreads: bigint | number | null = null;
@@ -129,6 +131,7 @@ export class TelemetrySnapshotData {
     uptimeSeconds!: bigint | number;
     memoryWorkingSetMB!: number | null;
     memoryGcHeapMB!: number | null;
+    memoryPercent!: number | null;
     cpuPercent!: number | null;
     threadPoolWorkerThreads!: bigint | number;
     threadPoolCompletionPortThreads!: bigint | number;
@@ -856,6 +859,7 @@ export class TelemetrySnapshotService extends SecureEndpointBase {
         output.uptimeSeconds = data.uptimeSeconds;
         output.memoryWorkingSetMB = data.memoryWorkingSetMB;
         output.memoryGcHeapMB = data.memoryGcHeapMB;
+        output.memoryPercent = data.memoryPercent;
         output.cpuPercent = data.cpuPercent;
         output.threadPoolWorkerThreads = data.threadPoolWorkerThreads;
         output.threadPoolCompletionPortThreads = data.threadPoolCompletionPortThreads;

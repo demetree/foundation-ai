@@ -95,6 +95,7 @@ CREATE TABLE [Telemetry].[TelemetrySnapshot]
 	[uptimeSeconds] BIGINT NULL,
 	[memoryWorkingSetMB] FLOAT NULL,
 	[memoryGcHeapMB] FLOAT NULL,
+	[memoryPercent] FLOAT NULL,
 	[cpuPercent] FLOAT NULL,
 	[threadPoolWorkerThreads] INT NULL,
 	[threadPoolCompletionPortThreads] INT NULL,
@@ -154,6 +155,7 @@ CREATE TABLE [Telemetry].[TelemetryDiskHealth]
 	[totalGB] FLOAT NULL,
 	[freeGB] FLOAT NULL,
 	[freePercent] FLOAT NULL,
+	[usedPercent] FLOAT NULL,
 	[status] NVARCHAR(50) NULL,
 	[isApplicationDrive] BIT NOT NULL DEFAULT 0
 	CONSTRAINT [FK_TelemetryDiskHealth_TelemetrySnapshot_telemetrySnapshotId] FOREIGN KEY ([telemetrySnapshotId]) REFERENCES [Telemetry].[TelemetrySnapshot] ([id])		-- Foreign key to the TelemetrySnapshot table.

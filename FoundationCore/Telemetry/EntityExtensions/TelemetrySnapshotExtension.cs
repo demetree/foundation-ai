@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Foundation.Entity;
 
-namespace Foundation.Telemetry.Telemetry.Database
+namespace Foundation.Telemetry.Database
 {
 	//
 	// The purpose of this partial class is to provide helper methods to convert an object into a simpler anonymous object better suited for JSON serialization to web client for the web api controllers to use.
@@ -32,6 +32,7 @@ namespace Foundation.Telemetry.Telemetry.Database
 			public Int64? uptimeSeconds { get; set; }
 			public Double? memoryWorkingSetMB { get; set; }
 			public Double? memoryGcHeapMB { get; set; }
+			public Double? memoryPercent { get; set; }
 			public Double? cpuPercent { get; set; }
 			public Int32? threadPoolWorkerThreads { get; set; }
 			public Int32? threadPoolCompletionPortThreads { get; set; }
@@ -73,6 +74,7 @@ namespace Foundation.Telemetry.Telemetry.Database
 				uptimeSeconds = this.uptimeSeconds,
 				memoryWorkingSetMB = this.memoryWorkingSetMB,
 				memoryGcHeapMB = this.memoryGcHeapMB,
+				memoryPercent = this.memoryPercent,
 				cpuPercent = this.cpuPercent,
 				threadPoolWorkerThreads = this.threadPoolWorkerThreads,
 				threadPoolCompletionPortThreads = this.threadPoolCompletionPortThreads,
@@ -126,6 +128,7 @@ namespace Foundation.Telemetry.Telemetry.Database
 				uptimeSeconds = this.uptimeSeconds,
 				memoryWorkingSetMB = this.memoryWorkingSetMB,
 				memoryGcHeapMB = this.memoryGcHeapMB,
+				memoryPercent = this.memoryPercent,
 				cpuPercent = this.cpuPercent,
 				threadPoolWorkerThreads = this.threadPoolWorkerThreads,
 				threadPoolCompletionPortThreads = this.threadPoolCompletionPortThreads,
@@ -169,9 +172,9 @@ namespace Foundation.Telemetry.Telemetry.Database
 		/// Converts an INPUT DTO to a TelemetrySnapshot Object.
 		///
 		/// </summary>
-		public static Telemetry.Database.TelemetrySnapshot FromDTO(TelemetrySnapshotDTO dto)
+		public static Database.TelemetrySnapshot FromDTO(TelemetrySnapshotDTO dto)
 		{
-			return new Telemetry.Database.TelemetrySnapshot
+			return new Database.TelemetrySnapshot
 			{
 				id = dto.id,
 				telemetryApplicationId = dto.telemetryApplicationId,
@@ -181,6 +184,7 @@ namespace Foundation.Telemetry.Telemetry.Database
 				uptimeSeconds = dto.uptimeSeconds,
 				memoryWorkingSetMB = dto.memoryWorkingSetMB,
 				memoryGcHeapMB = dto.memoryGcHeapMB,
+				memoryPercent = dto.memoryPercent,
 				cpuPercent = dto.cpuPercent,
 				threadPoolWorkerThreads = dto.threadPoolWorkerThreads,
 				threadPoolCompletionPortThreads = dto.threadPoolCompletionPortThreads,
@@ -211,6 +215,7 @@ namespace Foundation.Telemetry.Telemetry.Database
 			this.uptimeSeconds = dto.uptimeSeconds;
 			this.memoryWorkingSetMB = dto.memoryWorkingSetMB;
 			this.memoryGcHeapMB = dto.memoryGcHeapMB;
+			this.memoryPercent = dto.memoryPercent;
 			this.cpuPercent = dto.cpuPercent;
 			this.threadPoolWorkerThreads = dto.threadPoolWorkerThreads;
 			this.threadPoolCompletionPortThreads = dto.threadPoolCompletionPortThreads;
@@ -240,6 +245,7 @@ namespace Foundation.Telemetry.Telemetry.Database
 				uptimeSeconds = this.uptimeSeconds,
 				memoryWorkingSetMB = this.memoryWorkingSetMB,
 				memoryGcHeapMB = this.memoryGcHeapMB,
+				memoryPercent = this.memoryPercent,
 				cpuPercent = this.cpuPercent,
 				threadPoolWorkerThreads = this.threadPoolWorkerThreads,
 				threadPoolCompletionPortThreads = this.threadPoolCompletionPortThreads,
@@ -288,7 +294,7 @@ namespace Foundation.Telemetry.Telemetry.Database
 		/// Creates an anonymous object version of a TelemetrySnapshot Object.
 		///
 		/// </summary>
-		public static object CreateAnonymous(Telemetry.Database.TelemetrySnapshot telemetrySnapshot)
+		public static object CreateAnonymous(Database.TelemetrySnapshot telemetrySnapshot)
 		{
 			//
 			// Return a simplified object without any object or list properties.
@@ -307,6 +313,7 @@ namespace Foundation.Telemetry.Telemetry.Database
 				uptimeSeconds = telemetrySnapshot.uptimeSeconds,
 				memoryWorkingSetMB = telemetrySnapshot.memoryWorkingSetMB,
 				memoryGcHeapMB = telemetrySnapshot.memoryGcHeapMB,
+				memoryPercent = telemetrySnapshot.memoryPercent,
 				cpuPercent = telemetrySnapshot.cpuPercent,
 				threadPoolWorkerThreads = telemetrySnapshot.threadPoolWorkerThreads,
 				threadPoolCompletionPortThreads = telemetrySnapshot.threadPoolCompletionPortThreads,
@@ -341,6 +348,7 @@ namespace Foundation.Telemetry.Telemetry.Database
 				uptimeSeconds = telemetrySnapshot.uptimeSeconds,
 				memoryWorkingSetMB = telemetrySnapshot.memoryWorkingSetMB,
 				memoryGcHeapMB = telemetrySnapshot.memoryGcHeapMB,
+				memoryPercent = telemetrySnapshot.memoryPercent,
 				cpuPercent = telemetrySnapshot.cpuPercent,
 				threadPoolWorkerThreads = telemetrySnapshot.threadPoolWorkerThreads,
 				threadPoolCompletionPortThreads = telemetrySnapshot.threadPoolCompletionPortThreads,

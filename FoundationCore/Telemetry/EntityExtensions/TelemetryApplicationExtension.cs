@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Foundation.Entity;
 
-namespace Foundation.Telemetry.Telemetry.Database
+namespace Foundation.Telemetry.Database
 {
 	//
 	// The purpose of this partial class is to provide helper methods to convert an object into a simpler anonymous object better suited for JSON serialization to web client for the web api controllers to use.
@@ -137,9 +137,9 @@ namespace Foundation.Telemetry.Telemetry.Database
 		/// Converts an INPUT DTO to a TelemetryApplication Object.
 		///
 		/// </summary>
-		public static Telemetry.Database.TelemetryApplication FromDTO(TelemetryApplicationDTO dto)
+		public static Database.TelemetryApplication FromDTO(TelemetryApplicationDTO dto)
 		{
-			return new Telemetry.Database.TelemetryApplication
+			return new Database.TelemetryApplication
 			{
 				id = dto.id,
 				name = dto.name,
@@ -229,7 +229,7 @@ namespace Foundation.Telemetry.Telemetry.Database
 		/// Creates an anonymous object version of a TelemetryApplication Object.
 		///
 		/// </summary>
-		public static object CreateAnonymous(Telemetry.Database.TelemetryApplication telemetryApplication)
+		public static object CreateAnonymous(Database.TelemetryApplication telemetryApplication)
 		{
 			//
 			// Return a simplified object without any object or list properties.

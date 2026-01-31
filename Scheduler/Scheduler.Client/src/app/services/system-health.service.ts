@@ -32,6 +32,7 @@ export interface ApplicationMetrics {
     workingSetMB: number;
     privateMemoryMB: number;
     gcHeapMB: number;
+    percent?: number;
     gen0Collections: number;
     gen1Collections: number;
     gen2Collections: number;

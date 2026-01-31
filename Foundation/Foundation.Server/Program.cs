@@ -22,7 +22,7 @@ using Foundation.Security.Database;
 using Foundation.Security;
 using Foundation.Auditor.Database;
 using Foundation.Telemetry;
-using Foundation.Telemetry.Telemetry.Database;
+using Foundation.Telemetry.Database;
 
 
 namespace Foundation.Server

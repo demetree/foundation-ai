@@ -15,7 +15,7 @@ using Foundation.Auditor;
 using Foundation.Controllers;
 using Foundation.Security.Database;
 using static Foundation.Auditor.AuditEngine;
-using Foundation.Telemetry.Telemetry.Database;
+using Foundation.Telemetry.Database;
 
 namespace Foundation.Telemetry.Controllers.WebAPI
 {
@@ -100,7 +100,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			    pageSize = null;
 			}
 
-			IQueryable<Telemetry.Database.TelemetryDatabaseHealth> query = (from tdh in _context.TelemetryDatabaseHealths select tdh);
+			IQueryable<Database.TelemetryDatabaseHealth> query = (from tdh in _context.TelemetryDatabaseHealths select tdh);
 			if (telemetrySnapshotId.HasValue == true)
 			{
 				query = query.Where(tdh => tdh.telemetrySnapshotId == telemetrySnapshotId.Value);
@@ -166,11 +166,11 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 
 			query = query.AsNoTracking();
 			
-			List<Telemetry.Database.TelemetryDatabaseHealth> materialized = await query.ToListAsync(cancellationToken);
+			List<Database.TelemetryDatabaseHealth> materialized = await query.ToListAsync(cancellationToken);
 
 			// Convert all the date properties to be of kind UTC.
 			bool databaseStoresDateWithTimeZone = _context.DoesDatabaseStoreDateWithTimeZone();
-			foreach (Telemetry.Database.TelemetryDatabaseHealth telemetryDatabaseHealth in materialized)
+			foreach (Database.TelemetryDatabaseHealth telemetryDatabaseHealth in materialized)
 			{
 			    Foundation.DateTimeUtility.ConvertAllDateTimePropertiesToUTC(telemetryDatabaseHealth, databaseStoresDateWithTimeZone);
 			}
@@ -223,7 +223,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 0, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 
-			IQueryable<Telemetry.Database.TelemetryDatabaseHealth> query = (from tdh in _context.TelemetryDatabaseHealths select tdh);
+			IQueryable<Database.TelemetryDatabaseHealth> query = (from tdh in _context.TelemetryDatabaseHealths select tdh);
 			if (telemetrySnapshotId.HasValue == true)
 			{
 				query = query.Where(tdh => tdh.telemetrySnapshotId == telemetrySnapshotId.Value);
@@ -306,7 +306,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 
 			try
 			{
-				IQueryable<Telemetry.Database.TelemetryDatabaseHealth> query = (from tdh in _context.TelemetryDatabaseHealths where
+				IQueryable<Database.TelemetryDatabaseHealth> query = (from tdh in _context.TelemetryDatabaseHealths where
 				(tdh.id == id)
 					select tdh);
 
@@ -316,7 +316,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 					query = query.AsSplitQuery();
 				}
 
-				Telemetry.Database.TelemetryDatabaseHealth materialized = await query.FirstOrDefaultAsync(cancellationToken);
+				Database.TelemetryDatabaseHealth materialized = await query.FirstOrDefaultAsync(cancellationToken);
 
 				if (materialized != null)
 				{
@@ -364,7 +364,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		[HttpPost]
 		[HttpPut]
-		public async Task<IActionResult> PutTelemetryDatabaseHealth(int id, [FromBody]Telemetry.Database.TelemetryDatabaseHealth.TelemetryDatabaseHealthDTO telemetryDatabaseHealthDTO, CancellationToken cancellationToken = default)
+		public async Task<IActionResult> PutTelemetryDatabaseHealth(int id, [FromBody]Database.TelemetryDatabaseHealth.TelemetryDatabaseHealthDTO telemetryDatabaseHealthDTO, CancellationToken cancellationToken = default)
 		{
 			if (telemetryDatabaseHealthDTO == null)
 			{
@@ -390,13 +390,13 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 0, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
-			IQueryable<Telemetry.Database.TelemetryDatabaseHealth> query = (from x in _context.TelemetryDatabaseHealths
+			IQueryable<Database.TelemetryDatabaseHealth> query = (from x in _context.TelemetryDatabaseHealths
 				where
 				(x.id == id)
 				select x);
 
 
-			Telemetry.Database.TelemetryDatabaseHealth existing = await query.FirstOrDefaultAsync(cancellationToken);
+			Database.TelemetryDatabaseHealth existing = await query.FirstOrDefaultAsync(cancellationToken);
 
 			if (existing == null)
 			{
@@ -405,12 +405,12 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			}
 
 			// Copy the existing object so it can be serialized as-is in the audit and history logs.
-			Telemetry.Database.TelemetryDatabaseHealth cloneOfExisting = (Telemetry.Database.TelemetryDatabaseHealth)_context.Entry(existing).GetDatabaseValues().ToObject();
+			Database.TelemetryDatabaseHealth cloneOfExisting = (Database.TelemetryDatabaseHealth)_context.Entry(existing).GetDatabaseValues().ToObject();
 
 			//
 			// Create a new TelemetryDatabaseHealth object using the data from the existing record, updated with what is in the DTO.
 			//
-			Telemetry.Database.TelemetryDatabaseHealth telemetryDatabaseHealth = (Telemetry.Database.TelemetryDatabaseHealth)_context.Entry(existing).GetDatabaseValues().ToObject();
+			Database.TelemetryDatabaseHealth telemetryDatabaseHealth = (Database.TelemetryDatabaseHealth)_context.Entry(existing).GetDatabaseValues().ToObject();
 			telemetryDatabaseHealth.ApplyDTO(telemetryDatabaseHealthDTO);
 
 
@@ -434,7 +434,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 				telemetryDatabaseHealth.provider = telemetryDatabaseHealth.provider.Substring(0, 100);
 			}
 
-			EntityEntry<Telemetry.Database.TelemetryDatabaseHealth> attached = _context.Entry(existing);
+			EntityEntry<Database.TelemetryDatabaseHealth> attached = _context.Entry(existing);
 			attached.CurrentValues.SetValues(telemetryDatabaseHealth);
 
 			try
@@ -445,12 +445,12 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 					"Telemetry.TelemetryDatabaseHealth entity successfully updated.",
 					true,
 					id.ToString(),
-					JsonSerializer.Serialize(Telemetry.Database.TelemetryDatabaseHealth.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Telemetry.Database.TelemetryDatabaseHealth.CreateAnonymousWithFirstLevelSubObjects(telemetryDatabaseHealth)),
+					JsonSerializer.Serialize(Database.TelemetryDatabaseHealth.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+					JsonSerializer.Serialize(Database.TelemetryDatabaseHealth.CreateAnonymousWithFirstLevelSubObjects(telemetryDatabaseHealth)),
 					null);
 
 
-				return Ok(Telemetry.Database.TelemetryDatabaseHealth.CreateAnonymous(telemetryDatabaseHealth));
+				return Ok(Database.TelemetryDatabaseHealth.CreateAnonymous(telemetryDatabaseHealth));
 			}
 			catch (Exception ex)
 			{
@@ -458,8 +458,8 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 					"Telemetry.TelemetryDatabaseHealth entity update failed",
 					false,
 					id.ToString(),
-					JsonSerializer.Serialize(Telemetry.Database.TelemetryDatabaseHealth.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Telemetry.Database.TelemetryDatabaseHealth.CreateAnonymousWithFirstLevelSubObjects(telemetryDatabaseHealth)),
+					JsonSerializer.Serialize(Database.TelemetryDatabaseHealth.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+					JsonSerializer.Serialize(Database.TelemetryDatabaseHealth.CreateAnonymousWithFirstLevelSubObjects(telemetryDatabaseHealth)),
 					ex);
 
 				return Problem(ex.Message);
@@ -477,7 +477,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 		[HttpPost]
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/TelemetryDatabaseHealth", Name = "TelemetryDatabaseHealth")]
-		public async Task<IActionResult> PostTelemetryDatabaseHealth([FromBody]Telemetry.Database.TelemetryDatabaseHealth.TelemetryDatabaseHealthDTO telemetryDatabaseHealthDTO, CancellationToken cancellationToken = default)
+		public async Task<IActionResult> PostTelemetryDatabaseHealth([FromBody]Database.TelemetryDatabaseHealth.TelemetryDatabaseHealthDTO telemetryDatabaseHealthDTO, CancellationToken cancellationToken = default)
 		{
 			if (telemetryDatabaseHealthDTO == null)
 			{
@@ -499,7 +499,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			//
 			// Create a new TelemetryDatabaseHealth object using the data from the DTO
 			//
-			Telemetry.Database.TelemetryDatabaseHealth telemetryDatabaseHealth = Telemetry.Database.TelemetryDatabaseHealth.FromDTO(telemetryDatabaseHealthDTO);
+			Database.TelemetryDatabaseHealth telemetryDatabaseHealth = Database.TelemetryDatabaseHealth.FromDTO(telemetryDatabaseHealthDTO);
 
 			try
 			{
@@ -531,7 +531,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 					true,
 					telemetryDatabaseHealth.id.ToString(),
 					"",
-					JsonSerializer.Serialize(Telemetry.Database.TelemetryDatabaseHealth.CreateAnonymousWithFirstLevelSubObjects(telemetryDatabaseHealth)),
+					JsonSerializer.Serialize(Database.TelemetryDatabaseHealth.CreateAnonymousWithFirstLevelSubObjects(telemetryDatabaseHealth)),
 					null);
 
 			}
@@ -545,7 +545,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 
 			BackgroundJob.Enqueue(() => SecurityLogic.AddToUserMostRecents(securityUser.id, "TelemetryDatabaseHealth", telemetryDatabaseHealth.id, telemetryDatabaseHealth.databaseName));
 
-			return CreatedAtRoute("TelemetryDatabaseHealth", new { id = telemetryDatabaseHealth.id }, Telemetry.Database.TelemetryDatabaseHealth.CreateAnonymousWithFirstLevelSubObjects(telemetryDatabaseHealth));
+			return CreatedAtRoute("TelemetryDatabaseHealth", new { id = telemetryDatabaseHealth.id }, Database.TelemetryDatabaseHealth.CreateAnonymousWithFirstLevelSubObjects(telemetryDatabaseHealth));
 		}
 
 
@@ -573,20 +573,20 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
-			IQueryable<Telemetry.Database.TelemetryDatabaseHealth> query = (from x in _context.TelemetryDatabaseHealths
+			IQueryable<Database.TelemetryDatabaseHealth> query = (from x in _context.TelemetryDatabaseHealths
 				where
 				(x.id == id)
 				select x);
 
 
-			Telemetry.Database.TelemetryDatabaseHealth telemetryDatabaseHealth = await query.FirstOrDefaultAsync(cancellationToken);
+			Database.TelemetryDatabaseHealth telemetryDatabaseHealth = await query.FirstOrDefaultAsync(cancellationToken);
 
 			if (telemetryDatabaseHealth == null)
 			{
 				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for Telemetry.TelemetryDatabaseHealth DELETE", id.ToString(), new Exception("No Telemetry.TelemetryDatabaseHealth entity could be find with the primary key provided."));
 				return NotFound();
 			}
-			Telemetry.Database.TelemetryDatabaseHealth cloneOfExisting = (Telemetry.Database.TelemetryDatabaseHealth)_context.Entry(telemetryDatabaseHealth).GetDatabaseValues().ToObject();
+			Database.TelemetryDatabaseHealth cloneOfExisting = (Database.TelemetryDatabaseHealth)_context.Entry(telemetryDatabaseHealth).GetDatabaseValues().ToObject();
 
 
 			try
@@ -598,8 +598,8 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 					"Telemetry.TelemetryDatabaseHealth entity successfully deleted.",
 					true,
 					id.ToString(),
-					JsonSerializer.Serialize(Telemetry.Database.TelemetryDatabaseHealth.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Telemetry.Database.TelemetryDatabaseHealth.CreateAnonymousWithFirstLevelSubObjects(telemetryDatabaseHealth)),
+					JsonSerializer.Serialize(Database.TelemetryDatabaseHealth.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+					JsonSerializer.Serialize(Database.TelemetryDatabaseHealth.CreateAnonymousWithFirstLevelSubObjects(telemetryDatabaseHealth)),
 					null);
 
 			}
@@ -609,8 +609,8 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 					"Telemetry.TelemetryDatabaseHealth entity delete failed.",
 					false,
 					id.ToString(),
-					JsonSerializer.Serialize(Telemetry.Database.TelemetryDatabaseHealth.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Telemetry.Database.TelemetryDatabaseHealth.CreateAnonymousWithFirstLevelSubObjects(telemetryDatabaseHealth)),
+					JsonSerializer.Serialize(Database.TelemetryDatabaseHealth.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+					JsonSerializer.Serialize(Database.TelemetryDatabaseHealth.CreateAnonymousWithFirstLevelSubObjects(telemetryDatabaseHealth)),
 					ex);
 
 				return Problem(ex.Message);
@@ -668,7 +668,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			    pageSize = null;
 			}
 
-			IQueryable<Telemetry.Database.TelemetryDatabaseHealth> query = (from tdh in _context.TelemetryDatabaseHealths select tdh);
+			IQueryable<Database.TelemetryDatabaseHealth> query = (from tdh in _context.TelemetryDatabaseHealths select tdh);
 			if (telemetrySnapshotId.HasValue == true)
 			{
 				query = query.Where(tdh => tdh.telemetrySnapshotId == telemetrySnapshotId.Value);
@@ -725,7 +725,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			{
 			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
 			}
-			return Ok(await (from queryData in query select Telemetry.Database.TelemetryDatabaseHealth.CreateMinimalAnonymous(queryData)).ToListAsync(cancellationToken));
+			return Ok(await (from queryData in query select Database.TelemetryDatabaseHealth.CreateMinimalAnonymous(queryData)).ToListAsync(cancellationToken));
 		}
 
 

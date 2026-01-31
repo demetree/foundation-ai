@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Foundation.Telemetry.Telemetry.Database;
+namespace Foundation.Telemetry.Database;
 
 public partial class TelemetryApplication
 {

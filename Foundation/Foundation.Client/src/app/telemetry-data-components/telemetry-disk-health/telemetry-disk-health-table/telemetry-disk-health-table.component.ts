@@ -170,6 +170,7 @@ export class TelemetryDiskHealthTableComponent implements OnInit, OnChanges, Aft
     { key: 'totalGB', label: 'Total G B', width: undefined },
     { key: 'freeGB', label: 'Free G B', width: undefined },
     { key: 'freePercent', label: 'Free Percent', width: undefined },
+    { key: 'usedPercent', label: 'Used Percent', width: undefined },
     { key: 'status', label: 'Status', width: undefined },
     { key: 'isApplicationDrive', label: 'Is Application Drive', width: '120px', template: 'boolean' },
 
@@ -319,6 +320,7 @@ export class TelemetryDiskHealthTableComponent implements OnInit, OnChanges, Aft
                       'totalGB',
                       'freeGB',
                       'freePercent',
+                      'usedPercent',
                       'status',
                       'isApplicationDrive',
         ];

@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Foundation.Services;
-using Foundation.Telemetry.Telemetry.Database;
+using Foundation.Telemetry.Database;
 
 namespace Foundation.Telemetry
 {
@@ -270,6 +270,8 @@ namespace Foundation.Telemetry
                                 snapshot.memoryWorkingSetMB = workingSet.GetDouble();
                             if (memory.TryGetProperty("gcHeapMB", out var gcHeap))
                                 snapshot.memoryGcHeapMB = gcHeap.GetDouble();
+                            if (memory.TryGetProperty("percent", out var memPercent))
+                                snapshot.memoryPercent = memPercent.GetDouble();
                         }
 
                         // Environment info is nested under application.environment
@@ -357,6 +359,7 @@ namespace Foundation.Telemetry
                             totalGB = disk.TryGetProperty("totalGB", out var t) ? t.GetDouble() : 0,
                             freeGB = disk.TryGetProperty("freeGB", out var f) ? f.GetDouble() : 0,
                             freePercent = disk.TryGetProperty("freePercent", out var fp) ? fp.GetDouble() : 0,
+                            usedPercent = disk.TryGetProperty("usedPercent", out var up) ? up.GetDouble() : 0,
                             status = disk.TryGetProperty("status", out var s) ? s.GetString() : null,
                             isApplicationDrive = disk.TryGetProperty("isApplicationDrive", out var ia) && ia.GetBoolean()
                         };

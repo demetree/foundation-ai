@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Foundation.Telemetry.Telemetry.Database;
+namespace Foundation.Telemetry.Database;
 
 public partial class TelemetrySnapshot
 {
@@ -22,6 +22,8 @@ public partial class TelemetrySnapshot
     public double? memoryWorkingSetMB { get; set; }
 
     public double? memoryGcHeapMB { get; set; }
+
+    public double? memoryPercent { get; set; }
 
     public double? cpuPercent { get; set; }
 

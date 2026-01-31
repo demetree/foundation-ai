@@ -47,6 +47,10 @@
                 Free  Percent
                 <span *ngIf="sortColumn === 'freePercent'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('usedPercent')">
+                Used  Percent
+                <span *ngIf="sortColumn === 'usedPercent'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
             <th class="sortable" scope="col" (click)="sortBy('status')">
                 Status
                 <span *ngIf="sortColumn === 'status'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
@@ -131,6 +135,7 @@ End of commented block for alternate definition option -->
             <td class="text-truncate">{{telemetryDiskHealth.totalGB | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{telemetryDiskHealth.freeGB | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{telemetryDiskHealth.freePercent | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{telemetryDiskHealth.usedPercent | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{telemetryDiskHealth.status}}</td>
             <td class="text-truncate"><boolean-icon [value]="telemetryDiskHealth.isApplicationDrive"/></td>
 End of commented block for alternate definition option -->
@@ -288,6 +293,10 @@ End of commented block for alternate definition option -->
             <p class="telemetry-disk-health-info" *ngIf="telemetryDiskHealth.freePercent != null">
               <strong>Free Percent: </strong>
               {{telemetryDiskHealth.freePercent | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="telemetry-disk-health-info" *ngIf="telemetryDiskHealth.usedPercent != null">
+              <strong>Used Percent: </strong>
+              {{telemetryDiskHealth.usedPercent | bigNumberFormat : '1.0-2'}}
             </p>
             <p class="telemetry-disk-health-info" *ngIf="telemetryDiskHealth.status != null">
               <strong>Status: </strong>

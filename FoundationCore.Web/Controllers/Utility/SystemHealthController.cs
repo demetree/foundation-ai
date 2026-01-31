@@ -433,6 +433,7 @@ namespace Foundation.Controllers.WebAPI
                     WorkingSetMB = Math.Round(process.WorkingSet64 / (1024.0 * 1024.0), 2),
                     PrivateMemoryMB = Math.Round(process.PrivateMemorySize64 / (1024.0 * 1024.0), 2),
                     GCHeapMB = Math.Round(GC.GetTotalMemory(false) / (1024.0 * 1024.0), 2),
+                    Percent = GetMemoryPercentUsed(process),
                     Gen0Collections = GC.CollectionCount(0),
                     Gen1Collections = GC.CollectionCount(1),
                     Gen2Collections = GC.CollectionCount(2)
@@ -603,6 +604,33 @@ namespace Foundation.Controllers.WebAPI
             {
                 return $"{uptime.Minutes}m {uptime.Seconds}s";
             }
+        }
+
+
+        /// <summary>
+        /// Calculate the percentage of total system memory used by this process.
+        /// Uses GC.GetGCMemoryInfo() to get total available memory.
+        /// </summary>
+        private static double GetMemoryPercentUsed(Process process)
+        {
+            try
+            {
+                GCMemoryInfo gcInfo = GC.GetGCMemoryInfo();
+                long totalMemory = gcInfo.TotalAvailableMemoryBytes;
+
+                if (totalMemory > 0)
+                {
+                    double percent = (double)process.WorkingSet64 / totalMemory * 100.0;
+
+                    return Math.Round(percent, 2);
+                }
+            }
+            catch
+            {
+                // Memory info may not be available on all platforms
+            }
+
+            return 0;
         }
 
 

@@ -34,6 +34,7 @@ export class TelemetryDiskHealthQueryParameters {
     totalGB: number | null | undefined = null;
     freeGB: number | null | undefined = null;
     freePercent: number | null | undefined = null;
+    usedPercent: number | null | undefined = null;
     status: string | null | undefined = null;
     isApplicationDrive: boolean | null | undefined = null;
     pageSize: bigint | number | null | undefined = null;
@@ -54,6 +55,7 @@ export class TelemetryDiskHealthSubmitData {
     totalGB: number | null = null;
     freeGB: number | null = null;
     freePercent: number | null = null;
+    usedPercent: number | null = null;
     status: string | null = null;
     isApplicationDrive!: boolean;
 }
@@ -109,6 +111,7 @@ export class TelemetryDiskHealthData {
     totalGB!: number | null;
     freeGB!: number | null;
     freePercent!: number | null;
+    usedPercent!: number | null;
     status!: string | null;
     isApplicationDrive!: boolean;
     telemetrySnapshot: TelemetrySnapshotData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
@@ -265,6 +268,7 @@ export class TelemetryDiskHealthService extends SecureEndpointBase {
         output.totalGB = data.totalGB;
         output.freeGB = data.freeGB;
         output.freePercent = data.freePercent;
+        output.usedPercent = data.usedPercent;
         output.status = data.status;
         output.isApplicationDrive = data.isApplicationDrive;
 

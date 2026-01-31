@@ -54,6 +54,10 @@
                 <label for="TelemetryDiskHealth-freePercent" id="label-TelemetryDiskHealth-freePercent">Free Percent</label>
                 <input type="number" id="TelemetryDiskHealth-freePercent" formControlName="freePercent" placeholder="Enter Free Percent" class="form-control telemetry-disk-health-input" [disabled]="!userIsTelemetryTelemetryDiskHealthWriter()" aria-labelledby="label-freePercent" />
             </div>
+            <div class="form-group" *ngIf="!isFieldHidden('usedPercent')">
+                <label for="TelemetryDiskHealth-usedPercent" id="label-TelemetryDiskHealth-usedPercent">Used Percent</label>
+                <input type="number" id="TelemetryDiskHealth-usedPercent" formControlName="usedPercent" placeholder="Enter Used Percent" class="form-control telemetry-disk-health-input" [disabled]="!userIsTelemetryTelemetryDiskHealthWriter()" aria-labelledby="label-usedPercent" />
+            </div>
             <div class="form-group" *ngIf="!isFieldHidden('status')">
                 <label for="TelemetryDiskHealth-status" id="label-TelemetryDiskHealth-status">Status</label>
                 <input type="text" id="TelemetryDiskHealth-status" formControlName="status" placeholder="Enter Status" class="form-control telemetry-disk-health-input" [disabled]="!userIsTelemetryTelemetryDiskHealthWriter()" aria-labelledby="label-status" />

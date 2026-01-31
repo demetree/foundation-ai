@@ -41,6 +41,7 @@ interface TelemetryDiskHealthFormValues {
   totalGB: string | null,     // Stored as string for form input, converted to number on submit.
   freeGB: string | null,     // Stored as string for form input, converted to number on submit.
   freePercent: string | null,     // Stored as string for form input, converted to number on submit.
+  usedPercent: string | null,     // Stored as string for form input, converted to number on submit.
   status: string | null,
   isApplicationDrive: boolean,
 };
@@ -76,6 +77,7 @@ export class TelemetryDiskHealthDetailComponent implements OnInit, CanComponentD
         totalGB: [''],
         freeGB: [''],
         freePercent: [''],
+        usedPercent: [''],
         status: [''],
         isApplicationDrive: [false],
       });
@@ -386,6 +388,7 @@ export class TelemetryDiskHealthDetailComponent implements OnInit, CanComponentD
         totalGB: '',
         freeGB: '',
         freePercent: '',
+        usedPercent: '',
         status: '',
         isApplicationDrive: false,
    }, { emitEvent: false});
@@ -403,6 +406,7 @@ export class TelemetryDiskHealthDetailComponent implements OnInit, CanComponentD
         totalGB: telemetryDiskHealthData.totalGB?.toString() ?? '',
         freeGB: telemetryDiskHealthData.freeGB?.toString() ?? '',
         freePercent: telemetryDiskHealthData.freePercent?.toString() ?? '',
+        usedPercent: telemetryDiskHealthData.usedPercent?.toString() ?? '',
         status: telemetryDiskHealthData.status ?? '',
         isApplicationDrive: telemetryDiskHealthData.isApplicationDrive ?? false,
       }, { emitEvent: false});
@@ -470,6 +474,7 @@ export class TelemetryDiskHealthDetailComponent implements OnInit, CanComponentD
         totalGB: formValue.totalGB ? Number(formValue.totalGB) : null,
         freeGB: formValue.freeGB ? Number(formValue.freeGB) : null,
         freePercent: formValue.freePercent ? Number(formValue.freePercent) : null,
+        usedPercent: formValue.usedPercent ? Number(formValue.usedPercent) : null,
         status: formValue.status?.trim() || null,
         isApplicationDrive: !!formValue.isApplicationDrive,
    };

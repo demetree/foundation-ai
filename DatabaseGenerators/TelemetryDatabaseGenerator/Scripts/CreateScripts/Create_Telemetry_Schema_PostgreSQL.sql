@@ -95,6 +95,7 @@ CREATE TABLE "Telemetry"."TelemetrySnapshot"
 	"uptimeSeconds" BIGINT NULL,
 	"memoryWorkingSetMB" DOUBLE PRECISION NULL,
 	"memoryGcHeapMB" DOUBLE PRECISION NULL,
+	"memoryPercent" DOUBLE PRECISION NULL,
 	"cpuPercent" DOUBLE PRECISION NULL,
 	"threadPoolWorkerThreads" INT NULL,
 	"threadPoolCompletionPortThreads" INT NULL,
@@ -150,6 +151,7 @@ CREATE TABLE "Telemetry"."TelemetryDiskHealth"
 	"totalGB" DOUBLE PRECISION NULL,
 	"freeGB" DOUBLE PRECISION NULL,
 	"freePercent" DOUBLE PRECISION NULL,
+	"usedPercent" DOUBLE PRECISION NULL,
 	"status" VARCHAR(50) NULL,
 	"isApplicationDrive" BOOLEAN NOT NULL DEFAULT false,
 	CONSTRAINT "telemetrySnapshotId" FOREIGN KEY ("telemetrySnapshotId") REFERENCES "Telemetry"."TelemetrySnapshot"("id")		-- Foreign key to the TelemetrySnapshot table.

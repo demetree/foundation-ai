@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Foundation.Telemetry.Telemetry.Database;
+namespace Foundation.Telemetry.Database;
 
 public partial class TelemetryDiskHealth
 {
@@ -20,6 +20,8 @@ public partial class TelemetryDiskHealth
     public double? freeGB { get; set; }
 
     public double? freePercent { get; set; }
+
+    public double? usedPercent { get; set; }
 
     public string status { get; set; }
 

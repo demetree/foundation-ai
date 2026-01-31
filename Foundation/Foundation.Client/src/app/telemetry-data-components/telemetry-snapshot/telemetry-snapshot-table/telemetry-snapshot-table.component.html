@@ -51,6 +51,10 @@
                 Memory  Gc  Heap  M  B
                 <span *ngIf="sortColumn === 'memoryGcHeapMB'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('memoryPercent')">
+                Memory  Percent
+                <span *ngIf="sortColumn === 'memoryPercent'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
             <th class="sortable" scope="col" (click)="sortBy('cpuPercent')">
                 Cpu  Percent
                 <span *ngIf="sortColumn === 'cpuPercent'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
@@ -156,6 +160,7 @@ End of commented block for alternate definition option -->
             <td class="text-truncate">{{telemetrySnapshot.uptimeSeconds | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{telemetrySnapshot.memoryWorkingSetMB | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{telemetrySnapshot.memoryGcHeapMB | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{telemetrySnapshot.memoryPercent | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{telemetrySnapshot.cpuPercent | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{telemetrySnapshot.threadPoolWorkerThreads | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{telemetrySnapshot.threadPoolCompletionPortThreads | bigNumberFormat : '1.0-2'}}</td>
@@ -322,6 +327,10 @@ End of commented block for alternate definition option -->
             <p class="telemetry-snapshot-info" *ngIf="telemetrySnapshot.memoryGcHeapMB != null">
               <strong>Memory Gc Heap M B: </strong>
               {{telemetrySnapshot.memoryGcHeapMB | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="telemetry-snapshot-info" *ngIf="telemetrySnapshot.memoryPercent != null">
+              <strong>Memory Percent: </strong>
+              {{telemetrySnapshot.memoryPercent | bigNumberFormat : '1.0-2'}}
             </p>
             <p class="telemetry-snapshot-info" *ngIf="telemetrySnapshot.cpuPercent != null">
               <strong>Cpu Percent: </strong>

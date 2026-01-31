@@ -5,7 +5,7 @@
 // Provides trend analysis and historical snapshots for system administrators.
 //
 using Foundation.Security;
-using Foundation.Telemetry.Telemetry.Database;
+using Foundation.Telemetry.Database;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;

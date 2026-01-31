@@ -60,6 +60,10 @@
                                 <label for="TelemetrySnapshot-memoryGcHeapMB" id="label-TelemetrySnapshot-memoryGcHeapMB">Memory Gc Heap M B</label>
                                 <input type="number" id="TelemetrySnapshot-memoryGcHeapMB" formControlName="memoryGcHeapMB" placeholder="Enter Memory Gc Heap M B" class="form-control telemetry-snapshot-input" [disabled]="!userIsTelemetryTelemetrySnapshotWriter()" aria-labelledby="label-memoryGcHeapMB" />
                             </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('memoryPercent')">
+                                <label for="TelemetrySnapshot-memoryPercent" id="label-TelemetrySnapshot-memoryPercent">Memory Percent</label>
+                                <input type="number" id="TelemetrySnapshot-memoryPercent" formControlName="memoryPercent" placeholder="Enter Memory Percent" class="form-control telemetry-snapshot-input" [disabled]="!userIsTelemetryTelemetrySnapshotWriter()" aria-labelledby="label-memoryPercent" />
+                            </div>
                             <div class="form-group" *ngIf="!isFieldHidden('cpuPercent')">
                                 <label for="TelemetrySnapshot-cpuPercent" id="label-TelemetrySnapshot-cpuPercent">Cpu Percent</label>
                                 <input type="number" id="TelemetrySnapshot-cpuPercent" formControlName="cpuPercent" placeholder="Enter Cpu Percent" class="form-control telemetry-snapshot-input" [disabled]="!userIsTelemetryTelemetrySnapshotWriter()" aria-labelledby="label-cpuPercent" />

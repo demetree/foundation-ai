@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Foundation.Entity;
 
-namespace Foundation.Telemetry.Telemetry.Database
+namespace Foundation.Telemetry.Database
 {
 	//
 	// The purpose of this partial class is to provide helper methods to convert an object into a simpler anonymous object better suited for JSON serialization to web client for the web api controllers to use.
@@ -29,6 +29,7 @@ namespace Foundation.Telemetry.Telemetry.Database
 			public Double? totalGB { get; set; }
 			public Double? freeGB { get; set; }
 			public Double? freePercent { get; set; }
+			public Double? usedPercent { get; set; }
 			public String status { get; set; }
 			[Required]
 			public Boolean isApplicationDrive { get; set; }
@@ -64,6 +65,7 @@ namespace Foundation.Telemetry.Telemetry.Database
 				totalGB = this.totalGB,
 				freeGB = this.freeGB,
 				freePercent = this.freePercent,
+				usedPercent = this.usedPercent,
 				status = this.status,
 				isApplicationDrive = this.isApplicationDrive
 			};
@@ -111,6 +113,7 @@ namespace Foundation.Telemetry.Telemetry.Database
 				totalGB = this.totalGB,
 				freeGB = this.freeGB,
 				freePercent = this.freePercent,
+				usedPercent = this.usedPercent,
 				status = this.status,
 				isApplicationDrive = this.isApplicationDrive,
 				telemetrySnapshot = this.telemetrySnapshot?.ToDTO()
@@ -148,9 +151,9 @@ namespace Foundation.Telemetry.Telemetry.Database
 		/// Converts an INPUT DTO to a TelemetryDiskHealth Object.
 		///
 		/// </summary>
-		public static Telemetry.Database.TelemetryDiskHealth FromDTO(TelemetryDiskHealthDTO dto)
+		public static Database.TelemetryDiskHealth FromDTO(TelemetryDiskHealthDTO dto)
 		{
-			return new Telemetry.Database.TelemetryDiskHealth
+			return new Database.TelemetryDiskHealth
 			{
 				id = dto.id,
 				telemetrySnapshotId = dto.telemetrySnapshotId,
@@ -159,6 +162,7 @@ namespace Foundation.Telemetry.Telemetry.Database
 				totalGB = dto.totalGB,
 				freeGB = dto.freeGB,
 				freePercent = dto.freePercent,
+				usedPercent = dto.usedPercent,
 				status = dto.status,
 				isApplicationDrive = dto.isApplicationDrive
 			};
@@ -183,6 +187,7 @@ namespace Foundation.Telemetry.Telemetry.Database
 			this.totalGB = dto.totalGB;
 			this.freeGB = dto.freeGB;
 			this.freePercent = dto.freePercent;
+			this.usedPercent = dto.usedPercent;
 			this.status = dto.status;
 			this.isApplicationDrive = dto.isApplicationDrive;
 		}
@@ -206,6 +211,7 @@ namespace Foundation.Telemetry.Telemetry.Database
 				totalGB = this.totalGB,
 				freeGB = this.freeGB,
 				freePercent = this.freePercent,
+				usedPercent = this.usedPercent,
 				status = this.status,
 				isApplicationDrive = this.isApplicationDrive,
 			 };
@@ -249,7 +255,7 @@ namespace Foundation.Telemetry.Telemetry.Database
 		/// Creates an anonymous object version of a TelemetryDiskHealth Object.
 		///
 		/// </summary>
-		public static object CreateAnonymous(Telemetry.Database.TelemetryDiskHealth telemetryDiskHealth)
+		public static object CreateAnonymous(Database.TelemetryDiskHealth telemetryDiskHealth)
 		{
 			//
 			// Return a simplified object without any object or list properties.
@@ -267,6 +273,7 @@ namespace Foundation.Telemetry.Telemetry.Database
 				totalGB = telemetryDiskHealth.totalGB,
 				freeGB = telemetryDiskHealth.freeGB,
 				freePercent = telemetryDiskHealth.freePercent,
+				usedPercent = telemetryDiskHealth.usedPercent,
 				status = telemetryDiskHealth.status,
 				isApplicationDrive = telemetryDiskHealth.isApplicationDrive,
 			 };
@@ -295,6 +302,7 @@ namespace Foundation.Telemetry.Telemetry.Database
 				totalGB = telemetryDiskHealth.totalGB,
 				freeGB = telemetryDiskHealth.freeGB,
 				freePercent = telemetryDiskHealth.freePercent,
+				usedPercent = telemetryDiskHealth.usedPercent,
 				status = telemetryDiskHealth.status,
 				isApplicationDrive = telemetryDiskHealth.isApplicationDrive,
 				telemetrySnapshot = TelemetrySnapshot.CreateMinimalAnonymous(telemetryDiskHealth.telemetrySnapshot)

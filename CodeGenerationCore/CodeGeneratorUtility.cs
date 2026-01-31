@@ -52,21 +52,21 @@ namespace Foundation.CodeGeneration
             //
             GenerateTemplateCodeFromEntityFrameworkContext("AuditorContext", "Auditor", typeof(Foundation.Auditor.Database.AuditorContext), auditorGenerator.database, folderPath);
             GenerateTemplateCodeFromEntityFrameworkContext("SecurityContext", "Security", typeof(Foundation.Security.Database.SecurityContext), securityGenerator.database, folderPath);
-            GenerateTemplateCodeFromEntityFrameworkContext("TelemetryContext", "Telemetry", typeof(Foundation.Telemetry.Telemetry.Database.TelemetryContext), telemetryGenerator.database, folderPath, "Telemetry.Database");
+            GenerateTemplateCodeFromEntityFrameworkContext("TelemetryContext", "Telemetry", typeof(Foundation.Telemetry.Database.TelemetryContext), telemetryGenerator.database, folderPath);
 
             //
             // Create Angular services to interact with the WebAPI
             //
             Foundation.CodeGeneration.AngularServiceGenerator.BuildAngularServiceImplementationFromEntityFrameworkContext("Security", typeof(Foundation.Security.Database.SecurityContext), securityGenerator.database, folderPath);
             Foundation.CodeGeneration.AngularServiceGenerator.BuildAngularServiceImplementationFromEntityFrameworkContext("Auditor", typeof(Foundation.Auditor.Database.AuditorContext), auditorGenerator.database, folderPath);
-            Foundation.CodeGeneration.AngularServiceGenerator.BuildAngularServiceImplementationFromEntityFrameworkContext("Telemetry", typeof(Foundation.Telemetry.Telemetry.Database.TelemetryContext), telemetryGenerator.database, folderPath);
+            Foundation.CodeGeneration.AngularServiceGenerator.BuildAngularServiceImplementationFromEntityFrameworkContext("Telemetry", typeof(Foundation.Telemetry.Database.TelemetryContext), telemetryGenerator.database, folderPath);
 
             //
             // Create Angular Components to interact with the data services
             //
             Foundation.CodeGeneration.AngularComponentGenerator.BuildAngularComponentImplementationFromEntityFrameworkContext("Security", typeof(Foundation.Security.Database.SecurityContext), securityGenerator.database, folderPath);
             Foundation.CodeGeneration.AngularComponentGenerator.BuildAngularComponentImplementationFromEntityFrameworkContext("Auditor", typeof(Foundation.Auditor.Database.AuditorContext), auditorGenerator.database, folderPath);
-            Foundation.CodeGeneration.AngularComponentGenerator.BuildAngularComponentImplementationFromEntityFrameworkContext("Telemetry", typeof(Foundation.Telemetry.Telemetry.Database.TelemetryContext), telemetryGenerator.database, folderPath);
+            Foundation.CodeGeneration.AngularComponentGenerator.BuildAngularComponentImplementationFromEntityFrameworkContext("Telemetry", typeof(Foundation.Telemetry.Database.TelemetryContext), telemetryGenerator.database, folderPath);
 
             return;
         }

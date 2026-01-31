@@ -15,7 +15,7 @@ using Foundation.Auditor;
 using Foundation.Controllers;
 using Foundation.Security.Database;
 using static Foundation.Auditor.AuditEngine;
-using Foundation.Telemetry.Telemetry.Database;
+using Foundation.Telemetry.Database;
 
 namespace Foundation.Telemetry.Controllers.WebAPI
 {
@@ -68,6 +68,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			double? totalGB = null,
 			double? freeGB = null,
 			double? freePercent = null,
+			double? usedPercent = null,
 			string status = null,
 			bool? isApplicationDrive = null,
 			int? pageSize = null,
@@ -101,7 +102,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			    pageSize = null;
 			}
 
-			IQueryable<Telemetry.Database.TelemetryDiskHealth> query = (from tdh in _context.TelemetryDiskHealths select tdh);
+			IQueryable<Database.TelemetryDiskHealth> query = (from tdh in _context.TelemetryDiskHealths select tdh);
 			if (telemetrySnapshotId.HasValue == true)
 			{
 				query = query.Where(tdh => tdh.telemetrySnapshotId == telemetrySnapshotId.Value);
@@ -125,6 +126,10 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			if (freePercent.HasValue == true)
 			{
 				query = query.Where(tdh => tdh.freePercent == freePercent.Value);
+			}
+			if (usedPercent.HasValue == true)
+			{
+				query = query.Where(tdh => tdh.usedPercent == usedPercent.Value);
 			}
 			if (string.IsNullOrEmpty(status) == false)
 			{
@@ -169,11 +174,11 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 
 			query = query.AsNoTracking();
 			
-			List<Telemetry.Database.TelemetryDiskHealth> materialized = await query.ToListAsync(cancellationToken);
+			List<Database.TelemetryDiskHealth> materialized = await query.ToListAsync(cancellationToken);
 
 			// Convert all the date properties to be of kind UTC.
 			bool databaseStoresDateWithTimeZone = _context.DoesDatabaseStoreDateWithTimeZone();
-			foreach (Telemetry.Database.TelemetryDiskHealth telemetryDiskHealth in materialized)
+			foreach (Database.TelemetryDiskHealth telemetryDiskHealth in materialized)
 			{
 			    Foundation.DateTimeUtility.ConvertAllDateTimePropertiesToUTC(telemetryDiskHealth, databaseStoresDateWithTimeZone);
 			}
@@ -212,6 +217,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			double? totalGB = null,
 			double? freeGB = null,
 			double? freePercent = null,
+			double? usedPercent = null,
 			string status = null,
 			bool? isApplicationDrive = null,
 			string anyStringContains = null,
@@ -227,7 +233,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 0, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 
-			IQueryable<Telemetry.Database.TelemetryDiskHealth> query = (from tdh in _context.TelemetryDiskHealths select tdh);
+			IQueryable<Database.TelemetryDiskHealth> query = (from tdh in _context.TelemetryDiskHealths select tdh);
 			if (telemetrySnapshotId.HasValue == true)
 			{
 				query = query.Where(tdh => tdh.telemetrySnapshotId == telemetrySnapshotId.Value);
@@ -251,6 +257,10 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			if (freePercent.HasValue == true)
 			{
 				query = query.Where(tdh => tdh.freePercent == freePercent.Value);
+			}
+			if (usedPercent.HasValue == true)
+			{
+				query = query.Where(tdh => tdh.usedPercent == usedPercent.Value);
 			}
 			if (status != null)
 			{
@@ -312,7 +322,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 
 			try
 			{
-				IQueryable<Telemetry.Database.TelemetryDiskHealth> query = (from tdh in _context.TelemetryDiskHealths where
+				IQueryable<Database.TelemetryDiskHealth> query = (from tdh in _context.TelemetryDiskHealths where
 				(tdh.id == id)
 					select tdh);
 
@@ -322,7 +332,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 					query = query.AsSplitQuery();
 				}
 
-				Telemetry.Database.TelemetryDiskHealth materialized = await query.FirstOrDefaultAsync(cancellationToken);
+				Database.TelemetryDiskHealth materialized = await query.FirstOrDefaultAsync(cancellationToken);
 
 				if (materialized != null)
 				{
@@ -370,7 +380,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		[HttpPost]
 		[HttpPut]
-		public async Task<IActionResult> PutTelemetryDiskHealth(int id, [FromBody]Telemetry.Database.TelemetryDiskHealth.TelemetryDiskHealthDTO telemetryDiskHealthDTO, CancellationToken cancellationToken = default)
+		public async Task<IActionResult> PutTelemetryDiskHealth(int id, [FromBody]Database.TelemetryDiskHealth.TelemetryDiskHealthDTO telemetryDiskHealthDTO, CancellationToken cancellationToken = default)
 		{
 			if (telemetryDiskHealthDTO == null)
 			{
@@ -396,13 +406,13 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 0, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
-			IQueryable<Telemetry.Database.TelemetryDiskHealth> query = (from x in _context.TelemetryDiskHealths
+			IQueryable<Database.TelemetryDiskHealth> query = (from x in _context.TelemetryDiskHealths
 				where
 				(x.id == id)
 				select x);
 
 
-			Telemetry.Database.TelemetryDiskHealth existing = await query.FirstOrDefaultAsync(cancellationToken);
+			Database.TelemetryDiskHealth existing = await query.FirstOrDefaultAsync(cancellationToken);
 
 			if (existing == null)
 			{
@@ -411,12 +421,12 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			}
 
 			// Copy the existing object so it can be serialized as-is in the audit and history logs.
-			Telemetry.Database.TelemetryDiskHealth cloneOfExisting = (Telemetry.Database.TelemetryDiskHealth)_context.Entry(existing).GetDatabaseValues().ToObject();
+			Database.TelemetryDiskHealth cloneOfExisting = (Database.TelemetryDiskHealth)_context.Entry(existing).GetDatabaseValues().ToObject();
 
 			//
 			// Create a new TelemetryDiskHealth object using the data from the existing record, updated with what is in the DTO.
 			//
-			Telemetry.Database.TelemetryDiskHealth telemetryDiskHealth = (Telemetry.Database.TelemetryDiskHealth)_context.Entry(existing).GetDatabaseValues().ToObject();
+			Database.TelemetryDiskHealth telemetryDiskHealth = (Database.TelemetryDiskHealth)_context.Entry(existing).GetDatabaseValues().ToObject();
 			telemetryDiskHealth.ApplyDTO(telemetryDiskHealthDTO);
 
 
@@ -435,7 +445,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 				telemetryDiskHealth.status = telemetryDiskHealth.status.Substring(0, 50);
 			}
 
-			EntityEntry<Telemetry.Database.TelemetryDiskHealth> attached = _context.Entry(existing);
+			EntityEntry<Database.TelemetryDiskHealth> attached = _context.Entry(existing);
 			attached.CurrentValues.SetValues(telemetryDiskHealth);
 
 			try
@@ -446,12 +456,12 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 					"Telemetry.TelemetryDiskHealth entity successfully updated.",
 					true,
 					id.ToString(),
-					JsonSerializer.Serialize(Telemetry.Database.TelemetryDiskHealth.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Telemetry.Database.TelemetryDiskHealth.CreateAnonymousWithFirstLevelSubObjects(telemetryDiskHealth)),
+					JsonSerializer.Serialize(Database.TelemetryDiskHealth.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+					JsonSerializer.Serialize(Database.TelemetryDiskHealth.CreateAnonymousWithFirstLevelSubObjects(telemetryDiskHealth)),
 					null);
 
 
-				return Ok(Telemetry.Database.TelemetryDiskHealth.CreateAnonymous(telemetryDiskHealth));
+				return Ok(Database.TelemetryDiskHealth.CreateAnonymous(telemetryDiskHealth));
 			}
 			catch (Exception ex)
 			{
@@ -459,8 +469,8 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 					"Telemetry.TelemetryDiskHealth entity update failed",
 					false,
 					id.ToString(),
-					JsonSerializer.Serialize(Telemetry.Database.TelemetryDiskHealth.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Telemetry.Database.TelemetryDiskHealth.CreateAnonymousWithFirstLevelSubObjects(telemetryDiskHealth)),
+					JsonSerializer.Serialize(Database.TelemetryDiskHealth.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+					JsonSerializer.Serialize(Database.TelemetryDiskHealth.CreateAnonymousWithFirstLevelSubObjects(telemetryDiskHealth)),
 					ex);
 
 				return Problem(ex.Message);
@@ -478,7 +488,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 		[HttpPost]
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/TelemetryDiskHealth", Name = "TelemetryDiskHealth")]
-		public async Task<IActionResult> PostTelemetryDiskHealth([FromBody]Telemetry.Database.TelemetryDiskHealth.TelemetryDiskHealthDTO telemetryDiskHealthDTO, CancellationToken cancellationToken = default)
+		public async Task<IActionResult> PostTelemetryDiskHealth([FromBody]Database.TelemetryDiskHealth.TelemetryDiskHealthDTO telemetryDiskHealthDTO, CancellationToken cancellationToken = default)
 		{
 			if (telemetryDiskHealthDTO == null)
 			{
@@ -500,7 +510,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			//
 			// Create a new TelemetryDiskHealth object using the data from the DTO
 			//
-			Telemetry.Database.TelemetryDiskHealth telemetryDiskHealth = Telemetry.Database.TelemetryDiskHealth.FromDTO(telemetryDiskHealthDTO);
+			Database.TelemetryDiskHealth telemetryDiskHealth = Database.TelemetryDiskHealth.FromDTO(telemetryDiskHealthDTO);
 
 			try
 			{
@@ -527,7 +537,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 					true,
 					telemetryDiskHealth.id.ToString(),
 					"",
-					JsonSerializer.Serialize(Telemetry.Database.TelemetryDiskHealth.CreateAnonymousWithFirstLevelSubObjects(telemetryDiskHealth)),
+					JsonSerializer.Serialize(Database.TelemetryDiskHealth.CreateAnonymousWithFirstLevelSubObjects(telemetryDiskHealth)),
 					null);
 
 			}
@@ -541,7 +551,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 
 			BackgroundJob.Enqueue(() => SecurityLogic.AddToUserMostRecents(securityUser.id, "TelemetryDiskHealth", telemetryDiskHealth.id, telemetryDiskHealth.driveName));
 
-			return CreatedAtRoute("TelemetryDiskHealth", new { id = telemetryDiskHealth.id }, Telemetry.Database.TelemetryDiskHealth.CreateAnonymousWithFirstLevelSubObjects(telemetryDiskHealth));
+			return CreatedAtRoute("TelemetryDiskHealth", new { id = telemetryDiskHealth.id }, Database.TelemetryDiskHealth.CreateAnonymousWithFirstLevelSubObjects(telemetryDiskHealth));
 		}
 
 
@@ -569,20 +579,20 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
-			IQueryable<Telemetry.Database.TelemetryDiskHealth> query = (from x in _context.TelemetryDiskHealths
+			IQueryable<Database.TelemetryDiskHealth> query = (from x in _context.TelemetryDiskHealths
 				where
 				(x.id == id)
 				select x);
 
 
-			Telemetry.Database.TelemetryDiskHealth telemetryDiskHealth = await query.FirstOrDefaultAsync(cancellationToken);
+			Database.TelemetryDiskHealth telemetryDiskHealth = await query.FirstOrDefaultAsync(cancellationToken);
 
 			if (telemetryDiskHealth == null)
 			{
 				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for Telemetry.TelemetryDiskHealth DELETE", id.ToString(), new Exception("No Telemetry.TelemetryDiskHealth entity could be find with the primary key provided."));
 				return NotFound();
 			}
-			Telemetry.Database.TelemetryDiskHealth cloneOfExisting = (Telemetry.Database.TelemetryDiskHealth)_context.Entry(telemetryDiskHealth).GetDatabaseValues().ToObject();
+			Database.TelemetryDiskHealth cloneOfExisting = (Database.TelemetryDiskHealth)_context.Entry(telemetryDiskHealth).GetDatabaseValues().ToObject();
 
 
 			try
@@ -594,8 +604,8 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 					"Telemetry.TelemetryDiskHealth entity successfully deleted.",
 					true,
 					id.ToString(),
-					JsonSerializer.Serialize(Telemetry.Database.TelemetryDiskHealth.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Telemetry.Database.TelemetryDiskHealth.CreateAnonymousWithFirstLevelSubObjects(telemetryDiskHealth)),
+					JsonSerializer.Serialize(Database.TelemetryDiskHealth.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+					JsonSerializer.Serialize(Database.TelemetryDiskHealth.CreateAnonymousWithFirstLevelSubObjects(telemetryDiskHealth)),
 					null);
 
 			}
@@ -605,8 +615,8 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 					"Telemetry.TelemetryDiskHealth entity delete failed.",
 					false,
 					id.ToString(),
-					JsonSerializer.Serialize(Telemetry.Database.TelemetryDiskHealth.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Telemetry.Database.TelemetryDiskHealth.CreateAnonymousWithFirstLevelSubObjects(telemetryDiskHealth)),
+					JsonSerializer.Serialize(Database.TelemetryDiskHealth.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+					JsonSerializer.Serialize(Database.TelemetryDiskHealth.CreateAnonymousWithFirstLevelSubObjects(telemetryDiskHealth)),
 					ex);
 
 				return Problem(ex.Message);
@@ -634,6 +644,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			double? totalGB = null,
 			double? freeGB = null,
 			double? freePercent = null,
+			double? usedPercent = null,
 			string status = null,
 			bool? isApplicationDrive = null,
 			string anyStringContains = null,
@@ -665,7 +676,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			    pageSize = null;
 			}
 
-			IQueryable<Telemetry.Database.TelemetryDiskHealth> query = (from tdh in _context.TelemetryDiskHealths select tdh);
+			IQueryable<Database.TelemetryDiskHealth> query = (from tdh in _context.TelemetryDiskHealths select tdh);
 			if (telemetrySnapshotId.HasValue == true)
 			{
 				query = query.Where(tdh => tdh.telemetrySnapshotId == telemetrySnapshotId.Value);
@@ -712,7 +723,7 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			{
 			   query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
 			}
-			return Ok(await (from queryData in query select Telemetry.Database.TelemetryDiskHealth.CreateMinimalAnonymous(queryData)).ToListAsync(cancellationToken));
+			return Ok(await (from queryData in query select Database.TelemetryDiskHealth.CreateMinimalAnonymous(queryData)).ToListAsync(cancellationToken));
 		}
 
 

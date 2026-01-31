@@ -358,10 +358,15 @@ export class SystemHealthComponent implements OnInit, OnDestroy {
 
 
     formatCpu(percent: number | undefined): string {
-      if (percent === undefined || percent === null) return '-';
-      return `${percent.toFixed(1)}%`;
+        if (percent === undefined || percent === null) return '-';
+        return `${percent.toFixed(1)}%`;
     }
 
+
+    formatPercent(percent: number | undefined): string {
+        if (percent === undefined || percent === null) return '-';
+        return `${percent.toFixed(1)}%`;
+    }
 
     //
     // Table statistics modal

@@ -114,6 +114,7 @@ and correlated error events from audit logs and log files.";
             //
             telemetrySnapshotTable.AddDoubleField("memoryWorkingSetMB", true);
             telemetrySnapshotTable.AddDoubleField("memoryGcHeapMB", true);
+            telemetrySnapshotTable.AddDoubleField("memoryPercent", true);
 
             //
             // CPU metrics
@@ -181,6 +182,7 @@ and correlated error events from audit logs and log files.";
             telemetryDiskHealthTable.AddDoubleField("totalGB", true);
             telemetryDiskHealthTable.AddDoubleField("freeGB", true);
             telemetryDiskHealthTable.AddDoubleField("freePercent", true);
+            telemetryDiskHealthTable.AddDoubleField("usedPercent", true);
             telemetryDiskHealthTable.AddString50Field("status", true);
             telemetryDiskHealthTable.AddBoolField("isApplicationDrive", false, false);
 

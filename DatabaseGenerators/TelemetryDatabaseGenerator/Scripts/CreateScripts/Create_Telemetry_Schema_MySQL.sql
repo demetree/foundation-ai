@@ -78,6 +78,7 @@ CREATE TABLE `TelemetrySnapshot`(
 	`uptimeSeconds` BIGINT NULL,
 	`memoryWorkingSetMB` DOUBLE NULL,
 	`memoryGcHeapMB` DOUBLE NULL,
+	`memoryPercent` DOUBLE NULL,
 	`cpuPercent` DOUBLE NULL,
 	`threadPoolWorkerThreads` INT NULL,
 	`threadPoolCompletionPortThreads` INT NULL,
@@ -126,6 +127,7 @@ CREATE TABLE `TelemetryDiskHealth`(
 	`totalGB` DOUBLE NULL,
 	`freeGB` DOUBLE NULL,
 	`freePercent` DOUBLE NULL,
+	`usedPercent` DOUBLE NULL,
 	`status` VARCHAR(50) NULL,
 	`isApplicationDrive` BIT NOT NULL DEFAULT 0,
 	FOREIGN KEY (`telemetrySnapshotId`) REFERENCES `TelemetrySnapshot`(`id`)		-- Foreign key to the TelemetrySnapshot table.
