@@ -272,6 +272,8 @@ namespace Foundation.Telemetry
                                 snapshot.memoryGcHeapMB = gcHeap.GetDouble();
                             if (memory.TryGetProperty("percent", out var memPercent))
                                 snapshot.memoryPercent = memPercent.GetDouble();
+                            if (memory.TryGetProperty("systemPercent", out var sysMemPercent))
+                                snapshot.systemMemoryPercent = sysMemPercent.GetDouble();
                         }
 
                         // Environment info is nested under application.environment
@@ -288,6 +290,8 @@ namespace Foundation.Telemetry
                         {
                             if (cpu.TryGetProperty("percent", out var percent))
                                 snapshot.cpuPercent = percent.GetDouble();
+                            if (cpu.TryGetProperty("systemPercent", out var sysCpuPercent))
+                                snapshot.systemCpuPercent = sysCpuPercent.GetDouble();
                         }
                     }
 

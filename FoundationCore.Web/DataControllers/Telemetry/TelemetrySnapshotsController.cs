@@ -70,7 +70,9 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			double? memoryWorkingSetMB = null,
 			double? memoryGcHeapMB = null,
 			double? memoryPercent = null,
+			double? systemMemoryPercent = null,
 			double? cpuPercent = null,
+			double? systemCpuPercent = null,
 			int? threadPoolWorkerThreads = null,
 			int? threadPoolCompletionPortThreads = null,
 			int? threadPoolPendingWorkItems = null,
@@ -149,9 +151,17 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			{
 				query = query.Where(ts => ts.memoryPercent == memoryPercent.Value);
 			}
+			if (systemMemoryPercent.HasValue == true)
+			{
+				query = query.Where(ts => ts.systemMemoryPercent == systemMemoryPercent.Value);
+			}
 			if (cpuPercent.HasValue == true)
 			{
 				query = query.Where(ts => ts.cpuPercent == cpuPercent.Value);
+			}
+			if (systemCpuPercent.HasValue == true)
+			{
+				query = query.Where(ts => ts.systemCpuPercent == systemCpuPercent.Value);
 			}
 			if (threadPoolWorkerThreads.HasValue == true)
 			{
@@ -258,7 +268,9 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			double? memoryWorkingSetMB = null,
 			double? memoryGcHeapMB = null,
 			double? memoryPercent = null,
+			double? systemMemoryPercent = null,
 			double? cpuPercent = null,
+			double? systemCpuPercent = null,
 			int? threadPoolWorkerThreads = null,
 			int? threadPoolCompletionPortThreads = null,
 			int? threadPoolPendingWorkItems = null,
@@ -319,9 +331,17 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			{
 				query = query.Where(ts => ts.memoryPercent == memoryPercent.Value);
 			}
+			if (systemMemoryPercent.HasValue == true)
+			{
+				query = query.Where(ts => ts.systemMemoryPercent == systemMemoryPercent.Value);
+			}
 			if (cpuPercent.HasValue == true)
 			{
 				query = query.Where(ts => ts.cpuPercent == cpuPercent.Value);
+			}
+			if (systemCpuPercent.HasValue == true)
+			{
+				query = query.Where(ts => ts.systemCpuPercent == systemCpuPercent.Value);
 			}
 			if (threadPoolWorkerThreads.HasValue == true)
 			{
@@ -724,7 +744,9 @@ namespace Foundation.Telemetry.Controllers.WebAPI
 			double? memoryWorkingSetMB = null,
 			double? memoryGcHeapMB = null,
 			double? memoryPercent = null,
+			double? systemMemoryPercent = null,
 			double? cpuPercent = null,
+			double? systemCpuPercent = null,
 			int? threadPoolWorkerThreads = null,
 			int? threadPoolCompletionPortThreads = null,
 			int? threadPoolPendingWorkItems = null,

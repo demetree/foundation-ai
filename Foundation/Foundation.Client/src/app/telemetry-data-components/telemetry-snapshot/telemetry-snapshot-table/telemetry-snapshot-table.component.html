@@ -55,9 +55,17 @@
                 Memory  Percent
                 <span *ngIf="sortColumn === 'memoryPercent'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('systemMemoryPercent')">
+                System  Memory  Percent
+                <span *ngIf="sortColumn === 'systemMemoryPercent'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
             <th class="sortable" scope="col" (click)="sortBy('cpuPercent')">
                 Cpu  Percent
                 <span *ngIf="sortColumn === 'cpuPercent'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('systemCpuPercent')">
+                System  Cpu  Percent
+                <span *ngIf="sortColumn === 'systemCpuPercent'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
             <th class="sortable" scope="col" (click)="sortBy('threadPoolWorkerThreads')">
                 Thread  Pool  Worker  Threads
@@ -161,7 +169,9 @@ End of commented block for alternate definition option -->
             <td class="text-truncate">{{telemetrySnapshot.memoryWorkingSetMB | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{telemetrySnapshot.memoryGcHeapMB | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{telemetrySnapshot.memoryPercent | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{telemetrySnapshot.systemMemoryPercent | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{telemetrySnapshot.cpuPercent | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{telemetrySnapshot.systemCpuPercent | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{telemetrySnapshot.threadPoolWorkerThreads | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{telemetrySnapshot.threadPoolCompletionPortThreads | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{telemetrySnapshot.threadPoolPendingWorkItems | bigNumberFormat : '1.0-2'}}</td>
@@ -332,9 +342,17 @@ End of commented block for alternate definition option -->
               <strong>Memory Percent: </strong>
               {{telemetrySnapshot.memoryPercent | bigNumberFormat : '1.0-2'}}
             </p>
+            <p class="telemetry-snapshot-info" *ngIf="telemetrySnapshot.systemMemoryPercent != null">
+              <strong>System Memory Percent: </strong>
+              {{telemetrySnapshot.systemMemoryPercent | bigNumberFormat : '1.0-2'}}
+            </p>
             <p class="telemetry-snapshot-info" *ngIf="telemetrySnapshot.cpuPercent != null">
               <strong>Cpu Percent: </strong>
               {{telemetrySnapshot.cpuPercent | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="telemetry-snapshot-info" *ngIf="telemetrySnapshot.systemCpuPercent != null">
+              <strong>System Cpu Percent: </strong>
+              {{telemetrySnapshot.systemCpuPercent | bigNumberFormat : '1.0-2'}}
             </p>
             <p class="telemetry-snapshot-info" *ngIf="telemetrySnapshot.threadPoolWorkerThreads != null">
               <strong>Thread Pool Worker Threads: </strong>

@@ -25,7 +25,11 @@ public partial class TelemetrySnapshot
 
     public double? memoryPercent { get; set; }
 
+    public double? systemMemoryPercent { get; set; }
+
     public double? cpuPercent { get; set; }
+
+    public double? systemCpuPercent { get; set; }
 
     public int? threadPoolWorkerThreads { get; set; }
 

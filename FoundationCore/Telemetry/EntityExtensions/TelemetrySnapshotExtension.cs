@@ -33,7 +33,9 @@ namespace Foundation.Telemetry.Database
 			public Double? memoryWorkingSetMB { get; set; }
 			public Double? memoryGcHeapMB { get; set; }
 			public Double? memoryPercent { get; set; }
+			public Double? systemMemoryPercent { get; set; }
 			public Double? cpuPercent { get; set; }
+			public Double? systemCpuPercent { get; set; }
 			public Int32? threadPoolWorkerThreads { get; set; }
 			public Int32? threadPoolCompletionPortThreads { get; set; }
 			public Int32? threadPoolPendingWorkItems { get; set; }
@@ -75,7 +77,9 @@ namespace Foundation.Telemetry.Database
 				memoryWorkingSetMB = this.memoryWorkingSetMB,
 				memoryGcHeapMB = this.memoryGcHeapMB,
 				memoryPercent = this.memoryPercent,
+				systemMemoryPercent = this.systemMemoryPercent,
 				cpuPercent = this.cpuPercent,
+				systemCpuPercent = this.systemCpuPercent,
 				threadPoolWorkerThreads = this.threadPoolWorkerThreads,
 				threadPoolCompletionPortThreads = this.threadPoolCompletionPortThreads,
 				threadPoolPendingWorkItems = this.threadPoolPendingWorkItems,
@@ -129,7 +133,9 @@ namespace Foundation.Telemetry.Database
 				memoryWorkingSetMB = this.memoryWorkingSetMB,
 				memoryGcHeapMB = this.memoryGcHeapMB,
 				memoryPercent = this.memoryPercent,
+				systemMemoryPercent = this.systemMemoryPercent,
 				cpuPercent = this.cpuPercent,
+				systemCpuPercent = this.systemCpuPercent,
 				threadPoolWorkerThreads = this.threadPoolWorkerThreads,
 				threadPoolCompletionPortThreads = this.threadPoolCompletionPortThreads,
 				threadPoolPendingWorkItems = this.threadPoolPendingWorkItems,
@@ -185,7 +191,9 @@ namespace Foundation.Telemetry.Database
 				memoryWorkingSetMB = dto.memoryWorkingSetMB,
 				memoryGcHeapMB = dto.memoryGcHeapMB,
 				memoryPercent = dto.memoryPercent,
+				systemMemoryPercent = dto.systemMemoryPercent,
 				cpuPercent = dto.cpuPercent,
+				systemCpuPercent = dto.systemCpuPercent,
 				threadPoolWorkerThreads = dto.threadPoolWorkerThreads,
 				threadPoolCompletionPortThreads = dto.threadPoolCompletionPortThreads,
 				threadPoolPendingWorkItems = dto.threadPoolPendingWorkItems,
@@ -216,7 +224,9 @@ namespace Foundation.Telemetry.Database
 			this.memoryWorkingSetMB = dto.memoryWorkingSetMB;
 			this.memoryGcHeapMB = dto.memoryGcHeapMB;
 			this.memoryPercent = dto.memoryPercent;
+			this.systemMemoryPercent = dto.systemMemoryPercent;
 			this.cpuPercent = dto.cpuPercent;
+			this.systemCpuPercent = dto.systemCpuPercent;
 			this.threadPoolWorkerThreads = dto.threadPoolWorkerThreads;
 			this.threadPoolCompletionPortThreads = dto.threadPoolCompletionPortThreads;
 			this.threadPoolPendingWorkItems = dto.threadPoolPendingWorkItems;
@@ -246,7 +256,9 @@ namespace Foundation.Telemetry.Database
 				memoryWorkingSetMB = this.memoryWorkingSetMB,
 				memoryGcHeapMB = this.memoryGcHeapMB,
 				memoryPercent = this.memoryPercent,
+				systemMemoryPercent = this.systemMemoryPercent,
 				cpuPercent = this.cpuPercent,
+				systemCpuPercent = this.systemCpuPercent,
 				threadPoolWorkerThreads = this.threadPoolWorkerThreads,
 				threadPoolCompletionPortThreads = this.threadPoolCompletionPortThreads,
 				threadPoolPendingWorkItems = this.threadPoolPendingWorkItems,
@@ -314,7 +326,9 @@ namespace Foundation.Telemetry.Database
 				memoryWorkingSetMB = telemetrySnapshot.memoryWorkingSetMB,
 				memoryGcHeapMB = telemetrySnapshot.memoryGcHeapMB,
 				memoryPercent = telemetrySnapshot.memoryPercent,
+				systemMemoryPercent = telemetrySnapshot.systemMemoryPercent,
 				cpuPercent = telemetrySnapshot.cpuPercent,
+				systemCpuPercent = telemetrySnapshot.systemCpuPercent,
 				threadPoolWorkerThreads = telemetrySnapshot.threadPoolWorkerThreads,
 				threadPoolCompletionPortThreads = telemetrySnapshot.threadPoolCompletionPortThreads,
 				threadPoolPendingWorkItems = telemetrySnapshot.threadPoolPendingWorkItems,
@@ -349,7 +363,9 @@ namespace Foundation.Telemetry.Database
 				memoryWorkingSetMB = telemetrySnapshot.memoryWorkingSetMB,
 				memoryGcHeapMB = telemetrySnapshot.memoryGcHeapMB,
 				memoryPercent = telemetrySnapshot.memoryPercent,
+				systemMemoryPercent = telemetrySnapshot.systemMemoryPercent,
 				cpuPercent = telemetrySnapshot.cpuPercent,
+				systemCpuPercent = telemetrySnapshot.systemCpuPercent,
 				threadPoolWorkerThreads = telemetrySnapshot.threadPoolWorkerThreads,
 				threadPoolCompletionPortThreads = telemetrySnapshot.threadPoolCompletionPortThreads,
 				threadPoolPendingWorkItems = telemetrySnapshot.threadPoolPendingWorkItems,

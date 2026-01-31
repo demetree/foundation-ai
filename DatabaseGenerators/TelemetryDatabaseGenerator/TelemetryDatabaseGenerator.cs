@@ -111,15 +111,21 @@ and correlated error events from audit logs and log files.";
 
             //
             // Memory metrics - stored as doubles for precision
+            // memoryPercent = process memory as % of system total
+            // systemMemoryPercent = total system memory usage as % (all processes)
             //
             telemetrySnapshotTable.AddDoubleField("memoryWorkingSetMB", true);
             telemetrySnapshotTable.AddDoubleField("memoryGcHeapMB", true);
             telemetrySnapshotTable.AddDoubleField("memoryPercent", true);
+            telemetrySnapshotTable.AddDoubleField("systemMemoryPercent", true);
 
             //
             // CPU metrics
+            // cpuPercent = process CPU usage
+            // systemCpuPercent = total system CPU usage (all processes)
             //
             telemetrySnapshotTable.AddDoubleField("cpuPercent", true);
+            telemetrySnapshotTable.AddDoubleField("systemCpuPercent", true);
 
             //
             // Thread pool metrics

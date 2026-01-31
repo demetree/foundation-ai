@@ -361,11 +361,23 @@ export class SystemHealthComponent implements OnInit, OnDestroy {
         if (!this.healthStatus) return 'healthy';
 
         //
-        // Check memory (warning at 1GB, critical at 2GB)
+        // Check system-wide memory percentage (warning at 50%, critical at 80%)
+        // Falls back to process percent, then MB thresholds
         //
-        const memoryMB = this.healthStatus.application?.memory?.workingSetMB || 0;
-        if (memoryMB > 2048) return 'critical';
-        if (memoryMB > 1024) return 'warning';
+        const systemMemoryPercent = this.healthStatus.application?.memory?.systemPercent;
+        const memoryPercent = this.healthStatus.application?.memory?.percent;
+        if (systemMemoryPercent !== undefined) {
+            if (systemMemoryPercent >= 80) return 'critical';
+            if (systemMemoryPercent >= 50) return 'warning';
+        } else if (memoryPercent !== undefined) {
+            if (memoryPercent >= 80) return 'critical';
+            if (memoryPercent >= 50) return 'warning';
+        } else {
+            // Fallback to MB thresholds
+            const memoryMB = this.healthStatus.application?.memory?.workingSetMB || 0;
+            if (memoryMB > 2048) return 'critical';
+            if (memoryMB > 1024) return 'warning';
+        }
 
         //
         // Check disk
@@ -433,6 +445,12 @@ export class SystemHealthComponent implements OnInit, OnDestroy {
 
 
     formatCpu(percent: number | undefined): string {
+        if (percent === undefined || percent === null) return '-';
+        return `${percent.toFixed(1)}%`;
+    }
+
+
+    formatPercent(percent: number | undefined): string {
         if (percent === undefined || percent === null) return '-';
         return `${percent.toFixed(1)}%`;
     }

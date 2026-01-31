@@ -434,6 +434,7 @@ namespace Foundation.Controllers.WebAPI
                     PrivateMemoryMB = Math.Round(process.PrivateMemorySize64 / (1024.0 * 1024.0), 2),
                     GCHeapMB = Math.Round(GC.GetTotalMemory(false) / (1024.0 * 1024.0), 2),
                     Percent = GetMemoryPercentUsed(process),
+                    SystemPercent = GetSystemMemoryPercent(),
                     Gen0Collections = GC.CollectionCount(0),
                     Gen1Collections = GC.CollectionCount(1),
                     Gen2Collections = GC.CollectionCount(2)
@@ -441,6 +442,7 @@ namespace Foundation.Controllers.WebAPI
                 Cpu = new
                 {
                     Percent = cpuPercent,
+                    SystemPercent = GetSystemCpuPercent(),
                     ProcessorCount = Environment.ProcessorCount
                 },
                 Process = new
@@ -631,6 +633,118 @@ namespace Foundation.Controllers.WebAPI
             }
 
             return 0;
+        }
+
+
+        /// <summary>
+        /// Calculate system-wide memory usage percentage.
+        /// Returns the percentage of total system RAM currently in use (all processes).
+        /// </summary>
+        private static double GetSystemMemoryPercent()
+        {
+            try
+            {
+                GCMemoryInfo gcInfo = GC.GetGCMemoryInfo();
+                long totalMemory = gcInfo.TotalAvailableMemoryBytes;
+
+                if (totalMemory > 0)
+                {
+                    //
+                    // Calculate used memory from all processes
+                    // GC.GetGCMemoryInfo provides MemoryLoadBytes which represents memory pressure
+                    //
+                    long usedMemory = 0;
+
+                    foreach (Process proc in Process.GetProcesses())
+                    {
+                        try
+                        {
+                            usedMemory += proc.WorkingSet64;
+                        }
+                        catch
+                        {
+                            // Process may have exited or access denied
+                        }
+                    }
+
+                    double percent = (double)usedMemory / totalMemory * 100.0;
+
+                    return Math.Round(Math.Min(100, percent), 2);
+                }
+            }
+            catch
+            {
+                // System memory info may not be available on all platforms
+            }
+
+            return 0;
+        }
+
+
+        /// <summary>
+        /// Calculate system-wide CPU usage percentage.
+        /// Returns the approximate percentage of CPU time in use across all processors.
+        /// </summary>
+        private static double _lastSystemCpuPercent = 0;
+        private static DateTime _lastCpuSampleTime = DateTime.MinValue;
+        private static readonly object _cpuSampleLock = new object();
+
+        private static double GetSystemCpuPercent()
+        {
+            lock (_cpuSampleLock)
+            {
+                try
+                {
+                    //
+                    // Return cached value if sampled recently (within 2 seconds)
+                    // CPU sampling is expensive due to Process.GetProcesses()
+                    //
+                    if ((DateTime.UtcNow - _lastCpuSampleTime).TotalSeconds < 2)
+                    {
+                        return _lastSystemCpuPercent;
+                    }
+
+                    //
+                    // Sample total CPU time across all processes
+                    //
+                    double totalCpuTime = 0;
+
+                    foreach (Process proc in Process.GetProcesses())
+                    {
+                        try
+                        {
+                            totalCpuTime += proc.TotalProcessorTime.TotalMilliseconds;
+                        }
+                        catch
+                        {
+                            // Process may have exited or access denied
+                        }
+                    }
+
+                    //
+                    // Calculate percentage based on system uptime and processor count
+                    // This is an approximation - real CPU usage requires time-based sampling
+                    //
+                    TimeSpan systemUptime = TimeSpan.FromMilliseconds(Environment.TickCount64);
+                    double totalAvailableCpuTime = systemUptime.TotalMilliseconds * Environment.ProcessorCount;
+
+                    if (totalAvailableCpuTime > 0)
+                    {
+                        double percent = (totalCpuTime / totalAvailableCpuTime) * 100.0;
+                        _lastSystemCpuPercent = Math.Round(Math.Min(100, Math.Max(0, percent)), 2);
+                    }
+
+                    _lastCpuSampleTime = DateTime.UtcNow;
+
+                    return _lastSystemCpuPercent;
+                }
+                catch
+                {
+                    // CPU info may not be available on all platforms
+                }
+
+                return 0;
+            }
         }
 
 

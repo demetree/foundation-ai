@@ -155,6 +155,27 @@
           </div>
         </div>
         <div class="card-body">
+          <!-- System Memory Usage Progress Bar (server-wide) -->
+          <div class="mb-3" *ngIf="healthStatus.application.memory?.systemPercent !== undefined">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="small text-muted">Server Memory Usage</span>
+              <span class="fw-bold" [ngClass]="{
+                    'text-success': (healthStatus.application.memory?.systemPercent || 0) < 50,
+                    'text-warning': (healthStatus.application.memory?.systemPercent || 0) >= 50 && (healthStatus.application.memory?.systemPercent || 0) < 80,
+                    'text-danger': (healthStatus.application.memory?.systemPercent || 0) >= 80
+                  }">
+                {{ formatPercent(healthStatus.application.memory?.systemPercent) }}
+              </span>
+            </div>
+            <div class="progress" style="height: 8px;">
+              <div class="progress-bar" [ngClass]="{
+                    'bg-success': (healthStatus.application.memory?.systemPercent || 0) < 50,
+                    'bg-warning': (healthStatus.application.memory?.systemPercent || 0) >= 50 && (healthStatus.application.memory?.systemPercent || 0) < 80,
+                    'bg-danger': (healthStatus.application.memory?.systemPercent || 0) >= 80
+                  }" [style.width.%]="healthStatus.application.memory?.systemPercent || 0" role="progressbar">
+              </div>
+            </div>
+          </div>
           <div class="metric-row">
             <span class="metric-label"><i class="fas fa-chart-pie me-2"></i>Working Set</span>
             <span class="metric-value fw-bold">
@@ -162,6 +183,10 @@
               formatBytes(healthStatus.application.memory.workingSetMB || 0)
               }}
             </span>
+          </div>
+          <div class="metric-row" *ngIf="healthStatus.application.memory?.percent !== undefined">
+            <span class="metric-label"><i class="fas fa-percentage me-2"></i>Process Usage</span>
+            <span class="metric-value">{{ formatPercent(healthStatus.application.memory.percent) }}</span>
           </div>
           <div class="metric-row">
             <span class="metric-label"><i class="fas fa-layer-group me-2"></i>GC Heap</span>
@@ -197,8 +222,29 @@
           </div>
         </div>
         <div class="card-body">
-          <div class="metric-row">
-            <span class="metric-label"><i class="fas fa-tachometer-alt me-2"></i>Usage</span>
+          <!-- System CPU Usage Progress Bar (server-wide) -->
+          <div class="mb-3" *ngIf="healthStatus.application.cpu?.systemPercent !== undefined">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="small text-muted">Server CPU Usage</span>
+              <span class="fw-bold" [ngClass]="{
+                    'text-success': (healthStatus.application.cpu?.systemPercent || 0) < 50,
+                    'text-warning': (healthStatus.application.cpu?.systemPercent || 0) >= 50 && (healthStatus.application.cpu?.systemPercent || 0) < 80,
+                    'text-danger': (healthStatus.application.cpu?.systemPercent || 0) >= 80
+                  }">
+                {{ formatPercent(healthStatus.application.cpu?.systemPercent) }}
+              </span>
+            </div>
+            <div class="progress" style="height: 8px;">
+              <div class="progress-bar" [ngClass]="{
+                    'bg-success': (healthStatus.application.cpu?.systemPercent || 0) < 50,
+                    'bg-warning': (healthStatus.application.cpu?.systemPercent || 0) >= 50 && (healthStatus.application.cpu?.systemPercent || 0) < 80,
+                    'bg-danger': (healthStatus.application.cpu?.systemPercent || 0) >= 80
+                  }" [style.width.%]="healthStatus.application.cpu?.systemPercent || 0" role="progressbar">
+              </div>
+            </div>
+          </div>
+          <div class="metric-row" *ngIf="healthStatus.application.cpu?.percent !== undefined">
+            <span class="metric-label"><i class="fas fa-tachometer-alt me-2"></i>Process Usage</span>
             <span class="metric-value fw-bold" [ngClass]="{
                   'text-success' : (healthStatus.application.cpu?.percent || 0) < 50,
                     'text-warning': (healthStatus.application.cpu?.percent || 0) >= 50 && (healthStatus.application.cpu?.percent || 0) < 80,
@@ -273,7 +319,7 @@
         <div class="card-body">
           <!-- Iterate over each database -->
           <div *ngFor="let db of healthStatus.database?.databases; let last = last" class="database-item"
-               [class.mb-3]="!last" [class.border-bottom]="!last" [class.pb-3]="!last">
+            [class.mb-3]="!last" [class.border-bottom]="!last" [class.pb-3]="!last">
             <div class="d-flex justify-content-between align-items-center mb-1">
               <span class="fw-bold">{{ db.name }}</span>
               <span class="badge" [ngClass]="db.isConnected ? 'bg-success' : 'bg-danger'">
@@ -294,7 +340,7 @@
               <i class="fas fa-exclamation-triangle me-1"></i>{{ db.errorMessage }}
             </div>
             <button *ngIf="db.isConnected" class="btn btn-sm btn-outline-secondary mt-2 w-100"
-                    (click)="openTableModal(db.name)">
+              (click)="openTableModal(db.name)">
               <i class="fas fa-table me-1"></i>View Tables
             </button>
           </div>
@@ -334,7 +380,7 @@
               <i class="fas fa-info-circle me-1"></i>No active sessions
             </div>
             <div *ngFor="let session of authenticatedUsers.sessions?.slice(0, 5); let last = last" [class.mb-2]="!last"
-                 [class.border-bottom]="!last" [class.pb-2]="!last">
+              [class.border-bottom]="!last" [class.pb-2]="!last">
               <div class="d-flex justify-content-between align-items-center">
                 <span class="fw-bold small">
                   <i class="fas fa-user me-1 text-muted"></i>{{ session.displayName || session.username }}
@@ -342,8 +388,8 @@
                 <div class="d-flex align-items-center gap-2">
                   <span class="badge bg-secondary small" *ngIf="session.loginMethod">{{ session.loginMethod }}</span>
                   <button *ngIf="session.sessionId" class="btn btn-outline-danger btn-sm py-0 px-1"
-                          title="Revoke Session" (click)="revokeSession(session)"
-                          [disabled]="revokingSessionId === session.sessionId">
+                    title="Revoke Session" (click)="revokeSession(session)"
+                    [disabled]="revokingSessionId === session.sessionId">
                     <i class="fas fa-times-circle"></i>
                   </button>
                 </div>
@@ -401,7 +447,7 @@
                 </div>
                 <div class="progress mb-2" style="height: 8px;">
                   <div class="progress-bar" [ngClass]="getDriveStatusClass(drive)" [style.width.%]="drive.usedPercent"
-                       role="progressbar">
+                    role="progressbar">
                   </div>
                 </div>
                 <div class="d-flex justify-content-between small text-muted">
@@ -441,7 +487,7 @@
               <div class="row g-2">
                 <div class="col-sm-6 col-md-4 col-lg-3" *ngFor="let metric of app.metrics">
                   <div class="metric-card p-2 rounded text-center" [ngClass]="getMetricStateClass(metric.state)"
-                       [title]="metric.description || ''">
+                    [title]="metric.description || ''">
                     <div class="metric-value fw-bold">{{ metric.value }}</div>
                     <div class="metric-name small text-muted">{{ metric.name }}</div>
                   </div>

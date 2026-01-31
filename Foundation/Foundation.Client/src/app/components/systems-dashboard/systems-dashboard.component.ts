@@ -967,6 +967,11 @@ export class SystemsDashboardComponent implements OnInit, OnDestroy {
         return `${percent.toFixed(1)}%`;
     }
 
+    formatPercent(percent: number | undefined | null): string {
+        if (percent === undefined || percent === null) return '-';
+        return `${percent.toFixed(1)}%`;
+    }
+
     formatDate(date: Date | string | undefined): string {
         if (!date) return '-';
         return new Date(date).toLocaleString();

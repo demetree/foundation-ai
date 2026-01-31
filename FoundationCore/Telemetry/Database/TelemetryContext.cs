@@ -35,13 +35,13 @@ public partial class TelemetryContext : DbContext
     {
         modelBuilder.Entity<TelemetryApplication>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Telemetr__3213E83F8E33988D");
+            entity.HasKey(e => e.id).HasName("PK__Telemetr__3213E83FD0A9127F");
 
             entity.ToTable("TelemetryApplication", "Telemetry");
 
             entity.HasIndex(e => e.name, "I_TelemetryApplication_name");
 
-            entity.HasIndex(e => e.name, "UQ__Telemetr__72E12F1BFFDD19CF").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__Telemetr__72E12F1B92B286AA").IsUnique();
 
             entity.Property(e => e.name)
                 .IsRequired()
@@ -51,7 +51,7 @@ public partial class TelemetryContext : DbContext
 
         modelBuilder.Entity<TelemetryApplicationMetric>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Telemetr__3213E83F1718CD55");
+            entity.HasKey(e => e.id).HasName("PK__Telemetr__3213E83F0BE28BB9");
 
             entity.ToTable("TelemetryApplicationMetric", "Telemetry");
 
@@ -70,7 +70,7 @@ public partial class TelemetryContext : DbContext
 
         modelBuilder.Entity<TelemetryCollectionRun>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Telemetr__3213E83FE427D706");
+            entity.HasKey(e => e.id).HasName("PK__Telemetr__3213E83FFE8469C6");
 
             entity.ToTable("TelemetryCollectionRun", "Telemetry");
 
@@ -79,7 +79,7 @@ public partial class TelemetryContext : DbContext
 
         modelBuilder.Entity<TelemetryDatabaseHealth>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Telemetr__3213E83F351953C5");
+            entity.HasKey(e => e.id).HasName("PK__Telemetr__3213E83FC42AF815");
 
             entity.ToTable("TelemetryDatabaseHealth", "Telemetry");
 
@@ -100,7 +100,7 @@ public partial class TelemetryContext : DbContext
 
         modelBuilder.Entity<TelemetryDiskHealth>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Telemetr__3213E83F19DC354F");
+            entity.HasKey(e => e.id).HasName("PK__Telemetr__3213E83F2B97A501");
 
             entity.ToTable("TelemetryDiskHealth", "Telemetry");
 
@@ -119,7 +119,7 @@ public partial class TelemetryContext : DbContext
 
         modelBuilder.Entity<TelemetryErrorEvent>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Telemetr__3213E83F86C756EC");
+            entity.HasKey(e => e.id).HasName("PK__Telemetr__3213E83F508E6AB2");
 
             entity.ToTable("TelemetryErrorEvent", "Telemetry");
 
@@ -143,7 +143,7 @@ public partial class TelemetryContext : DbContext
 
         modelBuilder.Entity<TelemetryLogError>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Telemetr__3213E83F379A6FE7");
+            entity.HasKey(e => e.id).HasName("PK__Telemetr__3213E83F94577B05");
 
             entity.ToTable("TelemetryLogError", "Telemetry");
 
@@ -166,7 +166,7 @@ public partial class TelemetryContext : DbContext
 
         modelBuilder.Entity<TelemetrySessionSnapshot>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Telemetr__3213E83F72744ABC");
+            entity.HasKey(e => e.id).HasName("PK__Telemetr__3213E83F7FF63C36");
 
             entity.ToTable("TelemetrySessionSnapshot", "Telemetry");
 
@@ -179,7 +179,7 @@ public partial class TelemetryContext : DbContext
 
         modelBuilder.Entity<TelemetrySnapshot>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Telemetr__3213E83F87E533D6");
+            entity.HasKey(e => e.id).HasName("PK__Telemetr__3213E83F430B8CAA");
 
             entity.ToTable("TelemetrySnapshot", "Telemetry");
 

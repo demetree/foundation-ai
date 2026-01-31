@@ -68,9 +68,17 @@
                 <label for="TelemetrySnapshot-memoryPercent" id="label-TelemetrySnapshot-memoryPercent">Memory Percent</label>
                 <input type="number" id="TelemetrySnapshot-memoryPercent" formControlName="memoryPercent" placeholder="Enter Memory Percent" class="form-control telemetry-snapshot-input" [disabled]="!userIsTelemetryTelemetrySnapshotWriter()" aria-labelledby="label-memoryPercent" />
             </div>
+            <div class="form-group" *ngIf="!isFieldHidden('systemMemoryPercent')">
+                <label for="TelemetrySnapshot-systemMemoryPercent" id="label-TelemetrySnapshot-systemMemoryPercent">System Memory Percent</label>
+                <input type="number" id="TelemetrySnapshot-systemMemoryPercent" formControlName="systemMemoryPercent" placeholder="Enter System Memory Percent" class="form-control telemetry-snapshot-input" [disabled]="!userIsTelemetryTelemetrySnapshotWriter()" aria-labelledby="label-systemMemoryPercent" />
+            </div>
             <div class="form-group" *ngIf="!isFieldHidden('cpuPercent')">
                 <label for="TelemetrySnapshot-cpuPercent" id="label-TelemetrySnapshot-cpuPercent">Cpu Percent</label>
                 <input type="number" id="TelemetrySnapshot-cpuPercent" formControlName="cpuPercent" placeholder="Enter Cpu Percent" class="form-control telemetry-snapshot-input" [disabled]="!userIsTelemetryTelemetrySnapshotWriter()" aria-labelledby="label-cpuPercent" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('systemCpuPercent')">
+                <label for="TelemetrySnapshot-systemCpuPercent" id="label-TelemetrySnapshot-systemCpuPercent">System Cpu Percent</label>
+                <input type="number" id="TelemetrySnapshot-systemCpuPercent" formControlName="systemCpuPercent" placeholder="Enter System Cpu Percent" class="form-control telemetry-snapshot-input" [disabled]="!userIsTelemetryTelemetrySnapshotWriter()" aria-labelledby="label-systemCpuPercent" />
             </div>
             <div class="form-group" *ngIf="!isFieldHidden('threadPoolWorkerThreads')">
                 <label for="TelemetrySnapshot-threadPoolWorkerThreads" id="label-TelemetrySnapshot-threadPoolWorkerThreads">Thread Pool Worker Threads</label>

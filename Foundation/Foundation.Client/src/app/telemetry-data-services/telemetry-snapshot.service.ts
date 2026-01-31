@@ -43,7 +43,9 @@ export class TelemetrySnapshotQueryParameters {
     memoryWorkingSetMB: number | null | undefined = null;
     memoryGcHeapMB: number | null | undefined = null;
     memoryPercent: number | null | undefined = null;
+    systemMemoryPercent: number | null | undefined = null;
     cpuPercent: number | null | undefined = null;
+    systemCpuPercent: number | null | undefined = null;
     threadPoolWorkerThreads: bigint | number | null | undefined = null;
     threadPoolCompletionPortThreads: bigint | number | null | undefined = null;
     threadPoolPendingWorkItems: bigint | number | null | undefined = null;
@@ -70,7 +72,9 @@ export class TelemetrySnapshotSubmitData {
     memoryWorkingSetMB: number | null = null;
     memoryGcHeapMB: number | null = null;
     memoryPercent: number | null = null;
+    systemMemoryPercent: number | null = null;
     cpuPercent: number | null = null;
+    systemCpuPercent: number | null = null;
     threadPoolWorkerThreads: bigint | number | null = null;
     threadPoolCompletionPortThreads: bigint | number | null = null;
     threadPoolPendingWorkItems: bigint | number | null = null;
@@ -132,7 +136,9 @@ export class TelemetrySnapshotData {
     memoryWorkingSetMB!: number | null;
     memoryGcHeapMB!: number | null;
     memoryPercent!: number | null;
+    systemMemoryPercent!: number | null;
     cpuPercent!: number | null;
+    systemCpuPercent!: number | null;
     threadPoolWorkerThreads!: bigint | number;
     threadPoolCompletionPortThreads!: bigint | number;
     threadPoolPendingWorkItems!: bigint | number;
@@ -860,7 +866,9 @@ export class TelemetrySnapshotService extends SecureEndpointBase {
         output.memoryWorkingSetMB = data.memoryWorkingSetMB;
         output.memoryGcHeapMB = data.memoryGcHeapMB;
         output.memoryPercent = data.memoryPercent;
+        output.systemMemoryPercent = data.systemMemoryPercent;
         output.cpuPercent = data.cpuPercent;
+        output.systemCpuPercent = data.systemCpuPercent;
         output.threadPoolWorkerThreads = data.threadPoolWorkerThreads;
         output.threadPoolCompletionPortThreads = data.threadPoolCompletionPortThreads;
         output.threadPoolPendingWorkItems = data.threadPoolPendingWorkItems;

@@ -158,6 +158,27 @@
           </div>
         </div>
         <div class="card-body">
+          <!-- System Memory Usage Progress Bar (server-wide) -->
+          <div class="mb-3" *ngIf="healthStatus.application.memory?.systemPercent !== undefined">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="small text-muted">Server Memory Usage</span>
+              <span class="fw-bold" [ngClass]="{
+                    'text-success': (healthStatus.application.memory?.systemPercent || 0) < 50,
+                    'text-warning': (healthStatus.application.memory?.systemPercent || 0) >= 50 && (healthStatus.application.memory?.systemPercent || 0) < 80,
+                    'text-danger': (healthStatus.application.memory?.systemPercent || 0) >= 80
+                  }">
+                {{ formatPercent(healthStatus.application.memory?.systemPercent) }}
+              </span>
+            </div>
+            <div class="progress" style="height: 8px;">
+              <div class="progress-bar" [ngClass]="{
+                    'bg-success': (healthStatus.application.memory?.systemPercent || 0) < 50,
+                    'bg-warning': (healthStatus.application.memory?.systemPercent || 0) >= 50 && (healthStatus.application.memory?.systemPercent || 0) < 80,
+                    'bg-danger': (healthStatus.application.memory?.systemPercent || 0) >= 80
+                  }" [style.width.%]="healthStatus.application.memory?.systemPercent || 0" role="progressbar">
+              </div>
+            </div>
+          </div>
           <div class="metric-row">
             <span class="metric-label"><i class="fas fa-chart-pie me-2"></i>Working Set</span>
             <span class="metric-value fw-bold">
@@ -166,19 +187,13 @@
               }}
             </span>
           </div>
+          <div class="metric-row" *ngIf="healthStatus.application.memory?.percent !== undefined">
+            <span class="metric-label"><i class="fas fa-percentage me-2"></i>Process Usage</span>
+            <span class="metric-value">{{ formatPercent(healthStatus.application.memory.percent) }}</span>
+          </div>
           <div class="metric-row">
             <span class="metric-label"><i class="fas fa-layer-group me-2"></i>GC Heap</span>
             <span class="metric-value">{{ formatBytes(healthStatus.application.memory.gcHeapMB || 0) }}</span>
-          </div>
-          <div class="metric-row">
-            <span class="metric-label"><i class="fas fa-percentage me-2"></i>System Usage</span>
-            <span class="metric-value fw-bold" [ngClass]="{
-                  'text-success': (healthStatus.application?.memory?.percent || 0) < 50,
-                  'text-warning': (healthStatus.application?.memory?.percent || 0) >= 50 && (healthStatus.application?.memory?.percent || 0) < 80,
-                  'text-danger': (healthStatus.application?.memory?.percent || 0) >= 80
-                }">
-              {{ formatPercent(healthStatus.application?.memory?.percent) }}
-            </span>
           </div>
           <div class="metric-row">
             <span class="metric-label"><i class="fas fa-recycle me-2"></i>GC Gen0</span>
@@ -211,8 +226,29 @@
           </div>
         </div>
         <div class="card-body">
-          <div class="metric-row">
-            <span class="metric-label"><i class="fas fa-tachometer-alt me-2"></i>Usage</span>
+          <!-- System CPU Usage Progress Bar (server-wide) -->
+          <div class="mb-3" *ngIf="healthStatus.application.cpu?.systemPercent !== undefined">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="small text-muted">Server CPU Usage</span>
+              <span class="fw-bold" [ngClass]="{
+                    'text-success': (healthStatus.application.cpu?.systemPercent || 0) < 50,
+                    'text-warning': (healthStatus.application.cpu?.systemPercent || 0) >= 50 && (healthStatus.application.cpu?.systemPercent || 0) < 80,
+                    'text-danger': (healthStatus.application.cpu?.systemPercent || 0) >= 80
+                  }">
+                {{ formatPercent(healthStatus.application.cpu?.systemPercent) }}
+              </span>
+            </div>
+            <div class="progress" style="height: 8px;">
+              <div class="progress-bar" [ngClass]="{
+                    'bg-success': (healthStatus.application.cpu?.systemPercent || 0) < 50,
+                    'bg-warning': (healthStatus.application.cpu?.systemPercent || 0) >= 50 && (healthStatus.application.cpu?.systemPercent || 0) < 80,
+                    'bg-danger': (healthStatus.application.cpu?.systemPercent || 0) >= 80
+                  }" [style.width.%]="healthStatus.application.cpu?.systemPercent || 0" role="progressbar">
+              </div>
+            </div>
+          </div>
+          <div class="metric-row" *ngIf="healthStatus.application.cpu?.percent !== undefined">
+            <span class="metric-label"><i class="fas fa-tachometer-alt me-2"></i>Process Usage</span>
             <span class="metric-value fw-bold" [ngClass]="{
                   'text-success' : (healthStatus.application?.cpu?.percent || 0) < 50,
                     'text-warning': (healthStatus.application?.cpu?.percent || 0) >= 50 && (healthStatus.application?.cpu?.percent || 0) < 80,

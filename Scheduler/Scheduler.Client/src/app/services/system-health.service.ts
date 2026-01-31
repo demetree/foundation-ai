@@ -33,6 +33,7 @@ export interface ApplicationMetrics {
     privateMemoryMB: number;
     gcHeapMB: number;
     percent?: number;
+    systemPercent?: number;
     gen0Collections: number;
     gen1Collections: number;
     gen2Collections: number;
@@ -53,6 +54,7 @@ export interface ApplicationMetrics {
   };
   cpu?: {
     percent: number;
+    systemPercent?: number;
     processorCount: number;
   };
 }

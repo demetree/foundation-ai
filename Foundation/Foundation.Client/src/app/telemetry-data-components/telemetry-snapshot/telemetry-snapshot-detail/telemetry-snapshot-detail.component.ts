@@ -50,7 +50,9 @@ interface TelemetrySnapshotFormValues {
   memoryWorkingSetMB: string | null,     // Stored as string for form input, converted to number on submit.
   memoryGcHeapMB: string | null,     // Stored as string for form input, converted to number on submit.
   memoryPercent: string | null,     // Stored as string for form input, converted to number on submit.
+  systemMemoryPercent: string | null,     // Stored as string for form input, converted to number on submit.
   cpuPercent: string | null,     // Stored as string for form input, converted to number on submit.
+  systemCpuPercent: string | null,     // Stored as string for form input, converted to number on submit.
   threadPoolWorkerThreads: string | null,     // Stored as string for form input, converted to number on submit.
   threadPoolCompletionPortThreads: string | null,     // Stored as string for form input, converted to number on submit.
   threadPoolPendingWorkItems: string | null,     // Stored as string for form input, converted to number on submit.
@@ -92,7 +94,9 @@ export class TelemetrySnapshotDetailComponent implements OnInit, CanComponentDea
         memoryWorkingSetMB: [''],
         memoryGcHeapMB: [''],
         memoryPercent: [''],
+        systemMemoryPercent: [''],
         cpuPercent: [''],
+        systemCpuPercent: [''],
         threadPoolWorkerThreads: [''],
         threadPoolCompletionPortThreads: [''],
         threadPoolPendingWorkItems: [''],
@@ -423,7 +427,9 @@ export class TelemetrySnapshotDetailComponent implements OnInit, CanComponentDea
         memoryWorkingSetMB: '',
         memoryGcHeapMB: '',
         memoryPercent: '',
+        systemMemoryPercent: '',
         cpuPercent: '',
+        systemCpuPercent: '',
         threadPoolWorkerThreads: '',
         threadPoolCompletionPortThreads: '',
         threadPoolPendingWorkItems: '',
@@ -447,7 +453,9 @@ export class TelemetrySnapshotDetailComponent implements OnInit, CanComponentDea
         memoryWorkingSetMB: telemetrySnapshotData.memoryWorkingSetMB?.toString() ?? '',
         memoryGcHeapMB: telemetrySnapshotData.memoryGcHeapMB?.toString() ?? '',
         memoryPercent: telemetrySnapshotData.memoryPercent?.toString() ?? '',
+        systemMemoryPercent: telemetrySnapshotData.systemMemoryPercent?.toString() ?? '',
         cpuPercent: telemetrySnapshotData.cpuPercent?.toString() ?? '',
+        systemCpuPercent: telemetrySnapshotData.systemCpuPercent?.toString() ?? '',
         threadPoolWorkerThreads: telemetrySnapshotData.threadPoolWorkerThreads?.toString() ?? '',
         threadPoolCompletionPortThreads: telemetrySnapshotData.threadPoolCompletionPortThreads?.toString() ?? '',
         threadPoolPendingWorkItems: telemetrySnapshotData.threadPoolPendingWorkItems?.toString() ?? '',
@@ -521,7 +529,9 @@ export class TelemetrySnapshotDetailComponent implements OnInit, CanComponentDea
         memoryWorkingSetMB: formValue.memoryWorkingSetMB ? Number(formValue.memoryWorkingSetMB) : null,
         memoryGcHeapMB: formValue.memoryGcHeapMB ? Number(formValue.memoryGcHeapMB) : null,
         memoryPercent: formValue.memoryPercent ? Number(formValue.memoryPercent) : null,
+        systemMemoryPercent: formValue.systemMemoryPercent ? Number(formValue.systemMemoryPercent) : null,
         cpuPercent: formValue.cpuPercent ? Number(formValue.cpuPercent) : null,
+        systemCpuPercent: formValue.systemCpuPercent ? Number(formValue.systemCpuPercent) : null,
         threadPoolWorkerThreads: formValue.threadPoolWorkerThreads ? Number(formValue.threadPoolWorkerThreads) : null,
         threadPoolCompletionPortThreads: formValue.threadPoolCompletionPortThreads ? Number(formValue.threadPoolCompletionPortThreads) : null,
         threadPoolPendingWorkItems: formValue.threadPoolPendingWorkItems ? Number(formValue.threadPoolPendingWorkItems) : null,
