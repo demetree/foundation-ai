@@ -65,7 +65,9 @@ GO
 CREATE INDEX [I_UserSession_securityUserId_isRevoked_active_deleted] ON [Security].[UserSession] ([securityUserId], [isRevoked], [active], [deleted])
 GO
 
-
+--
+-- Couple of new fields on Login Attempt
+--
 ALTER TABLE [Security].[LoginAttempt] ADD [success] BIT NULL			-- null = unknown/pending, true = success, false = failure
 GO
 
