@@ -68,6 +68,8 @@ export class SystemsDashboardComponent implements OnInit, OnDestroy {
         threadPoolWorkerThreads?: number;
         threadPoolPendingWorkItems?: number;
         machineName?: string;
+        systemMemoryPercent?: number;
+        systemCpuPercent?: number;
     } | null = null;
     realtimeLoading = false;
 
@@ -148,6 +150,8 @@ export class SystemsDashboardComponent implements OnInit, OnDestroy {
     memorySparkline: ChartData<'line'> | null = null;
     cpuSparkline: ChartData<'line'> | null = null;
     diskSparkline: ChartData<'line'> | null = null;
+    systemMemorySparkline: ChartData<'line'> | null = null;
+    systemCpuSparkline: ChartData<'line'> | null = null;
 
     // Sparkline time range controls
     sparklineHours = 24;
@@ -394,6 +398,50 @@ export class SystemsDashboardComponent implements OnInit, OnDestroy {
                 },
                 error: (err: Error) => {
                     console.error('Failed to load disk trends:', err);
+                }
+            });
+
+        // Load system memory trends
+        this.telemetryService.getSystemMemoryTrends(undefined, this.sparklineHours)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (response) => {
+                    const sorted = [...response.data].sort((a, b) =>
+                        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+                    this.systemMemorySparkline = {
+                        labels: sorted.map(() => ''),
+                        datasets: [{
+                            data: sorted.map(t => t.systemMemoryPercent ?? 0),
+                            borderColor: '#17a2b8',
+                            backgroundColor: 'rgba(23, 162, 184, 0.1)',
+                            fill: true
+                        }]
+                    };
+                },
+                error: (err: Error) => {
+                    console.error('Failed to load system memory trends:', err);
+                }
+            });
+
+        // Load system CPU trends
+        this.telemetryService.getSystemCpuTrends(undefined, this.sparklineHours)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (response) => {
+                    const sorted = [...response.data].sort((a, b) =>
+                        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+                    this.systemCpuSparkline = {
+                        labels: sorted.map(() => ''),
+                        datasets: [{
+                            data: sorted.map(t => t.systemCpuPercent ?? 0),
+                            borderColor: '#6c757d',
+                            backgroundColor: 'rgba(108, 117, 125, 0.1)',
+                            fill: true
+                        }]
+                    };
+                },
+                error: (err: Error) => {
+                    console.error('Failed to load system CPU trends:', err);
                 }
             });
     }

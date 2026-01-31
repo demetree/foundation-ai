@@ -205,6 +205,52 @@
         </div>
       </div>
 
+      <!-- Avg Server Memory % Card with Sparkline -->
+      <div class="summary-card summary-card-with-sparkline"
+        *ngIf="fleetMetrics.system.avgSystemMemoryPercent !== undefined">
+        <div class="card-main">
+          <div class="card-icon" [ngClass]="{
+            'bg-success': (fleetMetrics.system.avgSystemMemoryPercent || 0) < 50,
+            'bg-warning': (fleetMetrics.system.avgSystemMemoryPercent || 0) >= 50 && (fleetMetrics.system.avgSystemMemoryPercent || 0) < 80,
+            'bg-danger': (fleetMetrics.system.avgSystemMemoryPercent || 0) >= 80
+          }">
+            <i class="fas fa-server"></i>
+          </div>
+          <div class="card-content">
+            <h4>{{ fleetMetrics.system.avgSystemMemoryPercent?.toFixed(1) }}%</h4>
+            <p>Avg Server Memory</p>
+          </div>
+        </div>
+        <!-- System Memory Sparkline -->
+        <div class="sparkline-container" *ngIf="systemMemorySparkline">
+          <canvas baseChart [data]="systemMemorySparkline" [options]="sparklineOptions" [type]="lineChartType">
+          </canvas>
+        </div>
+      </div>
+
+      <!-- Avg Server CPU % Card with Sparkline -->
+      <div class="summary-card summary-card-with-sparkline"
+        *ngIf="fleetMetrics.system.avgSystemCpuPercent !== undefined">
+        <div class="card-main">
+          <div class="card-icon" [ngClass]="{
+            'bg-success': (fleetMetrics.system.avgSystemCpuPercent || 0) < 50,
+            'bg-warning': (fleetMetrics.system.avgSystemCpuPercent || 0) >= 50 && (fleetMetrics.system.avgSystemCpuPercent || 0) < 80,
+            'bg-danger': (fleetMetrics.system.avgSystemCpuPercent || 0) >= 80
+          }">
+            <i class="fas fa-tachometer-alt"></i>
+          </div>
+          <div class="card-content">
+            <h4>{{ fleetMetrics.system.avgSystemCpuPercent?.toFixed(1) }}%</h4>
+            <p>Avg Server CPU</p>
+          </div>
+        </div>
+        <!-- System CPU Sparkline -->
+        <div class="sparkline-container" *ngIf="systemCpuSparkline">
+          <canvas baseChart [data]="systemCpuSparkline" [options]="sparklineOptions" [type]="lineChartType">
+          </canvas>
+        </div>
+      </div>
+
       <!-- Disk Space Card with Sparkline -->
       <div class="summary-card summary-card-with-sparkline">
         <div class="card-main">
@@ -292,6 +338,24 @@
                 <span class="stat-label">Uptime:</span>
                 <span>{{ formatUptime(snap.uptimeSeconds) }}</span>
               </div>
+              <!-- System-wide server metrics -->
+              <div class="stat-row" *ngIf="snap.isOnline && snap.systemMemoryPercent !== undefined">
+                <span class="stat-label">Server Mem:</span>
+                <span [ngClass]="{
+                                    'text-success': (snap.systemMemoryPercent || 0) < 50,
+                                    'text-warning': (snap.systemMemoryPercent || 0) >= 50 && (snap.systemMemoryPercent || 0) < 80,
+                                    'text-danger': (snap.systemMemoryPercent || 0) >= 80
+                                }">{{ formatPercent(snap.systemMemoryPercent) }}</span>
+              </div>
+              <div class="stat-row" *ngIf="snap.isOnline && snap.systemCpuPercent !== undefined">
+                <span class="stat-label">Server CPU:</span>
+                <span [ngClass]="{
+                                    'text-success': (snap.systemCpuPercent || 0) < 50,
+                                    'text-warning': (snap.systemCpuPercent || 0) >= 50 && (snap.systemCpuPercent || 0) < 80,
+                                    'text-danger': (snap.systemCpuPercent || 0) >= 80
+                                }">{{ formatPercent(snap.systemCpuPercent) }}</span>
+              </div>
+              <!-- Process-level metrics -->
               <div class="stat-row" *ngIf="snap.isOnline">
                 <span class="stat-label">Memory:</span>
                 <span>{{ formatMemory(snap.memoryWorkingSetMB) }}</span>
@@ -840,6 +904,31 @@
           Showing data from last telemetry collection. For real-time metrics, visit the application's own
           dashboard.
         </div>
+        <!-- System-wide server metrics row (if available) -->
+        <div class="row g-3"
+          *ngIf="selectedSnapshot.systemMemoryPercent !== undefined || selectedSnapshot.systemCpuPercent !== undefined">
+          <div class="col-md-3" *ngIf="selectedSnapshot.systemMemoryPercent !== undefined">
+            <div class="metric-card">
+              <div class="metric-label">Server Memory</div>
+              <div class="metric-value" [ngClass]="{
+                  'text-success': (selectedSnapshot.systemMemoryPercent || 0) < 50,
+                  'text-warning': (selectedSnapshot.systemMemoryPercent || 0) >= 50 && (selectedSnapshot.systemMemoryPercent || 0) < 80,
+                  'text-danger': (selectedSnapshot.systemMemoryPercent || 0) >= 80
+                }">{{ formatPercent(selectedSnapshot.systemMemoryPercent) }}</div>
+            </div>
+          </div>
+          <div class="col-md-3" *ngIf="selectedSnapshot.systemCpuPercent !== undefined">
+            <div class="metric-card">
+              <div class="metric-label">Server CPU</div>
+              <div class="metric-value" [ngClass]="{
+                  'text-success': (selectedSnapshot.systemCpuPercent || 0) < 50,
+                  'text-warning': (selectedSnapshot.systemCpuPercent || 0) >= 50 && (selectedSnapshot.systemCpuPercent || 0) < 80,
+                  'text-danger': (selectedSnapshot.systemCpuPercent || 0) >= 80
+                }">{{ formatPercent(selectedSnapshot.systemCpuPercent) }}</div>
+            </div>
+          </div>
+        </div>
+        <!-- Process-level metrics -->
         <div class="row g-3">
           <div class="col-md-3">
             <div class="metric-card">
@@ -1057,6 +1146,8 @@
               <th>Application</th>
               <th>Status</th>
               <th>Uptime</th>
+              <th>Server Mem</th>
+              <th>Server CPU</th>
               <th>Memory</th>
               <th>CPU</th>
               <th>Machine</th>
@@ -1074,12 +1165,28 @@
                 </span>
               </td>
               <td>{{ formatUptime(snap.uptimeSeconds) }}</td>
+              <td>
+                <span *ngIf="snap.systemMemoryPercent !== undefined" [ngClass]="{
+                    'text-success': (snap.systemMemoryPercent || 0) < 50,
+                    'text-warning': (snap.systemMemoryPercent || 0) >= 50 && (snap.systemMemoryPercent || 0) < 80,
+                    'text-danger': (snap.systemMemoryPercent || 0) >= 80
+                  }">{{ formatPercent(snap.systemMemoryPercent) }}</span>
+                <span *ngIf="snap.systemMemoryPercent === undefined" class="text-muted">-</span>
+              </td>
+              <td>
+                <span *ngIf="snap.systemCpuPercent !== undefined" [ngClass]="{
+                    'text-success': (snap.systemCpuPercent || 0) < 50,
+                    'text-warning': (snap.systemCpuPercent || 0) >= 50 && (snap.systemCpuPercent || 0) < 80,
+                    'text-danger': (snap.systemCpuPercent || 0) >= 80
+                  }">{{ formatPercent(snap.systemCpuPercent) }}</span>
+                <span *ngIf="snap.systemCpuPercent === undefined" class="text-muted">-</span>
+              </td>
               <td>{{ formatMemory(snap.memoryWorkingSetMB) }}</td>
               <td>{{ formatCpu(snap.cpuPercent) }}</td>
               <td>{{ snap.machineName || '-' }}</td>
             </tr>
             <tr *ngIf="recentSnapshots.length === 0">
-              <td colspan="7" class="text-center text-muted">No snapshots found</td>
+              <td colspan="9" class="text-center text-muted">No snapshots found</td>
             </tr>
           </tbody>
         </table>
@@ -1233,6 +1340,24 @@
         <div class="modal-body">
           <!-- Core Metrics -->
           <div class="metrics-grid mb-4">
+            <!-- System-wide metrics (if available) -->
+            <div class="metric-item" *ngIf="selectedSnapshotDetail.systemMemoryPercent !== undefined">
+              <div class="metric-label">Server Memory %</div>
+              <div class="metric-value" [ngClass]="{
+                    'text-success': (selectedSnapshotDetail.systemMemoryPercent || 0) < 50,
+                    'text-warning': (selectedSnapshotDetail.systemMemoryPercent || 0) >= 50 && (selectedSnapshotDetail.systemMemoryPercent || 0) < 80,
+                    'text-danger': (selectedSnapshotDetail.systemMemoryPercent || 0) >= 80
+                  }">{{ formatPercent(selectedSnapshotDetail.systemMemoryPercent) }}</div>
+            </div>
+            <div class="metric-item" *ngIf="selectedSnapshotDetail.systemCpuPercent !== undefined">
+              <div class="metric-label">Server CPU %</div>
+              <div class="metric-value" [ngClass]="{
+                    'text-success': (selectedSnapshotDetail.systemCpuPercent || 0) < 50,
+                    'text-warning': (selectedSnapshotDetail.systemCpuPercent || 0) >= 50 && (selectedSnapshotDetail.systemCpuPercent || 0) < 80,
+                    'text-danger': (selectedSnapshotDetail.systemCpuPercent || 0) >= 80
+                  }">{{ formatPercent(selectedSnapshotDetail.systemCpuPercent) }}</div>
+            </div>
+            <!-- Process-level metrics -->
             <div class="metric-item">
               <div class="metric-label">Memory (Working Set)</div>
               <div class="metric-value">{{ formatMemory(selectedSnapshotDetail.memoryWorkingSetMB) }}</div>

@@ -23,6 +23,8 @@ export interface TelemetrySnapshotDto {
     threadPoolWorkerThreads?: number;
     threadPoolPendingWorkItems?: number;
     machineName?: string;
+    systemMemoryPercent?: number;
+    systemCpuPercent?: number;
 }
 
 export interface TelemetrySnapshotsResponse {
@@ -68,6 +70,30 @@ export interface DiskTrendPoint {
 
 export interface DiskTrendsResponse {
     data: DiskTrendPoint[];
+    hours: number;
+    count: number;
+}
+
+export interface SystemMemoryTrendPoint {
+    timestamp: Date;
+    applicationName: string;
+    systemMemoryPercent?: number;
+}
+
+export interface SystemMemoryTrendsResponse {
+    data: SystemMemoryTrendPoint[];
+    hours: number;
+    count: number;
+}
+
+export interface SystemCpuTrendPoint {
+    timestamp: Date;
+    applicationName: string;
+    systemCpuPercent?: number;
+}
+
+export interface SystemCpuTrendsResponse {
+    data: SystemCpuTrendPoint[];
     hours: number;
     count: number;
 }
@@ -133,6 +159,8 @@ export interface SnapshotDetailDto {
     threadPoolWorkerThreads?: number;
     threadPoolPendingWorkItems?: number;
     machineName?: string;
+    systemMemoryPercent?: number;
+    systemCpuPercent?: number;
     databases: DatabaseHealthDto[];
     disks: DiskHealthDto[];
     sessions?: SessionSnapshotDto;
@@ -215,6 +243,8 @@ export interface TelemetrySummaryResponse {
         memoryGcHeapMB?: number;
         cpuPercent?: number;
         machineName?: string;
+        systemMemoryPercent?: number;
+        systemCpuPercent?: number;
     }[];
     lastCollectionRun?: {
         startTime: Date;
@@ -240,6 +270,8 @@ export interface FleetMetricsResponse {
         totalMemoryMB: number;
         avgCpuPercent: number;
         totalLogErrors: number;
+        avgSystemMemoryPercent?: number;
+        avgSystemCpuPercent?: number;
     };
     metrics: {
         metricName: string;
@@ -374,6 +406,32 @@ export class TelemetryService {
 
         return this.http.get<DiskTrendsResponse>(
             `${this.baseUrl}/trends/disk`,
+            { headers: this.authService.GetAuthenticationHeaders(), params }
+        );
+    }
+
+    /**
+     * Get system-wide memory usage trends for sparklines
+     */
+    getSystemMemoryTrends(appName?: string, hours: number = 24): Observable<SystemMemoryTrendsResponse> {
+        let params = new HttpParams().set('hours', hours.toString());
+        if (appName) params = params.set('appName', appName);
+
+        return this.http.get<SystemMemoryTrendsResponse>(
+            `${this.baseUrl}/trends/systemMemory`,
+            { headers: this.authService.GetAuthenticationHeaders(), params }
+        );
+    }
+
+    /**
+     * Get system-wide CPU usage trends for sparklines
+     */
+    getSystemCpuTrends(appName?: string, hours: number = 24): Observable<SystemCpuTrendsResponse> {
+        let params = new HttpParams().set('hours', hours.toString());
+        if (appName) params = params.set('appName', appName);
+
+        return this.http.get<SystemCpuTrendsResponse>(
+            `${this.baseUrl}/trends/systemCpu`,
             { headers: this.authService.GetAuthenticationHeaders(), params }
         );
     }

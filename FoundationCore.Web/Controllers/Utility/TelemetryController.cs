@@ -347,6 +347,100 @@ namespace Foundation.Controllers.WebAPI
 
 
         //
+        // GET: api/Telemetry/trends/systemMemory
+        //
+        // Returns system-wide memory percentage trend data for sparklines
+        //
+        [HttpGet("trends/systemMemory")]
+        public async Task<IActionResult> GetSystemMemoryTrends([FromQuery] string appName = null,
+                                                                [FromQuery] int hours = 24)
+        {
+            try
+            {
+                DateTime startTime = DateTime.UtcNow.AddHours(-hours);
+
+                await using (TelemetryContext context = new TelemetryContext())
+                {
+                    IQueryable<TelemetrySnapshot> query = context.TelemetrySnapshots
+                        .Include(s => s.telemetryApplication)
+                        .Where(s => s.collectedAt >= startTime && s.isOnline && s.systemMemoryPercent.HasValue)
+                        .AsQueryable();
+
+                    if (!string.IsNullOrWhiteSpace(appName))
+                    {
+                        query = query.Where(s => s.telemetryApplication.name == appName);
+                    }
+
+                    var data = await query
+                        .OrderBy(s => s.collectedAt)
+                        .Select(s => new
+                        {
+                            timestamp = s.collectedAt,
+                            applicationName = s.telemetryApplication.name,
+                            systemMemoryPercent = s.systemMemoryPercent
+                        })
+                        .ToListAsync()
+                        .ConfigureAwait(false);
+
+                    return Ok(new { data, hours, count = data.Count });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving system memory trends");
+                return Problem("Failed to retrieve system memory trends");
+            }
+        }
+
+
+        //
+        // GET: api/Telemetry/trends/systemCpu
+        //
+        // Returns system-wide CPU percentage trend data for sparklines
+        //
+        [HttpGet("trends/systemCpu")]
+        public async Task<IActionResult> GetSystemCpuTrends([FromQuery] string appName = null,
+                                                             [FromQuery] int hours = 24)
+        {
+            try
+            {
+                DateTime startTime = DateTime.UtcNow.AddHours(-hours);
+
+                await using (TelemetryContext context = new TelemetryContext())
+                {
+                    IQueryable<TelemetrySnapshot> query = context.TelemetrySnapshots
+                        .Include(s => s.telemetryApplication)
+                        .Where(s => s.collectedAt >= startTime && s.isOnline && s.systemCpuPercent.HasValue)
+                        .AsQueryable();
+
+                    if (!string.IsNullOrWhiteSpace(appName))
+                    {
+                        query = query.Where(s => s.telemetryApplication.name == appName);
+                    }
+
+                    var data = await query
+                        .OrderBy(s => s.collectedAt)
+                        .Select(s => new
+                        {
+                            timestamp = s.collectedAt,
+                            applicationName = s.telemetryApplication.name,
+                            systemCpuPercent = s.systemCpuPercent
+                        })
+                        .ToListAsync()
+                        .ConfigureAwait(false);
+
+                    return Ok(new { data, hours, count = data.Count });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving system CPU trends");
+                return Problem("Failed to retrieve system CPU trends");
+            }
+        }
+
+
+        //
         // GET: api/Telemetry/trends/sessions
         //
         // Returns active session count trends for charting
@@ -507,7 +601,15 @@ namespace Foundation.Controllers.WebAPI
                             .Select(s => s.cpuPercent.Value)
                             .DefaultIfEmpty(0)
                             .Average(),
-                        totalLogErrors = latestSnapshots.Sum(s => s.TelemetryLogErrors.Sum(e => e.occurrenceCount))
+                        totalLogErrors = latestSnapshots.Sum(s => s.TelemetryLogErrors.Sum(e => e.occurrenceCount)),
+                        avgSystemMemoryPercent = latestSnapshots.Where(s => s.isOnline && s.systemMemoryPercent.HasValue)
+                            .Select(s => s.systemMemoryPercent.Value)
+                            .DefaultIfEmpty()
+                            .Average() is double memAvg && memAvg > 0 ? (double?)memAvg : null,
+                        avgSystemCpuPercent = latestSnapshots.Where(s => s.isOnline && s.systemCpuPercent.HasValue)
+                            .Select(s => s.systemCpuPercent.Value)
+                            .DefaultIfEmpty()
+                            .Average() is double cpuAvg && cpuAvg > 0 ? (double?)cpuAvg : null
                     };
 
                     return Ok(new
@@ -629,7 +731,9 @@ namespace Foundation.Controllers.WebAPI
                             s.memoryWorkingSetMB,
                             s.memoryGcHeapMB,
                             s.cpuPercent,
-                            s.machineName
+                            s.machineName,
+                            s.systemMemoryPercent,
+                            s.systemCpuPercent
                         })
                         .ToListAsync()
                         .ConfigureAwait(false);
