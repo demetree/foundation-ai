@@ -42,19 +42,18 @@ namespace Foundation.Controllers.WebAPI
         // Returns historical snapshots with optional filtering by app and date range
         //
         [HttpGet("snapshots")]
-        public async Task<IActionResult> GetSnapshots(
-            [FromQuery] string appName = null,
-            [FromQuery] DateTime? startDate = null,
-            [FromQuery] DateTime? endDate = null,
-            [FromQuery] int limit = 100)
+        public async Task<IActionResult> GetSnapshots([FromQuery] string appName = null,
+                                                      [FromQuery] DateTime? startDate = null,
+                                                      [FromQuery] DateTime? endDate = null,
+                                                      [FromQuery] int limit = 100)
         {
             try
             {
-                using (var context = new TelemetryContext())
+                await using (TelemetryContext context = new TelemetryContext())
                 {
-                    var query = context.TelemetrySnapshots
-                        .Include(s => s.telemetryApplication)
-                        .AsQueryable();
+                    IQueryable<TelemetrySnapshot> query = context.TelemetrySnapshots
+                                                                 .Include(s => s.telemetryApplication)
+                                                                 .AsQueryable();
 
                     if (!string.IsNullOrWhiteSpace(appName))
                     {
@@ -112,17 +111,16 @@ namespace Foundation.Controllers.WebAPI
         {
             try
             {
-                using (var context = new TelemetryContext())
+                await using (TelemetryContext context = new TelemetryContext())
                 {
-                    var snapshot = await context.TelemetrySnapshots
-                        .Include(s => s.telemetryApplication)
-                        .Include(s => s.TelemetryDatabaseHealths)
-                        .Include(s => s.TelemetryDiskHealths)
-                        .Include(s => s.TelemetrySessionSnapshots)
-                        .Include(s => s.TelemetryApplicationMetrics)
-                        .Include(s => s.TelemetryLogErrors)
-                        .FirstOrDefaultAsync(s => s.id == id)
-                        .ConfigureAwait(false);
+                    TelemetrySnapshot snapshot = await context.TelemetrySnapshots.Include(s => s.telemetryApplication)
+                                                                                 .Include(s => s.TelemetryDatabaseHealths)
+                                                                                 .Include(s => s.TelemetryDiskHealths)
+                                                                                 .Include(s => s.TelemetrySessionSnapshots)
+                                                                                 .Include(s => s.TelemetryApplicationMetrics)
+                                                                                 .Include(s => s.TelemetryLogErrors)
+                                                                                 .FirstOrDefaultAsync(s => s.id == id)
+                                                                                 .ConfigureAwait(false);
 
                     if (snapshot == null)
                     {
@@ -207,20 +205,18 @@ namespace Foundation.Controllers.WebAPI
         // Returns memory usage trend data for charting
         //
         [HttpGet("trends/memory")]
-        public async Task<IActionResult> GetMemoryTrends(
-            [FromQuery] string appName = null,
-            [FromQuery] int hours = 24)
+        public async Task<IActionResult> GetMemoryTrends([FromQuery] string appName = null,
+                                                         [FromQuery] int hours = 24)
         {
             try
             {
-                var startTime = DateTime.UtcNow.AddHours(-hours);
+                DateTime startTime = DateTime.UtcNow.AddHours(-hours);
 
-                using (var context = new TelemetryContext())
+                await using (TelemetryContext context = new TelemetryContext())
                 {
-                    var query = context.TelemetrySnapshots
-                        .Include(s => s.telemetryApplication)
-                        .Where(s => s.collectedAt >= startTime && s.isOnline)
-                        .AsQueryable();
+                    IQueryable<TelemetrySnapshot> query = context.TelemetrySnapshots.Include(s => s.telemetryApplication)
+                                                                                    .Where(s => s.collectedAt >= startTime && s.isOnline)
+                                                                                    .AsQueryable();
 
                     if (!string.IsNullOrWhiteSpace(appName))
                     {
@@ -256,17 +252,16 @@ namespace Foundation.Controllers.WebAPI
         // Returns CPU usage trend data for charting
         //
         [HttpGet("trends/cpu")]
-        public async Task<IActionResult> GetCpuTrends(
-            [FromQuery] string appName = null,
-            [FromQuery] int hours = 24)
+        public async Task<IActionResult> GetCpuTrends([FromQuery] string appName = null,
+                                                      [FromQuery] int hours = 24)
         {
             try
             {
-                var startTime = DateTime.UtcNow.AddHours(-hours);
+                DateTime startTime = DateTime.UtcNow.AddHours(-hours);
 
-                using (var context = new TelemetryContext())
+                await using (TelemetryContext context = new TelemetryContext())
                 {
-                    var query = context.TelemetrySnapshots
+                   IQueryable<TelemetrySnapshot> query = context.TelemetrySnapshots
                         .Include(s => s.telemetryApplication)
                         .Where(s => s.collectedAt >= startTime && s.isOnline && s.cpuPercent.HasValue)
                         .AsQueryable();
@@ -310,15 +305,15 @@ namespace Foundation.Controllers.WebAPI
         {
             try
             {
-                var startTime = DateTime.UtcNow.AddHours(-hours);
+                DateTime startTime = DateTime.UtcNow.AddHours(-hours);
 
-                using (var context = new TelemetryContext())
+                await using (TelemetryContext context = new TelemetryContext())
                 {
-                    var query = context.TelemetryDiskHealths
-                        .Include(d => d.telemetrySnapshot)
-                            .ThenInclude(s => s.telemetryApplication)
-                        .Where(d => d.telemetrySnapshot.collectedAt >= startTime)
-                        .AsQueryable();
+                    IQueryable<TelemetryDiskHealth> query = context.TelemetryDiskHealths
+                                                                   .Include(d => d.telemetrySnapshot)
+                                                                       .ThenInclude(s => s.telemetryApplication)
+                                                                   .Where(d => d.telemetrySnapshot.collectedAt >= startTime)
+                                                                   .AsQueryable();
 
                     if (!string.IsNullOrWhiteSpace(appName))
                     {
@@ -357,21 +352,20 @@ namespace Foundation.Controllers.WebAPI
         // Returns active session count trends for charting
         //
         [HttpGet("trends/sessions")]
-        public async Task<IActionResult> GetSessionTrends(
-            [FromQuery] string appName = null,
-            [FromQuery] int hours = 24)
+        public async Task<IActionResult> GetSessionTrends([FromQuery] string appName = null,
+                                                          [FromQuery] int hours = 24)
         {
             try
             {
-                var startTime = DateTime.UtcNow.AddHours(-hours);
+                DateTime startTime = DateTime.UtcNow.AddHours(-hours);
 
-                using (var context = new TelemetryContext())
+                await using (TelemetryContext context = new TelemetryContext())
                 {
-                    var query = context.TelemetrySessionSnapshots
-                        .Include(ss => ss.telemetrySnapshot)
-                            .ThenInclude(s => s.telemetryApplication)
-                        .Where(ss => ss.telemetrySnapshot.collectedAt >= startTime)
-                        .AsQueryable();
+                    IQueryable<TelemetrySessionSnapshot> query = context.TelemetrySessionSnapshots
+                                                                        .Include(ss => ss.telemetrySnapshot)
+                                                                            .ThenInclude(s => s.telemetryApplication)
+                                                                        .Where(ss => ss.telemetrySnapshot.collectedAt >= startTime)
+                                                                        .AsQueryable();
 
                     if (!string.IsNullOrWhiteSpace(appName))
                     {
@@ -407,23 +401,22 @@ namespace Foundation.Controllers.WebAPI
         // Returns business metric trends for charting/sparklines
         //
         [HttpGet("trends/metrics")]
-        public async Task<IActionResult> GetMetricTrends(
-            [FromQuery] string appName = null,
-            [FromQuery] string metricName = null,
-            [FromQuery] int hours = 24,
-            [FromQuery] int limit = 100)
+        public async Task<IActionResult> GetMetricTrends([FromQuery] string appName = null,
+                                                         [FromQuery] string metricName = null,
+                                                         [FromQuery] int hours = 24,
+                                                         [FromQuery] int limit = 100)
         {
             try
             {
-                var startTime = DateTime.UtcNow.AddHours(-hours);
+                DateTime startTime = DateTime.UtcNow.AddHours(-hours);
 
-                using (var context = new TelemetryContext())
+                await using (TelemetryContext context = new TelemetryContext())
                 {
-                    var query = context.TelemetryApplicationMetrics
-                        .Include(m => m.telemetrySnapshot)
-                            .ThenInclude(s => s.telemetryApplication)
-                        .Where(m => m.telemetrySnapshot.collectedAt >= startTime)
-                        .AsQueryable();
+                    IQueryable<TelemetryApplicationMetric> query = context.TelemetryApplicationMetrics
+                                                                          .Include(m => m.telemetrySnapshot)
+                                                                             .ThenInclude(s => s.telemetryApplication)
+                                                                          .Where(m => m.telemetrySnapshot.collectedAt >= startTime)
+                                                                          .AsQueryable();
 
                     if (!string.IsNullOrWhiteSpace(appName))
                     {
@@ -450,12 +443,12 @@ namespace Foundation.Controllers.WebAPI
                         .ConfigureAwait(false);
 
                     // Also return available metric names for the filter dropdown
-                    var availableMetrics = await context.TelemetryApplicationMetrics
-                        .Where(m => m.telemetrySnapshot.collectedAt >= startTime)
-                        .Select(m => m.metricName)
-                        .Distinct()
-                        .ToListAsync()
-                        .ConfigureAwait(false);
+                    List<string> availableMetrics = await context.TelemetryApplicationMetrics
+                                                                 .Where(m => m.telemetrySnapshot.collectedAt >= startTime)
+                                                                 .Select(m => m.metricName)
+                                                                 .Distinct()
+                                                                 .ToListAsync()
+                                                                 .ConfigureAwait(false);
 
                     return Ok(new { data, hours, count = data.Count, availableMetrics });
                 }
@@ -478,17 +471,16 @@ namespace Foundation.Controllers.WebAPI
         {
             try
             {
-                using (var context = new TelemetryContext())
+                await using (TelemetryContext context = new TelemetryContext())
                 {
                     // Get the latest snapshot for each application
-                    var latestSnapshots = await context.TelemetrySnapshots
-                        .Include(s => s.telemetryApplication)
-                        .Include(s => s.TelemetryApplicationMetrics)
-                        .Include(s => s.TelemetryLogErrors)
-                        .GroupBy(s => s.telemetryApplicationId)
-                        .Select(g => g.OrderByDescending(s => s.collectedAt).FirstOrDefault())
-                        .ToListAsync()
-                        .ConfigureAwait(false);
+                    List<TelemetrySnapshot> latestSnapshots = await context.TelemetrySnapshots.Include(s => s.telemetryApplication)
+                                                                                              .Include(s => s.TelemetryApplicationMetrics)
+                                                                                              .Include(s => s.TelemetryLogErrors)
+                                                                                              .GroupBy(s => s.telemetryApplicationId)
+                                                                                              .Select(g => g.OrderByDescending(s => s.collectedAt).FirstOrDefault())
+                                                                                              .ToListAsync()
+                                                                                              .ConfigureAwait(false);
 
                     // Aggregate numeric metrics by name
                     var metricAggregates = latestSnapshots
@@ -540,19 +532,17 @@ namespace Foundation.Controllers.WebAPI
         // Returns correlated error events with system state
         //
         [HttpGet("errors")]
-        public async Task<IActionResult> GetErrors(
-            [FromQuery] string appName = null,
-            [FromQuery] DateTime? startDate = null,
-            [FromQuery] DateTime? endDate = null,
-            [FromQuery] int limit = 100)
+        public async Task<IActionResult> GetErrors([FromQuery] string appName = null,
+                                                   [FromQuery] DateTime? startDate = null,
+                                                   [FromQuery] DateTime? endDate = null,
+                                                   [FromQuery] int limit = 100)
         {
             try
             {
-                using (var context = new TelemetryContext())
+                await using (TelemetryContext context = new TelemetryContext())
                 {
-                    var query = context.TelemetryErrorEvents
-                        .Include(e => e.telemetryApplication)
-                        .AsQueryable();
+                    IQueryable<TelemetryErrorEvent> query = context.TelemetryErrorEvents.Include(e => e.telemetryApplication)
+                                                                                        .AsQueryable();
 
                     if (!string.IsNullOrWhiteSpace(appName))
                     {
@@ -569,22 +559,21 @@ namespace Foundation.Controllers.WebAPI
                         query = query.Where(e => e.occurredAt <= endDate.Value);
                     }
 
-                    var errors = await query
-                        .OrderByDescending(e => e.occurredAt)
-                        .Take(Math.Min(limit, 500))
-                        .Select(e => new
-                        {
-                            e.id,
-                            applicationName = e.telemetryApplication.name,
-                            e.occurredAt,
-                            e.auditTypeName,
-                            e.moduleName,
-                            e.entityName,
-                            e.userName,
-                            e.message
-                        })
-                        .ToListAsync()
-                        .ConfigureAwait(false);
+                    var errors = await query.OrderByDescending(e => e.occurredAt)
+                                            .Take(Math.Min(limit, 500))
+                                            .Select(e => new
+                                            {
+                                                e.id,
+                                                applicationName = e.telemetryApplication.name,
+                                                e.occurredAt,
+                                                e.auditTypeName,
+                                                e.moduleName,
+                                                e.entityName,
+                                                e.userName,
+                                                e.message
+                                            })
+                                            .ToListAsync()
+                                            .ConfigureAwait(false);
 
                     return Ok(new { errors, count = errors.Count });
                 }
@@ -607,28 +596,26 @@ namespace Foundation.Controllers.WebAPI
         {
             try
             {
-                using (var context = new TelemetryContext())
+                await using (TelemetryContext context = new TelemetryContext())
                 {
                     // Get all applications
-                    var applications = await context.TelemetryApplications
-                        .Select(a => new
-                        {
-                            a.name,
-                            a.url,
-                            a.isSelf,
-                            a.firstSeen,
-                            a.lastSeen
-                        })
-                        .ToListAsync()
-                        .ConfigureAwait(false);
+                    var applications = await context.TelemetryApplications.Select(a => new
+                                                                            {
+                                                                                a.name,
+                                                                                a.url,
+                                                                                a.isSelf,
+                                                                                a.firstSeen,
+                                                                                a.lastSeen
+                                                                            })
+                                                                            .ToListAsync()
+                                                                            .ConfigureAwait(false);
 
                     // Get latest snapshot per application using a different approach:
                     // First get the max collectedAt per app, then fetch those snapshots
-                    var latestSnapshotIds = await context.TelemetrySnapshots
-                        .GroupBy(s => s.telemetryApplicationId)
-                        .Select(g => g.Max(s => s.id))
-                        .ToListAsync()
-                        .ConfigureAwait(false);
+                    List<int> latestSnapshotIds = await context.TelemetrySnapshots.GroupBy(s => s.telemetryApplicationId)
+                                                                            .Select(g => g.Max(s => s.id))
+                                                                            .ToListAsync()
+                                                                            .ConfigureAwait(false);
 
                     var latestSnapshots = await context.TelemetrySnapshots
                         .Include(s => s.telemetryApplication)
@@ -662,19 +649,19 @@ namespace Foundation.Controllers.WebAPI
                         .ConfigureAwait(false);
 
                     // Get 24h statistics - use separate queries instead of complex GroupBy
-                    var last24h = DateTime.UtcNow.AddHours(-24);
+                    DateTime last24h = DateTime.UtcNow.AddHours(-24);
                     
-                    var totalSnapshots24h = await context.TelemetrySnapshots
+                    int totalSnapshots24h = await context.TelemetrySnapshots
                         .Where(s => s.collectedAt >= last24h)
                         .CountAsync()
                         .ConfigureAwait(false);
 
-                    var onlineCount24h = await context.TelemetrySnapshots
+                    int onlineCount24h = await context.TelemetrySnapshots
                         .Where(s => s.collectedAt >= last24h && s.isOnline)
                         .CountAsync()
                         .ConfigureAwait(false);
 
-                    var memoryStats = await context.TelemetrySnapshots
+                    List<double> memoryStats = await context.TelemetrySnapshots
                         .Where(s => s.collectedAt >= last24h && s.memoryWorkingSetMB.HasValue)
                         .Select(s => s.memoryWorkingSetMB.Value)
                         .ToListAsync()
@@ -684,7 +671,7 @@ namespace Foundation.Controllers.WebAPI
                     double? maxMemoryMB = memoryStats.Any() ? memoryStats.Max() : null;
 
                     // Get error count for last 24h
-                    var errorCount24h = await context.TelemetryErrorEvents
+                    int errorCount24h = await context.TelemetryErrorEvents
                         .Where(e => e.occurredAt >= last24h)
                         .CountAsync()
                         .ConfigureAwait(false);
@@ -723,7 +710,7 @@ namespace Foundation.Controllers.WebAPI
         {
             try
             {
-                using (var context = new TelemetryContext())
+                await using (TelemetryContext context = new TelemetryContext())
                 {
                     var applications = await context.TelemetryApplications
                         .Select(a => new
@@ -760,7 +747,7 @@ namespace Foundation.Controllers.WebAPI
         {
             try
             {
-                using (var context = new TelemetryContext())
+                await using (TelemetryContext context = new TelemetryContext())
                 {
                     var runs = await context.TelemetryCollectionRuns
                         .OrderByDescending(r => r.startTime)

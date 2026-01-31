@@ -8,6 +8,7 @@ using Foundation.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Foundation.Controllers.WebAPI
@@ -42,7 +43,8 @@ namespace Foundation.Controllers.WebAPI
         {
             try
             {
-                var apps = _monitoredAppService.GetConfiguredApplications();
+                List<MonitoredApplicationConfig> apps = _monitoredAppService.GetConfiguredApplications();
+                
                 return Ok(apps);
             }
             catch (Exception ex)
@@ -94,7 +96,8 @@ namespace Foundation.Controllers.WebAPI
                 //
                 string userObjectGuid = User.FindFirst("sub")?.Value;
 
-                var status = await _monitoredAppService.GetApplicationStatusAsync(name, userObjectGuid);
+                MonitoredApplicationStatus status = await _monitoredAppService.GetApplicationStatusAsync(name, userObjectGuid);
+
                 return Ok(status);
             }
             catch (Exception ex)

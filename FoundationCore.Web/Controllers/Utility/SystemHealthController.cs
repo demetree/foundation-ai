@@ -4,13 +4,6 @@
 // API endpoints for monitoring system health and operational metrics.
 // Provides real-time diagnostics for system administrators.
 //
-using Foundation.Auditor;
-using Foundation.Security;
-using Foundation.Services;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -18,6 +11,14 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Net.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Foundation.Security;
+using Foundation.Services;
+
+
 
 namespace Foundation.Controllers.WebAPI
 {
@@ -50,15 +51,13 @@ namespace Foundation.Controllers.WebAPI
         private static readonly TimeSpan CacheDuration = TimeSpan.FromSeconds(1);
 
 
-        public SystemHealthController(
-            ILogger<SystemHealthController> logger,
-            IConfiguration configuration,
-            IMonitoredApplicationService monitoredAppsService = null,
-            IAuthenticatedUsersProvider authenticatedUsersProvider = null,
-            IEnumerable<IDatabaseHealthProvider> databaseProviders = null,
-            IEnumerable<IApplicationMetricsProvider> metricsProviders = null,
-            ILogErrorProvider logErrorProvider = null)
-            : base("Auditor", "SystemHealth")
+        public SystemHealthController(ILogger<SystemHealthController> logger,
+                                      IConfiguration configuration,
+                                      IMonitoredApplicationService monitoredAppsService = null,
+                                      IAuthenticatedUsersProvider authenticatedUsersProvider = null,
+                                      IEnumerable<IDatabaseHealthProvider> databaseProviders = null,
+                                      IEnumerable<IApplicationMetricsProvider> metricsProviders = null,
+                                      ILogErrorProvider logErrorProvider = null) : base("Auditor", "SystemHealth")
         {
             _logger = logger;
             _configuration = configuration;
@@ -96,7 +95,7 @@ namespace Foundation.Controllers.WebAPI
                 //
                 // Generate fresh response
                 //
-                var process = Process.GetCurrentProcess();
+                Process process = Process.GetCurrentProcess();
 
                 var status = new
                 {
@@ -139,7 +138,8 @@ namespace Foundation.Controllers.WebAPI
         {
             try
             {
-                var process = Process.GetCurrentProcess();
+                Process process = Process.GetCurrentProcess();
+
                 return Ok(GetApplicationMetrics(process));
             }
             catch (Exception ex)
@@ -192,20 +192,21 @@ namespace Foundation.Controllers.WebAPI
                 //
                 if (!string.IsNullOrWhiteSpace(appName) && _monitoredAppsService != null)
                 {
-                    var app = _monitoredAppsService.GetApplicationByName(appName);
+                    MonitoredApplicationConfig app = _monitoredAppsService.GetApplicationByName(appName);
+
                     if (app != null && !app.IsSelf)
                     {
                         //
                         // Proxy the request to the remote application
                         //
-                        var userObjectGuid = User?.Claims?.FirstOrDefault(c => c.Type == "sub")?.Value;
+                        string  userObjectGuid = User?.Claims?.FirstOrDefault(c => c.Type == "sub")?.Value;
+
                         if (string.IsNullOrEmpty(userObjectGuid))
                         {
                             return Unauthorized("User authentication required for remote app access");
                         }
 
-                        var response = await _monitoredAppsService.MakeAuthenticatedRequestAsync(
-                            appName, 
+                        HttpResponseMessage response = await _monitoredAppsService.MakeAuthenticatedRequestAsync(appName, 
                             $"api/SystemHealth/database/tables?database={database}",
                             userObjectGuid).ConfigureAwait(false);
 
@@ -305,13 +306,14 @@ namespace Foundation.Controllers.WebAPI
         {
             try
             {
-                var response = new ApplicationMetricsResponse();
+                ApplicationMetricsResponse response = new ApplicationMetricsResponse();
 
-                foreach (var provider in _metricsProviders)
+                foreach (IApplicationMetricsProvider provider in _metricsProviders)
                 {
                     try
                     {
-                        var metrics = await provider.GetMetricsAsync().ConfigureAwait(false);
+                        IEnumerable<ApplicationMetric> metrics = await provider.GetMetricsAsync().ConfigureAwait(false);
+
                         response.Applications.Add(new ApplicationMetricsGroup
                         {
                             ApplicationName = provider.ApplicationName,
@@ -359,7 +361,7 @@ namespace Foundation.Controllers.WebAPI
         {
             try
             {
-                var since = sinceUtc ?? DateTime.UtcNow.AddMinutes(-5);
+                DateTime since = sinceUtc ?? DateTime.UtcNow.AddMinutes(-5);
                 
                 if (_logErrorProvider == null)
                 {
@@ -371,7 +373,7 @@ namespace Foundation.Controllers.WebAPI
                     });
                 }
 
-                var errors = await _logErrorProvider.GetRecentErrorsAsync(since).ConfigureAwait(false);
+                IEnumerable<LogErrorEntry> errors = await _logErrorProvider.GetRecentErrorsAsync(since).ConfigureAwait(false);
 
                 return Ok(new RecentErrorsResponse
                 {
@@ -393,14 +395,16 @@ namespace Foundation.Controllers.WebAPI
 
         private object GetApplicationMetrics(Process process)
         {
-            var uptime = DateTime.UtcNow - _startTime;
+            TimeSpan uptime = DateTime.UtcNow - _startTime;
 
             // Calculate CPU usage as percentage of total CPU time over uptime
             double cpuPercent = 0;
+
             try
             {
-                var totalCpuTime = process.TotalProcessorTime.TotalMilliseconds;
-                var uptimeMs = uptime.TotalMilliseconds;
+                double totalCpuTime = process.TotalProcessorTime.TotalMilliseconds;
+                double uptimeMs = uptime.TotalMilliseconds;
+
                 if (uptimeMs > 0)
                 {
                     // Divide by processor count to get per-core average, clamp to 0-100%
@@ -460,16 +464,17 @@ namespace Foundation.Controllers.WebAPI
 
         private async Task<object> GetDatabaseStatusesAsync()
         {
-            var databases = new List<DatabaseHealthInfo>();
+            List<DatabaseHealthInfo> databases = new List<DatabaseHealthInfo>();
 
             //
             // Query all registered database health providers
             //
-            foreach (var provider in _databaseProviders)
+            foreach (IDatabaseHealthProvider provider in _databaseProviders)
             {
                 try
                 {
-                    var health = await provider.GetHealthAsync().ConfigureAwait(false);
+                    DatabaseHealthInfo health = await provider.GetHealthAsync().ConfigureAwait(false);
+
                     databases.Add(health);
                 }
                 catch (Exception ex)
@@ -513,22 +518,22 @@ namespace Foundation.Controllers.WebAPI
 
         private object GetDiskMetrics()
         {
-            var drives = new List<object>();
+            List<object> drives = new List<object>();
 
             try
             {
                 //
                 // Get the application's base path drive
                 //
-                var basePath = AppDomain.CurrentDomain.BaseDirectory;
-                var baseDrive = Path.GetPathRoot(basePath);
+                string basePath = AppDomain.CurrentDomain.BaseDirectory;
+                string baseDrive = Path.GetPathRoot(basePath);
 
-                foreach (var drive in DriveInfo.GetDrives())
+                foreach (DriveInfo drive in DriveInfo.GetDrives())
                 {
                     if (drive.IsReady && drive.DriveType == DriveType.Fixed)
                     {
-                        var freePercent = Math.Round((double)drive.AvailableFreeSpace / drive.TotalSize * 100, 1);
-                        var usedPercent = 100 - freePercent;
+                        double freePercent = Math.Round((double)drive.AvailableFreeSpace / drive.TotalSize * 100, 1);
+                        double usedPercent = 100 - freePercent;
 
                         drives.Add(new
                         {
@@ -620,11 +625,11 @@ namespace Foundation.Controllers.WebAPI
 
             try
             {
-                var usersInfo = await _authenticatedUsersProvider.GetAuthenticatedUsersAsync().ConfigureAwait(false);
-                var sessions = usersInfo?.Sessions ?? new List<AuthenticatedUserSession>();
+                AuthenticatedUsersInfo usersInfo = await _authenticatedUsersProvider.GetAuthenticatedUsersAsync().ConfigureAwait(false);
+                List<AuthenticatedUserSession> sessions = usersInfo?.Sessions ?? new List<AuthenticatedUserSession>();
 
-                var activeSessions = sessions.Where(s => !s.IsExpired).ToList();
-                var expiredSessions = sessions.Where(s => s.IsExpired).ToList();
+                List<AuthenticatedUserSession> activeSessions = sessions.Where(s => !s.IsExpired).ToList();
+                List<AuthenticatedUserSession> expiredSessions = sessions.Where(s => s.IsExpired).ToList();
 
                 return new
                 {
@@ -654,14 +659,15 @@ namespace Foundation.Controllers.WebAPI
         /// </summary>
         private async Task<object> GetBusinessMetricsAsync()
         {
-            var applications = new List<object>();
+            List<object> applications = new List<object>();
 
-            foreach (var provider in _metricsProviders)
+            foreach (IApplicationMetricsProvider provider in _metricsProviders)
             {
                 try
                 {
-                    var metrics = await provider.GetMetricsAsync().ConfigureAwait(false);
-                    var metricsList = metrics?.Select(m => new
+                    IEnumerable<ApplicationMetric> metrics = await provider.GetMetricsAsync().ConfigureAwait(false);
+                    
+                    List<Object> metricsList = metrics?.Select(m => new
                     {
                         Name = m.Name,
                         Value = m.Value,
@@ -692,13 +698,23 @@ namespace Foundation.Controllers.WebAPI
         /// </summary>
         private static double? ParseNumericValue(string value, MetricDataType dataType)
         {
-            if (string.IsNullOrEmpty(value)) return null;
-            if (dataType == MetricDataType.Text) return null;
+            if (string.IsNullOrEmpty(value) == true)
+            {
+                return null;
+            }
+
+            if (dataType == MetricDataType.Text)
+            {
+                return null;
+            }
 
             // Remove formatting characters like commas, percent signs
-            var cleanValue = value.Replace(",", "").Replace("%", "").Trim();
-            if (double.TryParse(cleanValue, out var result))
+            string cleanValue = value.Replace(",", "").Replace("%", "").Trim();
+
+            if (double.TryParse(cleanValue, out var result) == true)
+            {
                 return result;
+            }
 
             return null;
         }
@@ -717,9 +733,11 @@ namespace Foundation.Controllers.WebAPI
 
             try
             {
-                var since = DateTime.UtcNow.AddMinutes(-5);
-                var errors = await _logErrorProvider.GetRecentErrorsAsync(since).ConfigureAwait(false);
-                var errorList = errors?.Select(e => new
+                DateTime since = DateTime.UtcNow.AddMinutes(-5);
+                
+                IEnumerable<LogErrorEntry> errors = await _logErrorProvider.GetRecentErrorsAsync(since).ConfigureAwait(false);
+                
+                List<Object> errorList = errors?.Select(e => new
                 {
                     Timestamp = e.Timestamp,
                     Level = e.Level,
@@ -755,7 +773,8 @@ namespace Foundation.Controllers.WebAPI
                 }
 
                 // Check if this is the current server
-                var app = _monitoredAppsService.GetApplicationByName(appName);
+                MonitoredApplicationConfig app = _monitoredAppsService.GetApplicationByName(appName);
+
                 if (app == null)
                 {
                     return NotFound($"Application '{appName}' not found");
@@ -768,10 +787,10 @@ namespace Foundation.Controllers.WebAPI
                 }
 
                 // Get user identity for authenticated proxy request
-                var userObjectGuid = User?.Claims?.FirstOrDefault(c => c.Type == "sub")?.Value;
+                string userObjectGuid = User?.Claims?.FirstOrDefault(c => c.Type == "sub")?.Value;
 
                 // Use the monitored app service to fetch status with proper auth
-                var status = await _monitoredAppsService.GetApplicationStatusAsync(appName, userObjectGuid);
+                MonitoredApplicationStatus status = await _monitoredAppsService.GetApplicationStatusAsync(appName, userObjectGuid);
 
                 if (status.IsAvailable && status.HealthData != null)
                 {
@@ -811,7 +830,8 @@ namespace Foundation.Controllers.WebAPI
                     return Problem("Monitored application service not available");
                 }
 
-                var app = _monitoredAppsService.GetApplicationByName(appName);
+                MonitoredApplicationConfig app = _monitoredAppsService.GetApplicationByName(appName);
+
                 if (app == null)
                 {
                     return NotFound($"Application '{appName}' not found");
@@ -822,16 +842,16 @@ namespace Foundation.Controllers.WebAPI
                     return Ok(new { isSelf = true, message = "Use local endpoint" });
                 }
 
-                var userObjectGuid = User?.Claims?.FirstOrDefault(c => c.Type == "sub")?.Value;
+                string userObjectGuid = User?.Claims?.FirstOrDefault(c => c.Type == "sub")?.Value;
 
-                var response = await _monitoredAppsService.MakeAuthenticatedRequestAsync(
-                    appName, 
-                    "api/SystemHealth/users",
-                    userObjectGuid);
+                HttpResponseMessage response = await _monitoredAppsService.MakeAuthenticatedRequestAsync(appName, 
+                                                                                                        "api/SystemHealth/users",
+                                                                                                        userObjectGuid);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                    string content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
                     return Content(content, "application/json");
                 }
                 else

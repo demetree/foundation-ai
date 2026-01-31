@@ -164,13 +164,12 @@ namespace Foundation.Controllers.WebAPI
                 //
                 take = Math.Min(take, 1000);
 
-                LogEntriesResult result = _logFileService.GetLogEntries(
-                    folderName,
-                    fileName,
-                    skip,
-                    take,
-                    level,
-                    search);
+                LogEntriesResult result = _logFileService.GetLogEntries(folderName,
+                                                                        fileName,
+                                                                        skip,
+                                                                        take,
+                                                                        level,
+                                                                        search);
 
                 return Ok(new
                 {
@@ -222,13 +221,12 @@ namespace Foundation.Controllers.WebAPI
 
                 count = Math.Min(count, 500);
 
-                LogEntriesResult result = _logFileService.GetLogEntries(
-                    folderName,
-                    fileName,
-                    0,
-                    count,
-                    level,
-                    null);
+                LogEntriesResult result = _logFileService.GetLogEntries(folderName,
+                                                                        fileName,
+                                                                        0,
+                                                                        count,
+                                                                        level,
+                                                                        null);
 
                 return Ok(new
                 {
@@ -397,8 +395,8 @@ namespace Foundation.Controllers.WebAPI
                 }
 
                 var apps = _monitoredAppService.GetConfiguredApplications()
-                    .Select(a => new { a.Name, a.Url, a.IsSelf })
-                    .ToList();
+                                               .Select(a => new { a.Name, a.Url, a.IsSelf })
+                                               .ToList();
 
                 return Ok(apps);
             }
