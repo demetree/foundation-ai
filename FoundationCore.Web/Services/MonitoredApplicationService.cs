@@ -332,7 +332,10 @@ namespace Foundation.Services
             if (string.IsNullOrEmpty(token))
             {
                 _logger.LogWarning("Unable to obtain token for {AppName} - user may need to re-login", appName);
+
+                //
                 // Return unauthorized response
+                //
                 return new HttpResponseMessage(System.Net.HttpStatusCode.Unauthorized)
                 {
                     ReasonPhrase = "Unable to obtain token for remote application. Please re-login."
@@ -348,7 +351,70 @@ namespace Foundation.Services
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-            return await client.SendAsync(request);
+            HttpResponseMessage response = await client.SendAsync(request);
+
+            //
+            // If we got a 401 Unauthorized, the token may have expired on the remote server.
+            // Invalidate our cached token, get a fresh one, and retry once.
+            //
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                _logger.LogWarning("Token expired for {AppName}, invalidating cache and refreshing", appName);
+
+                InvalidateCachedToken(app, userObjectGuid);
+
+                //
+                // Get a fresh token
+                //
+                string freshToken = await GetTokenForRemoteAppAsync(app, userObjectGuid);
+
+                if (string.IsNullOrEmpty(freshToken))
+                {
+                    _logger.LogWarning("Unable to refresh token for {AppName} after 401", appName);
+                    return response;
+                }
+
+                _logger.LogInformation("Successfully refreshed token for {AppName}, retrying request", appName);
+
+                //
+                // Create a new request (HttpRequestMessage cannot be reused after sending)
+                //
+                HttpRequestMessage retryRequest = new HttpRequestMessage(HttpMethod.Get, url);
+                retryRequest.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", freshToken);
+
+                response = await client.SendAsync(retryRequest);
+            }
+
+            return response;
+        }
+
+
+        /// <summary>
+        /// Invalidates any cached tokens for the specified app and user.
+        /// Called when a 401 response indicates the token has expired.
+        /// </summary>
+        private void InvalidateCachedToken(MonitoredApplicationConfig app, string userObjectGuid)
+        {
+            bool useServiceAccountDirectly = userObjectGuid == SERVICE_ACCOUNT_MARKER;
+
+            //
+            // Remove user-specific token from cache
+            //
+            string userCacheKey = useServiceAccountDirectly
+                ? $"RemoteToken_{app.Name}_ServiceAccount"
+                : $"RemoteToken_{app.Name}_{userObjectGuid}";
+
+            _tokenCache.Remove(userCacheKey);
+            _logger.LogDebug("Invalidated cached token for {AppName} (key: {CacheKey})", app.Name, userCacheKey);
+
+            //
+            // Also remove service account token if it exists (it may have been used as fallback)
+            //
+            if (!useServiceAccountDirectly)
+            {
+                string serviceAccountCacheKey = $"RemoteToken_{app.Name}_ServiceAccount";
+                _tokenCache.Remove(serviceAccountCacheKey);
+            }
         }
 
 
