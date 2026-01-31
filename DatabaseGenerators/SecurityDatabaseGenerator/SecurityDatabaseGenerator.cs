@@ -220,7 +220,7 @@ namespace Foundation.Security.Database
                                                                { "firstName", "System" },
                                                                { "middleName", "Service" },
                                                                { "lastName", "Account" },
-                                                               { "password", "$HASH$V1000$10000$WeuGAJrhrIJWnWZIdyAQKvBEiFM0iMLiS+NJW8ws0YjSCbPq" },    // The default password is the object guid ('d80632a7-b1ff-47cb-9ecd-87f4a4a22763-Service2026!^#');
+                                                               { "password", "$HASH$V1000$10000$WeuGAJrhrIJWnWZIdyAQKvBEiFM0iMLiS+NJW8ws0YjSCbPq" },    // The default password is ('d80632a7-b1ff-47cb-9ecd-87f4a4a22763-Service2026!^#');
                                                                { "description", "System Service account for job/worker connection purposes.  Refer to generator for default password." },
                                                                { "readPermissionLevel", SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL.ToString() },
                                                                { "writePermissionLevel", SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL.ToString() },
