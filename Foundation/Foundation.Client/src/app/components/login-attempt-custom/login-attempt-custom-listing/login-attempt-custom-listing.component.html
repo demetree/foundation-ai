@@ -11,8 +11,9 @@
                 <small class="text-white-50">Authentication activity monitoring</small>
             </div>
             <div class="header-stats d-flex align-items-center gap-2" *ngIf="!(isLoading$ | async)">
-                <span class="badge badge-glass" *ngIf="failureCount > 0" ngbTooltip="Failed attempts in current view">
-                    <i class="fa-solid fa-exclamation-triangle me-1"></i>{{ failureCount }} failures
+                <span class="badge badge-glass" *ngIf="stats.failureCount > 0"
+                    ngbTooltip="Failed attempts in current view">
+                    <i class="fa-solid fa-exclamation-triangle me-1"></i>{{ stats.failureCount }} failures
                 </span>
                 <span class="badge badge-glass">
                     <i class="fa-solid fa-database me-1"></i>{{ (loginAttempts$ | async)?.length || 0 }} attempts
@@ -44,6 +45,60 @@
                 <button class="btn btn-sm btn-outline-light" (click)="exportToCsv()" ngbTooltip="Export to CSV">
                     <i class="fa-solid fa-download"></i>
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Panel -->
+    <div class="row g-3 mb-4 stats-row" *ngIf="!(isLoading$ | async)">
+        <div class="col-6 col-md">
+            <div class="stat-card stat-total">
+                <div class="stat-icon"><i class="fa-solid fa-chart-line"></i></div>
+                <div class="stat-value">{{ stats.totalAttempts | number }}</div>
+                <div class="stat-label">Total Attempts</div>
+            </div>
+        </div>
+        <div class="col-6 col-md">
+            <div class="stat-card stat-success">
+                <div class="stat-icon"><i class="fa-solid fa-check-circle"></i></div>
+                <div class="stat-value">{{ stats.successCount | number }}</div>
+                <div class="stat-label">Successes</div>
+            </div>
+        </div>
+        <div class="col-6 col-md">
+            <div class="stat-card stat-failure">
+                <div class="stat-icon"><i class="fa-solid fa-exclamation-triangle"></i></div>
+                <div class="stat-value">{{ stats.failureCount | number }}</div>
+                <div class="stat-label">Failures</div>
+            </div>
+        </div>
+        <div class="col-6 col-md">
+            <div class="stat-card stat-rate">
+                <div class="stat-icon"><i class="fa-solid fa-percent"></i></div>
+                <div class="stat-value">{{ stats.successRate }}%</div>
+                <div class="stat-label">Success Rate</div>
+            </div>
+        </div>
+        <div class="col-6 col-md">
+            <div class="stat-card stat-users">
+                <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+                <div class="stat-value">{{ stats.uniqueUsers | number }}</div>
+                <div class="stat-label">Unique Users</div>
+            </div>
+        </div>
+        <!-- Activity Sparkline -->
+        <div class="col-12 col-lg-4">
+            <div class="stat-card stat-sparkline">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="stat-label mb-0">Activity Trend (Hourly)</span>
+                </div>
+                <div class="sparkline-container" *ngIf="sparklineData.datasets.length > 0">
+                    <canvas baseChart [data]="sparklineData" [options]="sparklineOptions" [type]="'line'">
+                    </canvas>
+                </div>
+                <div class="text-muted small text-center" *ngIf="sparklineData.datasets.length === 0">
+                    No data for sparkline
+                </div>
             </div>
         </div>
     </div>

@@ -9,6 +9,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { BehaviorSubject, Subject, interval, Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { ChartConfiguration, ChartData } from 'chart.js';
 
 import { LoginAttemptService, LoginAttemptData, LoginAttemptQueryParameters } from '../../../security-data-services/login-attempt.service';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
@@ -109,7 +110,24 @@ export class LoginAttemptCustomListingComponent implements OnInit, OnDestroy {
     //
     // Stats
     //
-    failureCount: number = 0;
+    stats = {
+        totalAttempts: 0,
+        successCount: 0,
+        failureCount: 0,
+        successRate: 0,
+        uniqueUsers: 0,
+        topFailedUsers: [] as { userName: string; count: number }[]
+    };
+
+    // Sparkline data (hourly buckets)
+    sparklineData: ChartData<'line'> = { labels: [], datasets: [] };
+    sparklineOptions: ChartConfiguration<'line'>['options'] = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { enabled: false } },
+        scales: { x: { display: false }, y: { display: false, beginAtZero: true } },
+        elements: { point: { radius: 0 }, line: { borderWidth: 2, tension: 0.4 } }
+    };
 
     //
     // Auto-refresh
@@ -209,7 +227,7 @@ export class LoginAttemptCustomListingComponent implements OnInit, OnDestroy {
                 filtered = this.applySorting(filtered);
 
                 this.loginAttempts$.next(filtered);
-                this.failureCount = filtered.filter(a => !this.isSuccess(a)).length;
+                this.computeStats(filtered);
                 this.updatePagination();
                 this.isLoading$.next(false);
             },
@@ -294,6 +312,96 @@ export class LoginAttemptCustomListingComponent implements OnInit, OnDestroy {
         }
 
         return result;
+    }
+
+
+    //
+    // Compute statistics from filtered data
+    //
+    private computeStats(attempts: LoginAttemptData[]): void {
+        const successes = attempts.filter(a => this.isSuccess(a));
+        const failures = attempts.filter(a => !this.isSuccess(a));
+
+        // Basic counts
+        this.stats.totalAttempts = attempts.length;
+        this.stats.successCount = successes.length;
+        this.stats.failureCount = failures.length;
+        this.stats.successRate = attempts.length > 0
+            ? Math.round((successes.length / attempts.length) * 100)
+            : 0;
+
+        // Unique users
+        const uniqueUserNames = new Set(attempts.map(a => a.userName?.toLowerCase()).filter(u => u));
+        this.stats.uniqueUsers = uniqueUserNames.size;
+
+        // Top failed users
+        const failedUserCounts = new Map<string, number>();
+        failures.forEach(a => {
+            const userName = a.userName || 'Unknown';
+            failedUserCounts.set(userName, (failedUserCounts.get(userName) || 0) + 1);
+        });
+        this.stats.topFailedUsers = Array.from(failedUserCounts.entries())
+            .map(([userName, count]) => ({ userName, count }))
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 5);
+
+        // Build sparkline data (hourly buckets for the past 24 hours or current range)
+        this.buildSparkline(attempts, successes, failures);
+    }
+
+
+    //
+    // Build sparkline chart data from hourly buckets
+    //
+    private buildSparkline(attempts: LoginAttemptData[], successes: LoginAttemptData[], failures: LoginAttemptData[]): void {
+        if (attempts.length === 0) {
+            this.sparklineData = { labels: [], datasets: [] };
+            return;
+        }
+
+        // Determine time range from the data
+        const timestamps = attempts.map(a => new Date(a.timeStamp).getTime());
+        const minTime = Math.min(...timestamps);
+        const maxTime = Math.max(...timestamps);
+
+        // Create hourly buckets
+        const hourMs = 60 * 60 * 1000;
+        const buckets = new Map<number, { total: number; success: number; failure: number }>();
+
+        // Initialize buckets
+        const startBucket = Math.floor(minTime / hourMs) * hourMs;
+        const endBucket = Math.ceil(maxTime / hourMs) * hourMs;
+        for (let t = startBucket; t <= endBucket; t += hourMs) {
+            buckets.set(t, { total: 0, success: 0, failure: 0 });
+        }
+
+        // Fill buckets
+        attempts.forEach(a => {
+            const bucket = Math.floor(new Date(a.timeStamp).getTime() / hourMs) * hourMs;
+            const b = buckets.get(bucket);
+            if (b) {
+                b.total++;
+                if (this.isSuccess(a)) b.success++;
+                else b.failure++;
+            }
+        });
+
+        // Convert to chart data
+        const sortedBuckets = Array.from(buckets.entries()).sort((a, b) => a[0] - b[0]);
+        this.sparklineData = {
+            labels: sortedBuckets.map(([t]) => {
+                const d = new Date(t);
+                return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }),
+            datasets: [
+                {
+                    data: sortedBuckets.map(([, v]) => v.total),
+                    borderColor: '#7b1fa2',
+                    backgroundColor: 'rgba(123, 31, 162, 0.1)',
+                    fill: true
+                }
+            ]
+        };
     }
 
 
@@ -386,21 +494,35 @@ export class LoginAttemptCustomListingComponent implements OnInit, OnDestroy {
     //
     isSuccess(attempt: LoginAttemptData): boolean {
         // Use the success field if it's explicitly set (new records)
-        if (attempt.success === true) {
+        // Handle both boolean and string values due to potential JSON serialization differences
+        const success = attempt.success;
+        if (success === true || success === 'true' as any) {
             return true;
         }
-        if (attempt.success === false) {
+        if (success === false || success === 'false' as any) {
             return false;
         }
 
         // Fallback to heuristic for historical data without success field
         const value = (attempt.value || '').toLowerCase();
-        if (!value || value === 'success' || value === 'ok') {
-            return true;
+
+        // Check for explicit failure indicators first
+        const failureIndicators = ['fail', 'error', 'invalid', 'denied', 'locked', 'expired', 'disabled', 'not found', 'unauthorized'];
+        for (const indicator of failureIndicators) {
+            if (value.includes(indicator)) {
+                return false;
+            }
         }
-        if (value.includes('fail') || value.includes('error') || value.includes('invalid') || value.includes('denied')) {
-            return false;
+
+        // Check for explicit success indicators
+        const successIndicators = ['success', 'ok', 'authenticated', 'granted'];
+        for (const indicator of successIndicators) {
+            if (value.includes(indicator)) {
+                return true;
+            }
         }
+
+        // Default: if empty value or no failure indicators, assume success
         return true;
     }
 

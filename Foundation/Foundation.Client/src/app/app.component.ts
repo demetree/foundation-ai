@@ -181,6 +181,14 @@ export class AppComponent implements OnInit, OnDestroy {
 
   openLoginModal() {
 
+    //
+    // Suppress the modal if user is already on the login page - no value in showing a modal over the login form
+    //
+    if (this.router.url === '/login') {
+      return;
+    }
+
+
     if (this.isloginModalShown == true) {
       return;
     }

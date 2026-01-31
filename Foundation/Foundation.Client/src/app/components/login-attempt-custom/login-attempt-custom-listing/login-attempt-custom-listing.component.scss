@@ -38,6 +38,105 @@
 }
 
 //
+// Statistics Cards
+//
+.stats-row {
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.25rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        border-left: 4px solid #7b1fa2;
+        transition: all 0.2s ease;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-icon {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.8;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            line-height: 1.2;
+            color: #212529;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #6c757d;
+            margin-top: 0.25rem;
+        }
+
+        // Color variants
+        &.stat-total {
+            border-left-color: #7b1fa2;
+
+            .stat-icon {
+                color: #7b1fa2;
+            }
+        }
+
+        &.stat-success {
+            border-left-color: #28a745;
+
+            .stat-icon {
+                color: #28a745;
+            }
+        }
+
+        &.stat-failure {
+            border-left-color: #dc3545;
+
+            .stat-icon {
+                color: #dc3545;
+            }
+        }
+
+        &.stat-rate {
+            border-left-color: #0d6efd;
+
+            .stat-icon {
+                color: #0d6efd;
+            }
+        }
+
+        &.stat-users {
+            border-left-color: #17a2b8;
+
+            .stat-icon {
+                color: #17a2b8;
+            }
+        }
+
+        &.stat-sparkline {
+            border-left-color: #7b1fa2;
+            min-height: 110px;
+
+            .sparkline-container {
+                height: 60px;
+                width: 100%;
+            }
+
+            .stat-label {
+                text-transform: uppercase;
+                font-weight: 600;
+            }
+        }
+    }
+}
+
+//
 // Filter Card
 //
 .filter-card {

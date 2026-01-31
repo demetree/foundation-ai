@@ -37,7 +37,7 @@ export class AppComponent implements OnInit, OnDestroy {
   public isUserLoggedIn = false;
   public newNotificationCount = 0;
   public appTitle = 'Scheduler';
-  
+
   private stickyToasties: number[] = [];
 
   private dataLoadingConsecutiveFailures = 0;
@@ -68,7 +68,7 @@ export class AppComponent implements OnInit, OnDestroy {
     public router: Router,
     private navigationService: NavigationService,
     @Inject('BASE_URL') private baseUrl: string,
-    private http: HttpClient,  ) {
+    private http: HttpClient,) {
 
     storageManager.initialiseStorageSyncListener();
 
@@ -119,7 +119,7 @@ export class AppComponent implements OnInit, OnDestroy {
       if (this.isUserLoggedIn) {
 
         if (this.authService.isSecurityReader == false &&
-            this.authService.isAuditorReader == false) {
+          this.authService.isAuditorReader == false) {
           //
           // Display can't read alert
           //
@@ -184,6 +184,13 @@ export class AppComponent implements OnInit, OnDestroy {
 
   openLoginModal() {
 
+    //
+    // Suppress the modal if user is already on the login page - no value in showing a modal over the login form
+    //
+    if (this.router.url === '/login') {
+      return;
+    }
+
     if (this.isloginModalShown == true) {
       return;
     }
@@ -211,7 +218,7 @@ export class AppComponent implements OnInit, OnDestroy {
     }
 
     loginModalRef.shown.subscribe(() => {
-      this.alertService.showStickyMessage(this.gT('app.alerts.SessionExpired'),  this.gT('app.alerts.SessionExpiredLoginAgain'), MessageSeverity.info);
+      this.alertService.showStickyMessage(this.gT('app.alerts.SessionExpired'), this.gT('app.alerts.SessionExpiredLoginAgain'), MessageSeverity.info);
     });
 
     loginModalRef.hidden.subscribe(() => {
@@ -219,7 +226,7 @@ export class AppComponent implements OnInit, OnDestroy {
       this.loginControl?.reset();
 
       if (this.authService.isSessionExpired) {
-        this.alertService.showStickyMessage(this.gT('app.alerts.SessionExpired'),  this.gT('app.alerts.SessionExpiredLoginToRenewSession'), MessageSeverity.warn);
+        this.alertService.showStickyMessage(this.gT('app.alerts.SessionExpired'), this.gT('app.alerts.SessionExpiredLoginToRenewSession'), MessageSeverity.warn);
       }
     });
   }
@@ -311,7 +318,7 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
- 
+
   logout() {
 
     this.auditorDataServiceManagerService.ClearAllCaches();
