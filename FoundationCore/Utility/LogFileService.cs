@@ -79,6 +79,31 @@ namespace Foundation.LogViewer
     }
 
 
+    /// <summary>
+    ///
+    /// Result of a log entries query, containing the entries, total count, and level counts
+    ///
+    /// </summary>
+    public record LogEntriesResult
+    {
+        public List<LogEntry> Entries { get; init; }
+        public int TotalCount { get; init; }
+        public Dictionary<string, int> LevelCounts { get; init; }
+    }
+
+
+    /// <summary>
+    ///
+    /// Result of scanning a log file for error and warning counts
+    ///
+    /// </summary>
+    public record LevelCountResult
+    {
+        public int ErrorCount { get; init; }
+        public int WarningCount { get; init; }
+    }
+
+
     //
     // Log File Service
     //
@@ -92,13 +117,12 @@ namespace Foundation.LogViewer
     {
         List<LogFolderConfig> GetConfiguredFolders();
         List<LogFileInfo> GetLogFiles(string folderName);
-        (List<LogEntry> Entries, int TotalCount, Dictionary<string, int> LevelCounts) GetLogEntries(
-            string folderName,
-            string fileName,
-            int skip,
-            int take,
-            string levelFilter,
-            string searchText);
+        LogEntriesResult GetLogEntries(string folderName,
+                                        string fileName,
+                                        int skip,
+                                        int take,
+                                        string levelFilter,
+                                        string searchText);
         string GetLogFilePath(string folderName, string fileName);
         string GetLogFolderPath(string folderName);
     }
@@ -242,7 +266,7 @@ namespace Foundation.LogViewer
                     //
                     // Quick scan for error/warning counts
                     //
-                    var (errorCount, warningCount) = ScanFileForLevelCounts(f.FullName);
+                    LevelCountResult levelCounts = ScanFileForLevelCounts(f.FullName);
 
                     result.Add(new LogFileInfo
                     {
@@ -250,8 +274,8 @@ namespace Foundation.LogViewer
                         LastModified = f.LastWriteTimeUtc,
                         SizeBytes = f.Length,
                         SizeDisplay = FormatSize(f.Length),
-                        ErrorCount = errorCount,
-                        WarningCount = warningCount
+                        ErrorCount = levelCounts.ErrorCount,
+                        WarningCount = levelCounts.WarningCount
                     });
                 }
 
@@ -268,7 +292,7 @@ namespace Foundation.LogViewer
         /// <summary>
         /// Quick scan of a log file to count error and warning entries
         /// </summary>
-        private (int ErrorCount, int WarningCount) ScanFileForLevelCounts(string filePath)
+        private LevelCountResult ScanFileForLevelCounts(string filePath)
         {
             int errorCount = 0;
             int warningCount = 0;
@@ -306,30 +330,39 @@ namespace Foundation.LogViewer
                 _logger?.LogWarning(ex, $"Could not scan file for level counts: {filePath}");
             }
 
-            return (errorCount, warningCount);
+            return new LevelCountResult { ErrorCount = errorCount, WarningCount = warningCount };
         }
 
 
-        public (List<LogEntry> Entries, int TotalCount, Dictionary<string, int> LevelCounts) GetLogEntries(
-            string folderName,
-            string fileName,
-            int skip,
-            int take,
-            string levelFilter,
-            string searchText)
+        public LogEntriesResult GetLogEntries(string folderName,
+                                                string fileName,
+                                                int skip,
+                                                int take,
+                                                string levelFilter,
+                                                string searchText)
         {
             var folder = FindFolder(folderName);
 
             if (folder == null)
             {
-                return (new List<LogEntry>(), 0, new Dictionary<string, int>());
+                return new LogEntriesResult
+                {
+                    Entries = new List<LogEntry>(),
+                    TotalCount = 0,
+                    LevelCounts = new Dictionary<string, int>()
+                };
             }
 
             string fullPath = Path.Combine(GetFullPath(folder.Path), fileName);
 
             if (!File.Exists(fullPath))
             {
-                return (new List<LogEntry>(), 0, new Dictionary<string, int>());
+                return new LogEntriesResult
+                {
+                    Entries = new List<LogEntry>(),
+                    TotalCount = 0,
+                    LevelCounts = new Dictionary<string, int>()
+                };
             }
 
             try
@@ -450,12 +483,22 @@ namespace Foundation.LogViewer
                     .Take(take)
                     .ToList();
 
-                return (pagedEntries, totalCount, levelCounts);
+                return new LogEntriesResult
+                {
+                    Entries = pagedEntries,
+                    TotalCount = totalCount,
+                    LevelCounts = levelCounts
+                };
             }
             catch (Exception ex)
             {
                 _logger?.LogError(ex, $"Error reading log entries from {fullPath}");
-                return (new List<LogEntry>(), 0, new Dictionary<string, int>());
+                return new LogEntriesResult
+                {
+                    Entries = new List<LogEntry>(),
+                    TotalCount = 0,
+                    LevelCounts = new Dictionary<string, int>()
+                };
             }
         }
 

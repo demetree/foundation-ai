@@ -13,8 +13,11 @@ using Foundation.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace Foundation.Controllers.WebAPI
@@ -35,11 +38,9 @@ namespace Foundation.Controllers.WebAPI
         private readonly IMonitoredApplicationService _monitoredAppService;
 
 
-        public LogViewerController(
-            ILogFileService logFileService,
-            ILogger<LogViewerController> logger,
-            IMonitoredApplicationService monitoredAppService = null)
-            : base("Auditor", "LogViewer")              // Note that Log file access control is done through the Auditor Module.  Users must be Auditor Admins to use this interface
+        public LogViewerController(ILogFileService logFileService,
+                                   ILogger<LogViewerController> logger,
+                                   IMonitoredApplicationService monitoredAppService = null) : base("Auditor", "LogViewer")              // Note that Log file access control is done through the Auditor Module.  Users must be Auditor Admins to use this interface
         {
             _logFileService = logFileService;
             _logger = logger;
@@ -112,7 +113,7 @@ namespace Foundation.Controllers.WebAPI
                     return BadRequest("Folder name is required");
                 }
 
-                var files = _logFileService.GetLogFiles(folderName);
+                List<LogFileInfo> files = _logFileService.GetLogFiles(folderName);
 
                 return Ok(files);
             }
@@ -130,13 +131,12 @@ namespace Foundation.Controllers.WebAPI
         // Returns parsed log entries from the specified file
         //
         [HttpGet("entries/{folderName}/{fileName}")]
-        public IActionResult GetLogEntries(
-            string folderName,
-            string fileName,
-            [FromQuery] int skip = 0,
-            [FromQuery] int take = 100,
-            [FromQuery] string level = null,
-            [FromQuery] string search = null)
+        public IActionResult GetLogEntries(string folderName,
+                                           string fileName,
+                                           [FromQuery] int skip = 0,
+                                           [FromQuery] int take = 100,
+                                           [FromQuery] string level = null,
+                                           [FromQuery] string search = null)
         {
             //
             // Only admin users can  access log details
@@ -164,7 +164,7 @@ namespace Foundation.Controllers.WebAPI
                 //
                 take = Math.Min(take, 1000);
 
-                var (entries, totalCount, levelCounts) = _logFileService.GetLogEntries(
+                LogEntriesResult result = _logFileService.GetLogEntries(
                     folderName,
                     fileName,
                     skip,
@@ -174,9 +174,9 @@ namespace Foundation.Controllers.WebAPI
 
                 return Ok(new
                 {
-                    Entries = entries,
-                    TotalCount = totalCount,
-                    LevelCounts = levelCounts,
+                    Entries = result.Entries,
+                    TotalCount = result.TotalCount,
+                    LevelCounts = result.LevelCounts,
                     Skip = skip,
                     Take = take
                 });
@@ -195,11 +195,10 @@ namespace Foundation.Controllers.WebAPI
         // Returns the most recent entries (for live tailing)
         //
         [HttpGet("tail/{folderName}/{fileName}")]
-        public IActionResult TailLogFile(
-            string folderName,
-            string fileName,
-            [FromQuery] int count = 50,
-            [FromQuery] string level = null)
+        public IActionResult TailLogFile(string folderName,
+                                         string fileName,
+                                         [FromQuery] int count = 50,
+                                         [FromQuery] string level = null)
         {
             //
             // Only admin users can  access log details
@@ -223,7 +222,7 @@ namespace Foundation.Controllers.WebAPI
 
                 count = Math.Min(count, 500);
 
-                var (entries, totalCount, levelCounts) = _logFileService.GetLogEntries(
+                LogEntriesResult result = _logFileService.GetLogEntries(
                     folderName,
                     fileName,
                     0,
@@ -233,9 +232,9 @@ namespace Foundation.Controllers.WebAPI
 
                 return Ok(new
                 {
-                    Entries = entries,
-                    TotalCount = totalCount,
-                    LevelCounts = levelCounts
+                    Entries = result.Entries,
+                    TotalCount = result.TotalCount,
+                    LevelCounts = result.LevelCounts
                 });
             }
             catch (Exception ex)
@@ -282,7 +281,8 @@ namespace Foundation.Controllers.WebAPI
                     return NotFound("Log file not found");
                 }
 
-                var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+
                 return File(fileStream, "text/plain", fileName);
             }
             catch (Exception ex)
@@ -331,23 +331,26 @@ namespace Foundation.Controllers.WebAPI
                 //
                 // Create a temporary ZIP file
                 //
-                var logFiles = Directory.GetFiles(folderPath, "*.log");
+                string[] logFiles = Directory.GetFiles(folderPath, "*.log");
 
                 if (logFiles.Length == 0)
                 {
                     return NotFound("No log files found in folder");
                 }
 
-                var memoryStream = new MemoryStream();
-                using (var archive = new System.IO.Compression.ZipArchive(memoryStream, System.IO.Compression.ZipArchiveMode.Create, true))
+                MemoryStream memoryStream = new MemoryStream();
+
+                using (ZipArchive archive = new System.IO.Compression.ZipArchive(memoryStream, System.IO.Compression.ZipArchiveMode.Create, true))
                 {
                     foreach (var logFile in logFiles)
                     {
                         string entryName = Path.GetFileName(logFile);
-                        var entry = archive.CreateEntry(entryName, System.IO.Compression.CompressionLevel.Optimal);
 
-                        using var entryStream = entry.Open();
-                        using var fileStream = new FileStream(logFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                        ZipArchiveEntry entry = archive.CreateEntry(entryName, System.IO.Compression.CompressionLevel.Optimal);
+
+                        using Stream entryStream = entry.Open();
+                        using FileStream fileStream = new FileStream(logFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+
                         fileStream.CopyTo(entryStream);
                     }
                 }
@@ -437,14 +440,13 @@ namespace Foundation.Controllers.WebAPI
         // Returns log entries from a remote application's log file
         //
         [HttpGet("remote/{appName}/entries/{folderName}/{fileName}")]
-        public async Task<IActionResult> GetRemoteEntries(
-            string appName,
-            string folderName,
-            string fileName,
-            [FromQuery] int skip = 0,
-            [FromQuery] int take = 100,
-            [FromQuery] string level = null,
-            [FromQuery] string search = null)
+        public async Task<IActionResult> GetRemoteEntries(string appName,
+                                                          string folderName,
+                                                          string fileName,
+                                                          [FromQuery] int skip = 0,
+                                                          [FromQuery] int take = 100,
+                                                          [FromQuery] string level = null,
+                                                          [FromQuery] string search = null)
         {
             //
             // Build query string with all filter parameters
@@ -493,20 +495,20 @@ namespace Foundation.Controllers.WebAPI
                 // Get the current user's object GUID from the sub claim for cross-app authentication
                 //
                 string userObjectGuid = User.FindFirst("sub")?.Value;
+
                 if (string.IsNullOrEmpty(userObjectGuid))
                 {
                     _logger.LogWarning("No sub claim available for proxying request to {AppName}", appName);
                     return Unauthorized("User identity not available");
                 }
 
-                _logger.LogInformation("Proxying request to {AppName}/{Path} for user {UserObjectGuid}", 
-                    appName, relativePath, userObjectGuid);
+                _logger.LogInformation("Proxying request to {AppName}/{Path} for user {UserObjectGuid}", appName, relativePath, userObjectGuid);
 
                 //
                 // Forward the request to the remote application
                 // MonitoredAppService will obtain a fresh token for the target server using cached credentials
                 //
-                var response = await _monitoredAppService.MakeAuthenticatedRequestAsync(appName, relativePath, userObjectGuid);
+                HttpResponseMessage response = await _monitoredAppService.MakeAuthenticatedRequestAsync(appName, relativePath, userObjectGuid);
 
                 if (response.IsSuccessStatusCode)
                 {

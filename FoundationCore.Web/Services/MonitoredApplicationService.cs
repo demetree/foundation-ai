@@ -127,12 +127,11 @@ namespace Foundation.Services
         private const string SERVICE_ACCOUNT_MARKER = "__SERVICE_ACCOUNT__";
 
 
-        public MonitoredApplicationService(
-            IConfiguration configuration,
-            ILogger<MonitoredApplicationService> logger,
-            IHttpClientFactory httpClientFactory,
-            ICredentialCacheService credentialCache,
-            IMemoryCache tokenCache)
+        public MonitoredApplicationService(IConfiguration configuration,
+                                           ILogger<MonitoredApplicationService> logger,
+                                           IHttpClientFactory httpClientFactory,
+                                           ICredentialCacheService credentialCache,
+                                           IMemoryCache tokenCache)
         {
             _configuration = configuration;
             _logger = logger;
@@ -144,7 +143,9 @@ namespace Foundation.Services
             // Load configured applications from appsettings
             //
             _applications = new List<MonitoredApplicationConfig>();
-            var appsSection = configuration.GetSection("MonitoredApplications");
+
+            IConfigurationSection appsSection = configuration.GetSection("MonitoredApplications");
+
             if (appsSection.Exists())
             {
                 appsSection.Bind(_applications);
@@ -154,14 +155,17 @@ namespace Foundation.Services
             // Load service account configuration for fallback authentication
             //
             _serviceAccount = new ServiceAccountConfig();
-            var serviceAccountSection = configuration.GetSection("ServiceAccount");
+
+            IConfigurationSection serviceAccountSection = configuration.GetSection("ServiceAccount");
+
             if (serviceAccountSection.Exists())
             {
                 serviceAccountSection.Bind(_serviceAccount);
             }
 
             _logger.LogInformation("Loaded {Count} monitored applications, ServiceAccount fallback: {Enabled}", 
-                _applications.Count, !string.IsNullOrEmpty(_serviceAccount.Username) && _serviceAccount.Enabled);
+                                   _applications.Count, 
+                                   !string.IsNullOrEmpty(_serviceAccount.Username) && _serviceAccount.Enabled);
         }
 
 
@@ -173,8 +177,7 @@ namespace Foundation.Services
 
         public async Task<MonitoredApplicationStatus> GetApplicationStatusAsync(string appName)
         {
-            var app = _applications.FirstOrDefault(a =>
-                a.Name.Equals(appName, StringComparison.OrdinalIgnoreCase));
+            MonitoredApplicationConfig app = _applications.FirstOrDefault(a => a.Name.Equals(appName, StringComparison.OrdinalIgnoreCase));
 
             if (app == null)
             {
@@ -193,8 +196,7 @@ namespace Foundation.Services
 
         public async Task<MonitoredApplicationStatus> GetApplicationStatusAsync(string appName, string userObjectGuid)
         {
-            var app = _applications.FirstOrDefault(a =>
-                a.Name.Equals(appName, StringComparison.OrdinalIgnoreCase));
+            MonitoredApplicationConfig app = _applications.FirstOrDefault(a => a.Name.Equals(appName, StringComparison.OrdinalIgnoreCase));
 
             if (app == null)
             {
@@ -215,7 +217,9 @@ namespace Foundation.Services
         {
             // Use service account marker for background/automated calls
             var tasks = _applications.Select(app => FetchHealthStatusAsync(app, SERVICE_ACCOUNT_MARKER));
-            var results = await Task.WhenAll(tasks);
+
+            MonitoredApplicationStatus[] results = await Task.WhenAll(tasks);
+
             return results.ToList();
         }
 
@@ -223,14 +227,16 @@ namespace Foundation.Services
         public async Task<List<MonitoredApplicationStatus>> GetAllApplicationStatusesAsync(string userObjectGuid)
         {
             var tasks = _applications.Select(app => FetchHealthStatusAsync(app, userObjectGuid));
-            var results = await Task.WhenAll(tasks);
+
+            MonitoredApplicationStatus[] results = await Task.WhenAll(tasks);
+
             return results.ToList();
         }
 
 
         private async Task<MonitoredApplicationStatus> FetchHealthStatusAsync(MonitoredApplicationConfig app, string userObjectGuid)
         {
-            var result = new MonitoredApplicationStatus
+            MonitoredApplicationStatus result = new MonitoredApplicationStatus
             {
                 Name = app.Name,
                 Url = app.Url,
@@ -240,10 +246,10 @@ namespace Foundation.Services
 
             try
             {
-                var client = _httpClientFactory.CreateClient("MonitoredApps");
+                HttpClient client = _httpClientFactory.CreateClient("MonitoredApps");
                 client.Timeout = DefaultTimeout;
 
-                var url = $"{app.Url.TrimEnd('/')}/api/SystemHealth/status";
+                string url = $"{app.Url.TrimEnd('/')}/api/SystemHealth/status";
                 _logger.LogDebug("Fetching health status from {Url}", url);
 
                 HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
@@ -254,13 +260,14 @@ namespace Foundation.Services
                 if (!string.IsNullOrEmpty(userObjectGuid))
                 {
                     string token = await GetTokenForRemoteAppAsync(app, userObjectGuid);
+
                     if (!string.IsNullOrEmpty(token))
                     {
                         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
                     }
                 }
 
-                var response = await client.SendAsync(request);
+                HttpResponseMessage response = await client.SendAsync(request);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -304,15 +311,13 @@ namespace Foundation.Services
 
         public MonitoredApplicationConfig GetApplicationByName(string appName)
         {
-            return _applications.FirstOrDefault(a =>
-                a.Name.Equals(appName, StringComparison.OrdinalIgnoreCase));
+            return _applications.FirstOrDefault(a => a.Name.Equals(appName, StringComparison.OrdinalIgnoreCase));
         }
 
 
-        public async Task<HttpResponseMessage> MakeAuthenticatedRequestAsync(
-            string appName, string relativePath, string userObjectGuid)
+        public async Task<HttpResponseMessage> MakeAuthenticatedRequestAsync(string appName, string relativePath, string userObjectGuid)
         {
-            var app = GetApplicationByName(appName);
+            MonitoredApplicationConfig app = GetApplicationByName(appName);
 
             if (app == null)
             {
@@ -323,6 +328,7 @@ namespace Foundation.Services
             // Get or obtain a token for the target application
             //
             string token = await GetTokenForRemoteAppAsync(app, userObjectGuid);
+
             if (string.IsNullOrEmpty(token))
             {
                 _logger.LogWarning("Unable to obtain token for {AppName} - user may need to re-login", appName);
@@ -333,13 +339,13 @@ namespace Foundation.Services
                 };
             }
 
-            var client = _httpClientFactory.CreateClient("MonitoredApps");
+            HttpClient client = _httpClientFactory.CreateClient("MonitoredApps");
             client.Timeout = DefaultTimeout;
 
-            var url = $"{app.Url.TrimEnd('/')}/{relativePath.TrimStart('/')}";
+            string url = $"{app.Url.TrimEnd('/')}/{relativePath.TrimStart('/')}";
             _logger.LogDebug("Making authenticated request to {Url}", url);
 
-            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
             return await client.SendAsync(request);
@@ -353,22 +359,23 @@ namespace Foundation.Services
         {
             var response = new ApplicationMetricsResponse();
 
-            foreach (var app in _applications)
+            foreach (MonitoredApplicationConfig app in _applications)
             {
                 try
                 {
-                    var httpResponse = await MakeAuthenticatedRequestAsync(app.Name, "api/SystemHealth/metrics", userObjectGuid);
+                    HttpResponseMessage httpResponse = await MakeAuthenticatedRequestAsync(app.Name, "api/SystemHealth/metrics", userObjectGuid);
 
                     if (httpResponse.IsSuccessStatusCode)
                     {
-                        var json = await httpResponse.Content.ReadAsStringAsync();
-                        var jsonOptions = new JsonSerializerOptions
+                        string json = await httpResponse.Content.ReadAsStringAsync();
+                        JsonSerializerOptions jsonOptions = new JsonSerializerOptions
                         {
                             PropertyNameCaseInsensitive = true
                         };
+
                         jsonOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
                         
-                        var appMetrics = JsonSerializer.Deserialize<ApplicationMetricsResponse>(json, jsonOptions);
+                        ApplicationMetricsResponse appMetrics = JsonSerializer.Deserialize<ApplicationMetricsResponse>(json, jsonOptions);
 
                         if (appMetrics?.Applications != null)
                         {
@@ -377,8 +384,7 @@ namespace Foundation.Services
                     }
                     else
                     {
-                        _logger.LogWarning("Failed to get metrics from {AppName}: {StatusCode}", 
-                            app.Name, httpResponse.StatusCode);
+                        _logger.LogWarning("Failed to get metrics from {AppName}: {StatusCode}", app.Name, httpResponse.StatusCode);
                     }
                 }
                 catch (Exception ex)
@@ -420,18 +426,20 @@ namespace Foundation.Services
             //
             if (!useServiceAccountDirectly)
             {
-                var credentials = _credentialCache.GetCachedCredentials(userObjectGuid);
+                CachedCredentials credentials = _credentialCache.GetCachedCredentials(userObjectGuid);
                 
                 if (credentials != null)
                 {
                     //
                     // Try with user credentials
                     //
-                    var token = await RequestTokenAsync(app, credentials.Username, credentials.Password, cacheKey);
+                    string token = await RequestTokenAsync(app, credentials.Username, credentials.Password, cacheKey);
+
                     if (!string.IsNullOrEmpty(token))
                     {
                         return token;
                     }
+
                     _logger.LogWarning("Failed to get token using user credentials for {UserObjectGuid}, trying service account", userObjectGuid);
                 }
                 else
@@ -459,11 +467,14 @@ namespace Foundation.Services
                 }
 
                 _logger.LogInformation("Falling back to service account for {AppName} authentication", app.Name);
-                var token = await RequestTokenAsync(app, _serviceAccount.Username, _serviceAccount.Password, serviceAccountCacheKey);
+                
+                string token = await RequestTokenAsync(app, _serviceAccount.Username, _serviceAccount.Password, serviceAccountCacheKey);
+
                 if (!string.IsNullOrEmpty(token))
                 {
                     return token;
                 }
+
                 _logger.LogWarning("Service account authentication also failed for {AppName}", app.Name);
             }
             else
@@ -476,19 +487,21 @@ namespace Foundation.Services
 
 
         /// <summary>
+        /// 
         /// Requests a token from a remote application's OAuth endpoint
+        /// 
         /// </summary>
         private async Task<string> RequestTokenAsync(MonitoredApplicationConfig app, string username, string password, string cacheKey)
         {
             try
             {
-                var client = _httpClientFactory.CreateClient("MonitoredApps");
+                HttpClient client = _httpClientFactory.CreateClient("MonitoredApps");
                 client.Timeout = DefaultTimeout;
 
-                var tokenUrl = $"{app.Url.TrimEnd('/')}/connect/token";
+                string tokenUrl = $"{app.Url.TrimEnd('/')}/connect/token";
                 _logger.LogDebug("Requesting token from {TokenUrl} for user {Username}", tokenUrl, username);
 
-                var tokenRequest = new FormUrlEncodedContent(new[]
+                FormUrlEncodedContent tokenRequest = new FormUrlEncodedContent(new[]
                 {
                     new KeyValuePair<string, string>("grant_type", "password"),
                     new KeyValuePair<string, string>("username", username),
@@ -497,16 +510,16 @@ namespace Foundation.Services
                     new KeyValuePair<string, string>("scope", "openid profile email roles")
                 });
 
-                var response = await client.PostAsync(tokenUrl, tokenRequest);
+                HttpResponseMessage response = await client.PostAsync(tokenUrl, tokenRequest);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var tokenResponse = JsonSerializer.Deserialize<JsonElement>(content);
+                    string content = await response.Content.ReadAsStringAsync();
+                    JsonElement tokenResponse = JsonSerializer.Deserialize<JsonElement>(content);
 
                     if (tokenResponse.TryGetProperty("access_token", out var accessTokenElement))
                     {
-                        var token = accessTokenElement.GetString();
+                        string token = accessTokenElement.GetString();
 
                         //
                         // Cache the token
@@ -519,7 +532,8 @@ namespace Foundation.Services
                 }
                 else
                 {
-                    var errorContent = await response.Content.ReadAsStringAsync();
+                    string errorContent = await response.Content.ReadAsStringAsync();
+
                     _logger.LogWarning("Failed to obtain token from {AppName} for {Username}: {StatusCode} - {Error}", 
                         app.Name, username, response.StatusCode, errorContent);
                 }
