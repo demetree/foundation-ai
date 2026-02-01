@@ -140,13 +140,13 @@
             [ngClass]="summary.last24Hours.errorCount > 0 ? 'fa-exclamation-triangle' : 'fa-check-circle'"></i>
         </div>
         <div class="card-content">
-          <h4>{{ summary.last24Hours.errorCount === 0 ? '✓' : summary.last24Hours.errorCount }}</h4>
+          <h4>{{ summary.last24Hours.errorCount }}</h4>
           <p>{{ getTimeSinceLastError() }}</p>
         </div>
       </div>
 
       <!-- Fleet Health Score -->
-      <div class="summary-card" *ngIf="fleetMetrics || summary" [title]="getHealthScoreBreakdown()"
+      <div class="summary-card" *ngIf="fleetMetrics || summary" ngbTooltip="{{getHealthScoreBreakdown()}}"
         style="cursor: help;">
         <div class="card-icon" [ngClass]="getFleetHealthScoreClass()">
           <i class="fas fa-heartbeat"></i>
@@ -161,7 +161,7 @@
     <!-- Aggregates Header with Controls -->
     <div class="fleet-aggregates-header" *ngIf="fleetMetrics">
       <h6 class="mb-0">
-        <i class="fas fa-chart-line me-2"></i>All Systemss
+        <i class="fas fa-chart-line me-2"></i>All Systems
         <span class="badge bg-secondary ms-2" *ngIf="lastRefreshTime">
           Updated {{ getTimeSinceRefresh() }}
         </span>
@@ -197,37 +197,13 @@
         </div>
       </div>
 
-      <div class="summary-card summary-card-with-sparkline">
-        <div class="card-main">
-          <div class="card-icon" [ngClass]="{
-            'bg-success': fleetMetrics.system.avgCpuPercent < 50,
-            'bg-warning': fleetMetrics.system.avgCpuPercent >= 50 && fleetMetrics.system.avgCpuPercent < 80,
-            'bg-danger': fleetMetrics.system.avgCpuPercent >= 80
-          }">
-            <i class="fas fa-microchip"></i>
-          </div>
-          <div class="card-content">
-            <h4>
-              {{ fleetMetrics.system.avgCpuPercent.toFixed(1) }}%
-              <i class="fas ms-1 small" *ngIf="cpuSparkline"
-                [ngClass]="getTrendArrowClass(getMetricTrend(cpuSparkline), true)"></i>
-            </h4>
-            <p>Avg CPU</p>
-          </div>
-        </div>
-        <!-- CPU Sparkline -->
-        <div class="sparkline-container" *ngIf="cpuSparkline">
-          <canvas baseChart [data]="cpuSparkline" [options]="sparklineOptions" [type]="lineChartType">
-          </canvas>
-        </div>
-      </div>
 
       <!-- Avg Server Memory % Card with Sparkline -->
       <div class="summary-card summary-card-with-sparkline"
         *ngIf="fleetMetrics.system.avgSystemMemoryPercent !== undefined">
         <div class="card-main">
           <div class="card-icon" [ngClass]="{
-            'bg-success': (fleetMetrics.system.avgSystemMemoryPercent || 0) < 50,
+               'bg-success' : (fleetMetrics.system.avgSystemMemoryPercent || 0) < 50,
             'bg-warning': (fleetMetrics.system.avgSystemMemoryPercent || 0) >= 50 && (fleetMetrics.system.avgSystemMemoryPercent || 0) < 80,
             'bg-danger': (fleetMetrics.system.avgSystemMemoryPercent || 0) >= 80
           }">
@@ -249,12 +225,39 @@
         </div>
       </div>
 
+
+      <div class="summary-card summary-card-with-sparkline">
+        <div class="card-main">
+          <div class="card-icon" [ngClass]="{
+               'bg-success' : fleetMetrics.system.avgCpuPercent < 50,
+      'bg-warning': fleetMetrics.system.avgCpuPercent >= 50 && fleetMetrics.system.avgCpuPercent < 80,
+      'bg-danger': fleetMetrics.system.avgCpuPercent >= 80
+    }">
+            <i class="fas fa-microchip"></i>
+          </div>
+          <div class="card-content">
+            <h4>
+              {{ fleetMetrics.system.avgCpuPercent.toFixed(1) }}%
+              <i class="fas ms-1 small" *ngIf="cpuSparkline"
+                [ngClass]="getTrendArrowClass(getMetricTrend(cpuSparkline), true)"></i>
+            </h4>
+            <p>Avg CPU</p>
+          </div>
+        </div>
+        <!-- CPU Sparkline -->
+        <div class="sparkline-container" *ngIf="cpuSparkline">
+          <canvas baseChart [data]="cpuSparkline" [options]="sparklineOptions" [type]="lineChartType">
+          </canvas>
+        </div>
+      </div>
+
+
       <!-- Avg Server CPU % Card with Sparkline -->
       <div class="summary-card summary-card-with-sparkline"
         *ngIf="fleetMetrics.system.avgSystemCpuPercent !== undefined">
         <div class="card-main">
           <div class="card-icon" [ngClass]="{
-            'bg-success': (fleetMetrics.system.avgSystemCpuPercent || 0) < 50,
+               'bg-success' : (fleetMetrics.system.avgSystemCpuPercent || 0) < 50,
             'bg-warning': (fleetMetrics.system.avgSystemCpuPercent || 0) >= 50 && (fleetMetrics.system.avgSystemCpuPercent || 0) < 80,
             'bg-danger': (fleetMetrics.system.avgSystemCpuPercent || 0) >= 80
           }">
@@ -276,22 +279,6 @@
         </div>
       </div>
 
-      <!-- Disk Space Card with Sparkline -->
-      <div class="summary-card summary-card-with-sparkline">
-        <div class="card-main">
-          <div class="card-icon bg-purple">
-            <i class="fas fa-hdd"></i>
-          </div>
-          <div class="card-content">
-            <h4><i class="fas fa-chart-area text-muted" style="font-size: 1rem;"></i></h4>
-            <p>Disk Free %</p>
-          </div>
-        </div>
-        <div class="sparkline-container" *ngIf="diskSparkline">
-          <canvas baseChart [data]="diskSparkline" [options]="sparklineOptions" [type]="lineChartType">
-          </canvas>
-        </div>
-      </div>
 
       <!-- Network Utilization Card with Sparkline -->
       <div class="summary-card summary-card-with-sparkline">
@@ -306,6 +293,24 @@
         </div>
         <div class="sparkline-container" *ngIf="networkSparkline">
           <canvas baseChart [data]="networkSparkline" [options]="sparklineOptions" [type]="lineChartType">
+          </canvas>
+        </div>
+      </div>
+
+
+      <!-- Disk Space Card with Sparkline -->
+      <div class="summary-card summary-card-with-sparkline">
+        <div class="card-main">
+          <div class="card-icon bg-purple">
+            <i class="fas fa-hdd"></i>
+          </div>
+          <div class="card-content">
+            <h4><i class="fas fa-chart-area text-muted" style="font-size: 1rem;"></i></h4>
+            <p>Disk Free %</p>
+          </div>
+        </div>
+        <div class="sparkline-container" *ngIf="diskSparkline">
+          <canvas baseChart [data]="diskSparkline" [options]="sparklineOptions" [type]="lineChartType">
           </canvas>
         </div>
       </div>
@@ -354,7 +359,7 @@
 
     <!-- Application Cards Grid -->
     <h5 class="section-title">
-      <i class="fas fa-server me-2"></i>Service Status
+      <i class="fas fa-server me-2"></i>System Status
     </h5>
     <div class="app-grid">
       <div *ngFor="let app of summary.applications; trackBy: trackByAppName" class="app-card"
@@ -390,7 +395,7 @@
               <div class="stat-row" *ngIf="snap.isOnline && snap.systemMemoryPercent !== undefined">
                 <span class="stat-label">Server Mem:</span>
                 <span [ngClass]="{
-                                    'text-success': (snap.systemMemoryPercent || 0) < 50,
+                      'text-success' : (snap.systemMemoryPercent || 0) < 50,
                                     'text-warning': (snap.systemMemoryPercent || 0) >= 50 && (snap.systemMemoryPercent || 0) < 80,
                                     'text-danger': (snap.systemMemoryPercent || 0) >= 80
                                 }">{{ formatPercent(snap.systemMemoryPercent) }}</span>
@@ -398,7 +403,7 @@
               <div class="stat-row" *ngIf="snap.isOnline && snap.systemCpuPercent !== undefined">
                 <span class="stat-label">Server CPU:</span>
                 <span [ngClass]="{
-                                    'text-success': (snap.systemCpuPercent || 0) < 50,
+                      'text-success' : (snap.systemCpuPercent || 0) < 50,
                                     'text-warning': (snap.systemCpuPercent || 0) >= 50 && (snap.systemCpuPercent || 0) < 80,
                                     'text-danger': (snap.systemCpuPercent || 0) >= 80
                                 }">{{ formatPercent(snap.systemCpuPercent) }}</span>
@@ -408,8 +413,11 @@
                 <span class="stat-label">Network:</span>
                 <span class="text-orange">
                   {{ formatPercent(snap.networkUtilizationPercent) }}
-                  <small class="text-muted" *ngIf="snap.networkThroughputBytesPerSecond">({{
-                    formatBytes(snap.networkThroughputBytesPerSecond) }}/s)</small>
+                  <small class="text-muted" *ngIf="snap.networkThroughputBytesPerSecond">
+                    ({{
+                    formatBytes(snap.networkThroughputBytesPerSecond)
+                    }}/s)
+                  </small>
                 </span>
               </div>
               <!-- Process-level metrics -->
@@ -420,7 +428,7 @@
               <div class="stat-row" *ngIf="snap.isOnline">
                 <span class="stat-label">CPU:</span>
                 <span [ngClass]="{
-                                    'text-success': (snap.cpuPercent || 0) < 50,
+                      'text-success' : (snap.cpuPercent || 0) < 50,
                                     'text-warning': (snap.cpuPercent || 0) >= 50 && (snap.cpuPercent || 0) < 80,
                                     'text-danger': (snap.cpuPercent || 0) >= 80
                                 }">{{ formatCpu(snap.cpuPercent) }}</span>
@@ -483,7 +491,8 @@
           <span
             [ngClass]="{'text-success': summary.lastCollectionRun.applicationsSucceeded === summary.lastCollectionRun.applicationsPolled, 'text-warning': summary.lastCollectionRun.applicationsSucceeded < summary.lastCollectionRun.applicationsPolled}">
             {{ summary.lastCollectionRun.applicationsSucceeded }}/{{
-            summary.lastCollectionRun.applicationsPolled }}
+            summary.lastCollectionRun.applicationsPolled
+            }}
           </span>
         </div>
       </div>
@@ -592,7 +601,7 @@
                   <div class="d-flex justify-content-between align-items-center mb-1">
                     <span class="small text-muted">Server Memory Usage</span>
                     <span class="fw-bold" [ngClass]="{
-                          'text-success': (healthStatus.application.memory?.systemPercent || 0) < 50,
+                          'text-success' : (healthStatus.application.memory?.systemPercent || 0) < 50,
                           'text-warning': (healthStatus.application.memory?.systemPercent || 0) >= 50 && (healthStatus.application.memory?.systemPercent || 0) < 80,
                           'text-danger': (healthStatus.application.memory?.systemPercent || 0) >= 80
                         }">
@@ -601,7 +610,7 @@
                   </div>
                   <div class="progress" style="height: 8px;">
                     <div class="progress-bar" [ngClass]="{
-                          'bg-success': (healthStatus.application.memory?.systemPercent || 0) < 50,
+                         'bg-success' : (healthStatus.application.memory?.systemPercent || 0) < 50,
                           'bg-warning': (healthStatus.application.memory?.systemPercent || 0) >= 50 && (healthStatus.application.memory?.systemPercent || 0) < 80,
                           'bg-danger': (healthStatus.application.memory?.systemPercent || 0) >= 80
                         }" [style.width.%]="healthStatus.application.memory?.systemPercent || 0" role="progressbar">
@@ -665,7 +674,7 @@
                   <div class="d-flex justify-content-between align-items-center mb-1">
                     <span class="small text-muted">Server CPU Usage</span>
                     <span class="fw-bold" [ngClass]="{
-                          'text-success': (healthStatus.application.cpu?.systemPercent || 0) < 50,
+                          'text-success' : (healthStatus.application.cpu?.systemPercent || 0) < 50,
                           'text-warning': (healthStatus.application.cpu?.systemPercent || 0) >= 50 && (healthStatus.application.cpu?.systemPercent || 0) < 80,
                           'text-danger': (healthStatus.application.cpu?.systemPercent || 0) >= 80
                         }">
@@ -674,7 +683,7 @@
                   </div>
                   <div class="progress" style="height: 8px;">
                     <div class="progress-bar" [ngClass]="{
-                          'bg-success': (healthStatus.application.cpu?.systemPercent || 0) < 50,
+                         'bg-success' : (healthStatus.application.cpu?.systemPercent || 0) < 50,
                           'bg-warning': (healthStatus.application.cpu?.systemPercent || 0) >= 50 && (healthStatus.application.cpu?.systemPercent || 0) < 80,
                           'bg-danger': (healthStatus.application.cpu?.systemPercent || 0) >= 80
                         }" [style.width.%]="healthStatus.application.cpu?.systemPercent || 0" role="progressbar">
@@ -684,7 +693,7 @@
                 <div class="metric-row" *ngIf="healthStatus.application.cpu?.percent !== undefined">
                   <span class="metric-label"><i class="fas fa-tachometer-alt me-2"></i>Process Usage</span>
                   <span class="metric-value fw-bold" [ngClass]="{
-                              'text-success' : (healthStatus.application.cpu?.percent || 0) < 50,
+                        'text-success' : (healthStatus.application.cpu?.percent || 0) < 50,
                                             'text-warning': (healthStatus.application.cpu?.percent || 0) >= 50 && (healthStatus.application.cpu?.percent || 0) < 80,
                                             'text-danger': (healthStatus.application.cpu?.percent || 0) >= 80
                                         }">
@@ -1011,7 +1020,7 @@
             <div class="metric-card">
               <div class="metric-label">Server Memory</div>
               <div class="metric-value" [ngClass]="{
-                  'text-success': (selectedSnapshot.systemMemoryPercent || 0) < 50,
+                   'text-success' : (selectedSnapshot.systemMemoryPercent || 0) < 50,
                   'text-warning': (selectedSnapshot.systemMemoryPercent || 0) >= 50 && (selectedSnapshot.systemMemoryPercent || 0) < 80,
                   'text-danger': (selectedSnapshot.systemMemoryPercent || 0) >= 80
                 }">{{ formatPercent(selectedSnapshot.systemMemoryPercent) }}</div>
@@ -1021,7 +1030,7 @@
             <div class="metric-card">
               <div class="metric-label">Server CPU</div>
               <div class="metric-value" [ngClass]="{
-                  'text-success': (selectedSnapshot.systemCpuPercent || 0) < 50,
+                   'text-success' : (selectedSnapshot.systemCpuPercent || 0) < 50,
                   'text-warning': (selectedSnapshot.systemCpuPercent || 0) >= 50 && (selectedSnapshot.systemCpuPercent || 0) < 80,
                   'text-danger': (selectedSnapshot.systemCpuPercent || 0) >= 80
                 }">{{ formatPercent(selectedSnapshot.systemCpuPercent) }}</div>
@@ -1080,7 +1089,8 @@
           </div>
         </div>
         <div class="text-muted mt-3">
-          <i class="fas fa-clock me-1"></i>Last collected: {{ formatRelativeTime(selectedSnapshot.collectedAt)
+          <i class="fas fa-clock me-1"></i>Last collected: {{
+          formatRelativeTime(selectedSnapshot.collectedAt)
           }}
         </div>
       </div>
@@ -1141,7 +1151,7 @@
     <div class="sub-tab-content" *ngIf="activeHistoricalTab === 'overview' && summary">
       <!-- Summary Cards -->
       <div class="summary-cards mb-4">
-        <div class="summary-card">
+        <div class="summary-card" (click)="setHistoricalTab('snapshots')">
           <div class="card-icon bg-info">
             <i class="fas fa-camera"></i>
           </div>
@@ -1150,7 +1160,7 @@
             <p>Snapshots (24h)</p>
           </div>
         </div>
-        <div class="summary-card">
+        <div class="summary-card" (click)="setHistoricalTab('snapshots')">
           <div class="card-icon bg-success">
             <i class="fas fa-check"></i>
           </div>
@@ -1159,7 +1169,7 @@
             <p>Online Readings</p>
           </div>
         </div>
-        <div class="summary-card" *ngIf="summary.last24Hours?.avgMemoryMB">
+        <div class="summary-card" *ngIf="summary.last24Hours?.avgMemoryMB" (click)="setHistoricalTab('snapshots')">
           <div class="card-icon bg-primary">
             <i class="fas fa-memory"></i>
           </div>
@@ -1301,7 +1311,7 @@
             <td>{{ formatUptime(snap.uptimeSeconds) }}</td>
             <td>
               <span *ngIf="snap.systemMemoryPercent !== undefined" [ngClass]="{
-                    'text-success': (snap.systemMemoryPercent || 0) < 50,
+                    'text-success' : (snap.systemMemoryPercent || 0) < 50,
                     'text-warning': (snap.systemMemoryPercent || 0) >= 50 && (snap.systemMemoryPercent || 0) < 80,
                     'text-danger': (snap.systemMemoryPercent || 0) >= 80
                   }">{{ formatPercent(snap.systemMemoryPercent) }}</span>
@@ -1309,7 +1319,7 @@
             </td>
             <td>
               <span *ngIf="snap.systemCpuPercent !== undefined" [ngClass]="{
-                    'text-success': (snap.systemCpuPercent || 0) < 50,
+                    'text-success' : (snap.systemCpuPercent || 0) < 50,
                     'text-warning': (snap.systemCpuPercent || 0) >= 50 && (snap.systemCpuPercent || 0) < 80,
                     'text-danger': (snap.systemCpuPercent || 0) >= 80
                   }">{{ formatPercent(snap.systemCpuPercent) }}</span>
@@ -1434,8 +1444,12 @@
               <tr *ngFor="let table of getSortedTables()">
                 <td><code>{{ table.tableName }}</code></td>
                 <td class="text-end">{{ table.rowCount | number }}</td>
-                <td class="text-end" *ngIf="tableStats.sizeAvailable">{{ table.sizeMB |
-                  number:'1.2-2' }}</td>
+                <td class="text-end" *ngIf="tableStats.sizeAvailable">
+                  {{
+                  table.sizeMB |
+                  number:'1.2-2'
+                  }}
+                </td>
               </tr>
             </tbody>
           </table>
@@ -1451,12 +1465,11 @@
   </div>
 </div>
 <div class="modal-backdrop fade show" *ngIf="showTableModal" (click)="closeTableModal()"></div>
-
 <!-- Snapshot Detail Modal -->
 <div class="modal fade show d-block" *ngIf="selectedSnapshotDetail" tabindex="-1">
   <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content snapshot-detail-modal">
-      <div class="modal-header">
+      <div class="modal-header d-flex align-items-center">
         <div class="d-flex flex-column">
           <h5 class="modal-title mb-1">
             <i class="fas fa-camera me-2"></i>{{ selectedSnapshotDetail.applicationName }}
@@ -1465,10 +1478,13 @@
             <i class="fas fa-clock me-1"></i>{{ selectedSnapshotDetail.collectedAt | date:'medium' }}
           </small>
         </div>
-        <span class="status-badge ms-auto me-3" [class.online]="selectedSnapshotDetail.isOnline"
-          [class.offline]="!selectedSnapshotDetail.isOnline">
-          {{ selectedSnapshotDetail.isOnline ? 'Online' : 'Offline' }}
-        </span>
+        <div class="flex-grow-1 d-flex justify-content-end me-2">
+          <span class="status-badge" [class.online]="selectedSnapshotDetail.isOnline"
+            [class.offline]="!selectedSnapshotDetail.isOnline">
+            <i class="fas" [ngClass]="selectedSnapshotDetail.isOnline ? 'fa-check-circle' : 'fa-times-circle'"></i>
+            {{ selectedSnapshotDetail.isOnline ? 'Online' : 'Offline' }}
+          </span>
+        </div>
         <button type="button" class="btn-close" (click)="closeSnapshotDetail()"></button>
       </div>
       <div class="modal-body">
@@ -1478,7 +1494,7 @@
           <div class="metric-item" *ngIf="selectedSnapshotDetail.systemMemoryPercent !== undefined">
             <div class="metric-label">Server Memory %</div>
             <div class="metric-value" [ngClass]="{
-                    'text-success': (selectedSnapshotDetail.systemMemoryPercent || 0) < 50,
+                 'text-success' : (selectedSnapshotDetail.systemMemoryPercent || 0) < 50,
                     'text-warning': (selectedSnapshotDetail.systemMemoryPercent || 0) >= 50 && (selectedSnapshotDetail.systemMemoryPercent || 0) < 80,
                     'text-danger': (selectedSnapshotDetail.systemMemoryPercent || 0) >= 80
                   }">{{ formatPercent(selectedSnapshotDetail.systemMemoryPercent) }}</div>
@@ -1486,11 +1502,21 @@
           <div class="metric-item" *ngIf="selectedSnapshotDetail.systemCpuPercent !== undefined">
             <div class="metric-label">Server CPU %</div>
             <div class="metric-value" [ngClass]="{
-                    'text-success': (selectedSnapshotDetail.systemCpuPercent || 0) < 50,
+                 'text-success' : (selectedSnapshotDetail.systemCpuPercent || 0) < 50,
                     'text-warning': (selectedSnapshotDetail.systemCpuPercent || 0) >= 50 && (selectedSnapshotDetail.systemCpuPercent || 0) < 80,
                     'text-danger': (selectedSnapshotDetail.systemCpuPercent || 0) >= 80
                   }">{{ formatPercent(selectedSnapshotDetail.systemCpuPercent) }}</div>
           </div>
+
+          <div class="metric-item" *ngIf="getSnapshotNetworkUtilization() !== null">
+            <div class="metric-label">Server Network %</div>
+            <div class="metric-value" [ngClass]="{
+                 'text-success' : (getSnapshotNetworkUtilization() || 0) < 50,
+                    'text-warning': (getSnapshotNetworkUtilization() || 0) >= 50 && (getSnapshotNetworkUtilization() || 0) < 80,
+                    'text-danger': (getSnapshotNetworkUtilization() || 0) >= 80
+                  }">{{ formatPercent(getSnapshotNetworkUtilization()) }}</div>
+          </div>
+
           <!-- Process-level metrics -->
           <div class="metric-item">
             <div class="metric-label">Memory (Working Set)</div>
@@ -1595,8 +1621,11 @@
               <tr *ngFor="let nic of selectedSnapshotDetail.networks">
                 <td>
                   {{ nic.interfaceName }}
-                  <div class="small text-muted" *ngIf="nic.description">{{ nic.description | slice:0:30 }}{{
-                    nic.description.length > 30 ? '...' : '' }}</div>
+                  <div class="small text-muted" *ngIf="nic.description">
+                    {{ nic.description | slice:0:30 }}{{
+                    nic.description.length > 30 ? '...' : ''
+                    }}
+                  </div>
                 </td>
                 <td>{{ nic.linkSpeedMbps }} Mbps</td>
                 <td [class.text-danger]="(nic.utilizationPercent || 0) >= 80"
@@ -1618,7 +1647,8 @@
             <div class="col-6">
               <div class="metric-item">
                 <div class="metric-label">Active Sessions</div>
-                <div class="metric-value text-success">{{ selectedSnapshotDetail.sessions.activeSessionCount }}
+                <div class="metric-value text-success">
+                  {{ selectedSnapshotDetail.sessions.activeSessionCount }}
                 </div>
               </div>
             </div>
@@ -1653,8 +1683,10 @@
                 <td>
                   <span class="badge" [class.bg-success]="metric.state === 0" [class.bg-warning]="metric.state === 1"
                     [class.bg-danger]="metric.state === 2">
-                    {{ metric.state === 0 ? 'Healthy' : (metric.state === 1 ? 'Warning' : (metric.state === 2 ?
-                    'Critical' : '-')) }}
+                    {{
+                    metric.state === 0 ? 'Healthy' : (metric.state === 1 ? 'Warning' : (metric.state === 2 ?
+                    'Critical' : '-'))
+                    }}
                   </span>
                 </td>
               </tr>
@@ -1664,8 +1696,11 @@
 
         <!-- Log Errors -->
         <div class="section-card mb-3" *ngIf="selectedSnapshotDetail.logErrors?.length">
-          <h6 class="section-title"><i class="fas fa-exclamation-triangle me-2 text-danger"></i>Log Errors ({{
-            selectedSnapshotDetail.logErrors.length }})</h6>
+          <h6 class="section-title">
+            <i class="fas fa-exclamation-triangle me-2 text-danger"></i>Log Errors ({{
+            selectedSnapshotDetail.logErrors.length
+            }})
+          </h6>
 
           <!-- Filter Controls -->
           <div class="d-flex gap-2 mb-2 flex-wrap">
@@ -1677,8 +1712,11 @@
               <option value="FATAL">FATAL</option>
               <option value="CRITICAL">CRITICAL</option>
             </select>
-            <small class="text-muted align-self-center">Showing {{ filteredLogErrors.length }} of {{
-              selectedSnapshotDetail.logErrors.length }}</small>
+            <small class="text-muted align-self-center">
+              Showing {{ filteredLogErrors.length }} of {{
+              selectedSnapshotDetail.logErrors.length
+              }}
+            </small>
           </div>
 
           <div class="table-responsive">

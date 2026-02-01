@@ -1420,6 +1420,25 @@ export class SystemsDashboardComponent implements OnInit, OnDestroy {
         return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
     }
 
+    /**
+     * Calculate average network utilization from snapshot's networks array.
+     * Only includes interfaces with activity (bytes sent or received > 0).
+     */
+    getSnapshotNetworkUtilization(): number | null {
+        if (!this.selectedSnapshotDetail?.networks?.length) return null;
+
+        // Filter to only interfaces with activity
+        const activeNics = this.selectedSnapshotDetail.networks.filter(nic =>
+            (nic.bytesSentTotal ?? 0) > 0 || (nic.bytesReceivedTotal ?? 0) > 0
+        );
+
+        if (activeNics.length === 0) return null;
+
+        // Calculate average utilization
+        const totalUtil = activeNics.reduce((sum, nic) => sum + (nic.utilizationPercent ?? 0), 0);
+        return totalUtil / activeNics.length;
+    }
+
     formatDate(date: Date | string | undefined): string {
         if (!date) return '-';
         return new Date(date).toLocaleString();

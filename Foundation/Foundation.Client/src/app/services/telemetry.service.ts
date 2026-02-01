@@ -178,6 +178,7 @@ export interface SnapshotDetailDto {
     machineName?: string;
     systemMemoryPercent?: number;
     systemCpuPercent?: number;
+    networkUtilizationPercent?: number;
     databases: DatabaseHealthDto[];
     disks: DiskHealthDto[];
     networks: NetworkHealthDto[];
