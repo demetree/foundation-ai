@@ -171,8 +171,13 @@ namespace Foundation.Scheduler
                 Foundation.Web.Utility.StartupBasics.AddFoundationEssentialWebAPIControllers(controllers);
                 Foundation.Web.Utility.StartupBasics.AddSystemHealthController(controllers);
                 Foundation.Web.Utility.StartupBasics.AddMonitoredApplicationsController(controllers);               // to allow this system to be monitored
-                Foundation.Web.Utility.StartupBasics.AddSecurityWebAPIControllers(controllers);
-                Foundation.Web.Utility.StartupBasics.AddAuditorWebAPIControllers(controllers);
+                
+
+                //
+                // No longerincluding these because their function has been moved into the Foundation Administration app
+                //
+                //Foundation.Web.Utility.StartupBasics.AddSecurityWebAPIControllers(controllers);
+                //Foundation.Web.Utility.StartupBasics.AddAuditorWebAPIControllers(controllers);
 
                 //
                 // Custom Scheduler controllers

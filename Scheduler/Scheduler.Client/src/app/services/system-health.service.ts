@@ -16,6 +16,7 @@ export interface SystemHealthStatus {
   application: ApplicationMetrics;
   database: DatabaseStatus;
   disk: DiskMetrics;
+  network?: NetworkMetrics;
   threadPool: ThreadPoolMetrics;
 }
 
@@ -120,6 +121,23 @@ export interface ThreadPoolMetrics {
     min: number;
     inUse: number;
   };
+}
+
+export interface NetworkMetrics {
+  interfaces: NetworkInterfaceInfo[];
+}
+
+export interface NetworkInterfaceInfo {
+  name: string;
+  description: string;
+  linkSpeedMbps: number;
+  bytesSentTotal: number;
+  bytesReceivedTotal: number;
+  bytesSentPerSecond: number;
+  bytesReceivedPerSecond: number;
+  utilizationPercent: number;
+  status: 'Healthy' | 'Warning' | 'Critical';
+  isActive: boolean;
 }
 
 

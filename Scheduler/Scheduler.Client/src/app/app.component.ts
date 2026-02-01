@@ -9,8 +9,6 @@ import { NavigationService } from './utility-services/navigation.service';
 import { BodyClassService } from './utility-services/body-class.service';
 
 import { CurrentUserService } from './services/current-user.service';
-import { AuditorDataServiceManagerService } from './auditor-data-services/auditor-data-service-manager.service';
-import { SecurityDataServiceManagerService } from './security-data-services/security-data-service-manager.service';
 import { SchedulerDataServiceManagerService } from './scheduler-data-services/scheduler-data-service-manager.service';
 
 import { AppTranslationService } from './services/app-translation.service';
@@ -54,8 +52,6 @@ export class AppComponent implements OnInit, OnDestroy {
   constructor(
     storageManager: LocalStoreManager,
     private currentUserService: CurrentUserService,
-    private auditorDataServiceManagerService: AuditorDataServiceManagerService,
-    private securityDataServiceManagerService: SecurityDataServiceManagerService,
     private schedulerDataServiceManagerService: SchedulerDataServiceManagerService,
     private toastaService: ToastaService,
     private toastaConfig: ToastaConfig,
@@ -99,8 +95,6 @@ export class AppComponent implements OnInit, OnDestroy {
 
     this.isUserLoggedIn = this.authService.isLoggedIn;
 
-    this.auditorDataServiceManagerService.ClearAllCaches();
-    this.securityDataServiceManagerService.ClearAllCaches();
     this.schedulerDataServiceManagerService.ClearAllCaches();
 
     // Extra 1/20 second to display preboot loaded information
@@ -145,8 +139,6 @@ export class AppComponent implements OnInit, OnDestroy {
 
     this.authService.getLoginStatusEvent().subscribe(isLoggedIn => {
 
-      this.auditorDataServiceManagerService.ClearAllCaches();
-      this.securityDataServiceManagerService.ClearAllCaches();
       this.schedulerDataServiceManagerService.ClearAllCaches();
 
       this.isUserLoggedIn = isLoggedIn;
@@ -195,8 +187,6 @@ export class AppComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.auditorDataServiceManagerService.ClearAllCaches();
-    this.securityDataServiceManagerService.ClearAllCaches();
     this.schedulerDataServiceManagerService.ClearAllCaches();
 
 
@@ -321,8 +311,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   logout() {
 
-    this.auditorDataServiceManagerService.ClearAllCaches();
-    this.securityDataServiceManagerService.ClearAllCaches();
+    this.schedulerDataServiceManagerService.ClearAllCaches();
 
     this.authService.logout();
     this.authService.redirectLogoutUser();

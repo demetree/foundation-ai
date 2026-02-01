@@ -3,8 +3,6 @@ import { Router, NavigationEnd } from '@angular/router';
 import { NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { AuditorDataServiceManagerService } from '../../auditor-data-services/auditor-data-service-manager.service';
-import { SecurityDataServiceManagerService } from '../../security-data-services/security-data-service-manager.service';
 import { AuthService } from '../../services/auth.service';
 import { SchedulerHelperService } from '../../services/scheduler-helper.service';
 
@@ -30,8 +28,6 @@ export class SidebarComponent implements OnDestroy, AfterViewInit {
 
   constructor(
     private router: Router,
-    private auditorDataServiceManagerService: AuditorDataServiceManagerService,
-    private securityDataServiceManagerService: SecurityDataServiceManagerService,
     private authService: AuthService,
     private schedulerHelperService: SchedulerHelperService) {
     // Close side panel + tooltips on navigation
@@ -67,8 +63,6 @@ export class SidebarComponent implements OnDestroy, AfterViewInit {
   }
 
   logout(): void {
-    this.auditorDataServiceManagerService.ClearAllCaches();
-    this.securityDataServiceManagerService.ClearAllCaches();
     this.authService?.logout?.();
     this.authService?.redirectLogoutUser?.();
   }

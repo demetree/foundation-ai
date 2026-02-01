@@ -8,7 +8,7 @@ import { takeUntil } from 'rxjs/operators';
 import { AuthService } from '../../../services/auth.service';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { SecurityUserService, SecurityUserData, SecurityUserSubmitData } from '../../../security-data-services/security-user.service';
-import { SecurityUserCustomService } from '../../../security-data-services/security-user-custom.service';
+import { SecurityUserCustomService } from '../../../services/security-user-custom.service';
 import { SecurityUserTitleService, SecurityUserTitleData } from '../../../security-data-services/security-user-title.service';
 import { SecurityTenantService, SecurityTenantData } from '../../../security-data-services/security-tenant.service';
 import { SecurityOrganizationService, SecurityOrganizationData } from '../../../security-data-services/security-organization.service';

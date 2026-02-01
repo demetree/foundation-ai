@@ -308,6 +308,41 @@
     </div>
 
 
+    <!-- Network Interfaces Card -->
+    <div class="col-md-6 col-lg-4" *ngIf="healthStatus.network?.interfaces?.length">
+      <div class="card health-card h-100 border-0 shadow-sm">
+        <div class="card-header bg-transparent border-0 d-flex align-items-center">
+          <div class="stat-circle bg-orange-soft me-3">
+            <i class="fas fa-network-wired fa-lg text-orange"></i>
+          </div>
+          <div>
+            <h5 class="mb-0">Network</h5>
+            <small class="text-muted">{{ healthStatus.network?.interfaces?.length }} active interface(s)</small>
+          </div>
+        </div>
+        <div class="card-body">
+          <div *ngFor="let nic of healthStatus.network?.interfaces; let last = last" class="network-interface"
+            [class.mb-3]="!last" [class.border-bottom]="!last" [class.pb-3]="!last">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="fw-bold small text-truncate" style="max-width: 200px;" [title]="nic.description">
+                {{ nic.name }}
+              </span>
+              <span class="badge bg-secondary small">{{ nic.linkSpeedMbps | number:'1.0-0' }} Mbps</span>
+            </div>
+            <div class="metric-row small">
+              <span class="metric-label text-muted"><i class="fas fa-arrow-up me-1 text-success"></i>Sent</span>
+              <span class="metric-value">{{ formatNetworkBytes(nic.bytesSentTotal) }}</span>
+            </div>
+            <div class="metric-row small">
+              <span class="metric-label text-muted"><i class="fas fa-arrow-down me-1 text-primary"></i>Received</span>
+              <span class="metric-value">{{ formatNetworkBytes(nic.bytesReceivedTotal) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
     <!-- Database Card - now shows multiple databases -->
     <div class="col-md-6 col-lg-4">
       <div class="card health-card h-100 border-0 shadow-sm">

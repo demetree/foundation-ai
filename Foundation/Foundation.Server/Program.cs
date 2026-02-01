@@ -155,7 +155,7 @@ namespace Foundation.Server
                 Foundation.Web.Utility.StartupBasics.AddMonitoredApplicationsController(controllers);               // To make this system monitorable
                 Foundation.Web.Utility.StartupBasics.AddSecurityWebAPIControllers(controllers);                     // Security module
                 Foundation.Web.Utility.StartupBasics.AddAuditorWebAPIControllers(controllers);                      // Auditor module
-                Foundation.Web.Utility.StartupBasics.AddTelemetryController(controllers);                           // Telemetry historical data
+                Foundation.Web.Utility.TelemetryStartupBasics.AddTelemetryWebAPIControllers(controllers);           // Telemetry historical data module
 
 
                 logger.LogInformation("Controllers have been configured.");

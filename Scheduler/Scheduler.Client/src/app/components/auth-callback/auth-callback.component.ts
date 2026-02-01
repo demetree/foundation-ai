@@ -6,8 +6,6 @@ import { AlertService, MessageSeverity } from '../../services/alert.service';
 import { AppTranslationService } from '../../services/app-translation.service';
 import { AuthService, OidcProviders } from '../../services/auth.service';
 import { Utilities } from '../../services/utilities';
-import { AuditorDataServiceManagerService } from '../../auditor-data-services/auditor-data-service-manager.service';
-import { SecurityDataServiceManagerService } from '../../security-data-services/security-data-service-manager.service';
 import { SchedulerDataServiceManagerService } from '../../scheduler-data-services/scheduler-data-service-manager.service';
 
 @Component({
@@ -32,8 +30,6 @@ export class AuthCallbackComponent implements OnInit, OnDestroy {
     private alertService: AlertService,
     private translationService: AppTranslationService,
     private authService: AuthService,
-    private auditorDataServiceManagerService: AuditorDataServiceManagerService,
-    private securityDataServiceManagerService: SecurityDataServiceManagerService,
     private schedulerDataServiceManagerService: SchedulerDataServiceManagerService) {
   }
 
@@ -146,8 +142,6 @@ export class AuthCallbackComponent implements OnInit, OnDestroy {
 
     if (!tokenProcessed) {
 
-      this.auditorDataServiceManagerService.ClearAllCaches();
-      this.securityDataServiceManagerService.ClearAllCaches();
       this.schedulerDataServiceManagerService.ClearAllCaches();
 
       setTimeout(() => {
@@ -168,8 +162,6 @@ export class AuthCallbackComponent implements OnInit, OnDestroy {
     this.alertService.startLoadingMessage('', this.gT('authCallback.alerts.SigningIn'));
 
     // Clear all data service caches at login events.
-    this.auditorDataServiceManagerService.ClearAllCaches();
-    this.securityDataServiceManagerService.ClearAllCaches();
     this.schedulerDataServiceManagerService.ClearAllCaches();
 
     this.authService.loginWithExternalToken(token, provider)
@@ -209,8 +201,6 @@ export class AuthCallbackComponent implements OnInit, OnDestroy {
         next: user => {
 
           // Clear all data service caches at login events.
-          this.auditorDataServiceManagerService.ClearAllCaches();
-          this.securityDataServiceManagerService.ClearAllCaches();
           this.schedulerDataServiceManagerService.ClearAllCaches();
 
           setTimeout(() => {
@@ -224,8 +214,6 @@ export class AuthCallbackComponent implements OnInit, OnDestroy {
         },
         error: error => {
 
-          this.auditorDataServiceManagerService.ClearAllCaches();
-          this.securityDataServiceManagerService.ClearAllCaches();
           this.schedulerDataServiceManagerService.ClearAllCaches();
 
           this.alertService.stopLoadingMessage();

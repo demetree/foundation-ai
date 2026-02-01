@@ -6,8 +6,6 @@ import { SecureEndpointBase } from './secure-endpoint-base.service';
 import { AuthService } from './auth.service';
 import { AlertService } from '../services/alert.service';
 import { CurrentUserService } from './current-user.service';
-import { AuditorDataServiceManagerService } from '../auditor-data-services/auditor-data-service-manager.service';
-import { SecurityDataServiceManagerService } from '../security-data-services/security-data-service-manager.service';
 import { SchedulerDataServiceManagerService } from '../scheduler-data-services/scheduler-data-service-manager.service';
 
 //interface SetupDataChangeTime {
@@ -33,8 +31,6 @@ export class CacheManagerService extends SecureEndpointBase {
     alertService: AlertService,
     @Inject('BASE_URL') private baseUrl: string,
     private currentUserService: CurrentUserService,
-    private auditorDataServiceManagerService: AuditorDataServiceManagerService,
-    private securityDataServiceManagerService: SecurityDataServiceManagerService,
     private schedulerDataServiceManagerService: SchedulerDataServiceManagerService,
   ) {
     super(http, alertService, authService);
@@ -48,8 +44,6 @@ export class CacheManagerService extends SecureEndpointBase {
 
     this.currentUserService.ClearAllCaches();
 
-    this.auditorDataServiceManagerService.ClearAllCaches();
-    this.securityDataServiceManagerService.ClearAllCaches();
     this.schedulerDataServiceManagerService.ClearAllCaches();
   }
 

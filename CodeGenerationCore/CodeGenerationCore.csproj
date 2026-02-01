@@ -11,6 +11,7 @@
     <ProjectReference Include="..\DatabaseGenerators\AuditorDatabaseGenerator\AuditorDatabaseGenerator.csproj" />
     <ProjectReference Include="..\DatabaseGenerators\SecurityDatabaseGenerator\SecurityDatabaseGenerator.csproj" />
     <ProjectReference Include="..\DatabaseGenerators\TelemetryDatabaseGenerator\TelemetryDatabaseGenerator.csproj" />
+    <ProjectReference Include="..\Foundation.Telemetry\Foundation.Telemetry.csproj" />
     <ProjectReference Include="..\FoundationCommon\FoundationCommon.csproj" />
     <ProjectReference Include="..\FoundationCore\Foundation.csproj" />
   </ItemGroup>
