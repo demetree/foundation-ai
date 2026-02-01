@@ -136,11 +136,24 @@
       <div class="summary-card" *ngIf="summary.last24Hours">
         <div class="card-icon"
           [ngClass]="{'bg-danger': summary.last24Hours.errorCount > 0, 'bg-success': summary.last24Hours.errorCount === 0}">
-          <i class="fas fa-exclamation-triangle"></i>
+          <i class="fas"
+            [ngClass]="summary.last24Hours.errorCount > 0 ? 'fa-exclamation-triangle' : 'fa-check-circle'"></i>
         </div>
         <div class="card-content">
-          <h4>{{ summary.last24Hours.errorCount }}</h4>
-          <p>Errors (24h)</p>
+          <h4>{{ summary.last24Hours.errorCount === 0 ? '✓' : summary.last24Hours.errorCount }}</h4>
+          <p>{{ getTimeSinceLastError() }}</p>
+        </div>
+      </div>
+
+      <!-- Fleet Health Score -->
+      <div class="summary-card" *ngIf="fleetMetrics || summary" [title]="getHealthScoreBreakdown()"
+        style="cursor: help;">
+        <div class="card-icon" [ngClass]="getFleetHealthScoreClass()">
+          <i class="fas fa-heartbeat"></i>
+        </div>
+        <div class="card-content">
+          <h4>{{ calculateFleetHealthScore() }}</h4>
+          <p>{{ getHealthScoreStatus() }}</p>
         </div>
       </div>
     </div>
@@ -194,7 +207,11 @@
             <i class="fas fa-microchip"></i>
           </div>
           <div class="card-content">
-            <h4>{{ fleetMetrics.system.avgCpuPercent.toFixed(1) }}%</h4>
+            <h4>
+              {{ fleetMetrics.system.avgCpuPercent.toFixed(1) }}%
+              <i class="fas ms-1 small" *ngIf="cpuSparkline"
+                [ngClass]="getTrendArrowClass(getMetricTrend(cpuSparkline), true)"></i>
+            </h4>
             <p>Avg CPU</p>
           </div>
         </div>
@@ -217,7 +234,11 @@
             <i class="fas fa-server"></i>
           </div>
           <div class="card-content">
-            <h4>{{ fleetMetrics.system.avgSystemMemoryPercent?.toFixed(1) }}%</h4>
+            <h4>
+              {{ fleetMetrics.system.avgSystemMemoryPercent?.toFixed(1) }}%
+              <i class="fas ms-1 small" *ngIf="systemMemorySparkline"
+                [ngClass]="getTrendArrowClass(getMetricTrend(systemMemorySparkline), true)"></i>
+            </h4>
             <p>Avg Server Memory</p>
           </div>
         </div>
@@ -240,7 +261,11 @@
             <i class="fas fa-tachometer-alt"></i>
           </div>
           <div class="card-content">
-            <h4>{{ fleetMetrics.system.avgSystemCpuPercent?.toFixed(1) }}%</h4>
+            <h4>
+              {{ fleetMetrics.system.avgSystemCpuPercent?.toFixed(1) }}%
+              <i class="fas ms-1 small" *ngIf="systemCpuSparkline"
+                [ngClass]="getTrendArrowClass(getMetricTrend(systemCpuSparkline), true)"></i>
+            </h4>
             <p>Avg Server CPU</p>
           </div>
         </div>

@@ -507,45 +507,53 @@ export class SystemsDashboardComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * Calculate health score (0-100) for an app based on its metrics
+     * Calculate health score (0-100) for an app based on its metrics.
+     * Uses same weighted formula as fleet health score for consistency.
+     * Weights: CPU 30%, Memory 30%, Errors 20%, Online 20%
      */
     calculateHealthScore(appName: string): number {
         const snap = this.summary?.latestSnapshots?.find(s => s.applicationName === appName);
         if (!snap) return 0;
 
-        let score = 100;
-
         // Offline = 0 score
         if (!snap.isOnline) return 0;
 
-        // CPU penalty (0-30 points)
-        const cpu = snap.cpuPercent ?? 0;
-        if (cpu >= 90) score -= 30;
-        else if (cpu >= 70) score -= 20;
-        else if (cpu >= 50) score -= 10;
+        let totalWeight = 0;
+        let weightedSum = 0;
 
-        // Memory penalty (0-30 points) - penalize if over 500MB
-        const mem = snap.memoryWorkingSetMB ?? 0;
-        if (mem >= 1000) score -= 30;
-        else if (mem >= 500) score -= 15;
-        else if (mem >= 250) score -= 5;
+        // CPU Score (30% weight) - prefer system CPU, fall back to process CPU
+        const cpuValue = (snap as any).systemCpuPercent ?? snap.cpuPercent ?? 0;
+        const cpuScore = this.percentToScore(cpuValue);
+        weightedSum += cpuScore * 30;
+        totalWeight += 30;
 
-        // Error penalty from fleet metrics (0-40 points)
-        if (this.fleetMetrics?.system?.totalLogErrors) {
-            const errors = this.fleetMetrics.system.totalLogErrors;
-            if (errors >= 50) score -= 40;
-            else if (errors >= 20) score -= 25;
-            else if (errors >= 5) score -= 10;
+        // Memory Score (30% weight) - prefer system memory percent
+        const memValue = (snap as any).systemMemoryPercent ?? 0;
+        if (memValue > 0) {
+            const memScore = this.percentToScore(memValue);
+            weightedSum += memScore * 30;
+            totalWeight += 30;
         }
 
-        return Math.max(0, score);
+        // Errors Score (20% weight) - use fleet errors divided by app count
+        const appCount = this.summary?.applications?.length || 1;
+        const errorCount = Math.floor((this.fleetMetrics?.system?.totalLogErrors ?? 0) / appCount);
+        const errorScore = this.errorCountToScore(errorCount);
+        weightedSum += errorScore * 20;
+        totalWeight += 20;
+
+        // Online Score (20% weight) - 100 since we already checked isOnline
+        weightedSum += 100 * 20;
+        totalWeight += 20;
+
+        return totalWeight > 0 ? Math.round(weightedSum / totalWeight) : 0;
     }
 
     /**
-     * Get health score color class
+     * Get health score color class (aligned with fleet thresholds)
      */
     getHealthScoreClass(score: number): string {
-        if (score >= 80) return 'health-good';
+        if (score >= 70) return 'health-good';
         if (score >= 50) return 'health-warning';
         return 'health-critical';
     }
@@ -595,6 +603,218 @@ export class SystemsDashboardComponent implements OnInit, OnDestroy {
 
     getStatusIcon(isOnline: boolean): string {
         return isOnline ? 'fa-check-circle' : 'fa-times-circle';
+    }
+
+    /**
+     * Calculate composite health score (0-100) from fleet metrics or summary.
+     * Higher score = healthier system.
+     * Weights: CPU 30%, Memory 30%, Errors 20%, Online 20%
+     */
+    calculateFleetHealthScore(): number {
+        let totalWeight = 0;
+        let weightedSum = 0;
+
+        // Try to get data from fleetMetrics first, fall back to summary
+        if (this.fleetMetrics?.system) {
+            const fm = this.fleetMetrics.system;
+
+            // CPU Score (30% weight) - lower CPU = healthier
+            const cpuValue = fm.avgSystemCpuPercent ?? fm.avgCpuPercent ?? 0;
+            const cpuScore = this.percentToScore(cpuValue);
+            weightedSum += cpuScore * 30;
+            totalWeight += 30;
+
+            // Memory Score (30% weight) - lower memory = healthier
+            const memValue = fm.avgSystemMemoryPercent ?? 0;
+            if (memValue > 0) {
+                const memScore = this.percentToScore(memValue);
+                weightedSum += memScore * 30;
+                totalWeight += 30;
+            }
+
+            // Errors Score (20% weight)
+            const errorCount = fm.totalLogErrors ?? 0;
+            let errorScore = 100;
+            if (errorCount > 50) errorScore = 0;
+            else if (errorCount > 20) errorScore = 25;
+            else if (errorCount > 5) errorScore = 50;
+            else if (errorCount > 0) errorScore = 75;
+            weightedSum += errorScore * 20;
+            totalWeight += 20;
+
+            // Online Score (20% weight)
+            if (fm.applicationCount > 0) {
+                const onlineScore = (fm.onlineCount / fm.applicationCount) * 100;
+                weightedSum += onlineScore * 20;
+                totalWeight += 20;
+            }
+        } else if (this.summary) {
+            // Fallback to summary data
+            // Errors Score (40% weight when we only have summary)
+            const errorCount = this.summary.last24Hours?.errorCount ?? 0;
+            let errorScore = 100;
+            if (errorCount > 50) errorScore = 0;
+            else if (errorCount > 20) errorScore = 25;
+            else if (errorCount > 5) errorScore = 50;
+            else if (errorCount > 0) errorScore = 75;
+            weightedSum += errorScore * 40;
+            totalWeight += 40;
+
+            // Online Score (60% weight when we only have summary)
+            const totalApps = this.getTotalApps();
+            const onlineApps = this.getOnlineCount();
+            if (totalApps > 0) {
+                const onlineScore = (onlineApps / totalApps) * 100;
+                weightedSum += onlineScore * 60;
+                totalWeight += 60;
+            }
+        }
+
+        return totalWeight > 0 ? Math.round(weightedSum / totalWeight) : 0;
+    }
+
+    /**
+     * Convert a percentage (0-100) to a health score (100-0).
+     * Lower percentage = healthier = higher score.
+     */
+    private percentToScore(percent: number): number {
+        if (percent < 50) return 100;
+        if (percent < 70) return 80;
+        if (percent < 80) return 60;
+        if (percent < 90) return 40;
+        return 20;
+    }
+
+    /**
+     * Get health score status label
+     */
+    getHealthScoreStatus(): string {
+        const score = this.calculateFleetHealthScore();
+        if (score >= 90) return 'Excellent';
+        if (score >= 70) return 'Healthy';
+        if (score >= 50) return 'Fair';
+        if (score >= 25) return 'Degraded';
+        return 'Critical';
+    }
+
+    /**
+     * Get fleet health score color class
+     */
+    getFleetHealthScoreClass(): string {
+        const score = this.calculateFleetHealthScore();
+        if (score >= 90) return 'bg-success';
+        if (score >= 70) return 'bg-success';
+        if (score >= 50) return 'bg-warning';
+        if (score >= 25) return 'bg-orange';
+        return 'bg-danger';
+    }
+
+    /**
+     * Get health score breakdown for tooltip
+     */
+    getHealthScoreBreakdown(): string {
+        const lines: string[] = [];
+
+        if (this.fleetMetrics?.system) {
+            const fm = this.fleetMetrics.system;
+            const cpuValue = fm.avgSystemCpuPercent ?? fm.avgCpuPercent ?? 0;
+            const memValue = fm.avgSystemMemoryPercent ?? 0;
+            const errorCount = fm.totalLogErrors ?? 0;
+            const onlinePercent = fm.applicationCount > 0
+                ? Math.round((fm.onlineCount / fm.applicationCount) * 100)
+                : 100;
+
+            lines.push(`CPU: ${cpuValue.toFixed(1)}% → ${this.percentToScore(cpuValue)}/100`);
+            if (memValue > 0) {
+                lines.push(`Memory: ${memValue.toFixed(1)}% → ${this.percentToScore(memValue)}/100`);
+            }
+            lines.push(`Errors: ${errorCount} → ${this.errorCountToScore(errorCount)}/100`);
+            lines.push(`Online: ${onlinePercent}% → ${onlinePercent}/100`);
+        } else if (this.summary) {
+            const errorCount = this.summary.last24Hours?.errorCount ?? 0;
+            const totalApps = this.getTotalApps();
+            const onlineApps = this.getOnlineCount();
+            const onlinePercent = totalApps > 0 ? Math.round((onlineApps / totalApps) * 100) : 100;
+
+            lines.push(`Errors: ${errorCount} → ${this.errorCountToScore(errorCount)}/100`);
+            lines.push(`Online: ${onlinePercent}% → ${onlinePercent}/100`);
+        }
+
+        return lines.join('\n');
+    }
+
+    /**
+     * Convert error count to score (helper for breakdown)
+     */
+    private errorCountToScore(errorCount: number): number {
+        if (errorCount === 0) return 100;
+        if (errorCount <= 5) return 75;
+        if (errorCount <= 20) return 50;
+        if (errorCount <= 50) return 25;
+        return 0;
+    }
+
+    /**
+     * Get trend indicator for a metric based on sparkline data
+     * Returns: 'up' | 'down' | 'stable'
+     */
+    getMetricTrend(sparklineData: ChartData<'line'> | null): 'up' | 'down' | 'stable' {
+        if (!sparklineData?.datasets?.[0]?.data?.length) return 'stable';
+
+        const data = sparklineData.datasets[0].data as number[];
+        if (data.length < 2) return 'stable';
+
+        // Compare last value to average of first half
+        const midpoint = Math.floor(data.length / 2);
+        const firstHalfAvg = data.slice(0, midpoint).reduce((a, b) => a + b, 0) / midpoint;
+        const lastValue = data[data.length - 1];
+
+        const changePercent = ((lastValue - firstHalfAvg) / (firstHalfAvg || 1)) * 100;
+
+        if (changePercent > 5) return 'up';
+        if (changePercent < -5) return 'down';
+        return 'stable';
+    }
+
+    /**
+     * Get trend arrow icon class
+     */
+    getTrendArrowClass(trend: 'up' | 'down' | 'stable', invertColors: boolean = false): string {
+        if (trend === 'up') {
+            return invertColors ? 'fa-arrow-up text-danger' : 'fa-arrow-up text-success';
+        }
+        if (trend === 'down') {
+            return invertColors ? 'fa-arrow-down text-success' : 'fa-arrow-down text-danger';
+        }
+        return 'fa-minus text-muted';
+    }
+
+    /**
+     * Get time since last error as human-readable string
+     */
+    getTimeSinceLastError(): string {
+        if (!this.summary?.last24Hours) return 'Unknown';
+
+        const errorCount = this.summary.last24Hours.errorCount ?? 0;
+        if (errorCount > 0) {
+            return `${errorCount} error${errorCount > 1 ? 's' : ''} (24h)`;
+        }
+
+        // No errors - check if we have lastErrorTime
+        const lastError = (this.summary.last24Hours as any).lastErrorTime;
+        if (lastError) {
+            const errorDate = new Date(lastError);
+            const now = new Date();
+            const hoursDiff = Math.floor((now.getTime() - errorDate.getTime()) / (1000 * 60 * 60));
+
+            if (hoursDiff < 1) return 'Error-free < 1h';
+            if (hoursDiff < 24) return `Error-free ${hoursDiff}h`;
+            const daysDiff = Math.floor(hoursDiff / 24);
+            return `Error-free ${daysDiff}d`;
+        }
+
+        // No errors and no timestamp - just show clean
+        return 'No errors (24h)';
     }
 
 
