@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.14.36804.6 d17.14
+# Visual Studio Version 18
+VisualStudioVersion = 18.2.11415.280
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Foundation Projects", "Foundation Projects", "{588B8AE4-0A65-4ADD-A0F1-5F608420F380}"
 EndProject
@@ -31,6 +31,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foundation.Web", "FoundationCore.Web\Foundation.Web.csproj", "{1BE9055D-C4D7-470E-BA58-34CF94A81CB2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{2A337194-9B49-45D1-AF1E-3EE7E96E3DDB}"
+	ProjectSection(SolutionItems) = preProject
+		DatabaseGenerators\TelemetryDatabaseGenerator\TelemetryDatabaseGenerator.cs = DatabaseGenerators\TelemetryDatabaseGenerator\TelemetryDatabaseGenerator.cs
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Admin", "Admin", "{46CC22F7-E000-498C-AABE-DD80911BCAB5}"
 EndProject
@@ -59,6 +62,14 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelemetryDatabaseGenerator", "DatabaseGenerators\TelemetryDatabaseGenerator\TelemetryDatabaseGenerator.csproj", "{13AADC88-4397-A29F-8B14-03DEC0AFB1C6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foundation.Telemetry", "Foundation.Telemetry\Foundation.Telemetry.csproj", "{57A8B5A6-B0FD-479F-AC1D-4AE2B60E27E7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Alerting", "Alerting", "{5B067DEB-1FDE-4A3C-B19D-74F40DCBCB8B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AlertingDatabase", "AlertingDatabase\AlertingDatabase.csproj", "{5047B084-5D38-04E4-E59E-DA396FC2FEC9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AlertingTools", "AlertingTools\AlertingTools.csproj", "{43029305-0F11-2887-86F1-9402BC5EF6A6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AlertingDatabaseGenerator", "DatabaseGenerators\AlertingDatabaseGenerator\AlertingDatabaseGenerator.csproj", "{3EAC4D90-7924-0DB8-D9E5-A4915D30E0E1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -322,6 +333,42 @@ Global
 		{57A8B5A6-B0FD-479F-AC1D-4AE2B60E27E7}.Release|x64.Build.0 = Release|Any CPU
 		{57A8B5A6-B0FD-479F-AC1D-4AE2B60E27E7}.Release|x86.ActiveCfg = Release|Any CPU
 		{57A8B5A6-B0FD-479F-AC1D-4AE2B60E27E7}.Release|x86.Build.0 = Release|Any CPU
+		{5047B084-5D38-04E4-E59E-DA396FC2FEC9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5047B084-5D38-04E4-E59E-DA396FC2FEC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5047B084-5D38-04E4-E59E-DA396FC2FEC9}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5047B084-5D38-04E4-E59E-DA396FC2FEC9}.Debug|x64.Build.0 = Debug|Any CPU
+		{5047B084-5D38-04E4-E59E-DA396FC2FEC9}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5047B084-5D38-04E4-E59E-DA396FC2FEC9}.Debug|x86.Build.0 = Debug|Any CPU
+		{5047B084-5D38-04E4-E59E-DA396FC2FEC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5047B084-5D38-04E4-E59E-DA396FC2FEC9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5047B084-5D38-04E4-E59E-DA396FC2FEC9}.Release|x64.ActiveCfg = Release|Any CPU
+		{5047B084-5D38-04E4-E59E-DA396FC2FEC9}.Release|x64.Build.0 = Release|Any CPU
+		{5047B084-5D38-04E4-E59E-DA396FC2FEC9}.Release|x86.ActiveCfg = Release|Any CPU
+		{5047B084-5D38-04E4-E59E-DA396FC2FEC9}.Release|x86.Build.0 = Release|Any CPU
+		{43029305-0F11-2887-86F1-9402BC5EF6A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43029305-0F11-2887-86F1-9402BC5EF6A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43029305-0F11-2887-86F1-9402BC5EF6A6}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{43029305-0F11-2887-86F1-9402BC5EF6A6}.Debug|x64.Build.0 = Debug|Any CPU
+		{43029305-0F11-2887-86F1-9402BC5EF6A6}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{43029305-0F11-2887-86F1-9402BC5EF6A6}.Debug|x86.Build.0 = Debug|Any CPU
+		{43029305-0F11-2887-86F1-9402BC5EF6A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43029305-0F11-2887-86F1-9402BC5EF6A6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43029305-0F11-2887-86F1-9402BC5EF6A6}.Release|x64.ActiveCfg = Release|Any CPU
+		{43029305-0F11-2887-86F1-9402BC5EF6A6}.Release|x64.Build.0 = Release|Any CPU
+		{43029305-0F11-2887-86F1-9402BC5EF6A6}.Release|x86.ActiveCfg = Release|Any CPU
+		{43029305-0F11-2887-86F1-9402BC5EF6A6}.Release|x86.Build.0 = Release|Any CPU
+		{3EAC4D90-7924-0DB8-D9E5-A4915D30E0E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3EAC4D90-7924-0DB8-D9E5-A4915D30E0E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3EAC4D90-7924-0DB8-D9E5-A4915D30E0E1}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{3EAC4D90-7924-0DB8-D9E5-A4915D30E0E1}.Debug|x64.Build.0 = Debug|Any CPU
+		{3EAC4D90-7924-0DB8-D9E5-A4915D30E0E1}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3EAC4D90-7924-0DB8-D9E5-A4915D30E0E1}.Debug|x86.Build.0 = Debug|Any CPU
+		{3EAC4D90-7924-0DB8-D9E5-A4915D30E0E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3EAC4D90-7924-0DB8-D9E5-A4915D30E0E1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3EAC4D90-7924-0DB8-D9E5-A4915D30E0E1}.Release|x64.ActiveCfg = Release|Any CPU
+		{3EAC4D90-7924-0DB8-D9E5-A4915D30E0E1}.Release|x64.Build.0 = Release|Any CPU
+		{3EAC4D90-7924-0DB8-D9E5-A4915D30E0E1}.Release|x86.ActiveCfg = Release|Any CPU
+		{3EAC4D90-7924-0DB8-D9E5-A4915D30E0E1}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -351,6 +398,10 @@ Global
 		{63510401-E957-49E5-A8E9-927DCBD7F5CE} = {EB29D575-8E81-4EFA-815A-0EF90A290E4A}
 		{13AADC88-4397-A29F-8B14-03DEC0AFB1C6} = {34736B3C-2F68-4D5B-A861-CB7841CC2D33}
 		{57A8B5A6-B0FD-479F-AC1D-4AE2B60E27E7} = {2A337194-9B49-45D1-AF1E-3EE7E96E3DDB}
+		{5B067DEB-1FDE-4A3C-B19D-74F40DCBCB8B} = {588B8AE4-0A65-4ADD-A0F1-5F608420F380}
+		{5047B084-5D38-04E4-E59E-DA396FC2FEC9} = {5B067DEB-1FDE-4A3C-B19D-74F40DCBCB8B}
+		{43029305-0F11-2887-86F1-9402BC5EF6A6} = {5B067DEB-1FDE-4A3C-B19D-74F40DCBCB8B}
+		{3EAC4D90-7924-0DB8-D9E5-A4915D30E0E1} = {34736B3C-2F68-4D5B-A861-CB7841CC2D33}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {64464076-9137-4F9B-A685-E1FC99778638}

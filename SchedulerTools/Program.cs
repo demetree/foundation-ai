@@ -1140,7 +1140,7 @@ namespace Foundation.Scheduler.CodeGeneration
             Console.WriteLine();
 
             Console.WriteLine();
-            Console.WriteLine("Basecamp application code created in folder: " + outputFolder);
+            Console.WriteLine("Scheduler application code created in folder: " + outputFolder);
             Console.WriteLine();
 
             //

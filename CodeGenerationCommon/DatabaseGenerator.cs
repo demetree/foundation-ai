@@ -2338,53 +2338,53 @@ namespace Foundation.CodeGeneration
                 }
 
 
-                public Field AddHTMLColorField(string fieldName, bool nullable = true)
+                public Field AddHTMLColorField(string fieldName, bool nullable = true, string defaultValue = null)
                 {
-                    return AddField(new Database.Table.Field { name = fieldName, dataType = DataType.STRING_HTML_COLOR, nullable = nullable, table = this });
+                    return AddField(new Database.Table.Field { name = fieldName, dataType = DataType.STRING_HTML_COLOR, nullable = nullable, table = this, defaultValue = defaultValue });
                 }
 
-                public Field AddString10Field(string fieldName, bool nullable = true)
+                public Field AddString10Field(string fieldName, bool nullable = true, string defaultValue = null)
                 {
-                    return AddField(new Database.Table.Field { name = fieldName, dataType = DataType.STRING_10, nullable = nullable, table = this });
+                    return AddField(new Database.Table.Field { name = fieldName, dataType = DataType.STRING_10, nullable = nullable, table = this, defaultValue = defaultValue });
                 }
-                public Field AddString50Field(string fieldName, bool nullable = true)
+                public Field AddString50Field(string fieldName, bool nullable = true, string defaultValue = null)
                 {
-                    return AddField(new Database.Table.Field { name = fieldName, dataType = DataType.STRING_50, nullable = nullable, table = this });
-                }
-
-                public Field AddString100Field(string fieldName, bool nullable = true)
-                {
-                    return AddField(new Database.Table.Field { name = fieldName, dataType = DataType.STRING_100, nullable = nullable, table = this });
+                    return AddField(new Database.Table.Field { name = fieldName, dataType = DataType.STRING_50, nullable = nullable, table = this, defaultValue = defaultValue });
                 }
 
-                public Field AddString250Field(string fieldName, bool nullable = true)
+                public Field AddString100Field(string fieldName, bool nullable = true, string defaultValue = null)
                 {
-                    return AddField(new Database.Table.Field { name = fieldName, dataType = DataType.STRING_250, nullable = nullable, table = this });
+                    return AddField(new Database.Table.Field { name = fieldName, dataType = DataType.STRING_100, nullable = nullable, table = this, defaultValue = defaultValue });
                 }
 
-                public Field AddString500Field(string fieldName, bool nullable = true)
+                public Field AddString250Field(string fieldName, bool nullable = true, string defaultValue = null)
                 {
-                    return AddField(new Database.Table.Field { name = fieldName, dataType = DataType.STRING_500, nullable = nullable, table = this });
+                    return AddField(new Database.Table.Field { name = fieldName, dataType = DataType.STRING_250, nullable = nullable, table = this, defaultValue = defaultValue });
                 }
 
-                public Field AddString850Field(string fieldName, bool nullable = true)
+                public Field AddString500Field(string fieldName, bool nullable = true, string defaultValue = null)
                 {
-                    return AddField(new Database.Table.Field { name = fieldName, dataType = DataType.STRING_850, nullable = nullable, table = this });
+                    return AddField(new Database.Table.Field { name = fieldName, dataType = DataType.STRING_500, nullable = nullable, table = this, defaultValue = defaultValue });
                 }
 
-                public Field AddString1000Field(string fieldName, bool nullable = true)
+                public Field AddString850Field(string fieldName, bool nullable = true, string defaultValue = null)
                 {
-                    return AddField(new Database.Table.Field { name = fieldName, dataType = DataType.STRING_1000, nullable = nullable, table = this });
+                    return AddField(new Database.Table.Field { name = fieldName, dataType = DataType.STRING_850, nullable = nullable, table = this, defaultValue = defaultValue });
                 }
 
-                public Field AddString2000Field(string fieldName, bool nullable = true)
+                public Field AddString1000Field(string fieldName, bool nullable = true, string defaultValue = null)
                 {
-                    return AddField(new Database.Table.Field { name = fieldName, dataType = DataType.STRING_2000, nullable = nullable, table = this });
+                    return AddField(new Database.Table.Field { name = fieldName, dataType = DataType.STRING_1000, nullable = nullable, table = this, defaultValue = defaultValue });
                 }
 
-                public Field AddTextField(string fieldName, bool nullable = true)
+                public Field AddString2000Field(string fieldName, bool nullable = true, string defaultValue = null)
                 {
-                    return AddField(new Database.Table.Field { name = fieldName, dataType = DataType.TEXT, nullable = nullable, table = this });
+                    return AddField(new Database.Table.Field { name = fieldName, dataType = DataType.STRING_2000, nullable = nullable, table = this, defaultValue = defaultValue });
+                }
+
+                public Field AddTextField(string fieldName, bool nullable = true, string defaultValue = null)
+                {
+                    return AddField(new Database.Table.Field { name = fieldName, dataType = DataType.TEXT, nullable = nullable, table = this, defaultValue = defaultValue });
                 }
 
                 public Field AddLatLongField(string fieldName, bool nullable = true)
