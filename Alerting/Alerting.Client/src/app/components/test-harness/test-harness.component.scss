@@ -1,0 +1,251 @@
+/*
+ * Alert Test Harness Component Styles
+ */
+
+.test-harness-container {
+    padding: 1.5rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.harness-header {
+    margin-bottom: 1.5rem;
+
+    h2 {
+        margin-bottom: 0.25rem;
+        color: var(--bs-primary, #0d6efd);
+
+        i {
+            margin-right: 0.5rem;
+        }
+    }
+}
+
+/* Stats Summary */
+.stats-summary {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+
+    .stat-card {
+        background: linear-gradient(135deg, rgba(var(--bs-primary-rgb, 13, 110, 253), 0.1), rgba(var(--bs-primary-rgb, 13, 110, 253), 0.05));
+        border: 1px solid rgba(var(--bs-primary-rgb, 13, 110, 253), 0.2);
+        border-radius: 8px;
+        padding: 1rem 1.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 100px;
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--bs-primary, #0d6efd);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--bs-secondary, #6c757d);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+    }
+}
+
+/* Tabs */
+.nav-tabs {
+    margin-bottom: 1.5rem;
+
+    .nav-link {
+        cursor: pointer;
+        color: var(--bs-secondary, #6c757d);
+        border: none;
+        padding: 0.75rem 1.25rem;
+        transition: all 0.2s;
+
+        &:hover {
+            color: var(--bs-primary, #0d6efd);
+            background: rgba(var(--bs-primary-rgb, 13, 110, 253), 0.05);
+        }
+
+        &.active {
+            color: var(--bs-primary, #0d6efd);
+            border-bottom: 2px solid var(--bs-primary, #0d6efd);
+            background: transparent;
+        }
+
+        i {
+            margin-right: 0.5rem;
+        }
+    }
+}
+
+.tab-content {
+    .tab-pane {
+        display: none;
+
+        &.active {
+            display: block;
+        }
+    }
+}
+
+/* Cards */
+.card {
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    margin-bottom: 1rem;
+
+    .card-header {
+        background: linear-gradient(180deg, #f8f9fa, #ffffff);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        padding: 1rem 1.25rem;
+
+        h5 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+    }
+
+    .card-body {
+        padding: 1.25rem;
+    }
+}
+
+/* Incident List */
+.incident-list {
+    max-height: 500px;
+    overflow-y: auto;
+
+    .incident-item {
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        cursor: pointer;
+        transition: background 0.2s;
+
+        &:hover {
+            background: rgba(var(--bs-primary-rgb, 13, 110, 253), 0.03);
+        }
+
+        &.selected {
+            background: rgba(var(--bs-primary-rgb, 13, 110, 253), 0.08);
+            border-left: 3px solid var(--bs-primary, #0d6efd);
+        }
+
+        h6 {
+            font-weight: 500;
+        }
+    }
+}
+
+/* Severity badges */
+.severity-critical {
+    background: linear-gradient(135deg, #dc3545, #c82333) !important;
+    color: white;
+}
+
+.severity-high {
+    background: linear-gradient(135deg, #fd7e14, #e56b0a) !important;
+    color: white;
+}
+
+.severity-medium {
+    background: linear-gradient(135deg, #ffc107, #e0a800) !important;
+    color: #212529;
+}
+
+.severity-low {
+    background: linear-gradient(135deg, #17a2b8, #138496) !important;
+    color: white;
+}
+
+.severity-info {
+    background: linear-gradient(135deg, #6c757d, #5a6268) !important;
+    color: white;
+}
+
+/* Status badges */
+.status-triggered {
+    background: linear-gradient(135deg, #dc3545, #c82333) !important;
+    color: white;
+    animation: pulse 2s infinite;
+}
+
+.status-acknowledged {
+    background: linear-gradient(135deg, #ffc107, #e0a800) !important;
+    color: #212529;
+}
+
+.status-resolved {
+    background: linear-gradient(135deg, #28a745, #218838) !important;
+    color: white;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+}
+
+/* Timeline */
+.timeline-list {
+    max-height: 150px;
+    overflow-y: auto;
+
+    .timeline-item {
+        padding: 0.5rem 0;
+        border-bottom: 1px dashed rgba(0, 0, 0, 0.1);
+
+        &:last-child {
+            border-bottom: none;
+        }
+    }
+}
+
+/* Notes */
+.notes-list {
+    max-height: 150px;
+    overflow-y: auto;
+
+    .note-item {
+        padding: 0.5rem;
+        background: rgba(0, 0, 0, 0.02);
+        border-radius: 4px;
+        margin-bottom: 0.5rem;
+
+        p {
+            font-size: 0.875rem;
+        }
+    }
+}
+
+/* Action buttons */
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Response panel */
+.response-panel {
+    .alert {
+        margin-bottom: 1rem;
+    }
+
+    table {
+        margin-bottom: 0;
+
+        th {
+            width: 120px;
+            font-weight: 500;
+        }
+    }
+}

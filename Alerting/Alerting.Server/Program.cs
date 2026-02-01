@@ -1,3 +1,5 @@
+using Alerting.Server.Controllers;
+using Alerting.Server.Services;
 using Foundation.Auditor.Controllers.WebAPI;
 using Foundation.Auditor.Database;
 using Foundation.Extensions;
@@ -174,7 +176,8 @@ namespace Foundation.Alerting
                 //
                 // Custom Alerting controllers
                 //
-
+                controllers.Add(typeof(AlertsController));
+                controllers.Add(typeof(IncidentController));
                 //
                 // End of Alerting custom controllers
                 //
@@ -300,6 +303,17 @@ namespace Foundation.Alerting
                 //
                 builder.Services.AddSingleton<Foundation.Services.IApplicationMetricsProvider,
                     global::Alerting.Server.Services.AlertingMetricsProvider>();
+
+                //
+                // Alerting Services
+                //
+                builder.Services.AddScoped<IAlertingService, AlertingService>();
+                builder.Services.AddScoped<IEscalationService, EscalationService>();
+
+                //
+                // Background Workers
+                //
+                builder.Services.AddHostedService<EscalationWorker>();
 
                 //
                 // Configurations
