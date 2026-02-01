@@ -1,0 +1,220 @@
+<!-- Login Analytics Modal Template -->
+<!-- Premium analytics visualization for login attempt data -->
+<!-- AI-assisted development - February 2026 -->
+
+<div class="modal-container">
+
+    <!-- Modal Header -->
+    <div class="modal-header premium-header">
+        <div class="header-content">
+            <h4 class="modal-title">
+                <i class="fa-solid fa-chart-line me-2"></i>Login Analytics
+            </h4>
+            <small class="text-white-50">{{ timeRangeLabel || 'Current view' }}</small>
+        </div>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="close()"></button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="modal-body p-4">
+
+        <!-- No Data State -->
+        <div *ngIf="attempts.length === 0" class="text-center py-5">
+            <i class="fa-solid fa-chart-pie fa-4x text-muted opacity-50 mb-3"></i>
+            <h5 class="text-muted">No Data Available</h5>
+            <p class="text-muted">There are no login attempts in the current view to analyze.</p>
+        </div>
+
+        <!-- Analytics Content -->
+        <ng-container *ngIf="attempts.length > 0">
+
+            <!-- Summary Stats Row -->
+            <div class="row g-3 mb-4">
+                <div class="col-6 col-md-2">
+                    <div class="summary-stat">
+                        <div class="stat-value">{{ stats.totalAttempts | number }}</div>
+                        <div class="stat-label">Total Attempts</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-2">
+                    <div class="summary-stat stat-success">
+                        <div class="stat-value">{{ stats.successCount | number }}</div>
+                        <div class="stat-label">Successes</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-2">
+                    <div class="summary-stat stat-failure">
+                        <div class="stat-value">{{ stats.failureCount | number }}</div>
+                        <div class="stat-label">Failures</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-2">
+                    <div class="summary-stat">
+                        <div class="stat-value">{{ stats.successRate }}%</div>
+                        <div class="stat-label">Success Rate</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-2">
+                    <div class="summary-stat">
+                        <div class="stat-value">{{ stats.uniqueUsers | number }}</div>
+                        <div class="stat-label">Unique Users</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-2">
+                    <div class="summary-stat">
+                        <div class="stat-value">{{ stats.uniqueIps | number }}</div>
+                        <div class="stat-label">Unique IPs</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row 1: Trend + Donut -->
+            <div class="row g-4 mb-4">
+
+                <!-- Success/Failure Trend Chart -->
+                <div class="col-lg-7">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h6><i class="fa-solid fa-chart-area me-2"></i>Activity Trend</h6>
+                        </div>
+                        <div class="chart-container" style="height: 280px;">
+                            <canvas baseChart [data]="trendChartData" [options]="trendChartOptions"
+                                [type]="'line'"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Failure Breakdown Donut -->
+                <div class="col-lg-5">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h6><i class="fa-solid fa-chart-pie me-2"></i>Failure Breakdown</h6>
+                        </div>
+                        <div class="chart-container" style="height: 280px;"
+                            *ngIf="failureDonutData.datasets.length > 0 && stats.failureCount > 0">
+                            <canvas baseChart [data]="failureDonutData" [options]="failureDonutOptions"
+                                [type]="'doughnut'"></canvas>
+                        </div>
+                        <div class="text-center py-5 text-muted" *ngIf="stats.failureCount === 0">
+                            <i class="fa-solid fa-check-circle fa-2x text-success mb-2"></i>
+                            <p class="mb-0">No failures in this period</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row 2: Hourly Distribution -->
+            <div class="row g-4 mb-4">
+                <div class="col-12">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h6><i class="fa-solid fa-clock me-2"></i>Hourly Distribution (Local Time)</h6>
+                        </div>
+                        <div class="chart-container" style="height: 200px;">
+                            <canvas baseChart [data]="hourlyChartData" [options]="hourlyChartOptions"
+                                [type]="'bar'"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tables Row: Top Users + IP Analysis -->
+            <div class="row g-4">
+
+                <!-- Top Users Table -->
+                <div class="col-lg-6">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h6><i class="fa-solid fa-users me-2"></i>Top Users by Activity</h6>
+                        </div>
+                        <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
+                            <table class="table table-sm table-hover analytics-table mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>User</th>
+                                        <th class="text-center">Attempts</th>
+                                        <th class="text-center">Success</th>
+                                        <th class="text-center">Failed</th>
+                                        <th class="text-end">Rate</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let user of topUsers">
+                                        <td class="user-cell">{{ user.userName }}</td>
+                                        <td class="text-center">{{ user.totalAttempts }}</td>
+                                        <td class="text-center text-success">{{ user.successCount }}</td>
+                                        <td class="text-center text-danger">{{ user.failureCount }}</td>
+                                        <td class="text-end">
+                                            <span class="badge" [ngClass]="getSuccessRateBadgeClass(user.successRate)">
+                                                {{ user.successRate }}%
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-center py-3 text-muted" *ngIf="topUsers.length === 0">
+                            No user data available
+                        </div>
+                    </div>
+                </div>
+
+                <!-- IP Analysis Table -->
+                <div class="col-lg-6">
+                    <div class="chart-card">
+                        <div class="chart-header d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0"><i class="fa-solid fa-network-wired me-2"></i>IP Address Analysis</h6>
+                            <span class="badge bg-danger" *ngIf="anomalyCount > 0">
+                                {{ anomalyCount }} Anomalies
+                            </span>
+                        </div>
+                        <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
+                            <table class="table table-sm table-hover analytics-table mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>IP Address</th>
+                                        <th class="text-center">Attempts</th>
+                                        <th class="text-center">Failures</th>
+                                        <th class="text-end">Fail Rate</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let ip of ipAnalysis" [class.anomaly-row]="ip.isAnomaly">
+                                        <td class="ip-cell">
+                                            {{ ip.ipAddress }}
+                                            <i class="fa-solid fa-exclamation-triangle text-danger ms-1"
+                                                *ngIf="ip.isAnomaly" ngbTooltip="High failure rate anomaly"></i>
+                                        </td>
+                                        <td class="text-center">{{ ip.totalAttempts }}</td>
+                                        <td class="text-center text-danger">{{ ip.failureCount }}</td>
+                                        <td class="text-end">
+                                            <span class="badge" [class.bg-danger]="ip.failureRate > 50"
+                                                [class.bg-warning]="ip.failureRate > 20 && ip.failureRate <= 50"
+                                                [class.bg-success]="ip.failureRate <= 20"
+                                                [class.text-dark]="ip.failureRate > 20 && ip.failureRate <= 50">
+                                                {{ ip.failureRate }}%
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-center py-3 text-muted" *ngIf="ipAnalysis.length === 0">
+                            No IP data available
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </ng-container>
+
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="modal-footer border-0">
+        <button type="button" class="btn btn-outline-secondary" (click)="close()">
+            <i class="fa-solid fa-times me-1"></i>Close
+        </button>
+    </div>
+
+</div>

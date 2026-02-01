@@ -21,42 +21,7 @@
       </a>
     </li>
 
-    <!-- Users -->
-    <li class="nav-item">
-      <a routerLink="/users" routerLinkActive="active" class="nav-link text-white"
-         [ngbTooltip]="!isExpanded ? 'Users' : null" triggers="hover" #tUsers="ngbTooltip" (click)="tUsers.close()"
-         placement="right" tooltipClass="sidebar-tip">
-        <i class="fa-solid fa-users"></i>
-        <span class="label px-2">Users</span>
-      </a>
-    </li>
-
-    <!-- Tenants -->
-    <li class="nav-item">
-      <a routerLink="/tenants" routerLinkActive="active" class="nav-link text-white"
-         [ngbTooltip]="!isExpanded ? 'Tenants' : null" triggers="hover" #tTenants="ngbTooltip" (click)="tTenants.close()"
-         placement="right" tooltipClass="sidebar-tip">
-        <i class="fa-solid fa-building"></i>
-        <span class="label px-2">Tenants</span>
-      </a>
-    </li>
-
-    <!-- Modules -->
-    <li class="nav-item">
-      <a routerLink="/modules" routerLinkActive="active" class="nav-link text-white"
-         [ngbTooltip]="!isExpanded ? 'Modules' : null" triggers="hover" #tModules="ngbTooltip" (click)="tModules.close()"
-         placement="right" tooltipClass="sidebar-tip">
-        <i class="fa-solid fa-puzzle-piece"></i>
-        <span class="label px-2">Modules</span>
-      </a>
-    </li>
-
-    <!-- Divider: Monitoring -->
-    <li class="nav-item" *ngIf="isExpanded">
-      <hr class="dropdown-divider text-secondary my-2">
-    </li>
-
-    <!-- Foundation Systems -->
+    <!-- Foundation Systems Dashboard -->
     <li class="nav-item">
       <a routerLink="/systems-dashboard" routerLinkActive="active" class="nav-link text-white"
          [ngbTooltip]="!isExpanded ? 'Systems Dashboard' : null" triggers="hover" #tHealth="ngbTooltip"
@@ -97,6 +62,45 @@
         <span class="label px-2">Login Attempts</span>
       </a>
     </li>
+
+
+    <!-- Divider: User / Tenant / Module management  -->
+    <li class="nav-item" *ngIf="isExpanded">
+      <hr class="dropdown-divider text-secondary my-2">
+    </li>
+
+
+    <!-- Users -->
+    <li class="nav-item">
+      <a routerLink="/users" routerLinkActive="active" class="nav-link text-white"
+         [ngbTooltip]="!isExpanded ? 'Users' : null" triggers="hover" #tUsers="ngbTooltip" (click)="tUsers.close()"
+         placement="right" tooltipClass="sidebar-tip">
+        <i class="fa-solid fa-users"></i>
+        <span class="label px-2">Users</span>
+      </a>
+    </li>
+
+    <!-- Tenants -->
+    <li class="nav-item">
+      <a routerLink="/tenants" routerLinkActive="active" class="nav-link text-white"
+         [ngbTooltip]="!isExpanded ? 'Tenants' : null" triggers="hover" #tTenants="ngbTooltip" (click)="tTenants.close()"
+         placement="right" tooltipClass="sidebar-tip">
+        <i class="fa-solid fa-building"></i>
+        <span class="label px-2">Tenants</span>
+      </a>
+    </li>
+
+    <!-- Modules -->
+    <li class="nav-item">
+      <a routerLink="/modules" routerLinkActive="active" class="nav-link text-white"
+         [ngbTooltip]="!isExpanded ? 'Modules' : null" triggers="hover" #tModules="ngbTooltip" (click)="tModules.close()"
+         placement="right" tooltipClass="sidebar-tip">
+        <i class="fa-solid fa-puzzle-piece"></i>
+        <span class="label px-2">Modules</span>
+      </a>
+    </li>
+
+
 
 
     <!-- Divider: Administration -->

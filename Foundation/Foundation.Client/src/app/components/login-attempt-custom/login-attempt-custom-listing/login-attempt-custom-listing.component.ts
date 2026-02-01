@@ -14,6 +14,8 @@ import { ChartConfiguration, ChartData } from 'chart.js';
 import { LoginAttemptService, LoginAttemptData, LoginAttemptQueryParameters } from '../../../security-data-services/login-attempt.service';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { AuthService } from '../../../services/auth.service';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { LoginAnalyticsModalComponent } from '../login-analytics-modal/login-analytics-modal.component';
 
 
 //
@@ -148,7 +150,8 @@ export class LoginAttemptCustomListingComponent implements OnInit, OnDestroy {
     constructor(
         private loginAttemptService: LoginAttemptService,
         private alertService: AlertService,
-        private authService: AuthService
+        private authService: AuthService,
+        private modalService: NgbModal
     ) { }
 
 
@@ -715,6 +718,38 @@ export class LoginAttemptCustomListingComponent implements OnInit, OnDestroy {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+    }
+
+
+    //
+    // Open Analytics Modal
+    //
+    openAnalyticsModal(): void {
+        //
+        // Get currently visible (filtered) attempts
+        //
+        const filteredAttempts = this.loginAttempts$.value;
+
+        //
+        // Get current time range label for display in modal
+        //
+        const selectedPreset = this.timePresets.find(p => p.value === this.selectedTimePreset);
+        const timeRangeLabel = selectedPreset ? selectedPreset.label : 'Current Filter';
+
+        //
+        // Open modal with lg size for adequate chart space
+        //
+        const modalRef = this.modalService.open(LoginAnalyticsModalComponent, {
+            size: 'xl',
+            centered: true,
+            backdrop: 'static'
+        });
+
+        //
+        // Pass data to the modal
+        //
+        modalRef.componentInstance.attempts = filteredAttempts;
+        modalRef.componentInstance.timeRangeLabel = timeRangeLabel;
     }
 
 

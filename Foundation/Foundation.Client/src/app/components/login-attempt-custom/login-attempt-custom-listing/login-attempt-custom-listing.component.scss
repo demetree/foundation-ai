@@ -132,6 +132,38 @@
                 text-transform: uppercase;
                 font-weight: 600;
             }
+
+            //
+            // Clickable variant for opening analytics modal
+            //
+            &.clickable {
+                cursor: pointer;
+                transition: all 0.2s ease;
+
+                &:hover {
+                    transform: translateY(-4px);
+                    box-shadow: 0 8px 24px rgba(123, 31, 162, 0.2);
+                    border-left-color: #9c27b0;
+
+                    .kpi-action {
+                        opacity: 1;
+                        transform: translateX(2px);
+                    }
+                }
+            }
+
+            //
+            // Action indicator icon
+            //
+            .kpi-action {
+                color: #7b1fa2;
+                opacity: 0.5;
+                transition: all 0.2s ease;
+
+                i {
+                    font-size: 0.9rem;
+                }
+            }
         }
     }
 }

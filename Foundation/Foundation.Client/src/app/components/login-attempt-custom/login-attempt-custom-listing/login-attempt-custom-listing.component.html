@@ -86,11 +86,15 @@
                 <div class="stat-label">Unique Users</div>
             </div>
         </div>
-        <!-- Activity Sparkline -->
+        <!-- Activity Sparkline (Clickable for Analytics) -->
         <div class="col-12 col-lg-4">
-            <div class="stat-card stat-sparkline">
+            <div class="stat-card stat-sparkline clickable" (click)="openAnalyticsModal()"
+                ngbTooltip="Click for detailed analytics">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <span class="stat-label mb-0">Activity Trend (Hourly)</span>
+                    <span class="kpi-action">
+                        <i class="fa-solid fa-chart-bar"></i>
+                    </span>
                 </div>
                 <div class="sparkline-container" *ngIf="sparklineData.datasets.length > 0">
                     <canvas baseChart [data]="sparklineData" [options]="sparklineOptions" [type]="'line'">
