@@ -1,0 +1,74 @@
+<div class="add-integration-change-history" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-integration-change-history me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Integration Change History" 
+        *ngIf="userIsAlertingIntegrationChangeHistoryWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #integrationChangeHistoryModal let-modal>
+   <div class="modal-header bg-dark text-light integration-change-history-modal-header">
+      <h5 class="modal-title mb-0" id="integrationChangeHistoryModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Integration Change History' : 'Add Integration Change History' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body integration-change-history-modal-body">
+      <form [formGroup]="integrationChangeHistoryForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('integrationId')">
+                <label for="IntegrationChangeHistory-integrationId" id="label-IntegrationChangeHistory-integrationId"><span class="text-danger">*</span>Integration</label>
+                <select id="IntegrationChangeHistory-integrationId" formControlName="integrationId" class="form-select integration-change-history-select" [disabled]="!userIsAlertingIntegrationChangeHistoryWriter()">
+                    <option [ngValue]="null">Select Integration</option>
+                    <option *ngFor="let integration of integrations$ | async" [ngValue]="integration.id">{{integration.name}}</option>
+                </select>
+                <div *ngIf="integrationChangeHistoryForm.get('integrationId')?.invalid && integrationChangeHistoryForm.get('integrationId')?.touched" class="text-danger">
+                    Integration is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="IntegrationChangeHistory-versionNumber" id="label-IntegrationChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="IntegrationChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control integration-change-history-input" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                <label for="IntegrationChangeHistory-timeStamp" id="label-IntegrationChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                <input type="datetime-local" id="IntegrationChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control integration-change-history-input" [disabled]="!userIsAlertingIntegrationChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                <div *ngIf="integrationChangeHistoryForm.get('timeStamp')?.invalid && integrationChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                    Time Stamp is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                <label for="IntegrationChangeHistory-userId" id="label-IntegrationChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                <input type="number" id="IntegrationChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control integration-change-history-input" [disabled]="!userIsAlertingIntegrationChangeHistoryWriter()" aria-labelledby="label-userId" />
+                <div *ngIf="integrationChangeHistoryForm.get('userId')?.invalid && integrationChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                    User Id is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                <label for="IntegrationChangeHistory-data" id="label-IntegrationChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                <textarea id="IntegrationChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control integration-change-history-input" [disabled]="!userIsAlertingIntegrationChangeHistoryWriter()"></textarea>
+                <div *ngIf="integrationChangeHistoryForm.get('data')?.invalid && integrationChangeHistoryForm.get('data')?.touched" class="text-danger">
+                    Data is required
+                </div>
+            </div>
+         <div class="modal-footer integration-change-history-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Integration Change History changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !integrationChangeHistoryForm.valid || integrationChangeHistoryForm.pristine  || userIsAlertingIntegrationChangeHistoryWriter() == false " ngbTooltip="Save the Integration Change History changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Integration Change History' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

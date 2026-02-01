@@ -1,0 +1,145 @@
+<div class="container-fluid p-1 m-0 schedule-layer-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="schedule-layer-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Schedule Layer</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Schedule Layer' : 'Add Schedule Layer'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsAlertingScheduleLayerReader()">
+                <div class="col m-2 schedule-layer-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="scheduleLayerForm" (ngSubmit)="submitForm()" class="schedule-layer-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('onCallScheduleId')">
+                                <label for="ScheduleLayer-onCallScheduleId" id="label-ScheduleLayer-onCallScheduleId"><span class="text-danger">*</span>On Call Schedule</label>
+                                <select id="ScheduleLayer-onCallScheduleId" formControlName="onCallScheduleId" class="form-select schedule-layer-select" [disabled]="!userIsAlertingScheduleLayerWriter()">
+                                    <option [ngValue]="null">Select On Call Schedule</option>
+                                    <option *ngFor="let onCallSchedule of onCallSchedules$ | async" [ngValue]="onCallSchedule.id">{{onCallSchedule.name}}</option>
+                                </select>
+                                <div *ngIf="scheduleLayerForm.get('onCallScheduleId')?.invalid && scheduleLayerForm.get('onCallScheduleId')?.touched" class="text-danger">
+                                    On Call Schedule is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="ScheduleLayer-name" id="label-ScheduleLayer-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="ScheduleLayer-name" formControlName="name" placeholder="Enter Name" class="form-control schedule-layer-input" [disabled]="!userIsAlertingScheduleLayerWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="scheduleLayerForm.get('name')?.invalid && scheduleLayerForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="ScheduleLayer-description" id="label-ScheduleLayer-description">Description</label>
+                                <textarea id="ScheduleLayer-description" formControlName="description" placeholder="Enter Description" class="form-control schedule-layer-input" [disabled]="!userIsAlertingScheduleLayerWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('layerLevel')">
+                                <label for="ScheduleLayer-layerLevel" id="label-ScheduleLayer-layerLevel"><span class="text-danger">*</span>Layer Level</label>
+                                <input type="number" id="ScheduleLayer-layerLevel" formControlName="layerLevel" placeholder="Enter Layer Level" class="form-control schedule-layer-input" [disabled]="!userIsAlertingScheduleLayerWriter()" aria-labelledby="label-layerLevel" />
+                                <div *ngIf="scheduleLayerForm.get('layerLevel')?.invalid && scheduleLayerForm.get('layerLevel')?.touched" class="text-danger">
+                                    Layer Level is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('rotationStart')">
+                                <label for="ScheduleLayer-rotationStart" id="label-ScheduleLayer-rotationStart"><span class="text-danger">*</span>Rotation Start</label>
+                                <input type="datetime-local" id="ScheduleLayer-rotationStart" formControlName="rotationStart" placeholder="Enter Rotation Start" class="form-control schedule-layer-input" [disabled]="!userIsAlertingScheduleLayerWriter()" aria-labelledby="label-rotationStart" />
+                                <div *ngIf="scheduleLayerForm.get('rotationStart')?.invalid && scheduleLayerForm.get('rotationStart')?.touched" class="text-danger">
+                                    Rotation Start is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('rotationDays')">
+                                <label for="ScheduleLayer-rotationDays" id="label-ScheduleLayer-rotationDays"><span class="text-danger">*</span>Rotation Days</label>
+                                <input type="number" id="ScheduleLayer-rotationDays" formControlName="rotationDays" placeholder="Enter Rotation Days" class="form-control schedule-layer-input" [disabled]="!userIsAlertingScheduleLayerWriter()" aria-labelledby="label-rotationDays" />
+                                <div *ngIf="scheduleLayerForm.get('rotationDays')?.invalid && scheduleLayerForm.get('rotationDays')?.touched" class="text-danger">
+                                    Rotation Days is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('handoffTime')">
+                                <label for="ScheduleLayer-handoffTime" id="label-ScheduleLayer-handoffTime"><span class="text-danger">*</span>Handoff Time</label>
+                                <input type="text" id="ScheduleLayer-handoffTime" formControlName="handoffTime" placeholder="Enter Handoff Time" class="form-control schedule-layer-input" [disabled]="!userIsAlertingScheduleLayerWriter()" aria-labelledby="label-handoffTime" />
+                                <div *ngIf="scheduleLayerForm.get('handoffTime')?.invalid && scheduleLayerForm.get('handoffTime')?.touched" class="text-danger">
+                                    Handoff Time is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="ScheduleLayer-versionNumber" id="label-ScheduleLayer-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="ScheduleLayer-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control schedule-layer-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ScheduleLayer-active" formControlName="active" class="form-check-input" [disabled]="!userIsAlertingScheduleLayerWriter()" />
+                                <label for="ScheduleLayer-active" class="form-check-label" id="label-ScheduleLayer-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ScheduleLayer-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsAlertingScheduleLayerWriter()" />
+                                <label for="ScheduleLayer-deleted" class="form-check-label" id="label-ScheduleLayer-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="schedule-layer-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="scheduleLayerForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Schedule Layer">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !scheduleLayerForm.valid || !scheduleLayerForm.dirty || scheduleLayerForm.pristine  || userIsAlertingScheduleLayerWriter() == false " ngbTooltip="Save the Schedule Layer changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Schedule Layer' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsAlertingScheduleLayerReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 schedule-layer-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="scheduleLayerChangeHistoryService.userIsAlertingScheduleLayerChangeHistoryReader()">
+                            <button ngbNavLink>Schedule Layer Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (scheduleLayerData?.ScheduleLayerChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-schedule-layer-change-history-table [queryParams]="{ scheduleLayerId: scheduleLayerData?.id }"></app-schedule-layer-change-history-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-schedule-layer-change-history-add-edit [preSeededData]="{ scheduleLayerId: scheduleLayerData?.id }" [hiddenFields]="['scheduleLayerId']"></app-schedule-layer-change-history-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="scheduleLayerMemberService.userIsAlertingScheduleLayerMemberReader()">
+                            <button ngbNavLink>Schedule Layer Members
+                                <span class="badge bg-primary ms-2">
+                                    {{ (scheduleLayerData?.ScheduleLayerMembersCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-schedule-layer-member-table [queryParams]="{ scheduleLayerId: scheduleLayerData?.id }"></app-schedule-layer-member-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-schedule-layer-member-add-edit [preSeededData]="{ scheduleLayerId: scheduleLayerData?.id }" [hiddenFields]="['scheduleLayerId']"></app-schedule-layer-member-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

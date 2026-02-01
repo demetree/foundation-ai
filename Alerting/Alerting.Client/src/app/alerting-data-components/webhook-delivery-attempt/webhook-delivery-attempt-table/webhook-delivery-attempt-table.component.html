@@ -1,0 +1,350 @@
+<app-webhook-delivery-attempt-add-edit [showAddButton]="false"></app-webhook-delivery-attempt-add-edit>
+<div class="row" *ngIf="userIsAlertingWebhookDeliveryAttemptReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsAlertingWebhookDeliveryAttemptWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsAlertingWebhookDeliveryAttemptWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('incident.name')">
+                Incident
+                <span *ngIf="sortColumn === 'incident.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('integration.name')">
+                Integration
+                <span *ngIf="sortColumn === 'integration.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('incidentTimelineEvent.name')">
+                Incident  Timeline  Event
+                <span *ngIf="sortColumn === 'incidentTimelineEvent.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('attemptNumber')">
+                Attempt  Number
+                <span *ngIf="sortColumn === 'attemptNumber'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('attemptedAt')">
+                Attempted  At
+                <span *ngIf="sortColumn === 'attemptedAt'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('httpStatusCode')">
+                Http  Status  Code
+                <span *ngIf="sortColumn === 'httpStatusCode'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('success')">
+                Success
+                <span *ngIf="sortColumn === 'success'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('payloadJson')">
+                Payload  Json
+                <span *ngIf="sortColumn === 'payloadJson'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('responseBody')">
+                Response  Body
+                <span *ngIf="sortColumn === 'responseBody'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('errorMessage')">
+                Error  Message
+                <span *ngIf="sortColumn === 'errorMessage'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let webhookDeliveryAttempt of filteredWebhookDeliveryAttempts; trackBy: getWebhookDeliveryAttemptId"
+              [ngClass]="{
+                 'row-inactive': webhookDeliveryAttempt.active == false,
+                 'row-deleted': webhookDeliveryAttempt.deleted == true 
+                 }">
+            <td class="header-action-button" *ngIf="userIsAlertingWebhookDeliveryAttemptWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleEdit(webhookDeliveryAttempt)"
+                      ngbTooltip="Edit" 
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsAlertingWebhookDeliveryAttemptWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleDelete(webhookDeliveryAttempt)"
+                      ngbTooltip="Delete" 
+                      placement="top"
+                      *ngIf="webhookDeliveryAttempt.deleted == false">
+                <i class="fa fa-trash"></i>
+              </button>
+              <button class="btn btn-sm"
+                      (click)="handleUndelete(webhookDeliveryAttempt)"
+                      ngbTooltip="Undelete" 
+                      placement="top"
+                      *ngIf="webhookDeliveryAttempt.deleted == true">
+                <i class="fa fa-trash-arrow-up"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(webhookDeliveryAttempt, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(webhookDeliveryAttempt, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(webhookDeliveryAttempt, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(webhookDeliveryAttempt, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(webhookDeliveryAttempt, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(webhookDeliveryAttempt, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(webhookDeliveryAttempt, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(webhookDeliveryAttempt, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/incident', webhookDeliveryAttempt.incidentId]" class="btn btn-link text-left" ngbTooltip="Open Incident details">{{webhookDeliveryAttempt.incident?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/integration', webhookDeliveryAttempt.integrationId]" class="btn btn-link text-left" ngbTooltip="Open Integration details">{{webhookDeliveryAttempt.integration?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/incidenttimelineevent', webhookDeliveryAttempt.incidentTimelineEventId]" class="btn btn-link text-left" ngbTooltip="Open Incident Timeline Event details">{{webhookDeliveryAttempt.incidentTimelineEvent?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/webhookdeliveryattempt', webhookDeliveryAttempt.id]" class="btn btn-link text-left" ngbTooltip="Open Webhook Delivery Attempt details">{{webhookDeliveryAttempt.attemptNumber | bigNumberFormat : '1.0-2'}}</a></td>
+            <td class="text-truncate">{{webhookDeliveryAttempt.attemptedAt | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate">{{webhookDeliveryAttempt.httpStatusCode | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate"><boolean-icon [value]="webhookDeliveryAttempt.success"/></td>
+            <td class="text-truncate">{{webhookDeliveryAttempt.payloadJson}}</td>
+            <td class="text-truncate">{{webhookDeliveryAttempt.responseBody}}</td>
+            <td class="text-truncate">{{webhookDeliveryAttempt.errorMessage}}</td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let webhookDeliveryAttempt of filteredWebhookDeliveryAttempts; trackBy: getWebhookDeliveryAttemptId" class="card my-2"
+              [ngClass]="{
+                 'row-inactive': webhookDeliveryAttempt.active == false,
+                 'row-deleted': webhookDeliveryAttempt.deleted == true 
+                 }">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(webhookDeliveryAttempt, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(webhookDeliveryAttempt, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(webhookDeliveryAttempt, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(webhookDeliveryAttempt, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(webhookDeliveryAttempt, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(webhookDeliveryAttempt, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(webhookDeliveryAttempt, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(webhookDeliveryAttempt, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(webhookDeliveryAttempt, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(webhookDeliveryAttempt, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(webhookDeliveryAttempt, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(webhookDeliveryAttempt, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(webhookDeliveryAttempt, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/webhookdeliveryattempt', webhookDeliveryAttempt.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(webhookDeliveryAttempt)" *ngIf="userIsAlertingWebhookDeliveryAttemptWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(webhookDeliveryAttempt)" *ngIf="userIsAlertingWebhookDeliveryAttemptWriter() && webhookDeliveryAttempt.deleted == false" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+            <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(webhookDeliveryAttempt)" *ngIf="userIsAlertingWebhookDeliveryAttemptWriter() && webhookDeliveryAttempt.deleted == true" ngbTooltip="Undelete">
+              <i class="fa fa-trash-arrow-upp"></i> UnDelete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{webhookDeliveryAttempt.id}}</strong>
+               <small class="text-muted d-block">{{webhookDeliveryAttempt.incident?.name}}</small>
+             </div>
+             <div>
+                <button class="btn btn-sm"
+                        [routerLink]="['/webhookdeliveryattempt', webhookDeliveryAttempt.id]"
+                        ngbTooltip="Webhook Delivery Attempt Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="btn btn-sm"
+                        (click)="handleEdit(webhookDeliveryAttempt)"
+                        ngbTooltip="Edit Webhook Delivery Attempt">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleDelete(webhookDeliveryAttempt)"
+                      ngbTooltip="Delete Webhook Delivery Attempt" 
+                      placement="top"
+                      *ngIf="webhookDeliveryAttempt.deleted == false">
+                  <i class="fa fa-trash"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleUndelete(webhookDeliveryAttempt)"
+                      ngbTooltip="Undelete Webhook Delivery Attempt" 
+                      placement="top"
+                      *ngIf="webhookDeliveryAttempt.deleted == true">
+                 <i class="fa fa-trash-arrow-up"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="webhook-delivery-attempt-info" *ngIf="webhookDeliveryAttempt.incidentId != null">
+              <strong>Incident: </strong>
+              <a [routerLink]="['/incident', webhookDeliveryAttempt.incidentId]" class="text-left p-0 m-0" ngbTooltip="Open Incident details">{{webhookDeliveryAttempt.incident?.name}}</a>
+            </p>
+            <p class="webhook-delivery-attempt-info" *ngIf="webhookDeliveryAttempt.integrationId != null">
+              <strong>Integration: </strong>
+              <a [routerLink]="['/integration', webhookDeliveryAttempt.integrationId]" class="text-left p-0 m-0" ngbTooltip="Open Integration details">{{webhookDeliveryAttempt.integration?.name}}</a>
+            </p>
+            <p class="webhook-delivery-attempt-info" *ngIf="webhookDeliveryAttempt.incidentTimelineEventId != null">
+              <strong>Incident Timeline Event: </strong>
+              <a [routerLink]="['/incidenttimelineevent', webhookDeliveryAttempt.incidentTimelineEventId]" class="text-left p-0 m-0" ngbTooltip="Open Incident Timeline Event details">{{webhookDeliveryAttempt.incidentTimelineEvent?.name}}</a>
+            </p>
+            <p class="webhook-delivery-attempt-info" *ngIf="webhookDeliveryAttempt.attemptNumber != null">
+              <strong>Attempt Number: </strong>
+              {{webhookDeliveryAttempt.attemptNumber | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="webhook-delivery-attempt-info" *ngIf="webhookDeliveryAttempt.attemptedAt != null">
+              <strong>Attempted At: </strong>
+              {{webhookDeliveryAttempt.attemptedAt | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="webhook-delivery-attempt-info" *ngIf="webhookDeliveryAttempt.httpStatusCode != null">
+              <strong>Http Status Code: </strong>
+              {{webhookDeliveryAttempt.httpStatusCode | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="webhook-delivery-attempt-info" *ngIf="webhookDeliveryAttempt.success != null">
+              <strong>Success: </strong>
+              <boolean-icon [value]="webhookDeliveryAttempt.success"/>
+            </p>
+            <p class="webhook-delivery-attempt-info" *ngIf="webhookDeliveryAttempt.payloadJson != null">
+              <strong>Payload Json: </strong>
+              {{webhookDeliveryAttempt.payloadJson}}
+            </p>
+            <p class="webhook-delivery-attempt-info" *ngIf="webhookDeliveryAttempt.responseBody != null">
+              <strong>Response Body: </strong>
+              {{webhookDeliveryAttempt.responseBody}}
+            </p>
+            <p class="webhook-delivery-attempt-info" *ngIf="webhookDeliveryAttempt.errorMessage != null">
+              <strong>Error Message: </strong>
+              {{webhookDeliveryAttempt.errorMessage}}
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+   </div>
+</div>

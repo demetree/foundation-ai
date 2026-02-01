@@ -1,0 +1,74 @@
+<div class="add-schedule-layer-member-change-history" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-schedule-layer-member-change-history me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Schedule Layer Member Change History" 
+        *ngIf="userIsAlertingScheduleLayerMemberChangeHistoryWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #scheduleLayerMemberChangeHistoryModal let-modal>
+   <div class="modal-header bg-dark text-light schedule-layer-member-change-history-modal-header">
+      <h5 class="modal-title mb-0" id="scheduleLayerMemberChangeHistoryModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Schedule Layer Member Change History' : 'Add Schedule Layer Member Change History' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body schedule-layer-member-change-history-modal-body">
+      <form [formGroup]="scheduleLayerMemberChangeHistoryForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('scheduleLayerMemberId')">
+                <label for="ScheduleLayerMemberChangeHistory-scheduleLayerMemberId" id="label-ScheduleLayerMemberChangeHistory-scheduleLayerMemberId"><span class="text-danger">*</span>Schedule Layer Member</label>
+                <select id="ScheduleLayerMemberChangeHistory-scheduleLayerMemberId" formControlName="scheduleLayerMemberId" class="form-select schedule-layer-member-change-history-select" [disabled]="!userIsAlertingScheduleLayerMemberChangeHistoryWriter()">
+                    <option [ngValue]="null">Select Schedule Layer Member</option>
+                    <option *ngFor="let scheduleLayerMember of scheduleLayerMembers$ | async" [ngValue]="scheduleLayerMember.id">{{scheduleLayerMember.id}}</option>
+                </select>
+                <div *ngIf="scheduleLayerMemberChangeHistoryForm.get('scheduleLayerMemberId')?.invalid && scheduleLayerMemberChangeHistoryForm.get('scheduleLayerMemberId')?.touched" class="text-danger">
+                    Schedule Layer Member is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="ScheduleLayerMemberChangeHistory-versionNumber" id="label-ScheduleLayerMemberChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="ScheduleLayerMemberChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control schedule-layer-member-change-history-input" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                <label for="ScheduleLayerMemberChangeHistory-timeStamp" id="label-ScheduleLayerMemberChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                <input type="datetime-local" id="ScheduleLayerMemberChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control schedule-layer-member-change-history-input" [disabled]="!userIsAlertingScheduleLayerMemberChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                <div *ngIf="scheduleLayerMemberChangeHistoryForm.get('timeStamp')?.invalid && scheduleLayerMemberChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                    Time Stamp is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                <label for="ScheduleLayerMemberChangeHistory-userId" id="label-ScheduleLayerMemberChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                <input type="number" id="ScheduleLayerMemberChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control schedule-layer-member-change-history-input" [disabled]="!userIsAlertingScheduleLayerMemberChangeHistoryWriter()" aria-labelledby="label-userId" />
+                <div *ngIf="scheduleLayerMemberChangeHistoryForm.get('userId')?.invalid && scheduleLayerMemberChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                    User Id is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                <label for="ScheduleLayerMemberChangeHistory-data" id="label-ScheduleLayerMemberChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                <textarea id="ScheduleLayerMemberChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control schedule-layer-member-change-history-input" [disabled]="!userIsAlertingScheduleLayerMemberChangeHistoryWriter()"></textarea>
+                <div *ngIf="scheduleLayerMemberChangeHistoryForm.get('data')?.invalid && scheduleLayerMemberChangeHistoryForm.get('data')?.touched" class="text-danger">
+                    Data is required
+                </div>
+            </div>
+         <div class="modal-footer schedule-layer-member-change-history-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Schedule Layer Member Change History changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !scheduleLayerMemberChangeHistoryForm.valid || scheduleLayerMemberChangeHistoryForm.pristine  || userIsAlertingScheduleLayerMemberChangeHistoryWriter() == false " ngbTooltip="Save the Schedule Layer Member Change History changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Schedule Layer Member Change History' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

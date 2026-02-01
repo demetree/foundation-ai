@@ -1,0 +1,118 @@
+<div class="container-fluid p-1 m-0 incident-notification-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="incident-notification-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Incident Notification</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Incident Notification' : 'Add Incident Notification'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsAlertingIncidentNotificationReader()">
+                <div class="col m-2 incident-notification-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="incidentNotificationForm" (ngSubmit)="submitForm()" class="incident-notification-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('incidentId')">
+                                <label for="IncidentNotification-incidentId" id="label-IncidentNotification-incidentId"><span class="text-danger">*</span>Incident</label>
+                                <select id="IncidentNotification-incidentId" formControlName="incidentId" class="form-select incident-notification-select" [disabled]="!userIsAlertingIncidentNotificationWriter()">
+                                    <option [ngValue]="null">Select Incident</option>
+                                    <option *ngFor="let incident of incidents$ | async" [ngValue]="incident.id">{{incident.incidentKey}}</option>
+                                </select>
+                                <div *ngIf="incidentNotificationForm.get('incidentId')?.invalid && incidentNotificationForm.get('incidentId')?.touched" class="text-danger">
+                                    Incident is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('escalationRuleId')">
+                                <label for="IncidentNotification-escalationRuleId" id="label-IncidentNotification-escalationRuleId">Escalation Rule</label>
+                                <select id="IncidentNotification-escalationRuleId" formControlName="escalationRuleId" class="form-select incident-notification-select" [disabled]="!userIsAlertingIncidentNotificationWriter()">
+                                    <option [ngValue]="null">Select Escalation Rule</option>
+                                    <option *ngFor="let escalationRule of escalationRules$ | async" [ngValue]="escalationRule.id">{{escalationRule.targetType}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userObjectGuid')">
+                                <label for="IncidentNotification-userObjectGuid" id="label-IncidentNotification-userObjectGuid"><span class="text-danger">*</span>User Object Guid</label>
+                                <input type="text" id="IncidentNotification-userObjectGuid" formControlName="userObjectGuid" placeholder="Enter User Object Guid" class="form-control incident-notification-input" [disabled]="!userIsAlertingIncidentNotificationWriter()" aria-labelledby="label-userObjectGuid" />
+                                <div *ngIf="incidentNotificationForm.get('userObjectGuid')?.invalid && incidentNotificationForm.get('userObjectGuid')?.touched" class="text-danger">
+                                    User Object Guid is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('firstNotifiedAt')">
+                                <label for="IncidentNotification-firstNotifiedAt" id="label-IncidentNotification-firstNotifiedAt"><span class="text-danger">*</span>First Notified At</label>
+                                <input type="datetime-local" id="IncidentNotification-firstNotifiedAt" formControlName="firstNotifiedAt" placeholder="Enter First Notified At" class="form-control incident-notification-input" [disabled]="!userIsAlertingIncidentNotificationWriter()" aria-labelledby="label-firstNotifiedAt" />
+                                <div *ngIf="incidentNotificationForm.get('firstNotifiedAt')?.invalid && incidentNotificationForm.get('firstNotifiedAt')?.touched" class="text-danger">
+                                    First Notified At is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('lastNotifiedAt')">
+                                <label for="IncidentNotification-lastNotifiedAt" id="label-IncidentNotification-lastNotifiedAt">Last Notified At</label>
+                                <input type="datetime-local" id="IncidentNotification-lastNotifiedAt" formControlName="lastNotifiedAt" placeholder="Enter Last Notified At" class="form-control incident-notification-input" [disabled]="!userIsAlertingIncidentNotificationWriter()" aria-labelledby="label-lastNotifiedAt" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('acknowledgedAt')">
+                                <label for="IncidentNotification-acknowledgedAt" id="label-IncidentNotification-acknowledgedAt">Acknowledged At</label>
+                                <input type="datetime-local" id="IncidentNotification-acknowledgedAt" formControlName="acknowledgedAt" placeholder="Enter Acknowledged At" class="form-control incident-notification-input" [disabled]="!userIsAlertingIncidentNotificationWriter()" aria-labelledby="label-acknowledgedAt" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('acknowledgedByObjectGuid')">
+                                <label for="IncidentNotification-acknowledgedByObjectGuid" id="label-IncidentNotification-acknowledgedByObjectGuid">Acknowledged By Object Guid</label>
+                                <input type="text" id="IncidentNotification-acknowledgedByObjectGuid" formControlName="acknowledgedByObjectGuid" placeholder="Enter Acknowledged By Object Guid" class="form-control incident-notification-input" [disabled]="!userIsAlertingIncidentNotificationWriter()" aria-labelledby="label-acknowledgedByObjectGuid" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="IncidentNotification-active" formControlName="active" class="form-check-input" [disabled]="!userIsAlertingIncidentNotificationWriter()" />
+                                <label for="IncidentNotification-active" class="form-check-label" id="label-IncidentNotification-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="IncidentNotification-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsAlertingIncidentNotificationWriter()" />
+                                <label for="IncidentNotification-deleted" class="form-check-label" id="label-IncidentNotification-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="incident-notification-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="incidentNotificationForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Incident Notification">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !incidentNotificationForm.valid || !incidentNotificationForm.dirty || incidentNotificationForm.pristine  || userIsAlertingIncidentNotificationWriter() == false " ngbTooltip="Save the Incident Notification changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Incident Notification' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsAlertingIncidentNotificationReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 incident-notification-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="notificationDeliveryAttemptService.userIsAlertingNotificationDeliveryAttemptReader()">
+                            <button ngbNavLink>Notification Delivery Attempts
+                                <span class="badge bg-primary ms-2">
+                                    {{ (incidentNotificationData?.NotificationDeliveryAttemptsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-notification-delivery-attempt-table [queryParams]="{ incidentNotificationId: incidentNotificationData?.id }"></app-notification-delivery-attempt-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-notification-delivery-attempt-add-edit [preSeededData]="{ incidentNotificationId: incidentNotificationData?.id }" [hiddenFields]="['incidentNotificationId']"></app-notification-delivery-attempt-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

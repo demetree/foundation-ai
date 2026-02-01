@@ -1,0 +1,110 @@
+<div class="container-fluid p-1 m-0 notification-channel-type-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="notification-channel-type-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Notification Channel Type</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Notification Channel Type' : 'Add Notification Channel Type'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsAlertingNotificationChannelTypeReader()">
+                <div class="col m-2 notification-channel-type-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="notificationChannelTypeForm" (ngSubmit)="submitForm()" class="notification-channel-type-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="NotificationChannelType-name" id="label-NotificationChannelType-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="NotificationChannelType-name" formControlName="name" placeholder="Enter Name" class="form-control notification-channel-type-input" [disabled]="!userIsAlertingNotificationChannelTypeWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="notificationChannelTypeForm.get('name')?.invalid && notificationChannelTypeForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="NotificationChannelType-description" id="label-NotificationChannelType-description">Description</label>
+                                <textarea id="NotificationChannelType-description" formControlName="description" placeholder="Enter Description" class="form-control notification-channel-type-input" [disabled]="!userIsAlertingNotificationChannelTypeWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('defaultPriority')">
+                                <label for="NotificationChannelType-defaultPriority" id="label-NotificationChannelType-defaultPriority"><span class="text-danger">*</span>Default Priority</label>
+                                <input type="number" id="NotificationChannelType-defaultPriority" formControlName="defaultPriority" placeholder="Enter Default Priority" class="form-control notification-channel-type-input" [disabled]="!userIsAlertingNotificationChannelTypeWriter()" aria-labelledby="label-defaultPriority" />
+                                <div *ngIf="notificationChannelTypeForm.get('defaultPriority')?.invalid && notificationChannelTypeForm.get('defaultPriority')?.touched" class="text-danger">
+                                    Default Priority is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="NotificationChannelType-active" formControlName="active" class="form-check-input" [disabled]="!userIsAlertingNotificationChannelTypeWriter()" />
+                                <label for="NotificationChannelType-active" class="form-check-label" id="label-NotificationChannelType-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="NotificationChannelType-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsAlertingNotificationChannelTypeWriter()" />
+                                <label for="NotificationChannelType-deleted" class="form-check-label" id="label-NotificationChannelType-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="notification-channel-type-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="notificationChannelTypeForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Notification Channel Type">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !notificationChannelTypeForm.valid || !notificationChannelTypeForm.dirty || notificationChannelTypeForm.pristine  || userIsAlertingNotificationChannelTypeWriter() == false " ngbTooltip="Save the Notification Channel Type changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Notification Channel Type' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsAlertingNotificationChannelTypeReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 notification-channel-type-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="userNotificationChannelPreferenceService.userIsAlertingUserNotificationChannelPreferenceReader()">
+                            <button ngbNavLink>User Notification Channel Preferences
+                                <span class="badge bg-primary ms-2">
+                                    {{ (notificationChannelTypeData?.UserNotificationChannelPreferencesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-user-notification-channel-preference-table [queryParams]="{ notificationChannelTypeId: notificationChannelTypeData?.id }"></app-user-notification-channel-preference-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-user-notification-channel-preference-add-edit [preSeededData]="{ notificationChannelTypeId: notificationChannelTypeData?.id }" [hiddenFields]="['notificationChannelTypeId']"></app-user-notification-channel-preference-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="notificationDeliveryAttemptService.userIsAlertingNotificationDeliveryAttemptReader()">
+                            <button ngbNavLink>Notification Delivery Attempts
+                                <span class="badge bg-primary ms-2">
+                                    {{ (notificationChannelTypeData?.NotificationDeliveryAttemptsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-notification-delivery-attempt-table [queryParams]="{ notificationChannelTypeId: notificationChannelTypeData?.id }"></app-notification-delivery-attempt-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-notification-delivery-attempt-add-edit [preSeededData]="{ notificationChannelTypeId: notificationChannelTypeData?.id }" [hiddenFields]="['notificationChannelTypeId']"></app-notification-delivery-attempt-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

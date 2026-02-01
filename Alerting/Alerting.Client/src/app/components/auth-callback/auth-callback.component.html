@@ -1,0 +1,66 @@
+<div class="d-flex h-90">
+  <div class="login-container m-auto">
+
+    <div *ngIf="!foundEmail" class="card boxshadow">
+      <div class="card-body">
+        <div class="text-center">
+          <i *ngIf="isLoading" class="fa fa-spinner fa-pulse"></i>
+          {{message}}
+        </div>
+        <div *ngIf="!message && !isLoading">
+          <a class="btn btn-primary float-end" routerLink="/"><i class='fa fa-home'></i> {{'notFound.backToHome' | translate}}</a>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="foundEmail" class="card boxshadow">
+      <div class="card-header bg-primary text-white">
+        <i class="fa fa-lock" aria-hidden="true"></i> {{'authCallback.LinkAccount' | translate:providerName}}
+      </div>
+      <div class="card-body">
+        <div class="col-md-10 offset-md-1 px-md-3">
+          <form class="login" name="loginForm" #f="ngForm" novalidate
+                (ngSubmit)="f.form.valid ? linkAccountAndLogin() : (!password.valid &&
+                  showErrorAlert('login.alerts.PasswordRequired', 'login.alerts.EnterValidPassword'))">
+            <div>
+              <p class="form-control-plaintext text-center fw-light">{{'authCallback.ExistingAccountFound' | translate:providerName}}</p>
+            </div>
+            <div class="mb-3 row">
+              <label class="col-form-label text-md-end col-md-4" for="auth-callback-found-email">{{'authCallback.Email' | translate}}</label>
+              <div class="col-md-8">
+                <input type="text" id="auth-callback-found-email" class="form-control-plaintext" value="{{foundEmail}}" readonly />
+              </div>
+            </div>
+            <div class="mb-3 row">
+              <label class="col-form-label text-md-end col-md-4" for="auth-callback-login-password">{{'login.Password' | translate}}</label>
+              <div class="col-md-8">
+                <input type="password" id="auth-callback-login-password" name="password" placeholder="{{'login.PasswordPlaceholder' | translate}}"
+                       autocomplete="current-password" class="form-control"
+                       [ngClass]="{'is-valid': f.submitted && password.valid, 'is-invalid' : f.submitted && !password.valid}"
+                       [(ngModel)]="userPassword" #password="ngModel" required />
+                <span class="invalid-feedback" *ngIf="f.submitted && !password.valid">
+                  {{'login.PasswordRequired' | translate}}
+                </span>
+              </div>
+            </div>
+            <div class="mb-3 row">
+              <div class="offset-md-4 col-md-8">
+                <button type="submit" class="btn btn-primary" [disabled]="isLoading">
+                  <i *ngIf="isLoading" class='fa fa-circle-o-notch fa-spin'></i>
+                  {{isLoading ? ('login.LoggingIn' | translate) : ('login.Login' | translate)}}
+                </button>
+              </div>
+            </div>
+
+            <div class="col-md-12">
+              <hr class="hr-separator" />
+            </div>
+            <div class="col-md-12 last-control-group account-controls text-center">
+              <a class="card-link text-link" routerLink="/recoverpassword">{{'login.RecoverPassword' | translate}}</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

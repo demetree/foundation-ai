@@ -1,0 +1,58 @@
+<div class="add-incident-event-type" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-incident-event-type me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Incident Event Type" 
+        *ngIf="userIsAlertingIncidentEventTypeWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #incidentEventTypeModal let-modal>
+   <div class="modal-header bg-dark text-light incident-event-type-modal-header">
+      <h5 class="modal-title mb-0" id="incidentEventTypeModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Incident Event Type' : 'Add Incident Event Type' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body incident-event-type-modal-body">
+      <form [formGroup]="incidentEventTypeForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="IncidentEventType-name" id="label-IncidentEventType-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="IncidentEventType-name" formControlName="name" placeholder="Enter Name" class="form-control incident-event-type-input" [disabled]="!userIsAlertingIncidentEventTypeWriter()" aria-labelledby="label-name" />
+                <div *ngIf="incidentEventTypeForm.get('name')?.invalid && incidentEventTypeForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="IncidentEventType-description" id="label-IncidentEventType-description">Description</label>
+                <textarea id="IncidentEventType-description" formControlName="description" placeholder="Enter Description" class="form-control incident-event-type-input" [disabled]="!userIsAlertingIncidentEventTypeWriter()"></textarea>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="IncidentEventType-active" formControlName="active" class="form-check-input" [disabled]="!userIsAlertingIncidentEventTypeWriter()" />
+                <label for="IncidentEventType-active" class="form-check-label" id="label-IncidentEventType-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="IncidentEventType-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsAlertingIncidentEventTypeWriter()" />
+                <label for="IncidentEventType-deleted" class="form-check-label" id="label-IncidentEventType-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer incident-event-type-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Incident Event Type changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !incidentEventTypeForm.valid || incidentEventTypeForm.pristine  || userIsAlertingIncidentEventTypeWriter() == false " ngbTooltip="Save the Incident Event Type changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Incident Event Type' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

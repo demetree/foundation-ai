@@ -1,0 +1,131 @@
+<div class="container-fluid p-1 m-0 user-notification-preference-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="user-notification-preference-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">User Notification Preference</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit User Notification Preference' : 'Add User Notification Preference'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsAlertingUserNotificationPreferenceReader()">
+                <div class="col m-2 user-notification-preference-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="userNotificationPreferenceForm" (ngSubmit)="submitForm()" class="user-notification-preference-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('securityUserObjectGuid')">
+                                <label for="UserNotificationPreference-securityUserObjectGuid" id="label-UserNotificationPreference-securityUserObjectGuid"><span class="text-danger">*</span>Security User Object Guid</label>
+                                <input type="text" id="UserNotificationPreference-securityUserObjectGuid" formControlName="securityUserObjectGuid" placeholder="Enter Security User Object Guid" class="form-control user-notification-preference-input" [disabled]="!userIsAlertingUserNotificationPreferenceWriter()" aria-labelledby="label-securityUserObjectGuid" />
+                                <div *ngIf="userNotificationPreferenceForm.get('securityUserObjectGuid')?.invalid && userNotificationPreferenceForm.get('securityUserObjectGuid')?.touched" class="text-danger">
+                                    Security User Object Guid is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeZoneId')">
+                                <label for="UserNotificationPreference-timeZoneId" id="label-UserNotificationPreference-timeZoneId">Time Zone Id</label>
+                                <input type="text" id="UserNotificationPreference-timeZoneId" formControlName="timeZoneId" placeholder="Enter Time Zone Id" class="form-control user-notification-preference-input" [disabled]="!userIsAlertingUserNotificationPreferenceWriter()" aria-labelledby="label-timeZoneId" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('quietHoursStart')">
+                                <label for="UserNotificationPreference-quietHoursStart" id="label-UserNotificationPreference-quietHoursStart">Quiet Hours Start</label>
+                                <input type="text" id="UserNotificationPreference-quietHoursStart" formControlName="quietHoursStart" placeholder="Enter Quiet Hours Start" class="form-control user-notification-preference-input" [disabled]="!userIsAlertingUserNotificationPreferenceWriter()" aria-labelledby="label-quietHoursStart" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('quietHoursEnd')">
+                                <label for="UserNotificationPreference-quietHoursEnd" id="label-UserNotificationPreference-quietHoursEnd">Quiet Hours End</label>
+                                <input type="text" id="UserNotificationPreference-quietHoursEnd" formControlName="quietHoursEnd" placeholder="Enter Quiet Hours End" class="form-control user-notification-preference-input" [disabled]="!userIsAlertingUserNotificationPreferenceWriter()" aria-labelledby="label-quietHoursEnd" />
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isDoNotDisturb')">
+                                <input type="checkbox" id="UserNotificationPreference-isDoNotDisturb" formControlName="isDoNotDisturb" class="form-check-input" [disabled]="!userIsAlertingUserNotificationPreferenceWriter()" />
+                                <label for="UserNotificationPreference-isDoNotDisturb" class="form-check-label" id="label-UserNotificationPreference-isDoNotDisturb"><span class="text-danger">*</span>Is Do Not Disturb</label>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isDoNotDisturbPermanent')">
+                                <input type="checkbox" id="UserNotificationPreference-isDoNotDisturbPermanent" formControlName="isDoNotDisturbPermanent" class="form-check-input" [disabled]="!userIsAlertingUserNotificationPreferenceWriter()" />
+                                <label for="UserNotificationPreference-isDoNotDisturbPermanent" class="form-check-label" id="label-UserNotificationPreference-isDoNotDisturbPermanent"><span class="text-danger">*</span>Is Do Not Disturb Permanent</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('doNotDisturbUntil')">
+                                <label for="UserNotificationPreference-doNotDisturbUntil" id="label-UserNotificationPreference-doNotDisturbUntil">Do Not Disturb Until</label>
+                                <input type="datetime-local" id="UserNotificationPreference-doNotDisturbUntil" formControlName="doNotDisturbUntil" placeholder="Enter Do Not Disturb Until" class="form-control user-notification-preference-input" [disabled]="!userIsAlertingUserNotificationPreferenceWriter()" aria-labelledby="label-doNotDisturbUntil" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('customSettingsJson')">
+                                <label for="UserNotificationPreference-customSettingsJson" id="label-UserNotificationPreference-customSettingsJson">Custom Settings Json</label>
+                                <textarea id="UserNotificationPreference-customSettingsJson" formControlName="customSettingsJson" placeholder="Enter Custom Settings Json" class="form-control user-notification-preference-input" [disabled]="!userIsAlertingUserNotificationPreferenceWriter()"></textarea>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="UserNotificationPreference-versionNumber" id="label-UserNotificationPreference-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="UserNotificationPreference-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control user-notification-preference-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="UserNotificationPreference-active" formControlName="active" class="form-check-input" [disabled]="!userIsAlertingUserNotificationPreferenceWriter()" />
+                                <label for="UserNotificationPreference-active" class="form-check-label" id="label-UserNotificationPreference-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="UserNotificationPreference-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsAlertingUserNotificationPreferenceWriter()" />
+                                <label for="UserNotificationPreference-deleted" class="form-check-label" id="label-UserNotificationPreference-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="user-notification-preference-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="userNotificationPreferenceForm.pristine" (click)="loadData(true)" ngbTooltip="Reload User Notification Preference">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !userNotificationPreferenceForm.valid || !userNotificationPreferenceForm.dirty || userNotificationPreferenceForm.pristine  || userIsAlertingUserNotificationPreferenceWriter() == false " ngbTooltip="Save the User Notification Preference changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add User Notification Preference' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsAlertingUserNotificationPreferenceReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 user-notification-preference-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="userNotificationPreferenceChangeHistoryService.userIsAlertingUserNotificationPreferenceChangeHistoryReader()">
+                            <button ngbNavLink>User Notification Preference Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (userNotificationPreferenceData?.UserNotificationPreferenceChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-user-notification-preference-change-history-table [queryParams]="{ userNotificationPreferenceId: userNotificationPreferenceData?.id }"></app-user-notification-preference-change-history-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-user-notification-preference-change-history-add-edit [preSeededData]="{ userNotificationPreferenceId: userNotificationPreferenceData?.id }" [hiddenFields]="['userNotificationPreferenceId']"></app-user-notification-preference-change-history-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="userNotificationChannelPreferenceService.userIsAlertingUserNotificationChannelPreferenceReader()">
+                            <button ngbNavLink>User Notification Channel Preferences
+                                <span class="badge bg-primary ms-2">
+                                    {{ (userNotificationPreferenceData?.UserNotificationChannelPreferencesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-user-notification-channel-preference-table [queryParams]="{ userNotificationPreferenceId: userNotificationPreferenceData?.id }"></app-user-notification-channel-preference-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-user-notification-channel-preference-add-edit [preSeededData]="{ userNotificationPreferenceId: userNotificationPreferenceData?.id }" [hiddenFields]="['userNotificationPreferenceId']"></app-user-notification-channel-preference-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

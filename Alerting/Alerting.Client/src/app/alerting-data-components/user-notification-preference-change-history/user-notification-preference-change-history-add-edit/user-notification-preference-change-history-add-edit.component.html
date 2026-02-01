@@ -1,0 +1,74 @@
+<div class="add-user-notification-preference-change-history" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-user-notification-preference-change-history me-2"
+        (click)="openModal()"
+        ngbTooltip="Add User Notification Preference Change History" 
+        *ngIf="userIsAlertingUserNotificationPreferenceChangeHistoryWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #userNotificationPreferenceChangeHistoryModal let-modal>
+   <div class="modal-header bg-dark text-light user-notification-preference-change-history-modal-header">
+      <h5 class="modal-title mb-0" id="userNotificationPreferenceChangeHistoryModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit User Notification Preference Change History' : 'Add User Notification Preference Change History' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body user-notification-preference-change-history-modal-body">
+      <form [formGroup]="userNotificationPreferenceChangeHistoryForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('userNotificationPreferenceId')">
+                <label for="UserNotificationPreferenceChangeHistory-userNotificationPreferenceId" id="label-UserNotificationPreferenceChangeHistory-userNotificationPreferenceId"><span class="text-danger">*</span>User Notification Preference</label>
+                <select id="UserNotificationPreferenceChangeHistory-userNotificationPreferenceId" formControlName="userNotificationPreferenceId" class="form-select user-notification-preference-change-history-select" [disabled]="!userIsAlertingUserNotificationPreferenceChangeHistoryWriter()">
+                    <option [ngValue]="null">Select User Notification Preference</option>
+                    <option *ngFor="let userNotificationPreference of userNotificationPreferences$ | async" [ngValue]="userNotificationPreference.id">{{userNotificationPreference.timeZoneId}}</option>
+                </select>
+                <div *ngIf="userNotificationPreferenceChangeHistoryForm.get('userNotificationPreferenceId')?.invalid && userNotificationPreferenceChangeHistoryForm.get('userNotificationPreferenceId')?.touched" class="text-danger">
+                    User Notification Preference is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="UserNotificationPreferenceChangeHistory-versionNumber" id="label-UserNotificationPreferenceChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="UserNotificationPreferenceChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control user-notification-preference-change-history-input" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                <label for="UserNotificationPreferenceChangeHistory-timeStamp" id="label-UserNotificationPreferenceChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                <input type="datetime-local" id="UserNotificationPreferenceChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control user-notification-preference-change-history-input" [disabled]="!userIsAlertingUserNotificationPreferenceChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                <div *ngIf="userNotificationPreferenceChangeHistoryForm.get('timeStamp')?.invalid && userNotificationPreferenceChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                    Time Stamp is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                <label for="UserNotificationPreferenceChangeHistory-userId" id="label-UserNotificationPreferenceChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                <input type="number" id="UserNotificationPreferenceChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control user-notification-preference-change-history-input" [disabled]="!userIsAlertingUserNotificationPreferenceChangeHistoryWriter()" aria-labelledby="label-userId" />
+                <div *ngIf="userNotificationPreferenceChangeHistoryForm.get('userId')?.invalid && userNotificationPreferenceChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                    User Id is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                <label for="UserNotificationPreferenceChangeHistory-data" id="label-UserNotificationPreferenceChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                <textarea id="UserNotificationPreferenceChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control user-notification-preference-change-history-input" [disabled]="!userIsAlertingUserNotificationPreferenceChangeHistoryWriter()"></textarea>
+                <div *ngIf="userNotificationPreferenceChangeHistoryForm.get('data')?.invalid && userNotificationPreferenceChangeHistoryForm.get('data')?.touched" class="text-danger">
+                    Data is required
+                </div>
+            </div>
+         <div class="modal-footer user-notification-preference-change-history-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the User Notification Preference Change History changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !userNotificationPreferenceChangeHistoryForm.valid || userNotificationPreferenceChangeHistoryForm.pristine  || userIsAlertingUserNotificationPreferenceChangeHistoryWriter() == false " ngbTooltip="Save the User Notification Preference Change History changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add User Notification Preference Change History' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

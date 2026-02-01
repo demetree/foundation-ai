@@ -1,0 +1,75 @@
+<div class="container-fluid p-1 m-0 service-change-history-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="service-change-history-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Service Change History</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Service Change History' : 'Add Service Change History'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsAlertingServiceChangeHistoryReader()">
+                <div class="col m-2 service-change-history-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="serviceChangeHistoryForm" (ngSubmit)="submitForm()" class="service-change-history-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('serviceId')">
+                                <label for="ServiceChangeHistory-serviceId" id="label-ServiceChangeHistory-serviceId"><span class="text-danger">*</span>Service</label>
+                                <select id="ServiceChangeHistory-serviceId" formControlName="serviceId" class="form-select service-change-history-select" [disabled]="!userIsAlertingServiceChangeHistoryWriter()">
+                                    <option [ngValue]="null">Select Service</option>
+                                    <option *ngFor="let service of services$ | async" [ngValue]="service.id">{{service.name}}</option>
+                                </select>
+                                <div *ngIf="serviceChangeHistoryForm.get('serviceId')?.invalid && serviceChangeHistoryForm.get('serviceId')?.touched" class="text-danger">
+                                    Service is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="ServiceChangeHistory-versionNumber" id="label-ServiceChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="ServiceChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control service-change-history-input" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                                <label for="ServiceChangeHistory-timeStamp" id="label-ServiceChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                                <input type="datetime-local" id="ServiceChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control service-change-history-input" [disabled]="!userIsAlertingServiceChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                                <div *ngIf="serviceChangeHistoryForm.get('timeStamp')?.invalid && serviceChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                                    Time Stamp is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="ServiceChangeHistory-userId" id="label-ServiceChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="ServiceChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control service-change-history-input" [disabled]="!userIsAlertingServiceChangeHistoryWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="serviceChangeHistoryForm.get('userId')?.invalid && serviceChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                                <label for="ServiceChangeHistory-data" id="label-ServiceChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                                <textarea id="ServiceChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control service-change-history-input" [disabled]="!userIsAlertingServiceChangeHistoryWriter()"></textarea>
+                                <div *ngIf="serviceChangeHistoryForm.get('data')?.invalid && serviceChangeHistoryForm.get('data')?.touched" class="text-danger">
+                                    Data is required
+                                </div>
+                            </div>
+                            <div class="service-change-history-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="serviceChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Service Change History">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !serviceChangeHistoryForm.valid || !serviceChangeHistoryForm.dirty || serviceChangeHistoryForm.pristine  || userIsAlertingServiceChangeHistoryWriter() == false " ngbTooltip="Save the Service Change History changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Service Change History' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

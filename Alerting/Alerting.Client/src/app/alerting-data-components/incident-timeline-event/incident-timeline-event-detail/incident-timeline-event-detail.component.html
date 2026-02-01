@@ -1,0 +1,110 @@
+<div class="container-fluid p-1 m-0 incident-timeline-event-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="incident-timeline-event-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Incident Timeline Event</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Incident Timeline Event' : 'Add Incident Timeline Event'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsAlertingIncidentTimelineEventReader()">
+                <div class="col m-2 incident-timeline-event-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="incidentTimelineEventForm" (ngSubmit)="submitForm()" class="incident-timeline-event-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('incidentId')">
+                                <label for="IncidentTimelineEvent-incidentId" id="label-IncidentTimelineEvent-incidentId"><span class="text-danger">*</span>Incident</label>
+                                <select id="IncidentTimelineEvent-incidentId" formControlName="incidentId" class="form-select incident-timeline-event-select" [disabled]="!userIsAlertingIncidentTimelineEventWriter()">
+                                    <option [ngValue]="null">Select Incident</option>
+                                    <option *ngFor="let incident of incidents$ | async" [ngValue]="incident.id">{{incident.incidentKey}}</option>
+                                </select>
+                                <div *ngIf="incidentTimelineEventForm.get('incidentId')?.invalid && incidentTimelineEventForm.get('incidentId')?.touched" class="text-danger">
+                                    Incident is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('incidentEventTypeId')">
+                                <label for="IncidentTimelineEvent-incidentEventTypeId" id="label-IncidentTimelineEvent-incidentEventTypeId"><span class="text-danger">*</span>Incident Event Type</label>
+                                <select id="IncidentTimelineEvent-incidentEventTypeId" formControlName="incidentEventTypeId" class="form-select incident-timeline-event-select" [disabled]="!userIsAlertingIncidentTimelineEventWriter()">
+                                    <option [ngValue]="null">Select Incident Event Type</option>
+                                    <option *ngFor="let incidentEventType of incidentEventTypes$ | async" [ngValue]="incidentEventType.id">{{incidentEventType.name}}</option>
+                                </select>
+                                <div *ngIf="incidentTimelineEventForm.get('incidentEventTypeId')?.invalid && incidentTimelineEventForm.get('incidentEventTypeId')?.touched" class="text-danger">
+                                    Incident Event Type is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timestamp')">
+                                <label for="IncidentTimelineEvent-timestamp" id="label-IncidentTimelineEvent-timestamp"><span class="text-danger">*</span>Timestamp</label>
+                                <input type="datetime-local" id="IncidentTimelineEvent-timestamp" formControlName="timestamp" placeholder="Enter Timestamp" class="form-control incident-timeline-event-input" [disabled]="!userIsAlertingIncidentTimelineEventWriter()" aria-labelledby="label-timestamp" />
+                                <div *ngIf="incidentTimelineEventForm.get('timestamp')?.invalid && incidentTimelineEventForm.get('timestamp')?.touched" class="text-danger">
+                                    Timestamp is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('actorObjectGuid')">
+                                <label for="IncidentTimelineEvent-actorObjectGuid" id="label-IncidentTimelineEvent-actorObjectGuid">Actor Object Guid</label>
+                                <input type="text" id="IncidentTimelineEvent-actorObjectGuid" formControlName="actorObjectGuid" placeholder="Enter Actor Object Guid" class="form-control incident-timeline-event-input" [disabled]="!userIsAlertingIncidentTimelineEventWriter()" aria-labelledby="label-actorObjectGuid" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('detailsJson')">
+                                <label for="IncidentTimelineEvent-detailsJson" id="label-IncidentTimelineEvent-detailsJson">Details Json</label>
+                                <textarea id="IncidentTimelineEvent-detailsJson" formControlName="detailsJson" placeholder="Enter Details Json" class="form-control incident-timeline-event-input" [disabled]="!userIsAlertingIncidentTimelineEventWriter()"></textarea>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="IncidentTimelineEvent-active" formControlName="active" class="form-check-input" [disabled]="!userIsAlertingIncidentTimelineEventWriter()" />
+                                <label for="IncidentTimelineEvent-active" class="form-check-label" id="label-IncidentTimelineEvent-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="IncidentTimelineEvent-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsAlertingIncidentTimelineEventWriter()" />
+                                <label for="IncidentTimelineEvent-deleted" class="form-check-label" id="label-IncidentTimelineEvent-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="incident-timeline-event-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="incidentTimelineEventForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Incident Timeline Event">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !incidentTimelineEventForm.valid || !incidentTimelineEventForm.dirty || incidentTimelineEventForm.pristine  || userIsAlertingIncidentTimelineEventWriter() == false " ngbTooltip="Save the Incident Timeline Event changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Incident Timeline Event' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsAlertingIncidentTimelineEventReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 incident-timeline-event-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="webhookDeliveryAttemptService.userIsAlertingWebhookDeliveryAttemptReader()">
+                            <button ngbNavLink>Webhook Delivery Attempts
+                                <span class="badge bg-primary ms-2">
+                                    {{ (incidentTimelineEventData?.WebhookDeliveryAttemptsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-webhook-delivery-attempt-table [queryParams]="{ incidentTimelineEventId: incidentTimelineEventData?.id }"></app-webhook-delivery-attempt-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-webhook-delivery-attempt-add-edit [preSeededData]="{ incidentTimelineEventId: incidentTimelineEventData?.id }" [hiddenFields]="['incidentTimelineEventId']"></app-webhook-delivery-attempt-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

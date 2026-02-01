@@ -1,0 +1,333 @@
+//
+// System Health Component Styles
+//
+// Premium styling for the system health dashboard.
+//
+
+.system-health-container {
+  padding: 1rem;
+}
+
+//
+// Premium Header
+//
+.premium-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px;
+  margin-bottom: 1.5rem;
+
+  .card-header {
+    padding: 1.5rem;
+  }
+
+  .page-title {
+    font-size: 1.5rem;
+  }
+
+  .badge-glass {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    color: white;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    font-weight: 500;
+  }
+
+  .badge-success {
+    background: rgba(40, 167, 69, 0.8) !important;
+  }
+
+  .badge-warning {
+    background: rgba(255, 193, 7, 0.8) !important;
+    color: #212529 !important;
+  }
+
+  .badge-danger {
+    background: rgba(220, 53, 69, 0.8) !important;
+  }
+}
+
+
+//
+// Health Cards
+//
+.health-card {
+  border-radius: 12px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  .card-header {
+    padding: 1rem 1.25rem;
+
+    h5 {
+      font-size: 1rem;
+      font-weight: 600;
+    }
+  }
+
+  .card-body {
+    padding: 1rem 1.25rem;
+  }
+}
+
+
+//
+// Stat circles (icons)
+//
+.stat-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bg-primary-soft {
+  background-color: rgba(102, 126, 234, 0.15);
+}
+
+.bg-info-soft {
+  background-color: rgba(23, 162, 184, 0.15);
+}
+
+.bg-warning-soft {
+  background-color: rgba(255, 193, 7, 0.15);
+}
+
+.bg-success-soft {
+  background-color: rgba(40, 167, 69, 0.15);
+}
+
+.bg-secondary-soft {
+  background-color: rgba(108, 117, 125, 0.15);
+}
+
+.bg-danger-soft {
+  background-color: rgba(220, 53, 69, 0.15);
+}
+
+
+//
+// Metric rows
+//
+.metric-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  .metric-label {
+    color: #6c757d;
+    font-size: 0.875rem;
+  }
+
+  .metric-value {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #212529;
+  }
+}
+
+
+//
+// Drive cards
+//
+.drive-card {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+
+  &.app-drive {
+    background: rgba(102, 126, 234, 0.05);
+    border-color: rgba(102, 126, 234, 0.2);
+  }
+}
+
+
+//
+// Status colors
+//
+.text-success {
+  color: #28a745 !important;
+}
+
+.text-warning {
+  color: #ffc107 !important;
+}
+
+.text-danger {
+  color: #dc3545 !important;
+}
+
+.badge.text-success {
+  background-color: rgba(40, 167, 69, 0.1);
+}
+
+.badge.text-warning {
+  background-color: rgba(255, 193, 7, 0.1);
+}
+
+.badge.text-danger {
+  background-color: rgba(220, 53, 69, 0.1);
+}
+
+
+//
+// Application Tabs
+//
+.app-tabs-container {
+  margin-bottom: 1rem;
+}
+
+.app-tabs {
+  border-bottom: 2px solid #e9ecef;
+
+  .nav-item {
+    margin-bottom: -2px;
+  }
+
+  .app-tab-btn {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1.25rem;
+    border: none;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    color: #6c757d;
+    font-weight: 500;
+    transition: all 0.2s ease;
+
+    &:hover {
+      color: #495057;
+      border-bottom-color: #dee2e6;
+    }
+
+    &.active {
+      color: #667eea;
+      border-bottom-color: #667eea;
+    }
+
+    .badge {
+      font-size: 0.7rem;
+      padding: 0.25rem 0.5rem;
+    }
+  }
+}
+
+
+//
+// Table Statistics Modal
+//
+.sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  i.fa-sort,
+  i.fa-sort-up,
+  i.fa-sort-down {
+    opacity: 0.5;
+  }
+
+  i.fa-sort-up,
+  i.fa-sort-down {
+    opacity: 1;
+    color: #667eea;
+  }
+}
+
+.modal-content {
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  border-bottom-color: #e9ecef;
+  padding: 1rem 1.5rem;
+
+  .modal-title {
+    font-weight: 600;
+  }
+}
+
+.modal-body {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.table code {
+  background: #f8f9fa;
+  padding: 0.125rem 0.375rem;
+  border-radius: 4px;
+  font-size: 0.8125rem;
+}
+
+
+//
+// Metric State Cards
+//
+.metric-card {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .metric-value {
+    font-size: 1.25rem;
+    color: #333;
+  }
+}
+
+.metric-healthy {
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+  border-color: #28a745;
+
+  .metric-value {
+    color: #155724;
+  }
+}
+
+.metric-warning {
+  background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%);
+  border-color: #ffc107;
+
+  .metric-value {
+    color: #856404;
+  }
+}
+
+.metric-critical {
+  background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+  border-color: #dc3545;
+
+  .metric-value {
+    color: #721c24;
+  }
+}
+
+.metric-unknown {
+  background: #e9ecef;
+  border-color: #6c757d;
+
+  .metric-value {
+    color: #495057;
+  }
+}

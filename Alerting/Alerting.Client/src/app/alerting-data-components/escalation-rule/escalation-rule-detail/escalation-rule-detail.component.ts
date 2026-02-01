@@ -1,0 +1,575 @@
+/*
+   GENERATED FORM FOR THE ESCALATIONRULE TABLE - DO NOT MODIFY DIRECTLY
+   =================================================================================
+
+   This is the default form generated from EscalationRule table metadata.
+
+   It is useful for low usage worksflows such as basic configuration, but is likely not good enough for primary workflow usage
+   because it's form layout and validation is too simple.
+   
+   For building better looking and/or versions with custom logic, create a custom version of this:
+
+   1. Copy this component
+   2. Rename to escalation-rule-custom (or similar)
+   3. Modify layout, grouping, field types, add workflow logic
+   
+   This generated version is kept simple on purpose so it's easy to use as a reference/scaffold.
+
+*/
+import { Component, OnInit, Input, Output } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { NavigationService } from '../../../utility-services/navigation.service';
+import { CanComponentDeactivate } from '../../../guards/unsaved-changes.guard';
+import { AlertService, MessageSeverity } from '../../../services/alert.service';
+import { EscalationRuleService, EscalationRuleData, EscalationRuleSubmitData } from '../../../alerting-data-services/escalation-rule.service';
+import { EscalationPolicyService } from '../../../alerting-data-services/escalation-policy.service';
+import { EscalationRuleChangeHistoryService } from '../../../alerting-data-services/escalation-rule-change-history.service';
+import { IncidentService } from '../../../alerting-data-services/incident.service';
+import { IncidentNotificationService } from '../../../alerting-data-services/incident-notification.service';
+import { AuthService } from '../../../services/auth.service';
+import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
+import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
+//
+// Define a type for the form values to improve readability and type safety.
+// This mirrors the structure of the FormGroup controls, with considerations for form input types:
+// - Numeric fields like latitude are strings in the form (due to input type="number" behavior).
+// - Allows null for optional fields.
+// - Does not include navigation properties or methods from domain models.
+//
+interface EscalationRuleFormValues {
+  escalationPolicyId: number | bigint,       // For FK link number
+  ruleOrder: string,     // Stored as string for form input, converted to number on submit.
+  delayMinutes: string,     // Stored as string for form input, converted to number on submit.
+  repeatCount: string,     // Stored as string for form input, converted to number on submit.
+  repeatDelayMinutes: string | null,     // Stored as string for form input, converted to number on submit.
+  targetType: string,
+  targetObjectGuid: string | null,
+  versionNumber: string,     // Stored as string for form input, converted to number on submit.
+  active: boolean,
+  deleted: boolean,
+};
+
+
+@Component({
+  selector: 'app-escalation-rule-detail',
+  templateUrl: './escalation-rule-detail.component.html',
+  styleUrls: ['./escalation-rule-detail.component.scss']
+})
+
+export class EscalationRuleDetailComponent implements OnInit, CanComponentDeactivate {
+
+
+  //
+  // Input for pre-seeded data in add mode. This allows the parent component to provide
+  // initial values for one or more fields. Use Partial to allow selective seeding.
+  // Only applied in add mode (not edit mode, where existing data takes precedence).
+  //
+  @Input() preSeededData: Partial<EscalationRuleFormValues> | null = null;
+
+  //
+  // Input for fields to hide. This is an array of field names (e.g., ['name', 'description']).
+  // Hiding a field will remove its form group from the template and disable its validator.
+  //
+  @Input() hiddenFields: string[] = [];
+
+
+  public escalationRuleForm: FormGroup = this.fb.group({
+        escalationPolicyId: [null, Validators.required],
+        ruleOrder: ['', Validators.required],
+        delayMinutes: ['', Validators.required],
+        repeatCount: ['', Validators.required],
+        repeatDelayMinutes: [''],
+        targetType: ['', Validators.required],
+        targetObjectGuid: [''],
+        versionNumber: [''],
+        active: [true],
+        deleted: [false],
+      });
+
+
+  public escalationRuleId: string | null = null;
+  public escalationRuleData: EscalationRuleData | null = null;
+
+  private isLoadingSubject = new BehaviorSubject<boolean>(true);
+  public isLoading$ = this.isLoadingSubject.asObservable();
+
+  public isSaving = false;
+
+  public isEditMode = true;   // Defaults to true (edit).  Gets set to false in ngOnInit if route is 'new'
+
+  escalationRules$ = this.escalationRuleService.GetEscalationRuleList();
+  public escalationPolicies$ = this.escalationPolicyService.GetEscalationPolicyList();
+  public escalationRuleChangeHistories$ = this.escalationRuleChangeHistoryService.GetEscalationRuleChangeHistoryList();
+  public incidents$ = this.incidentService.GetIncidentList();
+  public incidentNotifications$ = this.incidentNotificationService.GetIncidentNotificationList();
+
+  private destroy$ = new Subject<void>();
+
+  constructor(
+    public escalationRuleService: EscalationRuleService,
+    public escalationPolicyService: EscalationPolicyService,
+    public escalationRuleChangeHistoryService: EscalationRuleChangeHistoryService,
+    public incidentService: IncidentService,
+    public incidentNotificationService: IncidentNotificationService,
+    private authService: AuthService,
+    private route: ActivatedRoute,
+    private router: Router,
+    private fb: FormBuilder,
+    private alertService: AlertService,
+    private navigationService: NavigationService) { 
+
+    }
+
+  ngOnInit(): void {
+
+    // Get the escalationRuleId from the route parameters
+    this.escalationRuleId = this.route.snapshot.paramMap.get('escalationRuleId');
+
+    if (this.escalationRuleId === 'new' ||
+        this.escalationRuleId == null) {
+      //
+      // Add mode
+      //
+      this.isEditMode = false;
+      this.escalationRuleData = null;
+
+      this.buildFormValues(null);
+
+      //
+      // Apply pre-seeded data if provided and we are in add mode.
+      // This patches the form with partial values.
+      // Check explicitly for null/undefined to avoid errors.
+      //
+      if (this.preSeededData !== null && this.preSeededData !== undefined) {
+        this.escalationRuleForm.patchValue(this.preSeededData);
+      }
+
+
+    //
+    // Disable validators for hidden fields to prevent form invalidation.
+    // This prevents requiring values for hidden fields.
+    //
+    let index: number;
+
+    for (index = 0; index < this.hiddenFields.length; index++) {
+      const fieldName = this.hiddenFields[index];
+      const control = this.escalationRuleForm.get(fieldName);
+      if (control !== null) {
+        control.clearValidators();
+        control.updateValueAndValidity(); // Refresh validation state.
+      }
+    }
+
+
+      this.isLoadingSubject.next(false); // No load needed for add mode
+
+      document.title = 'Add New Escalation Rule';
+
+    } else {
+
+      // Edit mode
+      this.isEditMode = true;
+
+      document.title = 'Edit Escalation Rule';
+
+      // Load the data from the server
+      this.loadData(false);
+    }
+
+  }
+
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+
+  public canDeactivate(): boolean {
+    if (this.escalationRuleForm.dirty) {
+      return confirm('You have unsaved Escalation Rule changes. Are you sure you want to leave this page?');
+    }
+    return true;
+  }
+
+
+ public GetQueryParameters(): any {
+
+    if (this.escalationRuleId != null && this.escalationRuleId !== 'new') {
+
+      const id = parseInt(this.escalationRuleId, 10);
+
+      if (!isNaN(id)) {
+        return { escalationRuleId: id };
+      }
+    }
+
+    return null;
+  }
+
+
+/*
+  * Loads the EscalationRule data for the current escalationRuleId.
+  *
+  * Fully respects the EscalationRuleService caching strategy and error handling strategy.
+  *
+  * @param forceLoadAndDisplaySuccessAlert
+  *   - true  will bypass cache entirely and show success alert message
+  *   - false/null will use cache if available, no alert message
+  */
+  public loadData(forceLoadAndDisplaySuccessAlert: boolean | null = null): void {
+
+    //
+    // Start loading indicator immediately
+    //
+    this.isLoadingSubject.next(true);
+
+
+    //
+    // Permission Check
+    //
+    if (!this.escalationRuleService.userIsAlertingEscalationRuleReader()) {
+
+      const userName = this.authService.currentUser?.userName || 'Current user';
+      this.alertService.showMessage(`${userName} does not have permission to read EscalationRules.`,
+                                    'Access Denied',
+                                     MessageSeverity.warn
+      );
+
+      this.isLoadingSubject.next(false);
+
+      return;
+    }
+
+    //
+    // Validate escalationRuleId
+    //
+    if (!this.escalationRuleId) {
+
+      this.alertService.showMessage('No EscalationRule ID provided.', 'Missing ID', MessageSeverity.error);
+      this.isLoadingSubject.next(false);
+
+      return;
+    }
+
+    const escalationRuleId = Number(this.escalationRuleId);
+
+    if (isNaN(escalationRuleId) || escalationRuleId <= 0) {
+
+      this.alertService.showMessage(`Invalid Escalation Rule ID: "${this.escalationRuleId}"`,
+                                    'Invalid ID',
+                                    MessageSeverity.error
+      );
+
+      this.isLoadingSubject.next(false);
+
+      return;
+    }
+
+    //
+    // Force refresh: clear specific record cache only
+    //
+    if (forceLoadAndDisplaySuccessAlert === true) {
+      // This is the most targeted way: clear only this EscalationRule + relations
+
+      this.escalationRuleService.ClearRecordCache(escalationRuleId, true);
+    }
+
+    //
+    // Subscribe with full next/error handling
+    //
+    this.escalationRuleService.GetEscalationRule(escalationRuleId, true).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+
+      next: (escalationRuleData) => {
+
+        //
+        // Success path — escalationRuleData can legitimately be null if 404'd but request succeeded
+        //
+        if (!escalationRuleData) {
+
+          this.handleEscalationRuleNotFound(escalationRuleId);
+
+        } else {
+
+          this.escalationRuleData = escalationRuleData;
+          this.buildFormValues(this.escalationRuleData);
+
+          if (forceLoadAndDisplaySuccessAlert === true) {
+            this.alertService.showMessage(
+              'EscalationRule loaded successfully',
+              '',
+              MessageSeverity.success
+            );
+          }
+        }
+
+        this.isLoadingSubject.next(false);
+      },
+
+      error: (error: any) => {
+        //
+        // All HTTP/network/parsing errors flow here
+        // The service already stripped sensitive info and re-threw cleanly
+        //
+        this.handleEscalationRuleLoadError(error, escalationRuleId);
+        this.isLoadingSubject.next(false);
+      }
+    });
+  }
+
+
+  private handleEscalationRuleNotFound(escalationRuleId: number): void {
+
+    this.escalationRuleData = null;
+    this.buildFormValues(null);
+
+    this.alertService.showMessage(
+      `EscalationRule #${escalationRuleId} was not found or has been deleted.`,
+      'Not Found',
+      MessageSeverity.warn
+    );
+  }
+
+
+  private handleEscalationRuleLoadError(error: any, escalationRuleId: number): void {
+
+    let message = 'Failed to load Escalation Rule.';
+    let title = 'Load Error';
+    let severity = MessageSeverity.error;
+
+    //
+    // Leverage HTTP status if available
+    //
+    if (error?.status) {
+      switch (error.status) {
+        case 401:
+          message = 'Your session has expired. Please log in again.';
+          title = 'Unauthorized';
+          break;
+        case 403:
+          message = 'You do not have permission to view this Escalation Rule.';
+          title = 'Forbidden';
+          break;
+        case 404:
+          message = `Escalation Rule #${escalationRuleId} was not found.`;
+          title = 'Not Found';
+          severity = MessageSeverity.warn;
+          break;
+        case 500:
+          message = 'Server error. Please try again or contact support.';
+          title = 'Server Error';
+          break;
+        case 0:
+          message = 'Cannot reach server. Check your internet connection.';
+          title = 'Offline';
+          break;
+        default:
+          message = `Server error ${error.status || 'unknown'}: ${error.statusText || 'Request failed'}`;
+      }
+    } else {
+      message = error?.message || message;
+    }
+
+    console.error(`Escalation Rule load failed (ID: ${escalationRuleId})`, error);
+
+    //
+    // Reset UI to safe state
+    //
+    this.escalationRuleData = null;
+    this.buildFormValues(null);
+
+    this.alertService.showMessage(message, title, severity);
+  }
+
+
+  private buildFormValues(escalationRuleData: EscalationRuleData | null) {
+
+    if (escalationRuleData == null) {
+      
+      //
+      // Reset the form group to null state, but don't change the form instance.
+      //
+      this.escalationRuleForm.reset({
+        escalationPolicyId: null,
+        ruleOrder: '',
+        delayMinutes: '',
+        repeatCount: '',
+        repeatDelayMinutes: '',
+        targetType: '',
+        targetObjectGuid: '',
+        versionNumber: '',
+        active: true,
+        deleted: false,
+   }, { emitEvent: false});
+
+    }
+    else {
+
+        //
+        // Reset the form with properly formatted values that support dates in datetime-local inputs
+        //
+        this.escalationRuleForm.reset({
+        escalationPolicyId: escalationRuleData.escalationPolicyId,
+        ruleOrder: escalationRuleData.ruleOrder?.toString() ?? '',
+        delayMinutes: escalationRuleData.delayMinutes?.toString() ?? '',
+        repeatCount: escalationRuleData.repeatCount?.toString() ?? '',
+        repeatDelayMinutes: escalationRuleData.repeatDelayMinutes?.toString() ?? '',
+        targetType: escalationRuleData.targetType ?? '',
+        targetObjectGuid: escalationRuleData.targetObjectGuid ?? '',
+        versionNumber: escalationRuleData.versionNumber?.toString() ?? '',
+        active: escalationRuleData.active ?? true,
+        deleted: escalationRuleData.deleted ?? false,
+      }, { emitEvent: false});
+    }
+
+    this.escalationRuleForm.markAsPristine();
+    this.escalationRuleForm.markAsUntouched();
+  }
+
+  public goBack(): void {
+    this.navigationService.goBack();
+  }
+
+
+  public canGoBack(): boolean {
+    return this.navigationService.canGoBack();
+  }
+
+
+  //
+  // Helper method to determine if a field should be hidden based on the hiddenFields input.
+  // Returns true if the field is in the array, false otherwise.
+  //
+  public isFieldHidden(fieldName: string): boolean {
+    // Explicit check for array existence to avoid runtime errors.
+    if (this.hiddenFields === null || this.hiddenFields === undefined) {
+      return false;
+    }
+    // Use traditional includes method for clarity.
+    return this.hiddenFields.includes(fieldName);
+  }
+
+
+  public submitForm() {
+
+    if (this.isSaving == true) {
+      return;
+    }
+
+    if (this.escalationRuleService.userIsAlertingEscalationRuleWriter() == false) {
+      this.alertService.showMessage(this.authService.currentUser?.userName + " does not have the permission to write to Escalation Rules", 'Access Denied', MessageSeverity.info);
+      return;
+    }
+
+    if (!this.escalationRuleForm.valid) {
+      this.alertService.showMessage('Please fix form errors before saving.', 'Invalid Data', MessageSeverity.warn);
+      this.escalationRuleForm.markAllAsTouched();
+      return;
+    }
+
+    this.isSaving = true;
+
+    const formValue = this.escalationRuleForm.getRawValue();
+
+
+
+    //
+    // Build clean submit object from form + fallback to current data if needed
+    //
+    const escalationRuleSubmitData: EscalationRuleSubmitData = {
+        id: this.escalationRuleData?.id || 0,
+        escalationPolicyId: Number(formValue.escalationPolicyId),
+        ruleOrder: Number(formValue.ruleOrder),
+        delayMinutes: Number(formValue.delayMinutes),
+        repeatCount: Number(formValue.repeatCount),
+        repeatDelayMinutes: formValue.repeatDelayMinutes ? Number(formValue.repeatDelayMinutes) : null,
+        targetType: formValue.targetType!.trim(),
+        targetObjectGuid: formValue.targetObjectGuid?.trim() || null,
+        versionNumber: this.escalationRuleData?.versionNumber ?? 0,
+        active: !!formValue.active,
+        deleted: !!formValue.deleted,
+   };
+
+
+    //
+    // Choose the save method we want
+    //
+    const saveObservable = this.isEditMode
+      ? this.escalationRuleService.PutEscalationRule(escalationRuleSubmitData.id, escalationRuleSubmitData)
+      : this.escalationRuleService.PostEscalationRule(escalationRuleSubmitData);
+
+
+    saveObservable.pipe(
+      finalize(() => this.isSaving = false)
+    ).subscribe({
+      next: (savedEscalationRuleData) => {
+
+        this.escalationRuleService.ClearAllCaches();       // Clear the data service cache because we know we have changed the data.
+
+        if (!this.isEditMode) {
+          //
+          // Navigate to the newly created Escalation Rule's detail page
+          //
+          this.escalationRuleForm.markAsPristine();     // Set the form to new state so the deactivate guard won't complain during routing
+          this.escalationRuleForm.markAsUntouched();
+
+          this.router.navigate(['/escalationrules', savedEscalationRuleData.id]);
+          this.alertService.showMessage('Escalation Rule added successfully', '', MessageSeverity.success);
+        } else {
+
+          //
+          // Rebuild the form with the new data
+          //
+          this.escalationRuleData = savedEscalationRuleData;
+          this.buildFormValues(this.escalationRuleData);
+
+          this.alertService.showMessage("Escalation Rule saved successfully", '', MessageSeverity.success);
+        }
+      },
+      error: (err) => {
+
+            let errorMessage: string;
+
+            // Check if err is an Error object (e.g., new Error('message'))
+            if (err instanceof Error) {
+                errorMessage = err.message || 'An unexpected error occurred.';
+            }
+            // Check if err is a ServerError object with status and error properties
+            else if (err.status && err.error)
+            {
+                if (err.status === 403)
+                {
+                    errorMessage = err.error?.message ||
+                                   'You do not have permission to save this Escalation Rule.';
+                }
+                else
+                {
+                    errorMessage = err.error?.message ||
+                                   err.error?.error_description ||
+                                   err.error?.detail ||
+                                   'An error occurred while saving the Escalation Rule.';
+                }
+            }
+            // Fallback for unexpected error formats
+            else {
+                errorMessage = 'An unexpected error occurred.';
+            }
+
+            this.alertService.showMessage('Escalation Rule could not be saved',
+                                          errorMessage,
+                                          MessageSeverity.error);
+      }
+    });
+  }
+
+  public userIsAlertingEscalationRuleReader(): boolean {
+    return this.escalationRuleService.userIsAlertingEscalationRuleReader();
+  }
+
+  public userIsAlertingEscalationRuleWriter(): boolean {
+    return this.escalationRuleService.userIsAlertingEscalationRuleWriter();
+  }
+}

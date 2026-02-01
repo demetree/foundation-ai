@@ -1,0 +1,75 @@
+<div class="container-fluid p-1 m-0 incident-note-change-history-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="incident-note-change-history-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Incident Note Change History</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Incident Note Change History' : 'Add Incident Note Change History'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsAlertingIncidentNoteChangeHistoryReader()">
+                <div class="col m-2 incident-note-change-history-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="incidentNoteChangeHistoryForm" (ngSubmit)="submitForm()" class="incident-note-change-history-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('incidentNoteId')">
+                                <label for="IncidentNoteChangeHistory-incidentNoteId" id="label-IncidentNoteChangeHistory-incidentNoteId"><span class="text-danger">*</span>Incident Note</label>
+                                <select id="IncidentNoteChangeHistory-incidentNoteId" formControlName="incidentNoteId" class="form-select incident-note-change-history-select" [disabled]="!userIsAlertingIncidentNoteChangeHistoryWriter()">
+                                    <option [ngValue]="null">Select Incident Note</option>
+                                    <option *ngFor="let incidentNote of incidentNotes$ | async" [ngValue]="incidentNote.id">{{incidentNote.content}}</option>
+                                </select>
+                                <div *ngIf="incidentNoteChangeHistoryForm.get('incidentNoteId')?.invalid && incidentNoteChangeHistoryForm.get('incidentNoteId')?.touched" class="text-danger">
+                                    Incident Note is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="IncidentNoteChangeHistory-versionNumber" id="label-IncidentNoteChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="IncidentNoteChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control incident-note-change-history-input" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                                <label for="IncidentNoteChangeHistory-timeStamp" id="label-IncidentNoteChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                                <input type="datetime-local" id="IncidentNoteChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control incident-note-change-history-input" [disabled]="!userIsAlertingIncidentNoteChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                                <div *ngIf="incidentNoteChangeHistoryForm.get('timeStamp')?.invalid && incidentNoteChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                                    Time Stamp is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="IncidentNoteChangeHistory-userId" id="label-IncidentNoteChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="IncidentNoteChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control incident-note-change-history-input" [disabled]="!userIsAlertingIncidentNoteChangeHistoryWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="incidentNoteChangeHistoryForm.get('userId')?.invalid && incidentNoteChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                                <label for="IncidentNoteChangeHistory-data" id="label-IncidentNoteChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                                <textarea id="IncidentNoteChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control incident-note-change-history-input" [disabled]="!userIsAlertingIncidentNoteChangeHistoryWriter()"></textarea>
+                                <div *ngIf="incidentNoteChangeHistoryForm.get('data')?.invalid && incidentNoteChangeHistoryForm.get('data')?.touched" class="text-danger">
+                                    Data is required
+                                </div>
+                            </div>
+                            <div class="incident-note-change-history-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="incidentNoteChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Incident Note Change History">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !incidentNoteChangeHistoryForm.valid || !incidentNoteChangeHistoryForm.dirty || incidentNoteChangeHistoryForm.pristine  || userIsAlertingIncidentNoteChangeHistoryWriter() == false " ngbTooltip="Save the Incident Note Change History changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Incident Note Change History' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

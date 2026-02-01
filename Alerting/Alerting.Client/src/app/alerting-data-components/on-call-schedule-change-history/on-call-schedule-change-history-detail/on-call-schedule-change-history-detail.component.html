@@ -1,0 +1,75 @@
+<div class="container-fluid p-1 m-0 on-call-schedule-change-history-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="on-call-schedule-change-history-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">On Call Schedule Change History</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit On Call Schedule Change History' : 'Add On Call Schedule Change History'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsAlertingOnCallScheduleChangeHistoryReader()">
+                <div class="col m-2 on-call-schedule-change-history-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="onCallScheduleChangeHistoryForm" (ngSubmit)="submitForm()" class="on-call-schedule-change-history-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('onCallScheduleId')">
+                                <label for="OnCallScheduleChangeHistory-onCallScheduleId" id="label-OnCallScheduleChangeHistory-onCallScheduleId"><span class="text-danger">*</span>On Call Schedule</label>
+                                <select id="OnCallScheduleChangeHistory-onCallScheduleId" formControlName="onCallScheduleId" class="form-select on-call-schedule-change-history-select" [disabled]="!userIsAlertingOnCallScheduleChangeHistoryWriter()">
+                                    <option [ngValue]="null">Select On Call Schedule</option>
+                                    <option *ngFor="let onCallSchedule of onCallSchedules$ | async" [ngValue]="onCallSchedule.id">{{onCallSchedule.name}}</option>
+                                </select>
+                                <div *ngIf="onCallScheduleChangeHistoryForm.get('onCallScheduleId')?.invalid && onCallScheduleChangeHistoryForm.get('onCallScheduleId')?.touched" class="text-danger">
+                                    On Call Schedule is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="OnCallScheduleChangeHistory-versionNumber" id="label-OnCallScheduleChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="OnCallScheduleChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control on-call-schedule-change-history-input" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                                <label for="OnCallScheduleChangeHistory-timeStamp" id="label-OnCallScheduleChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                                <input type="datetime-local" id="OnCallScheduleChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control on-call-schedule-change-history-input" [disabled]="!userIsAlertingOnCallScheduleChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                                <div *ngIf="onCallScheduleChangeHistoryForm.get('timeStamp')?.invalid && onCallScheduleChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                                    Time Stamp is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="OnCallScheduleChangeHistory-userId" id="label-OnCallScheduleChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="OnCallScheduleChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control on-call-schedule-change-history-input" [disabled]="!userIsAlertingOnCallScheduleChangeHistoryWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="onCallScheduleChangeHistoryForm.get('userId')?.invalid && onCallScheduleChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                                <label for="OnCallScheduleChangeHistory-data" id="label-OnCallScheduleChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                                <textarea id="OnCallScheduleChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control on-call-schedule-change-history-input" [disabled]="!userIsAlertingOnCallScheduleChangeHistoryWriter()"></textarea>
+                                <div *ngIf="onCallScheduleChangeHistoryForm.get('data')?.invalid && onCallScheduleChangeHistoryForm.get('data')?.touched" class="text-danger">
+                                    Data is required
+                                </div>
+                            </div>
+                            <div class="on-call-schedule-change-history-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="onCallScheduleChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload On Call Schedule Change History">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !onCallScheduleChangeHistoryForm.valid || !onCallScheduleChangeHistoryForm.dirty || onCallScheduleChangeHistoryForm.pristine  || userIsAlertingOnCallScheduleChangeHistoryWriter() == false " ngbTooltip="Save the On Call Schedule Change History changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add On Call Schedule Change History' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

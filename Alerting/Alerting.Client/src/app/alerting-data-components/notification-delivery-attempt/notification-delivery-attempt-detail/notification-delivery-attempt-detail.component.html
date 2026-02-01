@@ -1,0 +1,97 @@
+<div class="container-fluid p-1 m-0 notification-delivery-attempt-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="notification-delivery-attempt-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Notification Delivery Attempt</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Notification Delivery Attempt' : 'Add Notification Delivery Attempt'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsAlertingNotificationDeliveryAttemptReader()">
+                <div class="col m-2 notification-delivery-attempt-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="notificationDeliveryAttemptForm" (ngSubmit)="submitForm()" class="notification-delivery-attempt-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('incidentNotificationId')">
+                                <label for="NotificationDeliveryAttempt-incidentNotificationId" id="label-NotificationDeliveryAttempt-incidentNotificationId"><span class="text-danger">*</span>Incident Notification</label>
+                                <select id="NotificationDeliveryAttempt-incidentNotificationId" formControlName="incidentNotificationId" class="form-select notification-delivery-attempt-select" [disabled]="!userIsAlertingNotificationDeliveryAttemptWriter()">
+                                    <option [ngValue]="null">Select Incident Notification</option>
+                                    <option *ngFor="let incidentNotification of incidentNotifications$ | async" [ngValue]="incidentNotification.id">{{incidentNotification.id}}</option>
+                                </select>
+                                <div *ngIf="notificationDeliveryAttemptForm.get('incidentNotificationId')?.invalid && notificationDeliveryAttemptForm.get('incidentNotificationId')?.touched" class="text-danger">
+                                    Incident Notification is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('notificationChannelTypeId')">
+                                <label for="NotificationDeliveryAttempt-notificationChannelTypeId" id="label-NotificationDeliveryAttempt-notificationChannelTypeId"><span class="text-danger">*</span>Notification Channel Type</label>
+                                <select id="NotificationDeliveryAttempt-notificationChannelTypeId" formControlName="notificationChannelTypeId" class="form-select notification-delivery-attempt-select" [disabled]="!userIsAlertingNotificationDeliveryAttemptWriter()">
+                                    <option [ngValue]="null">Select Notification Channel Type</option>
+                                    <option *ngFor="let notificationChannelType of notificationChannelTypes$ | async" [ngValue]="notificationChannelType.id">{{notificationChannelType.name}}</option>
+                                </select>
+                                <div *ngIf="notificationDeliveryAttemptForm.get('notificationChannelTypeId')?.invalid && notificationDeliveryAttemptForm.get('notificationChannelTypeId')?.touched" class="text-danger">
+                                    Notification Channel Type is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('attemptNumber')">
+                                <label for="NotificationDeliveryAttempt-attemptNumber" id="label-NotificationDeliveryAttempt-attemptNumber"><span class="text-danger">*</span>Attempt Number</label>
+                                <input type="number" id="NotificationDeliveryAttempt-attemptNumber" formControlName="attemptNumber" placeholder="Enter Attempt Number" class="form-control notification-delivery-attempt-input" [disabled]="!userIsAlertingNotificationDeliveryAttemptWriter()" aria-labelledby="label-attemptNumber" />
+                                <div *ngIf="notificationDeliveryAttemptForm.get('attemptNumber')?.invalid && notificationDeliveryAttemptForm.get('attemptNumber')?.touched" class="text-danger">
+                                    Attempt Number is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('attemptedAt')">
+                                <label for="NotificationDeliveryAttempt-attemptedAt" id="label-NotificationDeliveryAttempt-attemptedAt"><span class="text-danger">*</span>Attempted At</label>
+                                <input type="datetime-local" id="NotificationDeliveryAttempt-attemptedAt" formControlName="attemptedAt" placeholder="Enter Attempted At" class="form-control notification-delivery-attempt-input" [disabled]="!userIsAlertingNotificationDeliveryAttemptWriter()" aria-labelledby="label-attemptedAt" />
+                                <div *ngIf="notificationDeliveryAttemptForm.get('attemptedAt')?.invalid && notificationDeliveryAttemptForm.get('attemptedAt')?.touched" class="text-danger">
+                                    Attempted At is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('status')">
+                                <label for="NotificationDeliveryAttempt-status" id="label-NotificationDeliveryAttempt-status"><span class="text-danger">*</span>Status</label>
+                                <input type="text" id="NotificationDeliveryAttempt-status" formControlName="status" placeholder="Enter Status" class="form-control notification-delivery-attempt-input" [disabled]="!userIsAlertingNotificationDeliveryAttemptWriter()" aria-labelledby="label-status" />
+                                <div *ngIf="notificationDeliveryAttemptForm.get('status')?.invalid && notificationDeliveryAttemptForm.get('status')?.touched" class="text-danger">
+                                    Status is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('errorMessage')">
+                                <label for="NotificationDeliveryAttempt-errorMessage" id="label-NotificationDeliveryAttempt-errorMessage">Error Message</label>
+                                <textarea id="NotificationDeliveryAttempt-errorMessage" formControlName="errorMessage" placeholder="Enter Error Message" class="form-control notification-delivery-attempt-input" [disabled]="!userIsAlertingNotificationDeliveryAttemptWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('response')">
+                                <label for="NotificationDeliveryAttempt-response" id="label-NotificationDeliveryAttempt-response">Response</label>
+                                <textarea id="NotificationDeliveryAttempt-response" formControlName="response" placeholder="Enter Response" class="form-control notification-delivery-attempt-input" [disabled]="!userIsAlertingNotificationDeliveryAttemptWriter()"></textarea>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="NotificationDeliveryAttempt-active" formControlName="active" class="form-check-input" [disabled]="!userIsAlertingNotificationDeliveryAttemptWriter()" />
+                                <label for="NotificationDeliveryAttempt-active" class="form-check-label" id="label-NotificationDeliveryAttempt-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="NotificationDeliveryAttempt-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsAlertingNotificationDeliveryAttemptWriter()" />
+                                <label for="NotificationDeliveryAttempt-deleted" class="form-check-label" id="label-NotificationDeliveryAttempt-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="notification-delivery-attempt-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="notificationDeliveryAttemptForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Notification Delivery Attempt">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !notificationDeliveryAttemptForm.valid || !notificationDeliveryAttemptForm.dirty || notificationDeliveryAttemptForm.pristine  || userIsAlertingNotificationDeliveryAttemptWriter() == false " ngbTooltip="Save the Notification Delivery Attempt changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Notification Delivery Attempt' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -128,6 +128,16 @@ namespace Foundation.CodeGeneration
 
 
             string acronym = GetAcronym(entityName);
+
+            //
+            // Change acronym if it's a C# reserved word.  Add more as we find them.
+            //
+            if (acronym == "in" ||
+                acronym == "event")
+            {
+                acronym = acronym + "_";
+            }
+
             string plural = Pluralize(entityName);
 
 

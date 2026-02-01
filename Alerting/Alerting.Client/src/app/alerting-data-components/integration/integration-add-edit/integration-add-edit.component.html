@@ -1,0 +1,83 @@
+<div class="add-integration" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-integration me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Integration" 
+        *ngIf="userIsAlertingIntegrationWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #integrationModal let-modal>
+   <div class="modal-header bg-dark text-light integration-modal-header">
+      <h5 class="modal-title mb-0" id="integrationModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Integration' : 'Add Integration' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body integration-modal-body">
+      <form [formGroup]="integrationForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('serviceId')">
+                <label for="Integration-serviceId" id="label-Integration-serviceId"><span class="text-danger">*</span>Service</label>
+                <select id="Integration-serviceId" formControlName="serviceId" class="form-select integration-select" [disabled]="!userIsAlertingIntegrationWriter()">
+                    <option [ngValue]="null">Select Service</option>
+                    <option *ngFor="let service of services$ | async" [ngValue]="service.id">{{service.name}}</option>
+                </select>
+                <div *ngIf="integrationForm.get('serviceId')?.invalid && integrationForm.get('serviceId')?.touched" class="text-danger">
+                    Service is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="Integration-name" id="label-Integration-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="Integration-name" formControlName="name" placeholder="Enter Name" class="form-control integration-input" [disabled]="!userIsAlertingIntegrationWriter()" aria-labelledby="label-name" />
+                <div *ngIf="integrationForm.get('name')?.invalid && integrationForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="Integration-description" id="label-Integration-description">Description</label>
+                <textarea id="Integration-description" formControlName="description" placeholder="Enter Description" class="form-control integration-input" [disabled]="!userIsAlertingIntegrationWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('apiKeyHash')">
+                <label for="Integration-apiKeyHash" id="label-Integration-apiKeyHash"><span class="text-danger">*</span>Api Key Hash</label>
+                <input type="text" id="Integration-apiKeyHash" formControlName="apiKeyHash" placeholder="Enter Api Key Hash" class="form-control integration-input" [disabled]="!userIsAlertingIntegrationWriter()" aria-labelledby="label-apiKeyHash" />
+                <div *ngIf="integrationForm.get('apiKeyHash')?.invalid && integrationForm.get('apiKeyHash')?.touched" class="text-danger">
+                    Api Key Hash is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('callbackWebhookUrl')">
+                <label for="Integration-callbackWebhookUrl" id="label-Integration-callbackWebhookUrl">Callback Webhook Url</label>
+                <textarea id="Integration-callbackWebhookUrl" formControlName="callbackWebhookUrl" placeholder="Enter Callback Webhook Url" class="form-control integration-input" [disabled]="!userIsAlertingIntegrationWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="Integration-versionNumber" id="label-Integration-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="Integration-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control integration-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="Integration-active" formControlName="active" class="form-check-input" [disabled]="!userIsAlertingIntegrationWriter()" />
+                <label for="Integration-active" class="form-check-label" id="label-Integration-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="Integration-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsAlertingIntegrationWriter()" />
+                <label for="Integration-deleted" class="form-check-label" id="label-Integration-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer integration-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Integration changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !integrationForm.valid || integrationForm.pristine  || userIsAlertingIntegrationWriter() == false " ngbTooltip="Save the Integration changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Integration' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

@@ -1,0 +1,94 @@
+
+
+/* Importing Bootstrap SCSS file. */
+@import 'app/assets/styles/styles-vendor.css';
+@import "bootstrap-icons/font/bootstrap-icons.css";
+@import 'bootstrap/scss/bootstrap';
+
+@import "bootstrap-icons/font/bootstrap-icons.css";
+
+@import 'bootstrap/scss/bootstrap';
+
+@import 'app/assets/styles/vertical-tabs';
+@import 'app/assets/styles/ngx-datatable';
+
+
+
+.spinner-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.8);
+  z-index: 1050;
+}
+
+
+.pre-login-background {
+  background: url(assets/images/backgrounds/background.jpg) no-repeat center center fixed;
+  background-size: cover;
+}
+
+.post-login-background {
+  background-color: #f9f9f9;  // a light grey
+}
+
+
+/*// From the K2 style guidelines.  This font, and Calibri, but Calibri is usually already on computers so we're not distributing it.
+@font-face {
+  font-family: 'k2';
+  src: url('assets/fonts/ABCDEFG.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+// Apply k2 font globally
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: 'k2', sans-serif;*/ /* Apply K2 as the default font */
+/*}
+
+// Make body use the Calibri font from the style guidelines
+body {
+  font-family: 'k2', sans-serif;
+}
+
+// Ensure headings use K2 font
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'k2', serif; // Use K2 for all headings 
+}
+
+
+
+// Apply K2 font to all tables and their content 
+table {
+  font-family: 'k2', sans-serif;
+  font-size: 1rem; 
+  border-collapse: collapse; 
+  width: 100%; 
+  margin-bottom: 1rem; 
+  color: #212529; 
+}
+
+// Apply K2 to all text-based elements, excluding icons 
+*, *:not(i):not([class*="fa-solid"]):not([class*="icon"]) {
+  font-family: 'k2', sans-serif;
+}
+
+*/
+
+
+
+.no-select {
+  user-select: none
+}
+
+h1, h2, h3, h4, h5, h6, label, th {
+  user-select: none;
+}
+
+td {
+  user-select: text;
+}

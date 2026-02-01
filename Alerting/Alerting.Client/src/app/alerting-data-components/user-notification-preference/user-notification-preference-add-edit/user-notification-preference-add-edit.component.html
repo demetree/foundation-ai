@@ -1,0 +1,86 @@
+<div class="add-user-notification-preference" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-user-notification-preference me-2"
+        (click)="openModal()"
+        ngbTooltip="Add User Notification Preference" 
+        *ngIf="userIsAlertingUserNotificationPreferenceWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #userNotificationPreferenceModal let-modal>
+   <div class="modal-header bg-dark text-light user-notification-preference-modal-header">
+      <h5 class="modal-title mb-0" id="userNotificationPreferenceModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit User Notification Preference' : 'Add User Notification Preference' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body user-notification-preference-modal-body">
+      <form [formGroup]="userNotificationPreferenceForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('securityUserObjectGuid')">
+                <label for="UserNotificationPreference-securityUserObjectGuid" id="label-UserNotificationPreference-securityUserObjectGuid"><span class="text-danger">*</span>Security User Object Guid</label>
+                <input type="text" id="UserNotificationPreference-securityUserObjectGuid" formControlName="securityUserObjectGuid" placeholder="Enter Security User Object Guid" class="form-control user-notification-preference-input" [disabled]="!userIsAlertingUserNotificationPreferenceWriter()" aria-labelledby="label-securityUserObjectGuid" />
+                <div *ngIf="userNotificationPreferenceForm.get('securityUserObjectGuid')?.invalid && userNotificationPreferenceForm.get('securityUserObjectGuid')?.touched" class="text-danger">
+                    Security User Object Guid is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('timeZoneId')">
+                <label for="UserNotificationPreference-timeZoneId" id="label-UserNotificationPreference-timeZoneId">Time Zone Id</label>
+                <input type="text" id="UserNotificationPreference-timeZoneId" formControlName="timeZoneId" placeholder="Enter Time Zone Id" class="form-control user-notification-preference-input" [disabled]="!userIsAlertingUserNotificationPreferenceWriter()" aria-labelledby="label-timeZoneId" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('quietHoursStart')">
+                <label for="UserNotificationPreference-quietHoursStart" id="label-UserNotificationPreference-quietHoursStart">Quiet Hours Start</label>
+                <input type="text" id="UserNotificationPreference-quietHoursStart" formControlName="quietHoursStart" placeholder="Enter Quiet Hours Start" class="form-control user-notification-preference-input" [disabled]="!userIsAlertingUserNotificationPreferenceWriter()" aria-labelledby="label-quietHoursStart" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('quietHoursEnd')">
+                <label for="UserNotificationPreference-quietHoursEnd" id="label-UserNotificationPreference-quietHoursEnd">Quiet Hours End</label>
+                <input type="text" id="UserNotificationPreference-quietHoursEnd" formControlName="quietHoursEnd" placeholder="Enter Quiet Hours End" class="form-control user-notification-preference-input" [disabled]="!userIsAlertingUserNotificationPreferenceWriter()" aria-labelledby="label-quietHoursEnd" />
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isDoNotDisturb')">
+                <input type="checkbox" id="UserNotificationPreference-isDoNotDisturb" formControlName="isDoNotDisturb" class="form-check-input" [disabled]="!userIsAlertingUserNotificationPreferenceWriter()" />
+                <label for="UserNotificationPreference-isDoNotDisturb" class="form-check-label" id="label-UserNotificationPreference-isDoNotDisturb"><span class="text-danger">*</span>Is Do Not Disturb</label>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isDoNotDisturbPermanent')">
+                <input type="checkbox" id="UserNotificationPreference-isDoNotDisturbPermanent" formControlName="isDoNotDisturbPermanent" class="form-check-input" [disabled]="!userIsAlertingUserNotificationPreferenceWriter()" />
+                <label for="UserNotificationPreference-isDoNotDisturbPermanent" class="form-check-label" id="label-UserNotificationPreference-isDoNotDisturbPermanent"><span class="text-danger">*</span>Is Do Not Disturb Permanent</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('doNotDisturbUntil')">
+                <label for="UserNotificationPreference-doNotDisturbUntil" id="label-UserNotificationPreference-doNotDisturbUntil">Do Not Disturb Until</label>
+                <input type="datetime-local" id="UserNotificationPreference-doNotDisturbUntil" formControlName="doNotDisturbUntil" placeholder="Enter Do Not Disturb Until" class="form-control user-notification-preference-input" [disabled]="!userIsAlertingUserNotificationPreferenceWriter()" aria-labelledby="label-doNotDisturbUntil" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('customSettingsJson')">
+                <label for="UserNotificationPreference-customSettingsJson" id="label-UserNotificationPreference-customSettingsJson">Custom Settings Json</label>
+                <textarea id="UserNotificationPreference-customSettingsJson" formControlName="customSettingsJson" placeholder="Enter Custom Settings Json" class="form-control user-notification-preference-input" [disabled]="!userIsAlertingUserNotificationPreferenceWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="UserNotificationPreference-versionNumber" id="label-UserNotificationPreference-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="UserNotificationPreference-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control user-notification-preference-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="UserNotificationPreference-active" formControlName="active" class="form-check-input" [disabled]="!userIsAlertingUserNotificationPreferenceWriter()" />
+                <label for="UserNotificationPreference-active" class="form-check-label" id="label-UserNotificationPreference-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="UserNotificationPreference-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsAlertingUserNotificationPreferenceWriter()" />
+                <label for="UserNotificationPreference-deleted" class="form-check-label" id="label-UserNotificationPreference-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer user-notification-preference-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the User Notification Preference changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !userNotificationPreferenceForm.valid || userNotificationPreferenceForm.pristine  || userIsAlertingUserNotificationPreferenceWriter() == false " ngbTooltip="Save the User Notification Preference changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add User Notification Preference' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

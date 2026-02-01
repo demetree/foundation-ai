@@ -1,0 +1,103 @@
+<div class="container-fluid p-1 m-0 schedule-layer-member-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="schedule-layer-member-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Schedule Layer Member</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Schedule Layer Member' : 'Add Schedule Layer Member'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsAlertingScheduleLayerMemberReader()">
+                <div class="col m-2 schedule-layer-member-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="scheduleLayerMemberForm" (ngSubmit)="submitForm()" class="schedule-layer-member-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('scheduleLayerId')">
+                                <label for="ScheduleLayerMember-scheduleLayerId" id="label-ScheduleLayerMember-scheduleLayerId"><span class="text-danger">*</span>Schedule Layer</label>
+                                <select id="ScheduleLayerMember-scheduleLayerId" formControlName="scheduleLayerId" class="form-select schedule-layer-member-select" [disabled]="!userIsAlertingScheduleLayerMemberWriter()">
+                                    <option [ngValue]="null">Select Schedule Layer</option>
+                                    <option *ngFor="let scheduleLayer of scheduleLayers$ | async" [ngValue]="scheduleLayer.id">{{scheduleLayer.name}}</option>
+                                </select>
+                                <div *ngIf="scheduleLayerMemberForm.get('scheduleLayerId')?.invalid && scheduleLayerMemberForm.get('scheduleLayerId')?.touched" class="text-danger">
+                                    Schedule Layer is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('position')">
+                                <label for="ScheduleLayerMember-position" id="label-ScheduleLayerMember-position"><span class="text-danger">*</span>Position</label>
+                                <input type="number" id="ScheduleLayerMember-position" formControlName="position" placeholder="Enter Position" class="form-control schedule-layer-member-input" [disabled]="!userIsAlertingScheduleLayerMemberWriter()" aria-labelledby="label-position" />
+                                <div *ngIf="scheduleLayerMemberForm.get('position')?.invalid && scheduleLayerMemberForm.get('position')?.touched" class="text-danger">
+                                    Position is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('securityUserObjectGuid')">
+                                <label for="ScheduleLayerMember-securityUserObjectGuid" id="label-ScheduleLayerMember-securityUserObjectGuid"><span class="text-danger">*</span>Security User Object Guid</label>
+                                <input type="text" id="ScheduleLayerMember-securityUserObjectGuid" formControlName="securityUserObjectGuid" placeholder="Enter Security User Object Guid" class="form-control schedule-layer-member-input" [disabled]="!userIsAlertingScheduleLayerMemberWriter()" aria-labelledby="label-securityUserObjectGuid" />
+                                <div *ngIf="scheduleLayerMemberForm.get('securityUserObjectGuid')?.invalid && scheduleLayerMemberForm.get('securityUserObjectGuid')?.touched" class="text-danger">
+                                    Security User Object Guid is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="ScheduleLayerMember-versionNumber" id="label-ScheduleLayerMember-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="ScheduleLayerMember-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control schedule-layer-member-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ScheduleLayerMember-active" formControlName="active" class="form-check-input" [disabled]="!userIsAlertingScheduleLayerMemberWriter()" />
+                                <label for="ScheduleLayerMember-active" class="form-check-label" id="label-ScheduleLayerMember-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ScheduleLayerMember-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsAlertingScheduleLayerMemberWriter()" />
+                                <label for="ScheduleLayerMember-deleted" class="form-check-label" id="label-ScheduleLayerMember-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="schedule-layer-member-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="scheduleLayerMemberForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Schedule Layer Member">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !scheduleLayerMemberForm.valid || !scheduleLayerMemberForm.dirty || scheduleLayerMemberForm.pristine  || userIsAlertingScheduleLayerMemberWriter() == false " ngbTooltip="Save the Schedule Layer Member changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Schedule Layer Member' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsAlertingScheduleLayerMemberReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 schedule-layer-member-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="scheduleLayerMemberChangeHistoryService.userIsAlertingScheduleLayerMemberChangeHistoryReader()">
+                            <button ngbNavLink>Schedule Layer Member Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (scheduleLayerMemberData?.ScheduleLayerMemberChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-schedule-layer-member-change-history-table [queryParams]="{ scheduleLayerMemberId: scheduleLayerMemberData?.id }"></app-schedule-layer-member-change-history-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-schedule-layer-member-change-history-add-edit [preSeededData]="{ scheduleLayerMemberId: scheduleLayerMemberData?.id }" [hiddenFields]="['scheduleLayerMemberId']"></app-schedule-layer-member-change-history-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

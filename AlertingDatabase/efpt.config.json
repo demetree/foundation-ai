@@ -1,6 +1,6 @@
 ﻿{
    "CodeGenerationMode": 4,
-   "ContextClassName": "AlertContext",
+   "ContextClassName": "AlertingContext",
    "ContextNamespace": null,
    "FilterSchemas": false,
    "IncludeConnectionString": false,
@@ -9,13 +9,132 @@
    "OutputContextPath": null,
    "OutputPath": "Database",
    "PreserveCasingWithRegex": true,
-   "ProjectRootNamespace": "Foundation.Alert",
+   "ProjectRootNamespace": "Foundation.Alerting",
    "Schemas": null,
    "SelectedHandlebarsLanguage": 2,
    "SelectedToBeGenerated": 0,
    "T4TemplatePath": null,
    "Tables": [
-     
+      {
+         "Name": "[Alerting].[EscalationPolicy]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Alerting].[EscalationPolicyChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Alerting].[EscalationRule]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Alerting].[EscalationRuleChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Alerting].[Incident]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Alerting].[IncidentChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Alerting].[IncidentEventType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Alerting].[IncidentNote]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Alerting].[IncidentNoteChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Alerting].[IncidentNotification]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Alerting].[IncidentStatusType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Alerting].[IncidentTimelineEvent]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Alerting].[Integration]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Alerting].[IntegrationChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Alerting].[NotificationChannelType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Alerting].[NotificationDeliveryAttempt]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Alerting].[OnCallSchedule]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Alerting].[OnCallScheduleChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Alerting].[ScheduleLayer]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Alerting].[ScheduleLayerChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Alerting].[ScheduleLayerMember]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Alerting].[ScheduleLayerMemberChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Alerting].[Service]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Alerting].[ServiceChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Alerting].[SeverityType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Alerting].[UserNotificationChannelPreference]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Alerting].[UserNotificationChannelPreferenceChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Alerting].[UserNotificationPreference]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Alerting].[UserNotificationPreferenceChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Alerting].[WebhookDeliveryAttempt]",
+         "ObjectType": 0
+      }
    ],
    "UiHint": null,
    "UncountableWords": null,

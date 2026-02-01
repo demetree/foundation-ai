@@ -1,0 +1,79 @@
+<div class="add-user-notification-channel-preference" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-user-notification-channel-preference me-2"
+        (click)="openModal()"
+        ngbTooltip="Add User Notification Channel Preference" 
+        *ngIf="userIsAlertingUserNotificationChannelPreferenceWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #userNotificationChannelPreferenceModal let-modal>
+   <div class="modal-header bg-dark text-light user-notification-channel-preference-modal-header">
+      <h5 class="modal-title mb-0" id="userNotificationChannelPreferenceModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit User Notification Channel Preference' : 'Add User Notification Channel Preference' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body user-notification-channel-preference-modal-body">
+      <form [formGroup]="userNotificationChannelPreferenceForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('userNotificationPreferenceId')">
+                <label for="UserNotificationChannelPreference-userNotificationPreferenceId" id="label-UserNotificationChannelPreference-userNotificationPreferenceId"><span class="text-danger">*</span>User Notification Preference</label>
+                <select id="UserNotificationChannelPreference-userNotificationPreferenceId" formControlName="userNotificationPreferenceId" class="form-select user-notification-channel-preference-select" [disabled]="!userIsAlertingUserNotificationChannelPreferenceWriter()">
+                    <option [ngValue]="null">Select User Notification Preference</option>
+                    <option *ngFor="let userNotificationPreference of userNotificationPreferences$ | async" [ngValue]="userNotificationPreference.id">{{userNotificationPreference.timeZoneId}}</option>
+                </select>
+                <div *ngIf="userNotificationChannelPreferenceForm.get('userNotificationPreferenceId')?.invalid && userNotificationChannelPreferenceForm.get('userNotificationPreferenceId')?.touched" class="text-danger">
+                    User Notification Preference is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('notificationChannelTypeId')">
+                <label for="UserNotificationChannelPreference-notificationChannelTypeId" id="label-UserNotificationChannelPreference-notificationChannelTypeId"><span class="text-danger">*</span>Notification Channel Type</label>
+                <select id="UserNotificationChannelPreference-notificationChannelTypeId" formControlName="notificationChannelTypeId" class="form-select user-notification-channel-preference-select" [disabled]="!userIsAlertingUserNotificationChannelPreferenceWriter()">
+                    <option [ngValue]="null">Select Notification Channel Type</option>
+                    <option *ngFor="let notificationChannelType of notificationChannelTypes$ | async" [ngValue]="notificationChannelType.id">{{notificationChannelType.name}}</option>
+                </select>
+                <div *ngIf="userNotificationChannelPreferenceForm.get('notificationChannelTypeId')?.invalid && userNotificationChannelPreferenceForm.get('notificationChannelTypeId')?.touched" class="text-danger">
+                    Notification Channel Type is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isEnabled')">
+                <input type="checkbox" id="UserNotificationChannelPreference-isEnabled" formControlName="isEnabled" class="form-check-input" [disabled]="!userIsAlertingUserNotificationChannelPreferenceWriter()" />
+                <label for="UserNotificationChannelPreference-isEnabled" class="form-check-label" id="label-UserNotificationChannelPreference-isEnabled"><span class="text-danger">*</span>Is Enabled</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('priorityOverride')">
+                <label for="UserNotificationChannelPreference-priorityOverride" id="label-UserNotificationChannelPreference-priorityOverride">Priority Override</label>
+                <input type="number" id="UserNotificationChannelPreference-priorityOverride" formControlName="priorityOverride" placeholder="Enter Priority Override" class="form-control user-notification-channel-preference-input" [disabled]="!userIsAlertingUserNotificationChannelPreferenceWriter()" aria-labelledby="label-priorityOverride" />
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="UserNotificationChannelPreference-versionNumber" id="label-UserNotificationChannelPreference-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="UserNotificationChannelPreference-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control user-notification-channel-preference-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="UserNotificationChannelPreference-active" formControlName="active" class="form-check-input" [disabled]="!userIsAlertingUserNotificationChannelPreferenceWriter()" />
+                <label for="UserNotificationChannelPreference-active" class="form-check-label" id="label-UserNotificationChannelPreference-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="UserNotificationChannelPreference-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsAlertingUserNotificationChannelPreferenceWriter()" />
+                <label for="UserNotificationChannelPreference-deleted" class="form-check-label" id="label-UserNotificationChannelPreference-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer user-notification-channel-preference-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the User Notification Channel Preference changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !userNotificationChannelPreferenceForm.valid || userNotificationChannelPreferenceForm.pristine  || userIsAlertingUserNotificationChannelPreferenceWriter() == false " ngbTooltip="Save the User Notification Channel Preference changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add User Notification Channel Preference' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

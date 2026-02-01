@@ -1,0 +1,110 @@
+<div class="container-fluid p-1 m-0 incident-note-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="incident-note-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Incident Note</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Incident Note' : 'Add Incident Note'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsAlertingIncidentNoteReader()">
+                <div class="col m-2 incident-note-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="incidentNoteForm" (ngSubmit)="submitForm()" class="incident-note-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('incidentId')">
+                                <label for="IncidentNote-incidentId" id="label-IncidentNote-incidentId"><span class="text-danger">*</span>Incident</label>
+                                <select id="IncidentNote-incidentId" formControlName="incidentId" class="form-select incident-note-select" [disabled]="!userIsAlertingIncidentNoteWriter()">
+                                    <option [ngValue]="null">Select Incident</option>
+                                    <option *ngFor="let incident of incidents$ | async" [ngValue]="incident.id">{{incident.incidentKey}}</option>
+                                </select>
+                                <div *ngIf="incidentNoteForm.get('incidentId')?.invalid && incidentNoteForm.get('incidentId')?.touched" class="text-danger">
+                                    Incident is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('authorObjectGuid')">
+                                <label for="IncidentNote-authorObjectGuid" id="label-IncidentNote-authorObjectGuid"><span class="text-danger">*</span>Author Object Guid</label>
+                                <input type="text" id="IncidentNote-authorObjectGuid" formControlName="authorObjectGuid" placeholder="Enter Author Object Guid" class="form-control incident-note-input" [disabled]="!userIsAlertingIncidentNoteWriter()" aria-labelledby="label-authorObjectGuid" />
+                                <div *ngIf="incidentNoteForm.get('authorObjectGuid')?.invalid && incidentNoteForm.get('authorObjectGuid')?.touched" class="text-danger">
+                                    Author Object Guid is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('createdAt')">
+                                <label for="IncidentNote-createdAt" id="label-IncidentNote-createdAt"><span class="text-danger">*</span>Created At</label>
+                                <input type="datetime-local" id="IncidentNote-createdAt" formControlName="createdAt" placeholder="Enter Created At" class="form-control incident-note-input" [disabled]="!userIsAlertingIncidentNoteWriter()" aria-labelledby="label-createdAt" />
+                                <div *ngIf="incidentNoteForm.get('createdAt')?.invalid && incidentNoteForm.get('createdAt')?.touched" class="text-danger">
+                                    Created At is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('content')">
+                                <label for="IncidentNote-content" id="label-IncidentNote-content"><span class="text-danger">*</span>Content</label>
+                                <textarea id="IncidentNote-content" formControlName="content" placeholder="Enter Content" class="form-control incident-note-input" [disabled]="!userIsAlertingIncidentNoteWriter()"></textarea>
+                                <div *ngIf="incidentNoteForm.get('content')?.invalid && incidentNoteForm.get('content')?.touched" class="text-danger">
+                                    Content is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="IncidentNote-versionNumber" id="label-IncidentNote-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="IncidentNote-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control incident-note-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="IncidentNote-active" formControlName="active" class="form-check-input" [disabled]="!userIsAlertingIncidentNoteWriter()" />
+                                <label for="IncidentNote-active" class="form-check-label" id="label-IncidentNote-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="IncidentNote-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsAlertingIncidentNoteWriter()" />
+                                <label for="IncidentNote-deleted" class="form-check-label" id="label-IncidentNote-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="incident-note-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="incidentNoteForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Incident Note">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !incidentNoteForm.valid || !incidentNoteForm.dirty || incidentNoteForm.pristine  || userIsAlertingIncidentNoteWriter() == false " ngbTooltip="Save the Incident Note changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Incident Note' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsAlertingIncidentNoteReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 incident-note-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="incidentNoteChangeHistoryService.userIsAlertingIncidentNoteChangeHistoryReader()">
+                            <button ngbNavLink>Incident Note Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (incidentNoteData?.IncidentNoteChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-incident-note-change-history-table [queryParams]="{ incidentNoteId: incidentNoteData?.id }"></app-incident-note-change-history-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-incident-note-change-history-add-edit [preSeededData]="{ incidentNoteId: incidentNoteData?.id }" [hiddenFields]="['incidentNoteId']"></app-incident-note-change-history-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

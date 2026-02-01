@@ -1,0 +1,75 @@
+<div class="container-fluid p-1 m-0 user-notification-channel-preference-change-history-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="user-notification-channel-preference-change-history-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">User Notification Channel Preference Change History</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit User Notification Channel Preference Change History' : 'Add User Notification Channel Preference Change History'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsAlertingUserNotificationChannelPreferenceChangeHistoryReader()">
+                <div class="col m-2 user-notification-channel-preference-change-history-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="userNotificationChannelPreferenceChangeHistoryForm" (ngSubmit)="submitForm()" class="user-notification-channel-preference-change-history-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('userNotificationChannelPreferenceId')">
+                                <label for="UserNotificationChannelPreferenceChangeHistory-userNotificationChannelPreferenceId" id="label-UserNotificationChannelPreferenceChangeHistory-userNotificationChannelPreferenceId"><span class="text-danger">*</span>User Notification Channel Preference</label>
+                                <select id="UserNotificationChannelPreferenceChangeHistory-userNotificationChannelPreferenceId" formControlName="userNotificationChannelPreferenceId" class="form-select user-notification-channel-preference-change-history-select" [disabled]="!userIsAlertingUserNotificationChannelPreferenceChangeHistoryWriter()">
+                                    <option [ngValue]="null">Select User Notification Channel Preference</option>
+                                    <option *ngFor="let userNotificationChannelPreference of userNotificationChannelPreferences$ | async" [ngValue]="userNotificationChannelPreference.id">{{userNotificationChannelPreference.id}}</option>
+                                </select>
+                                <div *ngIf="userNotificationChannelPreferenceChangeHistoryForm.get('userNotificationChannelPreferenceId')?.invalid && userNotificationChannelPreferenceChangeHistoryForm.get('userNotificationChannelPreferenceId')?.touched" class="text-danger">
+                                    User Notification Channel Preference is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="UserNotificationChannelPreferenceChangeHistory-versionNumber" id="label-UserNotificationChannelPreferenceChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="UserNotificationChannelPreferenceChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control user-notification-channel-preference-change-history-input" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                                <label for="UserNotificationChannelPreferenceChangeHistory-timeStamp" id="label-UserNotificationChannelPreferenceChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                                <input type="datetime-local" id="UserNotificationChannelPreferenceChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control user-notification-channel-preference-change-history-input" [disabled]="!userIsAlertingUserNotificationChannelPreferenceChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                                <div *ngIf="userNotificationChannelPreferenceChangeHistoryForm.get('timeStamp')?.invalid && userNotificationChannelPreferenceChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                                    Time Stamp is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="UserNotificationChannelPreferenceChangeHistory-userId" id="label-UserNotificationChannelPreferenceChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="UserNotificationChannelPreferenceChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control user-notification-channel-preference-change-history-input" [disabled]="!userIsAlertingUserNotificationChannelPreferenceChangeHistoryWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="userNotificationChannelPreferenceChangeHistoryForm.get('userId')?.invalid && userNotificationChannelPreferenceChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                                <label for="UserNotificationChannelPreferenceChangeHistory-data" id="label-UserNotificationChannelPreferenceChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                                <textarea id="UserNotificationChannelPreferenceChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control user-notification-channel-preference-change-history-input" [disabled]="!userIsAlertingUserNotificationChannelPreferenceChangeHistoryWriter()"></textarea>
+                                <div *ngIf="userNotificationChannelPreferenceChangeHistoryForm.get('data')?.invalid && userNotificationChannelPreferenceChangeHistoryForm.get('data')?.touched" class="text-danger">
+                                    Data is required
+                                </div>
+                            </div>
+                            <div class="user-notification-channel-preference-change-history-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="userNotificationChannelPreferenceChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload User Notification Channel Preference Change History">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !userNotificationChannelPreferenceChangeHistoryForm.valid || !userNotificationChannelPreferenceChangeHistoryForm.dirty || userNotificationChannelPreferenceChangeHistoryForm.pristine  || userIsAlertingUserNotificationChannelPreferenceChangeHistoryWriter() == false " ngbTooltip="Save the User Notification Channel Preference Change History changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add User Notification Channel Preference Change History' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

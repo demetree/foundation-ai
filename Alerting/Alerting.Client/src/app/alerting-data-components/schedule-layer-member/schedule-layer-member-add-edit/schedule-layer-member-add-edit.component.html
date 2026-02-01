@@ -1,0 +1,75 @@
+<div class="add-schedule-layer-member" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-schedule-layer-member me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Schedule Layer Member" 
+        *ngIf="userIsAlertingScheduleLayerMemberWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #scheduleLayerMemberModal let-modal>
+   <div class="modal-header bg-dark text-light schedule-layer-member-modal-header">
+      <h5 class="modal-title mb-0" id="scheduleLayerMemberModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Schedule Layer Member' : 'Add Schedule Layer Member' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body schedule-layer-member-modal-body">
+      <form [formGroup]="scheduleLayerMemberForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('scheduleLayerId')">
+                <label for="ScheduleLayerMember-scheduleLayerId" id="label-ScheduleLayerMember-scheduleLayerId"><span class="text-danger">*</span>Schedule Layer</label>
+                <select id="ScheduleLayerMember-scheduleLayerId" formControlName="scheduleLayerId" class="form-select schedule-layer-member-select" [disabled]="!userIsAlertingScheduleLayerMemberWriter()">
+                    <option [ngValue]="null">Select Schedule Layer</option>
+                    <option *ngFor="let scheduleLayer of scheduleLayers$ | async" [ngValue]="scheduleLayer.id">{{scheduleLayer.name}}</option>
+                </select>
+                <div *ngIf="scheduleLayerMemberForm.get('scheduleLayerId')?.invalid && scheduleLayerMemberForm.get('scheduleLayerId')?.touched" class="text-danger">
+                    Schedule Layer is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('position')">
+                <label for="ScheduleLayerMember-position" id="label-ScheduleLayerMember-position"><span class="text-danger">*</span>Position</label>
+                <input type="number" id="ScheduleLayerMember-position" formControlName="position" placeholder="Enter Position" class="form-control schedule-layer-member-input" [disabled]="!userIsAlertingScheduleLayerMemberWriter()" aria-labelledby="label-position" />
+                <div *ngIf="scheduleLayerMemberForm.get('position')?.invalid && scheduleLayerMemberForm.get('position')?.touched" class="text-danger">
+                    Position is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('securityUserObjectGuid')">
+                <label for="ScheduleLayerMember-securityUserObjectGuid" id="label-ScheduleLayerMember-securityUserObjectGuid"><span class="text-danger">*</span>Security User Object Guid</label>
+                <input type="text" id="ScheduleLayerMember-securityUserObjectGuid" formControlName="securityUserObjectGuid" placeholder="Enter Security User Object Guid" class="form-control schedule-layer-member-input" [disabled]="!userIsAlertingScheduleLayerMemberWriter()" aria-labelledby="label-securityUserObjectGuid" />
+                <div *ngIf="scheduleLayerMemberForm.get('securityUserObjectGuid')?.invalid && scheduleLayerMemberForm.get('securityUserObjectGuid')?.touched" class="text-danger">
+                    Security User Object Guid is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="ScheduleLayerMember-versionNumber" id="label-ScheduleLayerMember-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="ScheduleLayerMember-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control schedule-layer-member-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ScheduleLayerMember-active" formControlName="active" class="form-check-input" [disabled]="!userIsAlertingScheduleLayerMemberWriter()" />
+                <label for="ScheduleLayerMember-active" class="form-check-label" id="label-ScheduleLayerMember-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ScheduleLayerMember-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsAlertingScheduleLayerMemberWriter()" />
+                <label for="ScheduleLayerMember-deleted" class="form-check-label" id="label-ScheduleLayerMember-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer schedule-layer-member-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Schedule Layer Member changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !scheduleLayerMemberForm.valid || scheduleLayerMemberForm.pristine  || userIsAlertingScheduleLayerMemberWriter() == false " ngbTooltip="Save the Schedule Layer Member changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Schedule Layer Member' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

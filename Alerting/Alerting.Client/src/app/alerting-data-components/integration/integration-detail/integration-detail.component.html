@@ -1,0 +1,128 @@
+<div class="container-fluid p-1 m-0 integration-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="integration-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Integration</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Integration' : 'Add Integration'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsAlertingIntegrationReader()">
+                <div class="col m-2 integration-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="integrationForm" (ngSubmit)="submitForm()" class="integration-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('serviceId')">
+                                <label for="Integration-serviceId" id="label-Integration-serviceId"><span class="text-danger">*</span>Service</label>
+                                <select id="Integration-serviceId" formControlName="serviceId" class="form-select integration-select" [disabled]="!userIsAlertingIntegrationWriter()">
+                                    <option [ngValue]="null">Select Service</option>
+                                    <option *ngFor="let service of services$ | async" [ngValue]="service.id">{{service.name}}</option>
+                                </select>
+                                <div *ngIf="integrationForm.get('serviceId')?.invalid && integrationForm.get('serviceId')?.touched" class="text-danger">
+                                    Service is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="Integration-name" id="label-Integration-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="Integration-name" formControlName="name" placeholder="Enter Name" class="form-control integration-input" [disabled]="!userIsAlertingIntegrationWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="integrationForm.get('name')?.invalid && integrationForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="Integration-description" id="label-Integration-description">Description</label>
+                                <textarea id="Integration-description" formControlName="description" placeholder="Enter Description" class="form-control integration-input" [disabled]="!userIsAlertingIntegrationWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('apiKeyHash')">
+                                <label for="Integration-apiKeyHash" id="label-Integration-apiKeyHash"><span class="text-danger">*</span>Api Key Hash</label>
+                                <input type="text" id="Integration-apiKeyHash" formControlName="apiKeyHash" placeholder="Enter Api Key Hash" class="form-control integration-input" [disabled]="!userIsAlertingIntegrationWriter()" aria-labelledby="label-apiKeyHash" />
+                                <div *ngIf="integrationForm.get('apiKeyHash')?.invalid && integrationForm.get('apiKeyHash')?.touched" class="text-danger">
+                                    Api Key Hash is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('callbackWebhookUrl')">
+                                <label for="Integration-callbackWebhookUrl" id="label-Integration-callbackWebhookUrl">Callback Webhook Url</label>
+                                <textarea id="Integration-callbackWebhookUrl" formControlName="callbackWebhookUrl" placeholder="Enter Callback Webhook Url" class="form-control integration-input" [disabled]="!userIsAlertingIntegrationWriter()"></textarea>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="Integration-versionNumber" id="label-Integration-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="Integration-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control integration-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="Integration-active" formControlName="active" class="form-check-input" [disabled]="!userIsAlertingIntegrationWriter()" />
+                                <label for="Integration-active" class="form-check-label" id="label-Integration-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="Integration-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsAlertingIntegrationWriter()" />
+                                <label for="Integration-deleted" class="form-check-label" id="label-Integration-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="integration-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="integrationForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Integration">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !integrationForm.valid || !integrationForm.dirty || integrationForm.pristine  || userIsAlertingIntegrationWriter() == false " ngbTooltip="Save the Integration changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Integration' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsAlertingIntegrationReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 integration-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="integrationChangeHistoryService.userIsAlertingIntegrationChangeHistoryReader()">
+                            <button ngbNavLink>Integration Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (integrationData?.IntegrationChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-integration-change-history-table [queryParams]="{ integrationId: integrationData?.id }"></app-integration-change-history-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-integration-change-history-add-edit [preSeededData]="{ integrationId: integrationData?.id }" [hiddenFields]="['integrationId']"></app-integration-change-history-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="webhookDeliveryAttemptService.userIsAlertingWebhookDeliveryAttemptReader()">
+                            <button ngbNavLink>Webhook Delivery Attempts
+                                <span class="badge bg-primary ms-2">
+                                    {{ (integrationData?.WebhookDeliveryAttemptsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-webhook-delivery-attempt-table [queryParams]="{ integrationId: integrationData?.id }"></app-webhook-delivery-attempt-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-webhook-delivery-attempt-add-edit [preSeededData]="{ integrationId: integrationData?.id }" [hiddenFields]="['integrationId']"></app-webhook-delivery-attempt-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

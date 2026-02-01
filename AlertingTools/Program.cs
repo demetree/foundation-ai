@@ -115,38 +115,36 @@ namespace Foundation.Alerting.CodeGeneration
 
         static void GenerateAlertingApplicationCode()
         {
-
-            /*
             //
             // This depends upon the AlertContext class, and its child data classes to be created in this project, presumably with the ADO.Net 'Code First From Database' tool.  Namespace adjustments and file moves may be necessary.
             //
-            string outputFolder = Path.Combine(_outputDirectory, "AlertEntityCode");
+            string outputFolder = Path.Combine(_outputDirectory, "AlertingEntityCode");
 
-            Foundation.Alert.Database.AlertDatabaseGenerator AlertDatabaseGenerator = new Foundation.Alert.Database.AlertDatabaseGenerator();
+            Foundation.Alerting.Database.AlertingDatabaseGenerator alertingDatabaseGenerator = new Foundation.Alerting.Database.AlertingDatabaseGenerator();
 
             //
             // Create the WebAPI controllers - Note that we are ignoring the foundation services for Alert controllers
             //
-            Foundation.CodeGeneration.CodeGeneratorUtility.GenerateTemplateCodeFromEntityFrameworkContext("AlertContext", "Alert", typeof(Foundation.Alert.Database.AlertContext), AlertDatabaseGenerator.database, outputFolder);
+            Foundation.CodeGeneration.CodeGeneratorUtility.GenerateTemplateCodeFromEntityFrameworkContext("AlertingContext", "Alerting", typeof(Foundation.Alerting.Database.AlertingContext), alertingDatabaseGenerator.database, outputFolder);
 
 
             //
             // Create Angular data services to interact with the WebAPI.  Roller Ops does not use authorization.
             //
-            Foundation.CodeGeneration.AngularServiceGenerator.BuildAngularServiceImplementationFromEntityFrameworkContext("Alert", typeof(Foundation.Alert.Database.AlertContext), AlertDatabaseGenerator.database, outputFolder);
+            Foundation.CodeGeneration.AngularServiceGenerator.BuildAngularServiceImplementationFromEntityFrameworkContext("Alerting", typeof(Foundation.Alerting.Database.AlertingContext), alertingDatabaseGenerator.database, outputFolder);
 
             //
             // Create Angular Components to interact with the data services  Roller Ops does not use authorization.
             //
-            Foundation.CodeGeneration.AngularComponentGenerator.BuildAngularComponentImplementationFromEntityFrameworkContext("Alert", typeof(Foundation.Alert.Database.AlertContext), AlertDatabaseGenerator.database, outputFolder);
+            Foundation.CodeGeneration.AngularComponentGenerator.BuildAngularComponentImplementationFromEntityFrameworkContext("Alerting", typeof(Foundation.Alerting.Database.AlertingContext), alertingDatabaseGenerator.database, outputFolder);
 
 
             Console.WriteLine();
-            Console.WriteLine("Alert application code created in folder: " + outputFolder);
+            Console.WriteLine("Alerting application code created in folder: " + outputFolder);
             Console.WriteLine();
 
             Console.WriteLine();
-            Console.WriteLine("Alert application code created in folder: " + outputFolder);
+            Console.WriteLine("Alerting application code created in folder: " + outputFolder);
             Console.WriteLine();
 
             //
@@ -180,7 +178,7 @@ namespace Foundation.Alerting.CodeGeneration
                             Console.WriteLine("Automating Angular module integration...");
                             AngularAutomationUtility.IntegrateGeneratedCode(
                                 Directory.GetCurrentDirectory(),
-                                "Alert", // Module Name
+                                "Alerting", // Module Name
                                 outputFolder,
                                 angularAppRoot,
                                 angularModuleFile,
@@ -203,8 +201,6 @@ namespace Foundation.Alerting.CodeGeneration
                 Console.WriteLine($"Error reading configuration or deploying: {ex.Message}");
                 Process.Start("explorer.exe", outputFolder);
             }
-            */
-
         }
     }
 }

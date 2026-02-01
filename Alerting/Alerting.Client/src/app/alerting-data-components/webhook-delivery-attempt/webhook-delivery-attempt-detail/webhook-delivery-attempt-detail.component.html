@@ -1,0 +1,109 @@
+<div class="container-fluid p-1 m-0 webhook-delivery-attempt-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="webhook-delivery-attempt-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Webhook Delivery Attempt</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Webhook Delivery Attempt' : 'Add Webhook Delivery Attempt'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsAlertingWebhookDeliveryAttemptReader()">
+                <div class="col m-2 webhook-delivery-attempt-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="webhookDeliveryAttemptForm" (ngSubmit)="submitForm()" class="webhook-delivery-attempt-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('incidentId')">
+                                <label for="WebhookDeliveryAttempt-incidentId" id="label-WebhookDeliveryAttempt-incidentId"><span class="text-danger">*</span>Incident</label>
+                                <select id="WebhookDeliveryAttempt-incidentId" formControlName="incidentId" class="form-select webhook-delivery-attempt-select" [disabled]="!userIsAlertingWebhookDeliveryAttemptWriter()">
+                                    <option [ngValue]="null">Select Incident</option>
+                                    <option *ngFor="let incident of incidents$ | async" [ngValue]="incident.id">{{incident.incidentKey}}</option>
+                                </select>
+                                <div *ngIf="webhookDeliveryAttemptForm.get('incidentId')?.invalid && webhookDeliveryAttemptForm.get('incidentId')?.touched" class="text-danger">
+                                    Incident is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('integrationId')">
+                                <label for="WebhookDeliveryAttempt-integrationId" id="label-WebhookDeliveryAttempt-integrationId"><span class="text-danger">*</span>Integration</label>
+                                <select id="WebhookDeliveryAttempt-integrationId" formControlName="integrationId" class="form-select webhook-delivery-attempt-select" [disabled]="!userIsAlertingWebhookDeliveryAttemptWriter()">
+                                    <option [ngValue]="null">Select Integration</option>
+                                    <option *ngFor="let integration of integrations$ | async" [ngValue]="integration.id">{{integration.name}}</option>
+                                </select>
+                                <div *ngIf="webhookDeliveryAttemptForm.get('integrationId')?.invalid && webhookDeliveryAttemptForm.get('integrationId')?.touched" class="text-danger">
+                                    Integration is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('incidentTimelineEventId')">
+                                <label for="WebhookDeliveryAttempt-incidentTimelineEventId" id="label-WebhookDeliveryAttempt-incidentTimelineEventId">Incident Timeline Event</label>
+                                <select id="WebhookDeliveryAttempt-incidentTimelineEventId" formControlName="incidentTimelineEventId" class="form-select webhook-delivery-attempt-select" [disabled]="!userIsAlertingWebhookDeliveryAttemptWriter()">
+                                    <option [ngValue]="null">Select Incident Timeline Event</option>
+                                    <option *ngFor="let incidentTimelineEvent of incidentTimelineEvents$ | async" [ngValue]="incidentTimelineEvent.id">{{incidentTimelineEvent.detailsJson}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('attemptNumber')">
+                                <label for="WebhookDeliveryAttempt-attemptNumber" id="label-WebhookDeliveryAttempt-attemptNumber"><span class="text-danger">*</span>Attempt Number</label>
+                                <input type="number" id="WebhookDeliveryAttempt-attemptNumber" formControlName="attemptNumber" placeholder="Enter Attempt Number" class="form-control webhook-delivery-attempt-input" [disabled]="!userIsAlertingWebhookDeliveryAttemptWriter()" aria-labelledby="label-attemptNumber" />
+                                <div *ngIf="webhookDeliveryAttemptForm.get('attemptNumber')?.invalid && webhookDeliveryAttemptForm.get('attemptNumber')?.touched" class="text-danger">
+                                    Attempt Number is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('attemptedAt')">
+                                <label for="WebhookDeliveryAttempt-attemptedAt" id="label-WebhookDeliveryAttempt-attemptedAt"><span class="text-danger">*</span>Attempted At</label>
+                                <input type="datetime-local" id="WebhookDeliveryAttempt-attemptedAt" formControlName="attemptedAt" placeholder="Enter Attempted At" class="form-control webhook-delivery-attempt-input" [disabled]="!userIsAlertingWebhookDeliveryAttemptWriter()" aria-labelledby="label-attemptedAt" />
+                                <div *ngIf="webhookDeliveryAttemptForm.get('attemptedAt')?.invalid && webhookDeliveryAttemptForm.get('attemptedAt')?.touched" class="text-danger">
+                                    Attempted At is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('httpStatusCode')">
+                                <label for="WebhookDeliveryAttempt-httpStatusCode" id="label-WebhookDeliveryAttempt-httpStatusCode">Http Status Code</label>
+                                <input type="number" id="WebhookDeliveryAttempt-httpStatusCode" formControlName="httpStatusCode" placeholder="Enter Http Status Code" class="form-control webhook-delivery-attempt-input" [disabled]="!userIsAlertingWebhookDeliveryAttemptWriter()" aria-labelledby="label-httpStatusCode" />
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('success')">
+                                <input type="checkbox" id="WebhookDeliveryAttempt-success" formControlName="success" class="form-check-input" [disabled]="!userIsAlertingWebhookDeliveryAttemptWriter()" />
+                                <label for="WebhookDeliveryAttempt-success" class="form-check-label" id="label-WebhookDeliveryAttempt-success"><span class="text-danger">*</span>Success</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('payloadJson')">
+                                <label for="WebhookDeliveryAttempt-payloadJson" id="label-WebhookDeliveryAttempt-payloadJson">Payload Json</label>
+                                <textarea id="WebhookDeliveryAttempt-payloadJson" formControlName="payloadJson" placeholder="Enter Payload Json" class="form-control webhook-delivery-attempt-input" [disabled]="!userIsAlertingWebhookDeliveryAttemptWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('responseBody')">
+                                <label for="WebhookDeliveryAttempt-responseBody" id="label-WebhookDeliveryAttempt-responseBody">Response Body</label>
+                                <textarea id="WebhookDeliveryAttempt-responseBody" formControlName="responseBody" placeholder="Enter Response Body" class="form-control webhook-delivery-attempt-input" [disabled]="!userIsAlertingWebhookDeliveryAttemptWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('errorMessage')">
+                                <label for="WebhookDeliveryAttempt-errorMessage" id="label-WebhookDeliveryAttempt-errorMessage">Error Message</label>
+                                <textarea id="WebhookDeliveryAttempt-errorMessage" formControlName="errorMessage" placeholder="Enter Error Message" class="form-control webhook-delivery-attempt-input" [disabled]="!userIsAlertingWebhookDeliveryAttemptWriter()"></textarea>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="WebhookDeliveryAttempt-active" formControlName="active" class="form-check-input" [disabled]="!userIsAlertingWebhookDeliveryAttemptWriter()" />
+                                <label for="WebhookDeliveryAttempt-active" class="form-check-label" id="label-WebhookDeliveryAttempt-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="WebhookDeliveryAttempt-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsAlertingWebhookDeliveryAttemptWriter()" />
+                                <label for="WebhookDeliveryAttempt-deleted" class="form-check-label" id="label-WebhookDeliveryAttempt-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="webhook-delivery-attempt-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="webhookDeliveryAttemptForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Webhook Delivery Attempt">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !webhookDeliveryAttemptForm.valid || !webhookDeliveryAttemptForm.dirty || webhookDeliveryAttemptForm.pristine  || userIsAlertingWebhookDeliveryAttemptWriter() == false " ngbTooltip="Save the Webhook Delivery Attempt changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Webhook Delivery Attempt' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

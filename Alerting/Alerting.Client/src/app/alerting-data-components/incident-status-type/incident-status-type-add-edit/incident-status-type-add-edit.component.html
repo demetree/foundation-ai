@@ -1,0 +1,58 @@
+<div class="add-incident-status-type" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-incident-status-type me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Incident Status Type" 
+        *ngIf="userIsAlertingIncidentStatusTypeWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #incidentStatusTypeModal let-modal>
+   <div class="modal-header bg-dark text-light incident-status-type-modal-header">
+      <h5 class="modal-title mb-0" id="incidentStatusTypeModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Incident Status Type' : 'Add Incident Status Type' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body incident-status-type-modal-body">
+      <form [formGroup]="incidentStatusTypeForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="IncidentStatusType-name" id="label-IncidentStatusType-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="IncidentStatusType-name" formControlName="name" placeholder="Enter Name" class="form-control incident-status-type-input" [disabled]="!userIsAlertingIncidentStatusTypeWriter()" aria-labelledby="label-name" />
+                <div *ngIf="incidentStatusTypeForm.get('name')?.invalid && incidentStatusTypeForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="IncidentStatusType-description" id="label-IncidentStatusType-description">Description</label>
+                <textarea id="IncidentStatusType-description" formControlName="description" placeholder="Enter Description" class="form-control incident-status-type-input" [disabled]="!userIsAlertingIncidentStatusTypeWriter()"></textarea>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="IncidentStatusType-active" formControlName="active" class="form-check-input" [disabled]="!userIsAlertingIncidentStatusTypeWriter()" />
+                <label for="IncidentStatusType-active" class="form-check-label" id="label-IncidentStatusType-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="IncidentStatusType-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsAlertingIncidentStatusTypeWriter()" />
+                <label for="IncidentStatusType-deleted" class="form-check-label" id="label-IncidentStatusType-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer incident-status-type-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Incident Status Type changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !incidentStatusTypeForm.valid || incidentStatusTypeForm.pristine  || userIsAlertingIncidentStatusTypeWriter() == false " ngbTooltip="Save the Incident Status Type changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Incident Status Type' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

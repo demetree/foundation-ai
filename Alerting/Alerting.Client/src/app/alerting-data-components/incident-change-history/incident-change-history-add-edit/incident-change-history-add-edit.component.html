@@ -1,0 +1,74 @@
+<div class="add-incident-change-history" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-incident-change-history me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Incident Change History" 
+        *ngIf="userIsAlertingIncidentChangeHistoryWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #incidentChangeHistoryModal let-modal>
+   <div class="modal-header bg-dark text-light incident-change-history-modal-header">
+      <h5 class="modal-title mb-0" id="incidentChangeHistoryModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Incident Change History' : 'Add Incident Change History' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body incident-change-history-modal-body">
+      <form [formGroup]="incidentChangeHistoryForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('incidentId')">
+                <label for="IncidentChangeHistory-incidentId" id="label-IncidentChangeHistory-incidentId"><span class="text-danger">*</span>Incident</label>
+                <select id="IncidentChangeHistory-incidentId" formControlName="incidentId" class="form-select incident-change-history-select" [disabled]="!userIsAlertingIncidentChangeHistoryWriter()">
+                    <option [ngValue]="null">Select Incident</option>
+                    <option *ngFor="let incident of incidents$ | async" [ngValue]="incident.id">{{incident.incidentKey}}</option>
+                </select>
+                <div *ngIf="incidentChangeHistoryForm.get('incidentId')?.invalid && incidentChangeHistoryForm.get('incidentId')?.touched" class="text-danger">
+                    Incident is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="IncidentChangeHistory-versionNumber" id="label-IncidentChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="IncidentChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control incident-change-history-input" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                <label for="IncidentChangeHistory-timeStamp" id="label-IncidentChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                <input type="datetime-local" id="IncidentChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control incident-change-history-input" [disabled]="!userIsAlertingIncidentChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                <div *ngIf="incidentChangeHistoryForm.get('timeStamp')?.invalid && incidentChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                    Time Stamp is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                <label for="IncidentChangeHistory-userId" id="label-IncidentChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                <input type="number" id="IncidentChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control incident-change-history-input" [disabled]="!userIsAlertingIncidentChangeHistoryWriter()" aria-labelledby="label-userId" />
+                <div *ngIf="incidentChangeHistoryForm.get('userId')?.invalid && incidentChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                    User Id is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                <label for="IncidentChangeHistory-data" id="label-IncidentChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                <textarea id="IncidentChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control incident-change-history-input" [disabled]="!userIsAlertingIncidentChangeHistoryWriter()"></textarea>
+                <div *ngIf="incidentChangeHistoryForm.get('data')?.invalid && incidentChangeHistoryForm.get('data')?.touched" class="text-danger">
+                    Data is required
+                </div>
+            </div>
+         <div class="modal-footer incident-change-history-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Incident Change History changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !incidentChangeHistoryForm.valid || incidentChangeHistoryForm.pristine  || userIsAlertingIncidentChangeHistoryWriter() == false " ngbTooltip="Save the Incident Change History changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Incident Change History' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

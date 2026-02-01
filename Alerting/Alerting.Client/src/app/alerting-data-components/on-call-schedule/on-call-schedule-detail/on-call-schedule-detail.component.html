@@ -1,0 +1,114 @@
+<div class="container-fluid p-1 m-0 on-call-schedule-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="on-call-schedule-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">On Call Schedule</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit On Call Schedule' : 'Add On Call Schedule'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsAlertingOnCallScheduleReader()">
+                <div class="col m-2 on-call-schedule-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="onCallScheduleForm" (ngSubmit)="submitForm()" class="on-call-schedule-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="OnCallSchedule-name" id="label-OnCallSchedule-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="OnCallSchedule-name" formControlName="name" placeholder="Enter Name" class="form-control on-call-schedule-input" [disabled]="!userIsAlertingOnCallScheduleWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="onCallScheduleForm.get('name')?.invalid && onCallScheduleForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="OnCallSchedule-description" id="label-OnCallSchedule-description">Description</label>
+                                <textarea id="OnCallSchedule-description" formControlName="description" placeholder="Enter Description" class="form-control on-call-schedule-input" [disabled]="!userIsAlertingOnCallScheduleWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeZoneId')">
+                                <label for="OnCallSchedule-timeZoneId" id="label-OnCallSchedule-timeZoneId"><span class="text-danger">*</span>Time Zone Id</label>
+                                <input type="text" id="OnCallSchedule-timeZoneId" formControlName="timeZoneId" placeholder="Enter Time Zone Id" class="form-control on-call-schedule-input" [disabled]="!userIsAlertingOnCallScheduleWriter()" aria-labelledby="label-timeZoneId" />
+                                <div *ngIf="onCallScheduleForm.get('timeZoneId')?.invalid && onCallScheduleForm.get('timeZoneId')?.touched" class="text-danger">
+                                    Time Zone Id is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="OnCallSchedule-versionNumber" id="label-OnCallSchedule-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="OnCallSchedule-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control on-call-schedule-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="OnCallSchedule-active" formControlName="active" class="form-check-input" [disabled]="!userIsAlertingOnCallScheduleWriter()" />
+                                <label for="OnCallSchedule-active" class="form-check-label" id="label-OnCallSchedule-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="OnCallSchedule-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsAlertingOnCallScheduleWriter()" />
+                                <label for="OnCallSchedule-deleted" class="form-check-label" id="label-OnCallSchedule-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="on-call-schedule-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="onCallScheduleForm.pristine" (click)="loadData(true)" ngbTooltip="Reload On Call Schedule">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !onCallScheduleForm.valid || !onCallScheduleForm.dirty || onCallScheduleForm.pristine  || userIsAlertingOnCallScheduleWriter() == false " ngbTooltip="Save the On Call Schedule changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add On Call Schedule' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsAlertingOnCallScheduleReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 on-call-schedule-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="onCallScheduleChangeHistoryService.userIsAlertingOnCallScheduleChangeHistoryReader()">
+                            <button ngbNavLink>On Call Schedule Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (onCallScheduleData?.OnCallScheduleChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-on-call-schedule-change-history-table [queryParams]="{ onCallScheduleId: onCallScheduleData?.id }"></app-on-call-schedule-change-history-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-on-call-schedule-change-history-add-edit [preSeededData]="{ onCallScheduleId: onCallScheduleData?.id }" [hiddenFields]="['onCallScheduleId']"></app-on-call-schedule-change-history-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="scheduleLayerService.userIsAlertingScheduleLayerReader()">
+                            <button ngbNavLink>Schedule Layers
+                                <span class="badge bg-primary ms-2">
+                                    {{ (onCallScheduleData?.ScheduleLayersCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-schedule-layer-table [queryParams]="{ onCallScheduleId: onCallScheduleData?.id }"></app-schedule-layer-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-schedule-layer-add-edit [preSeededData]="{ onCallScheduleId: onCallScheduleData?.id }" [hiddenFields]="['onCallScheduleId']"></app-schedule-layer-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

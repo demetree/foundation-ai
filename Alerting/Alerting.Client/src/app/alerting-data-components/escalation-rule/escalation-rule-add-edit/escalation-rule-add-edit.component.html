@@ -1,0 +1,97 @@
+<div class="add-escalation-rule" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-escalation-rule me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Escalation Rule" 
+        *ngIf="userIsAlertingEscalationRuleWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #escalationRuleModal let-modal>
+   <div class="modal-header bg-dark text-light escalation-rule-modal-header">
+      <h5 class="modal-title mb-0" id="escalationRuleModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Escalation Rule' : 'Add Escalation Rule' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body escalation-rule-modal-body">
+      <form [formGroup]="escalationRuleForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('escalationPolicyId')">
+                <label for="EscalationRule-escalationPolicyId" id="label-EscalationRule-escalationPolicyId"><span class="text-danger">*</span>Escalation Policy</label>
+                <select id="EscalationRule-escalationPolicyId" formControlName="escalationPolicyId" class="form-select escalation-rule-select" [disabled]="!userIsAlertingEscalationRuleWriter()">
+                    <option [ngValue]="null">Select Escalation Policy</option>
+                    <option *ngFor="let escalationPolicy of escalationPolicies$ | async" [ngValue]="escalationPolicy.id">{{escalationPolicy.name}}</option>
+                </select>
+                <div *ngIf="escalationRuleForm.get('escalationPolicyId')?.invalid && escalationRuleForm.get('escalationPolicyId')?.touched" class="text-danger">
+                    Escalation Policy is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('ruleOrder')">
+                <label for="EscalationRule-ruleOrder" id="label-EscalationRule-ruleOrder"><span class="text-danger">*</span>Rule Order</label>
+                <input type="number" id="EscalationRule-ruleOrder" formControlName="ruleOrder" placeholder="Enter Rule Order" class="form-control escalation-rule-input" [disabled]="!userIsAlertingEscalationRuleWriter()" aria-labelledby="label-ruleOrder" />
+                <div *ngIf="escalationRuleForm.get('ruleOrder')?.invalid && escalationRuleForm.get('ruleOrder')?.touched" class="text-danger">
+                    Rule Order is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('delayMinutes')">
+                <label for="EscalationRule-delayMinutes" id="label-EscalationRule-delayMinutes"><span class="text-danger">*</span>Delay Minutes</label>
+                <input type="number" id="EscalationRule-delayMinutes" formControlName="delayMinutes" placeholder="Enter Delay Minutes" class="form-control escalation-rule-input" [disabled]="!userIsAlertingEscalationRuleWriter()" aria-labelledby="label-delayMinutes" />
+                <div *ngIf="escalationRuleForm.get('delayMinutes')?.invalid && escalationRuleForm.get('delayMinutes')?.touched" class="text-danger">
+                    Delay Minutes is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('repeatCount')">
+                <label for="EscalationRule-repeatCount" id="label-EscalationRule-repeatCount"><span class="text-danger">*</span>Repeat Count</label>
+                <input type="number" id="EscalationRule-repeatCount" formControlName="repeatCount" placeholder="Enter Repeat Count" class="form-control escalation-rule-input" [disabled]="!userIsAlertingEscalationRuleWriter()" aria-labelledby="label-repeatCount" />
+                <div *ngIf="escalationRuleForm.get('repeatCount')?.invalid && escalationRuleForm.get('repeatCount')?.touched" class="text-danger">
+                    Repeat Count is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('repeatDelayMinutes')">
+                <label for="EscalationRule-repeatDelayMinutes" id="label-EscalationRule-repeatDelayMinutes">Repeat Delay Minutes</label>
+                <input type="number" id="EscalationRule-repeatDelayMinutes" formControlName="repeatDelayMinutes" placeholder="Enter Repeat Delay Minutes" class="form-control escalation-rule-input" [disabled]="!userIsAlertingEscalationRuleWriter()" aria-labelledby="label-repeatDelayMinutes" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('targetType')">
+                <label for="EscalationRule-targetType" id="label-EscalationRule-targetType"><span class="text-danger">*</span>Target Type</label>
+                <input type="text" id="EscalationRule-targetType" formControlName="targetType" placeholder="Enter Target Type" class="form-control escalation-rule-input" [disabled]="!userIsAlertingEscalationRuleWriter()" aria-labelledby="label-targetType" />
+                <div *ngIf="escalationRuleForm.get('targetType')?.invalid && escalationRuleForm.get('targetType')?.touched" class="text-danger">
+                    Target Type is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('targetObjectGuid')">
+                <label for="EscalationRule-targetObjectGuid" id="label-EscalationRule-targetObjectGuid">Target Object Guid</label>
+                <input type="text" id="EscalationRule-targetObjectGuid" formControlName="targetObjectGuid" placeholder="Enter Target Object Guid" class="form-control escalation-rule-input" [disabled]="!userIsAlertingEscalationRuleWriter()" aria-labelledby="label-targetObjectGuid" />
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="EscalationRule-versionNumber" id="label-EscalationRule-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="EscalationRule-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control escalation-rule-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="EscalationRule-active" formControlName="active" class="form-check-input" [disabled]="!userIsAlertingEscalationRuleWriter()" />
+                <label for="EscalationRule-active" class="form-check-label" id="label-EscalationRule-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="EscalationRule-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsAlertingEscalationRuleWriter()" />
+                <label for="EscalationRule-deleted" class="form-check-label" id="label-EscalationRule-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer escalation-rule-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Escalation Rule changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !escalationRuleForm.valid || escalationRuleForm.pristine  || userIsAlertingEscalationRuleWriter() == false " ngbTooltip="Save the Escalation Rule changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Escalation Rule' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>
