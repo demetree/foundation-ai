@@ -1,26 +1,35 @@
 <!-- Sidebar (collapsible/overlay when expanded) -->
-<div *ngIf="isUserLoggedIn"
-     class="sidebar text-bg-dark no-select"
-     [class.expanded]="isExpanded"
-     [class.collapsed]="!isExpanded">
+<div *ngIf="isUserLoggedIn" class="sidebar text-bg-dark no-select" [class.expanded]="isExpanded"
+  [class.collapsed]="!isExpanded">
 
   <!-- Toggle button (tooltip only when collapsed) -->
-  <button class="toggle-btn"
-          type="button"
-          (click)="tToggle.close(); toggle()"
-          [attr.aria-expanded]="isExpanded"
-          [ngbTooltip]="!isExpanded ? 'Expand' : null"
-          triggers="hover"
-          #tToggle="ngbTooltip"
-          placement="right"
-          tooltipClass="sidebar-tip"
-          aria-label="Toggle sidebar">
+  <button class="toggle-btn" type="button" (click)="tToggle.close(); toggle()" [attr.aria-expanded]="isExpanded"
+    [ngbTooltip]="!isExpanded ? 'Expand' : null" triggers="hover" #tToggle="ngbTooltip" placement="right"
+    tooltipClass="sidebar-tip" aria-label="Toggle sidebar">
     <i class="fa" [ngClass]="{ 'fa-angle-right': !isExpanded, 'fa-angle-left': isExpanded }"></i>
   </button>
 
   <ul class="nav nav-pills flex-column">
 
-   
+    <!-- Integrations -->
+    <li class="nav-item">
+      <a routerLink="/integration-management" routerLinkActive="active" class="nav-link text-white"
+        [ngbTooltip]="!isExpanded ? 'Integrations' : null" triggers="hover" #tIntegrations="ngbTooltip"
+        (click)="tIntegrations.close(); close()" placement="right" tooltipClass="sidebar-tip">
+        <i class="fa-solid fa-plug"></i>
+        <span class="label px-2">Integrations</span>
+      </a>
+    </li>
+
+    <!-- Test Harness -->
+    <li class="nav-item">
+      <a routerLink="/test-harness" routerLinkActive="active" class="nav-link text-white"
+        [ngbTooltip]="!isExpanded ? 'Test Harness' : null" triggers="hover" #tHarness="ngbTooltip"
+        (click)="tHarness.close(); close()" placement="right" tooltipClass="sidebar-tip">
+        <i class="fa-solid fa-flask"></i>
+        <span class="label px-2">Test Harness</span>
+      </a>
+    </li>
 
   </ul>
 

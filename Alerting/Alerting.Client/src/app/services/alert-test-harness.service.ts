@@ -88,7 +88,7 @@ export interface IntegrationInfo {
 export class AlertTestHarnessService extends SecureEndpointBase {
 
     private readonly alertsApiUrl = '/api/alerts/v1';
-    private readonly incidentsApiUrl = '/api/incidents';
+    private readonly incidentsApiUrl = '/api/incident-management';
 
     constructor(
         http: HttpClient,

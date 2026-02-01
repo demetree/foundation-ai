@@ -20,6 +20,7 @@ import { ResetPasswordComponent } from './components/reset-password/reset-passwo
 
 import { SystemHealthComponent } from './components/system-health/system-health.component';
 import { TestHarnessComponent } from './components/test-harness/test-harness.component';
+import { IntegrationManagementComponent } from './components/integration-management/integration-management.component';
 
 //
 // Custom screens
@@ -145,6 +146,7 @@ const routes: Routes = [
 
   { path: 'system-health', component: SystemHealthComponent, canActivate: [AuthGuard], title: 'System Health' },
   { path: 'test-harness', component: TestHarnessComponent, canActivate: [AuthGuard], title: 'Test Harness' },
+  { path: 'integration-management', component: IntegrationManagementComponent, canActivate: [AuthGuard], title: 'Integration Management' },
 
 
 

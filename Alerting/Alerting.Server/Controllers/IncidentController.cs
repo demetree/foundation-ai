@@ -21,7 +21,7 @@ namespace Alerting.Server.Controllers
     /// API for authenticated users to manage incidents.
     /// </summary>
     [ApiController]
-    [Route("api/incidents")]
+    [Route("api/incident-management")]
     [Authorize]
     public class IncidentController : ControllerBase
     {

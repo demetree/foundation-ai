@@ -69,6 +69,7 @@ import { SystemHealthComponent } from './components/system-health/system-health.
 import { SystemHealthService } from './services/system-health.service';
 import { TestHarnessComponent } from './components/test-harness/test-harness.component';
 import { AlertTestHarnessService } from './services/alert-test-harness.service';
+import { IntegrationManagementComponent } from './components/integration-management/integration-management.component';
 
 //
 // Custom Components
@@ -296,6 +297,7 @@ import { WebhookDeliveryAttemptTableComponent } from './alerting-data-components
 
     SystemHealthComponent,
     TestHarnessComponent,
+    IntegrationManagementComponent,
 
 
     //

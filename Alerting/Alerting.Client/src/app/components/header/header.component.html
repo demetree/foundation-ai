@@ -15,30 +15,19 @@
   <!-- Right-side actions -->
   <div class="d-flex align-items-center">
     <!-- Mobile menu toggle (only on small screens) -->
-    <button *ngIf="isUserLoggedIn"
-            class="btn btn-outline-light d-md-none me-2"
-            (click)="toggleMobileMenu()"
-            [attr.aria-expanded]="isMobileMenuOpen"
-            aria-label="Open menu">
+    <button *ngIf="isUserLoggedIn" class="btn btn-outline-light d-md-none me-2" (click)="toggleMobileMenu()"
+      [attr.aria-expanded]="isMobileMenuOpen" aria-label="Open menu">
       <i class="fa fa-bars"></i>
     </button>
 
     <!-- Profile dropdown (desktop/tablet) -->
-    <div *ngIf="isUserLoggedIn"
-         ngbDropdown
-         placement="bottom-end"
-         [autoClose]="'outside'"
-         #profileMenu="ngbDropdown"
-         class="ms-2 position-relative d-none d-md-block">
-      <button class="btn btn-dark d-flex align-items-center profile-btn"
-              id="profileDropdown"
-              ngbDropdownToggle>
+    <div *ngIf="isUserLoggedIn" ngbDropdown placement="bottom-end" [autoClose]="'outside'" #profileMenu="ngbDropdown"
+      class="ms-2 position-relative d-none d-md-block">
+      <button class="btn btn-dark d-flex align-items-center profile-btn" id="profileDropdown" ngbDropdownToggle>
         <span class="avatar me-2">{{ userInitials }}</span>
         <span class="d-md-inline">{{ currentUserFirstName }}</span>
       </button>
-      <div ngbDropdownMenu
-           class="dropdown-menu shadow-lg header-profile-menu"
-           aria-labelledby="profileDropdown">
+      <div ngbDropdownMenu class="dropdown-menu shadow-lg header-profile-menu" aria-labelledby="profileDropdown">
         <div class="menu-anim">
           <div class="px-3 py-2 border-bottom small">
             <div class="fw-semibold">{{ currentUserFirstName || 'User' }}</div>
@@ -54,24 +43,36 @@
 </header>
 
 <!-- Mobile Menu Overlay - Matches Sidebar Exactly -->
-<div *ngIf="isUserLoggedIn && isMobileMenuOpen"
-     class="mobile-sidebar-overlay d-md-none"
-     (click)="closeMobileMenu()">
-  <div class="mobile-sidebar bg-dark text-white"
-       (click)="$event.stopPropagation()">
+<div *ngIf="isUserLoggedIn && isMobileMenuOpen" class="mobile-sidebar-overlay d-md-none" (click)="closeMobileMenu()">
+  <div class="mobile-sidebar bg-dark text-white" (click)="$event.stopPropagation()">
     <!-- Close button -->
     <div class="d-flex justify-content-end p-2">
-      <button class="btn btn-close btn-close-white"
-              (click)="closeMobileMenu()"
-              aria-label="Close menu"></button>
+      <button class="btn btn-close btn-close-white" (click)="closeMobileMenu()" aria-label="Close menu"></button>
     </div>
 
 
     <ul>
 
-      <li class="nav-item my-2"><hr class="border-secondary"></li>
+      <li class="nav-item my-2">
+        <hr class="border-secondary">
+      </li>
 
-   
+      <!-- Integrations -->
+      <li class="nav-item">
+        <a class="nav-link text-white" routerLink="/integration-management" routerLinkActive="active"
+          (click)="closeMobileMenu()">
+          <i class="fa fa-plug me-2"></i>
+          Integrations
+        </a>
+      </li>
+
+      <!-- Test Harness -->
+      <li class="nav-item">
+        <a class="nav-link text-white" routerLink="/test-harness" routerLinkActive="active" (click)="closeMobileMenu()">
+          <i class="fa fa-flask me-2"></i>
+          Test Harness
+        </a>
+      </li>
 
     </ul>
 
