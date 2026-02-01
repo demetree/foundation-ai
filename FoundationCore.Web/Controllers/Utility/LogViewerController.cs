@@ -64,7 +64,7 @@ namespace Foundation.Controllers.WebAPI
             //
             if (UserCanAdminister() == false)
             {
-                CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, $"Non-admin user attempted to get log configured folders.", false);
+                CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, $"Non-admin user attempted to get log configured folders.  Auditor Administrator role required.", false);
 
                 return Forbid();
             }
