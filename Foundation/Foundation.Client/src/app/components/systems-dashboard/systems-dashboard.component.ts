@@ -21,6 +21,9 @@ import {
     TelemetryCollectionRunDto,
     MemoryTrendPoint,
     CpuTrendPoint,
+    NetworkTrendPoint,
+    SystemMemoryTrendPoint,
+    SystemCpuTrendPoint,
     SnapshotDetailDto,
     FleetMetricsResponse,
     MetricTrendPoint
@@ -96,11 +99,15 @@ export class SystemsDashboardComponent implements OnInit, OnDestroy {
 
     // Chart data
     cpuTrends: CpuTrendPoint[] = [];
+    networkTrends: NetworkTrendPoint[] = [];
+    systemMemoryTrends: SystemMemoryTrendPoint[] = [];
+    systemCpuTrends: SystemCpuTrendPoint[] = [];
     trendLoading = false;
 
     // Memory chart configuration
     memoryChartData: ChartData<'line'> = { labels: [], datasets: [] };
     cpuChartData: ChartData<'line'> = { labels: [], datasets: [] };
+    networkChartData: ChartData<'line'> = { labels: [], datasets: [] };
     lineChartType = 'line' as const;
     chartOptions: ChartConfiguration<'line'>['options'] = {
         responsive: true,
@@ -825,6 +832,18 @@ export class SystemsDashboardComponent implements OnInit, OnDestroy {
             cpu: this.telemetryService.getCpuTrends(
                 this.selectedAppName || undefined,
                 this.selectedHours
+            ),
+            network: this.telemetryService.getNetworkTrends(
+                this.selectedAppName || undefined,
+                this.selectedHours
+            ),
+            systemMemory: this.telemetryService.getSystemMemoryTrends(
+                this.selectedAppName || undefined,
+                this.selectedHours
+            ),
+            systemCpu: this.telemetryService.getSystemCpuTrends(
+                this.selectedAppName || undefined,
+                this.selectedHours
             )
         })
             .pipe(takeUntil(this.destroy$))
@@ -832,8 +851,12 @@ export class SystemsDashboardComponent implements OnInit, OnDestroy {
                 next: (result) => {
                     this.memoryTrends = result.memory.data;
                     this.cpuTrends = result.cpu.data;
+                    this.networkTrends = result.network.data;
+                    this.systemMemoryTrends = result.systemMemory.data;
+                    this.systemCpuTrends = result.systemCpu.data;
                     this.buildMemoryChart();
                     this.buildCpuChart();
+                    this.buildNetworkChart();
                     this.trendLoading = false;
                 },
                 error: (err: Error) => {
@@ -849,7 +872,7 @@ export class SystemsDashboardComponent implements OnInit, OnDestroy {
             return;
         }
 
-        // Group by application
+        // Group process memory by application
         const appGroups = new Map<string, { timestamp: Date; value: number }[]>();
         for (const point of this.memoryTrends) {
             const app = point.applicationName;
@@ -862,9 +885,24 @@ export class SystemsDashboardComponent implements OnInit, OnDestroy {
             });
         }
 
-        // Generate unique labels (time points)
-        const allTimestamps = this.memoryTrends
-            .map(p => new Date(p.timestamp).getTime())
+        // Group system memory by application
+        const systemGroups = new Map<string, { timestamp: Date; value: number }[]>();
+        for (const point of this.systemMemoryTrends) {
+            const app = point.applicationName;
+            if (!systemGroups.has(app)) {
+                systemGroups.set(app, []);
+            }
+            systemGroups.get(app)!.push({
+                timestamp: new Date(point.timestamp),
+                value: point.systemMemoryPercent || 0
+            });
+        }
+
+        // Generate unique labels (time points) from both data sources
+        const allTimestamps = [
+            ...this.memoryTrends.map(p => new Date(p.timestamp).getTime()),
+            ...this.systemMemoryTrends.map(p => new Date(p.timestamp).getTime())
+        ]
             .filter((v, i, a) => a.indexOf(v) === i)
             .sort((a, b) => a - b);
 
@@ -877,6 +915,7 @@ export class SystemsDashboardComponent implements OnInit, OnDestroy {
         const datasets: ChartData<'line'>['datasets'] = [];
         let colorIndex = 0;
 
+        // Add process memory datasets (solid lines)
         appGroups.forEach((points, appName) => {
             const data = allTimestamps.map(ts => {
                 const point = points.find(p => p.timestamp.getTime() === ts);
@@ -884,10 +923,30 @@ export class SystemsDashboardComponent implements OnInit, OnDestroy {
             });
 
             datasets.push({
-                label: appName,
+                label: `${appName} (Process MB)`,
                 data: data,
                 borderColor: colors[colorIndex % colors.length],
                 backgroundColor: colors[colorIndex % colors.length] + '33',
+                fill: false,
+                spanGaps: true
+            });
+            colorIndex++;
+        });
+
+        // Add system memory datasets (dashed lines)
+        colorIndex = 0;
+        systemGroups.forEach((points, appName) => {
+            const data = allTimestamps.map(ts => {
+                const point = points.find(p => p.timestamp.getTime() === ts);
+                return point ? point.value : null;
+            });
+
+            datasets.push({
+                label: `${appName} (Server %)`,
+                data: data,
+                borderColor: colors[colorIndex % colors.length],
+                backgroundColor: colors[colorIndex % colors.length] + '33',
+                borderDash: [5, 5],
                 fill: false,
                 spanGaps: true
             });
@@ -903,7 +962,7 @@ export class SystemsDashboardComponent implements OnInit, OnDestroy {
             return;
         }
 
-        // Group by application
+        // Group process CPU by application
         const appGroups = new Map<string, { timestamp: Date; value: number }[]>();
         for (const point of this.cpuTrends) {
             const app = point.applicationName;
@@ -916,9 +975,24 @@ export class SystemsDashboardComponent implements OnInit, OnDestroy {
             });
         }
 
-        // Generate unique labels (time points)
-        const allTimestamps = this.cpuTrends
-            .map(p => new Date(p.timestamp).getTime())
+        // Group system CPU by application
+        const systemGroups = new Map<string, { timestamp: Date; value: number }[]>();
+        for (const point of this.systemCpuTrends) {
+            const app = point.applicationName;
+            if (!systemGroups.has(app)) {
+                systemGroups.set(app, []);
+            }
+            systemGroups.get(app)!.push({
+                timestamp: new Date(point.timestamp),
+                value: point.systemCpuPercent || 0
+            });
+        }
+
+        // Generate unique labels (time points) from both data sources
+        const allTimestamps = [
+            ...this.cpuTrends.map(p => new Date(p.timestamp).getTime()),
+            ...this.systemCpuTrends.map(p => new Date(p.timestamp).getTime())
+        ]
             .filter((v, i, a) => a.indexOf(v) === i)
             .sort((a, b) => a - b);
 
@@ -931,6 +1005,7 @@ export class SystemsDashboardComponent implements OnInit, OnDestroy {
         const datasets: ChartData<'line'>['datasets'] = [];
         let colorIndex = 0;
 
+        // Add process CPU datasets (solid lines)
         appGroups.forEach((points, appName) => {
             const data = allTimestamps.map(ts => {
                 const point = points.find(p => p.timestamp.getTime() === ts);
@@ -938,7 +1013,7 @@ export class SystemsDashboardComponent implements OnInit, OnDestroy {
             });
 
             datasets.push({
-                label: appName,
+                label: `${appName} (Process %)`,
                 data: data,
                 borderColor: colors[colorIndex % colors.length],
                 backgroundColor: colors[colorIndex % colors.length] + '33',
@@ -948,7 +1023,81 @@ export class SystemsDashboardComponent implements OnInit, OnDestroy {
             colorIndex++;
         });
 
+        // Add system CPU datasets (dashed lines)
+        colorIndex = 0;
+        systemGroups.forEach((points, appName) => {
+            const data = allTimestamps.map(ts => {
+                const point = points.find(p => p.timestamp.getTime() === ts);
+                return point ? point.value : null;
+            });
+
+            datasets.push({
+                label: `${appName} (Server %)`,
+                data: data,
+                borderColor: colors[colorIndex % colors.length],
+                backgroundColor: colors[colorIndex % colors.length] + '33',
+                borderDash: [5, 5],
+                fill: false,
+                spanGaps: true
+            });
+            colorIndex++;
+        });
+
         this.cpuChartData = { labels, datasets };
+    }
+
+    private buildNetworkChart(): void {
+        if (!this.networkTrends.length) {
+            this.networkChartData = { labels: [], datasets: [] };
+            return;
+        }
+
+        // Group by application + interface
+        const appGroups = new Map<string, { timestamp: Date; value: number }[]>();
+        for (const point of this.networkTrends) {
+            const key = `${point.applicationName} - ${point.interfaceName}`;
+            if (!appGroups.has(key)) {
+                appGroups.set(key, []);
+            }
+            appGroups.get(key)!.push({
+                timestamp: new Date(point.timestamp),
+                value: point.utilizationPercent || 0
+            });
+        }
+
+        // Generate unique labels (time points)
+        const allTimestamps = this.networkTrends
+            .map(p => new Date(p.timestamp).getTime())
+            .filter((v, i, a) => a.indexOf(v) === i)
+            .sort((a, b) => a - b);
+
+        const labels = allTimestamps.map(t => {
+            const d = new Date(t);
+            return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        });
+
+        const colors = ['#ff8c00', '#4e79a7', '#e15759', '#76b7b2', '#59a14f', '#edc949', '#f28e2c'];
+        const datasets: ChartData<'line'>['datasets'] = [];
+        let colorIndex = 0;
+
+        appGroups.forEach((points, label) => {
+            const data = allTimestamps.map(ts => {
+                const point = points.find(p => p.timestamp.getTime() === ts);
+                return point ? point.value : null;
+            });
+
+            datasets.push({
+                label: label,
+                data: data,
+                borderColor: colors[colorIndex % colors.length],
+                backgroundColor: colors[colorIndex % colors.length] + '33',
+                fill: false,
+                spanGaps: true
+            });
+            colorIndex++;
+        });
+
+        this.networkChartData = { labels, datasets };
     }
 
     onAppFilterChange(): void {
@@ -1041,6 +1190,14 @@ export class SystemsDashboardComponent implements OnInit, OnDestroy {
     formatPercent(percent: number | undefined | null): string {
         if (percent === undefined || percent === null) return '-';
         return `${percent.toFixed(1)}%`;
+    }
+
+    formatBytes(bytes: number | undefined | null): string {
+        if (bytes === undefined || bytes === null) return '-';
+        if (bytes < 1024) return `${bytes.toFixed(0)} B`;
+        if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+        if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+        return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
     }
 
     formatDate(date: Date | string | undefined): string {
@@ -1249,6 +1406,10 @@ export class SystemsDashboardComponent implements OnInit, OnDestroy {
 
     trackByDriveName(index: number, drive: { name: string }): string {
         return drive.name;
+    }
+
+    trackByNicName(index: number, nic: { name: string }): string {
+        return nic.name;
     }
 
     trackByRunId(index: number, run: { id: number }): number {

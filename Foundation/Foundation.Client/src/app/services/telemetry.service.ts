@@ -180,9 +180,22 @@ export interface SnapshotDetailDto {
     systemCpuPercent?: number;
     databases: DatabaseHealthDto[];
     disks: DiskHealthDto[];
+    networks: NetworkHealthDto[];
     sessions?: SessionSnapshotDto;
     metrics: ApplicationMetricDto[];
     logErrors: LogErrorDto[];
+}
+
+export interface NetworkHealthDto {
+    interfaceName?: string;
+    description?: string;
+    linkSpeedMbps?: number;
+    bytesSentTotal?: number;
+    bytesReceivedTotal?: number;
+    bytesSentPerSecond?: number;
+    bytesReceivedPerSecond?: number;
+    utilizationPercent?: number;
+    status?: string;
 }
 
 export interface LogErrorDto {
@@ -262,6 +275,8 @@ export interface TelemetrySummaryResponse {
         machineName?: string;
         systemMemoryPercent?: number;
         systemCpuPercent?: number;
+        networkUtilizationPercent?: number;
+        networkThroughputBytesPerSecond?: number;
     }[];
     lastCollectionRun?: {
         startTime: Date;

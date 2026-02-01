@@ -16,6 +16,7 @@ export interface SystemHealthStatus {
     application: ApplicationMetrics;
     database: DatabaseStatus;
     disk: DiskMetrics;
+    network?: NetworkMetrics;
     threadPool: ThreadPoolMetrics;
 }
 
@@ -122,6 +123,23 @@ export interface ThreadPoolMetrics {
     };
 }
 
+export interface NetworkMetrics {
+    interfaces: NetworkInterfaceInfo[];
+}
+
+export interface NetworkInterfaceInfo {
+    name: string;
+    description: string;
+    linkSpeedMbps: number;
+    bytesSentTotal: number;
+    bytesReceivedTotal: number;
+    bytesSentPerSecond: number;
+    bytesReceivedPerSecond: number;
+    utilizationPercent: number;
+    status: 'Healthy' | 'Warning' | 'Critical';
+    isActive: boolean;
+}
+
 
 //
 // Authenticated Users Types
@@ -223,6 +241,16 @@ export class SystemHealthService {
     getDisk(): Observable<DiskMetrics> {
         return this.http.get<DiskMetrics>(
             `${this.baseUrl}/disk`,
+            { headers: this.authService.GetAuthenticationHeaders() }
+        );
+    }
+
+    /**
+     * Get network metrics only
+     */
+    getNetwork(): Observable<NetworkMetrics> {
+        return this.http.get<NetworkMetrics>(
+            `${this.baseUrl}/network`,
             { headers: this.authService.GetAuthenticationHeaders() }
         );
     }

@@ -295,7 +295,7 @@
         </div>
       </div>
       <!-- Business metric aggregates with sparklines -->
-      
+
     </div>
 
 
@@ -319,7 +319,7 @@
           <!-- Sparkline chart -->
           <div class="sparkline-container" *ngIf="metricSparklines.get(metric.metricName)">
             <canvas baseChart [data]="metricSparklines.get(metric.metricName)!" [options]="sparklineOptions"
-                    [type]="lineChartType">
+              [type]="lineChartType">
             </canvas>
           </div>
         </div>
@@ -377,6 +377,15 @@
                                     'text-warning': (snap.systemCpuPercent || 0) >= 50 && (snap.systemCpuPercent || 0) < 80,
                                     'text-danger': (snap.systemCpuPercent || 0) >= 80
                                 }">{{ formatPercent(snap.systemCpuPercent) }}</span>
+              </div>
+              <div class="stat-row"
+                *ngIf="snap.isOnline && (snap.networkUtilizationPercent !== undefined || snap.networkThroughputBytesPerSecond)">
+                <span class="stat-label">Network:</span>
+                <span class="text-orange">
+                  {{ formatPercent(snap.networkUtilizationPercent) }}
+                  <small class="text-muted" *ngIf="snap.networkThroughputBytesPerSecond">({{
+                    formatBytes(snap.networkThroughputBytesPerSecond) }}/s)</small>
+                </span>
               </div>
               <!-- Process-level metrics -->
               <div class="stat-row" *ngIf="snap.isOnline">
@@ -883,6 +892,49 @@
           </div>
 
 
+          <!-- Network Interfaces Card -->
+          <div class="col-md-6 col-lg-12" *ngIf="healthStatus.network?.interfaces?.length">
+            <div class="card health-card h-100 border-0 shadow-sm">
+              <div class="card-header bg-transparent border-0 d-flex align-items-center">
+                <div class="stat-circle bg-orange-soft me-3">
+                  <i class="fas fa-network-wired fa-lg text-orange"></i>
+                </div>
+                <div>
+                  <h5 class="mb-0">Network Interfaces</h5>
+                  <small class="text-muted">{{ healthStatus.network?.interfaces?.length }} active interface(s)</small>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="row g-3">
+                  <div class="col-md-6" *ngFor="let nic of healthStatus.network?.interfaces; trackBy: trackByNicName">
+                    <div class="drive-card p-3 rounded">
+                      <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="fw-bold">
+                          <i class="fas fa-ethernet me-2"></i>{{ nic.name }}
+                        </span>
+                        <span class="badge" [ngClass]="getStatusClass(nic.status)">
+                          {{ nic.status }}
+                        </span>
+                      </div>
+                      <div class="small text-muted mb-2" *ngIf="nic.description">
+                        {{ nic.description | slice:0:50 }}{{ nic.description.length > 50 ? '...' : '' }}
+                      </div>
+                      <div class="progress mb-2" style="height: 8px;">
+                        <div class="progress-bar bg-orange" [style.width.%]="nic.utilizationPercent" role="progressbar">
+                        </div>
+                      </div>
+                      <div class="d-flex justify-content-between small text-muted">
+                        <span>{{ nic.utilizationPercent?.toFixed(1) || 0 }}% utilized</span>
+                        <span>{{ nic.linkSpeedMbps }} Mbps</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
           <!-- Application Metrics Card -->
           <div class="col-md-6 col-lg-12" *ngIf="appMetrics?.applications?.length">
             <div class="card health-card h-100 border-0 shadow-sm">
@@ -1156,442 +1208,509 @@
             </div>
           </div>
         </div>
+
+        <!-- Network Trend Chart Row -->
+        <div class="row g-4 mt-2">
+          <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+              <div class="card-header bg-transparent border-0 d-flex align-items-center">
+                <div class="stat-circle bg-orange-soft me-3">
+                  <i class="fas fa-network-wired fa-lg text-orange"></i>
+                </div>
+                <div>
+                  <h5 class="mb-0">Network Utilization Trend</h5>
+                  <small class="text-muted">Interface utilization percentage over time</small>
+                </div>
+                <div class="ms-auto" *ngIf="trendLoading">
+                  <div class="spinner-border spinner-border-sm text-warning" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="chart-container" style="height: 280px;">
+                  <canvas baseChart *ngIf="networkChartData.datasets?.length" [data]="networkChartData"
+                    [options]="chartOptions" [type]="lineChartType">
+                  </canvas>
+                  <div *ngIf="!trendLoading && !networkChartData.datasets?.length" class="text-center text-muted py-5">
+                    <i class="fas fa-chart-line fa-3x mb-3 opacity-50"></i>
+                    <p>No network data available for the selected time range</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
+  </div>
 
-    <!-- Snapshots Table -->
-    <div class="sub-tab-content" *ngIf="activeHistoricalTab === 'snapshots'">
-      <div class="table-responsive">
-        <table class="table table-striped table-hover">
-          <thead>
-            <tr>
-              <th>Time</th>
-              <th>Application</th>
-              <th>Status</th>
-              <th>Uptime</th>
-              <th>Server Mem</th>
-              <th>Server CPU</th>
-              <th>Memory</th>
-              <th>CPU</th>
-              <th>Machine</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let snap of recentSnapshots; trackBy: trackByIndex" class="clickable-row"
-              (click)="openSnapshotDetail(snap.id)">
-              <td>{{ formatRelativeTime(snap.collectedAt) }}</td>
-              <td>{{ snap.applicationName }}</td>
-              <td>
-                <span class="status-badge" [class.online]="snap.isOnline" [class.offline]="!snap.isOnline">
-                  <i class="fas" [ngClass]="snap.isOnline ? 'fa-check-circle' : 'fa-times-circle'"></i>
-                  {{ snap.isOnline ? 'Online' : 'Offline' }}
-                </span>
-              </td>
-              <td>{{ formatUptime(snap.uptimeSeconds) }}</td>
-              <td>
-                <span *ngIf="snap.systemMemoryPercent !== undefined" [ngClass]="{
+  <!-- Snapshots Table -->
+  <div class="sub-tab-content" *ngIf="activeHistoricalTab === 'snapshots'">
+    <div class="table-responsive">
+      <table class="table table-striped table-hover">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Application</th>
+            <th>Status</th>
+            <th>Uptime</th>
+            <th>Server Mem</th>
+            <th>Server CPU</th>
+            <th>Memory</th>
+            <th>CPU</th>
+            <th>Machine</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let snap of recentSnapshots; trackBy: trackByIndex" class="clickable-row"
+            (click)="openSnapshotDetail(snap.id)">
+            <td>{{ formatRelativeTime(snap.collectedAt) }}</td>
+            <td>{{ snap.applicationName }}</td>
+            <td>
+              <span class="status-badge" [class.online]="snap.isOnline" [class.offline]="!snap.isOnline">
+                <i class="fas" [ngClass]="snap.isOnline ? 'fa-check-circle' : 'fa-times-circle'"></i>
+                {{ snap.isOnline ? 'Online' : 'Offline' }}
+              </span>
+            </td>
+            <td>{{ formatUptime(snap.uptimeSeconds) }}</td>
+            <td>
+              <span *ngIf="snap.systemMemoryPercent !== undefined" [ngClass]="{
                     'text-success': (snap.systemMemoryPercent || 0) < 50,
                     'text-warning': (snap.systemMemoryPercent || 0) >= 50 && (snap.systemMemoryPercent || 0) < 80,
                     'text-danger': (snap.systemMemoryPercent || 0) >= 80
                   }">{{ formatPercent(snap.systemMemoryPercent) }}</span>
-                <span *ngIf="snap.systemMemoryPercent === undefined" class="text-muted">-</span>
-              </td>
-              <td>
-                <span *ngIf="snap.systemCpuPercent !== undefined" [ngClass]="{
+              <span *ngIf="snap.systemMemoryPercent === undefined" class="text-muted">-</span>
+            </td>
+            <td>
+              <span *ngIf="snap.systemCpuPercent !== undefined" [ngClass]="{
                     'text-success': (snap.systemCpuPercent || 0) < 50,
                     'text-warning': (snap.systemCpuPercent || 0) >= 50 && (snap.systemCpuPercent || 0) < 80,
                     'text-danger': (snap.systemCpuPercent || 0) >= 80
                   }">{{ formatPercent(snap.systemCpuPercent) }}</span>
-                <span *ngIf="snap.systemCpuPercent === undefined" class="text-muted">-</span>
-              </td>
-              <td>{{ formatMemory(snap.memoryWorkingSetMB) }}</td>
-              <td>{{ formatCpu(snap.cpuPercent) }}</td>
-              <td>{{ snap.machineName || '-' }}</td>
-            </tr>
-            <tr *ngIf="recentSnapshots.length === 0">
-              <td colspan="9" class="text-center text-muted">No snapshots found</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+              <span *ngIf="snap.systemCpuPercent === undefined" class="text-muted">-</span>
+            </td>
+            <td>{{ formatMemory(snap.memoryWorkingSetMB) }}</td>
+            <td>{{ formatCpu(snap.cpuPercent) }}</td>
+            <td>{{ snap.machineName || '-' }}</td>
+          </tr>
+          <tr *ngIf="recentSnapshots.length === 0">
+            <td colspan="9" class="text-center text-muted">No snapshots found</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-
-    <!-- Collection Runs Table -->
-    <div class="sub-tab-content" *ngIf="activeHistoricalTab === 'runs'">
-      <div class="table-responsive">
-        <table class="table table-striped table-hover">
-          <thead>
-            <tr>
-              <th>Time</th>
-              <th>Duration</th>
-              <th>Apps Polled</th>
-              <th>Succeeded</th>
-              <th>Success Rate</th>
-              <th>Errors</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let run of collectionRuns; trackBy: trackByRunId">
-              <td>{{ formatRelativeTime(run.startTime) }}</td>
-              <td>{{ formatDuration(run.durationMs) }}</td>
-              <td>{{ run.applicationsPolled }}</td>
-              <td>{{ run.applicationsSucceeded }}</td>
-              <td [ngClass]="getSuccessClass(run)">{{ getSuccessRate(run) }}%</td>
-              <td>
-                <span *ngIf="run.errorMessage" class="text-danger" [title]="run.errorMessage">
-                  <i class="fas fa-exclamation-triangle"></i>
-                </span>
-                <span *ngIf="!run.errorMessage" class="text-success">
-                  <i class="fas fa-check"></i>
-                </span>
-              </td>
-            </tr>
-            <tr *ngIf="collectionRuns.length === 0">
-              <td colspan="6" class="text-center text-muted">No collection runs found</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
   </div>
 
-  <!-- Table Statistics Modal -->
-  <div class="modal fade" [class.show]="showTableModal" [style.display]="showTableModal ? 'block' : 'none'"
-    tabindex="-1" role="dialog" (click)="closeTableModal()">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document" (click)="$event.stopPropagation()">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">
-            <i class="fas fa-table me-2"></i>Table Statistics - {{ selectedDatabaseName }}
+  <!-- Collection Runs Table -->
+  <div class="sub-tab-content" *ngIf="activeHistoricalTab === 'runs'">
+    <div class="table-responsive">
+      <table class="table table-striped table-hover">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Duration</th>
+            <th>Apps Polled</th>
+            <th>Succeeded</th>
+            <th>Success Rate</th>
+            <th>Errors</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let run of collectionRuns; trackBy: trackByRunId">
+            <td>{{ formatRelativeTime(run.startTime) }}</td>
+            <td>{{ formatDuration(run.durationMs) }}</td>
+            <td>{{ run.applicationsPolled }}</td>
+            <td>{{ run.applicationsSucceeded }}</td>
+            <td [ngClass]="getSuccessClass(run)">{{ getSuccessRate(run) }}%</td>
+            <td>
+              <span *ngIf="run.errorMessage" class="text-danger" [title]="run.errorMessage">
+                <i class="fas fa-exclamation-triangle"></i>
+              </span>
+              <span *ngIf="!run.errorMessage" class="text-success">
+                <i class="fas fa-check"></i>
+              </span>
+            </td>
+          </tr>
+          <tr *ngIf="collectionRuns.length === 0">
+            <td colspan="6" class="text-center text-muted">No collection runs found</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- Table Statistics Modal -->
+<div class="modal fade" [class.show]="showTableModal" [style.display]="showTableModal ? 'block' : 'none'" tabindex="-1"
+  role="dialog" (click)="closeTableModal()">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document" (click)="$event.stopPropagation()">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="fas fa-table me-2"></i>Table Statistics - {{ selectedDatabaseName }}
+        </h5>
+        <button type="button" class="btn-close" (click)="closeTableModal()"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Loading state -->
+        <div *ngIf="tableStatsLoading" class="text-center py-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p class="mt-2 text-muted">Loading table statistics...</p>
+        </div>
+
+        <!-- Error state -->
+        <div *ngIf="!tableStatsLoading && tableStats?.errorMessage" class="alert alert-danger">
+          <i class="fas fa-exclamation-triangle me-2"></i>{{ tableStats?.errorMessage }}
+        </div>
+
+        <!-- Statistics summary -->
+        <div *ngIf="!tableStatsLoading && tableStats && !tableStats.errorMessage">
+          <div class="row mb-3">
+            <div class="col-4 text-center">
+              <div class="h4 mb-0">{{ tableStats.totalTables }}</div>
+              <small class="text-muted">Tables</small>
+            </div>
+            <div class="col-4 text-center">
+              <div class="h4 mb-0">{{ formatRowCount(tableStats.totalRows) }}</div>
+              <small class="text-muted">Total Rows</small>
+            </div>
+            <div class="col-4 text-center" *ngIf="tableStats.sizeAvailable">
+              <div class="h4 mb-0">{{ tableStats.totalSizeMB | number:'1.1-1' }} MB</div>
+              <small class="text-muted">Total Size</small>
+            </div>
+          </div>
+
+          <!-- Table list -->
+          <table class="table table-sm table-hover">
+            <thead>
+              <tr>
+                <th class="sortable" (click)="sortTables('tableName')">
+                  Table Name
+                  <i class="fas ms-1"
+                    [ngClass]="tableSortColumn === 'tableName' ? (tableSortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort'"></i>
+                </th>
+                <th class="sortable text-end" (click)="sortTables('rowCount')">
+                  Rows
+                  <i class="fas ms-1"
+                    [ngClass]="tableSortColumn === 'rowCount' ? (tableSortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort'"></i>
+                </th>
+                <th class="sortable text-end" *ngIf="tableStats.sizeAvailable" (click)="sortTables('sizeMB')">
+                  Size (MB)
+                  <i class="fas ms-1"
+                    [ngClass]="tableSortColumn === 'sizeMB' ? (tableSortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort'"></i>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let table of getSortedTables()">
+                <td><code>{{ table.tableName }}</code></td>
+                <td class="text-end">{{ table.rowCount | number }}</td>
+                <td class="text-end" *ngIf="tableStats.sizeAvailable">{{ table.sizeMB |
+                  number:'1.2-2' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <small class="text-muted me-auto">
+          <i class="fas fa-info-circle me-1"></i>Row counts are approximate
+        </small>
+        <button type="button" class="btn btn-secondary" (click)="closeTableModal()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop fade show" *ngIf="showTableModal" (click)="closeTableModal()"></div>
+
+<!-- Snapshot Detail Modal -->
+<div class="modal fade show d-block" *ngIf="selectedSnapshotDetail" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content snapshot-detail-modal">
+      <div class="modal-header">
+        <div class="d-flex flex-column">
+          <h5 class="modal-title mb-1">
+            <i class="fas fa-camera me-2"></i>{{ selectedSnapshotDetail.applicationName }}
           </h5>
-          <button type="button" class="btn-close" (click)="closeTableModal()"></button>
-        </div>
-        <div class="modal-body">
-          <!-- Loading state -->
-          <div *ngIf="tableStatsLoading" class="text-center py-4">
-            <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Loading...</span>
-            </div>
-            <p class="mt-2 text-muted">Loading table statistics...</p>
-          </div>
-
-          <!-- Error state -->
-          <div *ngIf="!tableStatsLoading && tableStats?.errorMessage" class="alert alert-danger">
-            <i class="fas fa-exclamation-triangle me-2"></i>{{ tableStats?.errorMessage }}
-          </div>
-
-          <!-- Statistics summary -->
-          <div *ngIf="!tableStatsLoading && tableStats && !tableStats.errorMessage">
-            <div class="row mb-3">
-              <div class="col-4 text-center">
-                <div class="h4 mb-0">{{ tableStats.totalTables }}</div>
-                <small class="text-muted">Tables</small>
-              </div>
-              <div class="col-4 text-center">
-                <div class="h4 mb-0">{{ formatRowCount(tableStats.totalRows) }}</div>
-                <small class="text-muted">Total Rows</small>
-              </div>
-              <div class="col-4 text-center" *ngIf="tableStats.sizeAvailable">
-                <div class="h4 mb-0">{{ tableStats.totalSizeMB | number:'1.1-1' }} MB</div>
-                <small class="text-muted">Total Size</small>
-              </div>
-            </div>
-
-            <!-- Table list -->
-            <table class="table table-sm table-hover">
-              <thead>
-                <tr>
-                  <th class="sortable" (click)="sortTables('tableName')">
-                    Table Name
-                    <i class="fas ms-1"
-                      [ngClass]="tableSortColumn === 'tableName' ? (tableSortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort'"></i>
-                  </th>
-                  <th class="sortable text-end" (click)="sortTables('rowCount')">
-                    Rows
-                    <i class="fas ms-1"
-                      [ngClass]="tableSortColumn === 'rowCount' ? (tableSortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort'"></i>
-                  </th>
-                  <th class="sortable text-end" *ngIf="tableStats.sizeAvailable" (click)="sortTables('sizeMB')">
-                    Size (MB)
-                    <i class="fas ms-1"
-                      [ngClass]="tableSortColumn === 'sizeMB' ? (tableSortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort'"></i>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let table of getSortedTables()">
-                  <td><code>{{ table.tableName }}</code></td>
-                  <td class="text-end">{{ table.rowCount | number }}</td>
-                  <td class="text-end" *ngIf="tableStats.sizeAvailable">{{ table.sizeMB |
-                    number:'1.2-2' }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <small class="text-muted me-auto">
-            <i class="fas fa-info-circle me-1"></i>Row counts are approximate
+          <small class="text-muted">
+            <i class="fas fa-clock me-1"></i>{{ selectedSnapshotDetail.collectedAt | date:'medium' }}
           </small>
-          <button type="button" class="btn btn-secondary" (click)="closeTableModal()">Close</button>
         </div>
+        <span class="status-badge ms-auto me-3" [class.online]="selectedSnapshotDetail.isOnline"
+          [class.offline]="!selectedSnapshotDetail.isOnline">
+          {{ selectedSnapshotDetail.isOnline ? 'Online' : 'Offline' }}
+        </span>
+        <button type="button" class="btn-close" (click)="closeSnapshotDetail()"></button>
       </div>
-    </div>
-  </div>
-  <div class="modal-backdrop fade show" *ngIf="showTableModal" (click)="closeTableModal()"></div>
-
-  <!-- Snapshot Detail Modal -->
-  <div class="modal fade show d-block" *ngIf="selectedSnapshotDetail" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-      <div class="modal-content snapshot-detail-modal">
-        <div class="modal-header">
-          <div class="d-flex flex-column">
-            <h5 class="modal-title mb-1">
-              <i class="fas fa-camera me-2"></i>{{ selectedSnapshotDetail.applicationName }}
-            </h5>
-            <small class="text-muted">
-              <i class="fas fa-clock me-1"></i>{{ selectedSnapshotDetail.collectedAt | date:'medium' }}
-            </small>
-          </div>
-          <span class="status-badge ms-auto me-3" [class.online]="selectedSnapshotDetail.isOnline"
-            [class.offline]="!selectedSnapshotDetail.isOnline">
-            {{ selectedSnapshotDetail.isOnline ? 'Online' : 'Offline' }}
-          </span>
-          <button type="button" class="btn-close" (click)="closeSnapshotDetail()"></button>
-        </div>
-        <div class="modal-body">
-          <!-- Core Metrics -->
-          <div class="metrics-grid mb-4">
-            <!-- System-wide metrics (if available) -->
-            <div class="metric-item" *ngIf="selectedSnapshotDetail.systemMemoryPercent !== undefined">
-              <div class="metric-label">Server Memory %</div>
-              <div class="metric-value" [ngClass]="{
+      <div class="modal-body">
+        <!-- Core Metrics -->
+        <div class="metrics-grid mb-4">
+          <!-- System-wide metrics (if available) -->
+          <div class="metric-item" *ngIf="selectedSnapshotDetail.systemMemoryPercent !== undefined">
+            <div class="metric-label">Server Memory %</div>
+            <div class="metric-value" [ngClass]="{
                     'text-success': (selectedSnapshotDetail.systemMemoryPercent || 0) < 50,
                     'text-warning': (selectedSnapshotDetail.systemMemoryPercent || 0) >= 50 && (selectedSnapshotDetail.systemMemoryPercent || 0) < 80,
                     'text-danger': (selectedSnapshotDetail.systemMemoryPercent || 0) >= 80
                   }">{{ formatPercent(selectedSnapshotDetail.systemMemoryPercent) }}</div>
-            </div>
-            <div class="metric-item" *ngIf="selectedSnapshotDetail.systemCpuPercent !== undefined">
-              <div class="metric-label">Server CPU %</div>
-              <div class="metric-value" [ngClass]="{
+          </div>
+          <div class="metric-item" *ngIf="selectedSnapshotDetail.systemCpuPercent !== undefined">
+            <div class="metric-label">Server CPU %</div>
+            <div class="metric-value" [ngClass]="{
                     'text-success': (selectedSnapshotDetail.systemCpuPercent || 0) < 50,
                     'text-warning': (selectedSnapshotDetail.systemCpuPercent || 0) >= 50 && (selectedSnapshotDetail.systemCpuPercent || 0) < 80,
                     'text-danger': (selectedSnapshotDetail.systemCpuPercent || 0) >= 80
                   }">{{ formatPercent(selectedSnapshotDetail.systemCpuPercent) }}</div>
-            </div>
-            <!-- Process-level metrics -->
-            <div class="metric-item">
-              <div class="metric-label">Memory (Working Set)</div>
-              <div class="metric-value">{{ formatMemory(selectedSnapshotDetail.memoryWorkingSetMB) }}</div>
-            </div>
-            <div class="metric-item">
-              <div class="metric-label">Memory (GC Heap)</div>
-              <div class="metric-value">{{ formatMemory(selectedSnapshotDetail.memoryGcHeapMB) }}</div>
-            </div>
-            <div class="metric-item">
-              <div class="metric-label">CPU</div>
-              <div class="metric-value">{{ formatCpu(selectedSnapshotDetail.cpuPercent) }}</div>
-            </div>
-            <div class="metric-item">
-              <div class="metric-label">Uptime</div>
-              <div class="metric-value">{{ formatUptime(selectedSnapshotDetail.uptimeSeconds) }}</div>
-            </div>
-            <div class="metric-item">
-              <div class="metric-label">Thread Pool Workers</div>
-              <div class="metric-value">{{ selectedSnapshotDetail.threadPoolWorkerThreads || '-' }}</div>
-            </div>
-            <div class="metric-item">
-              <div class="metric-label">Machine</div>
-              <div class="metric-value">{{ selectedSnapshotDetail.machineName || '-' }}</div>
-            </div>
           </div>
-
-          <!-- Database Health -->
-          <div class="section-card mb-3" *ngIf="selectedSnapshotDetail.databases?.length">
-            <h6 class="section-title"><i class="fas fa-database me-2"></i>Database Health</h6>
-            <table class="table table-sm mb-0">
-              <thead>
-                <tr>
-                  <th>Database</th>
-                  <th>Status</th>
-                  <th>Server</th>
-                  <th>Provider</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let db of selectedSnapshotDetail.databases">
-                  <td>{{ db.databaseName }}</td>
-                  <td>
-                    <span [class.text-success]="db.isConnected" [class.text-danger]="!db.isConnected">
-                      <i class="fas" [ngClass]="db.isConnected ? 'fa-check-circle' : 'fa-times-circle'"></i>
-                      {{ db.status || (db.isConnected ? 'Connected' : 'Disconnected') }}
-                    </span>
-                  </td>
-                  <td>{{ db.server || '-' }}</td>
-                  <td>{{ db.provider || '-' }}</td>
-                </tr>
-              </tbody>
-            </table>
+          <!-- Process-level metrics -->
+          <div class="metric-item">
+            <div class="metric-label">Memory (Working Set)</div>
+            <div class="metric-value">{{ formatMemory(selectedSnapshotDetail.memoryWorkingSetMB) }}</div>
           </div>
-
-          <!-- Disk Health -->
-          <div class="section-card mb-3" *ngIf="selectedSnapshotDetail.disks?.length">
-            <h6 class="section-title"><i class="fas fa-hdd me-2"></i>Disk Health</h6>
-            <table class="table table-sm mb-0">
-              <thead>
-                <tr>
-                  <th>Drive</th>
-                  <th>Total</th>
-                  <th>Free</th>
-                  <th>% Free</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let disk of selectedSnapshotDetail.disks" [class.table-warning]="disk.freePercent < 15">
-                  <td>
-                    {{ disk.driveName }}
-                    <span *ngIf="disk.isApplicationDrive" class="badge bg-primary ms-1">App</span>
-                  </td>
-                  <td>{{ disk.totalGB.toFixed(1) }} GB</td>
-                  <td>{{ disk.freeGB.toFixed(1) }} GB</td>
-                  <td [class.text-danger]="disk.freePercent < 10"
-                    [class.text-warning]="disk.freePercent >= 10 && disk.freePercent < 20">
-                    {{ disk.freePercent.toFixed(1) }}%
-                  </td>
-                  <td>{{ disk.status || 'OK' }}</td>
-                </tr>
-              </tbody>
-            </table>
+          <div class="metric-item">
+            <div class="metric-label">Memory (GC Heap)</div>
+            <div class="metric-value">{{ formatMemory(selectedSnapshotDetail.memoryGcHeapMB) }}</div>
           </div>
+          <div class="metric-item">
+            <div class="metric-label">CPU</div>
+            <div class="metric-value">{{ formatCpu(selectedSnapshotDetail.cpuPercent) }}</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-label">Uptime</div>
+            <div class="metric-value">{{ formatUptime(selectedSnapshotDetail.uptimeSeconds) }}</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-label">Thread Pool Workers</div>
+            <div class="metric-value">{{ selectedSnapshotDetail.threadPoolWorkerThreads || '-' }}</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-label">Machine</div>
+            <div class="metric-value">{{ selectedSnapshotDetail.machineName || '-' }}</div>
+          </div>
+        </div>
 
-          <!-- Session Info -->
-          <div class="section-card" *ngIf="selectedSnapshotDetail.sessions">
-            <h6 class="section-title"><i class="fas fa-users me-2"></i>Session Info</h6>
-            <div class="row">
-              <div class="col-6">
-                <div class="metric-item">
-                  <div class="metric-label">Active Sessions</div>
-                  <div class="metric-value text-success">{{ selectedSnapshotDetail.sessions.activeSessionCount }}</div>
+        <!-- Database Health -->
+        <div class="section-card mb-3" *ngIf="selectedSnapshotDetail.databases?.length">
+          <h6 class="section-title"><i class="fas fa-database me-2"></i>Database Health</h6>
+          <table class="table table-sm mb-0">
+            <thead>
+              <tr>
+                <th>Database</th>
+                <th>Status</th>
+                <th>Server</th>
+                <th>Provider</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let db of selectedSnapshotDetail.databases">
+                <td>{{ db.databaseName }}</td>
+                <td>
+                  <span [class.text-success]="db.isConnected" [class.text-danger]="!db.isConnected">
+                    <i class="fas" [ngClass]="db.isConnected ? 'fa-check-circle' : 'fa-times-circle'"></i>
+                    {{ db.status || (db.isConnected ? 'Connected' : 'Disconnected') }}
+                  </span>
+                </td>
+                <td>{{ db.server || '-' }}</td>
+                <td>{{ db.provider || '-' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Disk Health -->
+        <div class="section-card mb-3" *ngIf="selectedSnapshotDetail.disks?.length">
+          <h6 class="section-title"><i class="fas fa-hdd me-2"></i>Disk Health</h6>
+          <table class="table table-sm mb-0">
+            <thead>
+              <tr>
+                <th>Drive</th>
+                <th>Total</th>
+                <th>Free</th>
+                <th>% Free</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let disk of selectedSnapshotDetail.disks" [class.table-warning]="disk.freePercent < 15">
+                <td>
+                  {{ disk.driveName }}
+                  <span *ngIf="disk.isApplicationDrive" class="badge bg-primary ms-1">App</span>
+                </td>
+                <td>{{ disk.totalGB.toFixed(1) }} GB</td>
+                <td>{{ disk.freeGB.toFixed(1) }} GB</td>
+                <td [class.text-danger]="disk.freePercent < 10"
+                  [class.text-warning]="disk.freePercent >= 10 && disk.freePercent < 20">
+                  {{ disk.freePercent.toFixed(1) }}%
+                </td>
+                <td>{{ disk.status || 'OK' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Network Health -->
+        <div class="section-card mb-3" *ngIf="selectedSnapshotDetail.networks?.length">
+          <h6 class="section-title"><i class="fas fa-network-wired me-2 text-orange"></i>Network Health</h6>
+          <table class="table table-sm mb-0">
+            <thead>
+              <tr>
+                <th>Interface</th>
+                <th>Link Speed</th>
+                <th>Utilization</th>
+                <th>Sent/Sec</th>
+                <th>Recv/Sec</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let nic of selectedSnapshotDetail.networks">
+                <td>
+                  {{ nic.interfaceName }}
+                  <div class="small text-muted" *ngIf="nic.description">{{ nic.description | slice:0:30 }}{{
+                    nic.description.length > 30 ? '...' : '' }}</div>
+                </td>
+                <td>{{ nic.linkSpeedMbps }} Mbps</td>
+                <td [class.text-danger]="(nic.utilizationPercent || 0) >= 80"
+                  [class.text-warning]="(nic.utilizationPercent || 0) >= 50 && (nic.utilizationPercent || 0) < 80">
+                  {{ (nic.utilizationPercent || 0).toFixed(1) }}%
+                </td>
+                <td>{{ formatBytes(nic.bytesSentPerSecond) }}/s</td>
+                <td>{{ formatBytes(nic.bytesReceivedPerSecond) }}/s</td>
+                <td>{{ nic.status || 'OK' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Session Info -->
+        <div class="section-card" *ngIf="selectedSnapshotDetail.sessions">
+          <h6 class="section-title"><i class="fas fa-users me-2"></i>Session Info</h6>
+          <div class="row">
+            <div class="col-6">
+              <div class="metric-item">
+                <div class="metric-label">Active Sessions</div>
+                <div class="metric-value text-success">{{ selectedSnapshotDetail.sessions.activeSessionCount }}
                 </div>
               </div>
-              <div class="col-6">
-                <div class="metric-item">
-                  <div class="metric-label">Expired Sessions</div>
-                  <div class="metric-value text-muted">{{ selectedSnapshotDetail.sessions.expiredSessionCount }}</div>
-                </div>
+            </div>
+            <div class="col-6">
+              <div class="metric-item">
+                <div class="metric-label">Expired Sessions</div>
+                <div class="metric-value text-muted">{{ selectedSnapshotDetail.sessions.expiredSessionCount }}</div>
               </div>
             </div>
           </div>
+        </div>
 
-          <!-- Application Metrics -->
-          <div class="section-card mb-3" *ngIf="selectedSnapshotDetail.metrics?.length">
-            <h6 class="section-title"><i class="fas fa-chart-bar me-2"></i>Application Metrics</h6>
+        <!-- Application Metrics -->
+        <div class="section-card mb-3" *ngIf="selectedSnapshotDetail.metrics?.length">
+          <h6 class="section-title"><i class="fas fa-chart-bar me-2"></i>Application Metrics</h6>
+          <table class="table table-sm mb-0">
+            <thead>
+              <tr>
+                <th>Metric</th>
+                <th>Value</th>
+                <th>Category</th>
+                <th>State</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let metric of selectedSnapshotDetail.metrics">
+                <td>{{ metric.metricName }}</td>
+                <td>
+                  <strong>{{ metric.metricValue || '-' }}</strong>
+                </td>
+                <td>{{ metric.category || '-' }}</td>
+                <td>
+                  <span class="badge" [class.bg-success]="metric.state === 0" [class.bg-warning]="metric.state === 1"
+                    [class.bg-danger]="metric.state === 2">
+                    {{ metric.state === 0 ? 'Healthy' : (metric.state === 1 ? 'Warning' : (metric.state === 2 ?
+                    'Critical' : '-')) }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Log Errors -->
+        <div class="section-card mb-3" *ngIf="selectedSnapshotDetail.logErrors?.length">
+          <h6 class="section-title"><i class="fas fa-exclamation-triangle me-2 text-danger"></i>Log Errors ({{
+            selectedSnapshotDetail.logErrors.length }})</h6>
+
+          <!-- Filter Controls -->
+          <div class="d-flex gap-2 mb-2 flex-wrap">
+            <input type="text" class="form-control form-control-sm" style="max-width: 250px;"
+              placeholder="Search messages..." [(ngModel)]="logErrorFilter">
+            <select class="form-select form-select-sm" style="max-width: 120px;" [(ngModel)]="logErrorLevelFilter">
+              <option value="ALL">All Levels</option>
+              <option value="ERROR">ERROR</option>
+              <option value="FATAL">FATAL</option>
+              <option value="CRITICAL">CRITICAL</option>
+            </select>
+            <small class="text-muted align-self-center">Showing {{ filteredLogErrors.length }} of {{
+              selectedSnapshotDetail.logErrors.length }}</small>
+          </div>
+
+          <div class="table-responsive">
             <table class="table table-sm mb-0">
               <thead>
                 <tr>
-                  <th>Metric</th>
-                  <th>Value</th>
-                  <th>Category</th>
-                  <th>State</th>
+                  <th>Time</th>
+                  <th>Level</th>
+                  <th>Message</th>
+                  <th>Count</th>
+                  <th>File</th>
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let metric of selectedSnapshotDetail.metrics">
-                  <td>{{ metric.metricName }}</td>
-                  <td>
-                    <strong>{{ metric.metricValue || '-' }}</strong>
-                  </td>
-                  <td>{{ metric.category || '-' }}</td>
-                  <td>
-                    <span class="badge" [class.bg-success]="metric.state === 0" [class.bg-warning]="metric.state === 1"
-                      [class.bg-danger]="metric.state === 2">
-                      {{ metric.state === 0 ? 'Healthy' : (metric.state === 1 ? 'Warning' : (metric.state === 2 ?
-                      'Critical' : '-')) }}
-                    </span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Log Errors -->
-          <div class="section-card mb-3" *ngIf="selectedSnapshotDetail.logErrors?.length">
-            <h6 class="section-title"><i class="fas fa-exclamation-triangle me-2 text-danger"></i>Log Errors ({{
-              selectedSnapshotDetail.logErrors.length }})</h6>
-
-            <!-- Filter Controls -->
-            <div class="d-flex gap-2 mb-2 flex-wrap">
-              <input type="text" class="form-control form-control-sm" style="max-width: 250px;"
-                placeholder="Search messages..." [(ngModel)]="logErrorFilter">
-              <select class="form-select form-select-sm" style="max-width: 120px;" [(ngModel)]="logErrorLevelFilter">
-                <option value="ALL">All Levels</option>
-                <option value="ERROR">ERROR</option>
-                <option value="FATAL">FATAL</option>
-                <option value="CRITICAL">CRITICAL</option>
-              </select>
-              <small class="text-muted align-self-center">Showing {{ filteredLogErrors.length }} of {{
-                selectedSnapshotDetail.logErrors.length }}</small>
-            </div>
-
-            <div class="table-responsive">
-              <table class="table table-sm mb-0">
-                <thead>
+                <ng-container *ngFor="let err of filteredLogErrors">
                   <tr>
-                    <th>Time</th>
-                    <th>Level</th>
-                    <th>Message</th>
-                    <th>Count</th>
-                    <th>File</th>
+                    <td style="white-space: nowrap;">{{ err.logTimestamp | date:'short' }}</td>
+                    <td>
+                      <span class="badge bg-danger">{{ err.level }}</span>
+                    </td>
+                    <td>
+                      <span class="text-truncate d-inline-block" style="max-width: 280px;" [title]="err.message">
+                        {{ err.message }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="badge" [ngClass]="err.occurrenceCount > 1 ? 'bg-warning text-dark' : 'bg-secondary'">
+                        {{ err.occurrenceCount || 1 }}x
+                      </span>
+                    </td>
+                    <td><small class="text-muted">{{ err.logFileName }}</small></td>
                   </tr>
-                </thead>
-                <tbody>
-                  <ng-container *ngFor="let err of filteredLogErrors">
-                    <tr>
-                      <td style="white-space: nowrap;">{{ err.logTimestamp | date:'short' }}</td>
-                      <td>
-                        <span class="badge bg-danger">{{ err.level }}</span>
-                      </td>
-                      <td>
-                        <span class="text-truncate d-inline-block" style="max-width: 280px;" [title]="err.message">
-                          {{ err.message }}
-                        </span>
-                      </td>
-                      <td>
-                        <span class="badge"
-                          [ngClass]="err.occurrenceCount > 1 ? 'bg-warning text-dark' : 'bg-secondary'">
-                          {{ err.occurrenceCount || 1 }}x
-                        </span>
-                      </td>
-                      <td><small class="text-muted">{{ err.logFileName }}</small></td>
-                    </tr>
-                    <tr *ngIf="err.exception" class="exception-row">
-                      <td colspan="5" class="bg-dark text-light py-1 px-2">
-                        <details>
-                          <summary class="text-warning small">View Exception Stack</summary>
-                          <pre class="mb-0 small mt-1 text-light"
-                            style="white-space: pre-wrap;">{{ err.exception }}</pre>
-                        </details>
-                      </td>
-                    </tr>
-                  </ng-container>
-                </tbody>
-              </table>
-            </div>
+                  <tr *ngIf="err.exception" class="exception-row">
+                    <td colspan="5" class="bg-dark text-light py-1 px-2">
+                      <details>
+                        <summary class="text-warning small">View Exception Stack</summary>
+                        <pre class="mb-0 small mt-1 text-light" style="white-space: pre-wrap;">{{ err.exception }}</pre>
+                      </details>
+                    </td>
+                  </tr>
+                </ng-container>
+              </tbody>
+            </table>
           </div>
+        </div>
 
-          <!-- Empty state for child records -->
-          <div class="text-center text-muted py-4"
-            *ngIf="!selectedSnapshotDetail.databases?.length && !selectedSnapshotDetail.disks?.length && !selectedSnapshotDetail.sessions && !selectedSnapshotDetail.metrics?.length && !selectedSnapshotDetail.logErrors?.length">
-            <i class="fas fa-info-circle fa-2x mb-2"></i>
-            <p>No additional health data available for this snapshot.</p>
-          </div>
+        <!-- Empty state for child records -->
+        <div class="text-center text-muted py-4"
+          *ngIf="!selectedSnapshotDetail.databases?.length && !selectedSnapshotDetail.disks?.length && !selectedSnapshotDetail.sessions && !selectedSnapshotDetail.metrics?.length && !selectedSnapshotDetail.logErrors?.length">
+          <i class="fas fa-info-circle fa-2x mb-2"></i>
+          <p>No additional health data available for this snapshot.</p>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" (click)="closeSnapshotDetail()">Close</button>
-        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeSnapshotDetail()">Close</button>
       </div>
     </div>
   </div>
-  <div class="modal-backdrop fade show" *ngIf="selectedSnapshotDetail" (click)="closeSnapshotDetail()"></div>
+</div>
+<div class="modal-backdrop fade show" *ngIf="selectedSnapshotDetail" (click)="closeSnapshotDetail()"></div>

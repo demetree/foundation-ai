@@ -114,6 +114,16 @@
     background: linear-gradient(135deg, #fd7e14 0%, #ffa94d 100%);
 }
 
+// Orange soft background for stat circles
+.bg-orange-soft {
+    background: rgba(253, 126, 20, 0.15);
+}
+
+// Orange text color
+.text-orange {
+    color: #fd7e14;
+}
+
 // Summary Cards
 .summary-cards {
     display: grid;

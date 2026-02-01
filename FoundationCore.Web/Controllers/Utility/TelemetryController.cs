@@ -116,6 +116,7 @@ namespace Foundation.Controllers.WebAPI
                     TelemetrySnapshot snapshot = await context.TelemetrySnapshots.Include(s => s.telemetryApplication)
                                                                                  .Include(s => s.TelemetryDatabaseHealths)
                                                                                  .Include(s => s.TelemetryDiskHealths)
+                                                                                 .Include(s => s.TelemetryNetworkHealths)
                                                                                  .Include(s => s.TelemetrySessionSnapshots)
                                                                                  .Include(s => s.TelemetryApplicationMetrics)
                                                                                  .Include(s => s.TelemetryLogErrors)
@@ -137,6 +138,8 @@ namespace Foundation.Controllers.WebAPI
                         snapshot.memoryWorkingSetMB,
                         snapshot.memoryGcHeapMB,
                         snapshot.cpuPercent,
+                        snapshot.systemMemoryPercent,
+                        snapshot.systemCpuPercent,
                         snapshot.threadPoolWorkerThreads,
                         snapshot.threadPoolPendingWorkItems,
                         snapshot.machineName,
@@ -185,6 +188,18 @@ namespace Foundation.Controllers.WebAPI
                             e.exception,
                             e.logFileName,
                             e.occurrenceCount
+                        }),
+                        networks = snapshot.TelemetryNetworkHealths.Select(n => new
+                        {
+                            n.interfaceName,
+                            description = n.interfaceDescription,
+                            n.linkSpeedMbps,
+                            n.bytesSentTotal,
+                            n.bytesReceivedTotal,
+                            n.bytesSentPerSecond,
+                            n.bytesReceivedPerSecond,
+                            n.utilizationPercent,
+                            n.status
                         })
                     };
 
@@ -773,11 +788,13 @@ namespace Foundation.Controllers.WebAPI
                                                                             .ToListAsync()
                                                                             .ConfigureAwait(false);
 
-                    var latestSnapshots = await context.TelemetrySnapshots
+                    // Get latest snapshots with basic info
+                    var latestSnapshotsBase = await context.TelemetrySnapshots
                         .Include(s => s.telemetryApplication)
                         .Where(s => latestSnapshotIds.Contains(s.id))
                         .Select(s => new
                         {
+                            s.id,
                             applicationName = s.telemetryApplication.name,
                             s.collectedAt,
                             s.isOnline,
@@ -791,6 +808,41 @@ namespace Foundation.Controllers.WebAPI
                         })
                         .ToListAsync()
                         .ConfigureAwait(false);
+
+                    // Get network metrics per snapshot (as a separate query)
+                    var networkMetrics = await context.TelemetryNetworkHealths
+                        .Where(n => latestSnapshotIds.Contains(n.telemetrySnapshotId) && n.isActive)
+                        .GroupBy(n => n.telemetrySnapshotId)
+                        .Select(g => new
+                        {
+                            snapshotId = g.Key,
+                            maxUtilizationPercent = g.Max(n => n.utilizationPercent ?? 0),
+                            totalBytesSentPerSecond = g.Sum(n => n.bytesSentPerSecond ?? 0),
+                            totalBytesReceivedPerSecond = g.Sum(n => n.bytesReceivedPerSecond ?? 0)
+                        })
+                        .ToListAsync()
+                        .ConfigureAwait(false);
+
+                    // Merge network metrics with snapshots
+                    var latestSnapshots = latestSnapshotsBase.Select(s =>
+                    {
+                        var netMetric = networkMetrics.FirstOrDefault(n => n.snapshotId == s.id);
+                        return new
+                        {
+                            s.applicationName,
+                            s.collectedAt,
+                            s.isOnline,
+                            s.uptimeSeconds,
+                            s.memoryWorkingSetMB,
+                            s.memoryGcHeapMB,
+                            s.cpuPercent,
+                            s.machineName,
+                            s.systemMemoryPercent,
+                            s.systemCpuPercent,
+                            networkUtilizationPercent = netMetric?.maxUtilizationPercent ?? 0.0,
+                            networkThroughputBytesPerSecond = (netMetric?.totalBytesSentPerSecond ?? 0) + (netMetric?.totalBytesReceivedPerSecond ?? 0)
+                        };
+                    }).ToList();
 
                     // Get last collection run
                     var lastRun = await context.TelemetryCollectionRuns
