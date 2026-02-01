@@ -1,4 +1,4 @@
-<!-- Overview Component - Foundation Admin Dashboard -->
+<!-- Overview Component - Foundation Command Center -->
 <div class="overview-container">
 
   <!-- Premium Header with Gradient -->
@@ -26,20 +26,25 @@
         </p>
       </div>
 
-      <!-- Quick Stats Bar -->
+      <!-- Quick Stats Bar (Enhanced) -->
       <div class="stats-bar d-flex gap-4" *ngIf="!loading">
         <div class="stat-item text-center">
-          <div class="stat-value text-white">{{ healthSummary.totalUsers }}</div>
-          <div class="stat-label text-white-50">Total Users</div>
+          <div class="stat-value text-white">
+            <span [class.text-success]="fleetOnlineCount === fleetTotalCount">{{ fleetOnlineCount }}/{{ fleetTotalCount
+              }}</span>
+          </div>
+          <div class="stat-label text-white-50">Fleet Online</div>
         </div>
         <div class="stat-item text-center">
-          <div class="stat-value text-white">{{ healthSummary.activeUsers }}</div>
-          <div class="stat-label text-white-50">Active Users</div>
+          <div class="stat-value text-white">{{ activeSessionCount }}</div>
+          <div class="stat-label text-white-50">Active Sessions</div>
         </div>
         <div class="stat-item text-center">
-          <div class="stat-value text-white" [class.text-warning]="healthSummary.errorsToday > 0">{{
-            healthSummary.errorsToday }}</div>
-          <div class="stat-label text-white-50">System Errors</div>
+          <div class="stat-value"
+            [ngClass]="securityScore >= 80 ? 'text-success' : (securityScore >= 50 ? 'text-warning' : 'text-danger')">
+            {{ securityScore }}
+          </div>
+          <div class="stat-label text-white-50">Security Score</div>
         </div>
       </div>
 
@@ -59,138 +64,201 @@
   <!-- Main Content -->
   <div *ngIf="!loading" class="row g-4">
 
-    <!-- KPI Cards Row 1 -->
-    <div class="col-md-3">
-      <div class="card premium-card h-100 border-0 shadow-sm hover-lift" (click)="navigateToUsers()"
-        style="cursor: pointer;">
-        <div class="card-body d-flex align-items-center">
-          <div class="stat-circle bg-primary-soft me-3">
-            <i class="fa-solid fa-users fa-2x text-primary"></i>
-          </div>
-          <div>
-            <h3 class="mb-0 fw-bold text-dark">{{ healthSummary.activeUsers }}</h3>
-            <div class="text-muted small">Active Accounts</div>
-          </div>
+    <!-- ========================================= -->
+    <!-- FLEET HEALTH PANEL -->
+    <!-- ========================================= -->
+    <div class="col-lg-6">
+      <div class="card premium-card h-100 border-0 shadow-sm fleet-health-panel">
+        <div
+          class="card-header gradient-primary text-white border-0 py-3 px-4 d-flex align-items-center justify-content-between">
+          <h5 class="mb-0"><i class="fa-solid fa-satellite-dish me-2"></i>Fleet Health</h5>
+          <span class="badge bg-white-soft" *ngIf="!fleetLoading">
+            {{ fleetOnlineCount }}/{{ fleetTotalCount }} Online
+          </span>
         </div>
-      </div>
-    </div>
+        <div class="card-body px-4 py-3">
 
-    <div class="col-md-3">
-      <div class="card premium-card h-100 border-0 shadow-sm hover-lift" (click)="navigateToLogins()"
-        style="cursor: pointer;">
-        <div class="card-body d-flex align-items-center">
-          <div class="stat-circle bg-warning-soft me-3">
-            <i class="fa-solid fa-triangle-exclamation fa-2x text-warning"></i>
+          <!-- Loading State -->
+          <div *ngIf="fleetLoading" class="text-center py-4">
+            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+            <span class="ms-2 text-muted small">Loading fleet status...</span>
           </div>
-          <div>
-            <h3 class="mb-0 fw-bold text-dark" [class.text-danger]="healthSummary.failedLoginsToday > 5">{{
-              healthSummary.failedLoginsToday }}</h3>
-            <div class="text-muted small">Failed Logins Today</div>
-          </div>
-        </div>
-      </div>
-    </div>
 
-    <div class="col-md-3">
-      <div class="card premium-card h-100 border-0 shadow-sm hover-lift" (click)="navigateToAudit()"
-        style="cursor: pointer;">
-        <div class="card-body d-flex align-items-center">
-          <div class="stat-circle bg-danger-soft me-3">
-            <i class="fa-solid fa-clock fa-2x text-danger"></i>
-          </div>
-          <div>
-            <h3 class="mb-0 fw-bold" [class.text-danger]="healthSummary.failedEventsLastHour > 0">{{
-              healthSummary.failedEventsLastHour }}</h3>
-            <div class="text-muted small">Failed Events (1h)</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-3">
-      <div class="card premium-card h-100 border-0 shadow-sm hover-lift">
-        <div class="card-body d-flex align-items-center">
-          <div class="stat-circle bg-info-soft me-3">
-            <i class="fa-solid fa-user-check fa-2x text-info"></i>
-          </div>
-          <div>
-            <h3 class="mb-0 fw-bold text-info">{{ healthSummary.activeUsersToday }}</h3>
-            <div class="text-muted small">Active Users Today</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- KPI Cards Row 2 -->
-    <div class="col-md-3">
-      <div class="card premium-card h-100 border-0 shadow-sm hover-lift" (click)="navigateToAudit()"
-        style="cursor: pointer;">
-        <div class="card-body d-flex align-items-center">
-          <div class="stat-circle bg-purple-soft me-3">
-            <i class="fa-solid fa-clipboard-list fa-2x text-purple"></i>
-          </div>
-          <div>
-            <h3 class="mb-0 fw-bold text-dark">{{ healthSummary.totalEventsToday }}</h3>
-            <div class="text-muted small">Total Events Today</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-3">
-      <div class="card premium-card h-100 border-0 shadow-sm hover-lift" (click)="navigateToAudit()"
-        style="cursor: pointer;">
-        <div class="card-body d-flex align-items-center">
-          <div class="stat-circle bg-danger-soft me-3">
-            <i class="fa-solid fa-bug fa-2x text-danger"></i>
-          </div>
-          <div>
-            <h3 class="mb-0 fw-bold text-dark" [class.text-danger]="healthSummary.errorsToday > 0">{{
-              healthSummary.errorsToday }}</h3>
-            <div class="text-muted small">Audit Errors Today</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-3">
-      <div class="card premium-card h-100 border-0 shadow-sm">
-        <div class="card-body d-flex align-items-center">
-          <div class="stat-circle bg-success-soft me-3">
-            <i class="fa-solid fa-server fa-2x text-success"></i>
-          </div>
-          <div>
-            <h3 class="mb-0 fw-bold text-success">Online</h3>
-            <div class="text-muted small">System Status</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Most Active Modules Card -->
-    <div class="col-md-3">
-      <div class="card premium-card h-100 border-0 shadow-sm">
-        <div class="card-body">
-          <h6 class="text-muted small text-uppercase mb-3">
-            <i class="fa-solid fa-cubes me-1"></i>Most Active Modules
-          </h6>
-          <div *ngIf="mostActiveModules.length === 0" class="text-muted text-center py-2">
-            <small>No activity today</small>
-          </div>
-          <div *ngFor="let module of mostActiveModules" class="mb-2">
-            <div class="d-flex justify-content-between align-items-center mb-1">
-              <span class="small fw-medium text-truncate" style="max-width: 120px;">{{ module.name }}</span>
-              <span class="badge bg-primary-soft text-primary">{{ module.count }}</span>
-            </div>
-            <div class="progress" style="height: 4px;">
-              <div class="progress-bar bg-primary" [style.width.%]="module.percentage"></div>
+          <!-- Application Status Dots -->
+          <div *ngIf="!fleetLoading && fleetSummary" class="mb-3">
+            <div class="d-flex flex-wrap gap-2 mb-3">
+              <div *ngFor="let app of fleetSummary.latestSnapshots" class="app-status-indicator"
+                [ngbTooltip]="app.applicationName" placement="top">
+                <span class="status-dot" [class.online]="app.isOnline" [class.offline]="!app.isOnline">
+                </span>
+                <span class="app-name small text-truncate">{{ app.applicationName | slice:0:10 }}</span>
+              </div>
             </div>
           </div>
+
+          <!-- Resource Gauges -->
+          <div *ngIf="!fleetLoading" class="row g-3">
+            <div class="col-6">
+              <div class="resource-gauge">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <span class="small text-muted"><i class="fa-solid fa-microchip me-1"></i>Avg CPU</span>
+                  <span class="small fw-bold" [class.text-success]="avgCpuPercent < 70"
+                    [class.text-warning]="avgCpuPercent >= 70 && avgCpuPercent < 90"
+                    [class.text-danger]="avgCpuPercent >= 90">{{ avgCpuPercent }}%</span>
+                </div>
+                <div class="progress" style="height: 8px;">
+                  <div class="progress-bar" [class.bg-success]="avgCpuPercent < 70"
+                    [class.bg-warning]="avgCpuPercent >= 70 && avgCpuPercent < 90"
+                    [class.bg-danger]="avgCpuPercent >= 90" [style.width.%]="avgCpuPercent">
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="resource-gauge">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <span class="small text-muted"><i class="fa-solid fa-memory me-1"></i>Avg Memory</span>
+                  <span class="small fw-bold" [class.text-success]="avgMemoryPercent < 70"
+                    [class.text-warning]="avgMemoryPercent >= 70 && avgMemoryPercent < 90"
+                    [class.text-danger]="avgMemoryPercent >= 90">{{ avgMemoryPercent }}%</span>
+                </div>
+                <div class="progress" style="height: 8px;">
+                  <div class="progress-bar" [class.bg-success]="avgMemoryPercent < 70"
+                    [class.bg-warning]="avgMemoryPercent >= 70 && avgMemoryPercent < 90"
+                    [class.bg-danger]="avgMemoryPercent >= 90" [style.width.%]="avgMemoryPercent">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- No Fleet Data -->
+          <div *ngIf="!fleetLoading && !fleetSummary" class="text-center py-3 text-muted">
+            <i class="fa-solid fa-plug-circle-xmark fa-2x mb-2 opacity-50"></i>
+            <p class="small mb-0">Telemetry data unavailable</p>
+          </div>
+
+        </div>
+        <div class="card-footer bg-white border-0 pt-0 pb-3 px-4">
+          <button class="btn btn-sm btn-outline-primary rounded-pill w-100" (click)="navigateToSystems()">
+            <i class="fa-solid fa-arrow-right me-1"></i> Systems Dashboard
+          </button>
         </div>
       </div>
     </div>
 
-    <!-- Login Activity Chart -->
+    <!-- ========================================= -->
+    <!-- SECURITY POSTURE PANEL -->
+    <!-- ========================================= -->
+    <div class="col-lg-6">
+      <div class="card premium-card h-100 border-0 shadow-sm security-posture-panel">
+        <div
+          class="card-header gradient-purple text-white border-0 py-3 px-4 d-flex align-items-center justify-content-between">
+          <h5 class="mb-0"><i class="fa-solid fa-shield-halved me-2"></i>Security Posture</h5>
+          <span class="badge"
+            [ngClass]="securityScore >= 80 ? 'bg-success' : (securityScore >= 50 ? 'bg-warning' : 'bg-danger')">
+            Score: {{ securityScore }}
+          </span>
+        </div>
+        <div class="card-body px-4 py-3">
+
+          <div class="row g-3">
+            <!-- Success Rate Metric -->
+            <div class="col-6">
+              <div class="security-metric p-3 rounded bg-light-soft">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="small text-muted">Login Success Rate</span>
+                  <i class="fa-solid fa-arrow-trend-down text-success" *ngIf="loginTrend === 'down'"></i>
+                  <i class="fa-solid fa-arrow-trend-up text-danger" *ngIf="loginTrend === 'up'"></i>
+                  <i class="fa-solid fa-minus text-muted" *ngIf="loginTrend === 'stable'"></i>
+                </div>
+                <div class="d-flex align-items-end">
+                  <span class="fs-3 fw-bold" [class.text-success]="loginSuccessRate >= 90"
+                    [class.text-warning]="loginSuccessRate >= 70 && loginSuccessRate < 90"
+                    [class.text-danger]="loginSuccessRate < 70">{{ loginSuccessRate }}%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- IP Anomaly Metric -->
+            <div class="col-6">
+              <div class="security-metric p-3 rounded bg-light-soft">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="small text-muted">IP Anomalies</span>
+                  <i class="fa-solid fa-triangle-exclamation text-warning" *ngIf="ipAnomalyCount > 0"></i>
+                </div>
+                <div class="d-flex align-items-end">
+                  <span class="fs-3 fw-bold" [class.text-success]="ipAnomalyCount === 0"
+                    [class.text-warning]="ipAnomalyCount > 0 && ipAnomalyCount < 3"
+                    [class.text-danger]="ipAnomalyCount >= 3">{{ ipAnomalyCount }}</span>
+                  <span class="small text-muted ms-2" *ngIf="ipAnomalyCount > 0">suspicious IPs</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Failed Logins Metric -->
+            <div class="col-6">
+              <div class="security-metric p-3 rounded bg-light-soft">
+                <div class="small text-muted mb-2">Failed Logins Today</div>
+                <div class="d-flex align-items-end">
+                  <span class="fs-3 fw-bold" [class.text-success]="healthSummary.failedLoginsToday === 0"
+                    [class.text-warning]="healthSummary.failedLoginsToday > 0 && healthSummary.failedLoginsToday <= 5"
+                    [class.text-danger]="healthSummary.failedLoginsToday > 5">{{ healthSummary.failedLoginsToday
+                    }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- System Errors Metric -->
+            <div class="col-6">
+              <div class="security-metric p-3 rounded bg-light-soft">
+                <div class="small text-muted mb-2">System Errors Today</div>
+                <div class="d-flex align-items-end">
+                  <span class="fs-3 fw-bold" [class.text-success]="healthSummary.errorsToday === 0"
+                    [class.text-danger]="healthSummary.errorsToday > 0">{{ healthSummary.errorsToday }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <div class="card-footer bg-white border-0 pt-0 pb-3 px-4">
+          <button class="btn btn-sm btn-outline-primary rounded-pill w-100" (click)="navigateToLogins()">
+            <i class="fa-solid fa-arrow-right me-1"></i> Login Analytics
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================= -->
+    <!-- QUICK NAVIGATION GRID -->
+    <!-- ========================================= -->
+    <div class="col-12">
+      <div class="nav-grid-container mb-2">
+        <h6 class="text-muted small text-uppercase mb-3">
+          <i class="fa-solid fa-grip me-1"></i> Quick Navigation
+        </h6>
+        <div class="nav-grid row g-3">
+          <div class="col-6 col-md-4 col-lg-2" *ngFor="let card of navCards">
+            <div class="nav-card card h-100 border-0 shadow-sm hover-lift" (click)="navigateTo(card.route)"
+              style="cursor: pointer;">
+              <div class="card-body text-center py-4">
+                <div class="nav-card-icon mb-2" [ngClass]="'bg-' + card.color + '-soft'">
+                  <i [class]="card.icon + ' fa-lg'" [ngClass]="'text-' + card.color"></i>
+                </div>
+                <h6 class="fw-bold mb-1">{{ card.label }}</h6>
+                <span class="badge rounded-pill" [ngClass]="'bg-' + card.color + '-soft text-' + card.color">{{
+                  card.count }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================= -->
+    <!-- LOGIN ACTIVITY CHART -->
+    <!-- ========================================= -->
     <div class="col-lg-8">
       <div class="card premium-card h-100 border-0 shadow-sm">
         <div class="card-header bg-white border-0 pt-4 px-4">
@@ -207,13 +275,15 @@
       </div>
     </div>
 
-    <!-- Recent Activity Feed -->
+    <!-- ========================================= -->
+    <!-- RECENT ACTIVITY FEED -->
+    <!-- ========================================= -->
     <div class="col-lg-4">
       <div class="card premium-card h-100 border-0 shadow-sm">
         <div class="card-header gradient-purple text-white border-0 py-3 px-4">
           <h5 class="mb-0"><i class="fa-solid fa-clock-rotate-left me-2"></i>Latest Activity</h5>
         </div>
-        <div class="card-body p-0">
+        <div class="card-body p-0" style="max-height: 340px; overflow-y: auto;">
           <div class="list-group list-group-flush">
             <div *ngFor="let item of recentActivity" class="list-group-item border-0 py-3 px-4 hover-lift">
               <div class="d-flex w-100 justify-content-between align-items-center mb-1">
@@ -222,11 +292,16 @@
                         'bg-warning': item.status === 'warning',
                         'bg-danger': item.status === 'danger'
                       }">
+                  <i class="fa-solid" [ngClass]="{
+                    'fa-right-to-bracket': item.type === 'login',
+                    'fa-bug': item.type === 'error',
+                    'fa-clipboard-check': item.type === 'audit'
+                  }"></i>
                   {{ item.type | uppercase }}
                 </span>
                 <small class="text-muted">{{ item.timestamp | date:'shortTime' }}</small>
               </div>
-              <p class="mb-1 fw-medium text-dark">{{ item.description }}</p>
+              <p class="mb-1 fw-medium text-dark small">{{ item.description }}</p>
               <small class="text-muted">
                 <i class="fa-solid fa-user me-1"></i> {{ item.user }}
               </small>

@@ -334,3 +334,132 @@ $gradient-purple: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 .premium-card {
   animation: fadeIn 0.4s ease-out;
 }
+
+
+//
+// Fleet Health Panel
+//
+.fleet-health-panel {
+  .app-status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background-color: #f8fafc;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background-color: #e5e7eb;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+
+      &.online {
+        background-color: #10b981;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+        animation: pulse-green 2s infinite;
+      }
+
+      &.offline {
+        background-color: #ef4444;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+      }
+    }
+
+    .app-name {
+      max-width: 80px;
+      color: #374151;
+    }
+  }
+
+  .resource-gauge {
+    padding: 12px;
+    background-color: #f8fafc;
+    border-radius: 8px;
+  }
+}
+
+@keyframes pulse-green {
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+  }
+
+  50% {
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0.1);
+  }
+}
+
+
+//
+// Security Posture Panel
+//
+.security-posture-panel {
+  .security-metric {
+    transition: all 0.2s ease;
+
+    &:hover {
+      background-color: #f3f4f6 !important;
+    }
+  }
+}
+
+.bg-light-soft {
+  background-color: #f8fafc;
+}
+
+.bg-white-soft {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+
+//
+// Navigation Grid
+//
+.nav-grid-container {
+  .nav-card {
+    border-radius: 16px;
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+    }
+
+    .nav-card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+    }
+  }
+}
+
+
+//
+// Additional Color Utilities
+//
+.text-success {
+  color: #10b981 !important;
+}
+
+.text-warning {
+  color: #f59e0b !important;
+}
+
+.text-danger {
+  color: #ef4444 !important;
+}
+
+.bg-white-soft {
+  background-color: rgba(255, 255, 255, 0.25);
+}

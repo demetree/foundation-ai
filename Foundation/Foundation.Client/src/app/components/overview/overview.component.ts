@@ -33,6 +33,12 @@ import { AuditEventService, AuditEventData, AuditEventQueryParameters } from '..
 import { SecurityUserService, SecurityUserData } from '../../security-data-services/security-user.service';
 
 //
+// System Monitoring Services
+//
+import { TelemetryService, TelemetrySummaryResponse } from '../../services/telemetry.service';
+import { SystemHealthService, AuthenticatedUsersInfo } from '../../services/system-health.service';
+
+//
 // Chart.js Imports
 //
 import { ChartConfiguration, ChartOptions, ChartType } from 'chart.js';
@@ -110,6 +116,34 @@ export class OverviewComponent implements OnInit, OnDestroy, AfterViewInit {
   public mostActiveModules: { name: string; count: number; percentage: number }[] = [];
 
   //
+  // Fleet Health Metrics (from Telemetry)
+  //
+  public fleetSummary: TelemetrySummaryResponse | null = null;
+  public fleetOnlineCount: number = 0;
+  public fleetTotalCount: number = 0;
+  public avgCpuPercent: number = 0;
+  public avgMemoryPercent: number = 0;
+  public fleetLoading: boolean = true;
+
+  //
+  // Security Posture Metrics
+  //
+  public securityScore: number = 100;
+  public ipAnomalyCount: number = 0;
+  public loginSuccessRate: number = 100;
+  public loginTrend: 'up' | 'down' | 'stable' = 'stable';
+
+  //
+  // Active Sessions
+  //
+  public activeSessionCount: number = 0;
+
+  //
+  // Navigation Cards Data
+  //
+  public navCards: { route: string; icon: string; label: string; count: number | string; color: string }[] = [];
+
+  //
   // Chart Data - Login Activity
   //
   public loginActivityChartData: ChartConfiguration<'line'>['data'] = {
@@ -170,7 +204,9 @@ export class OverviewComponent implements OnInit, OnDestroy, AfterViewInit {
     private utilityService: UtilityService,
     private loginAttemptService: LoginAttemptService,
     private auditEventService: AuditEventService,
-    private securityUserService: SecurityUserService
+    private securityUserService: SecurityUserService,
+    private telemetryService: TelemetryService,
+    private systemHealthService: SystemHealthService
   ) {
     this.setGreeting();
   }
@@ -215,6 +251,7 @@ export class OverviewComponent implements OnInit, OnDestroy, AfterViewInit {
   //
   private loadDashboardData(): void {
     this.loading = true;
+    this.fleetLoading = true;
 
     //
     // Prepare time ranges
@@ -243,7 +280,7 @@ export class OverviewComponent implements OnInit, OnDestroy, AfterViewInit {
     const userParams = { active: true, includeRelations: false };
 
     //
-    // ForkJoin for parallel loading
+    // ForkJoin for parallel loading (existing data)
     //
     forkJoin({
       users: this.securityUserService.GetSecurityUserList(null), // Get all users for stats
@@ -263,8 +300,70 @@ export class OverviewComponent implements OnInit, OnDestroy, AfterViewInit {
       }
     });
 
+    //
+    // Load Fleet Telemetry Data (separate call for resilience)
+    //
+    this.telemetryService.getSummary().pipe(
+      takeUntil(this.destroy$),
+      catchError(err => {
+        console.warn('Fleet telemetry unavailable:', err.message);
+        return of(null);
+      })
+    ).subscribe(summary => {
+      this.fleetSummary = summary;
+      this.processFleetData(summary);
+      this.fleetLoading = false;
+    });
+
+    //
+    // Load Active Sessions (separate call for resilience)
+    //
+    this.systemHealthService.getAuthenticatedUsers().pipe(
+      takeUntil(this.destroy$),
+      catchError(err => {
+        console.warn('Session data unavailable:', err.message);
+        return of(null);
+      })
+    ).subscribe((sessions: AuthenticatedUsersInfo | null) => {
+      if (sessions) {
+        this.activeSessionCount = sessions.totalCount || sessions.sessions?.length || 0;
+      }
+    });
+
     // Also get current user details
     this.currentUser = this.authService.currentUser;
+  }
+
+  //
+  // Process Fleet Telemetry Data
+  //
+  private processFleetData(summary: TelemetrySummaryResponse | null): void {
+    if (!summary) {
+      return;
+    }
+
+    //
+    // Fleet counts
+    //
+    const apps = summary.latestSnapshots || [];
+    this.fleetTotalCount = apps.length;
+    this.fleetOnlineCount = apps.filter(a => a.isOnline).length;
+
+    //
+    // Average CPU and Memory across online apps
+    //
+    const onlineApps = apps.filter(a => a.isOnline);
+    if (onlineApps.length > 0) {
+      const cpuValues = onlineApps.map(a => a.systemCpuPercent ?? a.cpuPercent ?? 0);
+      const memValues = onlineApps.map(a => a.systemMemoryPercent ?? 0);
+      this.avgCpuPercent = Math.round(cpuValues.reduce((a, b) => a + b, 0) / cpuValues.length);
+      this.avgMemoryPercent = Math.round(memValues.reduce((a, b) => a + b, 0) / memValues.length);
+    }
+
+    //
+    // Update navigation cards with fleet status
+    //
+    this.updateNavCards();
   }
 
   //
@@ -382,6 +481,16 @@ export class OverviewComponent implements OnInit, OnDestroy, AfterViewInit {
     // Build Chart Data (Past 7 Days)
     //
     this.buildLoginChart(loginAttempts);
+
+    //
+    // Calculate Security Score
+    //
+    this.calculateSecurityScore(loginAttempts);
+
+    //
+    // Update Navigation Cards
+    //
+    this.updateNavCards();
   }
 
   private buildLoginChart(allLogins: LoginAttemptData[]): void {
@@ -444,5 +553,130 @@ export class OverviewComponent implements OnInit, OnDestroy, AfterViewInit {
 
   public navigateToLogins(): void {
     this.router.navigate(['/loginattempts']);
+  }
+
+  public navigateToSystems(): void {
+    this.router.navigate(['/systems-dashboard']);
+  }
+
+  public navigateTo(route: string): void {
+    this.router.navigate([route]);
+  }
+
+  //
+  // Update Navigation Cards Data
+  //
+  private updateNavCards(): void {
+    this.navCards = [
+      {
+        route: '/users',
+        icon: 'fa-solid fa-users',
+        label: 'Users',
+        count: this.healthSummary.activeUsers,
+        color: 'primary'
+      },
+      {
+        route: '/tenants',
+        icon: 'fa-solid fa-building',
+        label: 'Tenants',
+        count: '--',
+        color: 'info'
+      },
+      {
+        route: '/modules',
+        icon: 'fa-solid fa-puzzle-piece',
+        label: 'Modules',
+        count: this.mostActiveModules.length || '--',
+        color: 'purple'
+      },
+      {
+        route: '/auditevents',
+        icon: 'fa-solid fa-clipboard-list',
+        label: 'Audit',
+        count: this.healthSummary.totalEventsToday,
+        color: 'warning'
+      },
+      {
+        route: '/loginattempts',
+        icon: 'fa-solid fa-right-to-bracket',
+        label: 'Logins',
+        count: '--',
+        color: 'danger'
+      },
+      {
+        route: '/systems-dashboard',
+        icon: 'fa-solid fa-satellite-dish',
+        label: 'Systems',
+        count: `${this.fleetOnlineCount}/${this.fleetTotalCount}`,
+        color: 'success'
+      }
+    ];
+  }
+
+  //
+  // Calculate Security Posture Score
+  //
+  private calculateSecurityScore(loginAttempts: LoginAttemptData[]): void {
+    const todayStr = new Date().toDateString();
+    const todaysLogins = loginAttempts.filter(l => new Date(l.timeStamp).toDateString() === todayStr);
+
+    const successes = todaysLogins.filter(l =>
+      l.success === true ||
+      (l.value && l.value.toLowerCase().includes('success'))
+    ).length;
+
+    const total = todaysLogins.length;
+    this.loginSuccessRate = total > 0 ? Math.round((successes / total) * 100) : 100;
+
+    //
+    // Calculate IP anomalies (IPs with >50% failure rate and 3+ failures)
+    //
+    const failures = todaysLogins.filter(l =>
+      l.success === false ||
+      (l.value && (l.value.toLowerCase().includes('fail') || l.value.toLowerCase().includes('bad')))
+    );
+
+    const ipFailureCounts = new Map<string, { total: number; failures: number }>();
+    todaysLogins.forEach(l => {
+      const ip = l.ipAddress || 'unknown';
+      const existing = ipFailureCounts.get(ip) || { total: 0, failures: 0 };
+      existing.total++;
+      if (l.success === false || (l.value && l.value.toLowerCase().includes('fail'))) {
+        existing.failures++;
+      }
+      ipFailureCounts.set(ip, existing);
+    });
+
+    this.ipAnomalyCount = Array.from(ipFailureCounts.values())
+      .filter(v => v.total >= 3 && (v.failures / v.total) > 0.5)
+      .length;
+
+    //
+    // Calculate overall security score (0-100)
+    // Base 100, deduct for failures and anomalies
+    //
+    let score = 100;
+    score -= Math.min(20, (100 - this.loginSuccessRate) * 2); // Up to 20 points for failure rate
+    score -= Math.min(30, this.ipAnomalyCount * 10); // Up to 30 points for anomalies
+    score -= Math.min(20, this.healthSummary.errorsToday * 2); // Up to 20 points for system errors
+    this.securityScore = Math.max(0, Math.round(score));
+
+    //
+    // Determine login trend (compare today vs yesterday)
+    //
+    const yesterdayStr = new Date(Date.now() - 24 * 60 * 60 * 1000).toDateString();
+    const yesterdayLogins = loginAttempts.filter(l => new Date(l.timeStamp).toDateString() === yesterdayStr);
+    const yesterdayFailures = yesterdayLogins.filter(l =>
+      l.success === false || (l.value && l.value.toLowerCase().includes('fail'))
+    ).length;
+    const todayFailures = failures.length;
+
+    if (todayFailures < yesterdayFailures) {
+      this.loginTrend = 'down'; // Fewer failures = improving
+    } else if (todayFailures > yesterdayFailures) {
+      this.loginTrend = 'up'; // More failures = worsening
+    } else {
+      this.loginTrend = 'stable';
+    }
   }
 }
