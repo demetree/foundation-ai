@@ -443,7 +443,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			}
 
 
-			IQueryable<Database.OnCallScheduleChangeHistory> query = (from x in _context.OnCallScheduleChangeHistories
+			IQueryable<Database.OnCallScheduleChangeHistory> query = (from x in _alertingContext.OnCallScheduleChangeHistories
 				where
 				(x.id == id)
 				select x);
@@ -459,12 +459,12 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			}
 
 			// Copy the existing object so it can be serialized as-is in the audit and history logs.
-			Database.OnCallScheduleChangeHistory cloneOfExisting = (Database.OnCallScheduleChangeHistory)_context.Entry(existing).GetDatabaseValues().ToObject();
+			Database.OnCallScheduleChangeHistory cloneOfExisting = (Database.OnCallScheduleChangeHistory)_alertingContext.Entry(existing).GetDatabaseValues().ToObject();
 
 			//
 			// Create a new OnCallScheduleChangeHistory object using the data from the existing record, updated with what is in the DTO.
 			//
-			Database.OnCallScheduleChangeHistory onCallScheduleChangeHistory = (Database.OnCallScheduleChangeHistory)_context.Entry(existing).GetDatabaseValues().ToObject();
+			Database.OnCallScheduleChangeHistory onCallScheduleChangeHistory = (Database.OnCallScheduleChangeHistory)_alertingContext.Entry(existing).GetDatabaseValues().ToObject();
 			onCallScheduleChangeHistory.ApplyDTO(onCallScheduleChangeHistoryDTO);
 			//
 			// The tenant guid for any OnCallScheduleChangeHistory being saved must match the tenant guid of the user.  
@@ -487,12 +487,12 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				onCallScheduleChangeHistory.timeStamp = onCallScheduleChangeHistory.timeStamp.ToUniversalTime();
 			}
 
-			EntityEntry<Database.OnCallScheduleChangeHistory> attached = _context.Entry(existing);
+			EntityEntry<Database.OnCallScheduleChangeHistory> attached = _alertingContext.Entry(existing);
 			attached.CurrentValues.SetValues(onCallScheduleChangeHistory);
 
 			try
 			{
-				await _context.SaveChangesAsync(cancellationToken);
+				await _alertingContext.SaveChangesAsync(cancellationToken);
 
 				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity,
 					"Alerting.OnCallScheduleChangeHistory entity successfully updated.",
@@ -583,8 +583,8 @@ namespace Foundation.Alerting.Controllers.WebAPI
 					onCallScheduleChangeHistory.timeStamp = onCallScheduleChangeHistory.timeStamp.ToUniversalTime();
 				}
 
-				_context.OnCallScheduleChangeHistories.Add(onCallScheduleChangeHistory);
-				await _context.SaveChangesAsync(cancellationToken);
+				_alertingContext.OnCallScheduleChangeHistories.Add(onCallScheduleChangeHistory);
+				await _alertingContext.SaveChangesAsync(cancellationToken);
 
 				await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
 					"Alerting.OnCallScheduleChangeHistory entity successfully created.",
@@ -650,7 +650,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
 			}
 
-			IQueryable<Database.OnCallScheduleChangeHistory> query = (from x in _context.OnCallScheduleChangeHistories
+			IQueryable<Database.OnCallScheduleChangeHistory> query = (from x in _alertingContext.OnCallScheduleChangeHistories
 				where
 				(x.id == id)
 				select x);
@@ -664,13 +664,13 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for Alerting.OnCallScheduleChangeHistory DELETE", id.ToString(), new Exception("No Alerting.OnCallScheduleChangeHistory entity could be find with the primary key provided."));
 				return NotFound();
 			}
-			Database.OnCallScheduleChangeHistory cloneOfExisting = (Database.OnCallScheduleChangeHistory)_context.Entry(onCallScheduleChangeHistory).GetDatabaseValues().ToObject();
+			Database.OnCallScheduleChangeHistory cloneOfExisting = (Database.OnCallScheduleChangeHistory)_alertingContext.Entry(onCallScheduleChangeHistory).GetDatabaseValues().ToObject();
 
 
 			try
 			{
-				_context.OnCallScheduleChangeHistories.Remove(onCallScheduleChangeHistory);
-				await _context.SaveChangesAsync(cancellationToken);
+				_alertingContext.OnCallScheduleChangeHistories.Remove(onCallScheduleChangeHistory);
+				await _alertingContext.SaveChangesAsync(cancellationToken);
 
 				await CreateAuditEventAsync(AuditEngine.AuditType.DeleteEntity,
 					"Alerting.OnCallScheduleChangeHistory entity successfully deleted.",

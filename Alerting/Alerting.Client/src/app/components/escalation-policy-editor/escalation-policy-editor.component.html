@@ -140,11 +140,16 @@
 
                             <!-- Target Selection (User) -->
                             <div class="config-row" *ngIf="rule.targetType === 'User'">
-                                <label>User GUID</label>
-                                <input type="text" class="form-control form-control-sm"
-                                    [(ngModel)]="rule.targetObjectGuid" (ngModelChange)="onRuleChange(rule)"
-                                    placeholder="Enter user objectGuid">
+                                <label>User</label>
+                                <select class="form-select form-select-sm" [(ngModel)]="rule.targetObjectGuid"
+                                    (ngModelChange)="onUserSelection(rule, $event)">
+                                    <option [ngValue]="null">-- Select User --</option>
+                                    <option *ngFor="let user of users" [ngValue]="user.objectGuid">
+                                        {{ user.displayName }}
+                                    </option>
+                                </select>
                             </div>
+
 
                             <!-- Target Selection (Schedule) -->
                             <div class="config-row" *ngIf="rule.targetType === 'Schedule'">

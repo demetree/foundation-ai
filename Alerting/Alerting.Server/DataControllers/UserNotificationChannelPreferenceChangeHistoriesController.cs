@@ -437,7 +437,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			}
 
 
-			IQueryable<Database.UserNotificationChannelPreferenceChangeHistory> query = (from x in _context.UserNotificationChannelPreferenceChangeHistories
+			IQueryable<Database.UserNotificationChannelPreferenceChangeHistory> query = (from x in _alertingContext.UserNotificationChannelPreferenceChangeHistories
 				where
 				(x.id == id)
 				select x);
@@ -453,12 +453,12 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			}
 
 			// Copy the existing object so it can be serialized as-is in the audit and history logs.
-			Database.UserNotificationChannelPreferenceChangeHistory cloneOfExisting = (Database.UserNotificationChannelPreferenceChangeHistory)_context.Entry(existing).GetDatabaseValues().ToObject();
+			Database.UserNotificationChannelPreferenceChangeHistory cloneOfExisting = (Database.UserNotificationChannelPreferenceChangeHistory)_alertingContext.Entry(existing).GetDatabaseValues().ToObject();
 
 			//
 			// Create a new UserNotificationChannelPreferenceChangeHistory object using the data from the existing record, updated with what is in the DTO.
 			//
-			Database.UserNotificationChannelPreferenceChangeHistory userNotificationChannelPreferenceChangeHistory = (Database.UserNotificationChannelPreferenceChangeHistory)_context.Entry(existing).GetDatabaseValues().ToObject();
+			Database.UserNotificationChannelPreferenceChangeHistory userNotificationChannelPreferenceChangeHistory = (Database.UserNotificationChannelPreferenceChangeHistory)_alertingContext.Entry(existing).GetDatabaseValues().ToObject();
 			userNotificationChannelPreferenceChangeHistory.ApplyDTO(userNotificationChannelPreferenceChangeHistoryDTO);
 			//
 			// The tenant guid for any UserNotificationChannelPreferenceChangeHistory being saved must match the tenant guid of the user.  
@@ -481,12 +481,12 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				userNotificationChannelPreferenceChangeHistory.timeStamp = userNotificationChannelPreferenceChangeHistory.timeStamp.ToUniversalTime();
 			}
 
-			EntityEntry<Database.UserNotificationChannelPreferenceChangeHistory> attached = _context.Entry(existing);
+			EntityEntry<Database.UserNotificationChannelPreferenceChangeHistory> attached = _alertingContext.Entry(existing);
 			attached.CurrentValues.SetValues(userNotificationChannelPreferenceChangeHistory);
 
 			try
 			{
-				await _context.SaveChangesAsync(cancellationToken);
+				await _alertingContext.SaveChangesAsync(cancellationToken);
 
 				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity,
 					"Alerting.UserNotificationChannelPreferenceChangeHistory entity successfully updated.",
@@ -577,8 +577,8 @@ namespace Foundation.Alerting.Controllers.WebAPI
 					userNotificationChannelPreferenceChangeHistory.timeStamp = userNotificationChannelPreferenceChangeHistory.timeStamp.ToUniversalTime();
 				}
 
-				_context.UserNotificationChannelPreferenceChangeHistories.Add(userNotificationChannelPreferenceChangeHistory);
-				await _context.SaveChangesAsync(cancellationToken);
+				_alertingContext.UserNotificationChannelPreferenceChangeHistories.Add(userNotificationChannelPreferenceChangeHistory);
+				await _alertingContext.SaveChangesAsync(cancellationToken);
 
 				await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
 					"Alerting.UserNotificationChannelPreferenceChangeHistory entity successfully created.",
@@ -644,7 +644,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
 			}
 
-			IQueryable<Database.UserNotificationChannelPreferenceChangeHistory> query = (from x in _context.UserNotificationChannelPreferenceChangeHistories
+			IQueryable<Database.UserNotificationChannelPreferenceChangeHistory> query = (from x in _alertingContext.UserNotificationChannelPreferenceChangeHistories
 				where
 				(x.id == id)
 				select x);
@@ -658,13 +658,13 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for Alerting.UserNotificationChannelPreferenceChangeHistory DELETE", id.ToString(), new Exception("No Alerting.UserNotificationChannelPreferenceChangeHistory entity could be find with the primary key provided."));
 				return NotFound();
 			}
-			Database.UserNotificationChannelPreferenceChangeHistory cloneOfExisting = (Database.UserNotificationChannelPreferenceChangeHistory)_context.Entry(userNotificationChannelPreferenceChangeHistory).GetDatabaseValues().ToObject();
+			Database.UserNotificationChannelPreferenceChangeHistory cloneOfExisting = (Database.UserNotificationChannelPreferenceChangeHistory)_alertingContext.Entry(userNotificationChannelPreferenceChangeHistory).GetDatabaseValues().ToObject();
 
 
 			try
 			{
-				_context.UserNotificationChannelPreferenceChangeHistories.Remove(userNotificationChannelPreferenceChangeHistory);
-				await _context.SaveChangesAsync(cancellationToken);
+				_alertingContext.UserNotificationChannelPreferenceChangeHistories.Remove(userNotificationChannelPreferenceChangeHistory);
+				await _alertingContext.SaveChangesAsync(cancellationToken);
 
 				await CreateAuditEventAsync(AuditEngine.AuditType.DeleteEntity,
 					"Alerting.UserNotificationChannelPreferenceChangeHistory entity successfully deleted.",

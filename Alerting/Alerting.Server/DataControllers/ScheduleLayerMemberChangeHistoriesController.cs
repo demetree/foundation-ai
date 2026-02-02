@@ -437,7 +437,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			}
 
 
-			IQueryable<Database.ScheduleLayerMemberChangeHistory> query = (from x in _context.ScheduleLayerMemberChangeHistories
+			IQueryable<Database.ScheduleLayerMemberChangeHistory> query = (from x in _alertingContext.ScheduleLayerMemberChangeHistories
 				where
 				(x.id == id)
 				select x);
@@ -453,12 +453,12 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			}
 
 			// Copy the existing object so it can be serialized as-is in the audit and history logs.
-			Database.ScheduleLayerMemberChangeHistory cloneOfExisting = (Database.ScheduleLayerMemberChangeHistory)_context.Entry(existing).GetDatabaseValues().ToObject();
+			Database.ScheduleLayerMemberChangeHistory cloneOfExisting = (Database.ScheduleLayerMemberChangeHistory)_alertingContext.Entry(existing).GetDatabaseValues().ToObject();
 
 			//
 			// Create a new ScheduleLayerMemberChangeHistory object using the data from the existing record, updated with what is in the DTO.
 			//
-			Database.ScheduleLayerMemberChangeHistory scheduleLayerMemberChangeHistory = (Database.ScheduleLayerMemberChangeHistory)_context.Entry(existing).GetDatabaseValues().ToObject();
+			Database.ScheduleLayerMemberChangeHistory scheduleLayerMemberChangeHistory = (Database.ScheduleLayerMemberChangeHistory)_alertingContext.Entry(existing).GetDatabaseValues().ToObject();
 			scheduleLayerMemberChangeHistory.ApplyDTO(scheduleLayerMemberChangeHistoryDTO);
 			//
 			// The tenant guid for any ScheduleLayerMemberChangeHistory being saved must match the tenant guid of the user.  
@@ -481,12 +481,12 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				scheduleLayerMemberChangeHistory.timeStamp = scheduleLayerMemberChangeHistory.timeStamp.ToUniversalTime();
 			}
 
-			EntityEntry<Database.ScheduleLayerMemberChangeHistory> attached = _context.Entry(existing);
+			EntityEntry<Database.ScheduleLayerMemberChangeHistory> attached = _alertingContext.Entry(existing);
 			attached.CurrentValues.SetValues(scheduleLayerMemberChangeHistory);
 
 			try
 			{
-				await _context.SaveChangesAsync(cancellationToken);
+				await _alertingContext.SaveChangesAsync(cancellationToken);
 
 				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity,
 					"Alerting.ScheduleLayerMemberChangeHistory entity successfully updated.",
@@ -577,8 +577,8 @@ namespace Foundation.Alerting.Controllers.WebAPI
 					scheduleLayerMemberChangeHistory.timeStamp = scheduleLayerMemberChangeHistory.timeStamp.ToUniversalTime();
 				}
 
-				_context.ScheduleLayerMemberChangeHistories.Add(scheduleLayerMemberChangeHistory);
-				await _context.SaveChangesAsync(cancellationToken);
+				_alertingContext.ScheduleLayerMemberChangeHistories.Add(scheduleLayerMemberChangeHistory);
+				await _alertingContext.SaveChangesAsync(cancellationToken);
 
 				await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
 					"Alerting.ScheduleLayerMemberChangeHistory entity successfully created.",
@@ -644,7 +644,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
 			}
 
-			IQueryable<Database.ScheduleLayerMemberChangeHistory> query = (from x in _context.ScheduleLayerMemberChangeHistories
+			IQueryable<Database.ScheduleLayerMemberChangeHistory> query = (from x in _alertingContext.ScheduleLayerMemberChangeHistories
 				where
 				(x.id == id)
 				select x);
@@ -658,13 +658,13 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for Alerting.ScheduleLayerMemberChangeHistory DELETE", id.ToString(), new Exception("No Alerting.ScheduleLayerMemberChangeHistory entity could be find with the primary key provided."));
 				return NotFound();
 			}
-			Database.ScheduleLayerMemberChangeHistory cloneOfExisting = (Database.ScheduleLayerMemberChangeHistory)_context.Entry(scheduleLayerMemberChangeHistory).GetDatabaseValues().ToObject();
+			Database.ScheduleLayerMemberChangeHistory cloneOfExisting = (Database.ScheduleLayerMemberChangeHistory)_alertingContext.Entry(scheduleLayerMemberChangeHistory).GetDatabaseValues().ToObject();
 
 
 			try
 			{
-				_context.ScheduleLayerMemberChangeHistories.Remove(scheduleLayerMemberChangeHistory);
-				await _context.SaveChangesAsync(cancellationToken);
+				_alertingContext.ScheduleLayerMemberChangeHistories.Remove(scheduleLayerMemberChangeHistory);
+				await _alertingContext.SaveChangesAsync(cancellationToken);
 
 				await CreateAuditEventAsync(AuditEngine.AuditType.DeleteEntity,
 					"Alerting.ScheduleLayerMemberChangeHistory entity successfully deleted.",

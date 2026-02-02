@@ -7,6 +7,7 @@ import { EscalationPolicyService, EscalationPolicyData, EscalationPolicySubmitDa
 import { EscalationRuleService, EscalationRuleData, EscalationRuleSubmitData } from '../../alerting-data-services/escalation-rule.service';
 import { OnCallScheduleService, OnCallScheduleData } from '../../alerting-data-services/on-call-schedule.service';
 import { ServiceData } from '../../alerting-data-services/service.service';
+import { AlertingUserService, AlertingUser } from '../../services/alerting-user.service';
 import { AlertService } from '../../services/alert.service';
 
 /**
@@ -63,7 +64,7 @@ export class EscalationPolicyEditorComponent implements OnInit, OnDestroy {
     originalRulesSnapshot: string = '';
 
     // Available targets
-    users: { objectGuid: string; displayName: string }[] = [];
+    users: AlertingUser[] = [];
     schedules: OnCallScheduleData[] = [];
 
     // Linked services (loaded asynchronously)
@@ -78,6 +79,7 @@ export class EscalationPolicyEditorComponent implements OnInit, OnDestroy {
         private escalationPolicyService: EscalationPolicyService,
         private escalationRuleService: EscalationRuleService,
         private onCallScheduleService: OnCallScheduleService,
+        private alertingUserService: AlertingUserService,
         private alertService: AlertService
     ) { }
 
@@ -163,8 +165,18 @@ export class EscalationPolicyEditorComponent implements OnInit, OnDestroy {
 
 
     private loadTargetOptions(): void {
-        // Schedules are already loaded in loadPolicyData
-        // Users can be entered as objectGuid text (matching existing pattern)
+        // Load users for target selection
+        this.alertingUserService.getUsers()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (users) => {
+                    this.users = users;
+                },
+                error: (err) => {
+                    console.error('Error loading users:', err);
+                    this.users = [];
+                }
+            });
     }
 
 
@@ -287,6 +299,20 @@ export class EscalationPolicyEditorComponent implements OnInit, OnDestroy {
         }
         this.onRuleChange(rule);
     }
+
+
+    onUserSelection(rule: EditableRule, userGuid: string | null): void {
+        rule.targetObjectGuid = userGuid;
+        // Find user display name
+        if (userGuid) {
+            const user = this.users.find(u => u.objectGuid === userGuid);
+            rule.targetDisplayName = user?.displayName || userGuid;
+        } else {
+            rule.targetDisplayName = '';
+        }
+        this.onRuleChange(rule);
+    }
+
 
 
     // ─────────────────────────────────────────────────────────────────────────────

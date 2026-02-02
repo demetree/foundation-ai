@@ -445,7 +445,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			}
 
 
-			IQueryable<Database.IntegrationChangeHistory> query = (from x in _context.IntegrationChangeHistories
+			IQueryable<Database.IntegrationChangeHistory> query = (from x in _alertingContext.IntegrationChangeHistories
 				where
 				(x.id == id)
 				select x);
@@ -461,12 +461,12 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			}
 
 			// Copy the existing object so it can be serialized as-is in the audit and history logs.
-			Database.IntegrationChangeHistory cloneOfExisting = (Database.IntegrationChangeHistory)_context.Entry(existing).GetDatabaseValues().ToObject();
+			Database.IntegrationChangeHistory cloneOfExisting = (Database.IntegrationChangeHistory)_alertingContext.Entry(existing).GetDatabaseValues().ToObject();
 
 			//
 			// Create a new IntegrationChangeHistory object using the data from the existing record, updated with what is in the DTO.
 			//
-			Database.IntegrationChangeHistory integrationChangeHistory = (Database.IntegrationChangeHistory)_context.Entry(existing).GetDatabaseValues().ToObject();
+			Database.IntegrationChangeHistory integrationChangeHistory = (Database.IntegrationChangeHistory)_alertingContext.Entry(existing).GetDatabaseValues().ToObject();
 			integrationChangeHistory.ApplyDTO(integrationChangeHistoryDTO);
 			//
 			// The tenant guid for any IntegrationChangeHistory being saved must match the tenant guid of the user.  
@@ -489,12 +489,12 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				integrationChangeHistory.timeStamp = integrationChangeHistory.timeStamp.ToUniversalTime();
 			}
 
-			EntityEntry<Database.IntegrationChangeHistory> attached = _context.Entry(existing);
+			EntityEntry<Database.IntegrationChangeHistory> attached = _alertingContext.Entry(existing);
 			attached.CurrentValues.SetValues(integrationChangeHistory);
 
 			try
 			{
-				await _context.SaveChangesAsync(cancellationToken);
+				await _alertingContext.SaveChangesAsync(cancellationToken);
 
 				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity,
 					"Alerting.IntegrationChangeHistory entity successfully updated.",
@@ -585,8 +585,8 @@ namespace Foundation.Alerting.Controllers.WebAPI
 					integrationChangeHistory.timeStamp = integrationChangeHistory.timeStamp.ToUniversalTime();
 				}
 
-				_context.IntegrationChangeHistories.Add(integrationChangeHistory);
-				await _context.SaveChangesAsync(cancellationToken);
+				_alertingContext.IntegrationChangeHistories.Add(integrationChangeHistory);
+				await _alertingContext.SaveChangesAsync(cancellationToken);
 
 				await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
 					"Alerting.IntegrationChangeHistory entity successfully created.",
@@ -652,7 +652,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
 			}
 
-			IQueryable<Database.IntegrationChangeHistory> query = (from x in _context.IntegrationChangeHistories
+			IQueryable<Database.IntegrationChangeHistory> query = (from x in _alertingContext.IntegrationChangeHistories
 				where
 				(x.id == id)
 				select x);
@@ -666,13 +666,13 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for Alerting.IntegrationChangeHistory DELETE", id.ToString(), new Exception("No Alerting.IntegrationChangeHistory entity could be find with the primary key provided."));
 				return NotFound();
 			}
-			Database.IntegrationChangeHistory cloneOfExisting = (Database.IntegrationChangeHistory)_context.Entry(integrationChangeHistory).GetDatabaseValues().ToObject();
+			Database.IntegrationChangeHistory cloneOfExisting = (Database.IntegrationChangeHistory)_alertingContext.Entry(integrationChangeHistory).GetDatabaseValues().ToObject();
 
 
 			try
 			{
-				_context.IntegrationChangeHistories.Remove(integrationChangeHistory);
-				await _context.SaveChangesAsync(cancellationToken);
+				_alertingContext.IntegrationChangeHistories.Remove(integrationChangeHistory);
+				await _alertingContext.SaveChangesAsync(cancellationToken);
 
 				await CreateAuditEventAsync(AuditEngine.AuditType.DeleteEntity,
 					"Alerting.IntegrationChangeHistory entity successfully deleted.",

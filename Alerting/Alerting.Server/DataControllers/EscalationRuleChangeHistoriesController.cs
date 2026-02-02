@@ -439,7 +439,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			}
 
 
-			IQueryable<Database.EscalationRuleChangeHistory> query = (from x in _context.EscalationRuleChangeHistories
+			IQueryable<Database.EscalationRuleChangeHistory> query = (from x in _alertingContext.EscalationRuleChangeHistories
 				where
 				(x.id == id)
 				select x);
@@ -455,12 +455,12 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			}
 
 			// Copy the existing object so it can be serialized as-is in the audit and history logs.
-			Database.EscalationRuleChangeHistory cloneOfExisting = (Database.EscalationRuleChangeHistory)_context.Entry(existing).GetDatabaseValues().ToObject();
+			Database.EscalationRuleChangeHistory cloneOfExisting = (Database.EscalationRuleChangeHistory)_alertingContext.Entry(existing).GetDatabaseValues().ToObject();
 
 			//
 			// Create a new EscalationRuleChangeHistory object using the data from the existing record, updated with what is in the DTO.
 			//
-			Database.EscalationRuleChangeHistory escalationRuleChangeHistory = (Database.EscalationRuleChangeHistory)_context.Entry(existing).GetDatabaseValues().ToObject();
+			Database.EscalationRuleChangeHistory escalationRuleChangeHistory = (Database.EscalationRuleChangeHistory)_alertingContext.Entry(existing).GetDatabaseValues().ToObject();
 			escalationRuleChangeHistory.ApplyDTO(escalationRuleChangeHistoryDTO);
 			//
 			// The tenant guid for any EscalationRuleChangeHistory being saved must match the tenant guid of the user.  
@@ -483,12 +483,12 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				escalationRuleChangeHistory.timeStamp = escalationRuleChangeHistory.timeStamp.ToUniversalTime();
 			}
 
-			EntityEntry<Database.EscalationRuleChangeHistory> attached = _context.Entry(existing);
+			EntityEntry<Database.EscalationRuleChangeHistory> attached = _alertingContext.Entry(existing);
 			attached.CurrentValues.SetValues(escalationRuleChangeHistory);
 
 			try
 			{
-				await _context.SaveChangesAsync(cancellationToken);
+				await _alertingContext.SaveChangesAsync(cancellationToken);
 
 				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity,
 					"Alerting.EscalationRuleChangeHistory entity successfully updated.",
@@ -579,8 +579,8 @@ namespace Foundation.Alerting.Controllers.WebAPI
 					escalationRuleChangeHistory.timeStamp = escalationRuleChangeHistory.timeStamp.ToUniversalTime();
 				}
 
-				_context.EscalationRuleChangeHistories.Add(escalationRuleChangeHistory);
-				await _context.SaveChangesAsync(cancellationToken);
+				_alertingContext.EscalationRuleChangeHistories.Add(escalationRuleChangeHistory);
+				await _alertingContext.SaveChangesAsync(cancellationToken);
 
 				await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
 					"Alerting.EscalationRuleChangeHistory entity successfully created.",
@@ -646,7 +646,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
 			}
 
-			IQueryable<Database.EscalationRuleChangeHistory> query = (from x in _context.EscalationRuleChangeHistories
+			IQueryable<Database.EscalationRuleChangeHistory> query = (from x in _alertingContext.EscalationRuleChangeHistories
 				where
 				(x.id == id)
 				select x);
@@ -660,13 +660,13 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for Alerting.EscalationRuleChangeHistory DELETE", id.ToString(), new Exception("No Alerting.EscalationRuleChangeHistory entity could be find with the primary key provided."));
 				return NotFound();
 			}
-			Database.EscalationRuleChangeHistory cloneOfExisting = (Database.EscalationRuleChangeHistory)_context.Entry(escalationRuleChangeHistory).GetDatabaseValues().ToObject();
+			Database.EscalationRuleChangeHistory cloneOfExisting = (Database.EscalationRuleChangeHistory)_alertingContext.Entry(escalationRuleChangeHistory).GetDatabaseValues().ToObject();
 
 
 			try
 			{
-				_context.EscalationRuleChangeHistories.Remove(escalationRuleChangeHistory);
-				await _context.SaveChangesAsync(cancellationToken);
+				_alertingContext.EscalationRuleChangeHistories.Remove(escalationRuleChangeHistory);
+				await _alertingContext.SaveChangesAsync(cancellationToken);
 
 				await CreateAuditEventAsync(AuditEngine.AuditType.DeleteEntity,
 					"Alerting.EscalationRuleChangeHistory entity successfully deleted.",

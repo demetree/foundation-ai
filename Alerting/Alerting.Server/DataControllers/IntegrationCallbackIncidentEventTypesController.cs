@@ -484,7 +484,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			}
 
 
-			IQueryable<Database.IntegrationCallbackIncidentEventType> query = (from x in _context.IntegrationCallbackIncidentEventTypes
+			IQueryable<Database.IntegrationCallbackIncidentEventType> query = (from x in _alertingContext.IntegrationCallbackIncidentEventTypes
 				where
 				(x.id == id)
 				select x);
@@ -515,12 +515,12 @@ namespace Foundation.Alerting.Controllers.WebAPI
 
 
 			// Copy the existing object so it can be serialized as-is in the audit and history logs.
-			Database.IntegrationCallbackIncidentEventType cloneOfExisting = (Database.IntegrationCallbackIncidentEventType)_context.Entry(existing).GetDatabaseValues().ToObject();
+			Database.IntegrationCallbackIncidentEventType cloneOfExisting = (Database.IntegrationCallbackIncidentEventType)_alertingContext.Entry(existing).GetDatabaseValues().ToObject();
 
 			//
 			// Create a new IntegrationCallbackIncidentEventType object using the data from the existing record, updated with what is in the DTO.
 			//
-			Database.IntegrationCallbackIncidentEventType integrationCallbackIncidentEventType = (Database.IntegrationCallbackIncidentEventType)_context.Entry(existing).GetDatabaseValues().ToObject();
+			Database.IntegrationCallbackIncidentEventType integrationCallbackIncidentEventType = (Database.IntegrationCallbackIncidentEventType)_alertingContext.Entry(existing).GetDatabaseValues().ToObject();
 			integrationCallbackIncidentEventType.ApplyDTO(integrationCallbackIncidentEventTypeDTO);
 			//
 			// The tenant guid for any IntegrationCallbackIncidentEventType being saved must match the tenant guid of the user.  
@@ -565,12 +565,12 @@ namespace Foundation.Alerting.Controllers.WebAPI
 
 				try
 				{
-				    EntityEntry<Database.IntegrationCallbackIncidentEventType> attached = _context.Entry(existing);
+				    EntityEntry<Database.IntegrationCallbackIncidentEventType> attached = _alertingContext.Entry(existing);
 				    attached.CurrentValues.SetValues(integrationCallbackIncidentEventType);
 
-				    using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+				    using (IDbContextTransaction transaction = _alertingContext.Database.BeginTransaction())
 				    {
-				        _context.SaveChanges();
+				        _alertingContext.SaveChanges();
 
 				        //
 				        // Now add the change history
@@ -582,9 +582,9 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				        integrationCallbackIncidentEventTypeChangeHistory.userId = securityUser.id;
 				        integrationCallbackIncidentEventTypeChangeHistory.tenantGuid = userTenantGuid;
 				        integrationCallbackIncidentEventTypeChangeHistory.data = JsonSerializer.Serialize(Database.IntegrationCallbackIncidentEventType.CreateAnonymousWithFirstLevelSubObjects(integrationCallbackIncidentEventType));
-				        _context.IntegrationCallbackIncidentEventTypeChangeHistories.Add(integrationCallbackIncidentEventTypeChangeHistory);
+				        _alertingContext.IntegrationCallbackIncidentEventTypeChangeHistories.Add(integrationCallbackIncidentEventTypeChangeHistory);
 
-				        _context.SaveChanges();
+				        _alertingContext.SaveChanges();
 
 				        transaction.Commit();
 				    }
@@ -676,11 +676,11 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				integrationCallbackIncidentEventType.objectGuid = Guid.NewGuid();
 				integrationCallbackIncidentEventType.versionNumber = 1;
 
-				_context.IntegrationCallbackIncidentEventTypes.Add(integrationCallbackIncidentEventType);
+				_alertingContext.IntegrationCallbackIncidentEventTypes.Add(integrationCallbackIncidentEventType);
 
-				await using (IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync(cancellationToken))
+				await using (IDbContextTransaction transaction = await _alertingContext.Database.BeginTransactionAsync(cancellationToken))
 				{
-				    await _context.SaveChangesAsync(cancellationToken);
+				    await _alertingContext.SaveChangesAsync(cancellationToken);
 
 				    //
 				    // Now add the change history
@@ -689,7 +689,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				    //
 				    // Detach the integrationCallbackIncidentEventType object so that no further changes will be written to the database
 				    //
-				    _context.Entry(integrationCallbackIncidentEventType).State = EntityState.Detached;
+				    _alertingContext.Entry(integrationCallbackIncidentEventType).State = EntityState.Detached;
 
 				    //
 				    // Nullify all object properties before serializing.
@@ -706,8 +706,8 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				    integrationCallbackIncidentEventTypeChangeHistory.userId = securityUser.id;
 				    integrationCallbackIncidentEventTypeChangeHistory.tenantGuid = userTenantGuid;
 				    integrationCallbackIncidentEventTypeChangeHistory.data = JsonSerializer.Serialize(Database.IntegrationCallbackIncidentEventType.CreateAnonymousWithFirstLevelSubObjects(integrationCallbackIncidentEventType));
-				    _context.IntegrationCallbackIncidentEventTypeChangeHistories.Add(integrationCallbackIncidentEventTypeChangeHistory);
-				    await _context.SaveChangesAsync(cancellationToken);
+				    _alertingContext.IntegrationCallbackIncidentEventTypeChangeHistories.Add(integrationCallbackIncidentEventTypeChangeHistory);
+				    await _alertingContext.SaveChangesAsync(cancellationToken);
 
 				    await transaction.CommitAsync(cancellationToken);
 
@@ -783,7 +783,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			
 
 			
-			IQueryable <Database.IntegrationCallbackIncidentEventType> query = (from x in _context.IntegrationCallbackIncidentEventTypes
+			IQueryable <Database.IntegrationCallbackIncidentEventType> query = (from x in _alertingContext.IntegrationCallbackIncidentEventTypes
 			        where
 			        (x.id == id)
 			        select x);
@@ -808,7 +808,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				//
 				// Make a copy of the IntegrationCallbackIncidentEventType current state so we can log it.
 				//
-				Database.IntegrationCallbackIncidentEventType cloneOfExisting = (Database.IntegrationCallbackIncidentEventType)_context.Entry(integrationCallbackIncidentEventType).GetDatabaseValues().ToObject();
+				Database.IntegrationCallbackIncidentEventType cloneOfExisting = (Database.IntegrationCallbackIncidentEventType)_alertingContext.Entry(integrationCallbackIncidentEventType).GetDatabaseValues().ToObject();
 				
 				//
 				// Remove any object fields from the clone object so that it can serialize effectively
@@ -823,7 +823,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				    return NotFound();
 				}
 				
-				IntegrationCallbackIncidentEventTypeChangeHistory integrationCallbackIncidentEventTypeChangeHistory = (from x in _context.IntegrationCallbackIncidentEventTypeChangeHistories
+				IntegrationCallbackIncidentEventTypeChangeHistory integrationCallbackIncidentEventTypeChangeHistory = (from x in _alertingContext.IntegrationCallbackIncidentEventTypeChangeHistories
 				                                               where
 				                                               x.integrationCallbackIncidentEventTypeId == id &&
 				                                               x.versionNumber == versionNumber &&
@@ -852,10 +852,10 @@ namespace Foundation.Alerting.Controllers.WebAPI
 
 				    string serializedIntegrationCallbackIncidentEventType = JsonSerializer.Serialize(integrationCallbackIncidentEventType);
 
-				    using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+				    using (IDbContextTransaction transaction = _alertingContext.Database.BeginTransaction())
 				    {
 
-				        _context.SaveChanges();
+				        _alertingContext.SaveChanges();
 
 				        //
 				        // Now add the change history
@@ -867,9 +867,9 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				        newIntegrationCallbackIncidentEventTypeChangeHistory.userId = securityUser.id;
 				        newIntegrationCallbackIncidentEventTypeChangeHistory.tenantGuid = userTenantGuid;
 				        newIntegrationCallbackIncidentEventTypeChangeHistory.data = JsonSerializer.Serialize(Database.IntegrationCallbackIncidentEventType.CreateAnonymousWithFirstLevelSubObjects(integrationCallbackIncidentEventType));
-				        _context.IntegrationCallbackIncidentEventTypeChangeHistories.Add(newIntegrationCallbackIncidentEventTypeChangeHistory);
+				        _alertingContext.IntegrationCallbackIncidentEventTypeChangeHistories.Add(newIntegrationCallbackIncidentEventTypeChangeHistory);
 
-				        _context.SaveChanges();
+				        _alertingContext.SaveChanges();
 
 				        transaction.Commit();
 				    }
@@ -1212,7 +1212,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
 			}
 
-			IQueryable<Database.IntegrationCallbackIncidentEventType> query = (from x in _context.IntegrationCallbackIncidentEventTypes
+			IQueryable<Database.IntegrationCallbackIncidentEventType> query = (from x in _alertingContext.IntegrationCallbackIncidentEventTypes
 				where
 				(x.id == id)
 				select x);
@@ -1226,7 +1226,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for Alerting.IntegrationCallbackIncidentEventType DELETE", id.ToString(), new Exception("No Alerting.IntegrationCallbackIncidentEventType entity could be find with the primary key provided."));
 				return NotFound();
 			}
-			Database.IntegrationCallbackIncidentEventType cloneOfExisting = (Database.IntegrationCallbackIncidentEventType)_context.Entry(integrationCallbackIncidentEventType).GetDatabaseValues().ToObject();
+			Database.IntegrationCallbackIncidentEventType cloneOfExisting = (Database.IntegrationCallbackIncidentEventType)_alertingContext.Entry(integrationCallbackIncidentEventType).GetDatabaseValues().ToObject();
 
 
 			lock (integrationCallbackIncidentEventTypeDeleteSyncRoot)
@@ -1236,7 +1236,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			        integrationCallbackIncidentEventType.deleted = true;
 			        integrationCallbackIncidentEventType.versionNumber++;
 
-			        _context.SaveChanges();
+			        _alertingContext.SaveChanges();
 
 			        //
 			        // Now add the change history
@@ -1248,9 +1248,9 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			        integrationCallbackIncidentEventTypeChangeHistory.userId = securityUser.id;
 			        integrationCallbackIncidentEventTypeChangeHistory.tenantGuid = userTenantGuid;
 			        integrationCallbackIncidentEventTypeChangeHistory.data = JsonSerializer.Serialize(Database.IntegrationCallbackIncidentEventType.CreateAnonymousWithFirstLevelSubObjects(integrationCallbackIncidentEventType));
-			        _context.IntegrationCallbackIncidentEventTypeChangeHistories.Add(integrationCallbackIncidentEventTypeChangeHistory);
+			        _alertingContext.IntegrationCallbackIncidentEventTypeChangeHistories.Add(integrationCallbackIncidentEventTypeChangeHistory);
 
-			        _context.SaveChanges();
+			        _alertingContext.SaveChanges();
 
 					CreateAuditEvent(AuditEngine.AuditType.DeleteEntity,
 						"Alerting.IntegrationCallbackIncidentEventType entity successfully deleted.",

@@ -437,7 +437,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			}
 
 
-			IQueryable<Database.IntegrationCallbackIncidentEventTypeChangeHistory> query = (from x in _context.IntegrationCallbackIncidentEventTypeChangeHistories
+			IQueryable<Database.IntegrationCallbackIncidentEventTypeChangeHistory> query = (from x in _alertingContext.IntegrationCallbackIncidentEventTypeChangeHistories
 				where
 				(x.id == id)
 				select x);
@@ -453,12 +453,12 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			}
 
 			// Copy the existing object so it can be serialized as-is in the audit and history logs.
-			Database.IntegrationCallbackIncidentEventTypeChangeHistory cloneOfExisting = (Database.IntegrationCallbackIncidentEventTypeChangeHistory)_context.Entry(existing).GetDatabaseValues().ToObject();
+			Database.IntegrationCallbackIncidentEventTypeChangeHistory cloneOfExisting = (Database.IntegrationCallbackIncidentEventTypeChangeHistory)_alertingContext.Entry(existing).GetDatabaseValues().ToObject();
 
 			//
 			// Create a new IntegrationCallbackIncidentEventTypeChangeHistory object using the data from the existing record, updated with what is in the DTO.
 			//
-			Database.IntegrationCallbackIncidentEventTypeChangeHistory integrationCallbackIncidentEventTypeChangeHistory = (Database.IntegrationCallbackIncidentEventTypeChangeHistory)_context.Entry(existing).GetDatabaseValues().ToObject();
+			Database.IntegrationCallbackIncidentEventTypeChangeHistory integrationCallbackIncidentEventTypeChangeHistory = (Database.IntegrationCallbackIncidentEventTypeChangeHistory)_alertingContext.Entry(existing).GetDatabaseValues().ToObject();
 			integrationCallbackIncidentEventTypeChangeHistory.ApplyDTO(integrationCallbackIncidentEventTypeChangeHistoryDTO);
 			//
 			// The tenant guid for any IntegrationCallbackIncidentEventTypeChangeHistory being saved must match the tenant guid of the user.  
@@ -481,12 +481,12 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				integrationCallbackIncidentEventTypeChangeHistory.timeStamp = integrationCallbackIncidentEventTypeChangeHistory.timeStamp.ToUniversalTime();
 			}
 
-			EntityEntry<Database.IntegrationCallbackIncidentEventTypeChangeHistory> attached = _context.Entry(existing);
+			EntityEntry<Database.IntegrationCallbackIncidentEventTypeChangeHistory> attached = _alertingContext.Entry(existing);
 			attached.CurrentValues.SetValues(integrationCallbackIncidentEventTypeChangeHistory);
 
 			try
 			{
-				await _context.SaveChangesAsync(cancellationToken);
+				await _alertingContext.SaveChangesAsync(cancellationToken);
 
 				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity,
 					"Alerting.IntegrationCallbackIncidentEventTypeChangeHistory entity successfully updated.",
@@ -577,8 +577,8 @@ namespace Foundation.Alerting.Controllers.WebAPI
 					integrationCallbackIncidentEventTypeChangeHistory.timeStamp = integrationCallbackIncidentEventTypeChangeHistory.timeStamp.ToUniversalTime();
 				}
 
-				_context.IntegrationCallbackIncidentEventTypeChangeHistories.Add(integrationCallbackIncidentEventTypeChangeHistory);
-				await _context.SaveChangesAsync(cancellationToken);
+				_alertingContext.IntegrationCallbackIncidentEventTypeChangeHistories.Add(integrationCallbackIncidentEventTypeChangeHistory);
+				await _alertingContext.SaveChangesAsync(cancellationToken);
 
 				await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
 					"Alerting.IntegrationCallbackIncidentEventTypeChangeHistory entity successfully created.",
@@ -644,7 +644,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
 			}
 
-			IQueryable<Database.IntegrationCallbackIncidentEventTypeChangeHistory> query = (from x in _context.IntegrationCallbackIncidentEventTypeChangeHistories
+			IQueryable<Database.IntegrationCallbackIncidentEventTypeChangeHistory> query = (from x in _alertingContext.IntegrationCallbackIncidentEventTypeChangeHistories
 				where
 				(x.id == id)
 				select x);
@@ -658,13 +658,13 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for Alerting.IntegrationCallbackIncidentEventTypeChangeHistory DELETE", id.ToString(), new Exception("No Alerting.IntegrationCallbackIncidentEventTypeChangeHistory entity could be find with the primary key provided."));
 				return NotFound();
 			}
-			Database.IntegrationCallbackIncidentEventTypeChangeHistory cloneOfExisting = (Database.IntegrationCallbackIncidentEventTypeChangeHistory)_context.Entry(integrationCallbackIncidentEventTypeChangeHistory).GetDatabaseValues().ToObject();
+			Database.IntegrationCallbackIncidentEventTypeChangeHistory cloneOfExisting = (Database.IntegrationCallbackIncidentEventTypeChangeHistory)_alertingContext.Entry(integrationCallbackIncidentEventTypeChangeHistory).GetDatabaseValues().ToObject();
 
 
 			try
 			{
-				_context.IntegrationCallbackIncidentEventTypeChangeHistories.Remove(integrationCallbackIncidentEventTypeChangeHistory);
-				await _context.SaveChangesAsync(cancellationToken);
+				_alertingContext.IntegrationCallbackIncidentEventTypeChangeHistories.Remove(integrationCallbackIncidentEventTypeChangeHistory);
+				await _alertingContext.SaveChangesAsync(cancellationToken);
 
 				await CreateAuditEventAsync(AuditEngine.AuditType.DeleteEntity,
 					"Alerting.IntegrationCallbackIncidentEventTypeChangeHistory entity successfully deleted.",

@@ -445,7 +445,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			}
 
 
-			IQueryable<Database.UserNotificationPreferenceChangeHistory> query = (from x in _context.UserNotificationPreferenceChangeHistories
+			IQueryable<Database.UserNotificationPreferenceChangeHistory> query = (from x in _alertingContext.UserNotificationPreferenceChangeHistories
 				where
 				(x.id == id)
 				select x);
@@ -461,12 +461,12 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			}
 
 			// Copy the existing object so it can be serialized as-is in the audit and history logs.
-			Database.UserNotificationPreferenceChangeHistory cloneOfExisting = (Database.UserNotificationPreferenceChangeHistory)_context.Entry(existing).GetDatabaseValues().ToObject();
+			Database.UserNotificationPreferenceChangeHistory cloneOfExisting = (Database.UserNotificationPreferenceChangeHistory)_alertingContext.Entry(existing).GetDatabaseValues().ToObject();
 
 			//
 			// Create a new UserNotificationPreferenceChangeHistory object using the data from the existing record, updated with what is in the DTO.
 			//
-			Database.UserNotificationPreferenceChangeHistory userNotificationPreferenceChangeHistory = (Database.UserNotificationPreferenceChangeHistory)_context.Entry(existing).GetDatabaseValues().ToObject();
+			Database.UserNotificationPreferenceChangeHistory userNotificationPreferenceChangeHistory = (Database.UserNotificationPreferenceChangeHistory)_alertingContext.Entry(existing).GetDatabaseValues().ToObject();
 			userNotificationPreferenceChangeHistory.ApplyDTO(userNotificationPreferenceChangeHistoryDTO);
 			//
 			// The tenant guid for any UserNotificationPreferenceChangeHistory being saved must match the tenant guid of the user.  
@@ -489,12 +489,12 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				userNotificationPreferenceChangeHistory.timeStamp = userNotificationPreferenceChangeHistory.timeStamp.ToUniversalTime();
 			}
 
-			EntityEntry<Database.UserNotificationPreferenceChangeHistory> attached = _context.Entry(existing);
+			EntityEntry<Database.UserNotificationPreferenceChangeHistory> attached = _alertingContext.Entry(existing);
 			attached.CurrentValues.SetValues(userNotificationPreferenceChangeHistory);
 
 			try
 			{
-				await _context.SaveChangesAsync(cancellationToken);
+				await _alertingContext.SaveChangesAsync(cancellationToken);
 
 				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity,
 					"Alerting.UserNotificationPreferenceChangeHistory entity successfully updated.",
@@ -585,8 +585,8 @@ namespace Foundation.Alerting.Controllers.WebAPI
 					userNotificationPreferenceChangeHistory.timeStamp = userNotificationPreferenceChangeHistory.timeStamp.ToUniversalTime();
 				}
 
-				_context.UserNotificationPreferenceChangeHistories.Add(userNotificationPreferenceChangeHistory);
-				await _context.SaveChangesAsync(cancellationToken);
+				_alertingContext.UserNotificationPreferenceChangeHistories.Add(userNotificationPreferenceChangeHistory);
+				await _alertingContext.SaveChangesAsync(cancellationToken);
 
 				await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
 					"Alerting.UserNotificationPreferenceChangeHistory entity successfully created.",
@@ -652,7 +652,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
 			}
 
-			IQueryable<Database.UserNotificationPreferenceChangeHistory> query = (from x in _context.UserNotificationPreferenceChangeHistories
+			IQueryable<Database.UserNotificationPreferenceChangeHistory> query = (from x in _alertingContext.UserNotificationPreferenceChangeHistories
 				where
 				(x.id == id)
 				select x);
@@ -666,13 +666,13 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for Alerting.UserNotificationPreferenceChangeHistory DELETE", id.ToString(), new Exception("No Alerting.UserNotificationPreferenceChangeHistory entity could be find with the primary key provided."));
 				return NotFound();
 			}
-			Database.UserNotificationPreferenceChangeHistory cloneOfExisting = (Database.UserNotificationPreferenceChangeHistory)_context.Entry(userNotificationPreferenceChangeHistory).GetDatabaseValues().ToObject();
+			Database.UserNotificationPreferenceChangeHistory cloneOfExisting = (Database.UserNotificationPreferenceChangeHistory)_alertingContext.Entry(userNotificationPreferenceChangeHistory).GetDatabaseValues().ToObject();
 
 
 			try
 			{
-				_context.UserNotificationPreferenceChangeHistories.Remove(userNotificationPreferenceChangeHistory);
-				await _context.SaveChangesAsync(cancellationToken);
+				_alertingContext.UserNotificationPreferenceChangeHistories.Remove(userNotificationPreferenceChangeHistory);
+				await _alertingContext.SaveChangesAsync(cancellationToken);
 
 				await CreateAuditEventAsync(AuditEngine.AuditType.DeleteEntity,
 					"Alerting.UserNotificationPreferenceChangeHistory entity successfully deleted.",

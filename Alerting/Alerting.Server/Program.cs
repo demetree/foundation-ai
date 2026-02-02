@@ -179,6 +179,7 @@ namespace Foundation.Alerting
                 controllers.Add(typeof(AlertsController));
                 controllers.Add(typeof(IncidentController));
                 controllers.Add(typeof(IntegrationManagementController));
+                controllers.Add(typeof(UsersController));
                 //
                 // End of Alerting custom controllers
                 //
@@ -311,6 +312,7 @@ namespace Foundation.Alerting
                 //
                 builder.Services.AddScoped<IAlertingService, AlertingService>();
                 builder.Services.AddScoped<IEscalationService, EscalationService>();
+                builder.Services.AddScoped<IUserService, UserService>();
 
                 //
                 // Background Workers

@@ -439,7 +439,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			}
 
 
-			IQueryable<Database.IncidentNoteChangeHistory> query = (from x in _context.IncidentNoteChangeHistories
+			IQueryable<Database.IncidentNoteChangeHistory> query = (from x in _alertingContext.IncidentNoteChangeHistories
 				where
 				(x.id == id)
 				select x);
@@ -455,12 +455,12 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			}
 
 			// Copy the existing object so it can be serialized as-is in the audit and history logs.
-			Database.IncidentNoteChangeHistory cloneOfExisting = (Database.IncidentNoteChangeHistory)_context.Entry(existing).GetDatabaseValues().ToObject();
+			Database.IncidentNoteChangeHistory cloneOfExisting = (Database.IncidentNoteChangeHistory)_alertingContext.Entry(existing).GetDatabaseValues().ToObject();
 
 			//
 			// Create a new IncidentNoteChangeHistory object using the data from the existing record, updated with what is in the DTO.
 			//
-			Database.IncidentNoteChangeHistory incidentNoteChangeHistory = (Database.IncidentNoteChangeHistory)_context.Entry(existing).GetDatabaseValues().ToObject();
+			Database.IncidentNoteChangeHistory incidentNoteChangeHistory = (Database.IncidentNoteChangeHistory)_alertingContext.Entry(existing).GetDatabaseValues().ToObject();
 			incidentNoteChangeHistory.ApplyDTO(incidentNoteChangeHistoryDTO);
 			//
 			// The tenant guid for any IncidentNoteChangeHistory being saved must match the tenant guid of the user.  
@@ -483,12 +483,12 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				incidentNoteChangeHistory.timeStamp = incidentNoteChangeHistory.timeStamp.ToUniversalTime();
 			}
 
-			EntityEntry<Database.IncidentNoteChangeHistory> attached = _context.Entry(existing);
+			EntityEntry<Database.IncidentNoteChangeHistory> attached = _alertingContext.Entry(existing);
 			attached.CurrentValues.SetValues(incidentNoteChangeHistory);
 
 			try
 			{
-				await _context.SaveChangesAsync(cancellationToken);
+				await _alertingContext.SaveChangesAsync(cancellationToken);
 
 				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity,
 					"Alerting.IncidentNoteChangeHistory entity successfully updated.",
@@ -579,8 +579,8 @@ namespace Foundation.Alerting.Controllers.WebAPI
 					incidentNoteChangeHistory.timeStamp = incidentNoteChangeHistory.timeStamp.ToUniversalTime();
 				}
 
-				_context.IncidentNoteChangeHistories.Add(incidentNoteChangeHistory);
-				await _context.SaveChangesAsync(cancellationToken);
+				_alertingContext.IncidentNoteChangeHistories.Add(incidentNoteChangeHistory);
+				await _alertingContext.SaveChangesAsync(cancellationToken);
 
 				await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
 					"Alerting.IncidentNoteChangeHistory entity successfully created.",
@@ -646,7 +646,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
 			}
 
-			IQueryable<Database.IncidentNoteChangeHistory> query = (from x in _context.IncidentNoteChangeHistories
+			IQueryable<Database.IncidentNoteChangeHistory> query = (from x in _alertingContext.IncidentNoteChangeHistories
 				where
 				(x.id == id)
 				select x);
@@ -660,13 +660,13 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for Alerting.IncidentNoteChangeHistory DELETE", id.ToString(), new Exception("No Alerting.IncidentNoteChangeHistory entity could be find with the primary key provided."));
 				return NotFound();
 			}
-			Database.IncidentNoteChangeHistory cloneOfExisting = (Database.IncidentNoteChangeHistory)_context.Entry(incidentNoteChangeHistory).GetDatabaseValues().ToObject();
+			Database.IncidentNoteChangeHistory cloneOfExisting = (Database.IncidentNoteChangeHistory)_alertingContext.Entry(incidentNoteChangeHistory).GetDatabaseValues().ToObject();
 
 
 			try
 			{
-				_context.IncidentNoteChangeHistories.Remove(incidentNoteChangeHistory);
-				await _context.SaveChangesAsync(cancellationToken);
+				_alertingContext.IncidentNoteChangeHistories.Remove(incidentNoteChangeHistory);
+				await _alertingContext.SaveChangesAsync(cancellationToken);
 
 				await CreateAuditEventAsync(AuditEngine.AuditType.DeleteEntity,
 					"Alerting.IncidentNoteChangeHistory entity successfully deleted.",
