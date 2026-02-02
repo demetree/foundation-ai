@@ -31,8 +31,8 @@ namespace Foundation.Alerting.Controllers.WebAPI
     /// </summary>
 	public partial class IntegrationsController : SecureWebAPIController
 	{
-		public const int READ_PERMISSION_LEVEL_REQUIRED = 0;
-		public const int WRITE_PERMISSION_LEVEL_REQUIRED = 0;
+		public const int READ_PERMISSION_LEVEL_REQUIRED = 1;
+		public const int WRITE_PERMISSION_LEVEL_REQUIRED = 150;
 
 		static object integrationPutSyncRoot = new object();
 		static object integrationDeleteSyncRoot = new object();
@@ -83,6 +83,9 @@ namespace Foundation.Alerting.Controllers.WebAPI
 		{
 			StartAuditEventClock();
 
+			//
+			// Alerting Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
 			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
 			{
 			   return Forbid();
@@ -91,11 +94,9 @@ namespace Foundation.Alerting.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
-			bool userIsWriter = await UserCanWriteAsync(securityUser, 0, cancellationToken);
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 150, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 
-			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
-			
 			Guid userTenantGuid;
 
 			try
@@ -260,6 +261,9 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
+			//
+			// Alerting Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
 			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
 			{
 			   return Forbid();
@@ -267,10 +271,8 @@ namespace Foundation.Alerting.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
-			bool userIsWriter = await UserCanWriteAsync(securityUser, 0, cancellationToken);
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 150, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
-			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
-			
 			Guid userTenantGuid;
 
 			try
@@ -377,6 +379,9 @@ namespace Foundation.Alerting.Controllers.WebAPI
 		{
 			StartAuditEventClock();
 
+			//
+			// Alerting Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
 			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
 			{
 			   return Forbid();
@@ -385,10 +390,8 @@ namespace Foundation.Alerting.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
-			bool userIsWriter = await UserCanWriteAsync(securityUser, 0, cancellationToken);
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 150, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
-			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
-			
 			
 			Guid userTenantGuid;
 
@@ -456,6 +459,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 		}
 
 
+/* This function is expected to be overridden in a custom file
 		/// <summary>
 		/// 
 		/// This updates an existing Integration record
@@ -476,8 +480,10 @@ namespace Foundation.Alerting.Controllers.WebAPI
 
 			StartAuditEventClock();
 
-			// Admin privilege needed to write to this table.
-			if (await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
+			//
+			// Alerting Writer role needed to write to this table, as well as the minimum write permission level.
+			//
+			if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
 			{
 			   return Forbid();
 			}
@@ -491,10 +497,8 @@ namespace Foundation.Alerting.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
-			bool userIsWriter = await UserCanWriteAsync(securityUser, 0, cancellationToken);
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 150, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
-			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
-			
 			Guid userTenantGuid;
 
 			try
@@ -658,7 +662,9 @@ namespace Foundation.Alerting.Controllers.WebAPI
 
 			}
 		}
+*/
 
+/* This function is expected to be overridden in a custom file
         /// <summary>
         /// 
         /// This creates a new Integration record
@@ -678,8 +684,10 @@ namespace Foundation.Alerting.Controllers.WebAPI
 
 			StartAuditEventClock();
 
-			// Admin privilege needed to write to this table.
-			if (await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
+			//
+			// Alerting Writer role needed to write to this table, as well as the minimum write permission level.
+			//
+			if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
 			{
 			   return Forbid();
 			}
@@ -689,8 +697,6 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
-			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
-			
 			Guid userTenantGuid;
 
 			try
@@ -797,7 +803,9 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			return CreatedAtRoute("Integration", new { id = integration.id }, Database.Integration.CreateAnonymousWithFirstLevelSubObjects(integration));
 		}
 
+*/
 
+/* This function is expected to be overridden in a custom file
 
         /// <summary>
         /// 
@@ -827,7 +835,6 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 			
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
-			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
 
 			Guid userTenantGuid;
 
@@ -958,6 +965,8 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			}
 		}
 
+*/
+
 
 
         /// <summary>
@@ -975,10 +984,15 @@ namespace Foundation.Alerting.Controllers.WebAPI
 		[Route("api/Integration/{id}/ChangeMetadata")]
 		public async Task<IActionResult> GetIntegrationChangeMetadata(int id, int versionNumber, CancellationToken cancellationToken = default)
 		{
+
+			//
+			// Alerting Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
 			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
 			{
-				return Forbid();
+			   return Forbid();
 			}
+
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
@@ -1040,10 +1054,15 @@ namespace Foundation.Alerting.Controllers.WebAPI
 		[Route("api/Integration/{id}/AuditHistory")]
 		public async Task<IActionResult> GetIntegrationAuditHistory(int id, bool includeData = false, CancellationToken cancellationToken = default)
 		{
+
+			//
+			// Alerting Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
 			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
 			{
-				return Forbid();
+			   return Forbid();
 			}
+
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
@@ -1100,10 +1119,15 @@ namespace Foundation.Alerting.Controllers.WebAPI
 		[Route("api/Integration/{id}/Version/{version}")]
 		public async Task<IActionResult> GetIntegrationVersion(int id, int version, CancellationToken cancellationToken = default)
 		{
+
+			//
+			// Alerting Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
 			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
 			{
-				return Forbid();
+			   return Forbid();
 			}
+
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
@@ -1165,10 +1189,15 @@ namespace Foundation.Alerting.Controllers.WebAPI
 		[Route("api/Integration/{id}/StateAtTime")]
 		public async Task<IActionResult> GetIntegrationStateAtTime(int id, DateTime time, CancellationToken cancellationToken = default)
 		{
+
+			//
+			// Alerting Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
 			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
 			{
-				return Forbid();
+			   return Forbid();
 			}
+
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
@@ -1213,6 +1242,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			}
 		}
 
+/* This function is expected to be overridden in a custom file
         /// <summary>
         /// 
         /// This deletes a Integration record
@@ -1228,7 +1258,10 @@ namespace Foundation.Alerting.Controllers.WebAPI
 		{
 			StartAuditEventClock();
 
-			if (await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
+			//
+			// Alerting Writer role needed to write to this table, as well as the minimum write permission level.
+			//
+			if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
 			{
 			   return Forbid();
 			}
@@ -1236,7 +1269,6 @@ namespace Foundation.Alerting.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
-			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(cancellationToken);
 			
 			
 			Guid userTenantGuid;
@@ -1317,6 +1349,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 		}
 
 
+*/
         /// <summary>
         /// 
         /// This gets a list of Integration records, filtered by the parameters provided in a simple minimal format that is useful for drop down boxes and similar.
@@ -1344,17 +1377,20 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			int? pageNumber = null,
 			CancellationToken cancellationToken = default)
 		{
+			//
+			// Alerting Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
 			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
 			{
 			   return Forbid();
 			}
 
+
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
-			bool userIsWriter = await UserCanWriteAsync(securityUser, 0, cancellationToken);
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 150, cancellationToken);
 
-			bool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);
 
 			Guid userTenantGuid;
 
@@ -1482,12 +1518,17 @@ namespace Foundation.Alerting.Controllers.WebAPI
 		[HttpPost]
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/Integration/CreateAuditEvent")]
-		public async Task<IActionResult> CreateControllerAuditEvent(AuditEngine.AuditType type, string message, string primaryKey = null)
+		public async Task<IActionResult> CreateControllerAuditEvent(AuditEngine.AuditType type, string message, string primaryKey = null, CancellationToken cancellationToken = default)
 		{
-			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED) == false)
+
+			//
+			// Alerting Writer role needed to write to this table, as well as the minimum write permission level.
+			//
+			if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
 			{
 			   return Forbid();
 			}
+
 
 		    await CreateAuditEventAsync(type, message, primaryKey);
 

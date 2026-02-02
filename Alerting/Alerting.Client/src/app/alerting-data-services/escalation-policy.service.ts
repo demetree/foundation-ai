@@ -980,7 +980,7 @@ export class EscalationPolicyService extends SecureEndpointBase {
             const user = this.authService.currentUser;
 
             if (user != null) {
-                userIsAlertingEscalationPolicyReader = user.readPermission >= 0;
+                userIsAlertingEscalationPolicyReader = user.readPermission >= 1;
             } else {
                 userIsAlertingEscalationPolicyReader = false;
             }
@@ -1004,7 +1004,7 @@ export class EscalationPolicyService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsAlertingEscalationPolicyWriter = user.writePermission >= 0;
+            userIsAlertingEscalationPolicyWriter = user.writePermission >= 150;
           } else {
             userIsAlertingEscalationPolicyWriter = false;
           }      

@@ -796,7 +796,7 @@ export class ScheduleLayerMemberService extends SecureEndpointBase {
             const user = this.authService.currentUser;
 
             if (user != null) {
-                userIsAlertingScheduleLayerMemberReader = user.readPermission >= 0;
+                userIsAlertingScheduleLayerMemberReader = user.readPermission >= 1;
             } else {
                 userIsAlertingScheduleLayerMemberReader = false;
             }
@@ -820,7 +820,7 @@ export class ScheduleLayerMemberService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsAlertingScheduleLayerMemberWriter = user.writePermission >= 0;
+            userIsAlertingScheduleLayerMemberWriter = user.writePermission >= 100;
           } else {
             userIsAlertingScheduleLayerMemberWriter = false;
           }      

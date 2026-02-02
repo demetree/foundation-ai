@@ -29,6 +29,23 @@ INSERT INTO "Security"."ModuleSecurityRole" ( "moduleId", "securityRoleId" ) VAL
 
 
 -- 
+-- Define the custom roles for the Alerting module
+-- 
+INSERT INTO "Security"."SecurityRole" ( "name", "description", "privilegeId" ) VALUES  ( 'Alerting User Writer', 'Alerting User Writer Role', ( SELECT id FROM "Privilege" WHERE "name" = 'Custom' LIMIT 1) );
+
+INSERT INTO "Security"."SecurityRole" ( "name", "description", "privilegeId" ) VALUES  ( 'Alerting Schedule Writer', 'Alerting Schedule Writer Role', ( SELECT id FROM "Privilege" WHERE "name" = 'Custom' LIMIT 1) );
+
+INSERT INTO "Security"."SecurityRole" ( "name", "description", "privilegeId" ) VALUES  ( 'Alerting Master Config Writer', 'Alerting Master Config Writer Role', ( SELECT id FROM "Privilege" WHERE "name" = 'Custom' LIMIT 1) );
+
+
+INSERT INTO "Security"."ModuleSecurityRole" ( "moduleId", "securityRoleId" ) VALUES  ( ( SELECT id FROM "Module" WHERE "name" = 'Alerting' LIMIT 1), ( SELECT id FROM "SecurityRole" WHERE "name" = 'Alerting User Writer' LIMIT 1) );
+
+INSERT INTO "Security"."ModuleSecurityRole" ( "moduleId", "securityRoleId" ) VALUES  ( ( SELECT id FROM "Module" WHERE "name" = 'Alerting' LIMIT 1), ( SELECT id FROM "SecurityRole" WHERE "name" = 'Alerting Schedule Writer' LIMIT 1) );
+
+INSERT INTO "Security"."ModuleSecurityRole" ( "moduleId", "securityRoleId" ) VALUES  ( ( SELECT id FROM "Module" WHERE "name" = 'Alerting' LIMIT 1), ( SELECT id FROM "SecurityRole" WHERE "name" = 'Alerting Master Config Writer' LIMIT 1) );
+
+
+-- 
 -- Give the admin user administrative rights to the module
 -- 
 INSERT INTO "Security"."SecurityUserSecurityRole" ( "securityUserId", "securityRoleId", "active", "deleted" ) VALUES  ( ( SELECT id FROM "SecurityUser" WHERE "accountName" = 'Admin' LIMIT 1), ( SELECT id FROM "SecurityRole" WHERE "name" = 'Alerting Administrator' LIMIT 1), '1', '0' );

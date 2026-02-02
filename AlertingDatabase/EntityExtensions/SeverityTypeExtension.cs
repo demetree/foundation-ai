@@ -24,7 +24,6 @@ namespace Foundation.Alerting.Database
 			[Required]
 			public String name { get; set; }
 			public String description { get; set; }
-			[Required]
 			public Int32 sortOrder { get; set; }
 			public Boolean? active { get; set; }
 			public Boolean? deleted { get; set; }

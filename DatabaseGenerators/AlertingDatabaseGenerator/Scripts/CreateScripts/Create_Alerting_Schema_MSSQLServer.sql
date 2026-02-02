@@ -118,7 +118,7 @@ CREATE TABLE [Alerting].[SeverityType]
 	[id] INT IDENTITY PRIMARY KEY NOT NULL,
 	[name] NVARCHAR(100) NOT NULL UNIQUE,
 	[description] NVARCHAR(500) NULL,
-	[sortOrder] INT NOT NULL DEFAULT 0,
+	[sequence] INT NOT NULL,		-- Sequence to use for sorting.
 	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
 
@@ -137,16 +137,16 @@ GO
 CREATE INDEX [I_SeverityType_deleted] ON [Alerting].[SeverityType] ([deleted])
 GO
 
-INSERT INTO [Alerting].[SeverityType] ( [name], [description], [sortOrder] ) VALUES  ( 'Critical', 'Critical', 10 )
+INSERT INTO [Alerting].[SeverityType] ( [name], [description], [sequence] ) VALUES  ( 'Critical', 'Critical', 10 )
 GO
 
-INSERT INTO [Alerting].[SeverityType] ( [name], [description], [sortOrder] ) VALUES  ( 'High', 'High', 20 )
+INSERT INTO [Alerting].[SeverityType] ( [name], [description], [sequence] ) VALUES  ( 'High', 'High', 20 )
 GO
 
-INSERT INTO [Alerting].[SeverityType] ( [name], [description], [sortOrder] ) VALUES  ( 'Medium', 'Medium', 30 )
+INSERT INTO [Alerting].[SeverityType] ( [name], [description], [sequence] ) VALUES  ( 'Medium', 'Medium', 30 )
 GO
 
-INSERT INTO [Alerting].[SeverityType] ( [name], [description], [sortOrder] ) VALUES  ( 'Low', 'Low', 40 )
+INSERT INTO [Alerting].[SeverityType] ( [name], [description], [sequence] ) VALUES  ( 'Low', 'Low', 40 )
 GO
 
 
@@ -794,7 +794,7 @@ CREATE TABLE [Alerting].[UserNotificationPreference]
 (
 	[id] INT IDENTITY PRIMARY KEY NOT NULL,
 	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
-	[securityUserObjectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- References Security.SecurityUser.objectGuid - one preference row per user.
+	[securityUserObjectGuid] UNIQUEIDENTIFIER NOT NULL,		-- References Security.SecurityUser.objectGuid - one preference row per user.
 	[timeZoneId] NVARCHAR(50) NULL DEFAULT 'UTC',		-- User's preferred timezone for quiet hours scheduling.
 	[quietHoursStart] NVARCHAR(10) NULL,		-- HH:mm format local to timeZoneId - start of quiet hours (null = no quiet hours).
 	[quietHoursEnd] NVARCHAR(10) NULL,		-- HH:mm format local to timeZoneId - end of quiet hours.

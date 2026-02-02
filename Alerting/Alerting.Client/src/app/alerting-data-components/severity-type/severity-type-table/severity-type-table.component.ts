@@ -168,7 +168,6 @@ export class SeverityTypeTableComponent implements OnInit, OnChanges, AfterViewI
     const defaultColumns: TableColumn[] = [
     { key: 'name', label: 'Name', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/severitytype', 'id']  },
     { key: 'description', label: 'Description', width: undefined },
-    { key: 'sortOrder', label: 'Sort Order', width: undefined },
 
     ];
 
@@ -314,7 +313,6 @@ export class SeverityTypeTableComponent implements OnInit, OnChanges, AfterViewI
         const filterFields = [
                       'name',
                       'description',
-                      'sortOrder',
         ];
 
         result = result.filter((severityType) =>

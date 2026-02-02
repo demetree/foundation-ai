@@ -106,7 +106,7 @@ CREATE TABLE "SeverityType"
 	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
 	"name" VARCHAR(100) NOT NULL UNIQUE COLLATE NOCASE,
 	"description" VARCHAR(500) NULL COLLATE NOCASE,
-	"sortOrder" INTEGER NOT NULL DEFAULT 0,
+	"sequence" INTEGER NOT NULL,		-- Sequence to use for sorting.
 	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	"deleted" BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
 
@@ -123,13 +123,13 @@ CREATE INDEX "I_SeverityType_active" ON "SeverityType" ("active")
 CREATE INDEX "I_SeverityType_deleted" ON "SeverityType" ("deleted")
 ;
 
-INSERT INTO "SeverityType" ( "name", "description", "sortOrder" ) VALUES  ( 'Critical', 'Critical', 10 );
+INSERT INTO "SeverityType" ( "name", "description", "sequence" ) VALUES  ( 'Critical', 'Critical', 10 );
 
-INSERT INTO "SeverityType" ( "name", "description", "sortOrder" ) VALUES  ( 'High', 'High', 20 );
+INSERT INTO "SeverityType" ( "name", "description", "sequence" ) VALUES  ( 'High', 'High', 20 );
 
-INSERT INTO "SeverityType" ( "name", "description", "sortOrder" ) VALUES  ( 'Medium', 'Medium', 30 );
+INSERT INTO "SeverityType" ( "name", "description", "sequence" ) VALUES  ( 'Medium', 'Medium', 30 );
 
-INSERT INTO "SeverityType" ( "name", "description", "sortOrder" ) VALUES  ( 'Low', 'Low', 40 );
+INSERT INTO "SeverityType" ( "name", "description", "sequence" ) VALUES  ( 'Low', 'Low', 40 );
 
 
 -- Static status values for incidents.
@@ -715,7 +715,7 @@ CREATE TABLE "UserNotificationPreference"
 (
 	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
 	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
-	"securityUserObjectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- References Security.SecurityUser.objectGuid - one preference row per user.
+	"securityUserObjectGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- References Security.SecurityUser.objectGuid - one preference row per user.
 	"timeZoneId" VARCHAR(50) NULL DEFAULT 'UTC' COLLATE NOCASE,		-- User's preferred timezone for quiet hours scheduling.
 	"quietHoursStart" VARCHAR(10) NULL COLLATE NOCASE,		-- HH:mm format local to timeZoneId - start of quiet hours (null = no quiet hours).
 	"quietHoursEnd" VARCHAR(10) NULL COLLATE NOCASE,		-- HH:mm format local to timeZoneId - end of quiet hours.

@@ -123,6 +123,12 @@ namespace Foundation.CodeGeneration
         {
             protected string _schemaName;
 
+
+            /// <summary>
+            ///  To store the names and descriptions of the custom roles for the database
+            /// </summary>
+            protected Dictionary<string, string> _customRoles = new Dictionary<string, string>();
+
             /// <summary>
             /// To define a schema name to use when creating the database
             /// </summary>
@@ -132,9 +138,40 @@ namespace Foundation.CodeGeneration
                 _schemaName = schemaName;
             }
 
+
+            public void AddCustomRole(string name, string description)
+            { 
+                this._customRoles.Add(name, description);
+            }
+
             public class Table : DatabaseElement
             {
-                public int? maxPostBytes { get; set; }                  // instruction for controller code gen to limit the size of data allowed on puts/posts
+                /// <summary>
+                /// 
+                /// Instruction for controller code genertor to limit the size of data allowed on puts/posts
+                /// 
+                /// </summary>
+                public int? maxPostBytes { get; set; }                
+
+
+                /// <summary>
+                /// 
+                /// Custom role name for limiting write access.
+                /// 
+                /// Note - users with administrive role will also have access.
+                /// 
+                /// </summary>
+                public string customWriteAccessRole { get; set; }
+
+
+                /// <summary>
+                /// 
+                /// Custom role name for limiting read access.
+                /// 
+                /// Note - users with administrive role will also have access.
+                /// 
+                /// </summary>
+                public string customReadAccessRole { get; set; }
 
 
                 public class Field : DatabaseElement
@@ -2485,9 +2522,9 @@ namespace Foundation.CodeGeneration
                     }
                 }
 
-                public Field AddSequenceField()
+                public Field AddSequenceField(bool nullable = true)
                 {
-                    Field sequenceField = AddField(new Database.Table.Field { name = "sequence", dataType = DataType.INTEGER, nullable = true, table = this });
+                    Field sequenceField = AddField(new Database.Table.Field { name = "sequence", dataType = DataType.INTEGER, nullable = nullable, table = this });
 
                     sequenceField.comment = "Sequence to use for sorting.";
 
@@ -8502,7 +8539,19 @@ namespace Foundation.CodeGeneration
             }
 
 
-
+            /// <summary>
+            /// 
+            /// This creates the module and roles in the security database.
+            /// 
+            /// it starts with the standard security roles of reader, writer, admin, and no access, and then adds in any custom ones.
+            /// 
+            /// </summary>
+            /// <param name="moduleName"></param>
+            /// <param name="databaseType"></param>
+            /// <param name="disableComments"></param>
+            /// <param name="securitySchemaName"></param>
+            /// <param name="disableSchemaName"></param>
+            /// <returns></returns>
             public string CreateSecurityConfigurationSQL(string moduleName, DatabaseType databaseType, bool disableComments = false, string securitySchemaName = null, bool disableSchemaName = false)
             {
                 if (string.IsNullOrEmpty(securitySchemaName) == true)
@@ -8546,39 +8595,42 @@ namespace Foundation.CodeGeneration
                     sb.Append(CreateCommentLine(databaseType, ""));
                 }
 
-                List<Dictionary<string, string>> securityRoleData = new List<Dictionary<string, string>>();
+                //
+                // Default security roles.
+                //
+                List<Dictionary<string, string>> defaultSecurityRoleData = new List<Dictionary<string, string>>();
 
                 Dictionary<string, string> securityRoleAdministratorRow = new Dictionary<string, string>();
                 securityRoleAdministratorRow.Add("name", moduleName + " Administrator");
                 securityRoleAdministratorRow.Add("description", moduleName + " Administrator Role");
                 securityRoleAdministratorRow.Add("link:Privilege:name:privilegeId", "Administrative");
-                securityRoleData.Add(securityRoleAdministratorRow);
+                defaultSecurityRoleData.Add(securityRoleAdministratorRow);
 
                 Dictionary<string, string> securityRoleReaderRow = new Dictionary<string, string>();
                 securityRoleReaderRow.Add("name", moduleName + " Reader");
                 securityRoleReaderRow.Add("description", moduleName + " Reader Role");
                 securityRoleReaderRow.Add("link:Privilege:name:privilegeId", "Read Only");
-                securityRoleData.Add(securityRoleReaderRow);
+                defaultSecurityRoleData.Add(securityRoleReaderRow);
 
                 Dictionary<string, string> securityRoleReaderAndWriterRow = new Dictionary<string, string>();
                 securityRoleReaderAndWriterRow.Add("name", moduleName + " Reader and Writer");
                 securityRoleReaderAndWriterRow.Add("description", moduleName + " Reader and Writer Role");
                 securityRoleReaderAndWriterRow.Add("link:Privilege:name:privilegeId", "Read and Write");
-                securityRoleData.Add(securityRoleReaderAndWriterRow);
+                defaultSecurityRoleData.Add(securityRoleReaderAndWriterRow);
 
 
                 Dictionary<string, string> securityRoleNoAccessRow = new Dictionary<string, string>();
                 securityRoleNoAccessRow.Add("name", moduleName + " No Access");
                 securityRoleNoAccessRow.Add("description", moduleName + " No Access Role");
                 securityRoleNoAccessRow.Add("link:Privilege:name:privilegeId", "No Access");
-                securityRoleData.Add(securityRoleNoAccessRow);
+                defaultSecurityRoleData.Add(securityRoleNoAccessRow);
 
 
 
                 Table securityRoleTable = new Table("SecurityRole");
                 securityRoleTable.database = securityDatabase;
 
-                sb.AppendLine(securityRoleTable.CreateInsertSQLFromData(databaseType, securityRoleData, false));
+                sb.AppendLine(securityRoleTable.CreateInsertSQLFromData(databaseType, defaultSecurityRoleData, false));
 
                 if (this.disableComments == false)
                 {
@@ -8587,34 +8639,84 @@ namespace Foundation.CodeGeneration
                     sb.Append(CreateCommentLine(databaseType, ""));
                 }
 
-                List<Dictionary<string, string>> moduleRoleData = new List<Dictionary<string, string>>();
+                List<Dictionary<string, string>> defaultModuleRoleData = new List<Dictionary<string, string>>();
 
                 Dictionary<string, string> moduleRoleAdministratorRow = new Dictionary<string, string>();
                 moduleRoleAdministratorRow.Add("link:Module:name:moduleId", moduleName);
                 moduleRoleAdministratorRow.Add("link:SecurityRole:name:securityRoleId", moduleName + " Administrator");
-                moduleRoleData.Add(moduleRoleAdministratorRow);
+                defaultModuleRoleData.Add(moduleRoleAdministratorRow);
 
                 Dictionary<string, string> moduleRoleReaderRow = new Dictionary<string, string>();
                 moduleRoleReaderRow.Add("link:Module:name:moduleId", moduleName);
                 moduleRoleReaderRow.Add("link:SecurityRole:name:securityRoleId", moduleName + " Reader");
-                moduleRoleData.Add(moduleRoleReaderRow);
+                defaultModuleRoleData.Add(moduleRoleReaderRow);
 
                 Dictionary<string, string> moduleRoleReaderAndWriterRow = new Dictionary<string, string>();
                 moduleRoleReaderAndWriterRow.Add("link:Module:name:moduleId", moduleName);
                 moduleRoleReaderAndWriterRow.Add("link:SecurityRole:name:securityRoleId", moduleName + " Reader and Writer");
-                moduleRoleData.Add(moduleRoleReaderAndWriterRow);
+                defaultModuleRoleData.Add(moduleRoleReaderAndWriterRow);
 
                 Dictionary<string, string> moduleRoleNoAccessRow = new Dictionary<string, string>();
                 moduleRoleNoAccessRow.Add("link:Module:name:moduleId", moduleName);
                 moduleRoleNoAccessRow.Add("link:SecurityRole:name:securityRoleId", moduleName + " No Access");
-                moduleRoleData.Add(moduleRoleNoAccessRow);
+                defaultModuleRoleData.Add(moduleRoleNoAccessRow);
 
 
                 Table moduleSecurityRoleTable = new Table("ModuleSecurityRole");
                 moduleSecurityRoleTable.database = securityDatabase;
 
-                sb.AppendLine(moduleSecurityRoleTable.CreateInsertSQLFromData(databaseType, moduleRoleData, false));
+                sb.AppendLine(moduleSecurityRoleTable.CreateInsertSQLFromData(databaseType, defaultModuleRoleData, false));
 
+
+
+                if (_customRoles.Count > 0)
+                {
+                    if (this.disableComments == false)
+                    {
+                        sb.Append(CreateCommentLine(databaseType, ""));
+                        sb.Append(CreateCommentLine(databaseType, $"Define the custom roles for the {moduleName} module"));
+                        sb.Append(CreateCommentLine(databaseType, ""));
+                    }
+
+
+                    //
+                    // Now add in any custom roles defined in the database.
+                    //
+                    List<Dictionary<string, string>> customSecurityRoleData = new List<Dictionary<string, string>>();
+                    List<Dictionary<string, string>> customModuleRoleData = new List<Dictionary<string, string>>();
+
+
+                    foreach (KeyValuePair<string, string> customRole in _customRoles)
+                    {
+
+                        //
+                        // Add the custom role
+                        //
+                        Dictionary<string, string> customRoleLine = new Dictionary<string, string>();
+                        customRoleLine.Add("name", customRole.Key);
+                        customRoleLine.Add("description", customRole.Value);
+                        customRoleLine.Add("link:Privilege:name:privilegeId", "Custom");        // custom role type link
+                        customSecurityRoleData.Add(customRoleLine);
+
+
+                        //
+                        // Add the custom role to module link
+                        //
+                        Dictionary<string, string> customModuleRoleLine = new Dictionary<string, string>();
+                        customModuleRoleLine.Add("link:Module:name:moduleId", moduleName);
+                        customModuleRoleLine.Add("link:SecurityRole:name:securityRoleId", customRole.Key);
+                        customModuleRoleData.Add(customModuleRoleLine);
+                    }
+
+                    //
+                    // Add the insertion lines for the custom roles to the script
+                    //
+                    sb.AppendLine(securityRoleTable.CreateInsertSQLFromData(databaseType, customSecurityRoleData, false));
+                    sb.AppendLine(moduleSecurityRoleTable.CreateInsertSQLFromData(databaseType, customModuleRoleData, false));
+                }
+                //
+                // Give the Admin user the module's Adminstrator role
+                //
                 if (this.disableComments == false)
                 {
                     sb.Append(CreateCommentLine(databaseType, ""));
@@ -8636,7 +8738,7 @@ namespace Foundation.CodeGeneration
 
                 sb.AppendLine(securityUserSecurityRoleTable.CreateInsertSQLFromData(databaseType, userRoleData, false));
 
-
+                
                 return sb.ToString();
             }
 

@@ -909,7 +909,7 @@ export class UserNotificationPreferenceService extends SecureEndpointBase {
             const user = this.authService.currentUser;
 
             if (user != null) {
-                userIsAlertingUserNotificationPreferenceReader = user.readPermission >= 0;
+                userIsAlertingUserNotificationPreferenceReader = user.readPermission >= 1;
             } else {
                 userIsAlertingUserNotificationPreferenceReader = false;
             }
@@ -933,7 +933,7 @@ export class UserNotificationPreferenceService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsAlertingUserNotificationPreferenceWriter = user.writePermission >= 0;
+            userIsAlertingUserNotificationPreferenceWriter = user.writePermission >= 50;
           } else {
             userIsAlertingUserNotificationPreferenceWriter = false;
           }      

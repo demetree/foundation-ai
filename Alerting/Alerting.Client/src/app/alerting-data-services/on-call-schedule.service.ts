@@ -889,7 +889,7 @@ export class OnCallScheduleService extends SecureEndpointBase {
             const user = this.authService.currentUser;
 
             if (user != null) {
-                userIsAlertingOnCallScheduleReader = user.readPermission >= 0;
+                userIsAlertingOnCallScheduleReader = user.readPermission >= 1;
             } else {
                 userIsAlertingOnCallScheduleReader = false;
             }
@@ -913,7 +913,7 @@ export class OnCallScheduleService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsAlertingOnCallScheduleWriter = user.writePermission >= 0;
+            userIsAlertingOnCallScheduleWriter = user.writePermission >= 100;
           } else {
             userIsAlertingOnCallScheduleWriter = false;
           }      

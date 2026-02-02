@@ -800,7 +800,7 @@ export class IncidentNoteService extends SecureEndpointBase {
             const user = this.authService.currentUser;
 
             if (user != null) {
-                userIsAlertingIncidentNoteReader = user.readPermission >= 0;
+                userIsAlertingIncidentNoteReader = user.readPermission >= 1;
             } else {
                 userIsAlertingIncidentNoteReader = false;
             }
@@ -824,7 +824,7 @@ export class IncidentNoteService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsAlertingIncidentNoteWriter = user.writePermission >= 0;
+            userIsAlertingIncidentNoteWriter = user.writePermission >= 1;
           } else {
             userIsAlertingIncidentNoteWriter = false;
           }      

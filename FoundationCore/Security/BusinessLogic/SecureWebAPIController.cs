@@ -193,9 +193,12 @@ namespace Foundation.Security
 
         protected void DestroySessionAndAuthentication()
         {
-            ISession session = GetSession();
-            session.Clear();
-            HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            //
+            // Disabling this.  We are ruturning Forbids on security check failuers instead of unauthorized.  No need to try to clobber the session here.
+            //
+            //ISession session = GetSession();
+            //session.Clear();
+            //HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         }
 
 
@@ -501,13 +504,30 @@ namespace Foundation.Security
         }
 
 
+        protected async Task<bool> DoesUserHaveCustomRoleSecurityCheckAsync(string roleName, CancellationToken cancellationToken = default)
+        {
+            //
+            // Call this from deriving web API classs to allow a simple way to throw an error when a user doesn't have the specified role
+            //
+            if (await this.UserHasNoAccessAsync(cancellationToken) == true || await this.UserHasCustomRoleAsync(roleName, cancellationToken) == false)
+            {
+                CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, "User attempted to access a resource requiring administrator privilege to which they are not entitled", false);
+
+                DestroySessionAndAuthentication();
+
+                return false;
+            }
+
+            return true;
+        }
+
 
         protected bool DoesUserHaveCustomRoleSecurityCheck(string roleName)
         {
             //
-            // Call this in each Get handler in a deriving Web API class to allow a simple way to throw an error when the user doesn't have the privilege to administer.
+            // Call this from deriving web API classs to allow a simple way to throw an error when a user doesn't have the specified role
             //
-            if (this.UserHasCustomRole(roleName) == false)
+            if (this.UserHasNoAccess() == true || this.UserHasCustomRole(roleName) == false)
             {
                 DestroySessionAndAuthentication();
                 return false;
@@ -528,9 +548,9 @@ namespace Foundation.Security
             return SecurityFramework.UserHasNoAccess(this.moduleName, rolesAndPrivilegesForThisModule, securityUser);
         }
 
-        protected bool UserCanRead(SecurityUser securityUser, int entityMinimumWriteReadSecurityLevel = 0)
+        protected bool UserCanRead(SecurityUser securityUser, int entityMinimumWriteReadPermissionLevel = 0)
         {
-            return SecurityFramework.UserCanRead(this.moduleName, rolesAndPrivilegesForThisModule, securityUser, entityMinimumWriteReadSecurityLevel);
+            return SecurityFramework.UserCanRead(this.moduleName, rolesAndPrivilegesForThisModule, securityUser, entityMinimumWriteReadPermissionLevel);
         }
 
         protected bool UserMustReadAnonymously(SecurityUser securityUser)
@@ -538,14 +558,14 @@ namespace Foundation.Security
             return SecurityFramework.UserMustReadAnonymously(this.moduleName, rolesAndPrivilegesForThisModule, securityUser);
         }
 
-        protected async Task<bool> UserCanWriteAsync(SecurityUser securityUser, int entityMinimumWriteWriteSecurityLevel = 0, CancellationToken cancellationToken = default)
+        protected async Task<bool> UserCanWriteAsync(SecurityUser securityUser, int entityMinimumWritePermissionLevel = 0, CancellationToken cancellationToken = default)
         {
-            return await SecurityFramework.UserCanWriteAsync(this.moduleName, rolesAndPrivilegesForThisModule, securityUser, entityMinimumWriteWriteSecurityLevel, cancellationToken);
+            return await SecurityFramework.UserCanWriteAsync(this.moduleName, rolesAndPrivilegesForThisModule, securityUser, entityMinimumWritePermissionLevel, cancellationToken);
         }
 
-        protected bool UserCanWrite(SecurityUser securityUser, int entityMinimumWriteWriteSecurityLevel = 0)
+        protected bool UserCanWrite(SecurityUser securityUser, int entityMinimumWritePermissionLevel = 0)
         {
-            return SecurityFramework.UserCanWrite(this.moduleName, rolesAndPrivilegesForThisModule, securityUser, entityMinimumWriteWriteSecurityLevel);
+            return SecurityFramework.UserCanWrite(this.moduleName, rolesAndPrivilegesForThisModule, securityUser, entityMinimumWritePermissionLevel);
         }
 
         protected async Task<bool> UserCanAdministerAsync(SecurityUser securityUser, CancellationToken cancellationToken = default)
@@ -557,6 +577,12 @@ namespace Foundation.Security
         {
             return SecurityFramework.UserCanAdminister(this.moduleName, rolesAndPrivilegesForThisModule, securityUser);
         }
+
+        protected async Task<bool> UserHasCustomRoleAsync(string roleName, CancellationToken cancellationToken = default)
+        {
+            return await SecurityFramework.UserHasCustomRoleAsync(this.moduleName, rolesAndPrivilegesForThisModule, roleName, await GetSecurityUserAsync(), cancellationToken);
+        }
+
 
         protected bool UserHasCustomRole(string roleName)
         {

@@ -706,7 +706,7 @@ export class NotificationChannelTypeService extends SecureEndpointBase {
             const user = this.authService.currentUser;
 
             if (user != null) {
-                userIsAlertingNotificationChannelTypeReader = user.readPermission >= 0;
+                userIsAlertingNotificationChannelTypeReader = user.readPermission >= 1;
             } else {
                 userIsAlertingNotificationChannelTypeReader = false;
             }
@@ -730,7 +730,7 @@ export class NotificationChannelTypeService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsAlertingNotificationChannelTypeWriter = user.writePermission >= 0;
+            userIsAlertingNotificationChannelTypeWriter = user.writePermission >= 255;
           } else {
             userIsAlertingNotificationChannelTypeWriter = false;
           }      

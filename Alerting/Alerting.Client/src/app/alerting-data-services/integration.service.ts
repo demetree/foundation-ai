@@ -899,7 +899,7 @@ export class IntegrationService extends SecureEndpointBase {
             const user = this.authService.currentUser;
 
             if (user != null) {
-                userIsAlertingIntegrationReader = user.readPermission >= 0;
+                userIsAlertingIntegrationReader = user.readPermission >= 1;
             } else {
                 userIsAlertingIntegrationReader = false;
             }
@@ -923,7 +923,7 @@ export class IntegrationService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsAlertingIntegrationWriter = user.writePermission >= 0;
+            userIsAlertingIntegrationWriter = user.writePermission >= 150;
           } else {
             userIsAlertingIntegrationWriter = false;
           }      

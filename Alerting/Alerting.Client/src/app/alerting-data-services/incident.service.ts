@@ -1226,7 +1226,7 @@ export class IncidentService extends SecureEndpointBase {
             const user = this.authService.currentUser;
 
             if (user != null) {
-                userIsAlertingIncidentReader = user.readPermission >= 0;
+                userIsAlertingIncidentReader = user.readPermission >= 1;
             } else {
                 userIsAlertingIncidentReader = false;
             }
@@ -1250,7 +1250,7 @@ export class IncidentService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsAlertingIncidentWriter = user.writePermission >= 0;
+            userIsAlertingIncidentWriter = user.writePermission >= 255;
           } else {
             userIsAlertingIncidentWriter = false;
           }      

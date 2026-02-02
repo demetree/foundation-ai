@@ -990,7 +990,7 @@ export class ServiceService extends SecureEndpointBase {
             const user = this.authService.currentUser;
 
             if (user != null) {
-                userIsAlertingServiceReader = user.readPermission >= 0;
+                userIsAlertingServiceReader = user.readPermission >= 1;
             } else {
                 userIsAlertingServiceReader = false;
             }
@@ -1014,7 +1014,7 @@ export class ServiceService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsAlertingServiceWriter = user.writePermission >= 0;
+            userIsAlertingServiceWriter = user.writePermission >= 150;
           } else {
             userIsAlertingServiceWriter = false;
           }      

@@ -1029,6 +1029,49 @@ namespace Foundation.Security
         }
 
 
+
+        public static async Task<bool> UserHasCustomRoleAsync(string moduleName, List<RoleAndPrivilege> rolesForModule, string roleName, SecurityUser user, CancellationToken cancellationToken = default)
+        {
+            //
+            // Get the roles the user has access to in the provided module, if one is provided
+            //
+            List<SecurityRole> userRoles = null;
+
+            if (string.IsNullOrEmpty(moduleName) == false)
+            {
+                userRoles = await GetUserSecurityRolesInModuleAsync(user, moduleName, cancellationToken);
+            }
+            else
+            {
+                userRoles = await GetUserSecurityRolesAsync(user);
+            }
+
+            for (int i = 0; i < rolesForModule.Count; i++)
+            {
+                RoleAndPrivilege moduleRole = rolesForModule.ElementAt(i);
+
+                //
+                // Does this module have this role linked with a 'Custom' privilege?
+                //
+                if (moduleRole.roleName == roleName &&
+                    moduleRole.privilege == SecurityLogic.Privileges.CUSTOM)
+                {
+                    //
+                    // Does user have this role?
+                    //
+                    foreach (SecurityRole sr in userRoles)
+                    {
+                        if (sr.name == moduleRole.roleName)
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
         public static bool UserHasCustomRole(string moduleName, List<RoleAndPrivilege> rolesForModule, string roleName, SecurityUser user)
         {
             //
@@ -1065,8 +1108,6 @@ namespace Foundation.Security
                             return true;
                         }
                     }
-
-                    //return UserIsInRole(roleName, user);
                 }
             }
 

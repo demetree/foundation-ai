@@ -625,7 +625,7 @@ export class IncidentTimelineEventService extends SecureEndpointBase {
             const user = this.authService.currentUser;
 
             if (user != null) {
-                userIsAlertingIncidentTimelineEventReader = user.readPermission >= 0;
+                userIsAlertingIncidentTimelineEventReader = user.readPermission >= 1;
             } else {
                 userIsAlertingIncidentTimelineEventReader = false;
             }
@@ -649,7 +649,7 @@ export class IncidentTimelineEventService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsAlertingIncidentTimelineEventWriter = user.writePermission >= 0;
+            userIsAlertingIncidentTimelineEventWriter = user.writePermission >= 255;
           } else {
             userIsAlertingIncidentTimelineEventWriter = false;
           }      

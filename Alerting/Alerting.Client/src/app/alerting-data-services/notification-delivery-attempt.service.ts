@@ -538,7 +538,7 @@ export class NotificationDeliveryAttemptService extends SecureEndpointBase {
             const user = this.authService.currentUser;
 
             if (user != null) {
-                userIsAlertingNotificationDeliveryAttemptReader = user.readPermission >= 0;
+                userIsAlertingNotificationDeliveryAttemptReader = user.readPermission >= 1;
             } else {
                 userIsAlertingNotificationDeliveryAttemptReader = false;
             }
@@ -562,7 +562,7 @@ export class NotificationDeliveryAttemptService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsAlertingNotificationDeliveryAttemptWriter = user.writePermission >= 0;
+            userIsAlertingNotificationDeliveryAttemptWriter = user.writePermission >= 255;
           } else {
             userIsAlertingNotificationDeliveryAttemptWriter = false;
           }      

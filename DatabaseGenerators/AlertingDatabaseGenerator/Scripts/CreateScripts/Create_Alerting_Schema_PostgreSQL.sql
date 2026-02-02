@@ -122,7 +122,7 @@ CREATE TABLE "Alerting"."SeverityType"
 	"id" SERIAL PRIMARY KEY NOT NULL,
 	"name" VARCHAR(100) NOT NULL UNIQUE,
 	"description" VARCHAR(500) NULL,
-	"sortOrder" INT NOT NULL DEFAULT 0,
+	"sequence" INT NOT NULL,		-- Sequence to use for sorting.
 	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
 	"deleted" BOOLEAN NOT NULL DEFAULT false		-- Soft deletion flag.
 
@@ -139,13 +139,13 @@ CREATE INDEX "I_SeverityType_active" ON "Alerting"."SeverityType" ("active")
 CREATE INDEX "I_SeverityType_deleted" ON "Alerting"."SeverityType" ("deleted")
 ;
 
-INSERT INTO "Alerting"."SeverityType" ( "name", "description", "sortOrder" ) VALUES  ( 'Critical', 'Critical', 10 );
+INSERT INTO "Alerting"."SeverityType" ( "name", "description", "sequence" ) VALUES  ( 'Critical', 'Critical', 10 );
 
-INSERT INTO "Alerting"."SeverityType" ( "name", "description", "sortOrder" ) VALUES  ( 'High', 'High', 20 );
+INSERT INTO "Alerting"."SeverityType" ( "name", "description", "sequence" ) VALUES  ( 'High', 'High', 20 );
 
-INSERT INTO "Alerting"."SeverityType" ( "name", "description", "sortOrder" ) VALUES  ( 'Medium', 'Medium', 30 );
+INSERT INTO "Alerting"."SeverityType" ( "name", "description", "sequence" ) VALUES  ( 'Medium', 'Medium', 30 );
 
-INSERT INTO "Alerting"."SeverityType" ( "name", "description", "sortOrder" ) VALUES  ( 'Low', 'Low', 40 );
+INSERT INTO "Alerting"."SeverityType" ( "name", "description", "sequence" ) VALUES  ( 'Low', 'Low', 40 );
 
 
 -- Static status values for incidents.
@@ -731,7 +731,7 @@ CREATE TABLE "Alerting"."UserNotificationPreference"
 (
 	"id" SERIAL PRIMARY KEY NOT NULL,
 	"tenantGuid" VARCHAR(50) NOT NULL,		-- The guid for the Tenant to which this record belongs.
-	"securityUserObjectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- References Security.SecurityUser.objectGuid - one preference row per user.
+	"securityUserObjectGuid" VARCHAR(50) NOT NULL,		-- References Security.SecurityUser.objectGuid - one preference row per user.
 	"timeZoneId" VARCHAR(50) NULL DEFAULT 'UTC',		-- User's preferred timezone for quiet hours scheduling.
 	"quietHoursStart" VARCHAR(10) NULL,		-- HH:mm format local to timeZoneId - start of quiet hours (null = no quiet hours).
 	"quietHoursEnd" VARCHAR(10) NULL,		-- HH:mm format local to timeZoneId - end of quiet hours.

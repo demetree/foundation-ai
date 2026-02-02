@@ -1,9 +1,6 @@
-﻿using DocumentFormat.OpenXml.Bibliography;
-using DocumentFormat.OpenXml.Wordprocessing;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Drawing.Printing;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -42,9 +39,6 @@ namespace Foundation.CodeGeneration
             bool versionControlEnabled = false;
             bool canBeFavourited = false;
             bool adminAccessNeededToWrite = false;
-
-
-
 
             string displayNameFieldSerializationCode = camelCaseName + ".id.ToString()";          // Default to this because every entity will have it.
 
@@ -589,12 +583,12 @@ namespace Foundation.CodeGeneration
                 sb.AppendLine("\t\t\tStartAuditEventClock();");
                 sb.AppendLine();
 
+                GenerateReadRoleAndPermissionChecks(module, scriptGenTable, sb);
 
-                sb.AppendLine("\t\t\tif (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)");
-                sb.AppendLine("\t\t\t{");
-                sb.AppendLine("\t\t\t   return Forbid();");       // 403 is used here to indicate to the client that access to this resource is forbidden, as opposed to a 401 which indicates that there is no authorization.
-                sb.AppendLine("\t\t\t}");
-                sb.AppendLine();
+
+                //
+                // No longer using entity data tokens for route auth.  No need to write the code for it.
+                //
                 //sb.AppendLine("\t\t\tif (await IsEntityDataTokenValidAsync(TokenLogic.EntityDataTokenTrustLevel.Read) == false)");
                 //sb.AppendLine("\t\t\t{");
                 //sb.AppendLine("\t\t\t   return Forbid();");
@@ -614,8 +608,12 @@ namespace Foundation.CodeGeneration
 
                 if (multiTenancyEnabled == true)
                 {
-                    sb.AppendLine("\t\t\tbool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);");
-                    sb.AppendLine("\t\t\t");
+                    if (dataVisibilityEnabled == true)
+                    {
+                        sb.AppendLine("\t\t\tbool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);");
+                        sb.AppendLine("\t\t\t");
+                    }
+
                     sb.AppendLine(UserTenantGuidCommands(3));
                 }
             }
@@ -1381,11 +1379,11 @@ namespace Foundation.CodeGeneration
 
             if (ignoreFoundationServices == false)
             {
-                sb.AppendLine("\t\t\tif (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)");
-                sb.AppendLine("\t\t\t{");
-                sb.AppendLine("\t\t\t   return Forbid();");
-                sb.AppendLine("\t\t\t}");
-                sb.AppendLine();
+                GenerateReadRoleAndPermissionChecks(module, scriptGenTable, sb);
+
+                //
+                // No longer using entity data takens for route auth
+                //
                 //sb.AppendLine("\t\t\tif (await IsEntityDataTokenValidAsync(TokenLogic.EntityDataTokenTrustLevel.Read) == false)");
                 //sb.AppendLine("\t\t\t{");
                 //sb.AppendLine("\t\t\t   return Forbid();");
@@ -1400,8 +1398,12 @@ namespace Foundation.CodeGeneration
 
                 if (multiTenancyEnabled == true)
                 {
-                    sb.AppendLine("\t\t\tbool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);");
-                    sb.AppendLine("\t\t\t");
+                    if (dataVisibilityEnabled == true)
+                    {
+                        sb.AppendLine("\t\t\tbool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);");
+                        sb.AppendLine("\t\t\t");
+                    }
+
                     sb.AppendLine(UserTenantGuidCommands(3));
                 }
                 sb.AppendLine();
@@ -1629,11 +1631,12 @@ namespace Foundation.CodeGeneration
                 sb.AppendLine("\t\t\tStartAuditEventClock();");
                 sb.AppendLine();
 
-                sb.AppendLine("\t\t\tif (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)");
-                sb.AppendLine("\t\t\t{");
-                sb.AppendLine("\t\t\t   return Forbid();");
-                sb.AppendLine("\t\t\t}");
-                sb.AppendLine();
+
+                GenerateReadRoleAndPermissionChecks(module, scriptGenTable, sb);
+
+                //
+                // No longer using entity data tokens for route auth.
+                //
                 //sb.AppendLine("\t\t\tif (await IsEntityDataTokenValidAsync(TokenLogic.EntityDataTokenTrustLevel.Read) == false)");
                 //sb.AppendLine("\t\t\t{");
                 //sb.AppendLine("\t\t\t   return Forbid();");
@@ -1646,10 +1649,14 @@ namespace Foundation.CodeGeneration
                 sb.AppendLine();
                 sb.AppendLine("\t\t\tbool userIsWriter = await UserCanWriteAsync(securityUser, " + entityMinimumWritePermissionString + ", cancellationToken);");
                 sb.AppendLine("\t\t\tbool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);");
+
                 if (multiTenancyEnabled == true)
                 {
-                    sb.AppendLine("\t\t\tbool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);");
-                    sb.AppendLine("\t\t\t");
+                    if (dataVisibilityEnabled == true)
+                    {
+                        sb.AppendLine("\t\t\tbool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);");
+                        sb.AppendLine("\t\t\t");
+                    }
                     sb.AppendLine("\t\t\t");
                     sb.AppendLine(UserTenantGuidCommands(3));
                 }
@@ -1970,26 +1977,13 @@ namespace Foundation.CodeGeneration
                     sb.AppendLine("\t\t\tStartAuditEventClock();");
                     sb.AppendLine();
 
-                    if (adminAccessNeededToWrite == true)
-                    {
-                        sb.AppendLine("\t\t\t// Admin privilege needed to write to this table.");
-                        sb.AppendLine("\t\t\tif (await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)");
-                        sb.AppendLine("\t\t\t{");
-                        sb.AppendLine("\t\t\t   return Forbid();");
-                        sb.AppendLine("\t\t\t}");
-                        sb.AppendLine();
-                    }
-                    else
-                    {
-                        sb.AppendLine("\t\t\tif (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)");
-                        sb.AppendLine("\t\t\t{");
-                        sb.AppendLine("\t\t\t   return Forbid();");
-                        sb.AppendLine("\t\t\t}");
-                        sb.AppendLine();
-                    }
+                    GenerateWriteRoleAndPermissionChecks(module, scriptGenTable, sb, adminAccessNeededToWrite);
 
                     sb.AppendLine();
 
+                    //
+                    // No longer using entity data tokens for route auth.
+                    //
                     //sb.AppendLine("\t\t\tif (await IsEntityDataTokenValidAsync(TokenLogic.EntityDataTokenTrustLevel.Write) == false)");
                     //sb.AppendLine("\t\t\t{");
                     //sb.AppendLine("\t\t\t   return Forbid();");
@@ -2016,16 +2010,15 @@ namespace Foundation.CodeGeneration
 
                     if (multiTenancyEnabled == true)
                     {
-                        sb.AppendLine("\t\t\tbool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);");
-                        sb.AppendLine("\t\t\t");
+                        if (dataVisibilityEnabled == true)
+                        {
+                            sb.AppendLine("\t\t\tbool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);");
+                            sb.AppendLine("\t\t\t");
+                        }
                         sb.AppendLine(UserTenantGuidCommands(3));
                         sb.AppendLine();
                     }
                 }
-                //else
-                //{
-                //    sb.AppendLine("\t\t\tbool userIsAdmin = true;");
-                //}
 
 
                 sb.AppendLine("\t\t\tIQueryable<" + qualifiedEntity + "> query = (from x in _context." + plural);
@@ -2842,23 +2835,8 @@ namespace Foundation.CodeGeneration
                     sb.AppendLine("\t\t\tStartAuditEventClock();");
                     sb.AppendLine();
 
-                    if (adminAccessNeededToWrite == true)
-                    {
-                        sb.AppendLine("\t\t\t// Admin privilege needed to write to this table.");
-                        sb.AppendLine("\t\t\tif (await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)");
-                        sb.AppendLine("\t\t\t{");
-                        sb.AppendLine("\t\t\t   return Forbid();");
-                        sb.AppendLine("\t\t\t}");
-                        sb.AppendLine();
-                    }
-                    else
-                    {
-                        sb.AppendLine("\t\t\tif (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)");
-                        sb.AppendLine("\t\t\t{");
-                        sb.AppendLine("\t\t\t   return Forbid();");
-                        sb.AppendLine("\t\t\t}");
-                        sb.AppendLine();
-                    }
+                    GenerateWriteRoleAndPermissionChecks(module, scriptGenTable, sb, adminAccessNeededToWrite);
+
 
                     sb.AppendLine();
                     //sb.AppendLine("\t\t\tif (await IsEntityDataTokenValidAsync(TokenLogic.EntityDataTokenTrustLevel.Write) == false)");
@@ -2879,11 +2857,16 @@ namespace Foundation.CodeGeneration
                     sb.AppendLine();
                     sb.AppendLine("\t\t\tSecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);");
                     sb.AppendLine();
+
                     if (multiTenancyEnabled == true)
                     {
                         sb.AppendLine("\t\t\tbool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);");
-                        sb.AppendLine("\t\t\tbool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);");
-                        sb.AppendLine("\t\t\t");
+
+                        if (dataVisibilityEnabled == true)
+                        {
+                            sb.AppendLine("\t\t\tbool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);");
+                            sb.AppendLine("\t\t\t");
+                        }
                         sb.AppendLine(UserTenantGuidCommands(3));
                     }
                 }
@@ -3551,9 +3534,11 @@ namespace Foundation.CodeGeneration
                     sb.AppendLine("\t\t\t}");
                     sb.AppendLine();
                     sb.AppendLine();
-                    //sb.AppendLine("\t\t\t//");
-                    //sb.AppendLine("\t\t\t// Need to figure out if this should be used here or not... For now it's not letting me test.");
-                    //sb.AppendLine("\t\t\t//");
+
+
+                    //
+                    // No longer using entity data tokens for route auth
+                    //
                     //sb.AppendLine("\t\t\t//if (await IsEntityDataTokenValidAsync(TokenLogic.EntityDataTokenTrustLevel.Write) == false)");
                     //sb.AppendLine("\t\t\t//{");
                     //sb.AppendLine("\t\t\t//   return Forbid();");
@@ -3564,7 +3549,11 @@ namespace Foundation.CodeGeneration
                     sb.AppendLine("\t\t\tSecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);");
                     sb.AppendLine("\t\t\t");
                     sb.AppendLine("\t\t\tbool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);");
-                    sb.AppendLine("\t\t\tbool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);");
+
+                    if (dataVisibilityEnabled == true)
+                    {
+                        sb.AppendLine("\t\t\tbool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);");
+                    }
                     sb.AppendLine();
 
                     if (multiTenancyEnabled == true)
@@ -3850,10 +3839,10 @@ namespace Foundation.CodeGeneration
                     sb.AppendLine("\t\t[Route(\"api/" + singularForRouting + "/{id}/ChangeMetadata\")]");
                     sb.AppendLine("\t\tpublic async Task<IActionResult> Get" + entityName + "ChangeMetadata(int id, int versionNumber, CancellationToken cancellationToken = default)");
                     sb.AppendLine("\t\t{");
-                    sb.AppendLine("\t\t\tif (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)");
-                    sb.AppendLine("\t\t\t{");
-                    sb.AppendLine("\t\t\t\treturn Forbid();");
-                    sb.AppendLine("\t\t\t}");
+                    sb.AppendLine();
+
+                    GenerateReadRoleAndPermissionChecks(module, scriptGenTable, sb);
+
                     sb.AppendLine();
                     sb.AppendLine("\t\t\tSecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);");
 
@@ -3928,10 +3917,10 @@ namespace Foundation.CodeGeneration
                     sb.AppendLine("\t\t[Route(\"api/" + singularForRouting + "/{id}/AuditHistory\")]");
                     sb.AppendLine("\t\tpublic async Task<IActionResult> Get" + entityName + "AuditHistory(int id, bool includeData = false, CancellationToken cancellationToken = default)");
                     sb.AppendLine("\t\t{");
-                    sb.AppendLine("\t\t\tif (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)");
-                    sb.AppendLine("\t\t\t{");
-                    sb.AppendLine("\t\t\t\treturn Forbid();");
-                    sb.AppendLine("\t\t\t}");
+                    sb.AppendLine();
+
+                    GenerateReadRoleAndPermissionChecks(module, scriptGenTable, sb);
+
                     sb.AppendLine();
                     sb.AppendLine("\t\t\tSecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);");
 
@@ -4001,10 +3990,10 @@ namespace Foundation.CodeGeneration
                     sb.AppendLine("\t\t[Route(\"api/" + singularForRouting + "/{id}/Version/{version}\")]");
                     sb.AppendLine("\t\tpublic async Task<IActionResult> Get" + entityName + "Version(int id, int version, CancellationToken cancellationToken = default)");
                     sb.AppendLine("\t\t{");
-                    sb.AppendLine("\t\t\tif (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)");
-                    sb.AppendLine("\t\t\t{");
-                    sb.AppendLine("\t\t\t\treturn Forbid();");
-                    sb.AppendLine("\t\t\t}");
+                    sb.AppendLine();
+
+                    GenerateReadRoleAndPermissionChecks(module, scriptGenTable, sb);
+
                     sb.AppendLine();
                     sb.AppendLine("\t\t\tSecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);");
 
@@ -4079,10 +4068,9 @@ namespace Foundation.CodeGeneration
                     sb.AppendLine("\t\t[Route(\"api/" + singularForRouting + "/{id}/StateAtTime\")]");
                     sb.AppendLine("\t\tpublic async Task<IActionResult> Get" + entityName + "StateAtTime(int id, DateTime time, CancellationToken cancellationToken = default)");
                     sb.AppendLine("\t\t{");
-                    sb.AppendLine("\t\t\tif (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)");
-                    sb.AppendLine("\t\t\t{");
-                    sb.AppendLine("\t\t\t\treturn Forbid();");
-                    sb.AppendLine("\t\t\t}");
+                    sb.AppendLine();
+                    GenerateReadRoleAndPermissionChecks(module, scriptGenTable, sb);
+
                     sb.AppendLine();
                     sb.AppendLine("\t\t\tSecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);");
 
@@ -4166,26 +4154,10 @@ namespace Foundation.CodeGeneration
                     sb.AppendLine("\t\t\tStartAuditEventClock();");
                     sb.AppendLine();
 
-
                     //
                     // We consider deletes to be a write operation.
                     //
-                    if (scriptGenTable.adminAccessNeededToWrite == true)
-                    {
-                        sb.AppendLine("\t\t\tif (await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)");
-                        sb.AppendLine("\t\t\t{");
-                        sb.AppendLine("\t\t\t   return Forbid();");
-                        sb.AppendLine("\t\t\t}");
-                        sb.AppendLine();
-                    }
-                    else
-                    {
-                        sb.AppendLine("\t\t\tif (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)");
-                        sb.AppendLine("\t\t\t{");
-                        sb.AppendLine("\t\t\t   return Forbid();");
-                        sb.AppendLine("\t\t\t}");
-                        sb.AppendLine();
-                    }
+                    GenerateWriteRoleAndPermissionChecks(module, scriptGenTable, sb, adminAccessNeededToWrite);
 
                     sb.AppendLine();
                     sb.AppendLine("\t\t\tSecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);");
@@ -4193,7 +4165,11 @@ namespace Foundation.CodeGeneration
                     sb.AppendLine();
                     if (multiTenancyEnabled == true)
                     {
-                        sb.AppendLine("\t\t\tbool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(cancellationToken);");
+                        if (dataVisibilityEnabled == true)
+                        {
+                            sb.AppendLine("\t\t\tbool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(cancellationToken);");
+                        }
+
                         sb.AppendLine("\t\t\t");
                         sb.AppendLine("\t\t\t");
                         sb.AppendLine(UserTenantGuidCommands(3));
@@ -4573,10 +4549,7 @@ namespace Foundation.CodeGeneration
 
             if (ignoreFoundationServices == false)
             {
-                sb.AppendLine("\t\t\tif (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)");
-                sb.AppendLine("\t\t\t{");
-                sb.AppendLine("\t\t\t   return Forbid();");
-                sb.AppendLine("\t\t\t}");
+                GenerateReadRoleAndPermissionChecks(module, scriptGenTable, sb);
 
                 sb.AppendLine();
                 sb.AppendLine("\t\t\tSecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);");
@@ -4584,7 +4557,11 @@ namespace Foundation.CodeGeneration
                 sb.AppendLine("\t\t\tbool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);");
                 sb.AppendLine("\t\t\tbool userIsWriter = await UserCanWriteAsync(securityUser, " + entityMinimumWritePermissionString + ", cancellationToken);");
                 sb.AppendLine();
-                sb.AppendLine("\t\t\tbool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);");
+
+                if (dataVisibilityEnabled == true)
+                {
+                    sb.AppendLine("\t\t\tbool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(securityUser, cancellationToken);");
+                }
 
                 if (multiTenancyEnabled == true)
                 {
@@ -4866,13 +4843,10 @@ namespace Foundation.CodeGeneration
                 sb.AppendLine("\t\t[HttpPost]");
                 sb.AppendLine("\t\t[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]");
                 sb.AppendLine("\t\t[Route(\"api/" + singularForRouting + "/CreateAuditEvent\")]");
-                sb.AppendLine("\t\tpublic async Task<IActionResult> CreateControllerAuditEvent(AuditEngine.AuditType type, string message, string primaryKey = null)");
+                sb.AppendLine("\t\tpublic async Task<IActionResult> CreateControllerAuditEvent(AuditEngine.AuditType type, string message, string primaryKey = null, CancellationToken cancellationToken = default)");
                 sb.AppendLine("\t\t{");
-
-                sb.AppendLine("\t\t\tif (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED) == false)");
-                sb.AppendLine("\t\t\t{");
-                sb.AppendLine("\t\t\t   return Forbid();");
-                sb.AppendLine("\t\t\t}");
+                sb.AppendLine();
+                GenerateWriteRoleAndPermissionChecks(module, scriptGenTable, sb, adminAccessNeededToWrite);
                 sb.AppendLine();
                 sb.AppendLine("\t\t    await CreateAuditEventAsync(type, message, primaryKey);");
                 sb.AppendLine();
@@ -4904,17 +4878,20 @@ namespace Foundation.CodeGeneration
                 sb.AppendLine("\t\tpublic async Task<IActionResult> SetFavourite(int id, string description = null, CancellationToken cancellationToken = default)");
                 sb.AppendLine("\t\t{");
 
-                sb.AppendLine("\t\t\tif (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)");
-                sb.AppendLine("\t\t\t{");
-                sb.AppendLine("\t\t\t   return Forbid();");
-                sb.AppendLine("\t\t\t}");
+                GenerateReadRoleAndPermissionChecks(module, scriptGenTable, sb);
+
                 sb.AppendLine();
 
 
                 sb.AppendLine("\t\t\tSecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);");
                 sb.AppendLine();
                 sb.AppendLine("\t\t\tbool userIsAdmin = await UserCanAdministerAsync(cancellationToken);");
-                sb.AppendLine("\t\t\tbool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(cancellationToken);");
+
+                if (dataVisibilityEnabled == true)
+                {
+                    sb.AppendLine("\t\t\tbool userIsSecurityAdmin = await UserCanAdministerSecurityModuleAsync(cancellationToken);");
+                }
+
                 sb.AppendLine();
 
                 sb.AppendLine(UserTenantGuidCommands(3));
@@ -4975,10 +4952,10 @@ namespace Foundation.CodeGeneration
                 sb.AppendLine("\t\t[HttpDelete]");
                 sb.AppendLine("\t\tpublic async Task<IActionResult> DeleteFavourite(int id, CancellationToken cancellationToken = default)");
                 sb.AppendLine("\t\t{");
-                sb.AppendLine("\t\t\tif (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED) == false)");
-                sb.AppendLine("\t\t\t{");
-                sb.AppendLine("\t\t\t   return Forbid();");
-                sb.AppendLine("\t\t\t}");
+                sb.AppendLine();
+
+                GenerateReadRoleAndPermissionChecks(module, scriptGenTable, sb);
+
                 sb.AppendLine();
 
                 sb.AppendLine("\t\t\tSecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);");
@@ -6374,10 +6351,9 @@ namespace Foundation.CodeGeneration
                     sb.AppendLine("        [Route(\"api/" + singularForRouting + "/Data/{id:int}\")]");
                     sb.AppendLine("        public async Task<IActionResult> PNGDownloadAsync(int id, int? width = null, int? height = null)");
                     sb.AppendLine("        {");
-                    sb.AppendLine("             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED) == false)");
-                    sb.AppendLine("             {");
-                    sb.AppendLine("                 return Forbid();");
-                    sb.AppendLine("             }");
+                    sb.AppendLine();
+
+                    GenerateReadRoleAndPermissionChecks(module, scriptGenTable, sb);
 
                     sb.AppendLine();
                     if (dataVisibilityEnabled == true)
@@ -6495,10 +6471,10 @@ namespace Foundation.CodeGeneration
                     sb.AppendLine("        [Route(\"api/" + singularForRouting + "/Data/{id:int}\")]");
                     sb.AppendLine("        public async Task<IActionResult> DownloadDataAsync(int id)");
                     sb.AppendLine("        {");
-                    sb.AppendLine("             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED) == false)");
-                    sb.AppendLine("             {");
-                    sb.AppendLine("                 return Forbid();");
-                    sb.AppendLine("             }");
+                    sb.AppendLine();
+
+                    GenerateReadRoleAndPermissionChecks(module, scriptGenTable, sb);
+
                     sb.AppendLine();
                     if (dataVisibilityEnabled == true)
                     {
@@ -6554,6 +6530,69 @@ namespace Foundation.CodeGeneration
             sb.AppendLine("}");
 
             return sb.ToString();
+        }
+
+        private static void GenerateReadRoleAndPermissionChecks(string module, DatabaseGenerator.Database.Table scriptGenTable, StringBuilder sb)
+        {
+            if (string.IsNullOrEmpty(scriptGenTable.customReadAccessRole) == false)
+            {
+                sb.AppendLine("\t\t\t//");
+                sb.AppendLine($"\t\t\t// {scriptGenTable.customReadAccessRole} role needed to read from this table, or {module} Administrator role.  Note we do not check the user's read permission level here.  Role membership is the key to read access.");
+                sb.AppendLine("\t\t\t//");
+                sb.AppendLine($"\t\t\tif (await DoesUserHaveCustomRoleSecurityCheckAsync(\"{scriptGenTable.customWriteAccessRole}\", cancellationToken) == false && await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)");
+                sb.AppendLine("\t\t\t{");
+                sb.AppendLine("\t\t\t   return Forbid();");
+                sb.AppendLine("\t\t\t}");
+                sb.AppendLine();
+            }
+            else
+            {
+                sb.AppendLine("\t\t\t//");
+                sb.AppendLine($"\t\t\t// {module} Reader role or better needed to read from this table, as well as the minimum read permission level.");
+                sb.AppendLine("\t\t\t//");
+                sb.AppendLine("\t\t\tif (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)");
+                sb.AppendLine("\t\t\t{");
+                sb.AppendLine("\t\t\t   return Forbid();");       // 403 is used here to indicate to the client that access to this resource is forbidden, as opposed to a 401 which indicates that there is no authorization.
+                sb.AppendLine("\t\t\t}");
+                sb.AppendLine();
+            }
+        }
+
+        private static void GenerateWriteRoleAndPermissionChecks(string module, DatabaseGenerator.Database.Table scriptGenTable, StringBuilder sb, bool adminAccessNeededToWrite)
+        {
+            if (adminAccessNeededToWrite == true)
+            {
+                sb.AppendLine("\t\t\t//");
+                sb.AppendLine($"\t\t\t// {module} Administrator role needed to write to this table.");
+                sb.AppendLine("\t\t\t//");
+                sb.AppendLine("\t\t\tif (await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)");
+                sb.AppendLine("\t\t\t{");
+                sb.AppendLine("\t\t\t   return Forbid();");
+                sb.AppendLine("\t\t\t}");
+                sb.AppendLine();
+            }
+            else if (string.IsNullOrEmpty(scriptGenTable.customWriteAccessRole) == false)
+            {
+                sb.AppendLine("\t\t\t//");
+                sb.AppendLine($"\t\t\t// {scriptGenTable.customWriteAccessRole} role needed to write to this table, or {module} Administrator role.  Note we do not check the user's write permission level here.  Role membership is the key to write access.");
+                sb.AppendLine("\t\t\t//");
+                sb.AppendLine($"\t\t\tif (await DoesUserHaveCustomRoleSecurityCheckAsync(\"{scriptGenTable.customWriteAccessRole}\", cancellationToken) == false && await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)");
+                sb.AppendLine("\t\t\t{");
+                sb.AppendLine("\t\t\t   return Forbid();");
+                sb.AppendLine("\t\t\t}");
+                sb.AppendLine();
+            }
+            else
+            {
+                sb.AppendLine("\t\t\t//");
+                sb.AppendLine($"\t\t\t// {module} Writer role needed to write to this table, as well as the minimum write permission level.");
+                sb.AppendLine("\t\t\t//");
+                sb.AppendLine("\t\t\tif (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)");
+                sb.AppendLine("\t\t\t{");
+                sb.AppendLine("\t\t\t   return Forbid();");
+                sb.AppendLine("\t\t\t}");
+                sb.AppendLine();
+            }
         }
 
         private static void AddAnyStringsContainsQueryAdditions(Type type, StringBuilder sb, string rootNamespace, bool writeCodeToConditionallyIncludeRelations)

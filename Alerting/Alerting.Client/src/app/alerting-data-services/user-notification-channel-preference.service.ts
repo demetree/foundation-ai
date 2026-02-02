@@ -802,7 +802,7 @@ export class UserNotificationChannelPreferenceService extends SecureEndpointBase
             const user = this.authService.currentUser;
 
             if (user != null) {
-                userIsAlertingUserNotificationChannelPreferenceReader = user.readPermission >= 0;
+                userIsAlertingUserNotificationChannelPreferenceReader = user.readPermission >= 1;
             } else {
                 userIsAlertingUserNotificationChannelPreferenceReader = false;
             }
@@ -826,7 +826,7 @@ export class UserNotificationChannelPreferenceService extends SecureEndpointBase
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsAlertingUserNotificationChannelPreferenceWriter = user.writePermission >= 0;
+            userIsAlertingUserNotificationChannelPreferenceWriter = user.writePermission >= 50;
           } else {
             userIsAlertingUserNotificationChannelPreferenceWriter = false;
           }      

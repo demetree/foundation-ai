@@ -12,6 +12,18 @@ namespace Foundation.Alerting.Database
     /// </summary>
     public class AlertingDatabaseGenerator : DatabaseGenerator
     {
+        private const int ALERTING_READER_PERMISSION_LEVEL = 1;
+        private const int ALERTING_BASIC_WRITER_PERMISSION_LEVEL = 1;
+        private const int ALERTING_USER_WRITER_PERMISSION_LEVEL = 50;
+        private const int ALERTING_SCHEDULE_WRITER_PERMISSION_LEVEL = 100;
+        private const int ALERTING_MASTER_CONFIG_WRITER_PERMISSION_LEVEL = 150;
+        private const int ALERTING_SUPER_ADMIN_WRITER_PERMISSION_LEVEL = 255;
+
+        private const string ALERTING_USER_WRITER_CUSTOM_ROLE_NAME = "Alerting User Writer";
+        private const string ALERTING_SCHEDULE_WRITER_CUSTOM_ROLE_NAME = "Alerting Schedule Writer";
+        private const string ALERTING_MASTER_CONFIG_WRITER_CUSTOM_ROLE_NAME = "Alerting Master Config Writer";
+
+
         public AlertingDatabaseGenerator() : base("Alerting", "Alerting")
         {
             database.comment = @"Alerting and Incident Management database.
@@ -21,26 +33,36 @@ Designed to be independent while sharing the central Security database for users
 
             this.database.SetSchemaName("Alerting");
 
+            this.database.AddCustomRole(ALERTING_USER_WRITER_CUSTOM_ROLE_NAME, $"{ALERTING_USER_WRITER_CUSTOM_ROLE_NAME} Role");                        // Can write only to user setting type tables
+            this.database.AddCustomRole(ALERTING_SCHEDULE_WRITER_CUSTOM_ROLE_NAME, $"{ALERTING_SCHEDULE_WRITER_CUSTOM_ROLE_NAME} Role");                // Can write to Schedule setup tables
+            this.database.AddCustomRole(ALERTING_MASTER_CONFIG_WRITER_CUSTOM_ROLE_NAME, $"{ALERTING_MASTER_CONFIG_WRITER_CUSTOM_ROLE_NAME} Role");      // Can write to service and integration type setup tables
+
             #region Lookup Tables (static, non-writable)
 
+            //
             // SeverityType - static lookup for incident severity
-            var severityTable = database.AddTable("SeverityType");
+            //
+            Database.Table severityTable = database.AddTable("SeverityType");
+            severityTable.SetMinimumPermissionLevels(ALERTING_READER_PERMISSION_LEVEL, ALERTING_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
             severityTable.comment = "Static severity levels for incidents.";
-            severityTable.isWritable = false;
+            severityTable.isWritable = false;           // Nobody gets to write to this
             severityTable.AddIdField();
             severityTable.AddNameAndDescriptionFields(true, true, true);
-            severityTable.AddIntField("sortOrder", false, 0);
+            severityTable.AddSequenceField(false);
             severityTable.AddControlFields(false);
 
-            severityTable.AddData(new Dictionary<string, string> { { "name", "Critical" }, { "description", "Critical" }, { "sortOrder", "10" } });
-            severityTable.AddData(new Dictionary<string, string> { { "name", "High" }, { "description", "High" }, { "sortOrder", "20" } });
-            severityTable.AddData(new Dictionary<string, string> { { "name", "Medium" }, { "description", "Medium" }, { "sortOrder", "30" } });
-            severityTable.AddData(new Dictionary<string, string> { { "name", "Low" }, { "description", "Low" }, { "sortOrder", "40" } });
+            severityTable.AddData(new Dictionary<string, string> { { "name", "Critical" }, { "description", "Critical" }, { "sequence", "10" } });
+            severityTable.AddData(new Dictionary<string, string> { { "name", "High" }, { "description", "High" }, { "sequence", "20" } });
+            severityTable.AddData(new Dictionary<string, string> { { "name", "Medium" }, { "description", "Medium" }, { "sequence", "30" } });
+            severityTable.AddData(new Dictionary<string, string> { { "name", "Low" }, { "description", "Low" }, { "sequence", "40" } });
 
+            //
             // IncidentStatusType - static lookup for incident status
-            var incidentStatusTypeTable = database.AddTable("IncidentStatusType");
+            //
+            Database.Table incidentStatusTypeTable = database.AddTable("IncidentStatusType");
+            incidentStatusTypeTable.SetMinimumPermissionLevels(ALERTING_READER_PERMISSION_LEVEL, ALERTING_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
             incidentStatusTypeTable.comment = "Static status values for incidents.";
-            incidentStatusTypeTable.isWritable = false;
+            incidentStatusTypeTable.isWritable = false;     // Nobody gets to write to this
             incidentStatusTypeTable.AddIdField();
             incidentStatusTypeTable.AddNameAndDescriptionFields(true, true, true);
             incidentStatusTypeTable.AddControlFields(false);
@@ -49,10 +71,13 @@ Designed to be independent while sharing the central Security database for users
             incidentStatusTypeTable.AddData(new Dictionary<string, string> { { "name", "Acknowledged" }, { "description", "Acknowledged by a responder" } });
             incidentStatusTypeTable.AddData(new Dictionary<string, string> { { "name", "Resolved" }, { "description", "Incident resolved" } });
 
+            //
             // IncidentEventType - static lookup for timeline event types
-            var eventTypeTable = database.AddTable("IncidentEventType");
+            //
+            Database.Table eventTypeTable = database.AddTable("IncidentEventType");
+            eventTypeTable.SetMinimumPermissionLevels(ALERTING_READER_PERMISSION_LEVEL, ALERTING_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
             eventTypeTable.comment = "Static event types for the incident timeline.";
-            eventTypeTable.isWritable = false;
+            eventTypeTable.isWritable = false;              // Nobody gets to write to this
             eventTypeTable.AddIdField();
             eventTypeTable.AddNameAndDescriptionFields(true, true, true);
             eventTypeTable.AddControlFields(false);
@@ -64,10 +89,13 @@ Designed to be independent while sharing the central Security database for users
             eventTypeTable.AddData(new Dictionary<string, string> { { "name", "NoteAdded" }, { "description", "Note added to incident" } });
             eventTypeTable.AddData(new Dictionary<string, string> { { "name", "NotificationSent" }, { "description", "Notification delivery attempted" } });
 
+            //
             // NotificationChannelType - static channels for delivery attempts
-            var notificationChannelTypeTable = database.AddTable("NotificationChannelType");
+            //
+            Database.Table notificationChannelTypeTable = database.AddTable("NotificationChannelType");
+            notificationChannelTypeTable.SetMinimumPermissionLevels(ALERTING_READER_PERMISSION_LEVEL, ALERTING_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
             notificationChannelTypeTable.comment = "Static notification delivery channels.";
-            notificationChannelTypeTable.isWritable = false;
+            notificationChannelTypeTable.isWritable = false;        // Nobody gets to write to this
             notificationChannelTypeTable.AddIdField();
             notificationChannelTypeTable.AddNameAndDescriptionFields(true, true, true);
             notificationChannelTypeTable.AddIntField("defaultPriority", false, 0); // lower = higher priority
@@ -82,10 +110,15 @@ Designed to be independent while sharing the central Security database for users
 
             #region Configuration Tables (admin-only write, soft-delete)
 
-            var escalationPolicyTable = database.AddTable("EscalationPolicy");
+            Database.Table escalationPolicyTable = database.AddTable("EscalationPolicy");
+            escalationPolicyTable.SetMinimumPermissionLevels(ALERTING_READER_PERMISSION_LEVEL, ALERTING_MASTER_CONFIG_WRITER_PERMISSION_LEVEL);
             escalationPolicyTable.comment = "Escalation policies assigned to services.";
             escalationPolicyTable.isWritable = true;
-            escalationPolicyTable.adminAccessNeededToWrite = true;
+
+            //
+            // Must have Alerting Master Config role to write to this table.
+            //
+            escalationPolicyTable.customWriteAccessRole = ALERTING_MASTER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
 
             escalationPolicyTable.AddIdField();
             escalationPolicyTable.AddMultiTenantSupport();
@@ -95,10 +128,17 @@ Designed to be independent while sharing the central Security database for users
 
 
 
-            var serviceTable = database.AddTable("Service");
+            Database.Table serviceTable = database.AddTable("Service");
+            serviceTable.SetMinimumPermissionLevels(ALERTING_READER_PERMISSION_LEVEL, ALERTING_MASTER_CONFIG_WRITER_PERMISSION_LEVEL);
             serviceTable.comment = "Monitored services/applications that can generate alerts.";
             serviceTable.isWritable = true;
-            serviceTable.adminAccessNeededToWrite = true;
+
+            //
+            // Must have Alerting Master Config role to write to this table.
+            //
+            serviceTable.customWriteAccessRole = ALERTING_MASTER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
+
+
             serviceTable.AddIdField();
             serviceTable.AddMultiTenantSupport();
             serviceTable.AddForeignKeyField(escalationPolicyTable, true);
@@ -109,10 +149,17 @@ Designed to be independent while sharing the central Security database for users
 
             
 
-            var escalationRuleTable = database.AddTable("EscalationRule");
+            Database.Table escalationRuleTable = database.AddTable("EscalationRule");
+            escalationRuleTable.SetMinimumPermissionLevels(ALERTING_READER_PERMISSION_LEVEL, ALERTING_MASTER_CONFIG_WRITER_PERMISSION_LEVEL);
             escalationRuleTable.comment = "Individual escalation rules (ordered). Supports repeat looping until acknowledgment.";
             escalationRuleTable.isWritable = true;
-            escalationRuleTable.adminAccessNeededToWrite = true;
+
+            //
+            // Must have Alerting Master Config role to write to this table.
+            //
+            escalationRuleTable.customWriteAccessRole = ALERTING_MASTER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
+
+
             escalationRuleTable.AddIdField();
             escalationRuleTable.AddMultiTenantSupport();
             escalationRuleTable.AddForeignKeyField(escalationPolicyTable, false);
@@ -120,20 +167,26 @@ Designed to be independent while sharing the central Security database for users
             escalationRuleTable.AddIntField("delayMinutes", false, 0);
             escalationRuleTable.AddIntField("repeatCount", false, 0).AddScriptComments("How many times to repeat notification if no ack (0 = no repeat).");
             escalationRuleTable.AddIntField("repeatDelayMinutes", true).AddScriptComments("Delay between repeat attempts (null = same as delayMinutes).");
-            escalationRuleTable.AddString50Field("targetType", false)
-                .AddScriptComments("Valid values: User, Team, Schedule");
-            escalationRuleTable.AddGuidField("targetObjectGuid", true)
-                .AddScriptComments("References Security.SecurityUser/SecurityTeam or Alerting.OnCallSchedule objectGuid.");
+            escalationRuleTable.AddString50Field("targetType", false).AddScriptComments("Valid values: User, Team, Schedule");
+            escalationRuleTable.AddGuidField("targetObjectGuid", true).AddScriptComments("References Security.SecurityUser/SecurityTeam or Alerting.OnCallSchedule objectGuid.");
 
             escalationRuleTable.AddVersionControl();
             escalationRuleTable.AddControlFields(true);
 
             escalationRuleTable.CreateIndexForFields(new List<string>() { "escalationPolicyId", "ruleOrder" });
 
-            var onCallScheduleTable = database.AddTable("OnCallSchedule");
+
+
+
+            Database.Table onCallScheduleTable = database.AddTable("OnCallSchedule");
+            onCallScheduleTable.SetMinimumPermissionLevels(ALERTING_READER_PERMISSION_LEVEL, ALERTING_SCHEDULE_WRITER_PERMISSION_LEVEL);
             onCallScheduleTable.comment = "On-call rotation schedules (dynamic targets for escalation rules).";
-            onCallScheduleTable.isWritable = true;
-            onCallScheduleTable.adminAccessNeededToWrite = true;
+
+            //
+            // Must have Alerting Schedule writer role to write to this table.
+            //
+            onCallScheduleTable.customWriteAccessRole = ALERTING_SCHEDULE_WRITER_CUSTOM_ROLE_NAME;
+
             onCallScheduleTable.AddIdField();
             onCallScheduleTable.AddMultiTenantSupport();
             onCallScheduleTable.AddNameAndDescriptionFields(true, true, true);
@@ -141,10 +194,17 @@ Designed to be independent while sharing the central Security database for users
             onCallScheduleTable.AddVersionControl();
             onCallScheduleTable.AddControlFields(true);
 
-            var scheduleLayerTable = database.AddTable("ScheduleLayer");
+
+
+            Database.Table scheduleLayerTable = database.AddTable("ScheduleLayer");
+            scheduleLayerTable.SetMinimumPermissionLevels(ALERTING_READER_PERMISSION_LEVEL, ALERTING_SCHEDULE_WRITER_PERMISSION_LEVEL);
             scheduleLayerTable.comment = "Layers within an on-call schedule (primary, secondary, etc.).";
-            scheduleLayerTable.isWritable = true;
-            scheduleLayerTable.adminAccessNeededToWrite = true;
+
+            //
+            // Must have Alerting Schedule writer role to write to this table.
+            //
+            scheduleLayerTable.customWriteAccessRole = ALERTING_SCHEDULE_WRITER_CUSTOM_ROLE_NAME;
+
             scheduleLayerTable.AddIdField();
             scheduleLayerTable.AddMultiTenantSupport();
             scheduleLayerTable.AddForeignKeyField(onCallScheduleTable, false);
@@ -156,10 +216,18 @@ Designed to be independent while sharing the central Security database for users
             scheduleLayerTable.AddVersionControl();
             scheduleLayerTable.AddControlFields(true);
 
-            var layerMemberTable = database.AddTable("ScheduleLayerMember");
+
+
+            Database.Table layerMemberTable = database.AddTable("ScheduleLayerMember");
+            layerMemberTable.SetMinimumPermissionLevels(ALERTING_READER_PERMISSION_LEVEL, ALERTING_SCHEDULE_WRITER_PERMISSION_LEVEL);
             layerMemberTable.comment = "Users in a schedule layer rotation (ordered).";
-            layerMemberTable.isWritable = true;
-            layerMemberTable.adminAccessNeededToWrite = true;
+
+            //
+            // Must have Alerting Schedule writer role to write to this table.
+            //
+            layerMemberTable.customWriteAccessRole = ALERTING_SCHEDULE_WRITER_CUSTOM_ROLE_NAME;
+
+
             layerMemberTable.AddIdField();
             layerMemberTable.AddMultiTenantSupport();
             layerMemberTable.AddForeignKeyField(scheduleLayerTable, false);
@@ -170,10 +238,19 @@ Designed to be independent while sharing the central Security database for users
             layerMemberTable.AddControlFields(true);
             layerMemberTable.AddUniqueConstraint("tenantGuid", "scheduleLayerId", "position");
 
-            var integrationTable = database.AddTable("Integration");
+
+
+            Database.Table integrationTable = database.AddTable("Integration");
+            integrationTable.SetMinimumPermissionLevels(ALERTING_READER_PERMISSION_LEVEL, ALERTING_MASTER_CONFIG_WRITER_PERMISSION_LEVEL);
             integrationTable.comment = "API integrations for inbound alerts and outbound status callbacks.";
-            integrationTable.isWritable = true;
-            integrationTable.adminAccessNeededToWrite = true;
+            integrationTable.SetTableToBeReadonlyForControllerCreationPurposes();                   // custom write controller logic to be implemented to handle the hashing of the key server side.
+
+            //
+            // Must have Alerting Master Config role to write to this table.
+            //
+            onCallScheduleTable.customWriteAccessRole = ALERTING_MASTER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
+
+
             integrationTable.AddIdField();
             integrationTable.AddMultiTenantSupport();
             integrationTable.AddForeignKeyField(serviceTable, false);
@@ -190,29 +267,27 @@ Designed to be independent while sharing the central Security database for users
             #region User Notification Preferences (user-editable config)
 
             // UserNotificationPreference - per-user default notification preferences
-            var userPrefTable = database.AddTable("UserNotificationPreference");
+            Database.Table userPrefTable = database.AddTable("UserNotificationPreference");
+            userPrefTable.SetMinimumPermissionLevels(ALERTING_READER_PERMISSION_LEVEL, ALERTING_USER_WRITER_PERMISSION_LEVEL);
             userPrefTable.comment = "Per-user notification preferences (channels, quiet hours, DND, etc.). Users can edit their own preferences.";
             userPrefTable.isWritable = true;
-            // Note: Not adminAccessNeededToWrite = true — this should be user-self-editable via API/UI with proper auth checks
+
+            //
+            // Must have Alerting User writer role to write to this table.
+            //
+            userPrefTable.customWriteAccessRole = ALERTING_USER_WRITER_CUSTOM_ROLE_NAME;
+
+
             userPrefTable.AddIdField();
             userPrefTable.AddMultiTenantSupport();
-            userPrefTable.AddGuidField("securityUserObjectGuid", false)
-                .EnforceUniqueness()
-                .AddScriptComments("References Security.SecurityUser.objectGuid - one preference row per user.");
-            userPrefTable.AddString50Field("timeZoneId", true, "UTC")
-                .AddScriptComments("User's preferred timezone for quiet hours scheduling.");
-            userPrefTable.AddString10Field("quietHoursStart", true)
-                .AddScriptComments("HH:mm format local to timeZoneId - start of quiet hours (null = no quiet hours).");
-            userPrefTable.AddString10Field("quietHoursEnd", true)
-                .AddScriptComments("HH:mm format local to timeZoneId - end of quiet hours.");
-            userPrefTable.AddBoolField("isDoNotDisturb", false, false)
-                .AddScriptComments("Global DND override - if true, no notifications except possibly critical overrides.");
-            userPrefTable.AddBoolField("isDoNotDisturbPermanent", false, false)
-                .AddScriptComments("If true, DND has no scheduled end (until manually cleared).");
-            userPrefTable.AddDateTimeField("doNotDisturbUntil", true)
-                .AddScriptComments("Temporary DND end time (ignored if isDoNotDisturbPermanent = true).");
-            userPrefTable.AddTextField("customSettingsJson", true)
-                .AddScriptComments("Flexible JSON for future extensions (e.g., per-severity overrides, custom sounds).");
+            userPrefTable.AddGuidField("securityUserObjectGuid", false).AddScriptComments("References Security.SecurityUser.objectGuid - one preference row per user.");
+            userPrefTable.AddString50Field("timeZoneId", true, "UTC").AddScriptComments("User's preferred timezone for quiet hours scheduling.");
+            userPrefTable.AddString10Field("quietHoursStart", true).AddScriptComments("HH:mm format local to timeZoneId - start of quiet hours (null = no quiet hours).");
+            userPrefTable.AddString10Field("quietHoursEnd", true).AddScriptComments("HH:mm format local to timeZoneId - end of quiet hours.");
+            userPrefTable.AddBoolField("isDoNotDisturb", false, false).AddScriptComments("Global DND override - if true, no notifications except possibly critical overrides.");
+            userPrefTable.AddBoolField("isDoNotDisturbPermanent", false, false).AddScriptComments("If true, DND has no scheduled end (until manually cleared).");
+            userPrefTable.AddDateTimeField("doNotDisturbUntil", true).AddScriptComments("Temporary DND end time (ignored if isDoNotDisturbPermanent = true).");
+            userPrefTable.AddTextField("customSettingsJson", true).AddScriptComments("Flexible JSON for future extensions (e.g., per-severity overrides, custom sounds).");
             userPrefTable.AddVersionControl();
             userPrefTable.AddControlFields(true); // objectGuid, active, deleted, versionNumber
 
@@ -222,18 +297,25 @@ Designed to be independent while sharing the central Security database for users
             // Indexes
             userPrefTable.CreateIndexForFields(new List<string> { "securityUserObjectGuid" });
 
+
+
             // Child table: per-channel enable/disable and priority override
-            var channelPrefTable = database.AddTable("UserNotificationChannelPreference");
+            Database.Table channelPrefTable = database.AddTable("UserNotificationChannelPreference");
+            channelPrefTable.SetMinimumPermissionLevels(ALERTING_READER_PERMISSION_LEVEL, ALERTING_USER_WRITER_PERMISSION_LEVEL);
             channelPrefTable.comment = "Per-user, per-channel notification preferences (enable/disable, custom priority).";
-            channelPrefTable.isWritable = true;
+
+            //
+            // Must have Alerting User writer role to write to this table.
+            //
+            channelPrefTable.customWriteAccessRole = ALERTING_USER_WRITER_CUSTOM_ROLE_NAME;
+
+
             channelPrefTable.AddIdField();
             channelPrefTable.AddMultiTenantSupport();
             channelPrefTable.AddForeignKeyField(userPrefTable, false, true);
             channelPrefTable.AddForeignKeyField(notificationChannelTypeTable, false, true); // References NotificationChannelType
-            channelPrefTable.AddBoolField("isEnabled", false, true)
-                .AddScriptComments("If false, this channel is disabled for the user (overrides system defaults).");
-            channelPrefTable.AddIntField("priorityOverride", true)
-                .AddScriptComments("Optional custom priority (lower = higher urgency) - null = use channel default.");
+            channelPrefTable.AddBoolField("isEnabled", false, true).AddScriptComments("If false, this channel is disabled for the user (overrides system defaults).");
+            channelPrefTable.AddIntField("priorityOverride", true).AddScriptComments("Optional custom priority (lower = higher urgency) - null = use channel default.");
             channelPrefTable.AddVersionControl();
             channelPrefTable.AddControlFields(true);
 
@@ -248,7 +330,13 @@ Designed to be independent while sharing the central Security database for users
 
             #region Operational Tables (high volume)
 
-            var incidentTable = database.AddTable("Incident");
+
+            Database.Table incidentTable = database.AddTable("Incident");
+
+            // Limit writing to super admins with 255 write level
+            incidentTable.SetMinimumPermissionLevels(ALERTING_READER_PERMISSION_LEVEL, ALERTING_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            incidentTable.adminAccessNeededToWrite = true;
+
             incidentTable.comment = "Active and historical incidents.";
             incidentTable.isWritable = true;
             incidentTable.AddIdField();
@@ -262,12 +350,9 @@ Designed to be independent while sharing the central Security database for users
             incidentTable.AddDateTimeField("createdAt", false).CreateIndex();
 
             // Escalation state tracking - enables efficient background worker processing
-            incidentTable.AddForeignKeyField(escalationRuleTable, true)
-                .AddScriptComments("Current active escalation rule (null = no active escalation, e.g., acknowledged/resolved).");
-            incidentTable.AddIntField("currentRepeatCount", true, 0)
-                .AddScriptComments("How many repeat notifications have been sent for the current rule (resets on rule change).");
-            incidentTable.AddDateTimeField("nextEscalationAt", true)
-                .AddScriptComments("Timestamp when the next escalation/repeat should fire (drives worker query).");
+            incidentTable.AddForeignKeyField(escalationRuleTable, true).AddScriptComments("Current active escalation rule (null = no active escalation, e.g., acknowledged/resolved).");
+            incidentTable.AddIntField("currentRepeatCount", true, 0).AddScriptComments("How many repeat notifications have been sent for the current rule (resets on rule change).");
+            incidentTable.AddDateTimeField("nextEscalationAt", true).AddScriptComments("Timestamp when the next escalation/repeat should fire (drives worker query).");
 
             incidentTable.AddDateTimeField("acknowledgedAt", true);
             incidentTable.AddDateTimeField("resolvedAt", true);
@@ -284,7 +369,14 @@ Designed to be independent while sharing the central Security database for users
             incidentTable.CreateIndexForFields(new List<string> { "tenantGuid", "serviceId", "createdAt" });
             incidentTable.CreateIndexForFields(new List<string> { "tenantGuid", "nextEscalationAt", "incidentStatusTypeId" }); // Critical for worker: find due escalations in Triggered state
 
-            var timelineEventTable = database.AddTable("IncidentTimelineEvent");
+
+
+            Database.Table timelineEventTable = database.AddTable("IncidentTimelineEvent");
+
+            // Limit writing to super admins with 255 write level
+            timelineEventTable.SetMinimumPermissionLevels(ALERTING_READER_PERMISSION_LEVEL, ALERTING_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            timelineEventTable.adminAccessNeededToWrite = true;
+
             timelineEventTable.comment = "Timeline events for incidents.";
             timelineEventTable.isWritable = true;
             timelineEventTable.AddIdField();
@@ -298,7 +390,11 @@ Designed to be independent while sharing the central Security database for users
 
             timelineEventTable.CreateIndexForFields(new List<string> { "incidentId", "timestamp" });
 
-            var noteTable = database.AddTable("IncidentNote");
+
+
+            Database.Table noteTable = database.AddTable("IncidentNote");
+            noteTable.SetMinimumPermissionLevels(ALERTING_READER_PERMISSION_LEVEL, ALERTING_BASIC_WRITER_PERMISSION_LEVEL);
+            // Note no special role needd for writing this table, just the permission level check, so it can be written to by all writers
             noteTable.comment = "Notes added to incidents by responders.";
             noteTable.isWritable = true;
             noteTable.AddIdField();
@@ -310,8 +406,16 @@ Designed to be independent while sharing the central Security database for users
             noteTable.AddVersionControl();
             noteTable.AddControlFields();
 
-            var notificationTable = database.AddTable("IncidentNotification");
+
+
+            Database.Table notificationTable = database.AddTable("IncidentNotification");
+
+            // Limit writing to super admins with 255 write level
+            notificationTable.SetMinimumPermissionLevels(ALERTING_READER_PERMISSION_LEVEL, ALERTING_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+
             notificationTable.comment = "Notifications sent to individual users as part of escalation (teams/schedules are resolved to users at runtime).";
+            notificationTable.adminAccessNeededToWrite = true;
+
             notificationTable.isWritable = true;
             notificationTable.AddIdField();
             notificationTable.AddMultiTenantSupport();
@@ -326,7 +430,12 @@ Designed to be independent while sharing the central Security database for users
 
             notificationTable.CreateIndexForFields(new List<string> { "incidentId", "userObjectGuid" });
 
-            var deliveryAttemptTable = database.AddTable("NotificationDeliveryAttempt");
+            Database.Table deliveryAttemptTable = database.AddTable("NotificationDeliveryAttempt");
+
+            // Limit writing to super admins with 255 write level
+            deliveryAttemptTable.SetMinimumPermissionLevels(ALERTING_READER_PERMISSION_LEVEL, ALERTING_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            deliveryAttemptTable.adminAccessNeededToWrite = true;
+
             deliveryAttemptTable.comment = "Individual delivery attempts per channel for a notification.";
             deliveryAttemptTable.isWritable = true;
             deliveryAttemptTable.AddIdField();
@@ -342,9 +451,15 @@ Designed to be independent while sharing the central Security database for users
 
             deliveryAttemptTable.CreateIndexForFields(new List<string> { "tenantGuid", "incidentNotificationId", "notificationChannelTypeId" });
 
-            var webhookDeliveryTable = database.AddTable("WebhookDeliveryAttempt");
+
+
+            Database.Table webhookDeliveryTable = database.AddTable("WebhookDeliveryAttempt");
+            webhookDeliveryTable.SetMinimumPermissionLevels(ALERTING_READER_PERMISSION_LEVEL, ALERTING_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
             webhookDeliveryTable.comment = "Outbound webhook delivery attempts for incident status updates.";
+            
             webhookDeliveryTable.isWritable = true;
+            webhookDeliveryTable.adminAccessNeededToWrite = true;
+
             webhookDeliveryTable.AddIdField();
             webhookDeliveryTable.AddMultiTenantSupport();
             webhookDeliveryTable.AddForeignKeyField(incidentTable, false);

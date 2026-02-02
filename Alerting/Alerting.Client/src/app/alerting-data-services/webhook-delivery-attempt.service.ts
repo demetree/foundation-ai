@@ -552,7 +552,7 @@ export class WebhookDeliveryAttemptService extends SecureEndpointBase {
             const user = this.authService.currentUser;
 
             if (user != null) {
-                userIsAlertingWebhookDeliveryAttemptReader = user.readPermission >= 0;
+                userIsAlertingWebhookDeliveryAttemptReader = user.readPermission >= 1;
             } else {
                 userIsAlertingWebhookDeliveryAttemptReader = false;
             }
@@ -576,7 +576,7 @@ export class WebhookDeliveryAttemptService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsAlertingWebhookDeliveryAttemptWriter = user.writePermission >= 0;
+            userIsAlertingWebhookDeliveryAttemptWriter = user.writePermission >= 255;
           } else {
             userIsAlertingWebhookDeliveryAttemptWriter = false;
           }      

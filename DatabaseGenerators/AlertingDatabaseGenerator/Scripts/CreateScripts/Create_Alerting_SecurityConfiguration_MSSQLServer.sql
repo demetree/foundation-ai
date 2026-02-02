@@ -38,6 +38,29 @@ GO
 
 
 -- 
+-- Define the custom roles for the Alerting module
+-- 
+INSERT INTO [Security].[SecurityRole] ( [name], [description], [privilegeId] ) VALUES  ( 'Alerting User Writer', 'Alerting User Writer Role', ( SELECT TOP 1 id FROM [Security].[Privilege] WHERE [name] = 'Custom' ) )
+GO
+
+INSERT INTO [Security].[SecurityRole] ( [name], [description], [privilegeId] ) VALUES  ( 'Alerting Schedule Writer', 'Alerting Schedule Writer Role', ( SELECT TOP 1 id FROM [Security].[Privilege] WHERE [name] = 'Custom' ) )
+GO
+
+INSERT INTO [Security].[SecurityRole] ( [name], [description], [privilegeId] ) VALUES  ( 'Alerting Master Config Writer', 'Alerting Master Config Writer Role', ( SELECT TOP 1 id FROM [Security].[Privilege] WHERE [name] = 'Custom' ) )
+GO
+
+
+INSERT INTO [Security].[ModuleSecurityRole] ( [moduleId], [securityRoleId] ) VALUES  ( ( SELECT TOP 1 id FROM [Security].[Module] WHERE [name] = 'Alerting' ), ( SELECT TOP 1 id FROM [Security].[SecurityRole] WHERE [name] = 'Alerting User Writer' ) )
+GO
+
+INSERT INTO [Security].[ModuleSecurityRole] ( [moduleId], [securityRoleId] ) VALUES  ( ( SELECT TOP 1 id FROM [Security].[Module] WHERE [name] = 'Alerting' ), ( SELECT TOP 1 id FROM [Security].[SecurityRole] WHERE [name] = 'Alerting Schedule Writer' ) )
+GO
+
+INSERT INTO [Security].[ModuleSecurityRole] ( [moduleId], [securityRoleId] ) VALUES  ( ( SELECT TOP 1 id FROM [Security].[Module] WHERE [name] = 'Alerting' ), ( SELECT TOP 1 id FROM [Security].[SecurityRole] WHERE [name] = 'Alerting Master Config Writer' ) )
+GO
+
+
+-- 
 -- Give the admin user administrative rights to the module
 -- 
 INSERT INTO [Security].[SecurityUserSecurityRole] ( [securityUserId], [securityRoleId], [active], [deleted] ) VALUES  ( ( SELECT TOP 1 id FROM [Security].[SecurityUser] WHERE [accountName] = 'Admin' ), ( SELECT TOP 1 id FROM [Security].[SecurityRole] WHERE [name] = 'Alerting Administrator' ), '1', '0' )

@@ -47,7 +47,7 @@ export class SeverityTypeSubmitData {
     id!: bigint | number;
     name!: string;
     description: string | null = null;
-    sortOrder!: bigint | number;
+    sortOrder: bigint | number | null = null;
     active!: boolean;
     deleted!: boolean;
 }
@@ -611,7 +611,7 @@ export class SeverityTypeService extends SecureEndpointBase {
             const user = this.authService.currentUser;
 
             if (user != null) {
-                userIsAlertingSeverityTypeReader = user.readPermission >= 0;
+                userIsAlertingSeverityTypeReader = user.readPermission >= 1;
             } else {
                 userIsAlertingSeverityTypeReader = false;
             }
@@ -635,7 +635,7 @@ export class SeverityTypeService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsAlertingSeverityTypeWriter = user.writePermission >= 0;
+            userIsAlertingSeverityTypeWriter = user.writePermission >= 255;
           } else {
             userIsAlertingSeverityTypeWriter = false;
           }      
