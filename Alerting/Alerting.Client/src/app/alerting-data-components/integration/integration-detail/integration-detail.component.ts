@@ -45,7 +45,6 @@ interface IntegrationFormValues {
   callbackWebhookUrl: string | null,
   maxRetryAttempts: string | null,     // Stored as string for form input, converted to number on submit.
   retryBackoffSeconds: string | null,     // Stored as string for form input, converted to number on submit.
-  callbackOnEventTypes: string | null,
   lastCallbackSuccessAt: string | null,
   consecutiveCallbackFailures: string | null,     // Stored as string for form input, converted to number on submit.
   versionNumber: string,     // Stored as string for form input, converted to number on submit.
@@ -85,7 +84,6 @@ export class IntegrationDetailComponent implements OnInit, CanComponentDeactivat
         callbackWebhookUrl: [''],
         maxRetryAttempts: [''],
         retryBackoffSeconds: [''],
-        callbackOnEventTypes: [''],
         lastCallbackSuccessAt: [''],
         consecutiveCallbackFailures: [''],
         versionNumber: [''],
@@ -406,7 +404,6 @@ export class IntegrationDetailComponent implements OnInit, CanComponentDeactivat
         callbackWebhookUrl: '',
         maxRetryAttempts: '',
         retryBackoffSeconds: '',
-        callbackOnEventTypes: '',
         lastCallbackSuccessAt: '',
         consecutiveCallbackFailures: '',
         versionNumber: '',
@@ -428,7 +425,6 @@ export class IntegrationDetailComponent implements OnInit, CanComponentDeactivat
         callbackWebhookUrl: integrationData.callbackWebhookUrl ?? '',
         maxRetryAttempts: integrationData.maxRetryAttempts?.toString() ?? '',
         retryBackoffSeconds: integrationData.retryBackoffSeconds?.toString() ?? '',
-        callbackOnEventTypes: integrationData.callbackOnEventTypes ?? '',
         lastCallbackSuccessAt: isoUtcStringToDateTimeLocal(integrationData.lastCallbackSuccessAt) ?? '',
         consecutiveCallbackFailures: integrationData.consecutiveCallbackFailures?.toString() ?? '',
         versionNumber: integrationData.versionNumber?.toString() ?? '',
@@ -500,7 +496,6 @@ export class IntegrationDetailComponent implements OnInit, CanComponentDeactivat
         callbackWebhookUrl: formValue.callbackWebhookUrl?.trim() || null,
         maxRetryAttempts: formValue.maxRetryAttempts ? Number(formValue.maxRetryAttempts) : null,
         retryBackoffSeconds: formValue.retryBackoffSeconds ? Number(formValue.retryBackoffSeconds) : null,
-        callbackOnEventTypes: formValue.callbackOnEventTypes?.trim() || null,
         lastCallbackSuccessAt: formValue.lastCallbackSuccessAt ? dateTimeLocalToIsoUtc(formValue.lastCallbackSuccessAt.trim()) : null,
         consecutiveCallbackFailures: formValue.consecutiveCallbackFailures ? Number(formValue.consecutiveCallbackFailures) : null,
         versionNumber: this.integrationData?.versionNumber ?? 0,

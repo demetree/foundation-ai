@@ -51,10 +51,6 @@
                 Retry  Backoff  Seconds
                 <span *ngIf="sortColumn === 'retryBackoffSeconds'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
-            <th class="sortable" scope="col" (click)="sortBy('callbackOnEventTypes')">
-                Callback  On  Event  Types
-                <span *ngIf="sortColumn === 'callbackOnEventTypes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
-            </th>
             <th class="sortable" scope="col" (click)="sortBy('lastCallbackSuccessAt')">
                 Last  Callback  Success  At
                 <span *ngIf="sortColumn === 'lastCallbackSuccessAt'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
@@ -152,7 +148,6 @@ End of commented block for alternate definition option -->
             <td class="text-truncate">{{integration.callbackWebhookUrl}}</td>
             <td class="text-truncate">{{integration.maxRetryAttempts | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{integration.retryBackoffSeconds | bigNumberFormat : '1.0-2'}}</td>
-            <td class="text-truncate">{{integration.callbackOnEventTypes}}</td>
             <td class="text-truncate">{{integration.lastCallbackSuccessAt | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
             <td class="text-truncate">{{integration.consecutiveCallbackFailures | bigNumberFormat : '1.0-2'}}</td>
 End of commented block for alternate definition option -->
@@ -329,10 +324,6 @@ End of commented block for alternate definition option -->
             <p class="integration-info" *ngIf="integration.retryBackoffSeconds != null">
               <strong>Retry Backoff Seconds: </strong>
               {{integration.retryBackoffSeconds | bigNumberFormat : '1.0-2'}}
-            </p>
-            <p class="integration-info" *ngIf="integration.callbackOnEventTypes != null">
-              <strong>Callback On Event Types: </strong>
-              {{integration.callbackOnEventTypes}}
             </p>
             <p class="integration-info" *ngIf="integration.lastCallbackSuccessAt != null">
               <strong>Last Callback Success At: </strong>

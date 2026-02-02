@@ -25,8 +25,6 @@ public partial class Integration
 
     public int? retryBackoffSeconds { get; set; }
 
-    public string callbackOnEventTypes { get; set; }
-
     public DateTime? lastCallbackSuccessAt { get; set; }
 
     public int? consecutiveCallbackFailures { get; set; }

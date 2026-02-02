@@ -38,7 +38,6 @@ export class IntegrationQueryParameters {
     callbackWebhookUrl: string | null | undefined = null;
     maxRetryAttempts: bigint | number | null | undefined = null;
     retryBackoffSeconds: bigint | number | null | undefined = null;
-    callbackOnEventTypes: string | null | undefined = null;
     lastCallbackSuccessAt: string | null | undefined = null;        // ISO 8601
     consecutiveCallbackFailures: bigint | number | null | undefined = null;
     versionNumber: bigint | number | null | undefined = null;
@@ -64,7 +63,6 @@ export class IntegrationSubmitData {
     callbackWebhookUrl: string | null = null;
     maxRetryAttempts: bigint | number | null = null;
     retryBackoffSeconds: bigint | number | null = null;
-    callbackOnEventTypes: string | null = null;
     lastCallbackSuccessAt: string | null = null;     // ISO 8601
     consecutiveCallbackFailures: bigint | number | null = null;
     versionNumber!: bigint | number;
@@ -144,7 +142,6 @@ export class IntegrationData {
     callbackWebhookUrl!: string | null;
     maxRetryAttempts!: bigint | number;
     retryBackoffSeconds!: bigint | number;
-    callbackOnEventTypes!: string | null;
     lastCallbackSuccessAt!: string | null;   // ISO 8601
     consecutiveCallbackFailures!: bigint | number;
     versionNumber!: bigint | number;
@@ -643,7 +640,6 @@ export class IntegrationService extends SecureEndpointBase {
         output.callbackWebhookUrl = data.callbackWebhookUrl;
         output.maxRetryAttempts = data.maxRetryAttempts;
         output.retryBackoffSeconds = data.retryBackoffSeconds;
-        output.callbackOnEventTypes = data.callbackOnEventTypes;
         output.lastCallbackSuccessAt = data.lastCallbackSuccessAt;
         output.consecutiveCallbackFailures = data.consecutiveCallbackFailures;
         output.versionNumber = data.versionNumber;

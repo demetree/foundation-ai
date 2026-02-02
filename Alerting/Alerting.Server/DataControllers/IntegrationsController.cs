@@ -73,7 +73,6 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			string callbackWebhookUrl = null,
 			int? maxRetryAttempts = null,
 			int? retryBackoffSeconds = null,
-			string callbackOnEventTypes = null,
 			DateTime? lastCallbackSuccessAt = null,
 			int? consecutiveCallbackFailures = null,
 			int? versionNumber = null,
@@ -166,10 +165,6 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			{
 				query = query.Where(i => i.retryBackoffSeconds == retryBackoffSeconds.Value);
 			}
-			if (string.IsNullOrEmpty(callbackOnEventTypes) == false)
-			{
-				query = query.Where(i => i.callbackOnEventTypes == callbackOnEventTypes);
-			}
 			if (lastCallbackSuccessAt.HasValue == true)
 			{
 				query = query.Where(i => i.lastCallbackSuccessAt == lastCallbackSuccessAt.Value);
@@ -238,7 +233,6 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			       || x.description.Contains(anyStringContains)
 			       || x.apiKeyHash.Contains(anyStringContains)
 			       || x.callbackWebhookUrl.Contains(anyStringContains)
-			       || x.callbackOnEventTypes.Contains(anyStringContains)
 			       || (includeRelations == true && x.service.name.Contains(anyStringContains))
 			       || (includeRelations == true && x.service.description.Contains(anyStringContains))
 			   );
@@ -290,7 +284,6 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			string callbackWebhookUrl = null,
 			int? maxRetryAttempts = null,
 			int? retryBackoffSeconds = null,
-			string callbackOnEventTypes = null,
 			DateTime? lastCallbackSuccessAt = null,
 			int? consecutiveCallbackFailures = null,
 			int? versionNumber = null,
@@ -363,10 +356,6 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			{
 				query = query.Where(i => i.retryBackoffSeconds == retryBackoffSeconds.Value);
 			}
-			if (callbackOnEventTypes != null)
-			{
-				query = query.Where(i => i.callbackOnEventTypes == callbackOnEventTypes);
-			}
 			if (lastCallbackSuccessAt.HasValue == true)
 			{
 				query = query.Where(i => i.lastCallbackSuccessAt == lastCallbackSuccessAt.Value);
@@ -420,7 +409,6 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			       || x.description.Contains(anyStringContains)
 			       || x.apiKeyHash.Contains(anyStringContains)
 			       || x.callbackWebhookUrl.Contains(anyStringContains)
-			       || x.callbackOnEventTypes.Contains(anyStringContains)
 			       || x.service.name.Contains(anyStringContains)
 			       || x.service.description.Contains(anyStringContains)
 			   );
@@ -679,11 +667,6 @@ namespace Foundation.Alerting.Controllers.WebAPI
 					integration.callbackWebhookUrl = integration.callbackWebhookUrl.Substring(0, 1000);
 				}
 
-				if (integration.callbackOnEventTypes != null && integration.callbackOnEventTypes.Length > 500)
-				{
-					integration.callbackOnEventTypes = integration.callbackOnEventTypes.Substring(0, 500);
-				}
-
 				if (integration.lastCallbackSuccessAt.HasValue == true && integration.lastCallbackSuccessAt.Value.Kind != DateTimeKind.Utc)
 				{
 					integration.lastCallbackSuccessAt = integration.lastCallbackSuccessAt.Value.ToUniversalTime();
@@ -817,11 +800,6 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				if (integration.callbackWebhookUrl != null && integration.callbackWebhookUrl.Length > 1000)
 				{
 					integration.callbackWebhookUrl = integration.callbackWebhookUrl.Substring(0, 1000);
-				}
-
-				if (integration.callbackOnEventTypes != null && integration.callbackOnEventTypes.Length > 500)
-				{
-					integration.callbackOnEventTypes = integration.callbackOnEventTypes.Substring(0, 500);
 				}
 
 				if (integration.lastCallbackSuccessAt.HasValue == true && integration.lastCallbackSuccessAt.Value.Kind != DateTimeKind.Utc)
@@ -1009,7 +987,6 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				    integration.callbackWebhookUrl = oldIntegration.callbackWebhookUrl;
 				    integration.maxRetryAttempts = oldIntegration.maxRetryAttempts;
 				    integration.retryBackoffSeconds = oldIntegration.retryBackoffSeconds;
-				    integration.callbackOnEventTypes = oldIntegration.callbackOnEventTypes;
 				    integration.lastCallbackSuccessAt = oldIntegration.lastCallbackSuccessAt;
 				    integration.consecutiveCallbackFailures = oldIntegration.consecutiveCallbackFailures;
 				    integration.objectGuid = oldIntegration.objectGuid;
@@ -1465,7 +1442,6 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			string callbackWebhookUrl = null,
 			int? maxRetryAttempts = null,
 			int? retryBackoffSeconds = null,
-			string callbackOnEventTypes = null,
 			DateTime? lastCallbackSuccessAt = null,
 			int? consecutiveCallbackFailures = null,
 			int? versionNumber = null,
@@ -1557,10 +1533,6 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			{
 				query = query.Where(i => i.retryBackoffSeconds == retryBackoffSeconds.Value);
 			}
-			if (string.IsNullOrEmpty(callbackOnEventTypes) == false)
-			{
-				query = query.Where(i => i.callbackOnEventTypes == callbackOnEventTypes);
-			}
 			if (lastCallbackSuccessAt.HasValue == true)
 			{
 				query = query.Where(i => i.lastCallbackSuccessAt == lastCallbackSuccessAt.Value);
@@ -1615,7 +1587,6 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			       || x.description.Contains(anyStringContains)
 			       || x.apiKeyHash.Contains(anyStringContains)
 			       || x.callbackWebhookUrl.Contains(anyStringContains)
-			       || x.callbackOnEventTypes.Contains(anyStringContains)
 			       || x.service.name.Contains(anyStringContains)
 			       || x.service.description.Contains(anyStringContains)
 			   );

@@ -33,6 +33,8 @@ CREATE SCHEMA "Alerting"
 -- DROP TABLE "Alerting"."UserNotificationChannelPreference"
 -- DROP TABLE "Alerting"."UserNotificationPreferenceChangeHistory"
 -- DROP TABLE "Alerting"."UserNotificationPreference"
+-- DROP TABLE "Alerting"."IntegrationCallbackIncidentEventTypeChangeHistory"
+-- DROP TABLE "Alerting"."IntegrationCallbackIncidentEventType"
 -- DROP TABLE "Alerting"."IntegrationChangeHistory"
 -- DROP TABLE "Alerting"."Integration"
 -- DROP TABLE "Alerting"."ScheduleLayerMemberChangeHistory"
@@ -65,6 +67,8 @@ CREATE SCHEMA "Alerting"
 -- ALTER INDEX ALL ON "UserNotificationChannelPreference" DISABLE
 -- ALTER INDEX ALL ON "UserNotificationPreferenceChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "UserNotificationPreference" DISABLE
+-- ALTER INDEX ALL ON "IntegrationCallbackIncidentEventTypeChangeHistory" DISABLE
+-- ALTER INDEX ALL ON "IntegrationCallbackIncidentEventType" DISABLE
 -- ALTER INDEX ALL ON "IntegrationChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "Integration" DISABLE
 -- ALTER INDEX ALL ON "ScheduleLayerMemberChangeHistory" DISABLE
@@ -97,6 +101,8 @@ CREATE SCHEMA "Alerting"
 -- ALTER INDEX ALL ON "UserNotificationChannelPreference" REBUILD
 -- ALTER INDEX ALL ON "UserNotificationPreferenceChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "UserNotificationPreference" REBUILD
+-- ALTER INDEX ALL ON "IntegrationCallbackIncidentEventTypeChangeHistory" REBUILD
+-- ALTER INDEX ALL ON "IntegrationCallbackIncidentEventType" REBUILD
 -- ALTER INDEX ALL ON "IntegrationChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "Integration" REBUILD
 -- ALTER INDEX ALL ON "ScheduleLayerMemberChangeHistory" REBUILD
@@ -665,6 +671,10 @@ CREATE TABLE "Alerting"."Integration"
 	"description" VARCHAR(500) NULL,
 	"apiKeyHash" VARCHAR(250) NOT NULL UNIQUE,
 	"callbackWebhookUrl" VARCHAR(1000) NULL,
+	"maxRetryAttempts" INT NULL DEFAULT 10,		-- How many times to retry failed deliveries
+	"retryBackoffSeconds" INT NULL DEFAULT 30,		-- Base seconds for backoff (30, 60, 120, 240...)
+	"lastCallbackSuccessAt" TIMESTAMP NULL,
+	"consecutiveCallbackFailures" INT NULL,
 	"versionNumber" INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
 	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
 	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
@@ -723,6 +733,74 @@ CREATE INDEX "I_IntegrationChangeHistory_tenantGuid_userId" ON "Alerting"."Integ
 
 -- Index on the IntegrationChangeHistory table's tenantGuid,integrationId fields.
 CREATE INDEX "I_IntegrationChangeHistory_tenantGuid_integrationId" ON "Alerting"."IntegrationChangeHistory" ("tenantGuid", "integrationId") INCLUDE ( versionNumber, timeStamp, userId )
+;
+
+
+-- API integrations incident event types to callback on.
+CREATE TABLE "Alerting"."IntegrationCallbackIncidentEventType"
+(
+	"id" SERIAL PRIMARY KEY NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	"integrationId" INT NOT NULL,		-- Link to the Integration table.
+	"incidentEventTypeId" INT NOT NULL,		-- Link to the IncidentEventType table.
+	"versionNumber" INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
+	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
+	CONSTRAINT "integrationId" FOREIGN KEY ("integrationId") REFERENCES "Alerting"."Integration"("id"),		-- Foreign key to the Integration table.
+	CONSTRAINT "incidentEventTypeId" FOREIGN KEY ("incidentEventTypeId") REFERENCES "Alerting"."IncidentEventType"("id")		-- Foreign key to the IncidentEventType table.
+);
+-- Index on the IntegrationCallbackIncidentEventType table's tenantGuid field.
+CREATE INDEX "I_IntegrationCallbackIncidentEventType_tenantGuid" ON "Alerting"."IntegrationCallbackIncidentEventType" ("tenantGuid")
+;
+
+-- Index on the IntegrationCallbackIncidentEventType table's tenantGuid,integrationId fields.
+CREATE INDEX "I_IntegrationCallbackIncidentEventType_tenantGuid_integrationId" ON "Alerting"."IntegrationCallbackIncidentEventType" ("tenantGuid", "integrationId")
+;
+
+-- Index on the IntegrationCallbackIncidentEventType table's tenantGuid,incidentEventTypeId fields.
+CREATE INDEX "I_IntegrationCallbackIncidentEventType_tenantGuid_incidentEvent" ON "Alerting"."IntegrationCallbackIncidentEventType" ("tenantGuid", "incidentEventTypeId")
+;
+
+-- Index on the IntegrationCallbackIncidentEventType table's tenantGuid,active fields.
+CREATE INDEX "I_IntegrationCallbackIncidentEventType_tenantGuid_active" ON "Alerting"."IntegrationCallbackIncidentEventType" ("tenantGuid", "active")
+;
+
+-- Index on the IntegrationCallbackIncidentEventType table's tenantGuid,deleted fields.
+CREATE INDEX "I_IntegrationCallbackIncidentEventType_tenantGuid_deleted" ON "Alerting"."IntegrationCallbackIncidentEventType" ("tenantGuid", "deleted")
+;
+
+
+-- The change history for records from the IntegrationCallbackIncidentEventType table.
+CREATE TABLE "Alerting"."IntegrationCallbackIncidentEventTypeChangeHistory"
+(
+	"id" SERIAL PRIMARY KEY NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	"integrationCallbackIncidentEventTypeId" INT NOT NULL,		-- Link to the IntegrationCallbackIncidentEventType table.
+	"versionNumber" INT NOT NULL,		-- This is the version number that is being historized.
+	"timeStamp" TIMESTAMP NOT NULL,		-- The time that the record version was created.
+	"userId" INT NOT NULL,
+	"data" TEXT NOT NULL,		-- This stores the JSON representing the object's historical state.
+	CONSTRAINT "integrationCallbackIncidentEventTypeId" FOREIGN KEY ("integrationCallbackIncidentEventTypeId") REFERENCES "Alerting"."IntegrationCallbackIncidentEventType"("id")		-- Foreign key to the IntegrationCallbackIncidentEventType table.
+);
+-- Index on the IntegrationCallbackIncidentEventTypeChangeHistory table's tenantGuid field.
+CREATE INDEX "I_IntegrationCallbackIncidentEventTypeChangeHistory_tenantGuid" ON "Alerting"."IntegrationCallbackIncidentEventTypeChangeHistory" ("tenantGuid")
+;
+
+-- Index on the IntegrationCallbackIncidentEventTypeChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX "I_IntegrationCallbackIncidentEventTypeChangeHistory_tenantGuid_" ON "Alerting"."IntegrationCallbackIncidentEventTypeChangeHistory" ("tenantGuid", "versionNumber")
+;
+
+-- Index on the IntegrationCallbackIncidentEventTypeChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX "I_IntegrationCallbackIncidentEventTypeChangeHistory_tenantGuid_" ON "Alerting"."IntegrationCallbackIncidentEventTypeChangeHistory" ("tenantGuid", "timeStamp")
+;
+
+-- Index on the IntegrationCallbackIncidentEventTypeChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX "I_IntegrationCallbackIncidentEventTypeChangeHistory_tenantGuid_" ON "Alerting"."IntegrationCallbackIncidentEventTypeChangeHistory" ("tenantGuid", "userId")
+;
+
+-- Index on the IntegrationCallbackIncidentEventTypeChangeHistory table's tenantGuid,integrationCallbackIncidentEventTypeId fields.
+CREATE INDEX "I_IntegrationCallbackIncidentEventTypeChangeHistory_tenantGuid_" ON "Alerting"."IntegrationCallbackIncidentEventTypeChangeHistory" ("tenantGuid", "integrationCallbackIncidentEventTypeId") INCLUDE ( versionNumber, timeStamp, userId )
 ;
 
 

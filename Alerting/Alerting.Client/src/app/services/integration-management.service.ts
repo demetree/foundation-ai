@@ -20,6 +20,10 @@ export interface CreateIntegrationRequest {
     description?: string;
     serviceId: number;
     webhookUrl?: string;
+    maxRetryAttempts?: number;
+    retryBackoffSeconds?: number;
+    /** IDs of IncidentEventTypes that should trigger callbacks */
+    callbackEventTypeIds?: number[];
 }
 
 export interface UpdateIntegrationRequest {
@@ -27,6 +31,15 @@ export interface UpdateIntegrationRequest {
     description?: string;
     webhookUrl?: string;
     active?: boolean;
+    maxRetryAttempts?: number;
+    retryBackoffSeconds?: number;
+    /** IDs of IncidentEventTypes that should trigger callbacks. Pass null to leave unchanged. */
+    callbackEventTypeIds?: number[];
+}
+
+export interface CallbackEventTypeDto {
+    id: number;
+    name: string;
 }
 
 export interface IntegrationDto {
@@ -39,6 +52,14 @@ export interface IntegrationDto {
     webhookUrl?: string;
     active: boolean;
     versionNumber: number;
+    // Retry settings
+    maxRetryAttempts?: number;
+    retryBackoffSeconds?: number;
+    // Callback status (read-only)
+    lastCallbackSuccessAt?: string;
+    consecutiveCallbackFailures?: number;
+    // Selected event types for callbacks
+    callbackEventTypes?: CallbackEventTypeDto[];
 }
 
 export interface IntegrationCreatedResponse extends IntegrationDto {

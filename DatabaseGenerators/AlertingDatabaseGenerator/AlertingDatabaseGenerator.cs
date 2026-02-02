@@ -258,7 +258,6 @@ Designed to be independent while sharing the central Security database for users
             integrationTable.AddString1000Field("callbackWebhookUrl", true);
             integrationTable.AddIntField("maxRetryAttempts", true, 10).AddScriptComments("How many times to retry failed deliveries");
             integrationTable.AddIntField("retryBackoffSeconds", true, 30).AddScriptComments("Base seconds for backoff (30, 60, 120, 240...)");
-            integrationTable.AddString500Field("callbackOnEventTypes", true).AddScriptComments("Comma-separated IncidentEventType names (e.g., 'Acknowledged,Resolved,Escalated')");
             integrationTable.AddDateTimeField("lastCallbackSuccessAt", true);
             integrationTable.AddIntField("consecutiveCallbackFailures", true, null);    
             integrationTable.AddVersionControl();

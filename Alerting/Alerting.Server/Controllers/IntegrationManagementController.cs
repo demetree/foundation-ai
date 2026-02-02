@@ -26,9 +26,6 @@ using Foundation.Security.Database;
 
 namespace Alerting.Server.Controllers
 {
-
-
-
     /// <summary>
     /// Custom API for managing integrations with secure API key generation.
     /// Keys are generated and hashed server-side - clients receive the plain key once at creation.
@@ -39,8 +36,7 @@ namespace Alerting.Server.Controllers
     public class IntegrationManagementController : SecureWebAPIController
     {
         public const int READ_PERMISSION_LEVEL_REQUIRED = 1;
-        public const int WRITE_PERMISSION_LEVEL_REQUIRED = 1;
-
+        public const int WRITE_PERMISSION_LEVEL_REQUIRED = 150;
 
         private readonly AlertingContext _context;
         private readonly ILogger<IntegrationManagementController> _logger;
@@ -54,6 +50,13 @@ namespace Alerting.Server.Controllers
             public string Description { get; set; }
             public int ServiceId { get; set; }
             public string WebhookUrl { get; set; }
+            public int? MaxRetryAttempts { get; set; }
+            public int? RetryBackoffSeconds { get; set; }
+            /// <summary>
+            /// IDs of IncidentEventTypes that should trigger callbacks for this integration.
+            /// If empty or null, no automatic callbacks will be triggered.
+            /// </summary>
+            public List<int> CallbackEventTypeIds { get; set; }
         }
 
         public class UpdateIntegrationRequest
@@ -62,6 +65,12 @@ namespace Alerting.Server.Controllers
             public string Description { get; set; }
             public string WebhookUrl { get; set; }
             public bool? Active { get; set; }
+            public int? MaxRetryAttempts { get; set; }
+            public int? RetryBackoffSeconds { get; set; }
+            /// <summary>
+            /// IDs of IncidentEventTypes that should trigger callbacks. Pass null to leave unchanged.
+            /// </summary>
+            public List<int> CallbackEventTypeIds { get; set; }
         }
 
         public class IntegrationDto
@@ -75,6 +84,20 @@ namespace Alerting.Server.Controllers
             public string WebhookUrl { get; set; }
             public bool Active { get; set; }
             public int VersionNumber { get; set; }
+            // Retry settings
+            public int? MaxRetryAttempts { get; set; }
+            public int? RetryBackoffSeconds { get; set; }
+            // Callback status (read-only)
+            public DateTime? LastCallbackSuccessAt { get; set; }
+            public int? ConsecutiveCallbackFailures { get; set; }
+            // Selected event types for callbacks
+            public List<CallbackEventTypeDto> CallbackEventTypes { get; set; }
+        }
+
+        public class CallbackEventTypeDto
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
         }
 
         public class IntegrationCreatedResponse : IntegrationDto
@@ -133,7 +156,10 @@ namespace Alerting.Server.Controllers
             }
 
 
-            if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            //
+            // Alerting Master Config Writer role needed to write to this table, or Alerting Administrator role.  Note we do not check the user's write permission level here.  Role membership is the key to write access.
+            //
+            if (await DoesUserHaveCustomRoleSecurityCheckAsync("Alerting Master Config Writer", cancellationToken) == false && await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
             {
                 return Forbid();
             }
@@ -180,6 +206,8 @@ namespace Alerting.Server.Controllers
                 description = request.Description?.Trim(),
                 apiKeyHash = apiKeyHash,
                 callbackWebhookUrl = request.WebhookUrl?.Trim(),
+                maxRetryAttempts = request.MaxRetryAttempts,
+                retryBackoffSeconds = request.RetryBackoffSeconds,
                 versionNumber = 1,
                 objectGuid = Guid.NewGuid(),
                 active = true,
@@ -189,6 +217,27 @@ namespace Alerting.Server.Controllers
             var chts = Integration.GetChangeHistoryToolsetForWriting(_context, securityUser, false, cancellationToken);
 
             await chts.AddEntityAsync(integration);
+
+            // Create callback event type mappings if specified
+            if (request.CallbackEventTypeIds?.Any() == true)
+            {
+                var eventTypeChts = IntegrationCallbackIncidentEventType.GetChangeHistoryToolsetForWriting(_context, securityUser, false, cancellationToken);
+                
+                foreach (var eventTypeId in request.CallbackEventTypeIds.Distinct())
+                {
+                    var callbackEventType = new IntegrationCallbackIncidentEventType
+                    {
+                        tenantGuid = userTenantGuid,
+                        integrationId = integration.id,
+                        incidentEventTypeId = eventTypeId,
+                        versionNumber = 1,
+                        objectGuid = Guid.NewGuid(),
+                        active = true,
+                        deleted = false
+                    };
+                    await eventTypeChts.AddEntityAsync(callbackEventType);
+                }
+            }
 
 
             await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
@@ -256,6 +305,8 @@ namespace Alerting.Server.Controllers
 
             Integration integration = await _context.Integrations
                 .Include(i => i.service)
+                .Include(i => i.IntegrationCallbackIncidentEventTypes.Where(m => m.active && !m.deleted))
+                    .ThenInclude(m => m.incidentEventType)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(i => i.id == id && i.tenantGuid == userTenantGuid && i.deleted == false);
 
@@ -337,7 +388,19 @@ namespace Alerting.Server.Controllers
                     Description = i.description,
                     WebhookUrl = i.callbackWebhookUrl,
                     Active = i.active,
-                    VersionNumber = i.versionNumber
+                    VersionNumber = i.versionNumber,
+                    MaxRetryAttempts = i.maxRetryAttempts,
+                    RetryBackoffSeconds = i.retryBackoffSeconds,
+                    LastCallbackSuccessAt = i.lastCallbackSuccessAt,
+                    ConsecutiveCallbackFailures = i.consecutiveCallbackFailures,
+                    CallbackEventTypes = i.IntegrationCallbackIncidentEventTypes
+                        .Where(m => m.active && !m.deleted)
+                        .Select(m => new CallbackEventTypeDto
+                        {
+                            Id = m.incidentEventTypeId,
+                            Name = m.incidentEventType.name
+                        })
+                        .ToList()
                 })
                 .ToListAsync();
 
@@ -362,7 +425,10 @@ namespace Alerting.Server.Controllers
         [ProducesResponseType(404)]
         public async Task<IActionResult> RegenerateApiKey(int id, CancellationToken cancellationToken = default)
         {
-            if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            //
+            // Alerting Master Config Writer role needed to write to this table, or Alerting Administrator role.  Note we do not check the user's write permission level here.  Role membership is the key to write access.
+            //
+            if (await DoesUserHaveCustomRoleSecurityCheckAsync("Alerting Master Config Writer", cancellationToken) == false && await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
             {
                 return Forbid();
             }
@@ -438,7 +504,10 @@ namespace Alerting.Server.Controllers
         [ProducesResponseType(404)]
         public async Task<IActionResult> UpdateIntegration(int id, [FromBody] UpdateIntegrationRequest request, CancellationToken cancellationToken = default)
         {
-            if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            //
+            // Alerting Master Config Writer role needed to write to this table, or Alerting Administrator role.  Note we do not check the user's write permission level here.  Role membership is the key to write access.
+            //
+            if (await DoesUserHaveCustomRoleSecurityCheckAsync("Alerting Master Config Writer", cancellationToken) == false && await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
             {
                 return Forbid();
             }
@@ -482,9 +551,56 @@ namespace Alerting.Server.Controllers
                 integration.active = request.Active.Value;
             }
 
+            // Update retry settings (allow explicit null to clear)
+            if (request.MaxRetryAttempts.HasValue)
+            {
+                integration.maxRetryAttempts = request.MaxRetryAttempts;
+            }
+            if (request.RetryBackoffSeconds.HasValue)
+            {
+                integration.retryBackoffSeconds = request.RetryBackoffSeconds;
+            }
+
             var chts = Integration.GetChangeHistoryToolsetForWriting(_context, securityUser, false, cancellationToken);
 
             await chts.UpdateEntityAsync(integration);
+
+            // Sync callback event type mappings if specified (null = no change)
+            if (request.CallbackEventTypeIds != null)
+            {
+                var eventTypeChts = IntegrationCallbackIncidentEventType.GetChangeHistoryToolsetForWriting(_context, securityUser, false, cancellationToken);
+                
+                // Get existing active mappings
+                var existingMappings = await _context.IntegrationCallbackIncidentEventTypes
+                    .Where(m => m.integrationId == id && m.active == true && m.deleted == false)
+                    .ToListAsync(cancellationToken);
+
+                var existingEventTypeIds = existingMappings.Select(m => m.incidentEventTypeId).ToHashSet();
+                var requestedEventTypeIds = request.CallbackEventTypeIds.Distinct().ToHashSet();
+
+                // Soft-delete removed mappings
+                foreach (var mapping in existingMappings.Where(m => !requestedEventTypeIds.Contains(m.incidentEventTypeId)))
+                {
+                    mapping.deleted = true;
+                    await eventTypeChts.UpdateEntityAsync(mapping);
+                }
+
+                // Add new mappings
+                foreach (var eventTypeId in requestedEventTypeIds.Where(id => !existingEventTypeIds.Contains(id)))
+                {
+                    var newMapping = new IntegrationCallbackIncidentEventType
+                    {
+                        tenantGuid = userTenantGuid,
+                        integrationId = integration.id,
+                        incidentEventTypeId = eventTypeId,
+                        versionNumber = 1,
+                        objectGuid = Guid.NewGuid(),
+                        active = true,
+                        deleted = false
+                    };
+                    await eventTypeChts.AddEntityAsync(newMapping);
+                }
+            }
 
 
             await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity,
@@ -511,7 +627,10 @@ namespace Alerting.Server.Controllers
         [ProducesResponseType(404)]
         public async Task<IActionResult> DeleteIntegration(int id, CancellationToken cancellationToken = default)
         {
-            if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            //
+            // Alerting Master Config Writer role needed to write to this table, or Alerting Administrator role.  Note we do not check the user's write permission level here.  Role membership is the key to write access.
+            //
+            if (await DoesUserHaveCustomRoleSecurityCheckAsync("Alerting Master Config Writer", cancellationToken) == false && await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
             {
                 return Forbid();
             }
@@ -603,7 +722,19 @@ namespace Alerting.Server.Controllers
                 Description = integration.description,
                 WebhookUrl = integration.callbackWebhookUrl,
                 Active = integration.active,
-                VersionNumber = integration.versionNumber
+                VersionNumber = integration.versionNumber,
+                MaxRetryAttempts = integration.maxRetryAttempts,
+                RetryBackoffSeconds = integration.retryBackoffSeconds,
+                LastCallbackSuccessAt = integration.lastCallbackSuccessAt,
+                ConsecutiveCallbackFailures = integration.consecutiveCallbackFailures,
+                CallbackEventTypes = integration.IntegrationCallbackIncidentEventTypes?
+                    .Where(m => m.active && !m.deleted)
+                    .Select(m => new CallbackEventTypeDto
+                    {
+                        Id = m.incidentEventTypeId,
+                        Name = m.incidentEventType?.name
+                    })
+                    .ToList() ?? new List<CallbackEventTypeDto>()
             };
         }
 

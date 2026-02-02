@@ -199,6 +199,8 @@ namespace Foundation.Alerting
                 controllers.Add(typeof(IncidentStatusTypesController));
                 controllers.Add(typeof(IncidentTimelineEventsController));
                 controllers.Add(typeof(IntegrationsController));
+                controllers.Add(typeof(IntegrationCallbackIncidentEventTypesController));
+                controllers.Add(typeof(IntegrationCallbackIncidentEventTypeChangeHistoriesController));
                 controllers.Add(typeof(IntegrationChangeHistoriesController));
                 controllers.Add(typeof(NotificationChannelTypesController));
                 controllers.Add(typeof(NotificationDeliveryAttemptsController));
@@ -219,7 +221,6 @@ namespace Foundation.Alerting
                 //
                 // End of code generated controller list for Alerting module
                 //
-
 
 
                 logger.LogInformation("Controllers have been configured.");

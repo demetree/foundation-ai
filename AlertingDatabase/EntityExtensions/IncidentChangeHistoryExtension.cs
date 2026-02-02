@@ -284,7 +284,7 @@ namespace Foundation.Alerting.Database
 				timeStamp = incidentChangeHistory.timeStamp,
 				userId = incidentChangeHistory.userId,
 				data = incidentChangeHistory.data,
-				incident = Incident.CreateMinimalAnonymous(incidentChangeHistory.incident)
+				incident = Incident.CreateMinimalAnonymous(incidentChangeHistory.incident),
 			 };
 		}
 

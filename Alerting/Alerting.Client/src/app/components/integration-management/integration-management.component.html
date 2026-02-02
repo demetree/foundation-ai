@@ -89,7 +89,7 @@
                     <tr>
                         <th class="col-name">Integration Name</th>
                         <th class="col-service">Service</th>
-                        <th class="col-apikey">API Key</th>
+                        <th class="col-webhook">Webhook</th>
                         <th class="col-status text-center">Status</th>
                         <th class="col-actions text-center">Actions</th>
                     </tr>
@@ -120,23 +120,18 @@
                             </span>
                         </td>
 
-                        <!-- API Key -->
-                        <td class="col-apikey">
-                            <div class="apikey-container">
-                                <code class="apikey-value" [class.revealed]="revealedApiKeyId === integration.id">
-                                    {{ revealedApiKeyId === integration.id ? integration.apiKeyHash : '••••••••••••••••' }}
-                                </code>
-                                <button class="btn btn-icon btn-sm" (click)="toggleApiKeyReveal(integration)"
-                                    [ngbTooltip]="revealedApiKeyId === integration.id ? 'Hide' : 'Reveal'"
-                                    placement="top">
-                                    <i class="fa-solid"
-                                        [ngClass]="revealedApiKeyId === integration.id ? 'fa-eye-slash' : 'fa-eye'"></i>
-                                </button>
-                                <button class="btn btn-icon btn-sm" (click)="copyApiKey(integration.apiKeyHash)"
-                                    ngbTooltip="Copy to clipboard" placement="top">
-                                    <i class="fa-solid fa-copy"></i>
-                                </button>
+                        <!-- Webhook -->
+                        <td class="col-webhook">
+                            <div *ngIf="integration.callbackWebhookUrl" class="webhook-info">
+                                <i class="fa-solid fa-link text-success me-1"></i>
+                                <span class="webhook-url" [ngbTooltip]="integration.callbackWebhookUrl" placement="top">
+                                    {{ integration.callbackWebhookUrl | slice:0:30 }}{{
+                                    integration.callbackWebhookUrl.length > 30 ? '...' : '' }}
+                                </span>
                             </div>
+                            <span *ngIf="!integration.callbackWebhookUrl" class="text-muted">
+                                <i class="fa-solid fa-minus"></i> None
+                            </span>
                         </td>
 
                         <!-- Status -->
@@ -241,6 +236,51 @@
             <input type="url" class="form-control" [(ngModel)]="formWebhookUrl"
                 placeholder="https://your-endpoint.com/webhook">
             <small class="text-muted">Optional callback URL for incident notifications</small>
+        </div>
+
+        <!-- Webhook Retry Settings -->
+        <div class="row mb-3" *ngIf="formWebhookUrl">
+            <div class="col-md-6">
+                <label class="form-label">Max Retry Attempts</label>
+                <input type="number" class="form-control" [(ngModel)]="formMaxRetryAttempts" placeholder="e.g., 3"
+                    min="0" max="10">
+                <small class="text-muted">How many times to retry failed callbacks</small>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Retry Backoff (seconds)</label>
+                <input type="number" class="form-control" [(ngModel)]="formRetryBackoffSeconds" placeholder="e.g., 30"
+                    min="1" max="3600">
+                <small class="text-muted">Wait time between retries</small>
+            </div>
+        </div>
+
+        <!-- Callback Event Types -->
+        <div class="mb-3" *ngIf="formWebhookUrl && incidentEventTypes.length > 0">
+            <label class="form-label">Callback Event Types</label>
+            <div class="event-types-container border rounded p-2">
+                <div class="d-flex justify-content-between mb-2">
+                    <small class="text-muted">Select which incident events trigger callbacks</small>
+                    <div>
+                        <button type="button" class="btn btn-link btn-sm p-0 me-2" (click)="selectAllEventTypes()">
+                            Select All
+                        </button>
+                        <button type="button" class="btn btn-link btn-sm p-0" (click)="clearAllEventTypes()">
+                            Clear All
+                        </button>
+                    </div>
+                </div>
+                <div class="event-types-list">
+                    <div *ngFor="let eventType of incidentEventTypes" class="form-check">
+                        <input type="checkbox" class="form-check-input" [id]="'eventType_' + eventType.id"
+                            [checked]="isEventTypeSelected(eventType.id)" (change)="toggleEventType(eventType.id)">
+                        <label class="form-check-label" [for]="'eventType_' + eventType.id">
+                            {{ eventType.name }}
+                            <small *ngIf="eventType.description" class="text-muted d-block">{{ eventType.description
+                                }}</small>
+                        </label>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="form-check mb-3">

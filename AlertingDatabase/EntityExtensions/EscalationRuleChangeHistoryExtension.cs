@@ -284,7 +284,7 @@ namespace Foundation.Alerting.Database
 				timeStamp = escalationRuleChangeHistory.timeStamp,
 				userId = escalationRuleChangeHistory.userId,
 				data = escalationRuleChangeHistory.data,
-				escalationRule = EscalationRule.CreateMinimalAnonymous(escalationRuleChangeHistory.escalationRule)
+				escalationRule = EscalationRule.CreateMinimalAnonymous(escalationRuleChangeHistory.escalationRule),
 			 };
 		}
 

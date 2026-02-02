@@ -291,7 +291,6 @@ namespace Foundation.Alerting.Database
 			public String callbackWebhookUrl { get; set; }
 			public Int32? maxRetryAttempts { get; set; }
 			public Int32? retryBackoffSeconds { get; set; }
-			public String callbackOnEventTypes { get; set; }
 			public DateTime? lastCallbackSuccessAt { get; set; }
 			public Int32? consecutiveCallbackFailures { get; set; }
 			public Int32 versionNumber { get; set; }
@@ -332,7 +331,6 @@ namespace Foundation.Alerting.Database
 				callbackWebhookUrl = this.callbackWebhookUrl,
 				maxRetryAttempts = this.maxRetryAttempts,
 				retryBackoffSeconds = this.retryBackoffSeconds,
-				callbackOnEventTypes = this.callbackOnEventTypes,
 				lastCallbackSuccessAt = this.lastCallbackSuccessAt,
 				consecutiveCallbackFailures = this.consecutiveCallbackFailures,
 				versionNumber = this.versionNumber,
@@ -385,7 +383,6 @@ namespace Foundation.Alerting.Database
 				callbackWebhookUrl = this.callbackWebhookUrl,
 				maxRetryAttempts = this.maxRetryAttempts,
 				retryBackoffSeconds = this.retryBackoffSeconds,
-				callbackOnEventTypes = this.callbackOnEventTypes,
 				lastCallbackSuccessAt = this.lastCallbackSuccessAt,
 				consecutiveCallbackFailures = this.consecutiveCallbackFailures,
 				versionNumber = this.versionNumber,
@@ -439,7 +436,6 @@ namespace Foundation.Alerting.Database
 				callbackWebhookUrl = dto.callbackWebhookUrl,
 				maxRetryAttempts = dto.maxRetryAttempts,
 				retryBackoffSeconds = dto.retryBackoffSeconds,
-				callbackOnEventTypes = dto.callbackOnEventTypes,
 				lastCallbackSuccessAt = dto.lastCallbackSuccessAt,
 				consecutiveCallbackFailures = dto.consecutiveCallbackFailures,
 				versionNumber = dto.versionNumber,
@@ -469,7 +465,6 @@ namespace Foundation.Alerting.Database
 			this.callbackWebhookUrl = dto.callbackWebhookUrl;
 			this.maxRetryAttempts = dto.maxRetryAttempts;
 			this.retryBackoffSeconds = dto.retryBackoffSeconds;
-			this.callbackOnEventTypes = dto.callbackOnEventTypes;
 			this.lastCallbackSuccessAt = dto.lastCallbackSuccessAt;
 			this.consecutiveCallbackFailures = dto.consecutiveCallbackFailures;
 			this.versionNumber = dto.versionNumber;
@@ -505,7 +500,6 @@ namespace Foundation.Alerting.Database
 				callbackWebhookUrl = this.callbackWebhookUrl,
 				maxRetryAttempts = this.maxRetryAttempts,
 				retryBackoffSeconds = this.retryBackoffSeconds,
-				callbackOnEventTypes = this.callbackOnEventTypes,
 				lastCallbackSuccessAt = this.lastCallbackSuccessAt,
 				consecutiveCallbackFailures = this.consecutiveCallbackFailures,
 				versionNumber = this.versionNumber,
@@ -572,7 +566,6 @@ namespace Foundation.Alerting.Database
 				callbackWebhookUrl = integration.callbackWebhookUrl,
 				maxRetryAttempts = integration.maxRetryAttempts,
 				retryBackoffSeconds = integration.retryBackoffSeconds,
-				callbackOnEventTypes = integration.callbackOnEventTypes,
 				lastCallbackSuccessAt = integration.lastCallbackSuccessAt,
 				consecutiveCallbackFailures = integration.consecutiveCallbackFailures,
 				versionNumber = integration.versionNumber,
@@ -606,7 +599,6 @@ namespace Foundation.Alerting.Database
 				callbackWebhookUrl = integration.callbackWebhookUrl,
 				maxRetryAttempts = integration.maxRetryAttempts,
 				retryBackoffSeconds = integration.retryBackoffSeconds,
-				callbackOnEventTypes = integration.callbackOnEventTypes,
 				lastCallbackSuccessAt = integration.lastCallbackSuccessAt,
 				consecutiveCallbackFailures = integration.consecutiveCallbackFailures,
 				versionNumber = integration.versionNumber,
