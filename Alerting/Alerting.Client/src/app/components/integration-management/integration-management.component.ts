@@ -11,6 +11,7 @@ import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 
 import { IntegrationService, IntegrationData, IntegrationQueryParameters } from '../../alerting-data-services/integration.service';
 import { ServiceService, ServiceData } from '../../alerting-data-services/service.service';
+import { IntegrationManagementService, CreateIntegrationRequest, UpdateIntegrationRequest, IntegrationDto } from '../../services/integration-management.service';
 import { AlertService } from '../../services/alert.service';
 
 @Component({
@@ -82,6 +83,7 @@ export class IntegrationManagementComponent implements OnInit, OnDestroy {
 
     constructor(
         private integrationService: IntegrationService,
+        private integrationManagementService: IntegrationManagementService,
         private serviceService: ServiceService,
         private alertService: AlertService,
         private modalService: NgbModal
@@ -292,64 +294,55 @@ export class IntegrationManagementComponent implements OnInit, OnDestroy {
         this.isSaving = true;
 
         if (this.isAddMode) {
-            // Generate the plain API key to show to the user
-            const plainApiKey = this.generateApiKey();
-
-            // Hash the API key with SHA256 before storing (matches backend validation)
-            this.hashApiKey(plainApiKey).then(hashedKey => {
-                // Create new integration with hashed key
-                const newIntegration: any = {
-                    id: 0,
-                    serviceId: this.formServiceId,
-                    name: this.formName.trim(),
-                    description: this.formDescription.trim() || null,
-                    apiKeyHash: hashedKey, // Store the HASHED key
-                    callbackWebhookUrl: this.formWebhookUrl.trim() || null,
-                    versionNumber: 0,
-                    active: this.formActive,
-                    deleted: false
-                };
-
-                // Store the PLAIN API key to show to user (only shown once on creation)
-                this.generatedApiKey = plainApiKey;
-
-                this.integrationService.PostIntegration(newIntegration)
-                    .pipe(takeUntil(this.destroy$))
-                    .subscribe({
-                        next: (created) => {
-                            this.alertService.showSuccessMessage('Success', 'Integration created successfully');
-                            // Keep modal open to show the API key
-                            this.isAddMode = false;
-                            this.editingIntegration = created;
-                            this.isSaving = false;
-                            this.loadIntegrations();
-                        },
-                        error: (err) => {
-                            console.error('Error creating integration:', err);
-                            this.alertService.showErrorMessage('Error', 'Failed to create integration');
-                            this.isSaving = false;
-                        }
-                    });
-            }).catch(err => {
-                console.error('Error hashing API key:', err);
-                this.alertService.showErrorMessage('Error', 'Failed to generate API key');
-                this.isSaving = false;
-            });
-        } else {
-            // Update existing integration
-            const updateData: any = {
-                id: Number(this.editingIntegration!.id),
-                serviceId: this.formServiceId,
+            // Use the new backend API for creation - key is generated server-side
+            const request: CreateIntegrationRequest = {
                 name: this.formName.trim(),
-                description: this.formDescription.trim() || null,
-                apiKeyHash: this.editingIntegration!.apiKeyHash,
-                callbackWebhookUrl: this.formWebhookUrl.trim() || null,
-                versionNumber: Number(this.editingIntegration!.versionNumber),
-                active: this.formActive,
-                deleted: false
+                description: this.formDescription.trim() || undefined,
+                serviceId: this.formServiceId!,
+                webhookUrl: this.formWebhookUrl.trim() || undefined
             };
 
-            this.integrationService.PutIntegration(updateData.id, updateData)
+            this.integrationManagementService.createIntegration(request)
+                .pipe(takeUntil(this.destroy$))
+                .subscribe({
+                    next: (created) => {
+                        this.alertService.showSuccessMessage('Success', 'Integration created successfully');
+                        // Store the API key returned from server (only shown once)
+                        this.generatedApiKey = created.apiKey;
+                        // Keep modal open to show the API key
+                        this.isAddMode = false;
+                        this.editingIntegration = {
+                            id: BigInt(created.id),
+                            objectGuid: created.objectGuid,
+                            serviceId: BigInt(created.serviceId),
+                            serviceName: created.serviceName,
+                            name: created.name,
+                            description: created.description,
+                            callbackWebhookUrl: created.webhookUrl,
+                            versionNumber: BigInt(created.versionNumber),
+                            active: created.active,
+                            deleted: false,
+                            apiKeyHash: '' // Hash is never exposed to client
+                        } as unknown as IntegrationData;
+                        this.isSaving = false;
+                        this.loadIntegrations();
+                    },
+                    error: (err) => {
+                        console.error('Error creating integration:', err);
+                        this.alertService.showErrorMessage('Error', 'Failed to create integration');
+                        this.isSaving = false;
+                    }
+                });
+        } else {
+            // Use the new backend API for updates
+            const request: UpdateIntegrationRequest = {
+                name: this.formName.trim(),
+                description: this.formDescription.trim() || undefined,
+                webhookUrl: this.formWebhookUrl.trim() || undefined,
+                active: this.formActive
+            };
+
+            this.integrationManagementService.updateIntegration(Number(this.editingIntegration!.id), request)
                 .pipe(takeUntil(this.destroy$))
                 .subscribe({
                     next: () => {
@@ -367,30 +360,7 @@ export class IntegrationManagementComponent implements OnInit, OnDestroy {
     }
 
 
-    //
-    // API Key handling
-    //
 
-    private generateApiKey(): string {
-        // Generate a random API key (32 character hex string)
-        const array = new Uint8Array(16);
-        crypto.getRandomValues(array);
-        return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
-    }
-
-
-    /**
-     * Hash an API key using SHA-256 and return Base64 encoded string.
-     * This matches the backend HashApiKey() method in AlertingService.
-     */
-    private async hashApiKey(apiKey: string): Promise<string> {
-        const encoder = new TextEncoder();
-        const data = encoder.encode(apiKey);
-        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-        const hashArray = new Uint8Array(hashBuffer);
-        // Convert to Base64 (matches C# Convert.ToBase64String())
-        return btoa(String.fromCharCode(...hashArray));
-    }
 
 
     copyApiKey(apiKey: string): void {
@@ -420,19 +390,7 @@ export class IntegrationManagementComponent implements OnInit, OnDestroy {
             return;
         }
 
-        const deleteData: any = {
-            id: Number(integration.id),
-            serviceId: Number(integration.serviceId),
-            name: integration.name,
-            description: integration.description,
-            apiKeyHash: integration.apiKeyHash,
-            callbackWebhookUrl: integration.callbackWebhookUrl,
-            versionNumber: Number(integration.versionNumber),
-            active: false,
-            deleted: true
-        };
-
-        this.integrationService.PutIntegration(deleteData.id, deleteData)
+        this.integrationManagementService.deleteIntegration(Number(integration.id))
             .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: () => {

@@ -178,6 +178,7 @@ namespace Foundation.Alerting
                 //
                 controllers.Add(typeof(AlertsController));
                 controllers.Add(typeof(IncidentController));
+                controllers.Add(typeof(IntegrationManagementController));
                 //
                 // End of Alerting custom controllers
                 //

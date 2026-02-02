@@ -10,7 +10,7 @@ $trigger-gradient: linear-gradient(135deg, #f5af19 0%, #f12711 100%);
 .test-harness-container {
     display: flex;
     flex-direction: column;
-    min-height: 100%;
+    min-height: calc(100vh - 56px); // Fill viewport minus navbar
     background: linear-gradient(180deg, #f0f2f5 0%, #e2e6ea 100%);
     // Offset parent's 5px padding for edge-to-edge header
     margin: -5px;
