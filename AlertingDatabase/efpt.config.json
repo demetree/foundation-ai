@@ -68,6 +68,14 @@
          "ObjectType": 0
       },
       {
+         "Name": "[Alerting].[IntegrationCallbackIncidentEventType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Alerting].[IntegrationCallbackIncidentEventTypeChangeHistory]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[Alerting].[IntegrationChangeHistory]",
          "ObjectType": 0
       },

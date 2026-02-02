@@ -32,6 +32,13 @@
                 <label for="SeverityType-description" id="label-SeverityType-description">Description</label>
                 <textarea id="SeverityType-description" formControlName="description" placeholder="Enter Description" class="form-control severity-type-input" [disabled]="!userIsAlertingSeverityTypeWriter()"></textarea>
             </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                <label for="SeverityType-sequence" id="label-SeverityType-sequence"><span class="text-danger">*</span>Sequence</label>
+                <input type="number" id="SeverityType-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control severity-type-input" [disabled]="!userIsAlertingSeverityTypeWriter()" aria-labelledby="label-sequence" />
+                <div *ngIf="severityTypeForm.get('sequence')?.invalid && severityTypeForm.get('sequence')?.touched" class="text-danger">
+                    Sequence is required
+                </div>
+            </div>
             <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
                 <input type="checkbox" id="SeverityType-active" formControlName="active" class="form-check-input" [disabled]="!userIsAlertingSeverityTypeWriter()" />
                 <label for="SeverityType-active" class="form-check-label" id="label-SeverityType-active"><span class="text-danger">*</span>Active</label>

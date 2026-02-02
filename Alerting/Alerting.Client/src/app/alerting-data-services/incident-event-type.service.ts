@@ -16,6 +16,7 @@ import { UtilityService } from '../utility-services/utility.service'
 import { AlertService } from '../services/alert.service';
 import { AuthService } from '../services/auth.service';
 import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
+import { IntegrationCallbackIncidentEventTypeService, IntegrationCallbackIncidentEventTypeData } from './integration-callback-incident-event-type.service';
 import { IncidentTimelineEventService, IncidentTimelineEventData } from './incident-timeline-event.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
@@ -103,6 +104,11 @@ export class IncidentEventTypeData {
     //
     // Private lazy-loading caches for related collections
     //
+    private _integrationCallbackIncidentEventTypes: IntegrationCallbackIncidentEventTypeData[] | null = null;
+    private _integrationCallbackIncidentEventTypesPromise: Promise<IntegrationCallbackIncidentEventTypeData[]> | null  = null;
+    private _integrationCallbackIncidentEventTypesSubject = new BehaviorSubject<IntegrationCallbackIncidentEventTypeData[] | null>(null);
+
+                
     private _incidentTimelineEvents: IncidentTimelineEventData[] | null = null;
     private _incidentTimelineEventsPromise: Promise<IncidentTimelineEventData[]> | null  = null;
     private _incidentTimelineEventsSubject = new BehaviorSubject<IncidentTimelineEventData[] | null>(null);
@@ -115,6 +121,25 @@ export class IncidentEventTypeData {
     //
     // Also includes an observable for each child list to access its row count.
     //
+    public IntegrationCallbackIncidentEventTypes$ = this._integrationCallbackIncidentEventTypesSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._integrationCallbackIncidentEventTypes === null && this._integrationCallbackIncidentEventTypesPromise === null) {
+            this.loadIntegrationCallbackIncidentEventTypes(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public IntegrationCallbackIncidentEventTypesCount$ = IntegrationCallbackIncidentEventTypeService.Instance.GetIntegrationCallbackIncidentEventTypesRowCount({incidentEventTypeId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
     public IncidentTimelineEvents$ = this._incidentTimelineEventsSubject.asObservable().pipe(
 
         // Trigger load on first subscription if not already loaded
@@ -172,6 +197,10 @@ export class IncidentEventTypeData {
      //
      // Reset every collection cache and notify subscribers
      //
+     this._integrationCallbackIncidentEventTypes = null;
+     this._integrationCallbackIncidentEventTypesPromise = null;
+     this._integrationCallbackIncidentEventTypesSubject.next(null);
+
      this._incidentTimelineEvents = null;
      this._incidentTimelineEventsPromise = null;
      this._incidentTimelineEventsSubject.next(null);
@@ -182,6 +211,71 @@ export class IncidentEventTypeData {
     // Promise-based getters below — same lazy-load logic as observables
     // Use these in component code with await or .then()
     //
+    /**
+     *
+     * Gets the IntegrationCallbackIncidentEventTypes for this IncidentEventType.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.incidentEventType.IntegrationCallbackIncidentEventTypes.then(incidentEventTypes => { ... })
+     *   or
+     *   await this.incidentEventType.incidentEventTypes
+     *
+    */
+    public get IntegrationCallbackIncidentEventTypes(): Promise<IntegrationCallbackIncidentEventTypeData[]> {
+        if (this._integrationCallbackIncidentEventTypes !== null) {
+            return Promise.resolve(this._integrationCallbackIncidentEventTypes);
+        }
+
+        if (this._integrationCallbackIncidentEventTypesPromise !== null) {
+            return this._integrationCallbackIncidentEventTypesPromise;
+        }
+
+        // Start the load
+        this.loadIntegrationCallbackIncidentEventTypes();
+
+        return this._integrationCallbackIncidentEventTypesPromise!;
+    }
+
+
+
+    private loadIntegrationCallbackIncidentEventTypes(): void {
+
+        this._integrationCallbackIncidentEventTypesPromise = lastValueFrom(
+            IncidentEventTypeService.Instance.GetIntegrationCallbackIncidentEventTypesForIncidentEventType(this.id)
+        )
+        .then(IntegrationCallbackIncidentEventTypes => {
+            this._integrationCallbackIncidentEventTypes = IntegrationCallbackIncidentEventTypes ?? [];
+            this._integrationCallbackIncidentEventTypesSubject.next(this._integrationCallbackIncidentEventTypes);
+            return this._integrationCallbackIncidentEventTypes;
+         })
+        .catch(err => {
+            this._integrationCallbackIncidentEventTypes = [];
+            this._integrationCallbackIncidentEventTypesSubject.next(this._integrationCallbackIncidentEventTypes);
+            throw err;
+        })
+        .finally(() => {
+            this._integrationCallbackIncidentEventTypesPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached IntegrationCallbackIncidentEventType. Call after mutations to force refresh.
+     */
+    public ClearIntegrationCallbackIncidentEventTypesCache(): void {
+        this._integrationCallbackIncidentEventTypes = null;
+        this._integrationCallbackIncidentEventTypesPromise = null;
+        this._integrationCallbackIncidentEventTypesSubject.next(this._integrationCallbackIncidentEventTypes);      // Emit to observable
+    }
+
+    public get HasIntegrationCallbackIncidentEventTypes(): Promise<boolean> {
+        return this.IntegrationCallbackIncidentEventTypes.then(integrationCallbackIncidentEventTypes => integrationCallbackIncidentEventTypes.length > 0);
+    }
+
+
     /**
      *
      * Gets the IncidentTimelineEvents for this IncidentEventType.
@@ -282,6 +376,7 @@ export class IncidentEventTypeService extends SecureEndpointBase {
         authService: AuthService,
         alertService: AlertService,
         private utilityService: UtilityService,
+        private integrationCallbackIncidentEventTypeService: IntegrationCallbackIncidentEventTypeService,
         private incidentTimelineEventService: IncidentTimelineEventService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
@@ -640,6 +735,16 @@ export class IncidentEventTypeService extends SecureEndpointBase {
         return userIsAlertingIncidentEventTypeWriter;
     }
 
+    public GetIntegrationCallbackIncidentEventTypesForIncidentEventType(incidentEventTypeId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<IntegrationCallbackIncidentEventTypeData[]> {
+        return this.integrationCallbackIncidentEventTypeService.GetIntegrationCallbackIncidentEventTypeList({
+            incidentEventTypeId: incidentEventTypeId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
     public GetIncidentTimelineEventsForIncidentEventType(incidentEventTypeId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<IncidentTimelineEventData[]> {
         return this.incidentTimelineEventService.GetIncidentTimelineEventList({
             incidentEventTypeId: incidentEventTypeId,
@@ -685,6 +790,10 @@ export class IncidentEventTypeService extends SecureEndpointBase {
     // Explicitly initialize all private caches
     // This ensures the getters work correctly on revived objects
     //
+    (revived as any)._integrationCallbackIncidentEventTypes = null;
+    (revived as any)._integrationCallbackIncidentEventTypesPromise = null;
+    (revived as any)._integrationCallbackIncidentEventTypesSubject = new BehaviorSubject<IntegrationCallbackIncidentEventTypeData[] | null>(null);
+
     (revived as any)._incidentTimelineEvents = null;
     (revived as any)._incidentTimelineEventsPromise = null;
     (revived as any)._incidentTimelineEventsSubject = new BehaviorSubject<IncidentTimelineEventData[] | null>(null);
@@ -701,6 +810,22 @@ export class IncidentEventTypeService extends SecureEndpointBase {
     // 2. But private methods (loadIncidentEventTypeXYZ, etc.) are not accessible via the typed variable
     // 3. This is a controlled revival context — safe and necessary
     //
+    (revived as any).IntegrationCallbackIncidentEventTypes$ = (revived as any)._integrationCallbackIncidentEventTypesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._integrationCallbackIncidentEventTypes === null && (revived as any)._integrationCallbackIncidentEventTypesPromise === null) {
+                (revived as any).loadIntegrationCallbackIncidentEventTypes();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).IntegrationCallbackIncidentEventTypesCount$ = IntegrationCallbackIncidentEventTypeService.Instance.GetIntegrationCallbackIncidentEventTypesRowCount({incidentEventTypeId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
     (revived as any).IncidentTimelineEvents$ = (revived as any)._incidentTimelineEventsSubject.asObservable().pipe(
         tap(() => {
               if ((revived as any)._incidentTimelineEvents === null && (revived as any)._incidentTimelineEventsPromise === null) {

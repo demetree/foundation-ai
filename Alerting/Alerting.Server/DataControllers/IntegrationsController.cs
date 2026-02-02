@@ -71,6 +71,11 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			string description = null,
 			string apiKeyHash = null,
 			string callbackWebhookUrl = null,
+			int? maxRetryAttempts = null,
+			int? retryBackoffSeconds = null,
+			string callbackOnEventTypes = null,
+			DateTime? lastCallbackSuccessAt = null,
+			int? consecutiveCallbackFailures = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -121,6 +126,14 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			    pageSize = null;
 			}
 
+			//
+			// Turn any local time kinded parameters to UTC.
+			//
+			if (lastCallbackSuccessAt.HasValue == true && lastCallbackSuccessAt.Value.Kind != DateTimeKind.Utc)
+			{
+				lastCallbackSuccessAt = lastCallbackSuccessAt.Value.ToUniversalTime();
+			}
+
 			IQueryable<Database.Integration> query = (from i in _context.Integrations select i);
 
 			query = query.Where(x => x.tenantGuid == userTenantGuid);
@@ -144,6 +157,26 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			if (string.IsNullOrEmpty(callbackWebhookUrl) == false)
 			{
 				query = query.Where(i => i.callbackWebhookUrl == callbackWebhookUrl);
+			}
+			if (maxRetryAttempts.HasValue == true)
+			{
+				query = query.Where(i => i.maxRetryAttempts == maxRetryAttempts.Value);
+			}
+			if (retryBackoffSeconds.HasValue == true)
+			{
+				query = query.Where(i => i.retryBackoffSeconds == retryBackoffSeconds.Value);
+			}
+			if (string.IsNullOrEmpty(callbackOnEventTypes) == false)
+			{
+				query = query.Where(i => i.callbackOnEventTypes == callbackOnEventTypes);
+			}
+			if (lastCallbackSuccessAt.HasValue == true)
+			{
+				query = query.Where(i => i.lastCallbackSuccessAt == lastCallbackSuccessAt.Value);
+			}
+			if (consecutiveCallbackFailures.HasValue == true)
+			{
+				query = query.Where(i => i.consecutiveCallbackFailures == consecutiveCallbackFailures.Value);
 			}
 			if (versionNumber.HasValue == true)
 			{
@@ -205,6 +238,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			       || x.description.Contains(anyStringContains)
 			       || x.apiKeyHash.Contains(anyStringContains)
 			       || x.callbackWebhookUrl.Contains(anyStringContains)
+			       || x.callbackOnEventTypes.Contains(anyStringContains)
 			       || (includeRelations == true && x.service.name.Contains(anyStringContains))
 			       || (includeRelations == true && x.service.description.Contains(anyStringContains))
 			   );
@@ -254,6 +288,11 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			string description = null,
 			string apiKeyHash = null,
 			string callbackWebhookUrl = null,
+			int? maxRetryAttempts = null,
+			int? retryBackoffSeconds = null,
+			string callbackOnEventTypes = null,
+			DateTime? lastCallbackSuccessAt = null,
+			int? consecutiveCallbackFailures = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -286,6 +325,14 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			}
 
 
+			//
+			// Fix any non-UTC date parameters that come in.
+			//
+			if (lastCallbackSuccessAt.HasValue == true && lastCallbackSuccessAt.Value.Kind != DateTimeKind.Utc)
+			{
+				lastCallbackSuccessAt = lastCallbackSuccessAt.Value.ToUniversalTime();
+			}
+
 			IQueryable<Database.Integration> query = (from i in _context.Integrations select i);
 			query = query.Where(x => x.tenantGuid == userTenantGuid);
 			if (serviceId.HasValue == true)
@@ -307,6 +354,26 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			if (callbackWebhookUrl != null)
 			{
 				query = query.Where(i => i.callbackWebhookUrl == callbackWebhookUrl);
+			}
+			if (maxRetryAttempts.HasValue == true)
+			{
+				query = query.Where(i => i.maxRetryAttempts == maxRetryAttempts.Value);
+			}
+			if (retryBackoffSeconds.HasValue == true)
+			{
+				query = query.Where(i => i.retryBackoffSeconds == retryBackoffSeconds.Value);
+			}
+			if (callbackOnEventTypes != null)
+			{
+				query = query.Where(i => i.callbackOnEventTypes == callbackOnEventTypes);
+			}
+			if (lastCallbackSuccessAt.HasValue == true)
+			{
+				query = query.Where(i => i.lastCallbackSuccessAt == lastCallbackSuccessAt.Value);
+			}
+			if (consecutiveCallbackFailures.HasValue == true)
+			{
+				query = query.Where(i => i.consecutiveCallbackFailures == consecutiveCallbackFailures.Value);
 			}
 			if (versionNumber.HasValue == true)
 			{
@@ -353,6 +420,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			       || x.description.Contains(anyStringContains)
 			       || x.apiKeyHash.Contains(anyStringContains)
 			       || x.callbackWebhookUrl.Contains(anyStringContains)
+			       || x.callbackOnEventTypes.Contains(anyStringContains)
 			       || x.service.name.Contains(anyStringContains)
 			       || x.service.description.Contains(anyStringContains)
 			   );
@@ -481,9 +549,9 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			StartAuditEventClock();
 
 			//
-			// Alerting Writer role needed to write to this table, as well as the minimum write permission level.
+			// Alerting Master Config Writer role needed to write to this table, or Alerting Administrator role.  Note we do not check the user's write permission level here.  Role membership is the key to write access.
 			//
-			if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			if (await DoesUserHaveCustomRoleSecurityCheckAsync("Alerting Master Config Writer", cancellationToken) == false && await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
 			{
 			   return Forbid();
 			}
@@ -611,6 +679,16 @@ namespace Foundation.Alerting.Controllers.WebAPI
 					integration.callbackWebhookUrl = integration.callbackWebhookUrl.Substring(0, 1000);
 				}
 
+				if (integration.callbackOnEventTypes != null && integration.callbackOnEventTypes.Length > 500)
+				{
+					integration.callbackOnEventTypes = integration.callbackOnEventTypes.Substring(0, 500);
+				}
+
+				if (integration.lastCallbackSuccessAt.HasValue == true && integration.lastCallbackSuccessAt.Value.Kind != DateTimeKind.Utc)
+				{
+					integration.lastCallbackSuccessAt = integration.lastCallbackSuccessAt.Value.ToUniversalTime();
+				}
+
 				try
 				{
 				    EntityEntry<Database.Integration> attached = _context.Entry(existing);
@@ -685,9 +763,9 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			StartAuditEventClock();
 
 			//
-			// Alerting Writer role needed to write to this table, as well as the minimum write permission level.
+			// Alerting Master Config Writer role needed to write to this table, or Alerting Administrator role.  Note we do not check the user's write permission level here.  Role membership is the key to write access.
 			//
-			if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			if (await DoesUserHaveCustomRoleSecurityCheckAsync("Alerting Master Config Writer", cancellationToken) == false && await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
 			{
 			   return Forbid();
 			}
@@ -741,6 +819,16 @@ namespace Foundation.Alerting.Controllers.WebAPI
 					integration.callbackWebhookUrl = integration.callbackWebhookUrl.Substring(0, 1000);
 				}
 
+				if (integration.callbackOnEventTypes != null && integration.callbackOnEventTypes.Length > 500)
+				{
+					integration.callbackOnEventTypes = integration.callbackOnEventTypes.Substring(0, 500);
+				}
+
+				if (integration.lastCallbackSuccessAt.HasValue == true && integration.lastCallbackSuccessAt.Value.Kind != DateTimeKind.Utc)
+				{
+					integration.lastCallbackSuccessAt = integration.lastCallbackSuccessAt.Value.ToUniversalTime();
+				}
+
 				integration.objectGuid = Guid.NewGuid();
 				integration.versionNumber = 1;
 
@@ -762,6 +850,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				    //
 				    // Nullify all object properties before serializing.
 				    //
+					integration.IntegrationCallbackIncidentEventTypes = null;
 					integration.IntegrationChangeHistories = null;
 					integration.WebhookDeliveryAttempts = null;
 					integration.service = null;
@@ -881,6 +970,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				//
 				// Remove any object fields from the clone object so that it can serialize effectively
 				//
+				cloneOfExisting.IntegrationCallbackIncidentEventTypes = null;
 				cloneOfExisting.IntegrationChangeHistories = null;
 				cloneOfExisting.WebhookDeliveryAttempts = null;
 				cloneOfExisting.service = null;
@@ -917,6 +1007,11 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				    integration.description = oldIntegration.description;
 				    integration.apiKeyHash = oldIntegration.apiKeyHash;
 				    integration.callbackWebhookUrl = oldIntegration.callbackWebhookUrl;
+				    integration.maxRetryAttempts = oldIntegration.maxRetryAttempts;
+				    integration.retryBackoffSeconds = oldIntegration.retryBackoffSeconds;
+				    integration.callbackOnEventTypes = oldIntegration.callbackOnEventTypes;
+				    integration.lastCallbackSuccessAt = oldIntegration.lastCallbackSuccessAt;
+				    integration.consecutiveCallbackFailures = oldIntegration.consecutiveCallbackFailures;
 				    integration.objectGuid = oldIntegration.objectGuid;
 				    integration.active = oldIntegration.active;
 				    integration.deleted = oldIntegration.deleted;
@@ -1259,9 +1354,9 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			StartAuditEventClock();
 
 			//
-			// Alerting Writer role needed to write to this table, as well as the minimum write permission level.
+			// Alerting Master Config Writer role needed to write to this table, or Alerting Administrator role.  Note we do not check the user's write permission level here.  Role membership is the key to write access.
 			//
-			if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			if (await DoesUserHaveCustomRoleSecurityCheckAsync("Alerting Master Config Writer", cancellationToken) == false && await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
 			{
 			   return Forbid();
 			}
@@ -1368,6 +1463,11 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			string description = null,
 			string apiKeyHash = null,
 			string callbackWebhookUrl = null,
+			int? maxRetryAttempts = null,
+			int? retryBackoffSeconds = null,
+			string callbackOnEventTypes = null,
+			DateTime? lastCallbackSuccessAt = null,
+			int? consecutiveCallbackFailures = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -1417,6 +1517,14 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			    pageSize = null;
 			}
 
+			//
+			// Turn any local time kinded parameters to UTC.
+			//
+			if (lastCallbackSuccessAt.HasValue == true && lastCallbackSuccessAt.Value.Kind != DateTimeKind.Utc)
+			{
+				lastCallbackSuccessAt = lastCallbackSuccessAt.Value.ToUniversalTime();
+			}
+
 			IQueryable<Database.Integration> query = (from i in _context.Integrations select i);
 
 			query = query.Where(x => x.tenantGuid == userTenantGuid);
@@ -1440,6 +1548,26 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			if (string.IsNullOrEmpty(callbackWebhookUrl) == false)
 			{
 				query = query.Where(i => i.callbackWebhookUrl == callbackWebhookUrl);
+			}
+			if (maxRetryAttempts.HasValue == true)
+			{
+				query = query.Where(i => i.maxRetryAttempts == maxRetryAttempts.Value);
+			}
+			if (retryBackoffSeconds.HasValue == true)
+			{
+				query = query.Where(i => i.retryBackoffSeconds == retryBackoffSeconds.Value);
+			}
+			if (string.IsNullOrEmpty(callbackOnEventTypes) == false)
+			{
+				query = query.Where(i => i.callbackOnEventTypes == callbackOnEventTypes);
+			}
+			if (lastCallbackSuccessAt.HasValue == true)
+			{
+				query = query.Where(i => i.lastCallbackSuccessAt == lastCallbackSuccessAt.Value);
+			}
+			if (consecutiveCallbackFailures.HasValue == true)
+			{
+				query = query.Where(i => i.consecutiveCallbackFailures == consecutiveCallbackFailures.Value);
 			}
 			if (versionNumber.HasValue == true)
 			{
@@ -1487,6 +1615,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			       || x.description.Contains(anyStringContains)
 			       || x.apiKeyHash.Contains(anyStringContains)
 			       || x.callbackWebhookUrl.Contains(anyStringContains)
+			       || x.callbackOnEventTypes.Contains(anyStringContains)
 			       || x.service.name.Contains(anyStringContains)
 			       || x.service.description.Contains(anyStringContains)
 			   );
@@ -1522,9 +1651,9 @@ namespace Foundation.Alerting.Controllers.WebAPI
 		{
 
 			//
-			// Alerting Writer role needed to write to this table, as well as the minimum write permission level.
+			// Alerting Master Config Writer role needed to write to this table, or Alerting Administrator role.  Note we do not check the user's write permission level here.  Role membership is the key to write access.
 			//
-			if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			if (await DoesUserHaveCustomRoleSecurityCheckAsync("Alerting Master Config Writer", cancellationToken) == false && await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
 			{
 			   return Forbid();
 			}

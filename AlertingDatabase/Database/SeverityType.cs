@@ -13,7 +13,7 @@ public partial class SeverityType
 
     public string description { get; set; }
 
-    public int sortOrder { get; set; }
+    public int sequence { get; set; }
 
     public bool active { get; set; }
 

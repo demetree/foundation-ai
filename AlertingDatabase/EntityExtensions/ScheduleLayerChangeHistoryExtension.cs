@@ -284,7 +284,7 @@ namespace Foundation.Alerting.Database
 				timeStamp = scheduleLayerChangeHistory.timeStamp,
 				userId = scheduleLayerChangeHistory.userId,
 				data = scheduleLayerChangeHistory.data,
-				scheduleLayer = ScheduleLayer.CreateMinimalAnonymous(scheduleLayerChangeHistory.scheduleLayer),
+				scheduleLayer = ScheduleLayer.CreateMinimalAnonymous(scheduleLayerChangeHistory.scheduleLayer)
 			 };
 		}
 

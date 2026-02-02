@@ -174,6 +174,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			       || (includeRelations == true && x.integration.description.Contains(anyStringContains))
 			       || (includeRelations == true && x.integration.apiKeyHash.Contains(anyStringContains))
 			       || (includeRelations == true && x.integration.callbackWebhookUrl.Contains(anyStringContains))
+			       || (includeRelations == true && x.integration.callbackOnEventTypes.Contains(anyStringContains))
 			   );
 			}
 
@@ -293,6 +294,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			       || x.integration.description.Contains(anyStringContains)
 			       || x.integration.apiKeyHash.Contains(anyStringContains)
 			       || x.integration.callbackWebhookUrl.Contains(anyStringContains)
+			       || x.integration.callbackOnEventTypes.Contains(anyStringContains)
 			   );
 			}
 
@@ -810,6 +812,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			       || x.integration.description.Contains(anyStringContains)
 			       || x.integration.apiKeyHash.Contains(anyStringContains)
 			       || x.integration.callbackWebhookUrl.Contains(anyStringContains)
+			       || x.integration.callbackOnEventTypes.Contains(anyStringContains)
 			   );
 			}
 

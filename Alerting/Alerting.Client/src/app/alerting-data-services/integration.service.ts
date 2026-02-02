@@ -18,6 +18,7 @@ import { AuthService } from '../services/auth.service';
 import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
 import { ServiceData } from './service.service';
 import { IntegrationChangeHistoryService, IntegrationChangeHistoryData } from './integration-change-history.service';
+import { IntegrationCallbackIncidentEventTypeService, IntegrationCallbackIncidentEventTypeData } from './integration-callback-incident-event-type.service';
 import { WebhookDeliveryAttemptService, WebhookDeliveryAttemptData } from './webhook-delivery-attempt.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
@@ -35,6 +36,11 @@ export class IntegrationQueryParameters {
     description: string | null | undefined = null;
     apiKeyHash: string | null | undefined = null;
     callbackWebhookUrl: string | null | undefined = null;
+    maxRetryAttempts: bigint | number | null | undefined = null;
+    retryBackoffSeconds: bigint | number | null | undefined = null;
+    callbackOnEventTypes: string | null | undefined = null;
+    lastCallbackSuccessAt: string | null | undefined = null;        // ISO 8601
+    consecutiveCallbackFailures: bigint | number | null | undefined = null;
     versionNumber: bigint | number | null | undefined = null;
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
@@ -56,6 +62,11 @@ export class IntegrationSubmitData {
     description: string | null = null;
     apiKeyHash!: string;
     callbackWebhookUrl: string | null = null;
+    maxRetryAttempts: bigint | number | null = null;
+    retryBackoffSeconds: bigint | number | null = null;
+    callbackOnEventTypes: string | null = null;
+    lastCallbackSuccessAt: string | null = null;     // ISO 8601
+    consecutiveCallbackFailures: bigint | number | null = null;
     versionNumber!: bigint | number;
     active!: boolean;
     deleted!: boolean;
@@ -131,6 +142,11 @@ export class IntegrationData {
     description!: string | null;
     apiKeyHash!: string;
     callbackWebhookUrl!: string | null;
+    maxRetryAttempts!: bigint | number;
+    retryBackoffSeconds!: bigint | number;
+    callbackOnEventTypes!: string | null;
+    lastCallbackSuccessAt!: string | null;   // ISO 8601
+    consecutiveCallbackFailures!: bigint | number;
     versionNumber!: bigint | number;
     objectGuid!: string;
     active!: boolean;
@@ -143,6 +159,11 @@ export class IntegrationData {
     private _integrationChangeHistories: IntegrationChangeHistoryData[] | null = null;
     private _integrationChangeHistoriesPromise: Promise<IntegrationChangeHistoryData[]> | null  = null;
     private _integrationChangeHistoriesSubject = new BehaviorSubject<IntegrationChangeHistoryData[] | null>(null);
+
+                
+    private _integrationCallbackIncidentEventTypes: IntegrationCallbackIncidentEventTypeData[] | null = null;
+    private _integrationCallbackIncidentEventTypesPromise: Promise<IntegrationCallbackIncidentEventTypeData[]> | null  = null;
+    private _integrationCallbackIncidentEventTypesSubject = new BehaviorSubject<IntegrationCallbackIncidentEventTypeData[] | null>(null);
 
                 
     private _webhookDeliveryAttempts: WebhookDeliveryAttemptData[] | null = null;
@@ -179,6 +200,25 @@ export class IntegrationData {
 
   
     public IntegrationChangeHistoriesCount$ = IntegrationChangeHistoryService.Instance.GetIntegrationChangeHistoriesRowCount({integrationId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    public IntegrationCallbackIncidentEventTypes$ = this._integrationCallbackIncidentEventTypesSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._integrationCallbackIncidentEventTypes === null && this._integrationCallbackIncidentEventTypesPromise === null) {
+            this.loadIntegrationCallbackIncidentEventTypes(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public IntegrationCallbackIncidentEventTypesCount$ = IntegrationCallbackIncidentEventTypeService.Instance.GetIntegrationCallbackIncidentEventTypesRowCount({integrationId: this.id,
       active: true,
       deleted: false
     });
@@ -245,6 +285,10 @@ export class IntegrationData {
      this._integrationChangeHistories = null;
      this._integrationChangeHistoriesPromise = null;
      this._integrationChangeHistoriesSubject.next(null);
+
+     this._integrationCallbackIncidentEventTypes = null;
+     this._integrationCallbackIncidentEventTypesPromise = null;
+     this._integrationCallbackIncidentEventTypesSubject.next(null);
 
      this._webhookDeliveryAttempts = null;
      this._webhookDeliveryAttemptsPromise = null;
@@ -321,6 +365,71 @@ export class IntegrationData {
 
     public get HasIntegrationChangeHistories(): Promise<boolean> {
         return this.IntegrationChangeHistories.then(integrationChangeHistories => integrationChangeHistories.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the IntegrationCallbackIncidentEventTypes for this Integration.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.integration.IntegrationCallbackIncidentEventTypes.then(integrations => { ... })
+     *   or
+     *   await this.integration.integrations
+     *
+    */
+    public get IntegrationCallbackIncidentEventTypes(): Promise<IntegrationCallbackIncidentEventTypeData[]> {
+        if (this._integrationCallbackIncidentEventTypes !== null) {
+            return Promise.resolve(this._integrationCallbackIncidentEventTypes);
+        }
+
+        if (this._integrationCallbackIncidentEventTypesPromise !== null) {
+            return this._integrationCallbackIncidentEventTypesPromise;
+        }
+
+        // Start the load
+        this.loadIntegrationCallbackIncidentEventTypes();
+
+        return this._integrationCallbackIncidentEventTypesPromise!;
+    }
+
+
+
+    private loadIntegrationCallbackIncidentEventTypes(): void {
+
+        this._integrationCallbackIncidentEventTypesPromise = lastValueFrom(
+            IntegrationService.Instance.GetIntegrationCallbackIncidentEventTypesForIntegration(this.id)
+        )
+        .then(IntegrationCallbackIncidentEventTypes => {
+            this._integrationCallbackIncidentEventTypes = IntegrationCallbackIncidentEventTypes ?? [];
+            this._integrationCallbackIncidentEventTypesSubject.next(this._integrationCallbackIncidentEventTypes);
+            return this._integrationCallbackIncidentEventTypes;
+         })
+        .catch(err => {
+            this._integrationCallbackIncidentEventTypes = [];
+            this._integrationCallbackIncidentEventTypesSubject.next(this._integrationCallbackIncidentEventTypes);
+            throw err;
+        })
+        .finally(() => {
+            this._integrationCallbackIncidentEventTypesPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached IntegrationCallbackIncidentEventType. Call after mutations to force refresh.
+     */
+    public ClearIntegrationCallbackIncidentEventTypesCache(): void {
+        this._integrationCallbackIncidentEventTypes = null;
+        this._integrationCallbackIncidentEventTypesPromise = null;
+        this._integrationCallbackIncidentEventTypesSubject.next(this._integrationCallbackIncidentEventTypes);      // Emit to observable
+    }
+
+    public get HasIntegrationCallbackIncidentEventTypes(): Promise<boolean> {
+        return this.IntegrationCallbackIncidentEventTypes.then(integrationCallbackIncidentEventTypes => integrationCallbackIncidentEventTypes.length > 0);
     }
 
 
@@ -468,6 +577,7 @@ export class IntegrationService extends SecureEndpointBase {
         alertService: AlertService,
         private utilityService: UtilityService,
         private integrationChangeHistoryService: IntegrationChangeHistoryService,
+        private integrationCallbackIncidentEventTypeService: IntegrationCallbackIncidentEventTypeService,
         private webhookDeliveryAttemptService: WebhookDeliveryAttemptService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
@@ -531,6 +641,11 @@ export class IntegrationService extends SecureEndpointBase {
         output.description = data.description;
         output.apiKeyHash = data.apiKeyHash;
         output.callbackWebhookUrl = data.callbackWebhookUrl;
+        output.maxRetryAttempts = data.maxRetryAttempts;
+        output.retryBackoffSeconds = data.retryBackoffSeconds;
+        output.callbackOnEventTypes = data.callbackOnEventTypes;
+        output.lastCallbackSuccessAt = data.lastCallbackSuccessAt;
+        output.consecutiveCallbackFailures = data.consecutiveCallbackFailures;
         output.versionNumber = data.versionNumber;
         output.active = data.active;
         output.deleted = data.deleted;
@@ -942,6 +1057,16 @@ export class IntegrationService extends SecureEndpointBase {
     }
 
 
+    public GetIntegrationCallbackIncidentEventTypesForIntegration(integrationId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<IntegrationCallbackIncidentEventTypeData[]> {
+        return this.integrationCallbackIncidentEventTypeService.GetIntegrationCallbackIncidentEventTypeList({
+            integrationId: integrationId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
     public GetWebhookDeliveryAttemptsForIntegration(integrationId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<WebhookDeliveryAttemptData[]> {
         return this.webhookDeliveryAttemptService.GetWebhookDeliveryAttemptList({
             integrationId: integrationId,
@@ -991,6 +1116,10 @@ export class IntegrationService extends SecureEndpointBase {
     (revived as any)._integrationChangeHistoriesPromise = null;
     (revived as any)._integrationChangeHistoriesSubject = new BehaviorSubject<IntegrationChangeHistoryData[] | null>(null);
 
+    (revived as any)._integrationCallbackIncidentEventTypes = null;
+    (revived as any)._integrationCallbackIncidentEventTypesPromise = null;
+    (revived as any)._integrationCallbackIncidentEventTypesSubject = new BehaviorSubject<IntegrationCallbackIncidentEventTypeData[] | null>(null);
+
     (revived as any)._webhookDeliveryAttempts = null;
     (revived as any)._webhookDeliveryAttemptsPromise = null;
     (revived as any)._webhookDeliveryAttemptsSubject = new BehaviorSubject<WebhookDeliveryAttemptData[] | null>(null);
@@ -1017,6 +1146,22 @@ export class IntegrationService extends SecureEndpointBase {
       );
 
     (revived as any).IntegrationChangeHistoriesCount$ = IntegrationChangeHistoryService.Instance.GetIntegrationChangeHistoriesRowCount({integrationId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).IntegrationCallbackIncidentEventTypes$ = (revived as any)._integrationCallbackIncidentEventTypesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._integrationCallbackIncidentEventTypes === null && (revived as any)._integrationCallbackIncidentEventTypesPromise === null) {
+                (revived as any).loadIntegrationCallbackIncidentEventTypes();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).IntegrationCallbackIncidentEventTypesCount$ = IntegrationCallbackIncidentEventTypeService.Instance.GetIntegrationCallbackIncidentEventTypesRowCount({integrationId: (revived as any).id,
       active: true,
       deleted: false
     });

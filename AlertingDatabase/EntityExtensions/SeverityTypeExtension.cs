@@ -24,7 +24,8 @@ namespace Foundation.Alerting.Database
 			[Required]
 			public String name { get; set; }
 			public String description { get; set; }
-			public Int32 sortOrder { get; set; }
+			[Required]
+			public Int32 sequence { get; set; }
 			public Boolean? active { get; set; }
 			public Boolean? deleted { get; set; }
 		}
@@ -54,7 +55,7 @@ namespace Foundation.Alerting.Database
 				id = this.id,
 				name = this.name,
 				description = this.description,
-				sortOrder = this.sortOrder,
+				sequence = this.sequence,
 				active = this.active,
 				deleted = this.deleted
 			};
@@ -98,7 +99,7 @@ namespace Foundation.Alerting.Database
 				id = this.id,
 				name = this.name,
 				description = this.description,
-				sortOrder = this.sortOrder,
+				sequence = this.sequence,
 				active = this.active,
 				deleted = this.deleted
 			};
@@ -142,7 +143,7 @@ namespace Foundation.Alerting.Database
 				id = dto.id,
 				name = dto.name,
 				description = dto.description,
-				sortOrder = dto.sortOrder,
+				sequence = dto.sequence,
 				active = dto.active ?? true,
 				deleted = dto.deleted ?? false
 			};
@@ -163,7 +164,7 @@ namespace Foundation.Alerting.Database
 
 			this.name = dto.name;
 			this.description = dto.description;
-			this.sortOrder = dto.sortOrder;
+			this.sequence = dto.sequence;
 			if (dto.active.HasValue == true)
 			{
 				this.active = dto.active.Value;
@@ -189,7 +190,7 @@ namespace Foundation.Alerting.Database
 				id = this.id,
 				name = this.name,
 				description = this.description,
-				sortOrder = this.sortOrder,
+				sequence = this.sequence,
 				active = this.active,
 				deleted = this.deleted,
 			 };
@@ -247,7 +248,7 @@ namespace Foundation.Alerting.Database
 				id = severityType.id,
 				name = severityType.name,
 				description = severityType.description,
-				sortOrder = severityType.sortOrder,
+				sequence = severityType.sequence,
 				active = severityType.active,
 				deleted = severityType.deleted,
 			 };
@@ -272,7 +273,7 @@ namespace Foundation.Alerting.Database
 				id = severityType.id,
 				name = severityType.name,
 				description = severityType.description,
-				sortOrder = severityType.sortOrder,
+				sequence = severityType.sequence,
 				active = severityType.active,
 				deleted = severityType.deleted,
 			 };

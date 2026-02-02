@@ -53,6 +53,26 @@
                 <label for="Integration-callbackWebhookUrl" id="label-Integration-callbackWebhookUrl">Callback Webhook Url</label>
                 <textarea id="Integration-callbackWebhookUrl" formControlName="callbackWebhookUrl" placeholder="Enter Callback Webhook Url" class="form-control integration-input" [disabled]="!userIsAlertingIntegrationWriter()"></textarea>
             </div>
+            <div class="form-group" *ngIf="!isFieldHidden('maxRetryAttempts')">
+                <label for="Integration-maxRetryAttempts" id="label-Integration-maxRetryAttempts">Max Retry Attempts</label>
+                <input type="number" id="Integration-maxRetryAttempts" formControlName="maxRetryAttempts" placeholder="Enter Max Retry Attempts" class="form-control integration-input" [disabled]="!userIsAlertingIntegrationWriter()" aria-labelledby="label-maxRetryAttempts" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('retryBackoffSeconds')">
+                <label for="Integration-retryBackoffSeconds" id="label-Integration-retryBackoffSeconds">Retry Backoff Seconds</label>
+                <input type="number" id="Integration-retryBackoffSeconds" formControlName="retryBackoffSeconds" placeholder="Enter Retry Backoff Seconds" class="form-control integration-input" [disabled]="!userIsAlertingIntegrationWriter()" aria-labelledby="label-retryBackoffSeconds" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('callbackOnEventTypes')">
+                <label for="Integration-callbackOnEventTypes" id="label-Integration-callbackOnEventTypes">Callback On Event Types</label>
+                <textarea id="Integration-callbackOnEventTypes" formControlName="callbackOnEventTypes" placeholder="Enter Callback On Event Types" class="form-control integration-input" [disabled]="!userIsAlertingIntegrationWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('lastCallbackSuccessAt')">
+                <label for="Integration-lastCallbackSuccessAt" id="label-Integration-lastCallbackSuccessAt">Last Callback Success At</label>
+                <input type="datetime-local" id="Integration-lastCallbackSuccessAt" formControlName="lastCallbackSuccessAt" placeholder="Enter Last Callback Success At" class="form-control integration-input" [disabled]="!userIsAlertingIntegrationWriter()" aria-labelledby="label-lastCallbackSuccessAt" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('consecutiveCallbackFailures')">
+                <label for="Integration-consecutiveCallbackFailures" id="label-Integration-consecutiveCallbackFailures">Consecutive Callback Failures</label>
+                <input type="number" id="Integration-consecutiveCallbackFailures" formControlName="consecutiveCallbackFailures" placeholder="Enter Consecutive Callback Failures" class="form-control integration-input" [disabled]="!userIsAlertingIntegrationWriter()" aria-labelledby="label-consecutiveCallbackFailures" />
+            </div>
             <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
                 <label for="Integration-versionNumber" id="label-Integration-versionNumber"><span class="text-danger">*</span>Version Number</label>
                 <input type="number" id="Integration-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control integration-input" />

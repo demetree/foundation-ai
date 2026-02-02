@@ -64,7 +64,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 		public async Task<IActionResult> GetSeverityTypes(
 			string name = null,
 			string description = null,
-			int? sortOrder = null,
+			int? sequence = null,
 			bool? active = null,
 			bool? deleted = null,
 			int? pageSize = null,
@@ -110,9 +110,9 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			{
 				query = query.Where(st => st.description == description);
 			}
-			if (sortOrder.HasValue == true)
+			if (sequence.HasValue == true)
 			{
-				query = query.Where(st => st.sortOrder == sortOrder.Value);
+				query = query.Where(st => st.sequence == sequence.Value);
 			}
 			if (userIsWriter == true)
 			{
@@ -139,7 +139,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				query = query.Where(st => st.deleted == false);
 			}
 
-			query = query.OrderBy(st => st.sortOrder).ThenBy(st => st.name).ThenBy(st => st.description);
+			query = query.OrderBy(st => st.sequence).ThenBy(st => st.name).ThenBy(st => st.description);
 
 			if (pageNumber.HasValue == true &&
 			    pageSize.HasValue == true)
@@ -207,7 +207,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 		public async Task<IActionResult> GetRowCount(
 			string name = null,
 			string description = null,
-			int? sortOrder = null,
+			int? sequence = null,
 			bool? active = null,
 			bool? deleted = null,
 			string anyStringContains = null,
@@ -235,9 +235,9 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			{
 				query = query.Where(st => st.description == description);
 			}
-			if (sortOrder.HasValue == true)
+			if (sequence.HasValue == true)
 			{
-				query = query.Where(st => st.sortOrder == sortOrder.Value);
+				query = query.Where(st => st.sequence == sequence.Value);
 			}
 			if (userIsWriter == true)
 			{
@@ -377,7 +377,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 		public async Task<IActionResult> GetListData(
 			string name = null,
 			string description = null,
-			int? sortOrder = null,
+			int? sequence = null,
 			bool? active = null,
 			bool? deleted = null,
 			string anyStringContains = null,
@@ -421,9 +421,9 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			{
 				query = query.Where(st => st.description == description);
 			}
-			if (sortOrder.HasValue == true)
+			if (sequence.HasValue == true)
 			{
-				query = query.Where(st => st.sortOrder == sortOrder.Value);
+				query = query.Where(st => st.sequence == sequence.Value);
 			}
 			if (userIsWriter == true)
 			{
@@ -465,7 +465,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			}
 
 
-			query = query.OrderBy(x => x.sortOrder).ThenBy(x => x.name).ThenBy(x => x.description);
+			query = query.OrderBy(x => x.sequence).ThenBy(x => x.name).ThenBy(x => x.description);
 			if (pageNumber.HasValue == true &&
 			    pageSize.HasValue == true)
 			{

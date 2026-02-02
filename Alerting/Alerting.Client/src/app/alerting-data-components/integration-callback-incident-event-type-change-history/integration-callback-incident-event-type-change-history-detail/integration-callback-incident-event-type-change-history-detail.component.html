@@ -1,0 +1,75 @@
+<div class="container-fluid p-1 m-0 integration-callback-incident-event-type-change-history-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="integration-callback-incident-event-type-change-history-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Integration Callback Incident Event Type Change History</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Integration Callback Incident Event Type Change History' : 'Add Integration Callback Incident Event Type Change History'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsAlertingIntegrationCallbackIncidentEventTypeChangeHistoryReader()">
+                <div class="col m-2 integration-callback-incident-event-type-change-history-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="integrationCallbackIncidentEventTypeChangeHistoryForm" (ngSubmit)="submitForm()" class="integration-callback-incident-event-type-change-history-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('integrationCallbackIncidentEventTypeId')">
+                                <label for="IntegrationCallbackIncidentEventTypeChangeHistory-integrationCallbackIncidentEventTypeId" id="label-IntegrationCallbackIncidentEventTypeChangeHistory-integrationCallbackIncidentEventTypeId"><span class="text-danger">*</span>Integration Callback Incident Event Type</label>
+                                <select id="IntegrationCallbackIncidentEventTypeChangeHistory-integrationCallbackIncidentEventTypeId" formControlName="integrationCallbackIncidentEventTypeId" class="form-select integration-callback-incident-event-type-change-history-select" [disabled]="!userIsAlertingIntegrationCallbackIncidentEventTypeChangeHistoryWriter()">
+                                    <option [ngValue]="null">Select Integration Callback Incident Event Type</option>
+                                    <option *ngFor="let integrationCallbackIncidentEventType of integrationCallbackIncidentEventTypes$ | async" [ngValue]="integrationCallbackIncidentEventType.id">{{integrationCallbackIncidentEventType.id}}</option>
+                                </select>
+                                <div *ngIf="integrationCallbackIncidentEventTypeChangeHistoryForm.get('integrationCallbackIncidentEventTypeId')?.invalid && integrationCallbackIncidentEventTypeChangeHistoryForm.get('integrationCallbackIncidentEventTypeId')?.touched" class="text-danger">
+                                    Integration Callback Incident Event Type is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="IntegrationCallbackIncidentEventTypeChangeHistory-versionNumber" id="label-IntegrationCallbackIncidentEventTypeChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="IntegrationCallbackIncidentEventTypeChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control integration-callback-incident-event-type-change-history-input" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                                <label for="IntegrationCallbackIncidentEventTypeChangeHistory-timeStamp" id="label-IntegrationCallbackIncidentEventTypeChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                                <input type="datetime-local" id="IntegrationCallbackIncidentEventTypeChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control integration-callback-incident-event-type-change-history-input" [disabled]="!userIsAlertingIntegrationCallbackIncidentEventTypeChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                                <div *ngIf="integrationCallbackIncidentEventTypeChangeHistoryForm.get('timeStamp')?.invalid && integrationCallbackIncidentEventTypeChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                                    Time Stamp is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="IntegrationCallbackIncidentEventTypeChangeHistory-userId" id="label-IntegrationCallbackIncidentEventTypeChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="IntegrationCallbackIncidentEventTypeChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control integration-callback-incident-event-type-change-history-input" [disabled]="!userIsAlertingIntegrationCallbackIncidentEventTypeChangeHistoryWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="integrationCallbackIncidentEventTypeChangeHistoryForm.get('userId')?.invalid && integrationCallbackIncidentEventTypeChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                                <label for="IntegrationCallbackIncidentEventTypeChangeHistory-data" id="label-IntegrationCallbackIncidentEventTypeChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                                <textarea id="IntegrationCallbackIncidentEventTypeChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control integration-callback-incident-event-type-change-history-input" [disabled]="!userIsAlertingIntegrationCallbackIncidentEventTypeChangeHistoryWriter()"></textarea>
+                                <div *ngIf="integrationCallbackIncidentEventTypeChangeHistoryForm.get('data')?.invalid && integrationCallbackIncidentEventTypeChangeHistoryForm.get('data')?.touched" class="text-danger">
+                                    Data is required
+                                </div>
+                            </div>
+                            <div class="integration-callback-incident-event-type-change-history-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="integrationCallbackIncidentEventTypeChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Integration Callback Incident Event Type Change History">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !integrationCallbackIncidentEventTypeChangeHistoryForm.valid || !integrationCallbackIncidentEventTypeChangeHistoryForm.dirty || integrationCallbackIncidentEventTypeChangeHistoryForm.pristine  || userIsAlertingIntegrationCallbackIncidentEventTypeChangeHistoryWriter() == false " ngbTooltip="Save the Integration Callback Incident Event Type Change History changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Integration Callback Incident Event Type Change History' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

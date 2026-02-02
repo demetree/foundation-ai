@@ -284,7 +284,7 @@ namespace Foundation.Alerting.Database
 				timeStamp = userNotificationChannelPreferenceChangeHistory.timeStamp,
 				userId = userNotificationChannelPreferenceChangeHistory.userId,
 				data = userNotificationChannelPreferenceChangeHistory.data,
-				userNotificationChannelPreference = UserNotificationChannelPreference.CreateMinimalAnonymous(userNotificationChannelPreferenceChangeHistory.userNotificationChannelPreference),
+				userNotificationChannelPreference = UserNotificationChannelPreference.CreateMinimalAnonymous(userNotificationChannelPreferenceChangeHistory.userNotificationChannelPreference)
 			 };
 		}
 

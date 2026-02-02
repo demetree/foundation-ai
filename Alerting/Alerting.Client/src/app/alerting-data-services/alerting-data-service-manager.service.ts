@@ -22,6 +22,8 @@ import {IncidentNotificationService} from  './incident-notification.service';
 import {IncidentStatusTypeService} from  './incident-status-type.service';
 import {IncidentTimelineEventService} from  './incident-timeline-event.service';
 import {IntegrationService} from  './integration.service';
+import {IntegrationCallbackIncidentEventTypeService} from  './integration-callback-incident-event-type.service';
+import {IntegrationCallbackIncidentEventTypeChangeHistoryService} from  './integration-callback-incident-event-type-change-history.service';
 import {IntegrationChangeHistoryService} from  './integration-change-history.service';
 import {NotificationChannelTypeService} from  './notification-channel-type.service';
 import {NotificationDeliveryAttemptService} from  './notification-delivery-attempt.service';
@@ -59,6 +61,8 @@ export class AlertingDataServiceManagerService  {
               , public incidentStatusTypeService: IncidentStatusTypeService
               , public incidentTimelineEventService: IncidentTimelineEventService
               , public integrationService: IntegrationService
+              , public integrationCallbackIncidentEventTypeService: IntegrationCallbackIncidentEventTypeService
+              , public integrationCallbackIncidentEventTypeChangeHistoryService: IntegrationCallbackIncidentEventTypeChangeHistoryService
               , public integrationChangeHistoryService: IntegrationChangeHistoryService
               , public notificationChannelTypeService: NotificationChannelTypeService
               , public notificationDeliveryAttemptService: NotificationDeliveryAttemptService
@@ -94,6 +98,8 @@ export class AlertingDataServiceManagerService  {
         this.incidentStatusTypeService.ClearAllCaches();
         this.incidentTimelineEventService.ClearAllCaches();
         this.integrationService.ClearAllCaches();
+        this.integrationCallbackIncidentEventTypeService.ClearAllCaches();
+        this.integrationCallbackIncidentEventTypeChangeHistoryService.ClearAllCaches();
         this.integrationChangeHistoryService.ClearAllCaches();
         this.notificationChannelTypeService.ClearAllCaches();
         this.notificationDeliveryAttemptService.ClearAllCaches();

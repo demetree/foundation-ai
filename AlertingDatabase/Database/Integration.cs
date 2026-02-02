@@ -21,6 +21,16 @@ public partial class Integration
 
     public string callbackWebhookUrl { get; set; }
 
+    public int? maxRetryAttempts { get; set; }
+
+    public int? retryBackoffSeconds { get; set; }
+
+    public string callbackOnEventTypes { get; set; }
+
+    public DateTime? lastCallbackSuccessAt { get; set; }
+
+    public int? consecutiveCallbackFailures { get; set; }
+
     public int versionNumber { get; set; }
 
     public Guid objectGuid { get; set; }
@@ -28,6 +38,8 @@ public partial class Integration
     public bool active { get; set; }
 
     public bool deleted { get; set; }
+
+    public virtual ICollection<IntegrationCallbackIncidentEventType> IntegrationCallbackIncidentEventTypes { get; set; } = new List<IntegrationCallbackIncidentEventType>();
 
     public virtual ICollection<IntegrationChangeHistory> IntegrationChangeHistories { get; set; } = new List<IntegrationChangeHistory>();
 

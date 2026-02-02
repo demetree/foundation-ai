@@ -37,6 +37,7 @@ import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../uti
 interface SeverityTypeFormValues {
   name: string,
   description: string | null,
+  sequence: string,     // Stored as string for form input, converted to number on submit.
   active: boolean,
   deleted: boolean,
 };
@@ -68,6 +69,7 @@ export class SeverityTypeDetailComponent implements OnInit, CanComponentDeactiva
   public severityTypeForm: FormGroup = this.fb.group({
         name: ['', Validators.required],
         description: [''],
+        sequence: ['', Validators.required],
         active: [true],
         deleted: [false],
       });
@@ -374,6 +376,7 @@ export class SeverityTypeDetailComponent implements OnInit, CanComponentDeactiva
       this.severityTypeForm.reset({
         name: '',
         description: '',
+        sequence: '',
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -387,6 +390,7 @@ export class SeverityTypeDetailComponent implements OnInit, CanComponentDeactiva
         this.severityTypeForm.reset({
         name: severityTypeData.name ?? '',
         description: severityTypeData.description ?? '',
+        sequence: severityTypeData.sequence?.toString() ?? '',
         active: severityTypeData.active ?? true,
         deleted: severityTypeData.deleted ?? false,
       }, { emitEvent: false});
@@ -450,6 +454,7 @@ export class SeverityTypeDetailComponent implements OnInit, CanComponentDeactiva
         id: this.severityTypeData?.id || 0,
         name: formValue.name!.trim(),
         description: formValue.description?.trim() || null,
+        sequence: Number(formValue.sequence),
         active: !!formValue.active,
         deleted: !!formValue.deleted,
    };

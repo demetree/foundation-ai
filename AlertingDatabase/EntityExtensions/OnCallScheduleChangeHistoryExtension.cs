@@ -284,7 +284,7 @@ namespace Foundation.Alerting.Database
 				timeStamp = onCallScheduleChangeHistory.timeStamp,
 				userId = onCallScheduleChangeHistory.userId,
 				data = onCallScheduleChangeHistory.data,
-				onCallSchedule = OnCallSchedule.CreateMinimalAnonymous(onCallScheduleChangeHistory.onCallSchedule),
+				onCallSchedule = OnCallSchedule.CreateMinimalAnonymous(onCallScheduleChangeHistory.onCallSchedule)
 			 };
 		}
 

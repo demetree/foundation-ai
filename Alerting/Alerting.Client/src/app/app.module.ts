@@ -124,6 +124,8 @@ import { IncidentNotificationService } from './alerting-data-services/incident-n
 import { IncidentStatusTypeService } from './alerting-data-services/incident-status-type.service';
 import { IncidentTimelineEventService } from './alerting-data-services/incident-timeline-event.service';
 import { IntegrationService } from './alerting-data-services/integration.service';
+import { IntegrationCallbackIncidentEventTypeService } from './alerting-data-services/integration-callback-incident-event-type.service';
+import { IntegrationCallbackIncidentEventTypeChangeHistoryService } from './alerting-data-services/integration-callback-incident-event-type-change-history.service';
 import { IntegrationChangeHistoryService } from './alerting-data-services/integration-change-history.service';
 import { NotificationChannelTypeService } from './alerting-data-services/notification-channel-type.service';
 import { NotificationDeliveryAttemptService } from './alerting-data-services/notification-delivery-attempt.service';
@@ -202,6 +204,14 @@ import { IntegrationListingComponent } from './alerting-data-components/integrat
 import { IntegrationAddEditComponent } from './alerting-data-components/integration/integration-add-edit/integration-add-edit.component';
 import { IntegrationDetailComponent } from './alerting-data-components/integration/integration-detail/integration-detail.component';
 import { IntegrationTableComponent } from './alerting-data-components/integration/integration-table/integration-table.component';
+import { IntegrationCallbackIncidentEventTypeListingComponent } from './alerting-data-components/integration-callback-incident-event-type/integration-callback-incident-event-type-listing/integration-callback-incident-event-type-listing.component';
+import { IntegrationCallbackIncidentEventTypeAddEditComponent } from './alerting-data-components/integration-callback-incident-event-type/integration-callback-incident-event-type-add-edit/integration-callback-incident-event-type-add-edit.component';
+import { IntegrationCallbackIncidentEventTypeDetailComponent } from './alerting-data-components/integration-callback-incident-event-type/integration-callback-incident-event-type-detail/integration-callback-incident-event-type-detail.component';
+import { IntegrationCallbackIncidentEventTypeTableComponent } from './alerting-data-components/integration-callback-incident-event-type/integration-callback-incident-event-type-table/integration-callback-incident-event-type-table.component';
+import { IntegrationCallbackIncidentEventTypeChangeHistoryListingComponent } from './alerting-data-components/integration-callback-incident-event-type-change-history/integration-callback-incident-event-type-change-history-listing/integration-callback-incident-event-type-change-history-listing.component';
+import { IntegrationCallbackIncidentEventTypeChangeHistoryAddEditComponent } from './alerting-data-components/integration-callback-incident-event-type-change-history/integration-callback-incident-event-type-change-history-add-edit/integration-callback-incident-event-type-change-history-add-edit.component';
+import { IntegrationCallbackIncidentEventTypeChangeHistoryDetailComponent } from './alerting-data-components/integration-callback-incident-event-type-change-history/integration-callback-incident-event-type-change-history-detail/integration-callback-incident-event-type-change-history-detail.component';
+import { IntegrationCallbackIncidentEventTypeChangeHistoryTableComponent } from './alerting-data-components/integration-callback-incident-event-type-change-history/integration-callback-incident-event-type-change-history-table/integration-callback-incident-event-type-change-history-table.component';
 import { IntegrationChangeHistoryListingComponent } from './alerting-data-components/integration-change-history/integration-change-history-listing/integration-change-history-listing.component';
 import { IntegrationChangeHistoryAddEditComponent } from './alerting-data-components/integration-change-history/integration-change-history-add-edit/integration-change-history-add-edit.component';
 import { IntegrationChangeHistoryDetailComponent } from './alerting-data-components/integration-change-history/integration-change-history-detail/integration-change-history-detail.component';
@@ -367,6 +377,14 @@ IntegrationListingComponent,
 IntegrationAddEditComponent,
 IntegrationDetailComponent,
 IntegrationTableComponent,
+IntegrationCallbackIncidentEventTypeListingComponent,
+IntegrationCallbackIncidentEventTypeAddEditComponent,
+IntegrationCallbackIncidentEventTypeDetailComponent,
+IntegrationCallbackIncidentEventTypeTableComponent,
+IntegrationCallbackIncidentEventTypeChangeHistoryListingComponent,
+IntegrationCallbackIncidentEventTypeChangeHistoryAddEditComponent,
+IntegrationCallbackIncidentEventTypeChangeHistoryDetailComponent,
+IntegrationCallbackIncidentEventTypeChangeHistoryTableComponent,
 IntegrationChangeHistoryListingComponent,
 IntegrationChangeHistoryAddEditComponent,
 IntegrationChangeHistoryDetailComponent,
@@ -524,6 +542,8 @@ IncidentNotificationService,
 IncidentStatusTypeService,
 IncidentTimelineEventService,
 IntegrationService,
+IntegrationCallbackIncidentEventTypeService,
+IntegrationCallbackIncidentEventTypeChangeHistoryService,
 IntegrationChangeHistoryService,
 NotificationChannelTypeService,
 NotificationDeliveryAttemptService,

@@ -1,0 +1,71 @@
+<div class="add-integration-callback-incident-event-type" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-integration-callback-incident-event-type me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Integration Callback Incident Event Type" 
+        *ngIf="userIsAlertingIntegrationCallbackIncidentEventTypeWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #integrationCallbackIncidentEventTypeModal let-modal>
+   <div class="modal-header bg-dark text-light integration-callback-incident-event-type-modal-header">
+      <h5 class="modal-title mb-0" id="integrationCallbackIncidentEventTypeModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Integration Callback Incident Event Type' : 'Add Integration Callback Incident Event Type' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body integration-callback-incident-event-type-modal-body">
+      <form [formGroup]="integrationCallbackIncidentEventTypeForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('integrationId')">
+                <label for="IntegrationCallbackIncidentEventType-integrationId" id="label-IntegrationCallbackIncidentEventType-integrationId"><span class="text-danger">*</span>Integration</label>
+                <select id="IntegrationCallbackIncidentEventType-integrationId" formControlName="integrationId" class="form-select integration-callback-incident-event-type-select" [disabled]="!userIsAlertingIntegrationCallbackIncidentEventTypeWriter()">
+                    <option [ngValue]="null">Select Integration</option>
+                    <option *ngFor="let integration of integrations$ | async" [ngValue]="integration.id">{{integration.name}}</option>
+                </select>
+                <div *ngIf="integrationCallbackIncidentEventTypeForm.get('integrationId')?.invalid && integrationCallbackIncidentEventTypeForm.get('integrationId')?.touched" class="text-danger">
+                    Integration is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('incidentEventTypeId')">
+                <label for="IntegrationCallbackIncidentEventType-incidentEventTypeId" id="label-IntegrationCallbackIncidentEventType-incidentEventTypeId"><span class="text-danger">*</span>Incident Event Type</label>
+                <select id="IntegrationCallbackIncidentEventType-incidentEventTypeId" formControlName="incidentEventTypeId" class="form-select integration-callback-incident-event-type-select" [disabled]="!userIsAlertingIntegrationCallbackIncidentEventTypeWriter()">
+                    <option [ngValue]="null">Select Incident Event Type</option>
+                    <option *ngFor="let incidentEventType of incidentEventTypes$ | async" [ngValue]="incidentEventType.id">{{incidentEventType.name}}</option>
+                </select>
+                <div *ngIf="integrationCallbackIncidentEventTypeForm.get('incidentEventTypeId')?.invalid && integrationCallbackIncidentEventTypeForm.get('incidentEventTypeId')?.touched" class="text-danger">
+                    Incident Event Type is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="IntegrationCallbackIncidentEventType-versionNumber" id="label-IntegrationCallbackIncidentEventType-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="IntegrationCallbackIncidentEventType-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control integration-callback-incident-event-type-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="IntegrationCallbackIncidentEventType-active" formControlName="active" class="form-check-input" [disabled]="!userIsAlertingIntegrationCallbackIncidentEventTypeWriter()" />
+                <label for="IntegrationCallbackIncidentEventType-active" class="form-check-label" id="label-IntegrationCallbackIncidentEventType-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="IntegrationCallbackIncidentEventType-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsAlertingIntegrationCallbackIncidentEventTypeWriter()" />
+                <label for="IntegrationCallbackIncidentEventType-deleted" class="form-check-label" id="label-IntegrationCallbackIncidentEventType-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer integration-callback-incident-event-type-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Integration Callback Incident Event Type changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !integrationCallbackIncidentEventTypeForm.valid || integrationCallbackIncidentEventTypeForm.pristine  || userIsAlertingIntegrationCallbackIncidentEventTypeWriter() == false " ngbTooltip="Save the Integration Callback Incident Event Type changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Integration Callback Incident Event Type' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

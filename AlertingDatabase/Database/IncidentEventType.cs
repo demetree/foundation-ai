@@ -18,4 +18,6 @@ public partial class IncidentEventType
     public bool deleted { get; set; }
 
     public virtual ICollection<IncidentTimelineEvent> IncidentTimelineEvents { get; set; } = new List<IncidentTimelineEvent>();
+
+    public virtual ICollection<IntegrationCallbackIncidentEventType> IntegrationCallbackIncidentEventTypes { get; set; } = new List<IntegrationCallbackIncidentEventType>();
 }

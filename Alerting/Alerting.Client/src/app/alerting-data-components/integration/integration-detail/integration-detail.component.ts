@@ -25,6 +25,7 @@ import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { IntegrationService, IntegrationData, IntegrationSubmitData } from '../../../alerting-data-services/integration.service';
 import { ServiceService } from '../../../alerting-data-services/service.service';
 import { IntegrationChangeHistoryService } from '../../../alerting-data-services/integration-change-history.service';
+import { IntegrationCallbackIncidentEventTypeService } from '../../../alerting-data-services/integration-callback-incident-event-type.service';
 import { WebhookDeliveryAttemptService } from '../../../alerting-data-services/webhook-delivery-attempt.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
@@ -42,6 +43,11 @@ interface IntegrationFormValues {
   description: string | null,
   apiKeyHash: string,
   callbackWebhookUrl: string | null,
+  maxRetryAttempts: string | null,     // Stored as string for form input, converted to number on submit.
+  retryBackoffSeconds: string | null,     // Stored as string for form input, converted to number on submit.
+  callbackOnEventTypes: string | null,
+  lastCallbackSuccessAt: string | null,
+  consecutiveCallbackFailures: string | null,     // Stored as string for form input, converted to number on submit.
   versionNumber: string,     // Stored as string for form input, converted to number on submit.
   active: boolean,
   deleted: boolean,
@@ -77,6 +83,11 @@ export class IntegrationDetailComponent implements OnInit, CanComponentDeactivat
         description: [''],
         apiKeyHash: ['', Validators.required],
         callbackWebhookUrl: [''],
+        maxRetryAttempts: [''],
+        retryBackoffSeconds: [''],
+        callbackOnEventTypes: [''],
+        lastCallbackSuccessAt: [''],
+        consecutiveCallbackFailures: [''],
         versionNumber: [''],
         active: [true],
         deleted: [false],
@@ -96,6 +107,7 @@ export class IntegrationDetailComponent implements OnInit, CanComponentDeactivat
   integrations$ = this.integrationService.GetIntegrationList();
   public services$ = this.serviceService.GetServiceList();
   public integrationChangeHistories$ = this.integrationChangeHistoryService.GetIntegrationChangeHistoryList();
+  public integrationCallbackIncidentEventTypes$ = this.integrationCallbackIncidentEventTypeService.GetIntegrationCallbackIncidentEventTypeList();
   public webhookDeliveryAttempts$ = this.webhookDeliveryAttemptService.GetWebhookDeliveryAttemptList();
 
   private destroy$ = new Subject<void>();
@@ -104,6 +116,7 @@ export class IntegrationDetailComponent implements OnInit, CanComponentDeactivat
     public integrationService: IntegrationService,
     public serviceService: ServiceService,
     public integrationChangeHistoryService: IntegrationChangeHistoryService,
+    public integrationCallbackIncidentEventTypeService: IntegrationCallbackIncidentEventTypeService,
     public webhookDeliveryAttemptService: WebhookDeliveryAttemptService,
     private authService: AuthService,
     private route: ActivatedRoute,
@@ -391,6 +404,11 @@ export class IntegrationDetailComponent implements OnInit, CanComponentDeactivat
         description: '',
         apiKeyHash: '',
         callbackWebhookUrl: '',
+        maxRetryAttempts: '',
+        retryBackoffSeconds: '',
+        callbackOnEventTypes: '',
+        lastCallbackSuccessAt: '',
+        consecutiveCallbackFailures: '',
         versionNumber: '',
         active: true,
         deleted: false,
@@ -408,6 +426,11 @@ export class IntegrationDetailComponent implements OnInit, CanComponentDeactivat
         description: integrationData.description ?? '',
         apiKeyHash: integrationData.apiKeyHash ?? '',
         callbackWebhookUrl: integrationData.callbackWebhookUrl ?? '',
+        maxRetryAttempts: integrationData.maxRetryAttempts?.toString() ?? '',
+        retryBackoffSeconds: integrationData.retryBackoffSeconds?.toString() ?? '',
+        callbackOnEventTypes: integrationData.callbackOnEventTypes ?? '',
+        lastCallbackSuccessAt: isoUtcStringToDateTimeLocal(integrationData.lastCallbackSuccessAt) ?? '',
+        consecutiveCallbackFailures: integrationData.consecutiveCallbackFailures?.toString() ?? '',
         versionNumber: integrationData.versionNumber?.toString() ?? '',
         active: integrationData.active ?? true,
         deleted: integrationData.deleted ?? false,
@@ -475,6 +498,11 @@ export class IntegrationDetailComponent implements OnInit, CanComponentDeactivat
         description: formValue.description?.trim() || null,
         apiKeyHash: formValue.apiKeyHash!.trim(),
         callbackWebhookUrl: formValue.callbackWebhookUrl?.trim() || null,
+        maxRetryAttempts: formValue.maxRetryAttempts ? Number(formValue.maxRetryAttempts) : null,
+        retryBackoffSeconds: formValue.retryBackoffSeconds ? Number(formValue.retryBackoffSeconds) : null,
+        callbackOnEventTypes: formValue.callbackOnEventTypes?.trim() || null,
+        lastCallbackSuccessAt: formValue.lastCallbackSuccessAt ? dateTimeLocalToIsoUtc(formValue.lastCallbackSuccessAt.trim()) : null,
+        consecutiveCallbackFailures: formValue.consecutiveCallbackFailures ? Number(formValue.consecutiveCallbackFailures) : null,
         versionNumber: this.integrationData?.versionNumber ?? 0,
         active: !!formValue.active,
         deleted: !!formValue.deleted,

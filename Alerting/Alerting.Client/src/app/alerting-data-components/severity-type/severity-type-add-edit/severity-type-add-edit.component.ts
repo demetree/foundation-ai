@@ -36,6 +36,7 @@ import { AuthService } from '../../../services/auth.service';
 interface SeverityTypeFormValues {
   name: string,
   description: string | null,
+  sequence: string,     // Stored as string for form input, converted to number on submit.
   active: boolean,
   deleted: boolean,
 };
@@ -70,6 +71,7 @@ export class SeverityTypeAddEditComponent {
   public severityTypeForm: FormGroup = this.fb.group({
         name: ['', Validators.required],
         description: [''],
+        sequence: ['', Validators.required],
         active: [true],
         deleted: [false],
       });
@@ -206,6 +208,7 @@ export class SeverityTypeAddEditComponent {
         id: this.severityTypeSubmitData?.id || 0,
         name: formValue.name!.trim(),
         description: formValue.description?.trim() || null,
+        sequence: Number(formValue.sequence),
         active: !!formValue.active,
         deleted: !!formValue.deleted,
    };
@@ -335,6 +338,7 @@ export class SeverityTypeAddEditComponent {
       this.severityTypeForm.reset({
         name: '',
         description: '',
+        sequence: '',
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -348,6 +352,7 @@ export class SeverityTypeAddEditComponent {
         this.severityTypeForm.reset({
         name: severityTypeData.name ?? '',
         description: severityTypeData.description ?? '',
+        sequence: severityTypeData.sequence?.toString() ?? '',
         active: severityTypeData.active ?? true,
         deleted: severityTypeData.deleted ?? false,
       }, { emitEvent: false});

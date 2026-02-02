@@ -74,20 +74,20 @@ Designed to be independent while sharing the central Security database for users
             //
             // IncidentEventType - static lookup for timeline event types
             //
-            Database.Table eventTypeTable = database.AddTable("IncidentEventType");
-            eventTypeTable.SetMinimumPermissionLevels(ALERTING_READER_PERMISSION_LEVEL, ALERTING_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
-            eventTypeTable.comment = "Static event types for the incident timeline.";
-            eventTypeTable.isWritable = false;              // Nobody gets to write to this
-            eventTypeTable.AddIdField();
-            eventTypeTable.AddNameAndDescriptionFields(true, true, true);
-            eventTypeTable.AddControlFields(false);
+            Database.Table incidentEventTypeTable = database.AddTable("IncidentEventType");
+            incidentEventTypeTable.SetMinimumPermissionLevels(ALERTING_READER_PERMISSION_LEVEL, ALERTING_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            incidentEventTypeTable.comment = "Static event types for the incident timeline.";
+            incidentEventTypeTable.isWritable = false;              // Nobody gets to write to this
+            incidentEventTypeTable.AddIdField();
+            incidentEventTypeTable.AddNameAndDescriptionFields(true, true, true);
+            incidentEventTypeTable.AddControlFields(false);
 
-            eventTypeTable.AddData(new Dictionary<string, string> { { "name", "Triggered" }, { "description", "Incident was triggered" } });
-            eventTypeTable.AddData(new Dictionary<string, string> { { "name", "Escalated" }, { "description", "Escalation rule fired" } });
-            eventTypeTable.AddData(new Dictionary<string, string> { { "name", "Acknowledged" }, { "description", "Incident acknowledged" } });
-            eventTypeTable.AddData(new Dictionary<string, string> { { "name", "Resolved" }, { "description", "Incident resolved" } });
-            eventTypeTable.AddData(new Dictionary<string, string> { { "name", "NoteAdded" }, { "description", "Note added to incident" } });
-            eventTypeTable.AddData(new Dictionary<string, string> { { "name", "NotificationSent" }, { "description", "Notification delivery attempted" } });
+            incidentEventTypeTable.AddData(new Dictionary<string, string> { { "name", "Triggered" }, { "description", "Incident was triggered" } });
+            incidentEventTypeTable.AddData(new Dictionary<string, string> { { "name", "Escalated" }, { "description", "Escalation rule fired" } });
+            incidentEventTypeTable.AddData(new Dictionary<string, string> { { "name", "Acknowledged" }, { "description", "Incident acknowledged" } });
+            incidentEventTypeTable.AddData(new Dictionary<string, string> { { "name", "Resolved" }, { "description", "Incident resolved" } });
+            incidentEventTypeTable.AddData(new Dictionary<string, string> { { "name", "NoteAdded" }, { "description", "Note added to incident" } });
+            incidentEventTypeTable.AddData(new Dictionary<string, string> { { "name", "NotificationSent" }, { "description", "Notification delivery attempted" } });
 
             //
             // NotificationChannelType - static channels for delivery attempts
@@ -232,8 +232,7 @@ Designed to be independent while sharing the central Security database for users
             layerMemberTable.AddMultiTenantSupport();
             layerMemberTable.AddForeignKeyField(scheduleLayerTable, false);
             layerMemberTable.AddIntField("position", false, 0);
-            layerMemberTable.AddGuidField("securityUserObjectGuid", false)
-                .AddScriptComments("References Security.SecurityUser.objectGuid");
+            layerMemberTable.AddGuidField("securityUserObjectGuid", false).AddScriptComments("References Security.SecurityUser.objectGuid");
             layerMemberTable.AddVersionControl();
             layerMemberTable.AddControlFields(true);
             layerMemberTable.AddUniqueConstraint("tenantGuid", "scheduleLayerId", "position");
@@ -248,7 +247,7 @@ Designed to be independent while sharing the central Security database for users
             //
             // Must have Alerting Master Config role to write to this table.
             //
-            onCallScheduleTable.customWriteAccessRole = ALERTING_MASTER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
+            integrationTable.customWriteAccessRole = ALERTING_MASTER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
 
 
             integrationTable.AddIdField();
@@ -257,8 +256,34 @@ Designed to be independent while sharing the central Security database for users
             integrationTable.AddNameAndDescriptionFields(true, true, true);
             integrationTable.AddString250Field("apiKeyHash", false).EnforceUniqueness();            // global unique - No two tenants can share the same key hash 
             integrationTable.AddString1000Field("callbackWebhookUrl", true);
+            integrationTable.AddIntField("maxRetryAttempts", true, 10).AddScriptComments("How many times to retry failed deliveries");
+            integrationTable.AddIntField("retryBackoffSeconds", true, 30).AddScriptComments("Base seconds for backoff (30, 60, 120, 240...)");
+            integrationTable.AddString500Field("callbackOnEventTypes", true).AddScriptComments("Comma-separated IncidentEventType names (e.g., 'Acknowledged,Resolved,Escalated')");
+            integrationTable.AddDateTimeField("lastCallbackSuccessAt", true);
+            integrationTable.AddIntField("consecutiveCallbackFailures", true, null);    
             integrationTable.AddVersionControl();
             integrationTable.AddControlFields(true);
+
+
+
+            Database.Table integrationCallbackEventTable = database.AddTable("IntegrationCallbackIncidentEventType");
+            integrationCallbackEventTable.SetMinimumPermissionLevels(ALERTING_READER_PERMISSION_LEVEL, ALERTING_MASTER_CONFIG_WRITER_PERMISSION_LEVEL);
+            integrationCallbackEventTable.comment = "API integrations incident event types to callback on.";
+            integrationCallbackEventTable.SetTableToBeReadonlyForControllerCreationPurposes();                   // custom write controller logic to be implemented to handle the hashing of the key server side.
+
+            //
+            // Must have Alerting Master Config role to write to this table.
+            //
+            integrationCallbackEventTable.customWriteAccessRole = ALERTING_MASTER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
+
+            integrationCallbackEventTable.AddIdField();
+            integrationCallbackEventTable.AddMultiTenantSupport();
+
+            integrationCallbackEventTable.AddForeignKeyField(integrationTable, false, true);
+            integrationCallbackEventTable.AddForeignKeyField(incidentEventTypeTable, false, true);
+
+            integrationCallbackEventTable.AddVersionControl();
+            integrationCallbackEventTable.AddControlFields(true);
 
             #endregion
 
@@ -382,7 +407,7 @@ Designed to be independent while sharing the central Security database for users
             timelineEventTable.AddIdField();
             timelineEventTable.AddMultiTenantSupport();
             timelineEventTable.AddForeignKeyField(incidentTable, false);
-            timelineEventTable.AddForeignKeyField(eventTypeTable, false);
+            timelineEventTable.AddForeignKeyField(incidentEventTypeTable, false);
             timelineEventTable.AddDateTimeField("timestamp", false).CreateIndex();
             timelineEventTable.AddGuidField("actorObjectGuid", true);
             timelineEventTable.AddTextField("detailsJson", true);

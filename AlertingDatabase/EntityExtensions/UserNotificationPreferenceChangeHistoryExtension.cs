@@ -284,7 +284,7 @@ namespace Foundation.Alerting.Database
 				timeStamp = userNotificationPreferenceChangeHistory.timeStamp,
 				userId = userNotificationPreferenceChangeHistory.userId,
 				data = userNotificationPreferenceChangeHistory.data,
-				userNotificationPreference = UserNotificationPreference.CreateMinimalAnonymous(userNotificationPreferenceChangeHistory.userNotificationPreference),
+				userNotificationPreference = UserNotificationPreference.CreateMinimalAnonymous(userNotificationPreferenceChangeHistory.userNotificationPreference)
 			 };
 		}
 

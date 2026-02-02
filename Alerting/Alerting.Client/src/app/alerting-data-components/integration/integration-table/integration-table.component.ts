@@ -171,6 +171,11 @@ export class IntegrationTableComponent implements OnInit, OnChanges, AfterViewIn
     { key: 'description', label: 'Description', width: undefined },
     { key: 'apiKeyHash', label: 'Api Key Hash', width: undefined },
     { key: 'callbackWebhookUrl', label: 'Callback Webhook Url', width: undefined },
+    { key: 'maxRetryAttempts', label: 'Max Retry Attempts', width: undefined },
+    { key: 'retryBackoffSeconds', label: 'Retry Backoff Seconds', width: undefined },
+    { key: 'callbackOnEventTypes', label: 'Callback On Event Types', width: undefined },
+    { key: 'lastCallbackSuccessAt', label: 'Last Callback Success At', width: undefined, template: 'date' },
+    { key: 'consecutiveCallbackFailures', label: 'Consecutive Callback Failures', width: undefined },
 
     ];
 
@@ -321,6 +326,11 @@ export class IntegrationTableComponent implements OnInit, OnChanges, AfterViewIn
                       'description',
                       'apiKeyHash',
                       'callbackWebhookUrl',
+                      'maxRetryAttempts',
+                      'retryBackoffSeconds',
+                      'callbackOnEventTypes',
+                      'lastCallbackSuccessAt',
+                      'consecutiveCallbackFailures',
         ];
 
         result = result.filter((integration) =>

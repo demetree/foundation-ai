@@ -289,6 +289,11 @@ namespace Foundation.Alerting.Database
 			[Required]
 			public String apiKeyHash { get; set; }
 			public String callbackWebhookUrl { get; set; }
+			public Int32? maxRetryAttempts { get; set; }
+			public Int32? retryBackoffSeconds { get; set; }
+			public String callbackOnEventTypes { get; set; }
+			public DateTime? lastCallbackSuccessAt { get; set; }
+			public Int32? consecutiveCallbackFailures { get; set; }
 			public Int32 versionNumber { get; set; }
 			[Required]
 			public Guid objectGuid { get; set; }
@@ -325,6 +330,11 @@ namespace Foundation.Alerting.Database
 				description = this.description,
 				apiKeyHash = this.apiKeyHash,
 				callbackWebhookUrl = this.callbackWebhookUrl,
+				maxRetryAttempts = this.maxRetryAttempts,
+				retryBackoffSeconds = this.retryBackoffSeconds,
+				callbackOnEventTypes = this.callbackOnEventTypes,
+				lastCallbackSuccessAt = this.lastCallbackSuccessAt,
+				consecutiveCallbackFailures = this.consecutiveCallbackFailures,
 				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -373,6 +383,11 @@ namespace Foundation.Alerting.Database
 				description = this.description,
 				apiKeyHash = this.apiKeyHash,
 				callbackWebhookUrl = this.callbackWebhookUrl,
+				maxRetryAttempts = this.maxRetryAttempts,
+				retryBackoffSeconds = this.retryBackoffSeconds,
+				callbackOnEventTypes = this.callbackOnEventTypes,
+				lastCallbackSuccessAt = this.lastCallbackSuccessAt,
+				consecutiveCallbackFailures = this.consecutiveCallbackFailures,
 				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -422,6 +437,11 @@ namespace Foundation.Alerting.Database
 				description = dto.description,
 				apiKeyHash = dto.apiKeyHash,
 				callbackWebhookUrl = dto.callbackWebhookUrl,
+				maxRetryAttempts = dto.maxRetryAttempts,
+				retryBackoffSeconds = dto.retryBackoffSeconds,
+				callbackOnEventTypes = dto.callbackOnEventTypes,
+				lastCallbackSuccessAt = dto.lastCallbackSuccessAt,
+				consecutiveCallbackFailures = dto.consecutiveCallbackFailures,
 				versionNumber = dto.versionNumber,
 				objectGuid = dto.objectGuid,
 				active = dto.active ?? true,
@@ -447,6 +467,11 @@ namespace Foundation.Alerting.Database
 			this.description = dto.description;
 			this.apiKeyHash = dto.apiKeyHash;
 			this.callbackWebhookUrl = dto.callbackWebhookUrl;
+			this.maxRetryAttempts = dto.maxRetryAttempts;
+			this.retryBackoffSeconds = dto.retryBackoffSeconds;
+			this.callbackOnEventTypes = dto.callbackOnEventTypes;
+			this.lastCallbackSuccessAt = dto.lastCallbackSuccessAt;
+			this.consecutiveCallbackFailures = dto.consecutiveCallbackFailures;
 			this.versionNumber = dto.versionNumber;
 			this.objectGuid = dto.objectGuid;
 			if (dto.active.HasValue == true)
@@ -478,6 +503,11 @@ namespace Foundation.Alerting.Database
 				description = this.description,
 				apiKeyHash = this.apiKeyHash,
 				callbackWebhookUrl = this.callbackWebhookUrl,
+				maxRetryAttempts = this.maxRetryAttempts,
+				retryBackoffSeconds = this.retryBackoffSeconds,
+				callbackOnEventTypes = this.callbackOnEventTypes,
+				lastCallbackSuccessAt = this.lastCallbackSuccessAt,
+				consecutiveCallbackFailures = this.consecutiveCallbackFailures,
 				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -540,6 +570,11 @@ namespace Foundation.Alerting.Database
 				description = integration.description,
 				apiKeyHash = integration.apiKeyHash,
 				callbackWebhookUrl = integration.callbackWebhookUrl,
+				maxRetryAttempts = integration.maxRetryAttempts,
+				retryBackoffSeconds = integration.retryBackoffSeconds,
+				callbackOnEventTypes = integration.callbackOnEventTypes,
+				lastCallbackSuccessAt = integration.lastCallbackSuccessAt,
+				consecutiveCallbackFailures = integration.consecutiveCallbackFailures,
 				versionNumber = integration.versionNumber,
 				objectGuid = integration.objectGuid,
 				active = integration.active,
@@ -569,6 +604,11 @@ namespace Foundation.Alerting.Database
 				description = integration.description,
 				apiKeyHash = integration.apiKeyHash,
 				callbackWebhookUrl = integration.callbackWebhookUrl,
+				maxRetryAttempts = integration.maxRetryAttempts,
+				retryBackoffSeconds = integration.retryBackoffSeconds,
+				callbackOnEventTypes = integration.callbackOnEventTypes,
+				lastCallbackSuccessAt = integration.lastCallbackSuccessAt,
+				consecutiveCallbackFailures = integration.consecutiveCallbackFailures,
 				versionNumber = integration.versionNumber,
 				objectGuid = integration.objectGuid,
 				active = integration.active,

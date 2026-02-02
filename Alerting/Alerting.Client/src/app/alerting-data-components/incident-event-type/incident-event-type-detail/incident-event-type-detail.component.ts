@@ -23,6 +23,7 @@ import { NavigationService } from '../../../utility-services/navigation.service'
 import { CanComponentDeactivate } from '../../../guards/unsaved-changes.guard';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { IncidentEventTypeService, IncidentEventTypeData, IncidentEventTypeSubmitData } from '../../../alerting-data-services/incident-event-type.service';
+import { IntegrationCallbackIncidentEventTypeService } from '../../../alerting-data-services/integration-callback-incident-event-type.service';
 import { IncidentTimelineEventService } from '../../../alerting-data-services/incident-timeline-event.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
@@ -84,12 +85,14 @@ export class IncidentEventTypeDetailComponent implements OnInit, CanComponentDea
   public isEditMode = true;   // Defaults to true (edit).  Gets set to false in ngOnInit if route is 'new'
 
   incidentEventTypes$ = this.incidentEventTypeService.GetIncidentEventTypeList();
+  public integrationCallbackIncidentEventTypes$ = this.integrationCallbackIncidentEventTypeService.GetIntegrationCallbackIncidentEventTypeList();
   public incidentTimelineEvents$ = this.incidentTimelineEventService.GetIncidentTimelineEventList();
 
   private destroy$ = new Subject<void>();
 
   constructor(
     public incidentEventTypeService: IncidentEventTypeService,
+    public integrationCallbackIncidentEventTypeService: IntegrationCallbackIncidentEventTypeService,
     public incidentTimelineEventService: IncidentTimelineEventService,
     private authService: AuthService,
     private route: ActivatedRoute,
