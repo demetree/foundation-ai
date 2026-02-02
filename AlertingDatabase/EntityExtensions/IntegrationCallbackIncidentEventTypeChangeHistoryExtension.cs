@@ -284,7 +284,7 @@ namespace Foundation.Alerting.Database
 				timeStamp = integrationCallbackIncidentEventTypeChangeHistory.timeStamp,
 				userId = integrationCallbackIncidentEventTypeChangeHistory.userId,
 				data = integrationCallbackIncidentEventTypeChangeHistory.data,
-				integrationCallbackIncidentEventType = IntegrationCallbackIncidentEventType.CreateMinimalAnonymous(integrationCallbackIncidentEventTypeChangeHistory.integrationCallbackIncidentEventType)
+				integrationCallbackIncidentEventType = IntegrationCallbackIncidentEventType.CreateMinimalAnonymous(integrationCallbackIncidentEventTypeChangeHistory.integrationCallbackIncidentEventType),
 			 };
 		}
 

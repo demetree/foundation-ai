@@ -28,4 +28,6 @@ public partial class OnCallSchedule
     public virtual ICollection<OnCallScheduleChangeHistory> OnCallScheduleChangeHistories { get; set; } = new List<OnCallScheduleChangeHistory>();
 
     public virtual ICollection<ScheduleLayer> ScheduleLayers { get; set; } = new List<ScheduleLayer>();
+
+    public virtual ICollection<ScheduleOverride> ScheduleOverrides { get; set; } = new List<ScheduleOverride>();
 }

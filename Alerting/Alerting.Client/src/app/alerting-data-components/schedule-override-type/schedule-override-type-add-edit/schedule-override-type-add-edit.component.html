@@ -1,0 +1,58 @@
+<div class="add-schedule-override-type" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-schedule-override-type me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Schedule Override Type" 
+        *ngIf="userIsAlertingScheduleOverrideTypeWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #scheduleOverrideTypeModal let-modal>
+   <div class="modal-header bg-dark text-light schedule-override-type-modal-header">
+      <h5 class="modal-title mb-0" id="scheduleOverrideTypeModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Schedule Override Type' : 'Add Schedule Override Type' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body schedule-override-type-modal-body">
+      <form [formGroup]="scheduleOverrideTypeForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="ScheduleOverrideType-name" id="label-ScheduleOverrideType-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="ScheduleOverrideType-name" formControlName="name" placeholder="Enter Name" class="form-control schedule-override-type-input" [disabled]="!userIsAlertingScheduleOverrideTypeWriter()" aria-labelledby="label-name" />
+                <div *ngIf="scheduleOverrideTypeForm.get('name')?.invalid && scheduleOverrideTypeForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="ScheduleOverrideType-description" id="label-ScheduleOverrideType-description">Description</label>
+                <textarea id="ScheduleOverrideType-description" formControlName="description" placeholder="Enter Description" class="form-control schedule-override-type-input" [disabled]="!userIsAlertingScheduleOverrideTypeWriter()"></textarea>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ScheduleOverrideType-active" formControlName="active" class="form-check-input" [disabled]="!userIsAlertingScheduleOverrideTypeWriter()" />
+                <label for="ScheduleOverrideType-active" class="form-check-label" id="label-ScheduleOverrideType-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ScheduleOverrideType-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsAlertingScheduleOverrideTypeWriter()" />
+                <label for="ScheduleOverrideType-deleted" class="form-check-label" id="label-ScheduleOverrideType-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer schedule-override-type-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Schedule Override Type changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !scheduleOverrideTypeForm.valid || scheduleOverrideTypeForm.pristine  || userIsAlertingScheduleOverrideTypeWriter() == false " ngbTooltip="Save the Schedule Override Type changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Schedule Override Type' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

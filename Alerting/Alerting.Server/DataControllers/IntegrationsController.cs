@@ -568,7 +568,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			}
 
 
-			IQueryable<Database.Integration> query = (from x in _alertingContext.Integrations
+			IQueryable<Database.Integration> query = (from x in _context.Integrations
 				where
 				(x.id == id)
 				select x);
@@ -599,12 +599,12 @@ namespace Foundation.Alerting.Controllers.WebAPI
 
 
 			// Copy the existing object so it can be serialized as-is in the audit and history logs.
-			Database.Integration cloneOfExisting = (Database.Integration)_alertingContext.Entry(existing).GetDatabaseValues().ToObject();
+			Database.Integration cloneOfExisting = (Database.Integration)_context.Entry(existing).GetDatabaseValues().ToObject();
 
 			//
 			// Create a new Integration object using the data from the existing record, updated with what is in the DTO.
 			//
-			Database.Integration integration = (Database.Integration)_alertingContext.Entry(existing).GetDatabaseValues().ToObject();
+			Database.Integration integration = (Database.Integration)_context.Entry(existing).GetDatabaseValues().ToObject();
 			integration.ApplyDTO(integrationDTO);
 			//
 			// The tenant guid for any Integration being saved must match the tenant guid of the user.  
@@ -674,12 +674,12 @@ namespace Foundation.Alerting.Controllers.WebAPI
 
 				try
 				{
-				    EntityEntry<Database.Integration> attached = _alertingContext.Entry(existing);
+				    EntityEntry<Database.Integration> attached = _context.Entry(existing);
 				    attached.CurrentValues.SetValues(integration);
 
-				    using (IDbContextTransaction transaction = _alertingContext.Database.BeginTransaction())
+				    using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
 				    {
-				        _alertingContext.SaveChanges();
+				        _context.SaveChanges();
 
 				        //
 				        // Now add the change history
@@ -691,9 +691,9 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				        integrationChangeHistory.userId = securityUser.id;
 				        integrationChangeHistory.tenantGuid = userTenantGuid;
 				        integrationChangeHistory.data = JsonSerializer.Serialize(Database.Integration.CreateAnonymousWithFirstLevelSubObjects(integration));
-				        _alertingContext.IntegrationChangeHistories.Add(integrationChangeHistory);
+				        _context.IntegrationChangeHistories.Add(integrationChangeHistory);
 
-				        _alertingContext.SaveChanges();
+				        _context.SaveChanges();
 
 				        transaction.Commit();
 				    }
@@ -810,11 +810,11 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				integration.objectGuid = Guid.NewGuid();
 				integration.versionNumber = 1;
 
-				_alertingContext.Integrations.Add(integration);
+				_context.Integrations.Add(integration);
 
-				await using (IDbContextTransaction transaction = await _alertingContext.Database.BeginTransactionAsync(cancellationToken))
+				await using (IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync(cancellationToken))
 				{
-				    await _alertingContext.SaveChangesAsync(cancellationToken);
+				    await _context.SaveChangesAsync(cancellationToken);
 
 				    //
 				    // Now add the change history
@@ -823,7 +823,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				    //
 				    // Detach the integration object so that no further changes will be written to the database
 				    //
-				    _alertingContext.Entry(integration).State = EntityState.Detached;
+				    _context.Entry(integration).State = EntityState.Detached;
 
 				    //
 				    // Nullify all object properties before serializing.
@@ -841,8 +841,8 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				    integrationChangeHistory.userId = securityUser.id;
 				    integrationChangeHistory.tenantGuid = userTenantGuid;
 				    integrationChangeHistory.data = JsonSerializer.Serialize(Database.Integration.CreateAnonymousWithFirstLevelSubObjects(integration));
-				    _alertingContext.IntegrationChangeHistories.Add(integrationChangeHistory);
-				    await _alertingContext.SaveChangesAsync(cancellationToken);
+				    _context.IntegrationChangeHistories.Add(integrationChangeHistory);
+				    await _context.SaveChangesAsync(cancellationToken);
 
 				    await transaction.CommitAsync(cancellationToken);
 
@@ -918,7 +918,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			
 
 			
-			IQueryable <Database.Integration> query = (from x in _alertingContext.Integrations
+			IQueryable <Database.Integration> query = (from x in _context.Integrations
 			        where
 			        (x.id == id)
 			        select x);
@@ -943,7 +943,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				//
 				// Make a copy of the Integration current state so we can log it.
 				//
-				Database.Integration cloneOfExisting = (Database.Integration)_alertingContext.Entry(integration).GetDatabaseValues().ToObject();
+				Database.Integration cloneOfExisting = (Database.Integration)_context.Entry(integration).GetDatabaseValues().ToObject();
 				
 				//
 				// Remove any object fields from the clone object so that it can serialize effectively
@@ -959,7 +959,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				    return NotFound();
 				}
 				
-				IntegrationChangeHistory integrationChangeHistory = (from x in _alertingContext.IntegrationChangeHistories
+				IntegrationChangeHistory integrationChangeHistory = (from x in _context.IntegrationChangeHistories
 				                                               where
 				                                               x.integrationId == id &&
 				                                               x.versionNumber == versionNumber &&
@@ -995,10 +995,10 @@ namespace Foundation.Alerting.Controllers.WebAPI
 
 				    string serializedIntegration = JsonSerializer.Serialize(integration);
 
-				    using (IDbContextTransaction transaction = _alertingContext.Database.BeginTransaction())
+				    using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
 				    {
 
-				        _alertingContext.SaveChanges();
+				        _context.SaveChanges();
 
 				        //
 				        // Now add the change history
@@ -1010,9 +1010,9 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				        newIntegrationChangeHistory.userId = securityUser.id;
 				        newIntegrationChangeHistory.tenantGuid = userTenantGuid;
 				        newIntegrationChangeHistory.data = JsonSerializer.Serialize(Database.Integration.CreateAnonymousWithFirstLevelSubObjects(integration));
-				        _alertingContext.IntegrationChangeHistories.Add(newIntegrationChangeHistory);
+				        _context.IntegrationChangeHistories.Add(newIntegrationChangeHistory);
 
-				        _alertingContext.SaveChanges();
+				        _context.SaveChanges();
 
 				        transaction.Commit();
 				    }
@@ -1355,7 +1355,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
 			}
 
-			IQueryable<Database.Integration> query = (from x in _alertingContext.Integrations
+			IQueryable<Database.Integration> query = (from x in _context.Integrations
 				where
 				(x.id == id)
 				select x);
@@ -1369,7 +1369,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for Alerting.Integration DELETE", id.ToString(), new Exception("No Alerting.Integration entity could be find with the primary key provided."));
 				return NotFound();
 			}
-			Database.Integration cloneOfExisting = (Database.Integration)_alertingContext.Entry(integration).GetDatabaseValues().ToObject();
+			Database.Integration cloneOfExisting = (Database.Integration)_context.Entry(integration).GetDatabaseValues().ToObject();
 
 
 			lock (integrationDeleteSyncRoot)
@@ -1379,7 +1379,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			        integration.deleted = true;
 			        integration.versionNumber++;
 
-			        _alertingContext.SaveChanges();
+			        _context.SaveChanges();
 
 			        //
 			        // Now add the change history
@@ -1391,9 +1391,9 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			        integrationChangeHistory.userId = securityUser.id;
 			        integrationChangeHistory.tenantGuid = userTenantGuid;
 			        integrationChangeHistory.data = JsonSerializer.Serialize(Database.Integration.CreateAnonymousWithFirstLevelSubObjects(integration));
-			        _alertingContext.IntegrationChangeHistories.Add(integrationChangeHistory);
+			        _context.IntegrationChangeHistories.Add(integrationChangeHistory);
 
-			        _alertingContext.SaveChanges();
+			        _context.SaveChanges();
 
 					CreateAuditEvent(AuditEngine.AuditType.DeleteEntity,
 						"Alerting.Integration entity successfully deleted.",

@@ -252,6 +252,75 @@
                 </div>
             </div>
         </div>
+
+        <!-- Overrides Section -->
+        <div class="content-section overrides-section" *ngIf="!isNewSchedule">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    Schedule Overrides
+                    <span class="override-count" *ngIf="overrides.length > 0">({{ overrides.length }})</span>
+                </h2>
+                <button class="btn btn-add-override" (click)="openAddOverrideModal()">
+                    <i class="fa-solid fa-plus"></i>
+                    Add Override
+                </button>
+            </div>
+
+            <!-- Empty State -->
+            <div class="overrides-empty" *ngIf="overrides.length === 0">
+                <div class="empty-icon">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                </div>
+                <h3>No Overrides</h3>
+                <p>Create overrides for vacations, swaps, or temporary coverage changes.</p>
+            </div>
+
+            <!-- Overrides List -->
+            <div class="overrides-list" *ngIf="overrides.length > 0">
+                <div class="override-card" *ngFor="let override of overrides"
+                    [class.past]="override.endDateTime < today"
+                    [class.active]="override.startDateTime <= today && override.endDateTime > today">
+                    <div class="override-type-badge"
+                        [class]="getOverrideTypeName(override.scheduleOverrideTypeId).toLowerCase()">
+                        {{ getOverrideTypeName(override.scheduleOverrideTypeId) }}
+                    </div>
+                    <div class="override-details">
+                        <div class="override-dates">
+                            <i class="fa-regular fa-calendar"></i>
+                            {{ override.startDateTime | date:'MMM d, y h:mm a' }} — {{ override.endDateTime | date:'MMM
+                            d, y h:mm a' }}
+                        </div>
+                        <div class="override-users"
+                            *ngIf="override.originalUserObjectGuid || override.replacementUserObjectGuid">
+                            <span *ngIf="override.originalUserObjectGuid" class="user-badge original">
+                                <i class="fa-solid fa-user-minus"></i>
+                                {{ getUserName(override.originalUserObjectGuid) }}
+                            </span>
+                            <i class="fa-solid fa-arrow-right"
+                                *ngIf="override.originalUserObjectGuid && override.replacementUserObjectGuid"></i>
+                            <span *ngIf="override.replacementUserObjectGuid" class="user-badge replacement">
+                                <i class="fa-solid fa-user-plus"></i>
+                                {{ getUserName(override.replacementUserObjectGuid) }}
+                            </span>
+                        </div>
+                        <div class="override-reason" *ngIf="override.reason">
+                            <i class="fa-solid fa-comment"></i>
+                            {{ override.reason }}
+                        </div>
+                    </div>
+                    <div class="override-actions">
+                        <button class="btn btn-icon btn-sm" (click)="openEditOverrideModal(override)" ngbTooltip="Edit">
+                            <i class="fa-solid fa-pencil"></i>
+                        </button>
+                        <button class="btn btn-icon btn-sm btn-danger-ghost" (click)="removeOverride(override)"
+                            ngbTooltip="Delete">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Loading State -->
@@ -286,6 +355,71 @@
             <button class="btn btn-primary" (click)="save()" [disabled]="isSaving || !formName.trim()">
                 <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-1"></span>
                 {{ isNewSchedule ? 'Create Schedule' : 'Save Changes' }}
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Override Modal -->
+<div class="modal-overlay" *ngIf="showOverrideModal" (click)="closeOverrideModal()">
+    <div class="override-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h3>{{ editingOverride?.isNew ? 'Add Override' : 'Edit Override' }}</h3>
+            <button class="btn btn-icon" (click)="closeOverrideModal()">
+                <i class="fa-solid fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body" *ngIf="editingOverride">
+            <div class="form-group">
+                <label class="form-label">Override Type</label>
+                <select class="form-select" [(ngModel)]="editingOverride.scheduleOverrideTypeId">
+                    <option *ngFor="let type of overrideTypes" [ngValue]="type.id">
+                        {{ type.name }} - {{ type.description }}
+                    </option>
+                </select>
+            </div>
+            <div class="form-row">
+                <div class="form-group flex-1">
+                    <label class="form-label">Start Date/Time</label>
+                    <input type="datetime-local" class="form-control"
+                        [ngModel]="editingOverride.startDateTime | date:'yyyy-MM-ddTHH:mm'"
+                        (ngModelChange)="onOverrideStartDateChange($event)">
+                </div>
+                <div class="form-group flex-1">
+                    <label class="form-label">End Date/Time</label>
+                    <input type="datetime-local" class="form-control"
+                        [ngModel]="editingOverride.endDateTime | date:'yyyy-MM-ddTHH:mm'"
+                        (ngModelChange)="onOverrideEndDateChange($event)">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Original User (being replaced)</label>
+                <select class="form-select" [(ngModel)]="editingOverride.originalUserObjectGuid">
+                    <option [ngValue]="null">— None —</option>
+                    <option *ngFor="let user of users" [value]="user.objectGuid">
+                        {{ user.displayName }}
+                    </option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Replacement User</label>
+                <select class="form-select" [(ngModel)]="editingOverride.replacementUserObjectGuid">
+                    <option [ngValue]="null">— None (Remove from schedule) —</option>
+                    <option *ngFor="let user of users" [value]="user.objectGuid">
+                        {{ user.displayName }}
+                    </option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Reason / Notes</label>
+                <textarea class="form-control" [(ngModel)]="editingOverride.reason" rows="2"
+                    placeholder="e.g., Vacation, Sick leave, Training..."></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" (click)="closeOverrideModal()">Cancel</button>
+            <button class="btn btn-primary" (click)="saveOverrideFromModal()">
+                {{ editingOverride?.isNew ? 'Add Override' : 'Save Changes' }}
             </button>
         </div>
     </div>

@@ -1,0 +1,341 @@
+<app-schedule-override-add-edit [showAddButton]="false"></app-schedule-override-add-edit>
+<div class="row" *ngIf="userIsAlertingScheduleOverrideReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsAlertingScheduleOverrideWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsAlertingScheduleOverrideWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('onCallSchedule.name')">
+                On  Call  Schedule
+                <span *ngIf="sortColumn === 'onCallSchedule.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('scheduleLayer.name')">
+                Schedule  Layer
+                <span *ngIf="sortColumn === 'scheduleLayer.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('startDateTime')">
+                Start  Date  Time
+                <span *ngIf="sortColumn === 'startDateTime'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('endDateTime')">
+                End  Date  Time
+                <span *ngIf="sortColumn === 'endDateTime'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('scheduleOverrideType.name')">
+                Schedule  Override  Type
+                <span *ngIf="sortColumn === 'scheduleOverrideType.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('originalUserObjectGuid')">
+                Original  User  Object  Guid
+                <span *ngIf="sortColumn === 'originalUserObjectGuid'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('replacementUserObjectGuid')">
+                Replacement  User  Object  Guid
+                <span *ngIf="sortColumn === 'replacementUserObjectGuid'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('reason')">
+                Reason
+                <span *ngIf="sortColumn === 'reason'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('createdByUserObjectGuid')">
+                Created  By  User  Object  Guid
+                <span *ngIf="sortColumn === 'createdByUserObjectGuid'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let scheduleOverride of filteredScheduleOverrides; trackBy: getScheduleOverrideId"
+              [ngClass]="{
+                 'row-inactive': scheduleOverride.active == false,
+                 'row-deleted': scheduleOverride.deleted == true 
+                 }">
+            <td class="header-action-button" *ngIf="userIsAlertingScheduleOverrideWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleEdit(scheduleOverride)"
+                      ngbTooltip="Edit" 
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsAlertingScheduleOverrideWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleDelete(scheduleOverride)"
+                      ngbTooltip="Delete" 
+                      placement="top"
+                      *ngIf="scheduleOverride.deleted == false">
+                <i class="fa fa-trash"></i>
+              </button>
+              <button class="btn btn-sm"
+                      (click)="handleUndelete(scheduleOverride)"
+                      ngbTooltip="Undelete" 
+                      placement="top"
+                      *ngIf="scheduleOverride.deleted == true">
+                <i class="fa fa-trash-arrow-up"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(scheduleOverride, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(scheduleOverride, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(scheduleOverride, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(scheduleOverride, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(scheduleOverride, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(scheduleOverride, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(scheduleOverride, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(scheduleOverride, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/oncallschedule', scheduleOverride.onCallScheduleId]" class="btn btn-link text-left" ngbTooltip="Open On Call Schedule details">{{scheduleOverride.onCallSchedule?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/schedulelayer', scheduleOverride.scheduleLayerId]" class="btn btn-link text-left" ngbTooltip="Open Schedule Layer details">{{scheduleOverride.scheduleLayer?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/scheduleoverride', scheduleOverride.id]" class="btn btn-link text-left" ngbTooltip="Open Schedule Override details">{{scheduleOverride.startDateTime | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</a></td>
+            <td class="text-truncate">{{scheduleOverride.endDateTime | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate"><a [routerLink]="['/scheduleoverridetype', scheduleOverride.scheduleOverrideTypeId]" class="btn btn-link text-left" ngbTooltip="Open Schedule Override Type details">{{scheduleOverride.scheduleOverrideType?.name}}</a></td>
+            <td class="text-truncate">{{scheduleOverride.originalUserObjectGuid}}</td>
+            <td class="text-truncate">{{scheduleOverride.replacementUserObjectGuid}}</td>
+            <td class="text-truncate">{{scheduleOverride.reason}}</td>
+            <td class="text-truncate">{{scheduleOverride.createdByUserObjectGuid}}</td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let scheduleOverride of filteredScheduleOverrides; trackBy: getScheduleOverrideId" class="card my-2"
+              [ngClass]="{
+                 'row-inactive': scheduleOverride.active == false,
+                 'row-deleted': scheduleOverride.deleted == true 
+                 }">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(scheduleOverride, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(scheduleOverride, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(scheduleOverride, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(scheduleOverride, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(scheduleOverride, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(scheduleOverride, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(scheduleOverride, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(scheduleOverride, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(scheduleOverride, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(scheduleOverride, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(scheduleOverride, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(scheduleOverride, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(scheduleOverride, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/scheduleoverride', scheduleOverride.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(scheduleOverride)" *ngIf="userIsAlertingScheduleOverrideWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(scheduleOverride)" *ngIf="userIsAlertingScheduleOverrideWriter() && scheduleOverride.deleted == false" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+            <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(scheduleOverride)" *ngIf="userIsAlertingScheduleOverrideWriter() && scheduleOverride.deleted == true" ngbTooltip="Undelete">
+              <i class="fa fa-trash-arrow-upp"></i> UnDelete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{scheduleOverride.id}}</strong>
+               <small class="text-muted d-block">{{scheduleOverride.scheduleOverrideType?.name}}</small>
+             </div>
+             <div>
+                <button class="btn btn-sm"
+                        [routerLink]="['/scheduleoverride', scheduleOverride.id]"
+                        ngbTooltip="Schedule Override Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="btn btn-sm"
+                        (click)="handleEdit(scheduleOverride)"
+                        ngbTooltip="Edit Schedule Override">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleDelete(scheduleOverride)"
+                      ngbTooltip="Delete Schedule Override" 
+                      placement="top"
+                      *ngIf="scheduleOverride.deleted == false">
+                  <i class="fa fa-trash"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleUndelete(scheduleOverride)"
+                      ngbTooltip="Undelete Schedule Override" 
+                      placement="top"
+                      *ngIf="scheduleOverride.deleted == true">
+                 <i class="fa fa-trash-arrow-up"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="schedule-override-info" *ngIf="scheduleOverride.onCallScheduleId != null">
+              <strong>On Call Schedule: </strong>
+              <a [routerLink]="['/oncallschedule', scheduleOverride.onCallScheduleId]" class="text-left p-0 m-0" ngbTooltip="Open On Call Schedule details">{{scheduleOverride.onCallSchedule?.name}}</a>
+            </p>
+            <p class="schedule-override-info" *ngIf="scheduleOverride.scheduleLayerId != null">
+              <strong>Schedule Layer: </strong>
+              <a [routerLink]="['/schedulelayer', scheduleOverride.scheduleLayerId]" class="text-left p-0 m-0" ngbTooltip="Open Schedule Layer details">{{scheduleOverride.scheduleLayer?.name}}</a>
+            </p>
+            <p class="schedule-override-info" *ngIf="scheduleOverride.startDateTime != null">
+              <strong>Start Date Time: </strong>
+              {{scheduleOverride.startDateTime | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="schedule-override-info" *ngIf="scheduleOverride.endDateTime != null">
+              <strong>End Date Time: </strong>
+              {{scheduleOverride.endDateTime | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="schedule-override-info" *ngIf="scheduleOverride.scheduleOverrideTypeId != null">
+              <strong>Schedule Override Type: </strong>
+              <a [routerLink]="['/scheduleoverridetype', scheduleOverride.scheduleOverrideTypeId]" class="text-left p-0 m-0" ngbTooltip="Open Schedule Override Type details">{{scheduleOverride.scheduleOverrideType?.name}}</a>
+            </p>
+            <p class="schedule-override-info" *ngIf="scheduleOverride.originalUserObjectGuid != null">
+              <strong>Original User Object Guid: </strong>
+              {{scheduleOverride.originalUserObjectGuid}}
+            </p>
+            <p class="schedule-override-info" *ngIf="scheduleOverride.replacementUserObjectGuid != null">
+              <strong>Replacement User Object Guid: </strong>
+              {{scheduleOverride.replacementUserObjectGuid}}
+            </p>
+            <p class="schedule-override-info" *ngIf="scheduleOverride.reason != null">
+              <strong>Reason: </strong>
+              {{scheduleOverride.reason}}
+            </p>
+            <p class="schedule-override-info" *ngIf="scheduleOverride.createdByUserObjectGuid != null">
+              <strong>Created By User Object Guid: </strong>
+              {{scheduleOverride.createdByUserObjectGuid}}
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+   </div>
+</div>

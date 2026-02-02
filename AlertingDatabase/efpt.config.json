@@ -112,6 +112,18 @@
          "ObjectType": 0
       },
       {
+         "Name": "[Alerting].[ScheduleOverride]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Alerting].[ScheduleOverrideChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Alerting].[ScheduleOverrideType]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[Alerting].[Service]",
          "ObjectType": 0
       },

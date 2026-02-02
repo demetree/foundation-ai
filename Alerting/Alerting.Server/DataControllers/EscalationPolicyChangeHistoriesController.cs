@@ -441,7 +441,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			}
 
 
-			IQueryable<Database.EscalationPolicyChangeHistory> query = (from x in _alertingContext.EscalationPolicyChangeHistories
+			IQueryable<Database.EscalationPolicyChangeHistory> query = (from x in _context.EscalationPolicyChangeHistories
 				where
 				(x.id == id)
 				select x);
@@ -457,12 +457,12 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			}
 
 			// Copy the existing object so it can be serialized as-is in the audit and history logs.
-			Database.EscalationPolicyChangeHistory cloneOfExisting = (Database.EscalationPolicyChangeHistory)_alertingContext.Entry(existing).GetDatabaseValues().ToObject();
+			Database.EscalationPolicyChangeHistory cloneOfExisting = (Database.EscalationPolicyChangeHistory)_context.Entry(existing).GetDatabaseValues().ToObject();
 
 			//
 			// Create a new EscalationPolicyChangeHistory object using the data from the existing record, updated with what is in the DTO.
 			//
-			Database.EscalationPolicyChangeHistory escalationPolicyChangeHistory = (Database.EscalationPolicyChangeHistory)_alertingContext.Entry(existing).GetDatabaseValues().ToObject();
+			Database.EscalationPolicyChangeHistory escalationPolicyChangeHistory = (Database.EscalationPolicyChangeHistory)_context.Entry(existing).GetDatabaseValues().ToObject();
 			escalationPolicyChangeHistory.ApplyDTO(escalationPolicyChangeHistoryDTO);
 			//
 			// The tenant guid for any EscalationPolicyChangeHistory being saved must match the tenant guid of the user.  
@@ -485,12 +485,12 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				escalationPolicyChangeHistory.timeStamp = escalationPolicyChangeHistory.timeStamp.ToUniversalTime();
 			}
 
-			EntityEntry<Database.EscalationPolicyChangeHistory> attached = _alertingContext.Entry(existing);
+			EntityEntry<Database.EscalationPolicyChangeHistory> attached = _context.Entry(existing);
 			attached.CurrentValues.SetValues(escalationPolicyChangeHistory);
 
 			try
 			{
-				await _alertingContext.SaveChangesAsync(cancellationToken);
+				await _context.SaveChangesAsync(cancellationToken);
 
 				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity,
 					"Alerting.EscalationPolicyChangeHistory entity successfully updated.",
@@ -581,8 +581,8 @@ namespace Foundation.Alerting.Controllers.WebAPI
 					escalationPolicyChangeHistory.timeStamp = escalationPolicyChangeHistory.timeStamp.ToUniversalTime();
 				}
 
-				_alertingContext.EscalationPolicyChangeHistories.Add(escalationPolicyChangeHistory);
-				await _alertingContext.SaveChangesAsync(cancellationToken);
+				_context.EscalationPolicyChangeHistories.Add(escalationPolicyChangeHistory);
+				await _context.SaveChangesAsync(cancellationToken);
 
 				await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
 					"Alerting.EscalationPolicyChangeHistory entity successfully created.",
@@ -648,7 +648,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
 			}
 
-			IQueryable<Database.EscalationPolicyChangeHistory> query = (from x in _alertingContext.EscalationPolicyChangeHistories
+			IQueryable<Database.EscalationPolicyChangeHistory> query = (from x in _context.EscalationPolicyChangeHistories
 				where
 				(x.id == id)
 				select x);
@@ -662,13 +662,13 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for Alerting.EscalationPolicyChangeHistory DELETE", id.ToString(), new Exception("No Alerting.EscalationPolicyChangeHistory entity could be find with the primary key provided."));
 				return NotFound();
 			}
-			Database.EscalationPolicyChangeHistory cloneOfExisting = (Database.EscalationPolicyChangeHistory)_alertingContext.Entry(escalationPolicyChangeHistory).GetDatabaseValues().ToObject();
+			Database.EscalationPolicyChangeHistory cloneOfExisting = (Database.EscalationPolicyChangeHistory)_context.Entry(escalationPolicyChangeHistory).GetDatabaseValues().ToObject();
 
 
 			try
 			{
-				_alertingContext.EscalationPolicyChangeHistories.Remove(escalationPolicyChangeHistory);
-				await _alertingContext.SaveChangesAsync(cancellationToken);
+				_context.EscalationPolicyChangeHistories.Remove(escalationPolicyChangeHistory);
+				await _context.SaveChangesAsync(cancellationToken);
 
 				await CreateAuditEventAsync(AuditEngine.AuditType.DeleteEntity,
 					"Alerting.EscalationPolicyChangeHistory entity successfully deleted.",

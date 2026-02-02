@@ -284,7 +284,7 @@ namespace Foundation.Alerting.Database
 				timeStamp = integrationChangeHistory.timeStamp,
 				userId = integrationChangeHistory.userId,
 				data = integrationChangeHistory.data,
-				integration = Integration.CreateMinimalAnonymous(integrationChangeHistory.integration)
+				integration = Integration.CreateMinimalAnonymous(integrationChangeHistory.integration),
 			 };
 		}
 

@@ -106,6 +106,25 @@ Designed to be independent while sharing the central Security database for users
             notificationChannelTypeTable.AddData(new Dictionary<string, string> { { "name", "VoiceCall" }, { "description", "Automated voice call" }, { "defaultPriority", "5" } });
             notificationChannelTypeTable.AddData(new Dictionary<string, string> { { "name", "MobilePush" }, { "description", "Mobile app push" }, { "defaultPriority", "20" } });
 
+
+
+            //
+            // ScheduleOverrideType - static lookup for schedule overrides
+            //
+            Database.Table scheduleOverrideTypeTable = database.AddTable("ScheduleOverrideType");
+            scheduleOverrideTypeTable.SetMinimumPermissionLevels(ALERTING_READER_PERMISSION_LEVEL, ALERTING_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            scheduleOverrideTypeTable.comment = "Static schedule override types.";
+            scheduleOverrideTypeTable.isWritable = false;              // Nobody gets to write to this
+            scheduleOverrideTypeTable.AddIdField();
+            scheduleOverrideTypeTable.AddNameAndDescriptionFields(true, true, true);
+            scheduleOverrideTypeTable.AddControlFields(false);
+
+            //Valid values: SWAP, REPLACE, REMOVE
+            scheduleOverrideTypeTable.AddData(new Dictionary<string, string> { { "name", "Swap" }, { "description", "Swapped for another" } });
+            scheduleOverrideTypeTable.AddData(new Dictionary<string, string> { { "name", "Replace" }, { "description", "Replaced with another" } });
+            scheduleOverrideTypeTable.AddData(new Dictionary<string, string> { { "name", "Remove" }, { "description", "Removed" } });
+            
+
             #endregion
 
             #region Configuration Tables (admin-only write, soft-delete)
@@ -236,6 +255,39 @@ Designed to be independent while sharing the central Security database for users
             layerMemberTable.AddVersionControl();
             layerMemberTable.AddControlFields(true);
             layerMemberTable.AddUniqueConstraint("tenantGuid", "scheduleLayerId", "position");
+
+
+
+
+
+
+            Database.Table scheduleOverrideTable = database.AddTable("ScheduleOverride");
+            scheduleOverrideTable.SetMinimumPermissionLevels(ALERTING_READER_PERMISSION_LEVEL, ALERTING_SCHEDULE_WRITER_PERMISSION_LEVEL);
+            scheduleOverrideTable.comment = "Temporary overrides for on-call schedules (vacations, swaps, emergency substitutions).";
+
+            //
+            // Must have Alerting Schedule writer role to write to this table.
+            //
+            scheduleOverrideTable.customWriteAccessRole = ALERTING_SCHEDULE_WRITER_CUSTOM_ROLE_NAME;
+
+            scheduleOverrideTable.AddIdField();
+            scheduleOverrideTable.AddMultiTenantSupport();
+            scheduleOverrideTable.AddForeignKeyField(onCallScheduleTable, false);
+            scheduleOverrideTable.AddForeignKeyField(scheduleLayerTable, true).AddScriptComments("If null, override applies to all layers in the schedule.");
+            scheduleOverrideTable.AddDateTimeField("startDateTime", false).AddScriptComments("Start of override period (inclusive).");
+            scheduleOverrideTable.AddDateTimeField("endDateTime", false).AddScriptComments("End of override period (exclusive).");
+            scheduleOverrideTable.AddForeignKeyField(scheduleOverrideTypeTable, false, true).AddScriptComments("The type of override.  Will be one of Swap, Replace, or Remove");
+            scheduleOverrideTable.AddGuidField("originalUserObjectGuid", true).AddScriptComments("The user being replaced (null for layer-wide overrides).");
+            scheduleOverrideTable.AddGuidField("replacementUserObjectGuid", true).AddScriptComments("The substitute user (null for REMOVE type).");
+            scheduleOverrideTable.AddString500Field("reason", true).AddScriptComments("Optional explanation (vacation, sick, training, etc.).");
+            scheduleOverrideTable.AddGuidField("createdByUserObjectGuid", false).AddScriptComments("References Security.SecurityUser.objectGuid - who created the override.");
+            scheduleOverrideTable.AddVersionControl();
+            scheduleOverrideTable.AddControlFields(true);
+
+            // Index for finding overlapping overrides
+            scheduleOverrideTable.CreateIndexForFields(new List<string> { "tenantGuid", "onCallScheduleId", "startDateTime", "endDateTime" });
+            // Index for "my overrides" queries
+            scheduleOverrideTable.CreateIndexForFields(new List<string> { "tenantGuid", "originalUserObjectGuid" });
 
 
 

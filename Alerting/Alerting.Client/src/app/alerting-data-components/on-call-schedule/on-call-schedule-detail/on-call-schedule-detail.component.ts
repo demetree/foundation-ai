@@ -25,6 +25,7 @@ import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { OnCallScheduleService, OnCallScheduleData, OnCallScheduleSubmitData } from '../../../alerting-data-services/on-call-schedule.service';
 import { OnCallScheduleChangeHistoryService } from '../../../alerting-data-services/on-call-schedule-change-history.service';
 import { ScheduleLayerService } from '../../../alerting-data-services/schedule-layer.service';
+import { ScheduleOverrideService } from '../../../alerting-data-services/schedule-override.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -91,6 +92,7 @@ export class OnCallScheduleDetailComponent implements OnInit, CanComponentDeacti
   onCallSchedules$ = this.onCallScheduleService.GetOnCallScheduleList();
   public onCallScheduleChangeHistories$ = this.onCallScheduleChangeHistoryService.GetOnCallScheduleChangeHistoryList();
   public scheduleLayers$ = this.scheduleLayerService.GetScheduleLayerList();
+  public scheduleOverrides$ = this.scheduleOverrideService.GetScheduleOverrideList();
 
   private destroy$ = new Subject<void>();
 
@@ -98,6 +100,7 @@ export class OnCallScheduleDetailComponent implements OnInit, CanComponentDeacti
     public onCallScheduleService: OnCallScheduleService,
     public onCallScheduleChangeHistoryService: OnCallScheduleChangeHistoryService,
     public scheduleLayerService: ScheduleLayerService,
+    public scheduleOverrideService: ScheduleOverrideService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,

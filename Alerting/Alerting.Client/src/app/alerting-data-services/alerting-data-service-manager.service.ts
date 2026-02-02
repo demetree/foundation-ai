@@ -33,6 +33,9 @@ import {ScheduleLayerService} from  './schedule-layer.service';
 import {ScheduleLayerChangeHistoryService} from  './schedule-layer-change-history.service';
 import {ScheduleLayerMemberService} from  './schedule-layer-member.service';
 import {ScheduleLayerMemberChangeHistoryService} from  './schedule-layer-member-change-history.service';
+import {ScheduleOverrideService} from  './schedule-override.service';
+import {ScheduleOverrideChangeHistoryService} from  './schedule-override-change-history.service';
+import {ScheduleOverrideTypeService} from  './schedule-override-type.service';
 import {ServiceService} from  './service.service';
 import {ServiceChangeHistoryService} from  './service-change-history.service';
 import {SeverityTypeService} from  './severity-type.service';
@@ -72,6 +75,9 @@ export class AlertingDataServiceManagerService  {
               , public scheduleLayerChangeHistoryService: ScheduleLayerChangeHistoryService
               , public scheduleLayerMemberService: ScheduleLayerMemberService
               , public scheduleLayerMemberChangeHistoryService: ScheduleLayerMemberChangeHistoryService
+              , public scheduleOverrideService: ScheduleOverrideService
+              , public scheduleOverrideChangeHistoryService: ScheduleOverrideChangeHistoryService
+              , public scheduleOverrideTypeService: ScheduleOverrideTypeService
               , public serviceService: ServiceService
               , public serviceChangeHistoryService: ServiceChangeHistoryService
               , public severityTypeService: SeverityTypeService
@@ -109,6 +115,9 @@ export class AlertingDataServiceManagerService  {
         this.scheduleLayerChangeHistoryService.ClearAllCaches();
         this.scheduleLayerMemberService.ClearAllCaches();
         this.scheduleLayerMemberChangeHistoryService.ClearAllCaches();
+        this.scheduleOverrideService.ClearAllCaches();
+        this.scheduleOverrideChangeHistoryService.ClearAllCaches();
+        this.scheduleOverrideTypeService.ClearAllCaches();
         this.serviceService.ClearAllCaches();
         this.serviceChangeHistoryService.ClearAllCaches();
         this.severityTypeService.ClearAllCaches();

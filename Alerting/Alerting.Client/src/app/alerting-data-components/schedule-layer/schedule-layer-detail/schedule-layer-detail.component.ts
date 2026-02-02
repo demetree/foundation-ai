@@ -26,6 +26,7 @@ import { ScheduleLayerService, ScheduleLayerData, ScheduleLayerSubmitData } from
 import { OnCallScheduleService } from '../../../alerting-data-services/on-call-schedule.service';
 import { ScheduleLayerChangeHistoryService } from '../../../alerting-data-services/schedule-layer-change-history.service';
 import { ScheduleLayerMemberService } from '../../../alerting-data-services/schedule-layer-member.service';
+import { ScheduleOverrideService } from '../../../alerting-data-services/schedule-override.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -101,6 +102,7 @@ export class ScheduleLayerDetailComponent implements OnInit, CanComponentDeactiv
   public onCallSchedules$ = this.onCallScheduleService.GetOnCallScheduleList();
   public scheduleLayerChangeHistories$ = this.scheduleLayerChangeHistoryService.GetScheduleLayerChangeHistoryList();
   public scheduleLayerMembers$ = this.scheduleLayerMemberService.GetScheduleLayerMemberList();
+  public scheduleOverrides$ = this.scheduleOverrideService.GetScheduleOverrideList();
 
   private destroy$ = new Subject<void>();
 
@@ -109,6 +111,7 @@ export class ScheduleLayerDetailComponent implements OnInit, CanComponentDeactiv
     public onCallScheduleService: OnCallScheduleService,
     public scheduleLayerChangeHistoryService: ScheduleLayerChangeHistoryService,
     public scheduleLayerMemberService: ScheduleLayerMemberService,
+    public scheduleOverrideService: ScheduleOverrideService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,

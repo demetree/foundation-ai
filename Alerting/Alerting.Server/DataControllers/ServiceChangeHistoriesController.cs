@@ -441,7 +441,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			}
 
 
-			IQueryable<Database.ServiceChangeHistory> query = (from x in _alertingContext.ServiceChangeHistories
+			IQueryable<Database.ServiceChangeHistory> query = (from x in _context.ServiceChangeHistories
 				where
 				(x.id == id)
 				select x);
@@ -457,12 +457,12 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			}
 
 			// Copy the existing object so it can be serialized as-is in the audit and history logs.
-			Database.ServiceChangeHistory cloneOfExisting = (Database.ServiceChangeHistory)_alertingContext.Entry(existing).GetDatabaseValues().ToObject();
+			Database.ServiceChangeHistory cloneOfExisting = (Database.ServiceChangeHistory)_context.Entry(existing).GetDatabaseValues().ToObject();
 
 			//
 			// Create a new ServiceChangeHistory object using the data from the existing record, updated with what is in the DTO.
 			//
-			Database.ServiceChangeHistory serviceChangeHistory = (Database.ServiceChangeHistory)_alertingContext.Entry(existing).GetDatabaseValues().ToObject();
+			Database.ServiceChangeHistory serviceChangeHistory = (Database.ServiceChangeHistory)_context.Entry(existing).GetDatabaseValues().ToObject();
 			serviceChangeHistory.ApplyDTO(serviceChangeHistoryDTO);
 			//
 			// The tenant guid for any ServiceChangeHistory being saved must match the tenant guid of the user.  
@@ -485,12 +485,12 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				serviceChangeHistory.timeStamp = serviceChangeHistory.timeStamp.ToUniversalTime();
 			}
 
-			EntityEntry<Database.ServiceChangeHistory> attached = _alertingContext.Entry(existing);
+			EntityEntry<Database.ServiceChangeHistory> attached = _context.Entry(existing);
 			attached.CurrentValues.SetValues(serviceChangeHistory);
 
 			try
 			{
-				await _alertingContext.SaveChangesAsync(cancellationToken);
+				await _context.SaveChangesAsync(cancellationToken);
 
 				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity,
 					"Alerting.ServiceChangeHistory entity successfully updated.",
@@ -581,8 +581,8 @@ namespace Foundation.Alerting.Controllers.WebAPI
 					serviceChangeHistory.timeStamp = serviceChangeHistory.timeStamp.ToUniversalTime();
 				}
 
-				_alertingContext.ServiceChangeHistories.Add(serviceChangeHistory);
-				await _alertingContext.SaveChangesAsync(cancellationToken);
+				_context.ServiceChangeHistories.Add(serviceChangeHistory);
+				await _context.SaveChangesAsync(cancellationToken);
 
 				await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
 					"Alerting.ServiceChangeHistory entity successfully created.",
@@ -648,7 +648,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
 			}
 
-			IQueryable<Database.ServiceChangeHistory> query = (from x in _alertingContext.ServiceChangeHistories
+			IQueryable<Database.ServiceChangeHistory> query = (from x in _context.ServiceChangeHistories
 				where
 				(x.id == id)
 				select x);
@@ -662,13 +662,13 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for Alerting.ServiceChangeHistory DELETE", id.ToString(), new Exception("No Alerting.ServiceChangeHistory entity could be find with the primary key provided."));
 				return NotFound();
 			}
-			Database.ServiceChangeHistory cloneOfExisting = (Database.ServiceChangeHistory)_alertingContext.Entry(serviceChangeHistory).GetDatabaseValues().ToObject();
+			Database.ServiceChangeHistory cloneOfExisting = (Database.ServiceChangeHistory)_context.Entry(serviceChangeHistory).GetDatabaseValues().ToObject();
 
 
 			try
 			{
-				_alertingContext.ServiceChangeHistories.Remove(serviceChangeHistory);
-				await _alertingContext.SaveChangesAsync(cancellationToken);
+				_context.ServiceChangeHistories.Remove(serviceChangeHistory);
+				await _context.SaveChangesAsync(cancellationToken);
 
 				await CreateAuditEventAsync(AuditEngine.AuditType.DeleteEntity,
 					"Alerting.ServiceChangeHistory entity successfully deleted.",

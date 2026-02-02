@@ -18,6 +18,7 @@ import { AuthService } from '../services/auth.service';
 import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
 import { OnCallScheduleChangeHistoryService, OnCallScheduleChangeHistoryData } from './on-call-schedule-change-history.service';
 import { ScheduleLayerService, ScheduleLayerData } from './schedule-layer.service';
+import { ScheduleOverrideService, ScheduleOverrideData } from './schedule-override.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -142,6 +143,11 @@ export class OnCallScheduleData {
     private _scheduleLayersSubject = new BehaviorSubject<ScheduleLayerData[] | null>(null);
 
                 
+    private _scheduleOverrides: ScheduleOverrideData[] | null = null;
+    private _scheduleOverridesPromise: Promise<ScheduleOverrideData[]> | null  = null;
+    private _scheduleOverridesSubject = new BehaviorSubject<ScheduleOverrideData[] | null>(null);
+
+                
 
 
     //
@@ -196,6 +202,25 @@ export class OnCallScheduleData {
 
 
 
+    public ScheduleOverrides$ = this._scheduleOverridesSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._scheduleOverrides === null && this._scheduleOverridesPromise === null) {
+            this.loadScheduleOverrides(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public ScheduleOverridesCount$ = ScheduleOverrideService.Instance.GetScheduleOverridesRowCount({onCallScheduleId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
 
   //
   // Full reload — refreshes the entire object and clears all lazy caches 
@@ -241,6 +266,10 @@ export class OnCallScheduleData {
      this._scheduleLayers = null;
      this._scheduleLayersPromise = null;
      this._scheduleLayersSubject.next(null);
+
+     this._scheduleOverrides = null;
+     this._scheduleOverridesPromise = null;
+     this._scheduleOverridesSubject.next(null);
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -381,6 +410,71 @@ export class OnCallScheduleData {
     }
 
 
+    /**
+     *
+     * Gets the ScheduleOverrides for this OnCallSchedule.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.onCallSchedule.ScheduleOverrides.then(onCallSchedules => { ... })
+     *   or
+     *   await this.onCallSchedule.onCallSchedules
+     *
+    */
+    public get ScheduleOverrides(): Promise<ScheduleOverrideData[]> {
+        if (this._scheduleOverrides !== null) {
+            return Promise.resolve(this._scheduleOverrides);
+        }
+
+        if (this._scheduleOverridesPromise !== null) {
+            return this._scheduleOverridesPromise;
+        }
+
+        // Start the load
+        this.loadScheduleOverrides();
+
+        return this._scheduleOverridesPromise!;
+    }
+
+
+
+    private loadScheduleOverrides(): void {
+
+        this._scheduleOverridesPromise = lastValueFrom(
+            OnCallScheduleService.Instance.GetScheduleOverridesForOnCallSchedule(this.id)
+        )
+        .then(ScheduleOverrides => {
+            this._scheduleOverrides = ScheduleOverrides ?? [];
+            this._scheduleOverridesSubject.next(this._scheduleOverrides);
+            return this._scheduleOverrides;
+         })
+        .catch(err => {
+            this._scheduleOverrides = [];
+            this._scheduleOverridesSubject.next(this._scheduleOverrides);
+            throw err;
+        })
+        .finally(() => {
+            this._scheduleOverridesPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached ScheduleOverride. Call after mutations to force refresh.
+     */
+    public ClearScheduleOverridesCache(): void {
+        this._scheduleOverrides = null;
+        this._scheduleOverridesPromise = null;
+        this._scheduleOverridesSubject.next(this._scheduleOverrides);      // Emit to observable
+    }
+
+    public get HasScheduleOverrides(): Promise<boolean> {
+        return this.ScheduleOverrides.then(scheduleOverrides => scheduleOverrides.length > 0);
+    }
+
+
 
 
     //
@@ -461,6 +555,7 @@ export class OnCallScheduleService extends SecureEndpointBase {
         private utilityService: UtilityService,
         private onCallScheduleChangeHistoryService: OnCallScheduleChangeHistoryService,
         private scheduleLayerService: ScheduleLayerService,
+        private scheduleOverrideService: ScheduleOverrideService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
 
@@ -942,6 +1037,16 @@ export class OnCallScheduleService extends SecureEndpointBase {
     }
 
 
+    public GetScheduleOverridesForOnCallSchedule(onCallScheduleId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<ScheduleOverrideData[]> {
+        return this.scheduleOverrideService.GetScheduleOverrideList({
+            onCallScheduleId: onCallScheduleId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
  /**
    *
    * Revives a plain object from the server into a full OnCallScheduleData instance.
@@ -985,6 +1090,10 @@ export class OnCallScheduleService extends SecureEndpointBase {
     (revived as any)._scheduleLayersPromise = null;
     (revived as any)._scheduleLayersSubject = new BehaviorSubject<ScheduleLayerData[] | null>(null);
 
+    (revived as any)._scheduleOverrides = null;
+    (revived as any)._scheduleOverridesPromise = null;
+    (revived as any)._scheduleOverridesSubject = new BehaviorSubject<ScheduleOverrideData[] | null>(null);
+
 
     //
     // Re-attach ALL public observables with their lazy-load tap() triggers
@@ -1023,6 +1132,22 @@ export class OnCallScheduleService extends SecureEndpointBase {
       );
 
     (revived as any).ScheduleLayersCount$ = ScheduleLayerService.Instance.GetScheduleLayersRowCount({onCallScheduleId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).ScheduleOverrides$ = (revived as any)._scheduleOverridesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._scheduleOverrides === null && (revived as any)._scheduleOverridesPromise === null) {
+                (revived as any).loadScheduleOverrides();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).ScheduleOverridesCount$ = ScheduleOverrideService.Instance.GetScheduleOverridesRowCount({onCallScheduleId: (revived as any).id,
       active: true,
       deleted: false
     });

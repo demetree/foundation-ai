@@ -1,0 +1,139 @@
+<div class="container-fluid p-1 m-0 schedule-override-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="schedule-override-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Schedule Override</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Schedule Override' : 'Add Schedule Override'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsAlertingScheduleOverrideReader()">
+                <div class="col m-2 schedule-override-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="scheduleOverrideForm" (ngSubmit)="submitForm()" class="schedule-override-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('onCallScheduleId')">
+                                <label for="ScheduleOverride-onCallScheduleId" id="label-ScheduleOverride-onCallScheduleId"><span class="text-danger">*</span>On Call Schedule</label>
+                                <select id="ScheduleOverride-onCallScheduleId" formControlName="onCallScheduleId" class="form-select schedule-override-select" [disabled]="!userIsAlertingScheduleOverrideWriter()">
+                                    <option [ngValue]="null">Select On Call Schedule</option>
+                                    <option *ngFor="let onCallSchedule of onCallSchedules$ | async" [ngValue]="onCallSchedule.id">{{onCallSchedule.name}}</option>
+                                </select>
+                                <div *ngIf="scheduleOverrideForm.get('onCallScheduleId')?.invalid && scheduleOverrideForm.get('onCallScheduleId')?.touched" class="text-danger">
+                                    On Call Schedule is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('scheduleLayerId')">
+                                <label for="ScheduleOverride-scheduleLayerId" id="label-ScheduleOverride-scheduleLayerId">Schedule Layer</label>
+                                <select id="ScheduleOverride-scheduleLayerId" formControlName="scheduleLayerId" class="form-select schedule-override-select" [disabled]="!userIsAlertingScheduleOverrideWriter()">
+                                    <option [ngValue]="null">Select Schedule Layer</option>
+                                    <option *ngFor="let scheduleLayer of scheduleLayers$ | async" [ngValue]="scheduleLayer.id">{{scheduleLayer.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('startDateTime')">
+                                <label for="ScheduleOverride-startDateTime" id="label-ScheduleOverride-startDateTime"><span class="text-danger">*</span>Start Date Time</label>
+                                <input type="datetime-local" id="ScheduleOverride-startDateTime" formControlName="startDateTime" placeholder="Enter Start Date Time" class="form-control schedule-override-input" [disabled]="!userIsAlertingScheduleOverrideWriter()" aria-labelledby="label-startDateTime" />
+                                <div *ngIf="scheduleOverrideForm.get('startDateTime')?.invalid && scheduleOverrideForm.get('startDateTime')?.touched" class="text-danger">
+                                    Start Date Time is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('endDateTime')">
+                                <label for="ScheduleOverride-endDateTime" id="label-ScheduleOverride-endDateTime"><span class="text-danger">*</span>End Date Time</label>
+                                <input type="datetime-local" id="ScheduleOverride-endDateTime" formControlName="endDateTime" placeholder="Enter End Date Time" class="form-control schedule-override-input" [disabled]="!userIsAlertingScheduleOverrideWriter()" aria-labelledby="label-endDateTime" />
+                                <div *ngIf="scheduleOverrideForm.get('endDateTime')?.invalid && scheduleOverrideForm.get('endDateTime')?.touched" class="text-danger">
+                                    End Date Time is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('scheduleOverrideTypeId')">
+                                <label for="ScheduleOverride-scheduleOverrideTypeId" id="label-ScheduleOverride-scheduleOverrideTypeId"><span class="text-danger">*</span>Schedule Override Type</label>
+                                <select id="ScheduleOverride-scheduleOverrideTypeId" formControlName="scheduleOverrideTypeId" class="form-select schedule-override-select" [disabled]="!userIsAlertingScheduleOverrideWriter()">
+                                    <option [ngValue]="null">Select Schedule Override Type</option>
+                                    <option *ngFor="let scheduleOverrideType of scheduleOverrideTypes$ | async" [ngValue]="scheduleOverrideType.id">{{scheduleOverrideType.name}}</option>
+                                </select>
+                                <div *ngIf="scheduleOverrideForm.get('scheduleOverrideTypeId')?.invalid && scheduleOverrideForm.get('scheduleOverrideTypeId')?.touched" class="text-danger">
+                                    Schedule Override Type is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('originalUserObjectGuid')">
+                                <label for="ScheduleOverride-originalUserObjectGuid" id="label-ScheduleOverride-originalUserObjectGuid">Original User Object Guid</label>
+                                <input type="text" id="ScheduleOverride-originalUserObjectGuid" formControlName="originalUserObjectGuid" placeholder="Enter Original User Object Guid" class="form-control schedule-override-input" [disabled]="!userIsAlertingScheduleOverrideWriter()" aria-labelledby="label-originalUserObjectGuid" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('replacementUserObjectGuid')">
+                                <label for="ScheduleOverride-replacementUserObjectGuid" id="label-ScheduleOverride-replacementUserObjectGuid">Replacement User Object Guid</label>
+                                <input type="text" id="ScheduleOverride-replacementUserObjectGuid" formControlName="replacementUserObjectGuid" placeholder="Enter Replacement User Object Guid" class="form-control schedule-override-input" [disabled]="!userIsAlertingScheduleOverrideWriter()" aria-labelledby="label-replacementUserObjectGuid" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('reason')">
+                                <label for="ScheduleOverride-reason" id="label-ScheduleOverride-reason">Reason</label>
+                                <textarea id="ScheduleOverride-reason" formControlName="reason" placeholder="Enter Reason" class="form-control schedule-override-input" [disabled]="!userIsAlertingScheduleOverrideWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('createdByUserObjectGuid')">
+                                <label for="ScheduleOverride-createdByUserObjectGuid" id="label-ScheduleOverride-createdByUserObjectGuid"><span class="text-danger">*</span>Created By User Object Guid</label>
+                                <input type="text" id="ScheduleOverride-createdByUserObjectGuid" formControlName="createdByUserObjectGuid" placeholder="Enter Created By User Object Guid" class="form-control schedule-override-input" [disabled]="!userIsAlertingScheduleOverrideWriter()" aria-labelledby="label-createdByUserObjectGuid" />
+                                <div *ngIf="scheduleOverrideForm.get('createdByUserObjectGuid')?.invalid && scheduleOverrideForm.get('createdByUserObjectGuid')?.touched" class="text-danger">
+                                    Created By User Object Guid is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="ScheduleOverride-versionNumber" id="label-ScheduleOverride-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="ScheduleOverride-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control schedule-override-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ScheduleOverride-active" formControlName="active" class="form-check-input" [disabled]="!userIsAlertingScheduleOverrideWriter()" />
+                                <label for="ScheduleOverride-active" class="form-check-label" id="label-ScheduleOverride-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ScheduleOverride-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsAlertingScheduleOverrideWriter()" />
+                                <label for="ScheduleOverride-deleted" class="form-check-label" id="label-ScheduleOverride-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="schedule-override-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="scheduleOverrideForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Schedule Override">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !scheduleOverrideForm.valid || !scheduleOverrideForm.dirty || scheduleOverrideForm.pristine  || userIsAlertingScheduleOverrideWriter() == false " ngbTooltip="Save the Schedule Override changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Schedule Override' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsAlertingScheduleOverrideReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 schedule-override-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="scheduleOverrideChangeHistoryService.userIsAlertingScheduleOverrideChangeHistoryReader()">
+                            <button ngbNavLink>Schedule Override Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (scheduleOverrideData?.ScheduleOverrideChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-schedule-override-change-history-table [queryParams]="{ scheduleOverrideId: scheduleOverrideData?.id }"></app-schedule-override-change-history-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-schedule-override-change-history-add-edit [preSeededData]="{ scheduleOverrideId: scheduleOverrideData?.id }" [hiddenFields]="['scheduleOverrideId']"></app-schedule-override-change-history-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

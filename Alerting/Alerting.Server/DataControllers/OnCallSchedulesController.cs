@@ -723,6 +723,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				    //
 					onCallSchedule.OnCallScheduleChangeHistories = null;
 					onCallSchedule.ScheduleLayers = null;
+					onCallSchedule.ScheduleOverrides = null;
 
 
 				    OnCallScheduleChangeHistory onCallScheduleChangeHistory = new OnCallScheduleChangeHistory();
@@ -839,6 +840,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				//
 				cloneOfExisting.OnCallScheduleChangeHistories = null;
 				cloneOfExisting.ScheduleLayers = null;
+				cloneOfExisting.ScheduleOverrides = null;
 
 				if (versionNumber >= onCallSchedule.versionNumber)
 				{

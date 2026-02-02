@@ -37,5 +37,7 @@ public partial class ScheduleLayer
 
     public virtual ICollection<ScheduleLayerMember> ScheduleLayerMembers { get; set; } = new List<ScheduleLayerMember>();
 
+    public virtual ICollection<ScheduleOverride> ScheduleOverrides { get; set; } = new List<ScheduleOverride>();
+
     public virtual OnCallSchedule onCallSchedule { get; set; }
 }

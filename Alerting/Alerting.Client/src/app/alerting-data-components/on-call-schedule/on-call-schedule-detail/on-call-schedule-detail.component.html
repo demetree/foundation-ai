@@ -104,6 +104,23 @@
                             </div>
                             </ng-template>
                         </li>
+                      <li ngbNavItem *ngIf="scheduleOverrideService.userIsAlertingScheduleOverrideReader()">
+                            <button ngbNavLink>Schedule Overrides
+                                <span class="badge bg-primary ms-2">
+                                    {{ (onCallScheduleData?.ScheduleOverridesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-schedule-override-table [queryParams]="{ onCallScheduleId: onCallScheduleData?.id }"></app-schedule-override-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-schedule-override-add-edit [preSeededData]="{ onCallScheduleId: onCallScheduleData?.id }" [hiddenFields]="['onCallScheduleId']"></app-schedule-override-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
                     </ul>
                      <div [ngbNavOutlet]="nav"></div>
                 </div>

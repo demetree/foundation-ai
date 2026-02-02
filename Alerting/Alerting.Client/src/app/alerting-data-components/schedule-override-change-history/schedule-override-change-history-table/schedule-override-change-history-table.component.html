@@ -1,0 +1,269 @@
+<app-schedule-override-change-history-add-edit [showAddButton]="false"></app-schedule-override-change-history-add-edit>
+<div class="row" *ngIf="userIsAlertingScheduleOverrideChangeHistoryReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsAlertingScheduleOverrideChangeHistoryWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsAlertingScheduleOverrideChangeHistoryWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('scheduleOverride.name')">
+                Schedule  Override
+                <span *ngIf="sortColumn === 'scheduleOverride.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('timeStamp')">
+                Time  Stamp
+                <span *ngIf="sortColumn === 'timeStamp'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('userId')">
+                User  Id
+                <span *ngIf="sortColumn === 'userId'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('data')">
+                Data
+                <span *ngIf="sortColumn === 'data'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let scheduleOverrideChangeHistory of filteredScheduleOverrideChangeHistories; trackBy: getScheduleOverrideChangeHistoryId">
+            <td class="header-action-button" *ngIf="userIsAlertingScheduleOverrideChangeHistoryWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleEdit(scheduleOverrideChangeHistory)"
+                      ngbTooltip="Edit" 
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsAlertingScheduleOverrideChangeHistoryWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleDelete(scheduleOverrideChangeHistory)"
+                      ngbTooltip="Delete" 
+                      placement="top">
+                <i class="fa fa-trash"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(scheduleOverrideChangeHistory, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(scheduleOverrideChangeHistory, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(scheduleOverrideChangeHistory, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(scheduleOverrideChangeHistory, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(scheduleOverrideChangeHistory, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(scheduleOverrideChangeHistory, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(scheduleOverrideChangeHistory, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(scheduleOverrideChangeHistory, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/scheduleoverride', scheduleOverrideChangeHistory.scheduleOverrideId]" class="btn btn-link text-left" ngbTooltip="Open Schedule Override details">{{scheduleOverrideChangeHistory.scheduleOverride?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/scheduleoverridechangehistory', scheduleOverrideChangeHistory.id]" class="btn btn-link text-left" ngbTooltip="Open Schedule Override Change History details">{{scheduleOverrideChangeHistory.timeStamp | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</a></td>
+            <td class="text-truncate">{{scheduleOverrideChangeHistory.userId | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{scheduleOverrideChangeHistory.data}}</td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let scheduleOverrideChangeHistory of filteredScheduleOverrideChangeHistories; trackBy: getScheduleOverrideChangeHistoryId" class="card my-2">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(scheduleOverrideChangeHistory, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(scheduleOverrideChangeHistory, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(scheduleOverrideChangeHistory, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(scheduleOverrideChangeHistory, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(scheduleOverrideChangeHistory, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(scheduleOverrideChangeHistory, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(scheduleOverrideChangeHistory, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(scheduleOverrideChangeHistory, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(scheduleOverrideChangeHistory, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(scheduleOverrideChangeHistory, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(scheduleOverrideChangeHistory, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(scheduleOverrideChangeHistory, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(scheduleOverrideChangeHistory, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/scheduleoverridechangehistory', scheduleOverrideChangeHistory.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(scheduleOverrideChangeHistory)" *ngIf="userIsAlertingScheduleOverrideChangeHistoryWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(scheduleOverrideChangeHistory)" *ngIf="userIsAlertingScheduleOverrideChangeHistoryWriter()" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{scheduleOverrideChangeHistory.id}}</strong>
+               <small class="text-muted d-block">{{scheduleOverrideChangeHistory.scheduleOverride?.name}}</small>
+             </div>
+             <div>
+                <button class="btn btn-sm"
+                        [routerLink]="['/scheduleoverridechangehistory', scheduleOverrideChangeHistory.id]"
+                        ngbTooltip="Schedule Override Change History Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="btn btn-sm"
+                        (click)="handleEdit(scheduleOverrideChangeHistory)"
+                        ngbTooltip="Edit Schedule Override Change History">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="btn btn-sm"
+                     (click)="handleDelete(scheduleOverrideChangeHistory)"
+                     ngbTooltip="Delete Schedule Override Change History" 
+                     placement="top">
+                  <i class="fa fa-trash"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="schedule-override-change-history-info" *ngIf="scheduleOverrideChangeHistory.scheduleOverrideId != null">
+              <strong>Schedule Override: </strong>
+              <a [routerLink]="['/scheduleoverride', scheduleOverrideChangeHistory.scheduleOverrideId]" class="text-left p-0 m-0" ngbTooltip="Open Schedule Override details">{{scheduleOverrideChangeHistory.scheduleOverride?.name}}</a>
+            </p>
+            <p class="schedule-override-change-history-info" *ngIf="scheduleOverrideChangeHistory.timeStamp != null">
+              <strong>Time Stamp: </strong>
+              {{scheduleOverrideChangeHistory.timeStamp | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="schedule-override-change-history-info" *ngIf="scheduleOverrideChangeHistory.userId != null">
+              <strong>User Id: </strong>
+              {{scheduleOverrideChangeHistory.userId | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="schedule-override-change-history-info" *ngIf="scheduleOverrideChangeHistory.data != null">
+              <strong>Data: </strong>
+              {{scheduleOverrideChangeHistory.data}}
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+   </div>
+</div>

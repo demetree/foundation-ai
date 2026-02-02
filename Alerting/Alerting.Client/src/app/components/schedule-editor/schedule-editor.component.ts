@@ -6,6 +6,8 @@ import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { OnCallScheduleService, OnCallScheduleData, OnCallScheduleSubmitData } from '../../alerting-data-services/on-call-schedule.service';
 import { ScheduleLayerService, ScheduleLayerData, ScheduleLayerSubmitData } from '../../alerting-data-services/schedule-layer.service';
 import { ScheduleLayerMemberService, ScheduleLayerMemberData, ScheduleLayerMemberSubmitData } from '../../alerting-data-services/schedule-layer-member.service';
+import { ScheduleOverrideService, ScheduleOverrideData, ScheduleOverrideSubmitData } from '../../alerting-data-services/schedule-override.service';
+import { ScheduleOverrideTypeService, ScheduleOverrideTypeData } from '../../alerting-data-services/schedule-override-type.service';
 import { AlertingUserService, AlertingUser } from '../../services/alerting-user.service';
 import { AlertService } from '../../services/alert.service';
 
@@ -52,6 +54,23 @@ export interface OnCallSpan {
     color: string;
 }
 
+/**
+ * Local model for editing overrides
+ */
+export interface EditableOverride {
+    id: number | null;
+    scheduleLayerId: number | null;
+    scheduleOverrideTypeId: number;
+    startDateTime: Date;
+    endDateTime: Date;
+    originalUserObjectGuid: string | null;
+    replacementUserObjectGuid: string | null;
+    reason: string;
+    isNew: boolean;
+    isModified: boolean;
+    originalData: ScheduleOverrideData | null;
+}
+
 @Component({
     selector: 'app-schedule-editor',
     templateUrl: './schedule-editor.component.html',
@@ -93,6 +112,13 @@ export class ScheduleEditorComponent implements OnInit, OnDestroy {
     timelineSpans: OnCallSpan[] = [];
     today: Date = new Date();
 
+    // Overrides
+    overrides: EditableOverride[] = [];
+    overrideTypes: ScheduleOverrideTypeData[] = [];
+    showOverrideModal = false;
+    editingOverride: EditableOverride | null = null;
+    deletedOverrideIds: number[] = [];
+
     // Track unsaved changes
     hasUnsavedChanges = false;
 
@@ -126,6 +152,8 @@ export class ScheduleEditorComponent implements OnInit, OnDestroy {
         private scheduleService: OnCallScheduleService,
         private layerService: ScheduleLayerService,
         private memberService: ScheduleLayerMemberService,
+        private overrideService: ScheduleOverrideService,
+        private overrideTypeService: ScheduleOverrideTypeService,
         private alertingUserService: AlertingUserService,
         private alertService: AlertService
     ) { }
@@ -191,6 +219,9 @@ export class ScheduleEditorComponent implements OnInit, OnDestroy {
 
                     // Load layers
                     await this.loadLayers();
+
+                    // Load overrides
+                    await this.loadOverrides();
 
                     this.isLoading = false;
                     this.updateTimeline();
@@ -473,6 +504,11 @@ export class ScheduleEditorComponent implements OnInit, OnDestroy {
         return now >= this.timelineStartDate && now <= this.timelineEndDate;
     }
 
+    getUserName(userGuid: string): string {
+        const user = this.users.find(u => u.objectGuid === userGuid);
+        return user?.displayName || 'Unknown User';
+    }
+
     // ==================== Save Logic ====================
 
     markUnsavedChanges(): void {
@@ -503,9 +539,13 @@ export class ScheduleEditorComponent implements OnInit, OnDestroy {
             // Save layers
             await this.saveLayers(scheduleId!);
 
+            // Save overrides
+            await this.saveOverrides(scheduleId!);
+
             this.scheduleService.ClearAllCaches();
             this.layerService.ClearAllCaches();
             this.memberService.ClearAllCaches();
+            this.overrideService.ClearAllCaches();
 
             this.hasUnsavedChanges = false;
             this.alertService.showSuccessMessage('Saved', 'Schedule saved successfully.');
@@ -657,6 +697,183 @@ export class ScheduleEditorComponent implements OnInit, OnDestroy {
         submitData.securityUserObjectGuid = member.securityUserObjectGuid;
 
         await this.memberService.PutScheduleLayerMember(member.id!, submitData).toPromise();
+    }
+
+    // ==================== Override Management ====================
+
+    async loadOverrides(): Promise<void> {
+        if (!this.scheduleId) return;
+
+        // Load override types if not already loaded
+        if (this.overrideTypes.length === 0) {
+            try {
+                this.overrideTypes = await this.overrideTypeService.GetScheduleOverrideTypeList().toPromise() || [];
+            } catch (error) {
+                console.error('Failed to load override types:', error);
+            }
+        }
+
+        // Load overrides for this schedule
+        try {
+            const overridesData = await this.overrideService.GetScheduleOverrideList({ onCallScheduleId: this.scheduleId }).toPromise() || [];
+            this.overrides = overridesData.map((o: ScheduleOverrideData) => ({
+                id: Number(o.id),
+                scheduleLayerId: o.scheduleLayerId ? Number(o.scheduleLayerId) : null,
+                scheduleOverrideTypeId: Number(o.scheduleOverrideTypeId),
+                startDateTime: new Date(o.startDateTime),
+                endDateTime: new Date(o.endDateTime),
+                originalUserObjectGuid: o.originalUserObjectGuid,
+                replacementUserObjectGuid: o.replacementUserObjectGuid,
+                reason: o.reason || '',
+                isNew: false,
+                isModified: false,
+                originalData: o
+            }));
+        } catch (error) {
+            console.error('Failed to load overrides:', error);
+        }
+    }
+
+    getOverrideTypeName(typeId: number): string {
+        const overrideType = this.overrideTypes.find(t => Number(t.id) === typeId);
+        return overrideType?.name || 'Unknown';
+    }
+
+    openAddOverrideModal(): void {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(9, 0, 0, 0);
+
+        const endDate = new Date(tomorrow);
+        endDate.setDate(endDate.getDate() + 1);
+
+        this.editingOverride = {
+            id: null,
+            scheduleLayerId: null,
+            scheduleOverrideTypeId: this.overrideTypes.find(t => t.name === 'Replace')?.id as number || 1,
+            startDateTime: tomorrow,
+            endDateTime: endDate,
+            originalUserObjectGuid: null,
+            replacementUserObjectGuid: null,
+            reason: '',
+            isNew: true,
+            isModified: false,
+            originalData: null
+        };
+        this.showOverrideModal = true;
+    }
+
+    openEditOverrideModal(override: EditableOverride): void {
+        this.editingOverride = { ...override };
+        this.showOverrideModal = true;
+    }
+
+    onOverrideStartDateChange(value: string): void {
+        if (this.editingOverride && value) {
+            this.editingOverride.startDateTime = new Date(value);
+        }
+    }
+
+    onOverrideEndDateChange(value: string): void {
+        if (this.editingOverride && value) {
+            this.editingOverride.endDateTime = new Date(value);
+        }
+    }
+
+    closeOverrideModal(): void {
+        this.showOverrideModal = false;
+        this.editingOverride = null;
+    }
+
+    saveOverrideFromModal(): void {
+        if (!this.editingOverride) return;
+
+        if (this.editingOverride.isNew) {
+            this.overrides.push({ ...this.editingOverride });
+        } else {
+            const index = this.overrides.findIndex(o => o.id === this.editingOverride!.id);
+            if (index >= 0) {
+                this.editingOverride.isModified = true;
+                this.overrides[index] = { ...this.editingOverride };
+            }
+        }
+
+        this.markUnsavedChanges();
+        this.closeOverrideModal();
+    }
+
+    removeOverride(override: EditableOverride): void {
+        if (!confirm('Are you sure you want to remove this override?')) return;
+
+        if (!override.isNew && override.id) {
+            this.deletedOverrideIds.push(override.id);
+        }
+
+        const index = this.overrides.indexOf(override);
+        if (index >= 0) {
+            this.overrides.splice(index, 1);
+        }
+
+        this.markUnsavedChanges();
+    }
+
+    async saveOverrides(scheduleId: number): Promise<void> {
+        // Delete removed overrides
+        for (const overrideId of this.deletedOverrideIds) {
+            try {
+                await this.overrideService.DeleteScheduleOverride(overrideId).toPromise();
+            } catch (error) {
+                console.error('Failed to delete override:', error);
+            }
+        }
+
+        // Create/update overrides
+        for (const override of this.overrides) {
+            try {
+                if (override.isNew) {
+                    await this.createOverride(scheduleId, override);
+                } else if (override.isModified) {
+                    await this.updateOverride(override);
+                }
+            } catch (error) {
+                console.error('Failed to save override:', error);
+                throw error;
+            }
+        }
+
+        this.deletedOverrideIds = [];
+    }
+
+    private async createOverride(scheduleId: number, override: EditableOverride): Promise<void> {
+        const submitData = new ScheduleOverrideSubmitData();
+        submitData.onCallScheduleId = scheduleId;
+        submitData.scheduleLayerId = override.scheduleLayerId as any;
+        submitData.scheduleOverrideTypeId = override.scheduleOverrideTypeId;
+        submitData.startDateTime = override.startDateTime.toISOString();
+        submitData.endDateTime = override.endDateTime.toISOString();
+        submitData.originalUserObjectGuid = override.originalUserObjectGuid;
+        submitData.replacementUserObjectGuid = override.replacementUserObjectGuid;
+        submitData.reason = override.reason || null;
+        submitData.createdByUserObjectGuid = '00000000-0000-0000-0000-000000000000'; // Will be set by server
+        submitData.active = true;
+        submitData.deleted = false;
+
+        await this.overrideService.PostScheduleOverride(submitData).toPromise();
+    }
+
+    private async updateOverride(override: EditableOverride): Promise<void> {
+        if (!override.originalData) return;
+
+        const submitData = override.originalData.ConvertToSubmitData();
+        submitData.scheduleLayerId = override.scheduleLayerId as any;
+        submitData.scheduleOverrideTypeId = override.scheduleOverrideTypeId;
+        submitData.startDateTime = override.startDateTime.toISOString();
+        submitData.endDateTime = override.endDateTime.toISOString();
+        submitData.originalUserObjectGuid = override.originalUserObjectGuid;
+        submitData.replacementUserObjectGuid = override.replacementUserObjectGuid;
+        submitData.reason = override.reason || null;
+
+        await this.overrideService.PutScheduleOverride(override.id!, submitData).toPromise();
     }
 
     // ==================== Navigation ====================

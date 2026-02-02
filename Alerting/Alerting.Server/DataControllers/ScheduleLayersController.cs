@@ -797,6 +797,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				    //
 					scheduleLayer.ScheduleLayerChangeHistories = null;
 					scheduleLayer.ScheduleLayerMembers = null;
+					scheduleLayer.ScheduleOverrides = null;
 					scheduleLayer.onCallSchedule = null;
 
 
@@ -914,6 +915,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				//
 				cloneOfExisting.ScheduleLayerChangeHistories = null;
 				cloneOfExisting.ScheduleLayerMembers = null;
+				cloneOfExisting.ScheduleOverrides = null;
 				cloneOfExisting.onCallSchedule = null;
 
 				if (versionNumber >= scheduleLayer.versionNumber)
