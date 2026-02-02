@@ -139,7 +139,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				query = query.Where(st => st.deleted == false);
 			}
 
-			query = query.OrderBy(st => st.sequence).ThenBy(st => st.name).ThenBy(st => st.description);
+			query = query.OrderBy(st => st.sortOrder).ThenBy(st => st.name).ThenBy(st => st.description);
 
 			if (pageNumber.HasValue == true &&
 			    pageSize.HasValue == true)
@@ -465,7 +465,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			}
 
 
-			query = query.OrderBy(x => x.sequence).ThenBy(x => x.name).ThenBy(x => x.description);
+			query = query.OrderBy(x => x.sortOrder).ThenBy(x => x.name).ThenBy(x => x.description);
 			if (pageNumber.HasValue == true &&
 			    pageSize.HasValue == true)
 			{
