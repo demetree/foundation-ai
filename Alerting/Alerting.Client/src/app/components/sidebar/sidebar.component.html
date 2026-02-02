@@ -11,6 +11,26 @@
 
   <ul class="nav nav-pills flex-column">
 
+    <!-- Escalation Policies -->
+    <li class="nav-item">
+      <a routerLink="/escalation-policy-management" routerLinkActive="active" class="nav-link text-white"
+        [ngbTooltip]="!isExpanded ? 'Escalation Policies' : null" triggers="hover" #tPolicies="ngbTooltip"
+        (click)="tPolicies.close(); close()" placement="right" tooltipClass="sidebar-tip">
+        <i class="fa-solid fa-route"></i>
+        <span class="label px-2">Escalation Policies</span>
+      </a>
+    </li>
+
+    <!-- Services -->
+    <li class="nav-item">
+      <a routerLink="/service-management" routerLinkActive="active" class="nav-link text-white"
+        [ngbTooltip]="!isExpanded ? 'Services' : null" triggers="hover" #tServices="ngbTooltip"
+        (click)="tServices.close(); close()" placement="right" tooltipClass="sidebar-tip">
+        <i class="fa-solid fa-server"></i>
+        <span class="label px-2">Services</span>
+      </a>
+    </li>
+
     <!-- Integrations -->
     <li class="nav-item">
       <a routerLink="/integration-management" routerLinkActive="active" class="nav-link text-white"

@@ -292,39 +292,49 @@ export class IntegrationManagementComponent implements OnInit, OnDestroy {
         this.isSaving = true;
 
         if (this.isAddMode) {
-            // Create new integration
-            const newIntegration: any = {
-                id: 0,
-                serviceId: this.formServiceId,
-                name: this.formName.trim(),
-                description: this.formDescription.trim() || null,
-                apiKeyHash: this.generateApiKey(), // Generate a new API key
-                callbackWebhookUrl: this.formWebhookUrl.trim() || null,
-                versionNumber: 0,
-                active: this.formActive,
-                deleted: false
-            };
+            // Generate the plain API key to show to the user
+            const plainApiKey = this.generateApiKey();
 
-            // Store the plain API key to show to user
-            this.generatedApiKey = newIntegration.apiKeyHash;
+            // Hash the API key with SHA256 before storing (matches backend validation)
+            this.hashApiKey(plainApiKey).then(hashedKey => {
+                // Create new integration with hashed key
+                const newIntegration: any = {
+                    id: 0,
+                    serviceId: this.formServiceId,
+                    name: this.formName.trim(),
+                    description: this.formDescription.trim() || null,
+                    apiKeyHash: hashedKey, // Store the HASHED key
+                    callbackWebhookUrl: this.formWebhookUrl.trim() || null,
+                    versionNumber: 0,
+                    active: this.formActive,
+                    deleted: false
+                };
 
-            this.integrationService.PostIntegration(newIntegration)
-                .pipe(takeUntil(this.destroy$))
-                .subscribe({
-                    next: (created) => {
-                        this.alertService.showSuccessMessage('Success', 'Integration created successfully');
-                        // Keep modal open to show the API key
-                        this.isAddMode = false;
-                        this.editingIntegration = created;
-                        this.isSaving = false;
-                        this.loadIntegrations();
-                    },
-                    error: (err) => {
-                        console.error('Error creating integration:', err);
-                        this.alertService.showErrorMessage('Error', 'Failed to create integration');
-                        this.isSaving = false;
-                    }
-                });
+                // Store the PLAIN API key to show to user (only shown once on creation)
+                this.generatedApiKey = plainApiKey;
+
+                this.integrationService.PostIntegration(newIntegration)
+                    .pipe(takeUntil(this.destroy$))
+                    .subscribe({
+                        next: (created) => {
+                            this.alertService.showSuccessMessage('Success', 'Integration created successfully');
+                            // Keep modal open to show the API key
+                            this.isAddMode = false;
+                            this.editingIntegration = created;
+                            this.isSaving = false;
+                            this.loadIntegrations();
+                        },
+                        error: (err) => {
+                            console.error('Error creating integration:', err);
+                            this.alertService.showErrorMessage('Error', 'Failed to create integration');
+                            this.isSaving = false;
+                        }
+                    });
+            }).catch(err => {
+                console.error('Error hashing API key:', err);
+                this.alertService.showErrorMessage('Error', 'Failed to generate API key');
+                this.isSaving = false;
+            });
         } else {
             // Update existing integration
             const updateData: any = {
@@ -366,6 +376,20 @@ export class IntegrationManagementComponent implements OnInit, OnDestroy {
         const array = new Uint8Array(16);
         crypto.getRandomValues(array);
         return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+    }
+
+
+    /**
+     * Hash an API key using SHA-256 and return Base64 encoded string.
+     * This matches the backend HashApiKey() method in AlertingService.
+     */
+    private async hashApiKey(apiKey: string): Promise<string> {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(apiKey);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = new Uint8Array(hashBuffer);
+        // Convert to Base64 (matches C# Convert.ToBase64String())
+        return btoa(String.fromCharCode(...hashArray));
     }
 
 

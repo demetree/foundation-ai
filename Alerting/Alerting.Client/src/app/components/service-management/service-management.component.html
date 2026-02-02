@@ -1,23 +1,23 @@
-<!-- Integration Management Header -->
-<div class="integration-listing-container">
+<!-- Service Management -->
+<div class="service-listing-container">
 
     <!-- Gradient Header -->
     <div class="listing-header">
         <div class="header-content">
             <div class="header-left">
                 <div class="title-icon-wrapper">
-                    <i class="fa-solid fa-plug"></i>
+                    <i class="fa-solid fa-server"></i>
                 </div>
                 <div class="title-section">
-                    <h1 class="page-title">Integrations</h1>
-                    <p class="page-subtitle">Manage API integrations and webhook endpoints</p>
+                    <h1 class="page-title">Services</h1>
+                    <p class="page-subtitle">Define services to organize alerts and integrations</p>
                 </div>
             </div>
             <div class="header-right">
                 <!-- Add Button -->
                 <button class="btn btn-add" (click)="openAddModal()">
-                    <i class="fa-solid fa-plus me-1"></i>
-                    <span class="d-none d-sm-inline">Add Integration</span>
+                    <i class="fa-solid fa-plus"></i>
+                    <span class="d-none d-sm-inline">Add Service</span>
                 </button>
                 <!-- Count Badge -->
                 <div class="count-badge" *ngIf="!isLoading">
@@ -36,8 +36,8 @@
         <div class="search-section">
             <div class="search-container">
                 <i class="fa-solid fa-search search-icon"></i>
-                <input type="text" class="search-input" placeholder="Search integrations by name..."
-                    [ngModel]="filterText" (ngModelChange)="onFilterChange($event)">
+                <input type="text" class="search-input" placeholder="Search services by name..." [ngModel]="filterText"
+                    (ngModelChange)="onFilterChange($event)">
                 <button *ngIf="filterText" class="clear-btn" (click)="clearFilter()">
                     <i class="fa-solid fa-times"></i>
                 </button>
@@ -56,104 +56,94 @@
             <div class="spinner-border text-primary" role="status">
                 <span class="visually-hidden">Loading...</span>
             </div>
-            <p class="loading-text">Loading integrations...</p>
+            <p class="loading-text">Loading services...</p>
         </div>
 
         <!-- Error State -->
         <div *ngIf="errorMessage && !isLoading" class="error-state">
             <i class="fa-solid fa-exclamation-triangle"></i>
             <p>{{ errorMessage }}</p>
-            <button class="btn btn-outline-primary btn-sm" (click)="loadIntegrations()">
+            <button class="btn btn-outline-primary btn-sm" (click)="loadServices()">
                 <i class="fa-solid fa-refresh me-1"></i> Retry
             </button>
         </div>
 
         <!-- Empty State -->
-        <div *ngIf="!isLoading && !errorMessage && integrations.length === 0" class="empty-state">
+        <div *ngIf="!isLoading && !errorMessage && services.length === 0" class="empty-state">
             <div class="empty-icon-wrapper">
-                <i class="fa-solid fa-plug"></i>
+                <i class="fa-solid fa-server"></i>
             </div>
-            <h3>No Integrations Found</h3>
-            <p *ngIf="filterText">No integrations match your search criteria.</p>
-            <p *ngIf="!filterText">Create your first integration to start receiving alerts.</p>
+            <h3>No Services Found</h3>
+            <p *ngIf="filterText">No services match your search criteria.</p>
+            <p *ngIf="!filterText">Create your first service to organize alerts and integrations.</p>
             <button *ngIf="!filterText" class="btn btn-primary-gradient" (click)="openAddModal()">
                 <i class="fa-solid fa-plus"></i>
-                Create Integration
+                Create Service
             </button>
         </div>
 
         <!-- Table -->
-        <div *ngIf="!isLoading && !errorMessage && integrations.length > 0" class="table-wrapper">
+        <div *ngIf="!isLoading && !errorMessage && services.length > 0" class="table-wrapper">
             <table class="premium-table">
                 <thead>
                     <tr>
-                        <th class="col-name">Integration Name</th>
-                        <th class="col-service">Service</th>
-                        <th class="col-apikey">API Key</th>
+                        <th class="col-name">Service Name</th>
+                        <th class="col-policy">Escalation Policy</th>
+                        <th class="col-integrations text-center">Integrations</th>
                         <th class="col-status text-center">Status</th>
                         <th class="col-actions text-center">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *ngFor="let integration of integrations; trackBy: trackById" class="integration-row">
+                    <tr *ngFor="let service of services; trackBy: trackById" class="service-row">
 
                         <!-- Name -->
                         <td class="col-name">
-                            <div class="integration-name">
-                                <div class="integration-icon">
-                                    <i class="fa-solid fa-plug"></i>
+                            <div class="service-name">
+                                <div class="service-icon">
+                                    <i class="fa-solid fa-server"></i>
                                 </div>
                                 <div class="name-details">
-                                    <span class="name-text">{{ integration.name }}</span>
-                                    <span class="description-text" *ngIf="integration.description">
-                                        {{ integration.description }}
+                                    <span class="name-text">{{ service.name }}</span>
+                                    <span class="description-text" *ngIf="service.description">
+                                        {{ service.description }}
                                     </span>
                                 </div>
                             </div>
                         </td>
 
-                        <!-- Service -->
-                        <td class="col-service">
-                            <span class="service-badge">
-                                <i class="fa-solid fa-server me-1"></i>
-                                {{ integration.service?.name || '—' }}
+                        <!-- Escalation Policy -->
+                        <td class="col-policy">
+                            <span class="policy-badge" *ngIf="service.escalationPolicy">
+                                <i class="fa-solid fa-route me-1"></i>
+                                {{ service.escalationPolicy.name }}
                             </span>
+                            <span class="text-muted" *ngIf="!service.escalationPolicy">—</span>
                         </td>
 
-                        <!-- API Key -->
-                        <td class="col-apikey">
-                            <div class="apikey-container">
-                                <code class="apikey-value" [class.revealed]="revealedApiKeyId === integration.id">
-                                    {{ revealedApiKeyId === integration.id ? integration.apiKeyHash : '••••••••••••••••' }}
-                                </code>
-                                <button class="btn btn-icon btn-sm" (click)="toggleApiKeyReveal(integration)"
-                                    [ngbTooltip]="revealedApiKeyId === integration.id ? 'Hide' : 'Reveal'"
-                                    placement="top">
-                                    <i class="fa-solid"
-                                        [ngClass]="revealedApiKeyId === integration.id ? 'fa-eye-slash' : 'fa-eye'"></i>
-                                </button>
-                                <button class="btn btn-icon btn-sm" (click)="copyApiKey(integration.apiKeyHash)"
-                                    ngbTooltip="Copy to clipboard" placement="top">
-                                    <i class="fa-solid fa-copy"></i>
-                                </button>
-                            </div>
+                        <!-- Integrations Count -->
+                        <td class="col-integrations text-center">
+                            <span class="integration-count-badge">
+                                <i class="fa-solid fa-plug me-1"></i>
+                                {{ getIntegrationCount(service) }}
+                            </span>
                         </td>
 
                         <!-- Status -->
                         <td class="col-status text-center">
-                            <span class="status-badge" [ngClass]="getStatusBadgeClass(integration)">
-                                {{ getStatusText(integration) }}
+                            <span class="status-badge" [ngClass]="getStatusBadgeClass(service)">
+                                {{ getStatusText(service) }}
                             </span>
                         </td>
 
                         <!-- Actions -->
                         <td class="col-actions text-center">
                             <div class="action-buttons">
-                                <button class="btn btn-icon btn-sm" (click)="openEditModal(integration)"
-                                    ngbTooltip="Edit" placement="top">
+                                <button class="btn btn-icon btn-sm" (click)="openEditModal(service)" ngbTooltip="Edit"
+                                    placement="top">
                                     <i class="fa-solid fa-pencil"></i>
                                 </button>
-                                <button class="btn btn-icon btn-sm btn-danger" (click)="deleteIntegration(integration)"
+                                <button class="btn btn-icon btn-sm btn-danger" (click)="deleteService(service)"
                                     ngbTooltip="Delete" placement="top">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
@@ -191,56 +181,32 @@
 <ng-template #addEditModal let-modal>
     <div class="modal-header">
         <h5 class="modal-title">
-            <i class="fa-solid fa-plug me-2"></i>
-            {{ isAddMode ? 'Add Integration' : 'Edit Integration' }}
+            <i class="fa-solid fa-server me-2"></i>
+            {{ isAddMode ? 'Add Service' : 'Edit Service' }}
         </h5>
         <button type="button" class="btn-close" (click)="closeModal()"></button>
     </div>
     <div class="modal-body">
-        <!-- Show generated API key after creation -->
-        <div *ngIf="generatedApiKey" class="alert alert-success api-key-alert">
-            <div class="alert-header">
-                <i class="fa-solid fa-key me-2"></i>
-                <strong>Your API Key</strong>
-            </div>
-            <p class="api-key-warning">
-                <i class="fa-solid fa-exclamation-triangle me-1"></i>
-                Copy this key now! It will not be shown again.
-            </p>
-            <div class="api-key-display">
-                <code>{{ generatedApiKey }}</code>
-                <button class="btn btn-sm btn-outline-success" (click)="copyApiKey(generatedApiKey)">
-                    <i class="fa-solid fa-copy me-1"></i> Copy
-                </button>
-            </div>
-        </div>
-
         <div class="mb-3">
             <label class="form-label">Name <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" [(ngModel)]="formName" placeholder="e.g., Production Monitoring">
+            <input type="text" class="form-control" [(ngModel)]="formName" placeholder="e.g., Production API">
         </div>
 
         <div class="mb-3">
             <label class="form-label">Description</label>
             <textarea class="form-control" [(ngModel)]="formDescription" rows="2"
-                placeholder="Optional description"></textarea>
+                placeholder="Optional description of this service"></textarea>
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Service <span class="text-danger">*</span></label>
-            <select class="form-select" [(ngModel)]="formServiceId">
-                <option *ngFor="let service of services" [value]="service.id">
-                    {{ service.name }}
+            <label class="form-label">Escalation Policy</label>
+            <select class="form-select" [(ngModel)]="formEscalationPolicyId">
+                <option [ngValue]="null">— No escalation policy —</option>
+                <option *ngFor="let policy of escalationPolicies" [ngValue]="policy.id">
+                    {{ policy.name }}
                 </option>
             </select>
-            <small class="text-muted">The service this integration will create incidents for</small>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Webhook URL</label>
-            <input type="url" class="form-control" [(ngModel)]="formWebhookUrl"
-                placeholder="https://your-endpoint.com/webhook">
-            <small class="text-muted">Optional callback URL for incident notifications</small>
+            <small class="text-muted">Policy to use when escalating incidents for this service</small>
         </div>
 
         <div class="form-check mb-3">
@@ -250,10 +216,9 @@
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-secondary" (click)="closeModal()" [disabled]="isSaving">
-            {{ generatedApiKey ? 'Close' : 'Cancel' }}
+            Cancel
         </button>
-        <button *ngIf="!generatedApiKey" type="button" class="btn btn-primary" (click)="saveIntegration()"
-            [disabled]="isSaving">
+        <button type="button" class="btn btn-primary" (click)="saveService()" [disabled]="isSaving">
             <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-1"></span>
             {{ isAddMode ? 'Create' : 'Save Changes' }}
         </button>

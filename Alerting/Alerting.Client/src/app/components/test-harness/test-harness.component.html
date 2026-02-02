@@ -1,143 +1,173 @@
 <!--
   Alert Test Harness Component
-  Developer testing tool for Alerting backend APIs
+  Developer testing tool for Alerting backend APIs - Premium Edition
 -->
 
 <div class="test-harness-container">
-    <!-- Header -->
-    <div class="harness-header">
-        <h2><i class="fa fa-flask"></i> Alerting Test Harness</h2>
-        <p class="text-muted">Developer tool for testing backend APIs</p>
+
+    <!-- Premium Header -->
+    <div class="listing-header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="title-icon-wrapper">
+                    <i class="fa-solid fa-flask"></i>
+                </div>
+                <div class="title-section">
+                    <h1 class="page-title">Alerting Test Harness</h1>
+                    <p class="page-subtitle">Developer tool for testing backend APIs</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <!-- Stats Badges -->
+                <div class="header-stats" *ngIf="stats">
+                    <div class="stat-badge critical" *ngIf="stats.countsByStatus['Triggered']">
+                        <span class="stat-icon"><i class="fa-solid fa-bell"></i></span>
+                        <span class="stat-value">{{ stats.countsByStatus['Triggered'] }}</span>
+                        <span class="stat-label">Triggered</span>
+                    </div>
+                    <div class="stat-badge warning" *ngIf="stats.countsByStatus['Acknowledged']">
+                        <span class="stat-value">{{ stats.countsByStatus['Acknowledged'] }}</span>
+                        <span class="stat-label">Acknowledged</span>
+                    </div>
+                    <div class="stat-badge success" *ngIf="stats.countsByStatus['Resolved']">
+                        <span class="stat-value">{{ stats.countsByStatus['Resolved'] }}</span>
+                        <span class="stat-label">Resolved</span>
+                    </div>
+                </div>
+                <div class="count-badge">
+                    <span class="count-number">{{ stats?.totalActive || 0 }}</span>
+                    <span class="count-label">Active</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Navigation in Header -->
+        <div class="header-tabs">
+            <button class="tab-btn" [class.active]="activeTab === 'trigger'" (click)="selectTab('trigger')">
+                <i class="fa-solid fa-bolt"></i>
+                <span>Trigger Alert</span>
+            </button>
+            <button class="tab-btn" [class.active]="activeTab === 'incidents'" (click)="selectTab('incidents')">
+                <i class="fa-solid fa-list"></i>
+                <span>Incidents</span>
+                <span class="tab-badge" *ngIf="incidents.length">{{ incidents.length }}</span>
+            </button>
+        </div>
     </div>
 
-    <!-- Stats Summary -->
-    <div class="stats-summary" *ngIf="stats">
-        <div class="stat-card">
-            <span class="stat-value">{{ stats.totalActive }}</span>
-            <span class="stat-label">Active Incidents</span>
-        </div>
-        <div class="stat-card" *ngFor="let key of getObjectKeys(stats.countsByStatus)">
-            <span class="stat-value">{{ stats.countsByStatus[key] }}</span>
-            <span class="stat-label">{{ key }}</span>
-        </div>
-    </div>
+    <!-- Tab Content -->
+    <div class="tab-section">
 
-    <!-- Tabs -->
-    <ul class="nav nav-tabs">
-        <li class="nav-item">
-            <a class="nav-link" [class.active]="activeTab === 'trigger'" (click)="selectTab('trigger')">
-                <i class="fa fa-bolt"></i> Trigger Alert
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" [class.active]="activeTab === 'incidents'" (click)="selectTab('incidents')">
-                <i class="fa fa-list"></i> Incidents
-                <span class="badge bg-primary ms-1" *ngIf="incidents.length">{{ incidents.length }}</span>
-            </a>
-        </li>
-    </ul>
-
-    <div class="tab-content">
         <!-- Trigger Alert Tab -->
         <div class="tab-pane" [class.active]="activeTab === 'trigger'">
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5>Trigger Test Alert</h5>
+            <div class="trigger-layout">
+                <!-- Trigger Form -->
+                <div class="premium-card">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <i class="fa-solid fa-bolt"></i>
                         </div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <label class="form-label">API Key <span class="text-danger">*</span></label>
-                                <input type="password" class="form-control" [(ngModel)]="apiKey"
-                                    placeholder="Enter integration API key">
-                                <small class="text-muted">The X-Api-Key header value for authentication</small>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Incident Key</label>
-                                <div class="input-group">
-                                    <input type="text" class="form-control" [(ngModel)]="alertPayload.incidentKey"
-                                        placeholder="Optional deduplication key">
-                                    <button class="btn btn-outline-secondary" type="button"
-                                        (click)="generateIncidentKey()">
-                                        Generate
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Title <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" [(ngModel)]="alertPayload.title"
-                                    placeholder="Alert title">
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Description</label>
-                                <textarea class="form-control" rows="3" [(ngModel)]="alertPayload.description"
-                                    placeholder="Alert description"></textarea>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Severity</label>
-                                <select class="form-select" [(ngModel)]="alertPayload.severity">
-                                    <option *ngFor="let sev of severityOptions" [value]="sev">{{ sev }}</option>
-                                </select>
-                            </div>
-
-                            <button class="btn btn-primary btn-lg w-100" (click)="triggerAlert()"
-                                [disabled]="triggerLoading">
-                                <span *ngIf="triggerLoading" class="spinner-border spinner-border-sm me-2"></span>
-                                <i class="fa fa-bolt me-2" *ngIf="!triggerLoading"></i>
-                                Trigger Alert
-                            </button>
+                        <div class="card-title-section">
+                            <h3>Trigger Test Alert</h3>
+                            <p>Send a test alert through the API</p>
                         </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label class="form-label">API Key <span class="required">*</span></label>
+                            <input type="password" class="form-control premium-input" [(ngModel)]="apiKey"
+                                placeholder="Enter integration API key">
+                            <span class="form-hint">The X-Api-Key header value for authentication</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Incident Key</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control premium-input"
+                                    [(ngModel)]="alertPayload.incidentKey" placeholder="Optional deduplication key">
+                                <button class="btn btn-glass" type="button" (click)="generateIncidentKey()">
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Title <span class="required">*</span></label>
+                            <input type="text" class="form-control premium-input" [(ngModel)]="alertPayload.title"
+                                placeholder="Alert title">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control premium-input" rows="3" [(ngModel)]="alertPayload.description"
+                                placeholder="Alert description"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Severity</label>
+                            <select class="form-select premium-input" [(ngModel)]="alertPayload.severity">
+                                <option *ngFor="let sev of severityOptions" [value]="sev">{{ sev }}</option>
+                            </select>
+                        </div>
+
+                        <button class="btn btn-trigger" (click)="triggerAlert()" [disabled]="triggerLoading">
+                            <span *ngIf="triggerLoading" class="spinner-border spinner-border-sm me-2"></span>
+                            <i class="fa-solid fa-bolt me-2" *ngIf="!triggerLoading"></i>
+                            Trigger Alert
+                        </button>
                     </div>
                 </div>
 
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5>Response</h5>
+                <!-- Response Panel -->
+                <div class="premium-card">
+                    <div class="card-header">
+                        <div class="card-icon response">
+                            <i class="fa-solid fa-reply"></i>
                         </div>
-                        <div class="card-body">
-                            <div *ngIf="!lastTriggerResponse && !triggerLoading" class="text-muted text-center py-5">
-                                <i class="fa fa-arrow-left fa-2x mb-3"></i>
-                                <p>Trigger an alert to see the response</p>
+                        <div class="card-title-section">
+                            <h3>Response</h3>
+                            <p>API response from trigger</p>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div *ngIf="!lastTriggerResponse && !triggerLoading" class="empty-response">
+                            <div class="empty-icon">
+                                <i class="fa-solid fa-arrow-left"></i>
                             </div>
+                            <p>Trigger an alert to see the response</p>
+                        </div>
 
-                            <div *ngIf="triggerLoading" class="text-center py-5">
-                                <div class="spinner-border text-primary"></div>
-                                <p class="mt-2">Sending...</p>
-                            </div>
+                        <div *ngIf="triggerLoading" class="loading-response">
+                            <div class="spinner-border text-primary"></div>
+                            <p>Sending...</p>
+                        </div>
 
-                            <div *ngIf="lastTriggerResponse" class="response-panel">
-                                <div class="alert" [class.alert-success]="lastTriggerResponse.success"
-                                    [class.alert-danger]="!lastTriggerResponse.success">
+                        <div *ngIf="lastTriggerResponse" class="response-content">
+                            <div class="response-status" [class.success]="lastTriggerResponse.success"
+                                [class.error]="!lastTriggerResponse.success">
+                                <i class="fa-solid" [class.fa-check-circle]="lastTriggerResponse.success"
+                                    [class.fa-times-circle]="!lastTriggerResponse.success"></i>
+                                <div>
                                     <strong>{{ lastTriggerResponse.success ? 'Success!' : 'Failed' }}</strong>
-                                    <p class="mb-0">{{ lastTriggerResponse.message }}</p>
+                                    <p>{{ lastTriggerResponse.message }}</p>
                                 </div>
+                            </div>
 
-                                <div *ngIf="lastTriggerResponse.success">
-                                    <table class="table table-sm">
-                                        <tr>
-                                            <th>Incident ID</th>
-                                            <td>{{ lastTriggerResponse.incidentId }}</td>
-                                        </tr>
-                                        <tr>
-                                            <th>Incident Key</th>
-                                            <td><code>{{ lastTriggerResponse.incidentKey }}</code></td>
-                                        </tr>
-                                        <tr>
-                                            <th>Is New</th>
-                                            <td>
-                                                <span class="badge" [class.bg-success]="lastTriggerResponse.isNew"
-                                                    [class.bg-info]="!lastTriggerResponse.isNew">
-                                                    {{ lastTriggerResponse.isNew ? 'New Incident' : 'Updated' }}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    </table>
+                            <div *ngIf="lastTriggerResponse.success" class="response-details">
+                                <div class="detail-row">
+                                    <span class="detail-label">Incident ID</span>
+                                    <span class="detail-value">{{ lastTriggerResponse.incidentId }}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Incident Key</span>
+                                    <code class="detail-code">{{ lastTriggerResponse.incidentKey }}</code>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Status</span>
+                                    <span class="status-badge" [class.new]="lastTriggerResponse.isNew"
+                                        [class.updated]="!lastTriggerResponse.isNew">
+                                        {{ lastTriggerResponse.isNew ? 'New Incident' : 'Updated Existing' }}
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -148,54 +178,57 @@
 
         <!-- Incidents Tab -->
         <div class="tab-pane" [class.active]="activeTab === 'incidents'">
-            <div class="row">
+            <div class="incidents-layout">
                 <!-- Incident List -->
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">Incidents</h5>
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="form-check">
-                                    <input type="checkbox" class="form-check-input" id="includeResolved"
-                                        [(ngModel)]="includeResolved" (change)="loadIncidents()">
-                                    <label class="form-check-label" for="includeResolved">Show Resolved</label>
-                                </div>
-                                <button class="btn btn-sm btn-outline-primary" (click)="loadIncidents()">
-                                    <i class="fa fa-refresh" [class.fa-spin]="incidentsLoading"></i>
-                                </button>
-                            </div>
+                <div class="premium-card incident-list-card">
+                    <div class="card-header">
+                        <div class="card-icon incidents">
+                            <i class="fa-solid fa-list"></i>
                         </div>
-                        <div class="card-body p-0">
-                            <div *ngIf="incidentsLoading" class="text-center py-4">
-                                <div class="spinner-border text-primary"></div>
-                            </div>
+                        <div class="card-title-section">
+                            <h3>Incidents</h3>
+                            <p>{{ incidents.length }} incident{{ incidents.length !== 1 ? 's' : '' }}</p>
+                        </div>
+                        <div class="card-actions">
+                            <label class="filter-toggle">
+                                <input type="checkbox" [(ngModel)]="includeResolved" (change)="loadIncidents()">
+                                <span>Show Resolved</span>
+                            </label>
+                            <button class="btn btn-icon-glass" (click)="loadIncidents()" ngbTooltip="Refresh">
+                                <i class="fa-solid fa-refresh" [class.fa-spin]="incidentsLoading"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div *ngIf="incidentsLoading" class="loading-state">
+                            <div class="spinner-border text-primary"></div>
+                        </div>
 
-                            <div *ngIf="!incidentsLoading && incidents.length === 0"
-                                class="text-center py-4 text-muted">
-                                <i class="fa fa-check-circle fa-2x mb-2"></i>
-                                <p>No incidents found</p>
+                        <div *ngIf="!incidentsLoading && incidents.length === 0" class="empty-incidents">
+                            <div class="empty-icon success">
+                                <i class="fa-solid fa-check-circle"></i>
                             </div>
+                            <p>No incidents found</p>
+                        </div>
 
-                            <div class="incident-list">
-                                <div *ngFor="let incident of incidents" class="incident-item"
-                                    [class.selected]="selectedIncident?.id === incident.id"
-                                    (click)="viewIncidentDetail(incident)">
-                                    <div class="d-flex justify-content-between align-items-start">
-                                        <div>
-                                            <span class="badge me-2"
-                                                [ngClass]="getSeverityClass(incident.severityName)">
-                                                {{ incident.severityName }}
-                                            </span>
-                                            <span class="badge" [ngClass]="getStatusClass(incident.statusName)">
-                                                {{ incident.statusName }}
-                                            </span>
-                                        </div>
-                                        <small class="text-muted">{{ incident.createdAt | date:'short' }}</small>
-                                    </div>
-                                    <h6 class="mb-1 mt-2">{{ incident.title }}</h6>
-                                    <small class="text-muted">
-                                        <code>{{ incident.incidentKey }}</code> • {{ incident.serviceName }}
-                                    </small>
+                        <div class="incident-list" *ngIf="!incidentsLoading && incidents.length > 0">
+                            <div *ngFor="let incident of incidents" class="incident-item"
+                                [class.selected]="selectedIncident?.id === incident.id"
+                                (click)="viewIncidentDetail(incident)">
+                                <div class="incident-meta">
+                                    <span class="severity-badge" [ngClass]="getSeverityClass(incident.severityName)">
+                                        {{ incident.severityName }}
+                                    </span>
+                                    <span class="status-indicator" [ngClass]="getStatusClass(incident.statusName)">
+                                        {{ incident.statusName }}
+                                    </span>
+                                    <span class="incident-time">{{ incident.createdAt | date:'short' }}</span>
+                                </div>
+                                <h4 class="incident-title">{{ incident.title }}</h4>
+                                <div class="incident-info">
+                                    <code>{{ incident.incidentKey }}</code>
+                                    <span class="separator">•</span>
+                                    <span>{{ incident.serviceName }}</span>
                                 </div>
                             </div>
                         </div>
@@ -203,108 +236,127 @@
                 </div>
 
                 <!-- Incident Detail -->
-                <div class="col-md-6">
-                    <div class="card" *ngIf="selectedIncident || detailLoading">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">Incident Detail</h5>
-                            <button class="btn btn-sm btn-outline-secondary" (click)="closeDetail()">
-                                <i class="fa fa-times"></i>
-                            </button>
+                <div class="premium-card detail-card" *ngIf="selectedIncident || detailLoading">
+                    <div class="card-header">
+                        <div class="card-icon detail">
+                            <i class="fa-solid fa-file-lines"></i>
                         </div>
-                        <div class="card-body">
-                            <div *ngIf="detailLoading" class="text-center py-4">
-                                <div class="spinner-border text-primary"></div>
+                        <div class="card-title-section">
+                            <h3>Incident Detail</h3>
+                            <p *ngIf="selectedIncident">{{ selectedIncident.serviceName }}</p>
+                        </div>
+                        <button class="btn btn-icon-glass" (click)="closeDetail()">
+                            <i class="fa-solid fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div *ngIf="detailLoading" class="loading-state">
+                            <div class="spinner-border text-primary"></div>
+                        </div>
+
+                        <div *ngIf="selectedIncident && !detailLoading" class="detail-content">
+                            <h4 class="detail-title">{{ selectedIncident.title }}</h4>
+                            <p class="detail-description">{{ selectedIncident.description }}</p>
+
+                            <div class="detail-badges">
+                                <span class="severity-badge lg"
+                                    [ngClass]="getSeverityClass(selectedIncident.severityName)">
+                                    {{ selectedIncident.severityName }}
+                                </span>
+                                <span class="status-indicator lg"
+                                    [ngClass]="getStatusClass(selectedIncident.statusName)">
+                                    {{ selectedIncident.statusName }}
+                                </span>
                             </div>
 
-                            <div *ngIf="selectedIncident && !detailLoading">
-                                <h5>{{ selectedIncident.title }}</h5>
-                                <p class="text-muted">{{ selectedIncident.description }}</p>
-
-                                <div class="mb-3">
-                                    <span class="badge me-2"
-                                        [ngClass]="getSeverityClass(selectedIncident.severityName)">
-                                        {{ selectedIncident.severityName }}
-                                    </span>
-                                    <span class="badge" [ngClass]="getStatusClass(selectedIncident.statusName)">
-                                        {{ selectedIncident.statusName }}
-                                    </span>
+                            <div class="detail-meta">
+                                <div class="meta-row">
+                                    <span class="meta-label">Service</span>
+                                    <span class="meta-value">{{ selectedIncident.serviceName }}</span>
                                 </div>
-
-                                <table class="table table-sm">
-                                    <tr>
-                                        <th>Service</th>
-                                        <td>{{ selectedIncident.serviceName }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Created</th>
-                                        <td>{{ selectedIncident.createdAt | date:'medium' }}</td>
-                                    </tr>
-                                    <tr *ngIf="selectedIncident.acknowledgedAt">
-                                        <th>Acknowledged</th>
-                                        <td>{{ selectedIncident.acknowledgedAt | date:'medium' }}</td>
-                                    </tr>
-                                    <tr *ngIf="selectedIncident.resolvedAt">
-                                        <th>Resolved</th>
-                                        <td>{{ selectedIncident.resolvedAt | date:'medium' }}</td>
-                                    </tr>
-                                </table>
-
-                                <!-- Actions -->
-                                <div class="action-buttons mb-3">
-                                    <button class="btn btn-warning me-2"
-                                        *ngIf="selectedIncident.statusName === 'Triggered'"
-                                        (click)="acknowledgeIncident(selectedIncident.id)">
-                                        <i class="fa fa-check me-1"></i> Acknowledge
-                                    </button>
-                                    <button class="btn btn-success" *ngIf="selectedIncident.statusName !== 'Resolved'"
-                                        (click)="resolveIncident(selectedIncident.id)">
-                                        <i class="fa fa-check-double me-1"></i> Resolve
-                                    </button>
+                                <div class="meta-row">
+                                    <span class="meta-label">Created</span>
+                                    <span class="meta-value">{{ selectedIncident.createdAt | date:'medium' }}</span>
                                 </div>
+                                <div class="meta-row" *ngIf="selectedIncident.acknowledgedAt">
+                                    <span class="meta-label">Acknowledged</span>
+                                    <span class="meta-value">{{ selectedIncident.acknowledgedAt | date:'medium'
+                                        }}</span>
+                                </div>
+                                <div class="meta-row" *ngIf="selectedIncident.resolvedAt">
+                                    <span class="meta-label">Resolved</span>
+                                    <span class="meta-value">{{ selectedIncident.resolvedAt | date:'medium' }}</span>
+                                </div>
+                            </div>
 
-                                <!-- Timeline -->
-                                <h6>Timeline ({{ selectedIncident.timeline?.length || 0 }})</h6>
-                                <div class="timeline-list mb-3">
+                            <!-- Actions -->
+                            <div class="detail-actions">
+                                <button class="btn btn-action warning"
+                                    *ngIf="selectedIncident.statusName === 'Triggered'"
+                                    (click)="acknowledgeIncident(selectedIncident.id)">
+                                    <i class="fa-solid fa-check"></i> Acknowledge
+                                </button>
+                                <button class="btn btn-action success"
+                                    *ngIf="selectedIncident.statusName !== 'Resolved'"
+                                    (click)="resolveIncident(selectedIncident.id)">
+                                    <i class="fa-solid fa-check-double"></i> Resolve
+                                </button>
+                            </div>
+
+                            <!-- Timeline -->
+                            <div class="detail-section">
+                                <h5>
+                                    <i class="fa-solid fa-clock-rotate-left"></i>
+                                    Timeline ({{ selectedIncident.timeline?.length || 0 }})
+                                </h5>
+                                <div class="timeline-list">
                                     <div *ngFor="let event of selectedIncident.timeline" class="timeline-item">
-                                        <small class="text-muted">{{ event.timestamp | date:'short' }}</small>
-                                        <span class="badge bg-secondary ms-2">{{ event.eventType }}</span>
+                                        <span class="timeline-time">{{ event.timestamp | date:'short' }}</span>
+                                        <span class="timeline-event">{{ event.eventType }}</span>
                                     </div>
-                                    <div *ngIf="!selectedIncident.timeline?.length" class="text-muted small">
+                                    <div *ngIf="!selectedIncident.timeline?.length" class="timeline-empty">
                                         No timeline events
                                     </div>
                                 </div>
+                            </div>
 
-                                <!-- Notes -->
-                                <h6>Notes ({{ selectedIncident.notes?.length || 0 }})</h6>
-                                <div class="notes-list mb-3">
+                            <!-- Notes -->
+                            <div class="detail-section">
+                                <h5>
+                                    <i class="fa-solid fa-sticky-note"></i>
+                                    Notes ({{ selectedIncident.notes?.length || 0 }})
+                                </h5>
+                                <div class="notes-list">
                                     <div *ngFor="let note of selectedIncident.notes" class="note-item">
-                                        <p class="mb-1">{{ note.content }}</p>
-                                        <small class="text-muted">{{ note.createdAt | date:'short' }}</small>
+                                        <p>{{ note.content }}</p>
+                                        <span class="note-time">{{ note.createdAt | date:'short' }}</span>
                                     </div>
-                                    <div *ngIf="!selectedIncident.notes?.length" class="text-muted small">
+                                    <div *ngIf="!selectedIncident.notes?.length" class="notes-empty">
                                         No notes
                                     </div>
                                 </div>
 
-                                <!-- Add Note -->
                                 <div class="add-note">
-                                    <div class="input-group">
-                                        <input type="text" class="form-control" [(ngModel)]="newNoteContent"
-                                            placeholder="Add a note..." [disabled]="addingNote">
-                                        <button class="btn btn-outline-primary" (click)="addNote()"
-                                            [disabled]="!newNoteContent.trim() || addingNote">
-                                            <span *ngIf="addingNote" class="spinner-border spinner-border-sm"></span>
-                                            <i class="fa fa-paper-plane" *ngIf="!addingNote"></i>
-                                        </button>
-                                    </div>
+                                    <input type="text" class="form-control premium-input" [(ngModel)]="newNoteContent"
+                                        placeholder="Add a note..." [disabled]="addingNote">
+                                    <button class="btn btn-glass" (click)="addNote()"
+                                        [disabled]="!newNoteContent.trim() || addingNote">
+                                        <span *ngIf="addingNote" class="spinner-border spinner-border-sm"></span>
+                                        <i class="fa-solid fa-paper-plane" *ngIf="!addingNote"></i>
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <div class="card" *ngIf="!selectedIncident && !detailLoading">
-                        <div class="card-body text-center py-5 text-muted">
-                            <i class="fa fa-hand-pointer fa-2x mb-3"></i>
+                <!-- Empty Detail State -->
+                <div class="premium-card detail-card empty" *ngIf="!selectedIncident && !detailLoading">
+                    <div class="card-body">
+                        <div class="empty-detail">
+                            <div class="empty-icon">
+                                <i class="fa-solid fa-hand-pointer"></i>
+                            </div>
                             <p>Select an incident to view details</p>
                         </div>
                     </div>

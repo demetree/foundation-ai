@@ -7,6 +7,7 @@ using System;
 using System.Threading.Tasks;
 using Alerting.Server.Models;
 using Alerting.Server.Services;
+using Foundation.Controllers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;

@@ -136,7 +136,9 @@ export class AlertTestHarnessService extends SecureEndpointBase {
         if (includeResolved) params.push('includeResolved=true');
         if (params.length > 0) url += '?' + params.join('&');
 
-        return this.http.get<IncidentDto[]>(url).pipe(
+        const headers = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<IncidentDto[]>(url, { headers }).pipe(
             catchError(error => this.handleError(error, () => this.getIncidents(serviceId, severityId, includeResolved)))
         );
     }
@@ -147,8 +149,9 @@ export class AlertTestHarnessService extends SecureEndpointBase {
      */
     getIncidentDetail(id: number): Observable<IncidentDetailDto> {
         const url = this.configurationService.baseUrl + this.incidentsApiUrl + '/' + id;
+        const headers = this.authService.GetAuthenticationHeaders();
 
-        return this.http.get<IncidentDetailDto>(url).pipe(
+        return this.http.get<IncidentDetailDto>(url, { headers }).pipe(
             catchError(error => this.handleError(error, () => this.getIncidentDetail(id)))
         );
     }
@@ -159,8 +162,9 @@ export class AlertTestHarnessService extends SecureEndpointBase {
      */
     acknowledgeIncident(id: number): Observable<IncidentDto> {
         const url = this.configurationService.baseUrl + this.incidentsApiUrl + '/' + id + '/acknowledge';
+        const headers = this.authService.GetAuthenticationHeaders();
 
-        return this.http.post<IncidentDto>(url, {}).pipe(
+        return this.http.post<IncidentDto>(url, {}, { headers }).pipe(
             catchError(error => this.handleError(error, () => this.acknowledgeIncident(id)))
         );
     }
@@ -171,8 +175,9 @@ export class AlertTestHarnessService extends SecureEndpointBase {
      */
     resolveIncident(id: number): Observable<IncidentDto> {
         const url = this.configurationService.baseUrl + this.incidentsApiUrl + '/' + id + '/resolve';
+        const headers = this.authService.GetAuthenticationHeaders();
 
-        return this.http.post<IncidentDto>(url, {}).pipe(
+        return this.http.post<IncidentDto>(url, {}, { headers }).pipe(
             catchError(error => this.handleError(error, () => this.resolveIncident(id)))
         );
     }
@@ -183,8 +188,9 @@ export class AlertTestHarnessService extends SecureEndpointBase {
      */
     addNote(id: number, content: string): Observable<NoteDto> {
         const url = this.configurationService.baseUrl + this.incidentsApiUrl + '/' + id + '/notes';
+        const headers = this.authService.GetAuthenticationHeaders();
 
-        return this.http.post<NoteDto>(url, { content }).pipe(
+        return this.http.post<NoteDto>(url, { content }, { headers }).pipe(
             catchError(error => this.handleError(error, () => this.addNote(id, content)))
         );
     }
@@ -195,8 +201,9 @@ export class AlertTestHarnessService extends SecureEndpointBase {
      */
     getStats(): Observable<IncidentStatsDto> {
         const url = this.configurationService.baseUrl + this.incidentsApiUrl + '/stats';
+        const headers = this.authService.GetAuthenticationHeaders();
 
-        return this.http.get<IncidentStatsDto>(url).pipe(
+        return this.http.get<IncidentStatsDto>(url, { headers }).pipe(
             catchError(error => this.handleError(error, () => this.getStats()))
         );
     }

@@ -1,23 +1,23 @@
-<!-- Integration Management Header -->
-<div class="integration-listing-container">
+<!-- Escalation Policy Management -->
+<div class="policy-listing-container">
 
     <!-- Gradient Header -->
     <div class="listing-header">
         <div class="header-content">
             <div class="header-left">
                 <div class="title-icon-wrapper">
-                    <i class="fa-solid fa-plug"></i>
+                    <i class="fa-solid fa-route"></i>
                 </div>
                 <div class="title-section">
-                    <h1 class="page-title">Integrations</h1>
-                    <p class="page-subtitle">Manage API integrations and webhook endpoints</p>
+                    <h1 class="page-title">Escalation Policies</h1>
+                    <p class="page-subtitle">Define escalation paths and notification rules</p>
                 </div>
             </div>
             <div class="header-right">
                 <!-- Add Button -->
                 <button class="btn btn-add" (click)="openAddModal()">
-                    <i class="fa-solid fa-plus me-1"></i>
-                    <span class="d-none d-sm-inline">Add Integration</span>
+                    <i class="fa-solid fa-plus"></i>
+                    <span class="d-none d-sm-inline">Add Policy</span>
                 </button>
                 <!-- Count Badge -->
                 <div class="count-badge" *ngIf="!isLoading">
@@ -36,7 +36,7 @@
         <div class="search-section">
             <div class="search-container">
                 <i class="fa-solid fa-search search-icon"></i>
-                <input type="text" class="search-input" placeholder="Search integrations by name..."
+                <input type="text" class="search-input" placeholder="Search escalation policies..."
                     [ngModel]="filterText" (ngModelChange)="onFilterChange($event)">
                 <button *ngIf="filterText" class="clear-btn" (click)="clearFilter()">
                     <i class="fa-solid fa-times"></i>
@@ -56,104 +56,93 @@
             <div class="spinner-border text-primary" role="status">
                 <span class="visually-hidden">Loading...</span>
             </div>
-            <p class="loading-text">Loading integrations...</p>
+            <p class="loading-text">Loading escalation policies...</p>
         </div>
 
         <!-- Error State -->
         <div *ngIf="errorMessage && !isLoading" class="error-state">
             <i class="fa-solid fa-exclamation-triangle"></i>
             <p>{{ errorMessage }}</p>
-            <button class="btn btn-outline-primary btn-sm" (click)="loadIntegrations()">
+            <button class="btn btn-outline-primary btn-sm" (click)="loadPolicies()">
                 <i class="fa-solid fa-refresh me-1"></i> Retry
             </button>
         </div>
 
         <!-- Empty State -->
-        <div *ngIf="!isLoading && !errorMessage && integrations.length === 0" class="empty-state">
+        <div *ngIf="!isLoading && !errorMessage && policies.length === 0" class="empty-state">
             <div class="empty-icon-wrapper">
-                <i class="fa-solid fa-plug"></i>
+                <i class="fa-solid fa-route"></i>
             </div>
-            <h3>No Integrations Found</h3>
-            <p *ngIf="filterText">No integrations match your search criteria.</p>
-            <p *ngIf="!filterText">Create your first integration to start receiving alerts.</p>
+            <h3>No Escalation Policies Found</h3>
+            <p *ngIf="filterText">No policies match your search criteria.</p>
+            <p *ngIf="!filterText">Create your first escalation policy to define alert escalation paths.</p>
             <button *ngIf="!filterText" class="btn btn-primary-gradient" (click)="openAddModal()">
                 <i class="fa-solid fa-plus"></i>
-                Create Integration
+                Create Policy
             </button>
         </div>
 
         <!-- Table -->
-        <div *ngIf="!isLoading && !errorMessage && integrations.length > 0" class="table-wrapper">
+        <div *ngIf="!isLoading && !errorMessage && policies.length > 0" class="table-wrapper">
             <table class="premium-table">
                 <thead>
                     <tr>
-                        <th class="col-name">Integration Name</th>
-                        <th class="col-service">Service</th>
-                        <th class="col-apikey">API Key</th>
+                        <th class="col-name">Policy Name</th>
+                        <th class="col-services text-center">Services</th>
+                        <th class="col-rules text-center">Rules</th>
                         <th class="col-status text-center">Status</th>
                         <th class="col-actions text-center">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *ngFor="let integration of integrations; trackBy: trackById" class="integration-row">
+                    <tr *ngFor="let policy of policies; trackBy: trackById" class="policy-row">
 
                         <!-- Name -->
                         <td class="col-name">
-                            <div class="integration-name">
-                                <div class="integration-icon">
-                                    <i class="fa-solid fa-plug"></i>
+                            <div class="policy-name">
+                                <div class="policy-icon">
+                                    <i class="fa-solid fa-route"></i>
                                 </div>
                                 <div class="name-details">
-                                    <span class="name-text">{{ integration.name }}</span>
-                                    <span class="description-text" *ngIf="integration.description">
-                                        {{ integration.description }}
+                                    <span class="name-text">{{ policy.name }}</span>
+                                    <span class="description-text" *ngIf="policy.description">
+                                        {{ policy.description }}
                                     </span>
                                 </div>
                             </div>
                         </td>
 
-                        <!-- Service -->
-                        <td class="col-service">
-                            <span class="service-badge">
+                        <!-- Services Count -->
+                        <td class="col-services text-center">
+                            <span class="count-badge-inline service">
                                 <i class="fa-solid fa-server me-1"></i>
-                                {{ integration.service?.name || '—' }}
+                                {{ getServiceCount(policy) }}
                             </span>
                         </td>
 
-                        <!-- API Key -->
-                        <td class="col-apikey">
-                            <div class="apikey-container">
-                                <code class="apikey-value" [class.revealed]="revealedApiKeyId === integration.id">
-                                    {{ revealedApiKeyId === integration.id ? integration.apiKeyHash : '••••••••••••••••' }}
-                                </code>
-                                <button class="btn btn-icon btn-sm" (click)="toggleApiKeyReveal(integration)"
-                                    [ngbTooltip]="revealedApiKeyId === integration.id ? 'Hide' : 'Reveal'"
-                                    placement="top">
-                                    <i class="fa-solid"
-                                        [ngClass]="revealedApiKeyId === integration.id ? 'fa-eye-slash' : 'fa-eye'"></i>
-                                </button>
-                                <button class="btn btn-icon btn-sm" (click)="copyApiKey(integration.apiKeyHash)"
-                                    ngbTooltip="Copy to clipboard" placement="top">
-                                    <i class="fa-solid fa-copy"></i>
-                                </button>
-                            </div>
+                        <!-- Rules Count -->
+                        <td class="col-rules text-center">
+                            <span class="count-badge-inline rule">
+                                <i class="fa-solid fa-list-ol me-1"></i>
+                                {{ getRuleCount(policy) }}
+                            </span>
                         </td>
 
                         <!-- Status -->
                         <td class="col-status text-center">
-                            <span class="status-badge" [ngClass]="getStatusBadgeClass(integration)">
-                                {{ getStatusText(integration) }}
+                            <span class="status-badge" [ngClass]="getStatusBadgeClass(policy)">
+                                {{ getStatusText(policy) }}
                             </span>
                         </td>
 
                         <!-- Actions -->
                         <td class="col-actions text-center">
                             <div class="action-buttons">
-                                <button class="btn btn-icon btn-sm" (click)="openEditModal(integration)"
-                                    ngbTooltip="Edit" placement="top">
+                                <button class="btn btn-icon btn-sm" (click)="openEditModal(policy)" ngbTooltip="Edit"
+                                    placement="top">
                                     <i class="fa-solid fa-pencil"></i>
                                 </button>
-                                <button class="btn btn-icon btn-sm btn-danger" (click)="deleteIntegration(integration)"
+                                <button class="btn btn-icon btn-sm btn-danger" (click)="deletePolicy(policy)"
                                     ngbTooltip="Delete" placement="top">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
@@ -191,69 +180,38 @@
 <ng-template #addEditModal let-modal>
     <div class="modal-header">
         <h5 class="modal-title">
-            <i class="fa-solid fa-plug me-2"></i>
-            {{ isAddMode ? 'Add Integration' : 'Edit Integration' }}
+            <i class="fa-solid fa-route me-2"></i>
+            {{ isAddMode ? 'Add Escalation Policy' : 'Edit Escalation Policy' }}
         </h5>
         <button type="button" class="btn-close" (click)="closeModal()"></button>
     </div>
     <div class="modal-body">
-        <!-- Show generated API key after creation -->
-        <div *ngIf="generatedApiKey" class="alert alert-success api-key-alert">
-            <div class="alert-header">
-                <i class="fa-solid fa-key me-2"></i>
-                <strong>Your API Key</strong>
-            </div>
-            <p class="api-key-warning">
-                <i class="fa-solid fa-exclamation-triangle me-1"></i>
-                Copy this key now! It will not be shown again.
-            </p>
-            <div class="api-key-display">
-                <code>{{ generatedApiKey }}</code>
-                <button class="btn btn-sm btn-outline-success" (click)="copyApiKey(generatedApiKey)">
-                    <i class="fa-solid fa-copy me-1"></i> Copy
-                </button>
-            </div>
-        </div>
-
         <div class="mb-3">
             <label class="form-label">Name <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" [(ngModel)]="formName" placeholder="e.g., Production Monitoring">
+            <input type="text" class="form-control" [(ngModel)]="formName" placeholder="e.g., High Priority Escalation">
         </div>
 
         <div class="mb-3">
             <label class="form-label">Description</label>
-            <textarea class="form-control" [(ngModel)]="formDescription" rows="2"
-                placeholder="Optional description"></textarea>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Service <span class="text-danger">*</span></label>
-            <select class="form-select" [(ngModel)]="formServiceId">
-                <option *ngFor="let service of services" [value]="service.id">
-                    {{ service.name }}
-                </option>
-            </select>
-            <small class="text-muted">The service this integration will create incidents for</small>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Webhook URL</label>
-            <input type="url" class="form-control" [(ngModel)]="formWebhookUrl"
-                placeholder="https://your-endpoint.com/webhook">
-            <small class="text-muted">Optional callback URL for incident notifications</small>
+            <textarea class="form-control" [(ngModel)]="formDescription" rows="3"
+                placeholder="Describe the escalation path and when it should be used"></textarea>
         </div>
 
         <div class="form-check mb-3">
             <input type="checkbox" class="form-check-input" id="activeCheck" [(ngModel)]="formActive">
             <label class="form-check-label" for="activeCheck">Active</label>
         </div>
+
+        <div class="alert alert-info" *ngIf="!isAddMode">
+            <i class="fa-solid fa-info-circle me-2"></i>
+            To configure escalation rules, use the detailed policy editor after creating the policy.
+        </div>
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-secondary" (click)="closeModal()" [disabled]="isSaving">
-            {{ generatedApiKey ? 'Close' : 'Cancel' }}
+            Cancel
         </button>
-        <button *ngIf="!generatedApiKey" type="button" class="btn btn-primary" (click)="saveIntegration()"
-            [disabled]="isSaving">
+        <button type="button" class="btn btn-primary" (click)="savePolicy()" [disabled]="isSaving">
             <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-1"></span>
             {{ isAddMode ? 'Create' : 'Save Changes' }}
         </button>

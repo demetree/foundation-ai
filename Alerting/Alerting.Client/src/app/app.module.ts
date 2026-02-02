@@ -70,6 +70,8 @@ import { SystemHealthService } from './services/system-health.service';
 import { TestHarnessComponent } from './components/test-harness/test-harness.component';
 import { AlertTestHarnessService } from './services/alert-test-harness.service';
 import { IntegrationManagementComponent } from './components/integration-management/integration-management.component';
+import { ServiceManagementComponent } from './components/service-management/service-management.component';
+import { EscalationPolicyManagementComponent } from './components/escalation-policy-management/escalation-policy-management.component';
 
 //
 // Custom Components
@@ -298,6 +300,8 @@ import { WebhookDeliveryAttemptTableComponent } from './alerting-data-components
     SystemHealthComponent,
     TestHarnessComponent,
     IntegrationManagementComponent,
+    ServiceManagementComponent,
+    EscalationPolicyManagementComponent,
 
 
     //
