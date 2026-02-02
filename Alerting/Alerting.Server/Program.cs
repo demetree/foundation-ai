@@ -211,6 +211,9 @@ namespace Foundation.Alerting
                 controllers.Add(typeof(ScheduleLayerChangeHistoriesController));
                 controllers.Add(typeof(ScheduleLayerMembersController));
                 controllers.Add(typeof(ScheduleLayerMemberChangeHistoriesController));
+                controllers.Add(typeof(ScheduleOverridesController));
+                controllers.Add(typeof(ScheduleOverrideChangeHistoriesController));
+                controllers.Add(typeof(ScheduleOverrideTypesController));
                 controllers.Add(typeof(ServicesController));
                 controllers.Add(typeof(ServiceChangeHistoriesController));
                 controllers.Add(typeof(SeverityTypesController));
@@ -490,12 +493,12 @@ namespace Foundation.Alerting
                 //
                 using (var securityContext = new SecurityContext())
                 using (var auditorContext = new AuditorContext())
-                using (var schedulerContext = new AlertingContext())
+                using (var alertingContext = new AlertingContext())
                 {
                     LogDatabaseStatistics(logger,
                         ("Security", securityContext),
                         ("Auditor", auditorContext),
-                        ("Alerting", schedulerContext)
+                        ("Alerting", alertingContext)
                     );
                 }
 

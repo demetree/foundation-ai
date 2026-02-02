@@ -78,7 +78,66 @@
                 <span class="timeline-range">{{ timelineStartDate | date:'MMM d' }} - {{ timelineEndDate | date:'MMM d,
                     yyyy' }}</span>
             </h2>
+
+            <!-- Gap Warning Banner -->
+            <div class="gap-warning-banner" *ngIf="hasGaps">
+                <div class="gap-warning-icon">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div class="gap-warning-content">
+                    <strong>Coverage Gap{{ coverageGaps.length > 1 ? 's' : '' }} Detected</strong>
+                    <p>
+                        There {{ coverageGaps.length === 1 ? 'is' : 'are' }} {{ coverageGaps.length }}
+                        period{{ coverageGaps.length > 1 ? 's' : '' }} with no on-call coverage:
+                    </p>
+                    <ul class="gap-list">
+                        <li *ngFor="let gap of coverageGaps">
+                            {{ gap.startTime | date:'MMM d, h:mm a' }} — {{ gap.endTime | date:'MMM d, h:mm a' }}
+                            <span class="gap-duration">({{ formatGapDuration(gap) }})</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
             <div class="timeline-wrapper">
+                <!-- Gap Row (shows gaps across all layers) -->
+                <div class="timeline-gap-row" *ngIf="hasGaps">
+                    <div class="gap-label">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <span>Gaps</span>
+                    </div>
+                    <div class="gap-track">
+                        <div class="gap-indicator" *ngFor="let gap of coverageGaps" [ngStyle]="getGapStyle(gap)"
+                            [ngbTooltip]="'No coverage: ' + formatGapDuration(gap)">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Overrides Row (shows override spans) -->
+                <div class="timeline-override-row" *ngIf="timelineOverrideSpans.length > 0">
+                    <div class="override-label">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        <span>Overrides</span>
+                    </div>
+                    <div class="override-track">
+                        <div class="override-span" *ngFor="let span of timelineOverrideSpans"
+                            [ngStyle]="getOverrideSpanStyle(span)" [class.past]="span.isPast"
+                            [class.active]="span.isActive" [class.swap]="span.overrideType === 'Swap'"
+                            [class.replace]="span.overrideType === 'Replace'"
+                            [class.remove]="span.overrideType === 'Remove'" [ngbTooltip]="getOverrideTooltip(span)">
+                            <span class="override-span-icon">
+                                <i class="fa-solid" [class.fa-arrows-rotate]="span.overrideType === 'Swap'"
+                                    [class.fa-user-plus]="span.overrideType === 'Replace'"
+                                    [class.fa-user-minus]="span.overrideType === 'Remove'">
+                                </i>
+                            </span>
+                            <span class="override-span-users" *ngIf="span.replacementUserName">
+                                {{ span.replacementUserName }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Day Headers -->
                 <div class="timeline-header">
                     <div class="layer-label-placeholder"></div>

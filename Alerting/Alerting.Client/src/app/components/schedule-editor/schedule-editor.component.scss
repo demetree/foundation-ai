@@ -276,6 +276,244 @@ $card-shadow: 0 4px 6px rgba(0, 0, 0, 0.04), 0 8px 30px rgba(0, 0, 0, 0.06);
     overflow: hidden;
 }
 
+// ==================== Gap Warning ====================
+.gap-warning-banner {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border: 1px solid #f59e0b;
+    border-radius: 10px;
+    margin-bottom: 1.25rem;
+
+    .gap-warning-icon {
+        width: 40px;
+        height: 40px;
+        background: #f59e0b;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+
+        i {
+            color: white;
+            font-size: 1.1rem;
+        }
+    }
+
+    .gap-warning-content {
+        flex: 1;
+
+        strong {
+            color: #92400e;
+            font-size: 0.95rem;
+        }
+
+        p {
+            margin: 0.35rem 0 0.5rem;
+            color: #78350f;
+            font-size: 0.85rem;
+        }
+
+        .gap-list {
+            margin: 0;
+            padding-left: 1.25rem;
+            font-size: 0.82rem;
+            color: #78350f;
+
+            li {
+                margin-bottom: 0.25rem;
+
+                &:last-child {
+                    margin-bottom: 0;
+                }
+            }
+
+            .gap-duration {
+                color: #b45309;
+                font-weight: 600;
+            }
+        }
+    }
+}
+
+.timeline-gap-row {
+    display: flex;
+    margin-bottom: 0.75rem;
+    background: rgba(239, 68, 68, 0.08);
+    border-radius: 8px;
+    padding: 0.5rem 0;
+
+    .gap-label {
+        width: 140px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0 0.75rem;
+        color: #dc2626;
+        font-size: 0.82rem;
+        font-weight: 600;
+
+        i {
+            font-size: 0.9rem;
+        }
+    }
+
+    .gap-track {
+        flex: 1;
+        min-width: 700px;
+        height: 24px;
+        background: rgba(239, 68, 68, 0.1);
+        border-radius: 6px;
+        position: relative;
+    }
+
+    .gap-indicator {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        border-radius: 4px;
+        opacity: 0.85;
+        cursor: pointer;
+        transition: all 0.15s ease;
+
+        &::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(45deg,
+                    transparent,
+                    transparent 4px,
+                    rgba(255, 255, 255, 0.15) 4px,
+                    rgba(255, 255, 255, 0.15) 8px);
+            border-radius: 4px;
+        }
+
+        &:hover {
+            opacity: 1;
+            transform: scaleY(1.15);
+            z-index: 10;
+        }
+    }
+}
+
+// ==================== Timeline Override Row ====================
+.timeline-override-row {
+    display: flex;
+    margin-bottom: 0.75rem;
+    background: rgba(99, 102, 241, 0.08);
+    border-radius: 8px;
+    padding: 0.5rem 0;
+
+    .override-label {
+        width: 140px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0 0.75rem;
+        color: #6366f1;
+        font-size: 0.82rem;
+        font-weight: 600;
+
+        i {
+            font-size: 0.9rem;
+        }
+    }
+
+    .override-track {
+        flex: 1;
+        min-width: 700px;
+        height: 28px;
+        background: rgba(99, 102, 241, 0.1);
+        border-radius: 6px;
+        position: relative;
+    }
+
+    .override-span {
+        position: absolute;
+        top: 2px;
+        bottom: 2px;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0 0.5rem;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: white;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        overflow: hidden;
+        white-space: nowrap;
+
+        &.swap {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        }
+
+        &.replace {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        }
+
+        &.remove {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        &.past {
+            opacity: 0.5;
+        }
+
+        &.active {
+            box-shadow: 0 0 0 2px white, 0 0 0 4px currentColor;
+            animation: pulseGlow 2s infinite;
+        }
+
+        &:hover {
+            transform: scaleY(1.15);
+            z-index: 10;
+        }
+
+        .override-span-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 4px;
+            flex-shrink: 0;
+
+            i {
+                font-size: 0.6rem;
+            }
+        }
+
+        .override-span-users {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
+}
+
+@keyframes pulseGlow {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 2px white, 0 0 0 4px currentColor;
+    }
+
+    50% {
+        box-shadow: 0 0 0 2px white, 0 0 8px 4px currentColor;
+    }
+}
+
 .timeline-wrapper {
     overflow-x: auto;
     margin: 0 -0.5rem;

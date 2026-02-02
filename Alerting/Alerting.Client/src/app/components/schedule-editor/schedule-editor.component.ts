@@ -71,6 +71,29 @@ export interface EditableOverride {
     originalData: ScheduleOverrideData | null;
 }
 
+/**
+ * Represents a period with no on-call coverage
+ */
+export interface GapPeriod {
+    startTime: Date;
+    endTime: Date;
+}
+
+/**
+ * Timeline span for override visualization
+ */
+export interface OverrideSpan {
+    overrideId: number | null;
+    startTime: Date;
+    endTime: Date;
+    overrideType: string;
+    originalUserName: string | null;
+    replacementUserName: string | null;
+    reason: string;
+    isPast: boolean;
+    isActive: boolean;
+}
+
 @Component({
     selector: 'app-schedule-editor',
     templateUrl: './schedule-editor.component.html',
@@ -112,12 +135,17 @@ export class ScheduleEditorComponent implements OnInit, OnDestroy {
     timelineSpans: OnCallSpan[] = [];
     today: Date = new Date();
 
+    // Gap detection
+    coverageGaps: GapPeriod[] = [];
+    hasGaps = false;
+
     // Overrides
     overrides: EditableOverride[] = [];
     overrideTypes: ScheduleOverrideTypeData[] = [];
     showOverrideModal = false;
     editingOverride: EditableOverride | null = null;
     deletedOverrideIds: number[] = [];
+    timelineOverrideSpans: OverrideSpan[] = [];
 
     // Track unsaved changes
     hasUnsavedChanges = false;
@@ -419,6 +447,171 @@ export class ScheduleEditorComponent implements OnInit, OnDestroy {
             const spans = this.calculateLayerSpans(layer);
             this.timelineSpans.push(...spans);
         }
+
+        // Detect coverage gaps after updating timeline
+        this.detectCoverageGaps();
+
+        // Calculate override spans for timeline visualization
+        this.calculateTimelineOverrideSpans();
+    }
+
+    /**
+     * Calculates override spans that fall within the timeline window
+     */
+    private calculateTimelineOverrideSpans(): void {
+        this.timelineOverrideSpans = [];
+        const now = new Date();
+
+        for (const override of this.overrides) {
+            // Check if override overlaps with timeline window
+            const overrideStart = new Date(override.startDateTime);
+            const overrideEnd = new Date(override.endDateTime);
+
+            if (overrideEnd < this.timelineStartDate || overrideStart > this.timelineEndDate) {
+                continue; // Outside timeline window
+            }
+
+            // Clip to timeline window
+            const spanStart = new Date(Math.max(overrideStart.getTime(), this.timelineStartDate.getTime()));
+            const spanEnd = new Date(Math.min(overrideEnd.getTime(), this.timelineEndDate.getTime()));
+
+            const isPast = overrideEnd < now;
+            const isActive = overrideStart <= now && overrideEnd >= now;
+
+            this.timelineOverrideSpans.push({
+                overrideId: override.id,
+                startTime: spanStart,
+                endTime: spanEnd,
+                overrideType: this.getOverrideTypeName(override.scheduleOverrideTypeId),
+                originalUserName: override.originalUserObjectGuid
+                    ? this.getUserName(override.originalUserObjectGuid)
+                    : null,
+                replacementUserName: override.replacementUserObjectGuid
+                    ? this.getUserName(override.replacementUserObjectGuid)
+                    : null,
+                reason: override.reason,
+                isPast,
+                isActive
+            });
+        }
+
+        // Sort by start time
+        this.timelineOverrideSpans.sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
+    }
+
+    getOverrideSpanStyle(span: OverrideSpan): { [key: string]: string } {
+        const totalMs = this.timelineEndDate.getTime() - this.timelineStartDate.getTime();
+        const startOffset = span.startTime.getTime() - this.timelineStartDate.getTime();
+        const spanWidth = span.endTime.getTime() - span.startTime.getTime();
+
+        return {
+            left: `${(startOffset / totalMs) * 100}%`,
+            width: `${(spanWidth / totalMs) * 100}%`
+        };
+    }
+
+    getOverrideTooltip(span: OverrideSpan): string {
+        let tooltip = `${span.overrideType}`;
+        if (span.originalUserName && span.replacementUserName) {
+            tooltip += `: ${span.originalUserName} → ${span.replacementUserName}`;
+        } else if (span.replacementUserName) {
+            tooltip += `: ${span.replacementUserName}`;
+        }
+        if (span.reason) {
+            tooltip += ` (${span.reason})`;
+        }
+        return tooltip;
+    }
+
+
+    /**
+     * Detects periods where no layer has anyone on-call
+     */
+    private detectCoverageGaps(): void {
+        this.coverageGaps = [];
+
+        // If no layers, entire timeline is a gap
+        if (this.layers.length === 0 || this.timelineSpans.length === 0) {
+            if (this.layers.length === 0) {
+                this.coverageGaps.push({
+                    startTime: this.timelineStartDate,
+                    endTime: this.timelineEndDate
+                });
+            }
+            this.hasGaps = this.coverageGaps.length > 0;
+            return;
+        }
+
+        // Build a timeline of covered periods by merging all spans
+        // Sort spans by start time
+        const sortedSpans = [...this.timelineSpans].sort((a, b) =>
+            a.startTime.getTime() - b.startTime.getTime()
+        );
+
+        // Merge overlapping spans to find covered periods
+        const coveredPeriods: { start: Date; end: Date }[] = [];
+
+        for (const span of sortedSpans) {
+            if (coveredPeriods.length === 0) {
+                coveredPeriods.push({ start: span.startTime, end: span.endTime });
+            } else {
+                const last = coveredPeriods[coveredPeriods.length - 1];
+                if (span.startTime <= last.end) {
+                    // Overlapping or adjacent, extend the period
+                    last.end = new Date(Math.max(last.end.getTime(), span.endTime.getTime()));
+                } else {
+                    // New period
+                    coveredPeriods.push({ start: span.startTime, end: span.endTime });
+                }
+            }
+        }
+
+        // Find gaps between covered periods
+        let currentTime = this.timelineStartDate;
+
+        for (const period of coveredPeriods) {
+            if (period.start > currentTime) {
+                // Gap before this period
+                this.coverageGaps.push({
+                    startTime: new Date(currentTime),
+                    endTime: new Date(period.start)
+                });
+            }
+            currentTime = new Date(Math.max(currentTime.getTime(), period.end.getTime()));
+        }
+
+        // Check for gap at the end
+        if (currentTime < this.timelineEndDate) {
+            this.coverageGaps.push({
+                startTime: new Date(currentTime),
+                endTime: new Date(this.timelineEndDate)
+            });
+        }
+
+        this.hasGaps = this.coverageGaps.length > 0;
+    }
+
+    getGapStyle(gap: GapPeriod): { [key: string]: string } {
+        const totalMs = this.timelineEndDate.getTime() - this.timelineStartDate.getTime();
+        const startOffset = gap.startTime.getTime() - this.timelineStartDate.getTime();
+        const gapWidth = gap.endTime.getTime() - gap.startTime.getTime();
+
+        return {
+            left: `${(startOffset / totalMs) * 100}%`,
+            width: `${(gapWidth / totalMs) * 100}%`
+        };
+    }
+
+    formatGapDuration(gap: GapPeriod): string {
+        const durationMs = gap.endTime.getTime() - gap.startTime.getTime();
+        const hours = Math.floor(durationMs / (1000 * 60 * 60));
+        const days = Math.floor(hours / 24);
+
+        if (days > 0) {
+            const remainingHours = hours % 24;
+            return remainingHours > 0 ? `${days}d ${remainingHours}h` : `${days}d`;
+        }
+        return `${hours}h`;
     }
 
     private calculateLayerSpans(layer: EditableLayer): OnCallSpan[] {
@@ -800,6 +993,7 @@ export class ScheduleEditorComponent implements OnInit, OnDestroy {
 
         this.markUnsavedChanges();
         this.closeOverrideModal();
+        this.updateTimeline();
     }
 
     removeOverride(override: EditableOverride): void {
@@ -815,6 +1009,7 @@ export class ScheduleEditorComponent implements OnInit, OnDestroy {
         }
 
         this.markUnsavedChanges();
+        this.updateTimeline();
     }
 
     async saveOverrides(scheduleId: number): Promise<void> {
