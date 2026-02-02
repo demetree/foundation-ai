@@ -21,6 +21,17 @@
       </a>
     </li>
 
+    <!-- Schedules -->
+    <li class="nav-item">
+      <a routerLink="/schedule-management" routerLinkActive="active" class="nav-link text-white"
+        [ngbTooltip]="!isExpanded ? 'Schedules' : null" triggers="hover" #tSchedules="ngbTooltip"
+        (click)="tSchedules.close(); close()" placement="right" tooltipClass="sidebar-tip">
+        <i class="fa-solid fa-calendar-alt"></i>
+        <span class="label px-2">Schedules</span>
+      </a>
+    </li>
+
+
     <!-- Services -->
     <li class="nav-item">
       <a routerLink="/service-management" routerLinkActive="active" class="nav-link text-white"

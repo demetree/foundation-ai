@@ -24,6 +24,8 @@ import { IntegrationManagementComponent } from './components/integration-managem
 import { ServiceManagementComponent } from './components/service-management/service-management.component';
 import { EscalationPolicyManagementComponent } from './components/escalation-policy-management/escalation-policy-management.component';
 import { EscalationPolicyEditorComponent } from './components/escalation-policy-editor/escalation-policy-editor.component';
+import { ScheduleManagementComponent } from './components/schedule-management/schedule-management.component';
+import { ScheduleEditorComponent } from './components/schedule-editor/schedule-editor.component';
 
 //
 // Custom screens
@@ -157,6 +159,9 @@ const routes: Routes = [
   { path: 'service-management', component: ServiceManagementComponent, canActivate: [AuthGuard], title: 'Service Management' },
   { path: 'escalation-policy-management', component: EscalationPolicyManagementComponent, canActivate: [AuthGuard], title: 'Escalation Policy Management' },
   { path: 'escalation-policy-management/:id/edit', component: EscalationPolicyEditorComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Escalation Policy' },
+  { path: 'schedule-management', component: ScheduleManagementComponent, canActivate: [AuthGuard], title: 'Schedule Management' },
+  { path: 'schedule-management/new', component: ScheduleEditorComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'New Schedule' },
+  { path: 'schedule-management/:id/edit', component: ScheduleEditorComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Schedule' },
 
 
 

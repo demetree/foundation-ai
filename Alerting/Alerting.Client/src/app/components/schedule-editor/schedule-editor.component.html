@@ -1,0 +1,292 @@
+<!-- Schedule Editor -->
+<div class="schedule-editor-container">
+
+    <!-- Hero Header -->
+    <div class="editor-header">
+        <div class="header-content">
+            <div class="header-left">
+                <button class="btn btn-back" (click)="cancel()">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <div class="title-icon-wrapper">
+                    <i class="fa-solid fa-calendar-alt"></i>
+                </div>
+                <div class="title-section">
+                    <h1 class="page-title">{{ isNewSchedule ? 'New Schedule' : formName || 'Schedule' }}</h1>
+                    <p class="page-subtitle">Configure rotation layers and members</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <!-- On-Call Now Badge -->
+                <div class="on-call-badge" *ngIf="!isNewSchedule && layers.length > 0">
+                    <span class="badge-label">On-Call Now</span>
+                    <span class="badge-value">{{ getCurrentOnCall() }}</span>
+                </div>
+                <!-- Unsaved Changes Indicator -->
+                <div class="unsaved-indicator" *ngIf="hasUnsavedChanges">
+                    <i class="fa-solid fa-circle"></i>
+                    <span>Unsaved</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="editor-content" *ngIf="!isLoading && !errorMessage">
+
+        <!-- Metadata Section -->
+        <div class="content-section metadata-section">
+            <h2 class="section-title">
+                <i class="fa-solid fa-info-circle"></i>
+                Schedule Details
+            </h2>
+            <div class="form-row">
+                <div class="form-group flex-2">
+                    <label class="form-label">Name <span class="required">*</span></label>
+                    <input type="text" class="form-control" [(ngModel)]="formName"
+                        (ngModelChange)="markUnsavedChanges()" placeholder="e.g., Primary On-Call">
+                </div>
+                <div class="form-group flex-1">
+                    <label class="form-label">Timezone</label>
+                    <select class="form-select" [(ngModel)]="formTimeZoneId" (ngModelChange)="markUnsavedChanges()">
+                        <option *ngFor="let tz of commonTimezones" [value]="tz.id">{{ tz.label }}</option>
+                    </select>
+                </div>
+                <div class="form-group flex-auto">
+                    <label class="form-label">Status</label>
+                    <div class="form-check-inline">
+                        <input type="checkbox" class="form-check-input" id="activeCheck" [(ngModel)]="formActive"
+                            (ngModelChange)="markUnsavedChanges()">
+                        <label class="form-check-label" for="activeCheck">Active</label>
+                    </div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group flex-1">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-control" [(ngModel)]="formDescription" (ngModelChange)="markUnsavedChanges()"
+                        rows="2" placeholder="Optional description"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timeline Preview Section -->
+        <div class="content-section timeline-section" *ngIf="layers.length > 0">
+            <h2 class="section-title">
+                <i class="fa-solid fa-chart-gantt"></i>
+                Timeline Preview
+                <span class="timeline-range">{{ timelineStartDate | date:'MMM d' }} - {{ timelineEndDate | date:'MMM d,
+                    yyyy' }}</span>
+            </h2>
+            <div class="timeline-wrapper">
+                <!-- Day Headers -->
+                <div class="timeline-header">
+                    <div class="layer-label-placeholder"></div>
+                    <div class="timeline-days">
+                        <div class="day-header" *ngFor="let day of timelineDays"
+                            [class.today]="day.toDateString() === (today | date:'fullDate')">
+                            <span class="day-name">{{ day | date:'EEE' }}</span>
+                            <span class="day-number">{{ day | date:'d' }}</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Layer Rows -->
+                <div class="timeline-body">
+                    <div class="timeline-row" *ngFor="let layer of layers">
+                        <div class="layer-label">
+                            <span class="layer-badge"
+                                [style.backgroundColor]="'hsl(' + (layer.layerLevel * 60) + ', 70%, 50%)'">
+                                L{{ layer.layerLevel }}
+                            </span>
+                            <span class="layer-name">{{ layer.name }}</span>
+                        </div>
+                        <div class="timeline-track">
+                            <!-- Background grid -->
+                            <div class="day-grid">
+                                <div class="day-cell" *ngFor="let day of timelineDays"></div>
+                            </div>
+                            <!-- Spans -->
+                            <div class="span-container">
+                                <div class="on-call-span" *ngFor="let span of getSpansForLayer(layer.layerLevel)"
+                                    [ngStyle]="getSpanStyle(span)" [ngbTooltip]="span.userName + ' - ' + layer.name">
+                                    <span class="span-avatar" [style.backgroundColor]="span.color">
+                                        {{ getUserInitials(span.userId) }}
+                                    </span>
+                                    <span class="span-name">{{ span.userName }}</span>
+                                </div>
+                            </div>
+                            <!-- Current time marker -->
+                            <div class="current-time-marker" *ngIf="isWithinTimelineWindow()"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Layers Section -->
+        <div class="content-section layers-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fa-solid fa-layer-group"></i>
+                    Rotation Layers
+                </h2>
+                <button class="btn btn-add-layer" (click)="addLayer()">
+                    <i class="fa-solid fa-plus"></i>
+                    Add Layer
+                </button>
+            </div>
+
+            <!-- Empty State -->
+            <div class="layers-empty" *ngIf="layers.length === 0">
+                <div class="empty-icon">
+                    <i class="fa-solid fa-layer-group"></i>
+                </div>
+                <h3>No Rotation Layers</h3>
+                <p>Add your first layer to define who will be on-call and when.</p>
+                <button class="btn btn-primary-gradient" (click)="addLayer()">
+                    <i class="fa-solid fa-plus"></i>
+                    Add First Layer
+                </button>
+            </div>
+
+            <!-- Layer Cards -->
+            <div class="layers-list" cdkDropList (cdkDropListDropped)="onLayerDrop($event)" *ngIf="layers.length > 0">
+                <div class="layer-card" *ngFor="let layer of layers; let i = index" cdkDrag>
+                    <!-- Layer Header -->
+                    <div class="layer-header" (click)="toggleLayerExpansion(layer)">
+                        <div class="drag-handle" cdkDragHandle>
+                            <i class="fa-solid fa-grip-vertical"></i>
+                        </div>
+                        <div class="layer-level-badge">L{{ layer.layerLevel }}</div>
+                        <div class="layer-info">
+                            <span class="layer-title">{{ layer.name || 'Unnamed Layer' }}</span>
+                            <span class="layer-summary">
+                                {{ layer.members.length }} member{{ layer.members.length !== 1 ? 's' : '' }} •
+                                {{ layer.rotationDays }} day rotation
+                            </span>
+                        </div>
+                        <div class="layer-actions">
+                            <button class="btn btn-icon btn-sm" (click)="removeLayer(i); $event.stopPropagation()"
+                                ngbTooltip="Remove Layer">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                            <i class="fa-solid" [class.fa-chevron-down]="layer.isExpanded"
+                                [class.fa-chevron-right]="!layer.isExpanded"></i>
+                        </div>
+                    </div>
+
+                    <!-- Layer Body (Collapsible) -->
+                    <div class="layer-body" *ngIf="layer.isExpanded">
+                        <!-- Layer Settings -->
+                        <div class="layer-settings">
+                            <div class="setting-group">
+                                <label>Layer Name</label>
+                                <input type="text" class="form-control" [(ngModel)]="layer.name"
+                                    (ngModelChange)="onLayerFieldChange(layer)" placeholder="e.g., Primary">
+                            </div>
+                            <div class="setting-group">
+                                <label>Rotation Start</label>
+                                <input type="date" class="form-control"
+                                    [ngModel]="layer.rotationStart | date:'yyyy-MM-dd'"
+                                    (ngModelChange)="layer.rotationStart = $event; onLayerFieldChange(layer)">
+                            </div>
+                            <div class="setting-group">
+                                <label>Rotation Period</label>
+                                <select class="form-select" [(ngModel)]="layer.rotationDays"
+                                    (ngModelChange)="onLayerFieldChange(layer)">
+                                    <option [ngValue]="1">Daily (1 day)</option>
+                                    <option [ngValue]="7">Weekly (7 days)</option>
+                                    <option [ngValue]="14">Bi-weekly (14 days)</option>
+                                    <option [ngValue]="28">Monthly (28 days)</option>
+                                </select>
+                            </div>
+                            <div class="setting-group">
+                                <label>Handoff Time</label>
+                                <input type="time" class="form-control" [(ngModel)]="layer.handoffTime"
+                                    (ngModelChange)="onLayerFieldChange(layer)">
+                            </div>
+                        </div>
+
+                        <!-- Members List -->
+                        <div class="members-section">
+                            <div class="members-header">
+                                <h4>Rotation Members</h4>
+                                <button class="btn btn-add-member" (click)="addMember(layer)">
+                                    <i class="fa-solid fa-user-plus"></i>
+                                    Add Member
+                                </button>
+                            </div>
+
+                            <div class="members-empty" *ngIf="layer.members.length === 0">
+                                <p>No members in this rotation. Add users to define the on-call order.</p>
+                            </div>
+
+                            <div class="members-list" cdkDropList (cdkDropListDropped)="onMemberDrop(layer, $event)"
+                                *ngIf="layer.members.length > 0">
+                                <div class="member-row" *ngFor="let member of layer.members; let mi = index" cdkDrag>
+                                    <div class="member-drag-handle" cdkDragHandle>
+                                        <i class="fa-solid fa-grip-vertical"></i>
+                                    </div>
+                                    <div class="member-position">{{ member.position + 1 }}</div>
+                                    <div class="member-user">
+                                        <select class="form-select" [(ngModel)]="member.securityUserObjectGuid"
+                                            (ngModelChange)="onMemberUserChange(layer, member)">
+                                            <option value="">— Select User —</option>
+                                            <option *ngFor="let user of users" [value]="user.objectGuid">
+                                                {{ user.displayName }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="member-avatar" *ngIf="member.securityUserObjectGuid"
+                                        [style.backgroundColor]="getUserColor(member.securityUserObjectGuid)">
+                                        {{ getUserInitials(member.securityUserObjectGuid) }}
+                                    </div>
+                                    <button class="btn btn-icon btn-sm btn-remove-member"
+                                        (click)="removeMember(layer, mi)" ngbTooltip="Remove">
+                                        <i class="fa-solid fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-state" *ngIf="isLoading">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p>Loading schedule...</p>
+    </div>
+
+    <!-- Error State -->
+    <div class="error-state" *ngIf="errorMessage && !isLoading">
+        <i class="fa-solid fa-exclamation-triangle"></i>
+        <p>{{ errorMessage }}</p>
+        <button class="btn btn-outline-primary" (click)="cancel()">
+            <i class="fa-solid fa-arrow-left me-1"></i> Back to Schedules
+        </button>
+    </div>
+
+    <!-- Action Bar (Sticky Footer) -->
+    <div class="action-bar" *ngIf="!isLoading && !errorMessage">
+        <div class="action-bar-left">
+            <span class="save-hint" *ngIf="hasUnsavedChanges">
+                <i class="fa-solid fa-circle text-warning me-1"></i>
+                You have unsaved changes
+            </span>
+        </div>
+        <div class="action-bar-right">
+            <button class="btn btn-secondary" (click)="cancel()" [disabled]="isSaving">
+                Cancel
+            </button>
+            <button class="btn btn-primary" (click)="save()" [disabled]="isSaving || !formName.trim()">
+                <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-1"></span>
+                {{ isNewSchedule ? 'Create Schedule' : 'Save Changes' }}
+            </button>
+        </div>
+    </div>
+</div>
