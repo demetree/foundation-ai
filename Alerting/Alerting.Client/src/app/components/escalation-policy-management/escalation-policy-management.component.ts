@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy, ViewChild, TemplateRef } from '@angular/core';
+import { Router } from '@angular/router';
 import { Subject, BehaviorSubject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 
@@ -55,6 +56,7 @@ export class EscalationPolicyManagementComponent implements OnInit, OnDestroy {
     Math = Math;
 
     constructor(
+        private router: Router,
         private escalationPolicyService: EscalationPolicyService,
         private alertService: AlertService,
         private modalService: NgbModal
@@ -231,15 +233,8 @@ export class EscalationPolicyManagementComponent implements OnInit, OnDestroy {
     }
 
     openEditModal(policy: EscalationPolicyData): void {
-        this.isAddMode = false;
-        this.editingPolicy = policy;
-        this.formName = policy.name;
-        this.formDescription = policy.description || '';
-        this.formActive = policy.active;
-        this.modalRef = this.modalService.open(this.addEditModalTemplate, {
-            size: 'lg',
-            backdrop: 'static'
-        });
+        // Navigate to full-page editor instead of modal
+        this.router.navigate(['/escalation-policy-management', policy.id, 'edit']);
     }
 
     closeModal(): void {

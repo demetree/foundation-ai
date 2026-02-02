@@ -1,0 +1,232 @@
+<!-- Escalation Policy Editor -->
+<div class="policy-editor-container">
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-overlay">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="loading-text">Loading escalation policy...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="errorMessage && !isLoading" class="error-state">
+        <i class="fa-solid fa-exclamation-triangle"></i>
+        <h3>Error</h3>
+        <p>{{ errorMessage }}</p>
+        <button class="btn btn-secondary" (click)="goBack()">
+            <i class="fa-solid fa-arrow-left me-2"></i>Back to Policies
+        </button>
+    </div>
+
+    <!-- Main Content -->
+    <ng-container *ngIf="!isLoading && !errorMessage">
+
+        <!-- Header -->
+        <div class="editor-header">
+            <div class="header-left">
+                <button class="btn btn-back" (click)="goBack()" ngbTooltip="Back to Policies">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <div class="header-title">
+                    <h1>{{ formName || 'Escalation Policy' }}</h1>
+                    <span class="status-badge" [ngClass]="formActive ? 'active' : 'inactive'">
+                        {{ formActive ? 'Active' : 'Inactive' }}
+                    </span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <span *ngIf="hasUnsavedChanges" class="unsaved-indicator">
+                    <i class="fa-solid fa-circle"></i> Unsaved Changes
+                </span>
+                <button class="btn btn-secondary" (click)="cancel()" [disabled]="isSaving">
+                    Cancel
+                </button>
+                <button class="btn btn-primary" (click)="save()" [disabled]="isSaving">
+                    <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
+                    <i *ngIf="!isSaving" class="fa-solid fa-save me-2"></i>
+                    Save Changes
+                </button>
+            </div>
+        </div>
+
+        <!-- Content Grid -->
+        <div class="editor-content">
+
+            <!-- Metadata Card -->
+            <div class="metadata-card">
+                <div class="card-header">
+                    <i class="fa-solid fa-info-circle"></i>
+                    <h2>Policy Details</h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label class="form-label">Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" [(ngModel)]="formName"
+                            (ngModelChange)="onMetadataChange()" placeholder="e.g., High Priority Escalation">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" [(ngModel)]="formDescription" rows="3"
+                            (ngModelChange)="onMetadataChange()"
+                            placeholder="Describe this escalation path and when it should be used"></textarea>
+                    </div>
+
+                    <div class="form-check form-switch">
+                        <input type="checkbox" class="form-check-input" id="activeToggle" [(ngModel)]="formActive"
+                            (ngModelChange)="onMetadataChange()">
+                        <label class="form-check-label" for="activeToggle">
+                            <strong>Active</strong> — Enabled for incident escalation
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Escalation Rules Timeline -->
+            <div class="rules-section">
+                <div class="section-header">
+                    <div class="section-title">
+                        <i class="fa-solid fa-diagram-project"></i>
+                        <h2>Escalation Timeline</h2>
+                    </div>
+                    <span class="rule-count">{{ rules.length }} step{{ rules.length !== 1 ? 's' : '' }}</span>
+                </div>
+
+                <div class="timeline-container" cdkDropList (cdkDropListDropped)="onRuleDrop($event)">
+
+                    <!-- Empty State -->
+                    <div *ngIf="rules.length === 0" class="empty-timeline">
+                        <i class="fa-solid fa-diagram-project"></i>
+                        <p>No escalation steps defined yet.</p>
+                        <p class="text-muted">Add steps to define who gets notified and when.</p>
+                    </div>
+
+                    <!-- Rules -->
+                    <div *ngFor="let rule of rules; let i = index" class="rule-step" cdkDrag>
+
+                        <!-- Drag Handle -->
+                        <div class="drag-handle" cdkDragHandle>
+                            <i class="fa-solid fa-grip-vertical"></i>
+                        </div>
+
+                        <!-- Step Number & Delay -->
+                        <div class="step-indicator">
+                            <div class="step-number">{{ i + 1 }}</div>
+                            <div class="step-delay">{{ getDelayDisplay(rule.delayMinutes) }}</div>
+                        </div>
+
+                        <!-- Step Content -->
+                        <div class="step-content">
+
+                            <!-- Delay Input -->
+                            <div class="config-row">
+                                <label>Delay (minutes)</label>
+                                <input type="number" class="form-control form-control-sm"
+                                    [(ngModel)]="rule.delayMinutes" (ngModelChange)="onRuleChange(rule)" min="0"
+                                    max="1440">
+                            </div>
+
+                            <!-- Target Type -->
+                            <div class="config-row">
+                                <label>Notify</label>
+                                <select class="form-select form-select-sm" [(ngModel)]="rule.targetType"
+                                    (ngModelChange)="onTargetTypeChange(rule)">
+                                    <option value="User">Specific User</option>
+                                    <option value="Schedule">On-Call Schedule</option>
+                                    <option value="AllUsers">All Users</option>
+                                </select>
+                            </div>
+
+                            <!-- Target Selection (User) -->
+                            <div class="config-row" *ngIf="rule.targetType === 'User'">
+                                <label>User GUID</label>
+                                <input type="text" class="form-control form-control-sm"
+                                    [(ngModel)]="rule.targetObjectGuid" (ngModelChange)="onRuleChange(rule)"
+                                    placeholder="Enter user objectGuid">
+                            </div>
+
+                            <!-- Target Selection (Schedule) -->
+                            <div class="config-row" *ngIf="rule.targetType === 'Schedule'">
+                                <label>Schedule</label>
+                                <select class="form-select form-select-sm" [(ngModel)]="rule.targetObjectGuid"
+                                    (ngModelChange)="onRuleChange(rule)">
+                                    <option [ngValue]="null">-- Select Schedule --</option>
+                                    <option *ngFor="let schedule of schedules" [ngValue]="schedule.objectGuid">
+                                        {{ schedule.name }}
+                                    </option>
+                                </select>
+                            </div>
+
+                            <!-- All Users Info -->
+                            <div class="config-row info" *ngIf="rule.targetType === 'AllUsers'">
+                                <i class="fa-solid fa-users text-info me-2"></i>
+                                <span class="text-muted">All active users will be notified</span>
+                            </div>
+
+                            <!-- Repeat Settings -->
+                            <div class="repeat-settings">
+                                <div class="config-row half">
+                                    <label>Repeat</label>
+                                    <input type="number" class="form-control form-control-sm"
+                                        [(ngModel)]="rule.repeatCount" (ngModelChange)="onRuleChange(rule)" min="0"
+                                        max="10">
+                                    <span class="suffix">times</span>
+                                </div>
+                                <div class="config-row half" *ngIf="rule.repeatCount > 0">
+                                    <label>Every</label>
+                                    <input type="number" class="form-control form-control-sm"
+                                        [(ngModel)]="rule.repeatDelayMinutes" (ngModelChange)="onRuleChange(rule)"
+                                        min="1" max="60">
+                                    <span class="suffix">min</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Remove Button -->
+                        <button class="btn btn-remove" (click)="removeRule(i)" ngbTooltip="Remove Step">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+
+                        <!-- Connection Line -->
+                        <div class="connection-line" *ngIf="i < rules.length - 1"></div>
+                    </div>
+
+                </div>
+
+                <!-- Add Step Button -->
+                <button class="btn btn-add-step" (click)="addRule()">
+                    <i class="fa-solid fa-plus"></i>
+                    Add Escalation Step
+                </button>
+            </div>
+
+            <!-- Linked Services (Read-only) -->
+            <div class="services-section" *ngIf="policy">
+                <div class="section-header">
+                    <div class="section-title">
+                        <i class="fa-solid fa-server"></i>
+                        <h2>Linked Services</h2>
+                    </div>
+                </div>
+                <div class="services-list" *ngIf="linkedServices.length > 0">
+                    <div *ngFor="let service of linkedServices" class="service-item">
+                        <i class="fa-solid fa-server"></i>
+                        <span>{{ service.name }}</span>
+                    </div>
+                </div>
+                <div class="empty-services" *ngIf="linkedServices.length === 0">
+                    <p class="text-muted">
+                        <i class="fa-solid fa-info-circle me-2"></i>
+                        No services are using this policy yet.
+                    </p>
+                    <a routerLink="/service-management" class="btn btn-link">
+                        Configure services <i class="fa-solid fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+    </ng-container>
+</div>
