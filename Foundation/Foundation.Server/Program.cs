@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Http;
 using System.Reflection;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -23,6 +24,8 @@ using Foundation.Security;
 using Foundation.Auditor.Database;
 using Foundation.Telemetry;
 using Foundation.Telemetry.Database;
+using Foundation.Web.Services.Alerting;
+using Foundation.Server.OIDC;
 
 
 namespace Foundation.Server
@@ -240,6 +243,11 @@ namespace Foundation.Server
                 builder.Services.AddTelemetryServices(builder.Configuration);
 
                 //
+                // Alerting Integration Service (for incident management)
+                //
+                builder.Services.AddAlertingIntegration(builder.Configuration);
+
+                //
                 // Configurations
                 //
                 builder.Services.Configure<AppSettings>(builder.Configuration);
@@ -434,6 +442,12 @@ namespace Foundation.Server
 
 
                 //
+                // Auto-register with Alerting system (if configured)
+                //
+                await RegisterWithAlertingAsync(app, logger).ConfigureAwait(false);
+
+
+                //
                 // Initialize and start the Telemetry Collector
                 //
                 app.Services.UseTelemetryCollector();
@@ -612,6 +626,64 @@ namespace Foundation.Server
             logger.SetFileName(LOG_FILENAME);
 
             return logger;
+        }
+
+
+        /// <summary>
+        /// Auto-register with the Alerting system if configured and not already registered.
+        /// </summary>
+        private static async Task RegisterWithAlertingAsync(WebApplication app, Logger logger)
+        {
+            var config = app.Configuration;
+            var alertingUrl = config["Alerting:BaseUrl"];
+
+            // Skip if Alerting is not configured
+            if (string.IsNullOrEmpty(alertingUrl))
+            {
+                logger.LogInformation("Alerting integration not configured (no BaseUrl), skipping auto-registration.");
+                return;
+            }
+
+            var serviceName = config["Alerting:ServiceName"] ?? "Foundation";
+            var settingKey = $"Alerting:Integration:{serviceName}:ApiKey";
+
+            try
+            {
+                // Check if already registered by looking for existing API key in SystemSettings
+                var existingKey = await SystemSettings.GetSystemSettingAsync(settingKey, null).ConfigureAwait(false);
+                if (!string.IsNullOrEmpty(existingKey))
+                {
+                    logger.LogInformation("Alerting integration already registered for {ServiceName}.", serviceName);
+                    return;
+                }
+
+                logger.LogInformation("Registering with Alerting system at {Url}...", alertingUrl);
+
+                // Create HTTP client for token request (bypass SSL for local dev)
+                using var httpClientHandler = new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+                };
+                using var httpClient = new HttpClient(httpClientHandler);
+
+                // Get access token via service account
+                var accessToken = await OidcTokenHelper.GetServiceAccountTokenAsync(
+                    config, httpClient).ConfigureAwait(false);
+
+                // Get the integration service from DI and register
+                using var scope = app.Services.CreateScope();
+                var alertingService = scope.ServiceProvider.GetRequiredService<IAlertingIntegrationService>();
+
+                var result = await alertingService.RegisterAsync(accessToken).ConfigureAwait(false);
+
+                logger.LogInformation("Successfully registered with Alerting. ServiceId: {ServiceId}, IntegrationId: {IntegrationId}",
+                    result.ServiceId, result.IntegrationId);
+            }
+            catch (Exception ex)
+            {
+                // Log but don't fail startup - Alerting is an optional feature
+                logger.LogWarning(ex, "Failed to register with Alerting system at {Url}. Alerting features will be unavailable until registration succeeds.", alertingUrl);
+            }
         }
     }
 }
