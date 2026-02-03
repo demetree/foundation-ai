@@ -53,44 +53,104 @@
 
     <ul>
 
-      <li class="nav-item my-2">
-        <hr class="border-secondary">
+      <!-- ═══ OPERATIONS ═══ -->
+      <li class="nav-section-label">Operations</li>
+
+      <!-- Incidents -->
+      <li class="nav-item">
+        <a class="nav-link text-white" routerLink="/incident-dashboard" routerLinkActive="active"
+           (click)="closeMobileMenu()">
+          <i class="fa fa-triangle-exclamation me-2"></i>
+          Incidents
+        </a>
+      </li>
+
+      <!-- Responder Console -->
+      <li class="nav-item">
+        <a class="nav-link text-white" routerLink="/respond" routerLinkActive="active" (click)="closeMobileMenu()">
+          <i class="fa fa-headset me-2"></i>
+          Responder Console
+        </a>
+      </li>
+    </ul>
+
+    <!-- ═══ MY CONTEXT ═══ -->
+    <hr class="border-secondary">
+
+    <ul>
+      <li class="nav-section-label">My Context</li>
+
+      <!-- My Shift -->
+      <li class="nav-item">
+        <a class="nav-link text-white" routerLink="/my-shift" routerLinkActive="active" (click)="closeMobileMenu()">
+          <i class="fa fa-user-clock me-2"></i>
+          My Shift
+        </a>
+      </li>
+
+      <!-- Notification Preferences -->
+      <li class="nav-item">
+        <a class="nav-link text-white" routerLink="/notification-preferences" routerLinkActive="active"
+           (click)="closeMobileMenu()">
+          <i class="fa fa-bell me-2"></i>
+          Notification Preferences
+        </a>
+      </li>
+    </ul>
+    <!-- ═══ CONFIGURATION ═══ -->
+
+    <hr class="border-secondary">
+    <ul>
+      <li class="nav-section-label">Configuration</li>
+
+      <!-- Services -->
+      <li class="nav-item">
+        <a class="nav-link text-white" routerLink="/service-management" routerLinkActive="active"
+           (click)="closeMobileMenu()">
+          <i class="fa fa-server me-2"></i>
+          Services
+        </a>
       </li>
 
       <!-- Escalation Policies -->
       <li class="nav-item">
         <a class="nav-link text-white" routerLink="/escalation-policy-management" routerLinkActive="active"
-          (click)="closeMobileMenu()">
+           (click)="closeMobileMenu()">
           <i class="fa fa-route me-2"></i>
           Escalation Policies
         </a>
       </li>
 
-      <!-- Services -->
+      <!-- Schedules -->
       <li class="nav-item">
-        <a class="nav-link text-white" routerLink="/service-management" routerLinkActive="active"
-          (click)="closeMobileMenu()">
-          <i class="fa fa-server me-2"></i>
-          Services
+        <a class="nav-link text-white" routerLink="/schedule-management" routerLinkActive="active"
+           (click)="closeMobileMenu()">
+          <i class="fa fa-calendar-alt me-2"></i>
+          Schedules
         </a>
       </li>
 
       <!-- Integrations -->
       <li class="nav-item">
         <a class="nav-link text-white" routerLink="/integration-management" routerLinkActive="active"
-          (click)="closeMobileMenu()">
+           (click)="closeMobileMenu()">
           <i class="fa fa-plug me-2"></i>
           Integrations
         </a>
       </li>
+    </ul>
+    <!-- ═══ DEVELOPMENT ═══ -->
+    <hr class="border-secondary">
+    <ul>
+    <li class="nav-section-label">Development</li>
 
-      <!-- Test Harness -->
-      <li class="nav-item">
-        <a class="nav-link text-white" routerLink="/test-harness" routerLinkActive="active" (click)="closeMobileMenu()">
-          <i class="fa fa-flask me-2"></i>
-          Test Harness
-        </a>
-      </li>
+    <!-- Test Harness -->
+    <li class="nav-item">
+      <a class="nav-link text-white" routerLink="/test-harness" routerLinkActive="active" (click)="closeMobileMenu()">
+        <i class="fa fa-flask me-2"></i>
+        Test Harness
+      </a>
+    </li>
 
     </ul>
 

@@ -11,6 +11,64 @@
 
   <ul class="nav nav-pills flex-column">
 
+    <!-- ═══ OPERATIONS ═══ -->
+
+    <!-- Incidents -->
+    <li class="nav-item">
+      <a routerLink="/incident-dashboard" routerLinkActive="active" class="nav-link text-white"
+        [ngbTooltip]="!isExpanded ? 'Incidents' : null" triggers="hover" #tIncidents="ngbTooltip"
+        (click)="tIncidents.close(); close()" placement="right" tooltipClass="sidebar-tip">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <span class="label px-2">Incidents</span>
+      </a>
+    </li>
+
+    <!-- Responder Console -->
+    <li class="nav-item">
+      <a routerLink="/respond" routerLinkActive="active" class="nav-link text-white"
+        [ngbTooltip]="!isExpanded ? 'Responder Console' : null" triggers="hover" #tRespond="ngbTooltip"
+        (click)="tRespond.close(); close()" placement="right" tooltipClass="sidebar-tip">
+        <i class="fa-solid fa-headset"></i>
+        <span class="label px-2">Responder Console</span>
+      </a>
+    </li>
+
+    <!-- ═══ MY CONTEXT ═══ -->
+    <li class="nav-divider"></li>
+
+    <!-- My Shift -->
+    <li class="nav-item">
+      <a routerLink="/my-shift" routerLinkActive="active" class="nav-link text-white"
+        [ngbTooltip]="!isExpanded ? 'My Shift' : null" triggers="hover" #tMyShift="ngbTooltip"
+        (click)="tMyShift.close(); close()" placement="right" tooltipClass="sidebar-tip">
+        <i class="fa-solid fa-user-clock"></i>
+        <span class="label px-2">My Shift</span>
+      </a>
+    </li>
+
+    <!-- Notification Preferences -->
+    <li class="nav-item">
+      <a routerLink="/notification-preferences" routerLinkActive="active" class="nav-link text-white"
+        [ngbTooltip]="!isExpanded ? 'Notification Preferences' : null" triggers="hover" #tNotifPrefs="ngbTooltip"
+        (click)="tNotifPrefs.close(); close()" placement="right" tooltipClass="sidebar-tip">
+        <i class="fa-solid fa-bell"></i>
+        <span class="label px-2">Notification Preferences</span>
+      </a>
+    </li>
+
+    <!-- ═══ CONFIGURATION ═══ -->
+    <li class="nav-divider"></li>
+
+    <!-- Services -->
+    <li class="nav-item">
+      <a routerLink="/service-management" routerLinkActive="active" class="nav-link text-white"
+        [ngbTooltip]="!isExpanded ? 'Services' : null" triggers="hover" #tServices="ngbTooltip"
+        (click)="tServices.close(); close()" placement="right" tooltipClass="sidebar-tip">
+        <i class="fa-solid fa-server"></i>
+        <span class="label px-2">Services</span>
+      </a>
+    </li>
+
     <!-- Escalation Policies -->
     <li class="nav-item">
       <a routerLink="/escalation-policy-management" routerLinkActive="active" class="nav-link text-white"
@@ -31,52 +89,6 @@
       </a>
     </li>
 
-    <!-- Incidents -->
-    <li class="nav-item">
-      <a routerLink="/incident-dashboard" routerLinkActive="active" class="nav-link text-white"
-        [ngbTooltip]="!isExpanded ? 'Incidents' : null" triggers="hover" #tIncidents="ngbTooltip"
-        (click)="tIncidents.close(); close()" placement="right" tooltipClass="sidebar-tip">
-        <i class="fa-solid fa-triangle-exclamation"></i>
-        <span class="label px-2">Incidents</span>
-      </a>
-    </li>
-
-    <!-- Divider for Personal Context -->
-    <li class="nav-divider"></li>
-
-    <!-- Responder Console -->
-    <li class="nav-item">
-      <a routerLink="/respond" routerLinkActive="active" class="nav-link text-white"
-        [ngbTooltip]="!isExpanded ? 'Responder Console' : null" triggers="hover" #tRespond="ngbTooltip"
-        (click)="tRespond.close(); close()" placement="right" tooltipClass="sidebar-tip">
-        <i class="fa-solid fa-headset"></i>
-        <span class="label px-2">Responder Console</span>
-      </a>
-    </li>
-
-    <!-- My Shift -->
-    <li class="nav-item">
-      <a routerLink="/my-shift" routerLinkActive="active" class="nav-link text-white"
-        [ngbTooltip]="!isExpanded ? 'My Shift' : null" triggers="hover" #tMyShift="ngbTooltip"
-        (click)="tMyShift.close(); close()" placement="right" tooltipClass="sidebar-tip">
-        <i class="fa-solid fa-user-clock"></i>
-        <span class="label px-2">My Shift</span>
-      </a>
-    </li>
-
-    <!-- Divider for Configuration -->
-    <li class="nav-divider"></li>
-
-    <!-- Services -->
-    <li class="nav-item">
-      <a routerLink="/service-management" routerLinkActive="active" class="nav-link text-white"
-        [ngbTooltip]="!isExpanded ? 'Services' : null" triggers="hover" #tServices="ngbTooltip"
-        (click)="tServices.close(); close()" placement="right" tooltipClass="sidebar-tip">
-        <i class="fa-solid fa-server"></i>
-        <span class="label px-2">Services</span>
-      </a>
-    </li>
-
     <!-- Integrations -->
     <li class="nav-item">
       <a routerLink="/integration-management" routerLinkActive="active" class="nav-link text-white"
@@ -87,15 +99,8 @@
       </a>
     </li>
 
-    <!-- Notification Preferences -->
-    <li class="nav-item">
-      <a routerLink="/notification-preferences" routerLinkActive="active" class="nav-link text-white"
-        [ngbTooltip]="!isExpanded ? 'Notification Preferences' : null" triggers="hover" #tNotifPrefs="ngbTooltip"
-        (click)="tNotifPrefs.close(); close()" placement="right" tooltipClass="sidebar-tip">
-        <i class="fa-solid fa-bell"></i>
-        <span class="label px-2">Notification Preferences</span>
-      </a>
-    </li>
+    <!-- ═══ DEVELOPMENT ═══ -->
+    <li class="nav-divider"></li>
 
     <!-- Test Harness -->
     <li class="nav-item">

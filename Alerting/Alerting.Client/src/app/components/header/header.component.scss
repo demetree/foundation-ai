@@ -43,17 +43,19 @@
     background: linear-gradient(135deg, #6ea8fe 0%, #5bc0de 100%);
     color: #0b1320;
   }
+
   /* Dropdown container positioning */
   .ms-2.position-relative {
     position: relative !important;
   }
+
   /* Dropdown menu positioning and styling */
   .header-profile-menu {
     border-radius: 12px;
     overflow: hidden;
     z-index: 1060 !important;
     min-width: 220px;
-    border: 1px solid rgba(0,0,0,0.15);
+    border: 1px solid rgba(0, 0, 0, 0.15);
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.175) !important;
     position: absolute !important;
     top: 100% !important;
@@ -62,6 +64,7 @@
     transform: none !important;
     margin-top: 2px;
   }
+
   /* Animate a child wrapper so we don't fight the placement transform */
   .header-profile-menu .menu-anim {
     opacity: 0;
@@ -73,6 +76,7 @@
     opacity: 1;
     transform: translateY(0) scale(1);
   }
+
   /* Ensure dropdown items are properly styled */
   .header-profile-menu .dropdown-item {
     padding: 0.5rem 1rem;
@@ -83,6 +87,7 @@
   .header-profile-menu .dropdown-item:hover {
     background-color: #f8f9fa;
   }
+
   /* Mobile accordion link colors */
   .text-grey {
     color: #000 !important;
@@ -143,4 +148,14 @@
 .mobile-sidebar .nav-link.active {
   background-color: rgba(255, 255, 255, 0.1);
   border-radius: 0.375rem;
+}
+
+.mobile-sidebar .nav-section-label {
+  padding: 8px 16px 4px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+  list-style: none;
 }
