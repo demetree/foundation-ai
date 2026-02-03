@@ -6,6 +6,8 @@ import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { EscalationPolicyService, EscalationPolicyData, EscalationPolicySubmitData } from '../../alerting-data-services/escalation-policy.service';
 import { EscalationRuleService, EscalationRuleData, EscalationRuleSubmitData } from '../../alerting-data-services/escalation-rule.service';
 import { OnCallScheduleService, OnCallScheduleData } from '../../alerting-data-services/on-call-schedule.service';
+import { ScheduleLayerService, ScheduleLayerData } from '../../alerting-data-services/schedule-layer.service';
+import { ScheduleLayerMemberService, ScheduleLayerMemberData } from '../../alerting-data-services/schedule-layer-member.service';
 import { ServiceData } from '../../alerting-data-services/service.service';
 import { AlertingUserService, AlertingUser } from '../../services/alerting-user.service';
 import { AlertService } from '../../services/alert.service';
@@ -73,12 +75,17 @@ export class EscalationPolicyEditorComponent implements OnInit, OnDestroy {
     // Track unsaved changes
     hasUnsavedChanges = false;
 
+    // Cache of on-call info per schedule (keyed by objectGuid)
+    scheduleOnCallCache: Map<string, { userName: string; isLoading: boolean }> = new Map();
+
     constructor(
         private route: ActivatedRoute,
         private router: Router,
         private escalationPolicyService: EscalationPolicyService,
         private escalationRuleService: EscalationRuleService,
         private onCallScheduleService: OnCallScheduleService,
+        private scheduleLayerService: ScheduleLayerService,
+        private scheduleLayerMemberService: ScheduleLayerMemberService,
         private alertingUserService: AlertingUserService,
         private alertService: AlertService
     ) { }
@@ -526,5 +533,122 @@ export class EscalationPolicyEditorComponent implements OnInit, OnDestroy {
         const mins = minutes % 60;
         if (mins === 0) return `After ${hours}h`;
         return `After ${hours}h ${mins}m`;
+    }
+
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // Schedule Integration Helpers
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Get the "Who's On-Call Now" display for a schedule.
+     * Returns cached value or triggers async load.
+     */
+    getScheduleOnCall(scheduleObjectGuid: string | null): string {
+        if (!scheduleObjectGuid) return '';
+
+        const cached = this.scheduleOnCallCache.get(scheduleObjectGuid);
+        if (cached) {
+            return cached.isLoading ? 'Loading...' : cached.userName;
+        }
+
+        // Start loading
+        this.loadScheduleOnCallInfo(scheduleObjectGuid);
+        return 'Loading...';
+    }
+
+    /**
+     * Load schedule layers and members to determine who's on call now.
+     */
+    private loadScheduleOnCallInfo(scheduleObjectGuid: string): void {
+        // Mark as loading
+        this.scheduleOnCallCache.set(scheduleObjectGuid, { userName: '', isLoading: true });
+
+        const schedule = this.schedules.find(s => s.objectGuid === scheduleObjectGuid);
+        if (!schedule) {
+            this.scheduleOnCallCache.set(scheduleObjectGuid, { userName: 'Unknown', isLoading: false });
+            return;
+        }
+
+        // Load layers for this schedule
+        this.scheduleLayerService.GetScheduleLayerList({
+            onCallScheduleId: schedule.id,
+            active: true,
+            deleted: false
+        }).pipe(takeUntil(this.destroy$)).subscribe({
+            next: (layers) => {
+                if (layers.length === 0) {
+                    this.scheduleOnCallCache.set(scheduleObjectGuid, { userName: 'No layers', isLoading: false });
+                    return;
+                }
+
+                // Get the primary layer (lowest level number)
+                const primaryLayer = layers.sort((a, b) => Number(a.layerLevel) - Number(b.layerLevel))[0];
+
+                // Load members for this layer
+                this.scheduleLayerMemberService.GetScheduleLayerMemberList({
+                    scheduleLayerId: primaryLayer.id,
+                    active: true,
+                    deleted: false
+                }).pipe(takeUntil(this.destroy$)).subscribe({
+                    next: (members) => {
+                        const onCallName = this.calculateCurrentOnCall(primaryLayer, members);
+                        this.scheduleOnCallCache.set(scheduleObjectGuid, { userName: onCallName, isLoading: false });
+                    },
+                    error: () => {
+                        this.scheduleOnCallCache.set(scheduleObjectGuid, { userName: 'Error', isLoading: false });
+                    }
+                });
+            },
+            error: () => {
+                this.scheduleOnCallCache.set(scheduleObjectGuid, { userName: 'Error', isLoading: false });
+            }
+        });
+    }
+
+    /**
+     * Calculate who's on call based on layer rotation settings.
+     */
+    private calculateCurrentOnCall(layer: ScheduleLayerData, members: ScheduleLayerMemberData[]): string {
+        if (members.length === 0) return 'No members';
+
+        const now = new Date();
+        const rotationMs = Number(layer.rotationDays) * 24 * 60 * 60 * 1000;
+        const rotationStart = new Date(layer.rotationStart);
+
+        // Parse handoff time
+        const [handoffHour, handoffMinute] = layer.handoffTime.split(':').map(Number);
+        rotationStart.setHours(handoffHour, handoffMinute, 0, 0);
+
+        // Calculate which rotation we're in
+        const elapsedMs = now.getTime() - rotationStart.getTime();
+        const rotationIndex = Math.floor(elapsedMs / rotationMs);
+        const sortedMembers = members.sort((a, b) => Number(a.position) - Number(b.position));
+        const memberIndex = ((rotationIndex % sortedMembers.length) + sortedMembers.length) % sortedMembers.length;
+        const currentMember = sortedMembers[memberIndex];
+
+        // Find user name
+        const user = this.users.find(u => u.objectGuid === currentMember.securityUserObjectGuid);
+        return user?.displayName || 'Unknown';
+    }
+
+    /**
+     * Navigate to schedule editor.
+     */
+    navigateToSchedule(scheduleObjectGuid: string | null, event: Event): void {
+        event.stopPropagation();
+        if (!scheduleObjectGuid) return;
+
+        const schedule = this.schedules.find(s => s.objectGuid === scheduleObjectGuid);
+        if (schedule) {
+            this.router.navigate(['/schedule-management', schedule.id, 'edit']);
+        }
+    }
+
+    /**
+     * Check if a schedule is selected for a rule.
+     */
+    hasScheduleSelected(rule: EditableRule): boolean {
+        return rule.targetType === 'Schedule' && !!rule.targetObjectGuid;
     }
 }

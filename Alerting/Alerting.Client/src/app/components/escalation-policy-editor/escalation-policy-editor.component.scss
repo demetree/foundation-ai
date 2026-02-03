@@ -535,6 +535,67 @@
             border-top: 1px solid rgba(255, 255, 255, 0.05);
             margin-top: 0.5rem;
         }
+
+        // Schedule selection wrapper with link button
+        .schedule-select-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex: 1;
+
+            select {
+                flex: 1;
+            }
+
+            .schedule-link {
+                padding: 0.25rem 0.5rem;
+                color: rgba(255, 255, 255, 0.5);
+                transition: all 0.2s ease;
+
+                &:hover {
+                    color: #8b5cf6;
+                    transform: translateY(-1px);
+                }
+
+                i {
+                    font-size: 0.85rem;
+                }
+            }
+        }
+
+        // On-Call Now preview row
+        &.on-call-preview {
+            width: 100%;
+            margin-top: 0.25rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .on-call-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 0.75rem;
+            background: linear-gradient(135deg, rgba(20, 184, 166, 0.15) 0%, rgba(6, 182, 212, 0.1) 100%);
+            border: 1px solid rgba(20, 184, 166, 0.25);
+            border-radius: 8px;
+            font-size: 0.85rem;
+
+            i {
+                color: #14b8a6;
+                font-size: 0.9rem;
+            }
+
+            .on-call-label {
+                color: rgba(255, 255, 255, 0.6);
+                font-weight: 500;
+            }
+
+            .on-call-name {
+                color: #5eead4;
+                font-weight: 600;
+            }
+        }
     }
 
     .btn-remove {

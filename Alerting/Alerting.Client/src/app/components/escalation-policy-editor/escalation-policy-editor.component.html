@@ -154,14 +154,31 @@
                             <!-- Target Selection (Schedule) -->
                             <div class="config-row" *ngIf="rule.targetType === 'Schedule'">
                                 <label>Schedule</label>
-                                <select class="form-select form-select-sm" [(ngModel)]="rule.targetObjectGuid"
-                                    (ngModelChange)="onRuleChange(rule)">
-                                    <option [ngValue]="null">-- Select Schedule --</option>
-                                    <option *ngFor="let schedule of schedules" [ngValue]="schedule.objectGuid">
-                                        {{ schedule.name }}
-                                    </option>
-                                </select>
+                                <div class="schedule-select-wrapper">
+                                    <select class="form-select form-select-sm" [(ngModel)]="rule.targetObjectGuid"
+                                        (ngModelChange)="onRuleChange(rule)">
+                                        <option [ngValue]="null">-- Select Schedule --</option>
+                                        <option *ngFor="let schedule of schedules" [ngValue]="schedule.objectGuid">
+                                            {{ schedule.name }}
+                                        </option>
+                                    </select>
+                                    <button *ngIf="rule.targetObjectGuid" class="btn btn-sm btn-link schedule-link"
+                                        (click)="navigateToSchedule(rule.targetObjectGuid, $event)"
+                                        ngbTooltip="Open schedule editor">
+                                        <i class="fa-solid fa-external-link-alt"></i>
+                                    </button>
+                                </div>
                             </div>
+
+                            <!-- On-Call Now Preview (when schedule selected) -->
+                            <div class="config-row on-call-preview" *ngIf="hasScheduleSelected(rule)">
+                                <span class="on-call-badge">
+                                    <i class="fa-solid fa-headset"></i>
+                                    <span class="on-call-label">On-Call Now:</span>
+                                    <span class="on-call-name">{{ getScheduleOnCall(rule.targetObjectGuid) }}</span>
+                                </span>
+                            </div>
+
 
                             <!-- All Users Info -->
                             <div class="config-row info" *ngIf="rule.targetType === 'AllUsers'">
