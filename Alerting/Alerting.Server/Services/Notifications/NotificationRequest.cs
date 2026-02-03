@@ -46,6 +46,12 @@ namespace Alerting.Server.Services.Notifications
         /// The tenant GUID for multi-tenant context.
         /// </summary>
         public Guid TenantGuid { get; set; }
+
+        /// <summary>
+        /// Microsoft Teams Incoming Webhook URL for Teams channel notifications.
+        /// Configured at the service or escalation policy level.
+        /// </summary>
+        public string TeamsWebhookUrl { get; set; }
     }
 
     /// <summary>

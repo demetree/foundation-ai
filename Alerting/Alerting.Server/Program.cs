@@ -325,6 +325,8 @@ namespace Foundation.Alerting
                 //
                 builder.Services.AddScoped<INotificationDispatcher, NotificationDispatcher>();
                 builder.Services.AddScoped<INotificationProvider, EmailNotificationProvider>();
+                builder.Services.AddScoped<INotificationProvider, SmsNotificationProvider>();
+                builder.Services.AddScoped<INotificationProvider, TeamsNotificationProvider>();
 
                 //
                 // Background Workers
