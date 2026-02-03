@@ -27,14 +27,16 @@ namespace Foundation.Web.Services.Alerting
         private readonly ILogger<AlertingIntegrationService> _logger;
         private readonly JsonSerializerOptions _jsonOptions;
 
-        public AlertingIntegrationService(
-            HttpClient httpClient,
-            IOptions<AlertingIntegrationOptions> options,
-            ILogger<AlertingIntegrationService> logger)
+        private const string ALERTS_API_URL = "api/alerts/v1";
+
+        public AlertingIntegrationService(HttpClient httpClient,
+                                          IOptions<AlertingIntegrationOptions> options,
+                                          ILogger<AlertingIntegrationService> logger)
         {
             _httpClient = httpClient;
             _options = options.Value;
             _logger = logger;
+
             _jsonOptions = new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -51,9 +53,19 @@ namespace Foundation.Web.Services.Alerting
             _httpClient.Timeout = TimeSpan.FromSeconds(_options.TimeoutSeconds);
         }
 
-        public bool IsConfigured => 
-            !string.IsNullOrEmpty(_options.BaseUrl) && 
-            !string.IsNullOrEmpty(_options.ApiKey);
+        /// <summary>
+        /// Returns true if Alerting integration is configured (BaseUrl is set).
+        /// This indicates the system is intended to integrate with Alerting.
+        /// </summary>
+        public bool IsConfigured => !string.IsNullOrEmpty(_options.BaseUrl);
+
+        /// <summary>
+        /// Returns true if registered with Alerting (API key is available).
+        /// Note: This uses the cached API key; call EnsureRegisteredAsync for a fresh check.
+        /// </summary>
+        public bool IsRegistered => 
+            !string.IsNullOrEmpty(_options.ApiKey) || 
+            !string.IsNullOrEmpty(_cachedApiKey);
 
 
         public async Task<RegistrationResponse> RegisterAsync(string accessToken, CancellationToken cancellationToken = default)
@@ -71,15 +83,17 @@ namespace Foundation.Web.Services.Alerting
                 CallbackUrl = _options.CallbackUrl
             };
 
-            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "api/integrations/register");
-            httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-            httpRequest.Content = new StringContent(
-                JsonSerializer.Serialize(request, _jsonOptions),
-                Encoding.UTF8,
-                "application/json");
+            using HttpRequestMessage httpRequest = new HttpRequestMessage(HttpMethod.Post, "api/integrations/register");
 
-            var response = await _httpClient.SendAsync(httpRequest, cancellationToken).ConfigureAwait(false);
-            var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+            httpRequest.Content = new StringContent(JsonSerializer.Serialize(request, _jsonOptions),
+                                                    Encoding.UTF8,
+                                                    "application/json");
+
+            HttpResponseMessage response = await _httpClient.SendAsync(httpRequest, cancellationToken).ConfigureAwait(false);
+
+            string content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -88,7 +102,7 @@ namespace Foundation.Web.Services.Alerting
                 throw new HttpRequestException($"Registration failed: {response.StatusCode}");
             }
 
-            var result = JsonSerializer.Deserialize<RegistrationResponse>(content, _jsonOptions);
+            RegistrationResponse result = JsonSerializer.Deserialize<RegistrationResponse>(content, _jsonOptions);
 
             // Store API key and integration info in SystemSettings (database-backed)
             if (!string.IsNullOrEmpty(result?.ApiKey) && !string.IsNullOrEmpty(_options.ServiceName))
@@ -97,16 +111,13 @@ namespace Foundation.Web.Services.Alerting
                 {
                     var settingPrefix = $"Alerting:Integration:{_options.ServiceName}";
                     
-                    await SystemSettings.SetSystemSettingAsync(
-                        $"{settingPrefix}:ApiKey", result.ApiKey, cancellationToken).ConfigureAwait(false);
-                    await SystemSettings.SetSystemSettingAsync(
-                        $"{settingPrefix}:IntegrationId", result.IntegrationId.ToString(), cancellationToken).ConfigureAwait(false);
-                    await SystemSettings.SetSystemSettingAsync(
-                        $"{settingPrefix}:ServiceId", result.ServiceId.ToString(), cancellationToken).ConfigureAwait(false);
-                    
-                    _logger.LogInformation(
-                        "Alerting integration credentials stored in SystemSettings for {ServiceName}",
-                        _options.ServiceName);
+                    await SystemSettings.SetSystemSettingAsync($"{settingPrefix}:ApiKey", result.ApiKey, cancellationToken).ConfigureAwait(false);
+
+                    await SystemSettings.SetSystemSettingAsync($"{settingPrefix}:IntegrationGui", result.IntegrationGuid.ToString(), cancellationToken).ConfigureAwait(false);
+
+                    await SystemSettings.SetSystemSettingAsync($"{settingPrefix}:ServiceGuid", result.ServiceGuid.ToString(), cancellationToken).ConfigureAwait(false);
+
+                    _logger.LogInformation("Alerting integration credentials stored in SystemSettings for {ServiceName}", _options.ServiceName);
                 }
                 catch (Exception ex)
                 {
@@ -114,8 +125,7 @@ namespace Foundation.Web.Services.Alerting
                 }
             }
 
-            _logger.LogInformation("Successfully registered with Alerting as service {ServiceName} (ID: {ServiceId})",
-                result?.ServiceName, result?.ServiceId);
+            _logger.LogInformation("Successfully registered with Alerting as service {ServiceName} (ID: {ServiceGuid})", result?.ServiceName, result?.ServiceGuid);
 
             return result;
         }
@@ -136,14 +146,15 @@ namespace Foundation.Web.Services.Alerting
                 customFields = request.CustomFields
             };
 
-            using var httpRequest = await CreateApiRequestAsync(HttpMethod.Post, "api/alerts", cancellationToken).ConfigureAwait(false);
-            httpRequest.Content = new StringContent(
-                JsonSerializer.Serialize(payload, _jsonOptions),
-                Encoding.UTF8,
-                "application/json");
+            HttpRequestMessage httpRequest = await CreateApiRequestAsync(HttpMethod.Post, ALERTS_API_URL + "/enqueue", cancellationToken).ConfigureAwait(false);
 
-            var response = await _httpClient.SendAsync(httpRequest, cancellationToken).ConfigureAwait(false);
-            var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            httpRequest.Content = new StringContent(JsonSerializer.Serialize(payload, _jsonOptions),
+                                                    Encoding.UTF8,
+                                                    "application/json");
+
+            HttpResponseMessage response = await _httpClient.SendAsync(httpRequest, cancellationToken).ConfigureAwait(false);
+
+            string content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -164,16 +175,16 @@ namespace Foundation.Web.Services.Alerting
                 throw new ArgumentNullException(nameof(incidentKey));
             }
 
-            using var httpRequest = await CreateApiRequestAsync(HttpMethod.Get, $"api/incidents/{Uri.EscapeDataString(incidentKey)}/status", cancellationToken).ConfigureAwait(false);
+            using HttpRequestMessage httpRequest = await CreateApiRequestAsync(HttpMethod.Get, $"{ALERTS_API_URL}/incidents/{Uri.EscapeDataString(incidentKey)}/status", cancellationToken).ConfigureAwait(false);
 
-            var response = await _httpClient.SendAsync(httpRequest, cancellationToken).ConfigureAwait(false);
+            HttpResponseMessage response = await _httpClient.SendAsync(httpRequest, cancellationToken).ConfigureAwait(false);
 
             if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
                 return null;
             }
 
-            var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            string content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -189,24 +200,40 @@ namespace Foundation.Web.Services.Alerting
         {
             await EnsureConfiguredAsync(cancellationToken).ConfigureAwait(false);
 
-            var queryParams = new List<string>();
+            List<string> queryParams = new List<string>();
+
             if (filter?.Since.HasValue == true)
+            {
                 queryParams.Add($"since={filter.Since.Value:O}");
+            }
+
             if (filter?.Until.HasValue == true)
+            {
                 queryParams.Add($"until={filter.Until.Value:O}");
+            }
+
             if (!string.IsNullOrEmpty(filter?.Status))
+            {
                 queryParams.Add($"status={Uri.EscapeDataString(filter.Status)}");
+            }
+
             if (!string.IsNullOrEmpty(filter?.Severity))
+            {
                 queryParams.Add($"severity={Uri.EscapeDataString(filter.Severity)}");
+            }
+
             if (filter?.Limit.HasValue == true)
+            {
                 queryParams.Add($"limit={filter.Limit}");
+            }
 
-            var queryString = queryParams.Count > 0 ? "?" + string.Join("&", queryParams) : "";
+            string queryString = queryParams.Count > 0 ? "?" + string.Join("&", queryParams) : "";
 
-            using var httpRequest = await CreateApiRequestAsync(HttpMethod.Get, $"api/incidents/mine{queryString}", cancellationToken).ConfigureAwait(false);
+            HttpRequestMessage httpRequest = await CreateApiRequestAsync(HttpMethod.Get, $"{ALERTS_API_URL}/incidents{queryString}", cancellationToken).ConfigureAwait(false);
 
-            var response = await _httpClient.SendAsync(httpRequest, cancellationToken).ConfigureAwait(false);
-            var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            HttpResponseMessage response = await _httpClient.SendAsync(httpRequest, cancellationToken).ConfigureAwait(false);
+
+            string content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -214,7 +241,16 @@ namespace Foundation.Web.Services.Alerting
                 throw new HttpRequestException($"Failed to get incidents: {response.StatusCode}");
             }
 
-            return JsonSerializer.Deserialize<List<IncidentSummary>>(content, _jsonOptions);
+            // Alerting returns IncidentQueryResult wrapper with { success, message, incidents }
+            var queryResult = JsonSerializer.Deserialize<IncidentQueryResponse>(content, _jsonOptions);
+            
+            if (queryResult?.Success != true)
+            {
+                _logger.LogWarning("Incident query failed: {Message}", queryResult?.Message);
+                return new List<IncidentSummary>();
+            }
+
+            return queryResult.Incidents ?? new List<IncidentSummary>();
         }
 
 
@@ -229,18 +265,20 @@ namespace Foundation.Web.Services.Alerting
 
             var payload = new { resolution };
 
-            using var httpRequest = await CreateApiRequestAsync(HttpMethod.Post, $"api/incidents/{Uri.EscapeDataString(incidentKey)}/resolve", cancellationToken).ConfigureAwait(false);
-            httpRequest.Content = new StringContent(
-                JsonSerializer.Serialize(payload, _jsonOptions),
-                Encoding.UTF8,
-                "application/json");
+            using HttpRequestMessage httpRequest = await CreateApiRequestAsync(HttpMethod.Post, $"{ALERTS_API_URL}/resolve/{Uri.EscapeDataString(incidentKey)}", cancellationToken).ConfigureAwait(false);
+            
+            httpRequest.Content = new StringContent(JsonSerializer.Serialize(payload, _jsonOptions),
+                                                    Encoding.UTF8,
+                                                    "application/json");
 
-            var response = await _httpClient.SendAsync(httpRequest, cancellationToken).ConfigureAwait(false);
-            var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            HttpResponseMessage response = await _httpClient.SendAsync(httpRequest, cancellationToken).ConfigureAwait(false);
+
+            string content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogError("Failed to resolve incident: {StatusCode} - {Content}", response.StatusCode, content);
+                _logger.LogError($"Failed to resolve incident: {response.StatusCode} - {content}");
+
                 throw new HttpRequestException($"Failed to resolve incident: {response.StatusCode}");
             }
 
@@ -261,13 +299,14 @@ namespace Foundation.Web.Services.Alerting
             }
 
             // Try options first, then SystemSettings, then cache
-            var apiKey = await GetApiKeyAsync(cancellationToken).ConfigureAwait(false);
+            string apiKey = await GetApiKeyAsync(cancellationToken).ConfigureAwait(false);
             
             if (string.IsNullOrEmpty(apiKey))
             {
                 throw new InvalidOperationException("Alerting ApiKey is not configured. Call RegisterAsync first.");
             }
         }
+
 
         private async Task<string> GetApiKeyAsync(CancellationToken cancellationToken = default)
         {
@@ -296,8 +335,10 @@ namespace Foundation.Web.Services.Alerting
 
         private async Task<HttpRequestMessage> CreateApiRequestAsync(HttpMethod method, string path, CancellationToken cancellationToken = default)
         {
-            var apiKey = await GetApiKeyAsync(cancellationToken).ConfigureAwait(false);
-            var request = new HttpRequestMessage(method, path);
+            string apiKey = await GetApiKeyAsync(cancellationToken).ConfigureAwait(false);
+
+            HttpRequestMessage request = new HttpRequestMessage(method, path);
+
             request.Headers.Add("X-Api-Key", apiKey);
             return request;
         }

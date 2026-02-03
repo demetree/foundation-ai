@@ -3,17 +3,21 @@
 //
 // REST API for authenticated users to manage incidents.
 //
-using System;
-using System.Threading.Tasks;
 using Alerting.Server.Services;
-using Foundation.Security;
 using Foundation.Alerting.Database;
+using Foundation.Auditor;
+using Foundation.Security;
+using Foundation.Security.Database;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System.Linq;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using static Foundation.Alerting.Database.Incident;
 
 namespace Alerting.Server.Controllers
 {
@@ -23,16 +27,15 @@ namespace Alerting.Server.Controllers
     [ApiController]
     [Route("api/incident-management")]
     [Authorize]
-    public class IncidentController : ControllerBase
+    public class IncidentManagementController : SecureWebAPIController
     {
         private readonly IAlertingService _alertingService;
         private readonly AlertingContext _context;
-        private readonly ILogger<IncidentController> _logger;
+        private readonly ILogger<IncidentManagementController> _logger;
 
-        public IncidentController(
-            IAlertingService alertingService,
-            AlertingContext context,
-            ILogger<IncidentController> logger)
+        public IncidentManagementController(IAlertingService alertingService,
+                                            AlertingContext context,
+                                            ILogger<IncidentManagementController> logger) : base("Alerting", "IncidentManagement")
         {
             _alertingService = alertingService;
             _context = context;
@@ -48,18 +51,37 @@ namespace Alerting.Server.Controllers
         /// <returns>List of incidents.</returns>
         [HttpGet]
         [ProducesResponseType(typeof(List<IncidentDto>), 200)]
-        public async Task<IActionResult> GetIncidents(
-            [FromQuery] int? serviceId = null,
-            [FromQuery] int? severityId = null,
-            [FromQuery] bool includeResolved = false)
+        public async Task<IActionResult> GetIncidents([FromQuery] int? serviceId = null,
+                                                      [FromQuery] int? severityId = null,
+                                                      [FromQuery] bool includeResolved = false,
+                                                      CancellationToken cancellationToken = default)
         {
-            var tenantGuid = GetTenantGuid();
+            if (!await UserCanReadAsync())
+            {
+                return Forbid();
+            }
+
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+            Guid userTenantGuid;
+
+            try
+            {
+                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+                return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+            }
+
+
 
             var query = _context.Incidents
                 .Include(i => i.service)
                 .Include(i => i.severityType)
                 .Include(i => i.incidentStatusType)
-                .Where(i => i.tenantGuid == tenantGuid && i.active && !i.deleted);
+                .Where(i => i.tenantGuid == userTenantGuid && i.active && !i.deleted);
 
             if (!includeResolved)
             {
@@ -76,7 +98,7 @@ namespace Alerting.Server.Controllers
                 query = query.Where(i => i.severityTypeId == severityId.Value);
             }
 
-            var incidents = await query
+            List<IncidentDto> incidents = await query
                 .OrderByDescending(i => i.createdAt)
                 .Take(100) // Limit for performance
                 .Select(i => new IncidentDto
@@ -110,16 +132,37 @@ namespace Alerting.Server.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(IncidentDetailDto), 200)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> GetIncident(int id)
+        public async Task<IActionResult> GetIncident(int id, CancellationToken cancellationToken = default)
         {
-            var incident = await _alertingService.GetIncidentWithTimelineAsync(id).ConfigureAwait(false);
+            if (!await UserCanReadAsync())
+            {
+                return Forbid();
+            }
+
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+            Guid userTenantGuid;
+
+            try
+            {
+                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+                return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+            }
+
+
+
+            Incident incident = await _alertingService.GetIncidentWithTimelineAsync(id).ConfigureAwait(false);
 
             if (incident == null)
             {
                 return NotFound();
             }
 
-            var dto = new IncidentDetailDto
+            IncidentDetailDto dto = new IncidentDetailDto
             {
                 Id = incident.id,
                 ObjectGuid = incident.objectGuid,
@@ -164,14 +207,35 @@ namespace Alerting.Server.Controllers
         [ProducesResponseType(typeof(IncidentDto), 200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> AcknowledgeIncident(int id)
+        public async Task<IActionResult> AcknowledgeIncident(int id, CancellationToken cancellationToken = default)
         {
+            if (!await UserCanWriteAsync())
+            {
+                return Forbid();
+            }
+
             try
             {
-                var actorGuid = GetUserObjectGuid();
-                var incident = await _alertingService.AcknowledgeAsync(id, actorGuid).ConfigureAwait(false);
+                SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
-                _logger.LogInformation("Incident {IncidentId} acknowledged by user {UserGuid}", id, actorGuid);
+                Guid userTenantGuid;
+
+                try
+                {
+                    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+                    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+                }
+
+
+                Guid actorGuid = securityUser.objectGuid;
+
+                Incident incident = await _alertingService.AcknowledgeAsync(id, actorGuid).ConfigureAwait(false);
+
+                _logger.LogInformation($"Incident {id} acknowledged by user {securityUser.accountName} {actorGuid}");
 
                 return Ok(MapToDto(incident));
             }
@@ -194,14 +258,34 @@ namespace Alerting.Server.Controllers
         [ProducesResponseType(typeof(IncidentDto), 200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> ResolveIncident(int id)
+        public async Task<IActionResult> ResolveIncident(int id, CancellationToken cancellationToken = default)
         {
+            if (!await UserCanWriteAsync())
+            {
+                return Forbid();
+            }
+
             try
             {
-                var actorGuid = GetUserObjectGuid();
-                var incident = await _alertingService.ResolveAsync(id, actorGuid).ConfigureAwait(false);
+                SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
-                _logger.LogInformation("Incident {IncidentId} resolved by user {UserGuid}", id, actorGuid);
+                Guid userTenantGuid;
+
+                try
+                {
+                    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+                    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+                }
+
+                Guid actorGuid = securityUser.objectGuid;
+
+                Incident incident = await _alertingService.ResolveAsync(id, actorGuid).ConfigureAwait(false);
+
+                _logger.LogInformation($"Incident {id} resolved by user {securityUser.accountName} {actorGuid}");
 
                 return Ok(MapToDto(incident));
             }
@@ -221,17 +305,39 @@ namespace Alerting.Server.Controllers
         [ProducesResponseType(typeof(NoteDto), 201)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> AddNote(int id, [FromBody] AddNoteRequest request)
+        public async Task<IActionResult> AddNote(int id, [FromBody] AddNoteRequest request, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(request?.Content))
             {
                 return BadRequest(new { error = "Content is required" });
             }
 
+            if (!await UserCanWriteAsync())
+            {
+                return Forbid();
+            }
+
+
             try
             {
-                var authorGuid = GetUserObjectGuid();
-                var note = await _alertingService.AddNoteAsync(id, request.Content, authorGuid).ConfigureAwait(false);
+                SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+                Guid userTenantGuid;
+
+                try
+                {
+                    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+                    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+                }
+
+
+                Guid authorGuid = securityUser.objectGuid;
+
+                IncidentNote note = await _alertingService.AddNoteAsync(id, request.Content, authorGuid).ConfigureAwait(false);
 
                 return CreatedAtAction(nameof(GetIncident), new { id }, new NoteDto
                 {
@@ -253,12 +359,33 @@ namespace Alerting.Server.Controllers
         /// <returns>Incident counts by status and severity.</returns>
         [HttpGet("stats")]
         [ProducesResponseType(typeof(IncidentStatsDto), 200)]
-        public async Task<IActionResult> GetStats()
+        public async Task<IActionResult> GetStats(CancellationToken cancellationToken = default)
         {
-            var tenantGuid = GetTenantGuid();
+            if (!await UserCanReadAsync())
+            {
+                return Forbid();
+            }
 
-            var byStatus = await _alertingService.GetIncidentCountsByStatusAsync(tenantGuid).ConfigureAwait(false);
-            var bySeverity = await _alertingService.GetActiveIncidentCountsBySeverityAsync(tenantGuid).ConfigureAwait(false);
+
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+            Guid userTenantGuid;
+
+            try
+            {
+                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+                return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+            }
+
+
+            Guid actorGuid = securityUser.objectGuid;
+
+            Dictionary<string, int> byStatus = await _alertingService.GetIncidentCountsByStatusAsync(userTenantGuid).ConfigureAwait(false);
+            Dictionary<string, int> bySeverity = await _alertingService.GetActiveIncidentCountsBySeverityAsync(userTenantGuid).ConfigureAwait(false);
 
             return Ok(new IncidentStatsDto
             {
@@ -269,20 +396,6 @@ namespace Alerting.Server.Controllers
         }
 
         #region Helpers
-
-        private Guid GetTenantGuid()
-        {
-            // Get from claims or use a default for single-tenant scenarios
-            var claim = User.FindFirst("tenant_guid");
-            return claim != null ? Guid.Parse(claim.Value) : Guid.Empty;
-        }
-
-        private Guid GetUserObjectGuid()
-        {
-            // Get from claims
-            var claim = User.FindFirst("sub") ?? User.FindFirst("object_guid");
-            return claim != null ? Guid.Parse(claim.Value) : Guid.Empty;
-        }
 
         private static IncidentDto MapToDto(Incident incident)
         {

@@ -31,6 +31,7 @@ import { SystemHealthComponent } from './components/system-health/system-health.
 import { TelemetryDashboardComponent } from './components/telemetry-dashboard/telemetry-dashboard.component';
 import { SystemsDashboardComponent } from './components/systems-dashboard/systems-dashboard.component';
 import { SystemSettingCustomListingComponent } from './components/system-setting-custom/system-setting-custom-listing/system-setting-custom-listing.component';
+import { IncidentsReportComponent } from './components/incidents-report/incidents-report.component';
 
 
 //
@@ -218,6 +219,7 @@ const routes: Routes = [
   { path: 'telemetry-dashboard', component: TelemetryDashboardComponent, canActivate: [AuthGuard], title: 'Telemetry Dashboard' },
   { path: 'loginattempts', component: LoginAttemptCustomListingComponent, canActivate: [AuthGuard], title: 'Login Attempts' },
   { path: 'systemsettings', component: SystemSettingCustomListingComponent, canActivate: [AuthGuard], title: 'System Settings' },
+  { path: 'incidents', component: IncidentsReportComponent, canActivate: [AuthGuard], title: 'Incidents' },
 
 
   //

@@ -1,0 +1,167 @@
+<!-- 
+    Incidents Report Component Template
+    
+    Displays incidents from the Alerting system with premium styling.
+-->
+
+<div class="page-container">
+
+    <!-- Hero Header -->
+    <div class="incidents-hero">
+        <div class="hero-content">
+            <div class="hero-title-section">
+                <h1 class="hero-title">
+                    <i class="fas fa-bell"></i>
+                    Incidents Report
+                </h1>
+                <p class="hero-subtitle">Incidents raised by this Foundation system</p>
+            </div>
+            <div class="hero-actions">
+                <div class="hero-stats">
+                    <div class="stat-card stat-triggered" *ngIf="triggeredCount > 0">
+                        <div class="stat-value">{{ triggeredCount }}</div>
+                        <div class="stat-label">Triggered</div>
+                    </div>
+                    <div class="stat-card stat-acknowledged" *ngIf="acknowledgedCount > 0">
+                        <div class="stat-value">{{ acknowledgedCount }}</div>
+                        <div class="stat-label">Acknowledged</div>
+                    </div>
+                    <div class="stat-card stat-resolved">
+                        <div class="stat-value">{{ resolvedCount }}</div>
+                        <div class="stat-label">Resolved</div>
+                    </div>
+                    <div class="stat-card stat-total">
+                        <div class="stat-value">{{ incidents.length }}</div>
+                        <div class="stat-label">Total</div>
+                    </div>
+                </div>
+                <button class="btn btn-glass btn-test" (click)="testIntegration()"
+                    [disabled]="testingIntegration || !isConfigured"
+                    ngbTooltip="Raise a test incident to verify connectivity">
+                    <i class="fas fa-vial" *ngIf="!testingIntegration"></i>
+                    <i class="fas fa-spinner fa-spin" *ngIf="testingIntegration"></i>
+                    <span class="d-none d-md-inline ms-1">Test Integration</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Test Result Alert -->
+    <div class="alert d-flex align-items-center" *ngIf="testResult" [class.alert-success]="testResult.success"
+        [class.alert-danger]="!testResult.success">
+        <i class="fas me-2" [class.fa-check-circle]="testResult.success"
+            [class.fa-times-circle]="!testResult.success"></i>
+        <span>{{ testResult.message }}</span>
+    </div>
+
+    <!-- Not Configured Banner -->
+    <div class="alert alert-warning d-flex align-items-center" *ngIf="!isConfigured">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <span>{{ message || 'Alerting integration is not configured.' }}</span>
+    </div>
+
+    <!-- Error Banner -->
+    <div class="alert alert-danger d-flex align-items-center" *ngIf="error">
+        <i class="fas fa-times-circle me-2"></i>
+        <span>{{ error }}</span>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls-bar">
+        <div class="filter-group">
+            <label class="filter-label">Time Range</label>
+            <select class="form-select form-select-sm" [(ngModel)]="selectedHours" (change)="onFilterChange()">
+                <option *ngFor="let h of hourOptions" [value]="h">Last {{ getHourLabel(h) }}</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label class="filter-label">Status</label>
+            <select class="form-select form-select-sm" [(ngModel)]="selectedStatus" (change)="onFilterChange()">
+                <option value="">All Statuses</option>
+                <ng-container *ngFor="let s of statusOptions">
+                    <option *ngIf="s" [value]="s">{{ s }}</option>
+                </ng-container>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label class="filter-label">Severity</label>
+            <select class="form-select form-select-sm" [(ngModel)]="selectedSeverity" (change)="onFilterChange()">
+                <option value="">All Severities</option>
+                <ng-container *ngFor="let s of severityOptions">
+                    <option *ngIf="s" [value]="s">{{ s }}</option>
+                </ng-container>
+            </select>
+        </div>
+
+        <div class="controls-spacer"></div>
+
+        <div class="auto-refresh-control">
+            <button class="btn btn-sm" [class.btn-outline-secondary]="!autoRefreshEnabled"
+                [class.btn-success]="autoRefreshEnabled" (click)="toggleAutoRefresh()">
+                <i class="fas fa-sync-alt" [class.fa-spin]="autoRefreshEnabled"></i>
+                <span *ngIf="autoRefreshEnabled">{{ autoRefreshCountdown }}s</span>
+                <span *ngIf="!autoRefreshEnabled">Auto-refresh</span>
+            </button>
+        </div>
+
+        <button class="btn btn-sm btn-outline-primary" (click)="loadIncidents()">
+            <i class="fas fa-refresh"></i> Refresh
+        </button>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-container" *ngIf="loading">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="loading-text">Loading incidents...</p>
+    </div>
+
+    <!-- Incidents Table -->
+    <div class="incidents-table-container" *ngIf="!loading && incidents.length > 0">
+        <table class="table incidents-table">
+            <thead>
+                <tr>
+                    <th class="col-key">Incident</th>
+                    <th class="col-severity">Severity</th>
+                    <th class="col-status">Status</th>
+                    <th class="col-title">Title</th>
+                    <th class="col-time">Created</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let incident of incidents" class="incident-row">
+                    <td class="col-key">
+                        <span class="incident-key">{{ incident.incidentKey }}</span>
+                    </td>
+                    <td class="col-severity">
+                        <span class="severity-badge" [ngClass]="getSeverityClass(incident.severity)">
+                            {{ incident.severity }}
+                        </span>
+                    </td>
+                    <td class="col-status">
+                        <span class="status-badge" [ngClass]="getStatusClass(incident.status)">
+                            {{ incident.status }}
+                        </span>
+                    </td>
+                    <td class="col-title">{{ incident.title }}</td>
+                    <td class="col-time">
+                        <span class="time-ago" [title]="incident.createdAt | date:'medium'">
+                            {{ getTimeAgo(incident.createdAt) }}
+                        </span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!loading && incidents.length === 0 && isConfigured">
+        <i class="fas fa-check-circle empty-icon"></i>
+        <h3>No Incidents</h3>
+        <p>No incidents found for the selected time range and filters.</p>
+    </div>
+
+</div>

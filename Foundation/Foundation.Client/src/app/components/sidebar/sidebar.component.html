@@ -14,8 +14,8 @@
     <!-- Overview -->
     <li class="nav-item">
       <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"
-         class="nav-link text-white" [ngbTooltip]="!isExpanded ? 'Overview' : null" triggers="hover"
-         #tOverview="ngbTooltip" (click)="tOverview.close()" placement="right" tooltipClass="sidebar-tip">
+        class="nav-link text-white" [ngbTooltip]="!isExpanded ? 'Overview' : null" triggers="hover"
+        #tOverview="ngbTooltip" (click)="tOverview.close()" placement="right" tooltipClass="sidebar-tip">
         <i class="fa-solid fa-house"></i>
         <span class="label px-2">Overview</span>
       </a>
@@ -24,8 +24,8 @@
     <!-- Foundation Systems Dashboard -->
     <li class="nav-item">
       <a routerLink="/systems-dashboard" routerLinkActive="active" class="nav-link text-white"
-         [ngbTooltip]="!isExpanded ? 'Systems Dashboard' : null" triggers="hover" #tHealth="ngbTooltip"
-         (click)="tHealth.close()" placement="right" tooltipClass="sidebar-tip">
+        [ngbTooltip]="!isExpanded ? 'Systems Dashboard' : null" triggers="hover" #tHealth="ngbTooltip"
+        (click)="tHealth.close()" placement="right" tooltipClass="sidebar-tip">
         <i class="fa-solid fa-satellite-dish"></i>
         <span class="label px-2">Systems</span>
       </a>
@@ -35,8 +35,8 @@
     <!-- Audit Events -->
     <li class="nav-item">
       <a routerLink="/auditevents" routerLinkActive="active" class="nav-link text-white"
-         [ngbTooltip]="!isExpanded ? 'Audit Events' : null" triggers="hover" #tAudit="ngbTooltip"
-         (click)="tAudit.close()" placement="right" tooltipClass="sidebar-tip">
+        [ngbTooltip]="!isExpanded ? 'Audit Events' : null" triggers="hover" #tAudit="ngbTooltip"
+        (click)="tAudit.close()" placement="right" tooltipClass="sidebar-tip">
         <i class="fa-solid fa-clipboard-list"></i>
         <span class="label px-2">Audit Events</span>
       </a>
@@ -45,8 +45,8 @@
     <!-- System Logs -->
     <li class="nav-item">
       <a routerLink="/logs" routerLinkActive="active" class="nav-link text-white"
-         [ngbTooltip]="!isExpanded ? 'System Logs' : null" triggers="hover" #tLogs="ngbTooltip" (click)="tLogs.close()"
-         placement="right" tooltipClass="sidebar-tip">
+        [ngbTooltip]="!isExpanded ? 'System Logs' : null" triggers="hover" #tLogs="ngbTooltip" (click)="tLogs.close()"
+        placement="right" tooltipClass="sidebar-tip">
         <i class="fa-solid fa-file-alt"></i>
         <span class="label px-2">System Logs</span>
       </a>
@@ -56,10 +56,20 @@
     <!-- Login attemps -->
     <li class="nav-item">
       <a routerLink="/loginattempts" routerLinkActive="active" class="nav-link text-white"
-         [ngbTooltip]="!isExpanded ? 'Login Attempts' : null" triggers="hover" #tLoginAttempts="ngbTooltip" (click)="tLoginAttempts.close()"
-         placement="right" tooltipClass="sidebar-tip">
+        [ngbTooltip]="!isExpanded ? 'Login Attempts' : null" triggers="hover" #tLoginAttempts="ngbTooltip"
+        (click)="tLoginAttempts.close()" placement="right" tooltipClass="sidebar-tip">
         <i class="fa-solid fa-right-to-bracket"></i>
         <span class="label px-2">Login Attempts</span>
+      </a>
+    </li>
+
+    <!-- Incidents -->
+    <li class="nav-item">
+      <a routerLink="/incidents" routerLinkActive="active" class="nav-link text-white"
+        [ngbTooltip]="!isExpanded ? 'Incidents' : null" triggers="hover" #tIncidents="ngbTooltip"
+        (click)="tIncidents.close()" placement="right" tooltipClass="sidebar-tip">
+        <i class="fa-solid fa-bell"></i>
+        <span class="label px-2">Incidents</span>
       </a>
     </li>
 
@@ -73,8 +83,8 @@
     <!-- Users -->
     <li class="nav-item">
       <a routerLink="/users" routerLinkActive="active" class="nav-link text-white"
-         [ngbTooltip]="!isExpanded ? 'Users' : null" triggers="hover" #tUsers="ngbTooltip" (click)="tUsers.close()"
-         placement="right" tooltipClass="sidebar-tip">
+        [ngbTooltip]="!isExpanded ? 'Users' : null" triggers="hover" #tUsers="ngbTooltip" (click)="tUsers.close()"
+        placement="right" tooltipClass="sidebar-tip">
         <i class="fa-solid fa-users"></i>
         <span class="label px-2">Users</span>
       </a>
@@ -83,8 +93,8 @@
     <!-- Tenants -->
     <li class="nav-item">
       <a routerLink="/tenants" routerLinkActive="active" class="nav-link text-white"
-         [ngbTooltip]="!isExpanded ? 'Tenants' : null" triggers="hover" #tTenants="ngbTooltip" (click)="tTenants.close()"
-         placement="right" tooltipClass="sidebar-tip">
+        [ngbTooltip]="!isExpanded ? 'Tenants' : null" triggers="hover" #tTenants="ngbTooltip" (click)="tTenants.close()"
+        placement="right" tooltipClass="sidebar-tip">
         <i class="fa-solid fa-building"></i>
         <span class="label px-2">Tenants</span>
       </a>
@@ -93,8 +103,8 @@
     <!-- Modules -->
     <li class="nav-item">
       <a routerLink="/modules" routerLinkActive="active" class="nav-link text-white"
-         [ngbTooltip]="!isExpanded ? 'Modules' : null" triggers="hover" #tModules="ngbTooltip" (click)="tModules.close()"
-         placement="right" tooltipClass="sidebar-tip">
+        [ngbTooltip]="!isExpanded ? 'Modules' : null" triggers="hover" #tModules="ngbTooltip" (click)="tModules.close()"
+        placement="right" tooltipClass="sidebar-tip">
         <i class="fa-solid fa-puzzle-piece"></i>
         <span class="label px-2">Modules</span>
       </a>
@@ -111,7 +121,7 @@
     <!-- Administration Submenu -->
     <li class="nav-item" ngbDropdown placement="right-top" container="body">
       <a class="nav-link text-white" ngbDropdownToggle [ngbTooltip]="!isExpanded ? 'Administration' : null"
-         triggers="hover" #tAdmin="ngbTooltip" placement="right" tooltipClass="sidebar-tip" style="cursor: pointer;">
+        triggers="hover" #tAdmin="ngbTooltip" placement="right" tooltipClass="sidebar-tip" style="cursor: pointer;">
         <i class="fa-solid fa-gear"></i>
         <span class="label px-2">Administration</span>
         <i class="fa-solid fa-chevron-right expand-indicator ms-auto" *ngIf="isExpanded"></i>

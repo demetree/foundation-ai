@@ -61,10 +61,10 @@ namespace Alerting.Server.Controllers
 
         public class SelfRegisterResponse
         {
-            /// <summary>
-            /// The integration ID in Alerting.
-            /// </summary>
-            public int IntegrationId { get; set; }
+            ///// <summary>
+            ///// The integration ID in Alerting.
+            ///// </summary>
+            //public int IntegrationId { get; set; }
 
             /// <summary>
             /// The integration's unique identifier.
@@ -72,9 +72,9 @@ namespace Alerting.Server.Controllers
             public Guid IntegrationGuid { get; set; }
 
             /// <summary>
-            /// The service ID in Alerting.
+            /// The service objectGuid in Alerting.
             /// </summary>
-            public int ServiceId { get; set; }
+            public Guid ServiceGuid { get; set; }
 
             /// <summary>
             /// Name of the registered service.
@@ -233,9 +233,9 @@ namespace Alerting.Server.Controllers
 
             return Ok(new SelfRegisterResponse
             {
-                IntegrationId = integration.id,
+                //IntegrationId = integration.id,
                 IntegrationGuid = integration.objectGuid,
-                ServiceId = service.id,
+                ServiceGuid = service.objectGuid,
                 ServiceName = service.name,
                 ApiKey = plainApiKey,
                 Message = "Registration successful. Store the API key securely - it cannot be retrieved again."

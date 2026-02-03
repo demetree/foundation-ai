@@ -16,9 +16,16 @@ namespace Foundation.Web.Services.Alerting
     public interface IAlertingIntegrationService
     {
         /// <summary>
-        /// Gets whether the service is configured and ready to use.
+        /// Gets whether the Alerting integration is configured (BaseUrl is set).
+        /// This indicates intent to integrate, not that registration is complete.
         /// </summary>
         bool IsConfigured { get; }
+
+        /// <summary>
+        /// Gets whether this system is registered with Alerting (API key available).
+        /// Uses cached API key; may not reflect freshest database state.
+        /// </summary>
+        bool IsRegistered { get; }
 
         /// <summary>
         /// Register this system with Alerting using OIDC authentication.

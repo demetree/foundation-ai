@@ -179,7 +179,7 @@ namespace Foundation.Alerting
                 //
                 controllers.Add(typeof(AlertsController));
                 controllers.Add(typeof(DashboardController));
-                controllers.Add(typeof(IncidentController));
+                controllers.Add(typeof(IncidentManagementController));
                 controllers.Add(typeof(IntegrationManagementController));
                 controllers.Add(typeof(UsersController));
                 controllers.Add(typeof(IntegrationRegistrationController));

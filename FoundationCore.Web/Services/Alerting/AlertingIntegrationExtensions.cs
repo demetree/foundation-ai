@@ -22,9 +22,8 @@ namespace Foundation.Web.Services.Alerting
         /// <param name="services">The service collection.</param>
         /// <param name="configuration">Configuration containing "Alerting" section.</param>
         /// <returns>The service collection for chaining.</returns>
-        public static IServiceCollection AddAlertingIntegration(
-            this IServiceCollection services,
-            IConfiguration configuration)
+        public static IServiceCollection AddAlertingIntegration(this IServiceCollection services,
+                                                                IConfiguration configuration)
         {
             // Bind configuration
             services.Configure<AlertingIntegrationOptions>(configuration.GetSection(AlertingIntegrationOptions.SectionName));
@@ -33,8 +32,7 @@ namespace Foundation.Web.Services.Alerting
             services.AddHttpClient<IAlertingIntegrationService, AlertingIntegrationService>()
                 .ConfigureHttpClient((sp, client) =>
                 {
-                    var options = configuration.GetSection(AlertingIntegrationOptions.SectionName)
-                        .Get<AlertingIntegrationOptions>();
+                    AlertingIntegrationOptions options = configuration.GetSection(AlertingIntegrationOptions.SectionName).Get<AlertingIntegrationOptions>();
                     
                     if (!string.IsNullOrEmpty(options?.BaseUrl))
                     {

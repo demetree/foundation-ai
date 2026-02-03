@@ -72,10 +72,47 @@ namespace Alerting.Server.Services
         Task<Dictionary<string, int>> GetIncidentCountsByStatusAsync(Guid tenantGuid);
 
         /// <summary>
-        /// Gets incident counts by severity for active incidents.
+        /// Gets active incident counts by severity for active incidents.
         /// </summary>
         /// <param name="tenantGuid">The tenant GUID.</param>
         /// <returns>Dictionary of severity name to count.</returns>
         Task<Dictionary<string, int>> GetActiveIncidentCountsBySeverityAsync(Guid tenantGuid);
+
+        /// <summary>
+        /// Gets incidents for an integration (by API key).
+        /// Used by external systems to query their own incidents.
+        /// </summary>
+        /// <param name="integrationKey">The unhashed API key.</param>
+        /// <param name="since">Optional: only incidents created after this time.</param>
+        /// <param name="until">Optional: only incidents created before this time.</param>
+        /// <param name="status">Optional: filter by status name.</param>
+        /// <param name="severity">Optional: filter by severity name.</param>
+        /// <param name="limit">Maximum number of incidents to return.</param>
+        /// <returns>List of incidents for this integration's service.</returns>
+        Task<IncidentQueryResult> GetIncidentsByIntegrationKeyAsync(
+            string integrationKey,
+            DateTime? since = null,
+            DateTime? until = null,
+            string status = null,
+            string severity = null,
+            int limit = 50);
+
+        /// <summary>
+        /// Gets the status of a specific incident by key.
+        /// Used by external systems to check their incident status.
+        /// </summary>
+        /// <param name="integrationKey">The unhashed API key.</param>
+        /// <param name="incidentKey">The incident key to lookup.</param>
+        /// <returns>Incident status details, or null if not found.</returns>
+        Task<IncidentStatusResult> GetIncidentStatusByKeyAsync(string integrationKey, string incidentKey);
+
+        /// <summary>
+        /// Resolves an incident by its key (for external integrations).
+        /// </summary>
+        /// <param name="integrationKey">The unhashed API key.</param>
+        /// <param name="incidentKey">The incident key to resolve.</param>
+        /// <param name="resolution">Optional resolution note.</param>
+        /// <returns>Result of the resolution attempt.</returns>
+        Task<AlertResponse> ResolveByKeyAsync(string integrationKey, string incidentKey, string resolution = null);
     }
 }

@@ -358,6 +358,250 @@ namespace Alerting.Server.Services
                 .ConfigureAwait(false);
         }
 
+        #region External Integration Methods
+
+        /// <summary>
+        /// Gets incidents for an integration (by API key).
+        /// </summary>
+        public async Task<IncidentQueryResult> GetIncidentsByIntegrationKeyAsync(
+            string integrationKey,
+            DateTime? since = null,
+            DateTime? until = null,
+            string status = null,
+            string severity = null,
+            int limit = 50)
+        {
+            try
+            {
+                // Validate and lookup integration by API key hash
+                var apiKeyHash = HashApiKey(integrationKey);
+                var integration = await _context.Integrations
+                    .Include(i => i.service)
+                    .FirstOrDefaultAsync(i => i.apiKeyHash == apiKeyHash && i.active && !i.deleted)
+                    .ConfigureAwait(false);
+
+                if (integration == null)
+                {
+                    return new IncidentQueryResult
+                    {
+                        Success = false,
+                        Message = "Invalid integration key"
+                    };
+                }
+
+                var query = _context.Incidents
+                    .Include(i => i.service)
+                    .Include(i => i.severityType)
+                    .Include(i => i.incidentStatusType)
+                    .Where(i => i.serviceId == integration.serviceId && i.active && !i.deleted);
+
+                if (since.HasValue)
+                {
+                    query = query.Where(i => i.createdAt >= since.Value);
+                }
+
+                if (until.HasValue)
+                {
+                    query = query.Where(i => i.createdAt <= until.Value);
+                }
+
+                if (!string.IsNullOrEmpty(status))
+                {
+                    query = query.Where(i => i.incidentStatusType.name == status);
+                }
+
+                if (!string.IsNullOrEmpty(severity))
+                {
+                    query = query.Where(i => i.severityType.name == severity);
+                }
+
+                var incidents = await query
+                    .OrderByDescending(i => i.createdAt)
+                    .Take(limit)
+                    .Select(i => new IncidentSummaryDto
+                    {
+                        IncidentId = i.id,
+                        IncidentKey = i.incidentKey,
+                        Title = i.title,
+                        Status = i.incidentStatusType.name,
+                        Severity = i.severityType.name,
+                        ServiceName = i.service.name,
+                        CreatedAt = i.createdAt,
+                        AcknowledgedAt = i.acknowledgedAt,
+                        ResolvedAt = i.resolvedAt
+                    })
+                    .ToListAsync()
+                    .ConfigureAwait(false);
+
+                return new IncidentQueryResult
+                {
+                    Success = true,
+                    Incidents = incidents
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error querying incidents for integration");
+                return new IncidentQueryResult
+                {
+                    Success = false,
+                    Message = $"Error: {ex.Message}"
+                };
+            }
+        }
+
+        /// <summary>
+        /// Gets the status of a specific incident by key.
+        /// </summary>
+        public async Task<IncidentStatusResult> GetIncidentStatusByKeyAsync(string integrationKey, string incidentKey)
+        {
+            try
+            {
+                // Validate and lookup integration by API key hash
+                var apiKeyHash = HashApiKey(integrationKey);
+                var integration = await _context.Integrations
+                    .FirstOrDefaultAsync(i => i.apiKeyHash == apiKeyHash && i.active && !i.deleted)
+                    .ConfigureAwait(false);
+
+                if (integration == null)
+                {
+                    return new IncidentStatusResult
+                    {
+                        Success = false,
+                        Message = "Invalid integration key"
+                    };
+                }
+
+                var incident = await _context.Incidents
+                    .Include(i => i.severityType)
+                    .Include(i => i.incidentStatusType)
+                    .FirstOrDefaultAsync(i => i.incidentKey == incidentKey 
+                        && i.serviceId == integration.serviceId 
+                        && i.active && !i.deleted)
+                    .ConfigureAwait(false);
+
+                if (incident == null)
+                {
+                    return new IncidentStatusResult
+                    {
+                        Success = false,
+                        IncidentKey = incidentKey,
+                        Message = "Incident not found"
+                    };
+                }
+
+                return new IncidentStatusResult
+                {
+                    Success = true,
+                    IncidentId = incident.id,
+                    IncidentKey = incident.incidentKey,
+                    Status = incident.incidentStatusType?.name,
+                    Severity = incident.severityType?.name,
+                    Title = incident.title,
+                    Description = incident.description,
+                    CreatedAt = incident.createdAt,
+                    AcknowledgedAt = incident.acknowledgedAt,
+                    ResolvedAt = incident.resolvedAt
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting incident status for key {IncidentKey}", incidentKey);
+                return new IncidentStatusResult
+                {
+                    Success = false,
+                    Message = $"Error: {ex.Message}"
+                };
+            }
+        }
+
+        /// <summary>
+        /// Resolves an incident by its key (for external integrations).
+        /// </summary>
+        public async Task<AlertResponse> ResolveByKeyAsync(string integrationKey, string incidentKey, string resolution = null)
+        {
+            try
+            {
+                // Validate and lookup integration by API key hash
+                var apiKeyHash = HashApiKey(integrationKey);
+                var integration = await _context.Integrations
+                    .FirstOrDefaultAsync(i => i.apiKeyHash == apiKeyHash && i.active && !i.deleted)
+                    .ConfigureAwait(false);
+
+                if (integration == null)
+                {
+                    return new AlertResponse
+                    {
+                        Success = false,
+                        Message = "Invalid integration key"
+                    };
+                }
+
+                var incident = await _context.Incidents
+                    .FirstOrDefaultAsync(i => i.incidentKey == incidentKey 
+                        && i.serviceId == integration.serviceId 
+                        && i.active && !i.deleted)
+                    .ConfigureAwait(false);
+
+                if (incident == null)
+                {
+                    return new AlertResponse
+                    {
+                        Success = false,
+                        IncidentKey = incidentKey,
+                        Message = "Incident not found"
+                    };
+                }
+
+                if (incident.incidentStatusTypeId == StatusResolved)
+                {
+                    return new AlertResponse
+                    {
+                        Success = true,
+                        IncidentId = incident.id,
+                        IncidentKey = incidentKey,
+                        Message = "Incident already resolved"
+                    };
+                }
+
+                // Resolve the incident
+                incident.incidentStatusTypeId = StatusResolved;
+                incident.resolvedAt = DateTime.UtcNow;
+                incident.nextEscalationAt = null;
+                incident.versionNumber++;
+
+                await _context.SaveChangesAsync().ConfigureAwait(false);
+
+                // Add timeline event with resolution note
+                await AddTimelineEventAsync(incident, EventResolved, null, new 
+                { 
+                    resolution = resolution,
+                    source = "API"
+                }).ConfigureAwait(false);
+
+                _logger.LogInformation("Incident {IncidentKey} resolved via API", incidentKey);
+
+                return new AlertResponse
+                {
+                    Success = true,
+                    IncidentId = incident.id,
+                    IncidentKey = incidentKey,
+                    Message = "Incident resolved"
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error resolving incident by key {IncidentKey}", incidentKey);
+                return new AlertResponse
+                {
+                    Success = false,
+                    Message = $"Error: {ex.Message}"
+                };
+            }
+        }
+
+        #endregion
+
         #region Private Helpers
 
         private async Task AddTimelineEventAsync(Incident incident, int eventTypeId, Guid? actorGuid, object details)

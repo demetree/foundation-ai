@@ -15,8 +15,10 @@ using System.Threading.Tasks;
 namespace Foundation.Middleware
 {
     /// <summary>
+    /// 
     /// Middleware that validates user sessions are still active on each request.
     /// If a session has been revoked, the request is rejected with 401 Unauthorized.
+    /// 
     /// </summary>
     public class SessionValidationMiddleware
     {

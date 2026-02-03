@@ -110,15 +110,24 @@ namespace Foundation.Web.Services.Alerting
         public int? Limit { get; set; } = 50;
     }
 
+    /// <summary>
+    /// Response wrapper from Alerting API incident query.
+    /// </summary>
+    public class IncidentQueryResponse
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; }
+        public List<IncidentSummary> Incidents { get; set; }
+    }
+
     #endregion
 
     #region Registration DTOs
 
     public class RegistrationResponse
     {
-        public int IntegrationId { get; set; }
         public Guid IntegrationGuid { get; set; }
-        public int ServiceId { get; set; }
+        public Guid ServiceGuid { get; set; }
         public string ServiceName { get; set; }
         public string ApiKey { get; set; }
         public string Message { get; set; }

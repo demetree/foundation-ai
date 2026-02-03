@@ -26,6 +26,7 @@ using Foundation.Telemetry;
 using Foundation.Telemetry.Database;
 using Foundation.Web.Services.Alerting;
 using Foundation.Server.OIDC;
+using Foundation.Server.Controllers;
 
 
 namespace Foundation.Server
@@ -159,7 +160,9 @@ namespace Foundation.Server
                 Foundation.Web.Utility.StartupBasics.AddSecurityWebAPIControllers(controllers);                     // Security module
                 Foundation.Web.Utility.StartupBasics.AddAuditorWebAPIControllers(controllers);                      // Auditor module
                 Foundation.Web.Utility.TelemetryStartupBasics.AddTelemetryWebAPIControllers(controllers);           // Telemetry historical data module
-
+                
+                // Provides visibility into the alerting system
+                controllers.Add(typeof(IncidentsController));
                 
                 logger.LogInformation("Controllers have been configured.");
 
@@ -686,7 +689,7 @@ namespace Foundation.Server
 
                 RegistrationResponse result = await alertingService.RegisterAsync(accessToken).ConfigureAwait(false);
 
-                logger.LogInformation("Successfully registered with Alerting. ServiceId: {ServiceId}, IntegrationId: {IntegrationId}", result.ServiceId, result.IntegrationId);
+                logger.LogInformation("Successfully registered with Alerting. ServiceGuid: {ServiceGuid}, IntegrationGuid: {IntegrationGuid}", result.ServiceGuid, result.IntegrationGuid);
             }
             catch (Exception ex)
             {

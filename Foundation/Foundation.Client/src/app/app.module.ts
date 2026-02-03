@@ -489,6 +489,8 @@ import { IntelligenceModalComponent } from './components/shared/intelligence-mod
 import { SystemSettingCustomListingComponent } from './components/system-setting-custom/system-setting-custom-listing/system-setting-custom-listing.component';
 import { SystemSettingCustomTableComponent } from './components/system-setting-custom/system-setting-custom-table/system-setting-custom-table.component';
 import { SystemSettingCustomAddEditComponent } from './components/system-setting-custom/system-setting-custom-add-edit/system-setting-custom-add-edit.component';
+import { IncidentsReportComponent } from './components/incidents-report/incidents-report.component';
+import { IncidentsService } from './services/incidents.service';
 
 
 @NgModule({
@@ -828,6 +830,7 @@ import { SystemSettingCustomAddEditComponent } from './components/system-setting
     SystemSettingCustomListingComponent,
     SystemSettingCustomTableComponent,
     SystemSettingCustomAddEditComponent,
+    IncidentsReportComponent,
   ],
   imports: [
     BrowserModule,
@@ -881,6 +884,7 @@ import { SystemSettingCustomAddEditComponent } from './components/system-setting
     IntelligenceService,
     SystemHealthService,
     TelemetryService,
+    IncidentsService,
 
     //
     // Beginning of provider declarations for Security Data Services
