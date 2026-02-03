@@ -41,6 +41,31 @@
       </a>
     </li>
 
+    <!-- Divider for Personal Context -->
+    <li class="nav-divider"></li>
+
+    <!-- Responder Console -->
+    <li class="nav-item">
+      <a routerLink="/respond" routerLinkActive="active" class="nav-link text-white"
+        [ngbTooltip]="!isExpanded ? 'Responder Console' : null" triggers="hover" #tRespond="ngbTooltip"
+        (click)="tRespond.close(); close()" placement="right" tooltipClass="sidebar-tip">
+        <i class="fa-solid fa-headset"></i>
+        <span class="label px-2">Responder Console</span>
+      </a>
+    </li>
+
+    <!-- My Shift -->
+    <li class="nav-item">
+      <a routerLink="/my-shift" routerLinkActive="active" class="nav-link text-white"
+        [ngbTooltip]="!isExpanded ? 'My Shift' : null" triggers="hover" #tMyShift="ngbTooltip"
+        (click)="tMyShift.close(); close()" placement="right" tooltipClass="sidebar-tip">
+        <i class="fa-solid fa-user-clock"></i>
+        <span class="label px-2">My Shift</span>
+      </a>
+    </li>
+
+    <!-- Divider for Configuration -->
+    <li class="nav-divider"></li>
 
     <!-- Services -->
     <li class="nav-item">

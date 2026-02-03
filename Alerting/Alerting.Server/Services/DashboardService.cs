@@ -55,23 +55,14 @@ namespace Alerting.Server.Services
             var sevenDaysAgo = now.AddDays(-7);
 
             //
-            // Execute queries in parallel for performance
+            // Execute queries sequentially - DbContext is NOT thread-safe
+            // Sequential execution prevents concurrent access errors
             //
-            var incidentMetricsTask = GetIncidentMetricsAsync(todayStart);
-            var onCallSummaryTask = GetOnCallSummaryAsync();
-            var recentActivityTask = GetRecentActivityAsync();
-            var configCountsTask = GetConfigurationCountsAsync();
-            var performanceTask = GetPerformanceMetricsAsync(sevenDaysAgo, now);
-
-            await Task.WhenAll(
-                incidentMetricsTask,
-                onCallSummaryTask,
-                recentActivityTask,
-                configCountsTask,
-                performanceTask
-            ).ConfigureAwait(false);
-
-            var incidentMetrics = await incidentMetricsTask.ConfigureAwait(false);
+            var incidentMetrics = await GetIncidentMetricsAsync(todayStart).ConfigureAwait(false);
+            var onCallSummary = await GetOnCallSummaryAsync().ConfigureAwait(false);
+            var recentActivity = await GetRecentActivityAsync().ConfigureAwait(false);
+            var configCounts = await GetConfigurationCountsAsync().ConfigureAwait(false);
+            var performance = await GetPerformanceMetricsAsync(sevenDaysAgo, now).ConfigureAwait(false);
 
             //
             // Determine operational status based on active incident count
@@ -88,10 +79,10 @@ namespace Alerting.Server.Services
                 Status = status,
                 GeneratedAt = now,
                 IncidentMetrics = incidentMetrics,
-                OnCallSummary = await onCallSummaryTask.ConfigureAwait(false),
-                RecentActivity = await recentActivityTask.ConfigureAwait(false),
-                ConfigCounts = await configCountsTask.ConfigureAwait(false),
-                Performance = await performanceTask.ConfigureAwait(false)
+                OnCallSummary = onCallSummary,
+                RecentActivity = recentActivity,
+                ConfigCounts = configCounts,
+                Performance = performance
             };
         }
 

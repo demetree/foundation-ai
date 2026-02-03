@@ -74,6 +74,30 @@
                 </span>
             </div>
 
+            <!-- Notes Preview -->
+            <div class="notes-preview" *ngIf="primaryIncidentNotes.length > 0 || isLoadingNotes">
+                <div class="notes-header" (click)="toggleShowAllNotes()">
+                    <span class="notes-title">
+                        <i class="fas fa-sticky-note"></i>
+                        Notes ({{ primaryIncidentNotes.length }})
+                    </span>
+                    <i class="fas" [ngClass]="showAllNotes ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                </div>
+
+                <!-- Loading State -->
+                <div *ngIf="isLoadingNotes" class="notes-loading">
+                    <i class="fas fa-spinner fa-spin"></i> Loading notes...
+                </div>
+
+                <!-- Notes List (only visible when expanded) -->
+                <div class="notes-list" *ngIf="!isLoadingNotes && showAllNotes && primaryIncidentNotes.length > 0">
+                    <div class="note-item" *ngFor="let note of primaryIncidentNotes">
+                        <span class="note-time">{{ getNoteTimeAgo(note.createdAt) }}</span>
+                        <span class="note-content">{{ note.content }}</span>
+                    </div>
+                </div>
+            </div>
+
             <!-- Action Buttons -->
             <div class="action-buttons">
                 <button *ngIf="isTriggered(primaryIncident)" class="action-btn acknowledge-btn"

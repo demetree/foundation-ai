@@ -2,6 +2,11 @@
  * My Shift Page - Mobile-First Styles
  */
 
+:host {
+    display: block;
+    margin: -5px; // Counteract parent .main-content padding
+}
+
 // ===== Color Variables =====
 $on-call-primary: #22c55e;
 $on-call-dark: #166534;

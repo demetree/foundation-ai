@@ -12,6 +12,7 @@ import { takeUntil, switchMap, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { ConfigurationService } from '../../services/configuration.service';
 import { AlertService } from '../../services/alert.service';
+import { AuthService } from '../../services/auth.service';
 import { NavigationService } from '../../utility-services/navigation.service';
 
 
@@ -154,6 +155,7 @@ export class AlertingOverviewComponent implements OnInit, OnDestroy {
         private http: HttpClient,
         private config: ConfigurationService,
         private alertService: AlertService,
+        private authService: AuthService,
         private navigationService: NavigationService,
         private router: Router
     ) { }
@@ -173,9 +175,11 @@ export class AlertingOverviewComponent implements OnInit, OnDestroy {
      */
     loadDashboard(): void {
         this.loading = true;
+        const headers = this.authService.GetAuthenticationHeaders();
 
         this.http.get<DashboardSummary>(
-            `${this.config.baseUrl}/api/Dashboard/summary`
+            `${this.config.baseUrl}/api/Dashboard/summary`,
+            { headers }
         ).pipe(
             takeUntil(this.destroy$),
             catchError(error => {
@@ -199,14 +203,18 @@ export class AlertingOverviewComponent implements OnInit, OnDestroy {
         timer(this.REFRESH_INTERVAL, this.REFRESH_INTERVAL)
             .pipe(
                 takeUntil(this.destroy$),
-                switchMap(() => this.http.get<DashboardSummary>(
-                    `${this.config.baseUrl}/api/Dashboard/summary`
-                ).pipe(
-                    catchError(error => {
-                        console.warn('Auto-refresh failed', error);
-                        return of(null);
-                    })
-                ))
+                switchMap(() => {
+                    const headers = this.authService.GetAuthenticationHeaders();
+                    return this.http.get<DashboardSummary>(
+                        `${this.config.baseUrl}/api/Dashboard/summary`,
+                        { headers }
+                    ).pipe(
+                        catchError(error => {
+                            console.warn('Auto-refresh failed', error);
+                            return of(null);
+                        })
+                    );
+                })
             )
             .subscribe((summary: DashboardSummary | null) => {
                 if (summary) {

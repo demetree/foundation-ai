@@ -7,7 +7,7 @@ import { IncidentService, IncidentData, IncidentQueryParameters } from '../../al
 import { IncidentStatusTypeService, IncidentStatusTypeData } from '../../alerting-data-services/incident-status-type.service';
 import { SeverityTypeService, SeverityTypeData } from '../../alerting-data-services/severity-type.service';
 import { ServiceService, ServiceData } from '../../alerting-data-services/service.service';
-import { IncidentNoteService, IncidentNoteSubmitData } from '../../alerting-data-services/incident-note.service';
+import { IncidentNoteService, IncidentNoteData, IncidentNoteSubmitData } from '../../alerting-data-services/incident-note.service';
 import { AlertService } from '../../services/alert.service';
 import { AuthService } from '../../services/auth.service';
 
@@ -48,6 +48,12 @@ export class ResponderConsoleComponent implements OnInit, OnDestroy {
     showQuickNote = false;
     quickNoteContent = '';
     isAddingNote = false;
+
+    // Notes preview for primary incident
+    primaryIncidentNotes: IncidentNoteData[] = [];
+    isLoadingNotes = false;
+    showAllNotes = false;
+    readonly NOTES_PREVIEW_COUNT = 3;
 
     // Auto-refresh
     private refreshInterval: any = null;
@@ -166,6 +172,11 @@ export class ResponderConsoleComponent implements OnInit, OnDestroy {
                         // Default to most critical/recent
                         this.primaryIncident = this.myIncidents[0];
                         this.myIncidents = this.myIncidents.slice(1);
+                    }
+
+                    // Load notes for primary incident
+                    if (this.primaryIncident) {
+                        this.loadPrimaryIncidentNotes();
                     }
 
                     this.isLoading = false;
@@ -318,11 +329,69 @@ export class ResponderConsoleComponent implements OnInit, OnDestroy {
             this.quickNoteContent = '';
             this.showQuickNote = false;
             this.alertService.showSuccessMessage('Note added', null);
+
+            // Refresh notes preview
+            this.loadPrimaryIncidentNotes();
         } catch (error: any) {
             this.alertService.showHttpErrorMessage('Failed to add note', error);
         } finally {
             this.isAddingNote = false;
         }
+    }
+
+    /**
+     * Load notes for the primary incident
+     */
+    loadPrimaryIncidentNotes(): void {
+        if (!this.primaryIncident) {
+            this.primaryIncidentNotes = [];
+            return;
+        }
+
+        this.isLoadingNotes = true;
+        this.incidentNoteService.GetIncidentNoteList({
+            incidentId: this.primaryIncident.id as number,
+            active: true,
+            deleted: false
+        }).pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (notes) => {
+                    // Sort by most recent first
+                    this.primaryIncidentNotes = notes.sort((a, b) =>
+                        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+                    );
+                    this.isLoadingNotes = false;
+                },
+                error: (error) => {
+                    console.error('Failed to load notes', error);
+                    this.primaryIncidentNotes = [];
+                    this.isLoadingNotes = false;
+                }
+            });
+    }
+
+    /**
+     * Get notes to display in preview (limited count unless expanded)
+     */
+    get visibleNotes(): IncidentNoteData[] {
+        if (this.showAllNotes) {
+            return this.primaryIncidentNotes;
+        }
+        return this.primaryIncidentNotes.slice(0, this.NOTES_PREVIEW_COUNT);
+    }
+
+    /**
+     * Toggle showing all notes
+     */
+    toggleShowAllNotes(): void {
+        this.showAllNotes = !this.showAllNotes;
+    }
+
+    /**
+     * Get formatted time for note display
+     */
+    getNoteTimeAgo(dateString: string): string {
+        return this.getTimeAgo(dateString);
     }
 
     // ===== Navigation =====

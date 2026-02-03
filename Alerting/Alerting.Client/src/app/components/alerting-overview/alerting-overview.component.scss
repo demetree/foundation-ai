@@ -3,6 +3,14 @@
  * Premium glassmorphic design for the overview dashboard
  */
 
+:host {
+    display: block;
+    margin: -5px; // Counteract parent .main-content padding
+    padding: 0;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+
 // Variables
 $dark-gradient: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
 $glass-bg: rgba(255, 255, 255, 0.08);
