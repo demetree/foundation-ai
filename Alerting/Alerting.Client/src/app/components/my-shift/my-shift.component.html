@@ -1,0 +1,145 @@
+<!-- My Shift - On-Call Status Page -->
+<div class="my-shift-page">
+
+    <!-- Header -->
+    <header class="page-header">
+        <button class="back-btn" (click)="goBack()">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        <h1>My Shift</h1>
+        <button class="refresh-btn" (click)="refresh()" [disabled]="isLoading">
+            <i class="fas fa-sync-alt" [class.fa-spin]="isLoading"></i>
+        </button>
+    </header>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading your schedule...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="errorMessage && !isLoading" class="error-state">
+        <i class="fas fa-exclamation-triangle"></i>
+        <p>{{ errorMessage }}</p>
+        <button class="retry-btn" (click)="refresh()">Try Again</button>
+    </div>
+
+    <!-- Main Content -->
+    <main *ngIf="!isLoading && !errorMessage" class="page-content">
+
+        <!-- Status Hero -->
+        <section class="status-hero" [class.on-call]="isOnCallNow" [class.off-duty]="!isOnCallNow">
+            <div class="status-icon">
+                <i class="fas" [ngClass]="isOnCallNow ? 'fa-headset' : 'fa-moon'"></i>
+            </div>
+            <h2 class="status-text">
+                {{ isOnCallNow ? 'You Are On-Call' : 'Off Duty' }}
+            </h2>
+            <div *ngIf="currentShift" class="current-shift-info">
+                <p class="schedule-name">{{ currentShift.scheduleName }}</p>
+                <p class="time-remaining">{{ getTimeUntilEnd() }}</p>
+                <p class="shift-ends">Until {{ formatDateTime(currentShift.endTime) }}</p>
+            </div>
+            <div *ngIf="!isOnCallNow && upcomingShifts.length > 0" class="next-shift-info">
+                <p class="next-label">Next shift:</p>
+                <p class="next-time">{{ formatDateTime(upcomingShifts[0].startTime) }}</p>
+                <p class="next-schedule">{{ upcomingShifts[0].scheduleName }}</p>
+            </div>
+            <div *ngIf="!isOnCallNow && upcomingShifts.length === 0" class="no-shifts-info">
+                <p>No upcoming shifts scheduled</p>
+            </div>
+        </section>
+
+        <!-- Upcoming Shifts -->
+        <section *ngIf="upcomingShifts.length > 0" class="upcoming-section">
+            <h3 class="section-title">
+                <i class="fas fa-calendar-alt"></i>
+                Upcoming Shifts ({{ upcomingShifts.length }})
+            </h3>
+            <div class="shift-list">
+                <div *ngFor="let shift of upcomingShifts" class="shift-card">
+                    <div class="shift-date">
+                        <span class="day">{{ shift.startTime | date:'EEE' }}</span>
+                        <span class="date-num">{{ shift.startTime | date:'d' }}</span>
+                        <span class="month">{{ shift.startTime | date:'MMM' }}</span>
+                    </div>
+                    <div class="shift-details">
+                        <p class="shift-schedule">{{ shift.scheduleName }}</p>
+                        <p class="shift-layer">{{ shift.layerName }}</p>
+                        <p class="shift-time">{{ getShiftTimeRange(shift) }}</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Active Overrides -->
+        <section *ngIf="activeOverrides.length > 0" class="overrides-section">
+            <h3 class="section-title">
+                <i class="fas fa-exchange-alt"></i>
+                Active Overrides ({{ activeOverrides.length }})
+            </h3>
+            <div class="override-list">
+                <div *ngFor="let override of activeOverrides" class="override-card"
+                    [class.taking-over]="override.isUserTakingOver" [class.being-replaced]="!override.isUserTakingOver">
+                    <div class="override-icon">
+                        <i class="fas" [ngClass]="override.isUserTakingOver ? 'fa-user-plus' : 'fa-user-minus'"></i>
+                    </div>
+                    <div class="override-details">
+                        <p class="override-type">
+                            {{ override.isUserTakingOver ? 'Covering for' : 'Covered by' }}
+                            <strong>{{ override.originalUserName || 'Unknown' }}</strong>
+                        </p>
+                        <p class="override-time">
+                            {{ formatDateTime(override.startTime) }} - {{ formatDateTime(override.endTime) }}
+                        </p>
+                        <p *ngIf="override.reason" class="override-reason">{{ override.reason }}</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Escalation Policies -->
+        <section *ngIf="myPolicies.length > 0" class="policies-section">
+            <h3 class="section-title">
+                <i class="fas fa-sitemap"></i>
+                My Escalation Policies ({{ myPolicies.length }})
+            </h3>
+            <div class="policy-list">
+                <div *ngFor="let policy of myPolicies" class="policy-item">
+                    <span class="policy-name">{{ policy.policyName }}</span>
+                    <span class="policy-level">Level {{ policy.level }}</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Empty State -->
+        <section
+            *ngIf="upcomingShifts.length === 0 && activeOverrides.length === 0 && myPolicies.length === 0 && !isOnCallNow"
+            class="empty-section">
+            <div class="empty-icon">
+                <i class="fas fa-calendar-times"></i>
+            </div>
+            <h3>No Schedules Found</h3>
+            <p>You are not currently assigned to any on-call schedules or escalation policies.</p>
+        </section>
+
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <button class="nav-item" (click)="goToResponderConsole()">
+            <i class="fas fa-bell"></i>
+            <span>Alerts</span>
+        </button>
+        <button class="nav-item" (click)="goToDashboard()">
+            <i class="fas fa-th-large"></i>
+            <span>Dashboard</span>
+        </button>
+        <button class="nav-item active">
+            <i class="fas fa-calendar-alt"></i>
+            <span>My Shift</span>
+        </button>
+    </nav>
+
+</div>

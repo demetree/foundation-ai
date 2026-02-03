@@ -1,0 +1,738 @@
+/**
+ * Responder Console - Mobile-First Styles
+ * 
+ * Design principles:
+ * - Mobile-first (base styles for < 768px)
+ * - Touch targets >= 48px
+ * - Dark mode support
+ * - Severity-themed gradients
+ */
+
+// ===== Color Variables =====
+$severity-critical: #dc2626;
+$severity-critical-dark: #991b1b;
+$severity-high: #ea580c;
+$severity-high-dark: #9a3412;
+$severity-medium: #ca8a04;
+$severity-medium-dark: #854d0e;
+$severity-low: #16a34a;
+$severity-low-dark: #166534;
+
+$status-triggered: #ef4444;
+$status-acknowledged: #3b82f6;
+$status-resolved: #22c55e;
+
+$bg-dark: #0f172a;
+$bg-dark-card: #1e293b;
+$bg-light: #f8fafc;
+$bg-light-card: #ffffff;
+
+$text-light: #f1f5f9;
+$text-dark: #1e293b;
+$text-muted: #94a3b8;
+
+// ===== Base Container =====
+.responder-console {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    color: $text-light;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    padding-bottom: 80px; // Space for bottom nav
+
+    // Light mode override
+    &:not(.dark-mode) {
+        background: linear-gradient(135deg, #e2e8f0 0%, #f1f5f9 100%);
+        color: $text-dark;
+    }
+}
+
+// ===== Header =====
+.console-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+
+    h1 {
+        font-size: 1.125rem;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .back-btn,
+    .refresh-btn {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        border: none;
+        background: rgba(255, 255, 255, 0.1);
+        color: inherit;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+
+        &:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        &:disabled {
+            opacity: 0.5;
+        }
+    }
+}
+
+// ===== Loading & Error States =====
+.loading-state,
+.error-state,
+.empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+    text-align: center;
+}
+
+.spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid rgba(255, 255, 255, 0.2);
+    border-top-color: #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.error-state {
+    i {
+        font-size: 3rem;
+        color: #ef4444;
+        margin-bottom: 16px;
+    }
+}
+
+.retry-btn {
+    margin-top: 16px;
+    padding: 12px 24px;
+    border-radius: 12px;
+    border: none;
+    background: #3b82f6;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    min-height: 48px;
+}
+
+.empty-state {
+    .empty-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 24px;
+
+        i {
+            font-size: 2.5rem;
+            color: white;
+        }
+    }
+
+    h2 {
+        font-size: 1.5rem;
+        margin: 0 0 8px;
+    }
+
+    p {
+        color: $text-muted;
+        margin: 0;
+    }
+}
+
+// ===== Main Content =====
+.console-content {
+    flex: 1;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+// ===== Primary Incident Card =====
+.primary-incident {
+    position: relative;
+    border-radius: 20px;
+    padding: 24px;
+    overflow: hidden;
+    background: linear-gradient(135deg, rgba($severity-medium, 0.9), rgba($severity-medium-dark, 0.95));
+
+    &.severity-critical {
+        background: linear-gradient(135deg, rgba($severity-critical, 0.9), rgba($severity-critical-dark, 0.95));
+    }
+
+    &.severity-high {
+        background: linear-gradient(135deg, rgba($severity-high, 0.9), rgba($severity-high-dark, 0.95));
+    }
+
+    &.severity-medium {
+        background: linear-gradient(135deg, rgba($severity-medium, 0.9), rgba($severity-medium-dark, 0.95));
+    }
+
+    &.severity-low {
+        background: linear-gradient(135deg, rgba($severity-low, 0.9), rgba($severity-low-dark, 0.95));
+    }
+}
+
+// Status pulse animation for triggered incidents
+.status-pulse {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 12px;
+    height: 12px;
+    background: white;
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.5;
+        transform: scale(1.2);
+    }
+}
+
+.severity-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 8px 16px;
+    border-radius: 100px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    margin-bottom: 16px;
+}
+
+.incident-info {
+    margin-bottom: 16px;
+
+    .service-name {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0 0 8px;
+    }
+
+    .incident-title {
+        font-size: 1rem;
+        opacity: 0.9;
+        margin: 0 0 4px;
+        line-height: 1.4;
+    }
+
+    .incident-key {
+        font-size: 0.875rem;
+        opacity: 0.7;
+        margin: 0;
+        font-family: 'Fira Code', monospace;
+    }
+}
+
+.status-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+
+    .status-badge {
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        background: rgba(255, 255, 255, 0.2);
+
+        &.status-triggered {
+            background: $status-triggered;
+        }
+
+        &.status-acknowledged {
+            background: $status-acknowledged;
+        }
+
+        &.status-resolved {
+            background: $status-resolved;
+        }
+    }
+
+    .time-ago {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.875rem;
+        opacity: 0.8;
+    }
+}
+
+// ===== Action Buttons (Large Touch Targets) =====
+.action-buttons {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.action-btn {
+    flex: 1;
+    min-height: 56px;
+    border: none;
+    border-radius: 16px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.2s;
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    i {
+        font-size: 1.25rem;
+    }
+}
+
+.acknowledge-btn {
+    background: rgba(255, 255, 255, 0.95);
+    color: #1e293b;
+
+    &:hover:not(:disabled) {
+        background: white;
+        transform: translateY(-2px);
+    }
+}
+
+.resolve-btn {
+    background: rgba(0, 0, 0, 0.4);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+
+    &:hover:not(:disabled) {
+        background: rgba(0, 0, 0, 0.5);
+        border-color: rgba(255, 255, 255, 0.5);
+        transform: translateY(-2px);
+    }
+}
+
+// ===== Quick Note =====
+.quick-note-toggle {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.2);
+    color: white;
+    font-size: 0.875rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    min-height: 48px;
+
+    &:hover {
+        background: rgba(0, 0, 0, 0.3);
+    }
+}
+
+.quick-note-input {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+
+    textarea {
+        flex: 1;
+        padding: 12px;
+        border-radius: 12px;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        background: rgba(0, 0, 0, 0.2);
+        color: white;
+        font-size: 1rem;
+        resize: none;
+        font-family: inherit;
+
+        &::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        &:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+    }
+
+    .send-note-btn {
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        border: none;
+        background: white;
+        color: #1e293b;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+
+        &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    }
+}
+
+.view-details-btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 0.875rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 48px;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.15);
+    }
+}
+
+// ===== My Incidents Section =====
+.my-incidents {
+    .section-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 1rem;
+        font-weight: 600;
+        margin: 0 0 16px;
+        color: $text-muted;
+
+        i {
+            font-size: 0.875rem;
+        }
+    }
+}
+
+.incident-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.incident-card {
+    display: flex;
+    align-items: stretch;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-height: 80px;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.08);
+        transform: translateX(4px);
+    }
+
+    &:active {
+        transform: scale(0.98);
+    }
+}
+
+.severity-indicator {
+    width: 6px;
+    flex-shrink: 0;
+
+    .severity-critical & {
+        background: $severity-critical;
+    }
+
+    .severity-high & {
+        background: $severity-high;
+    }
+
+    .severity-medium & {
+        background: $severity-medium;
+    }
+
+    .severity-low & {
+        background: $severity-low;
+    }
+}
+
+.card-content {
+    flex: 1;
+    padding: 12px 16px;
+    min-width: 0;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.card-service {
+    font-weight: 600;
+    font-size: 0.875rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.card-time {
+    font-size: 0.75rem;
+    color: $text-muted;
+    flex-shrink: 0;
+    margin-left: 8px;
+}
+
+.card-title {
+    font-size: 0.8125rem;
+    color: $text-muted;
+    margin: 0 0 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.card-footer {
+    display: flex;
+    gap: 8px;
+}
+
+.card-status,
+.card-severity {
+    font-size: 0.6875rem;
+    padding: 3px 8px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.card-status {
+    background: rgba(255, 255, 255, 0.1);
+
+    &.status-triggered {
+        background: rgba($status-triggered, 0.2);
+        color: $status-triggered;
+    }
+
+    &.status-acknowledged {
+        background: rgba($status-acknowledged, 0.2);
+        color: $status-acknowledged;
+    }
+
+    &.status-resolved {
+        background: rgba($status-resolved, 0.2);
+        color: $status-resolved;
+    }
+}
+
+.card-severity {
+    background: rgba(255, 255, 255, 0.1);
+    color: $text-muted;
+}
+
+.card-actions {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 8px;
+    gap: 6px;
+}
+
+.mini-action {
+    width: 40px;
+    height: 36px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+
+    &:disabled {
+        opacity: 0.5;
+    }
+
+    &.ack {
+        background: rgba($status-acknowledged, 0.2);
+        color: $status-acknowledged;
+
+        &:hover:not(:disabled) {
+            background: $status-acknowledged;
+            color: white;
+        }
+    }
+
+    &.resolve {
+        background: rgba($status-resolved, 0.2);
+        color: $status-resolved;
+
+        &:hover:not(:disabled) {
+            background: $status-resolved;
+            color: white;
+        }
+    }
+}
+
+// ===== Bottom Navigation =====
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 100;
+}
+
+.nav-item {
+    flex: 1;
+    height: 100%;
+    border: none;
+    background: none;
+    color: $text-muted;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: color 0.2s;
+
+    i {
+        font-size: 1.25rem;
+    }
+
+    span {
+        font-size: 0.6875rem;
+        font-weight: 500;
+    }
+
+    &.active {
+        color: #3b82f6;
+    }
+
+    &:hover:not(:disabled) {
+        color: white;
+    }
+
+    &:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+    }
+}
+
+// ===== Tablet+ Breakpoint =====
+@media (min-width: 768px) {
+    .console-header {
+        padding: 20px 32px;
+
+        h1 {
+            font-size: 1.25rem;
+        }
+    }
+
+    .console-content {
+        padding: 24px 32px;
+        max-width: 800px;
+        margin: 0 auto;
+        width: 100%;
+    }
+
+    .primary-incident {
+        padding: 32px;
+    }
+
+    .incident-info .service-name {
+        font-size: 1.75rem;
+    }
+
+    .action-buttons {
+        gap: 16px;
+    }
+
+    .action-btn {
+        min-height: 60px;
+    }
+
+    .incident-card {
+        min-height: 90px;
+    }
+
+    .card-content {
+        padding: 16px 20px;
+    }
+
+    .mini-action {
+        width: 44px;
+        height: 40px;
+    }
+}
+
+// ===== Desktop Breakpoint =====
+@media (min-width: 1024px) {
+    .console-content {
+        max-width: 900px;
+    }
+
+    .incident-list {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+}

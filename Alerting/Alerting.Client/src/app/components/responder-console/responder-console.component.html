@@ -1,0 +1,179 @@
+<!-- Responder Console - Mobile-First Alert Landing Page -->
+<div class="responder-console" [class.dark-mode]="false">
+
+    <!-- Header -->
+    <header class="console-header">
+        <button class="back-btn" (click)="goToDashboard()">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        <h1>Responder Console</h1>
+        <button class="refresh-btn" (click)="refresh()" [disabled]="isLoading">
+            <i class="fas fa-sync-alt" [class.fa-spin]="isLoading"></i>
+        </button>
+    </header>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading incidents...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="errorMessage && !isLoading" class="error-state">
+        <i class="fas fa-exclamation-triangle"></i>
+        <p>{{ errorMessage }}</p>
+        <button class="retry-btn" (click)="refresh()">Try Again</button>
+    </div>
+
+    <!-- Main Content -->
+    <main *ngIf="!isLoading && !errorMessage" class="console-content">
+
+        <!-- No Incidents State -->
+        <div *ngIf="!primaryIncident && myIncidents.length === 0" class="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h2>All Clear!</h2>
+            <p>No active incidents requiring your attention.</p>
+        </div>
+
+        <!-- Primary Incident Card -->
+        <section *ngIf="primaryIncident" class="primary-incident" [ngClass]="getSeverityClass(primaryIncident)">
+
+            <!-- Status Pulse -->
+            <div class="status-pulse" *ngIf="isTriggered(primaryIncident)"></div>
+
+            <!-- Severity Badge -->
+            <div class="severity-badge">
+                <span class="severity-icon">
+                    <i class="fas" [ngClass]="{
+                        'fa-skull-crossbones': getSeverityName(primaryIncident) === 'Critical',
+                        'fa-exclamation-triangle': getSeverityName(primaryIncident) === 'High',
+                        'fa-exclamation-circle': getSeverityName(primaryIncident) === 'Medium',
+                        'fa-info-circle': getSeverityName(primaryIncident) === 'Low'
+                    }"></i>
+                </span>
+                <span class="severity-text">{{ getSeverityName(primaryIncident) | uppercase }}</span>
+            </div>
+
+            <!-- Incident Info -->
+            <div class="incident-info">
+                <h2 class="service-name">{{ getServiceName(primaryIncident) }}</h2>
+                <p class="incident-title">{{ primaryIncident.title }}</p>
+                <p class="incident-key">#{{ primaryIncident.incidentKey }}</p>
+            </div>
+
+            <!-- Status & Time -->
+            <div class="status-row">
+                <span class="status-badge" [ngClass]="getStatusClass(primaryIncident)">
+                    {{ getStatusName(primaryIncident) }}
+                </span>
+                <span class="time-ago">
+                    <i class="fas fa-clock"></i>
+                    {{ getTimeAgo(primaryIncident.createdAt) }}
+                </span>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button *ngIf="isTriggered(primaryIncident)" class="action-btn acknowledge-btn"
+                    (click)="acknowledgeIncident(primaryIncident)" [disabled]="isSaving">
+                    <i class="fas fa-check"></i>
+                    <span>Acknowledge</span>
+                </button>
+
+                <button class="action-btn resolve-btn" (click)="resolveIncident(primaryIncident)" [disabled]="isSaving">
+                    <i class="fas fa-check-double"></i>
+                    <span>Resolve</span>
+                </button>
+            </div>
+
+            <!-- Quick Note Toggle -->
+            <button class="quick-note-toggle" (click)="toggleQuickNote()">
+                <i class="fas" [ngClass]="showQuickNote ? 'fa-times' : 'fa-sticky-note'"></i>
+                <span>{{ showQuickNote ? 'Cancel' : 'Add Note' }}</span>
+            </button>
+
+            <!-- Quick Note Input -->
+            <div *ngIf="showQuickNote" class="quick-note-input">
+                <textarea [(ngModel)]="quickNoteContent" placeholder="Quick update or note..." rows="3"
+                    [disabled]="isAddingNote">
+                </textarea>
+                <button class="send-note-btn" (click)="addQuickNote()"
+                    [disabled]="!quickNoteContent.trim() || isAddingNote">
+                    <i class="fas" [ngClass]="isAddingNote ? 'fa-spinner fa-spin' : 'fa-paper-plane'"></i>
+                </button>
+            </div>
+
+            <!-- View Details Link -->
+            <button class="view-details-btn" (click)="viewIncidentDetails(primaryIncident)">
+                <span>View Full Details</span>
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </section>
+
+        <!-- My Active Incidents -->
+        <section *ngIf="myIncidents.length > 0" class="my-incidents">
+            <h3 class="section-title">
+                <i class="fas fa-list"></i>
+                My Active Incidents ({{ myIncidents.length }})
+            </h3>
+
+            <div class="incident-list">
+                <div *ngFor="let incident of myIncidents" class="incident-card" [ngClass]="getSeverityClass(incident)"
+                    (click)="focusOnIncident(incident)">
+
+                    <!-- Severity Indicator -->
+                    <div class="severity-indicator"></div>
+
+                    <!-- Card Content -->
+                    <div class="card-content">
+                        <div class="card-header">
+                            <span class="card-service">{{ getServiceName(incident) }}</span>
+                            <span class="card-time">{{ getTimeAgo(incident.createdAt) }}</span>
+                        </div>
+                        <p class="card-title">{{ incident.title }}</p>
+                        <div class="card-footer">
+                            <span class="card-status" [ngClass]="getStatusClass(incident)">
+                                {{ getStatusName(incident) }}
+                            </span>
+                            <span class="card-severity">
+                                {{ getSeverityName(incident) }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="card-actions" (click)="$event.stopPropagation()">
+                        <button *ngIf="isTriggered(incident)" class="mini-action ack"
+                            (click)="acknowledgeIncident(incident)" [disabled]="isSaving" title="Acknowledge">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button class="mini-action resolve" (click)="resolveIncident(incident)" [disabled]="isSaving"
+                            title="Resolve">
+                            <i class="fas fa-check-double"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="bottom-nav">
+        <button class="nav-item active">
+            <i class="fas fa-bell"></i>
+            <span>Alerts</span>
+        </button>
+        <button class="nav-item" (click)="goToDashboard()">
+            <i class="fas fa-th-large"></i>
+            <span>Dashboard</span>
+        </button>
+        <button class="nav-item" (click)="goToMyShift()">
+            <i class="fas fa-calendar-alt"></i>
+            <span>My Shift</span>
+        </button>
+    </nav>
+
+</div>

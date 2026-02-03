@@ -28,6 +28,9 @@ import { ScheduleManagementComponent } from './components/schedule-management/sc
 import { ScheduleEditorComponent } from './components/schedule-editor/schedule-editor.component';
 import { NotificationPreferencesEditorComponent } from './components/notification-preferences-editor/notification-preferences-editor.component';
 import { IncidentDashboardComponent } from './components/incident-dashboard/incident-dashboard.component';
+import { IncidentViewerComponent } from './components/incident-viewer/incident-viewer.component';
+import { ResponderConsoleComponent } from './components/responder-console/responder-console.component';
+import { MyShiftComponent } from './components/my-shift/my-shift.component';
 
 //
 // Custom screens
@@ -172,6 +175,10 @@ const routes: Routes = [
   { path: 'schedule-management/:id/edit', component: ScheduleEditorComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Schedule' },
   { path: 'notification-preferences', component: NotificationPreferencesEditorComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Notification Preferences' },
   { path: 'incident-dashboard', component: IncidentDashboardComponent, canActivate: [AuthGuard], title: 'Incident Dashboard' },
+  { path: 'incidents/:id', component: IncidentViewerComponent, canActivate: [AuthGuard], title: 'Incident Details' },
+  { path: 'respond', component: ResponderConsoleComponent, canActivate: [AuthGuard], title: 'Responder Console' },
+  { path: 'respond/:id', component: ResponderConsoleComponent, canActivate: [AuthGuard], title: 'Responder Console' },
+  { path: 'my-shift', component: MyShiftComponent, canActivate: [AuthGuard], title: 'My Shift' },
 
 
 

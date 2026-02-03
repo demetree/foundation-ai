@@ -1,0 +1,252 @@
+<!-- Incident Viewer - Detail Page -->
+<div class="incident-viewer">
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-container">
+        <div class="loading-spinner">
+            <div class="spinner-ring"></div>
+            <span>Loading incident...</span>
+        </div>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="errorMessage && !isLoading" class="error-container">
+        <div class="error-card">
+            <i class="fa-solid fa-exclamation-triangle"></i>
+            <p>{{ errorMessage }}</p>
+            <button class="btn-secondary" (click)="goBack()">
+                <i class="fa-solid fa-arrow-left"></i>
+                Back to Dashboard
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <ng-container *ngIf="!isLoading && !errorMessage && incident">
+
+        <!-- Hero Header -->
+        <header class="incident-header" [ngClass]="getSeverityClass()">
+            <div class="header-content">
+                <div class="header-left">
+                    <button class="btn-back" (click)="goBack()">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                    <div class="header-info">
+                        <div class="badges">
+                            <span class="severity-badge" [ngClass]="getSeverityClass()">
+                                {{ getSeverityName() }}
+                            </span>
+                            <span class="status-badge" [ngClass]="getStatusClass()" [class.pulse]="isTriggered()">
+                                <i class="fa-solid" [ngClass]="{
+                                    'fa-bolt': isTriggered(),
+                                    'fa-check': getStatusName() === 'Acknowledged',
+                                    'fa-check-double': isResolved()
+                                }"></i>
+                                {{ getStatusName() }}
+                            </span>
+                        </div>
+                        <h1 class="incident-title">{{ incident.title }}</h1>
+                        <p class="incident-key">{{ incident.incidentKey }}</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button *ngIf="isTriggered()" class="btn-action acknowledge" (click)="acknowledgeIncident()"
+                        [disabled]="isSaving">
+                        <i class="fa-solid fa-check"></i>
+                        <span>Acknowledge</span>
+                    </button>
+                    <button *ngIf="!isResolved()" class="btn-action resolve" (click)="resolveIncident()"
+                        [disabled]="isSaving">
+                        <i class="fa-solid fa-check-double"></i>
+                        <span>Resolve</span>
+                    </button>
+                    <button class="btn-secondary" (click)="refresh()">
+                        <i class="fa-solid fa-rotate"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="quick-stats">
+                <div class="stat-item">
+                    <i class="fa-solid fa-server"></i>
+                    <span class="stat-label">Service</span>
+                    <span class="stat-value">{{ getServiceName() }}</span>
+                </div>
+                <div class="stat-item">
+                    <i class="fa-solid fa-clock"></i>
+                    <span class="stat-label">Created</span>
+                    <span class="stat-value">{{ getRelativeTime(incident.createdAt) }}</span>
+                </div>
+                <div class="stat-item">
+                    <i class="fa-solid fa-hourglass-half"></i>
+                    <span class="stat-label">Duration</span>
+                    <span class="stat-value">{{ getDuration() }}</span>
+                </div>
+                <div class="stat-item" *ngIf="incident.acknowledgedAt">
+                    <i class="fa-solid fa-check"></i>
+                    <span class="stat-label">Acknowledged</span>
+                    <span class="stat-value">{{ getRelativeTime(incident.acknowledgedAt) }}</span>
+                </div>
+                <div class="stat-item" *ngIf="incident.resolvedAt">
+                    <i class="fa-solid fa-check-double"></i>
+                    <span class="stat-label">Resolved</span>
+                    <span class="stat-value">{{ getRelativeTime(incident.resolvedAt) }}</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Section Tabs -->
+        <div class="section-tabs">
+            <button class="tab-btn" [class.active]="activeSection === 'timeline'" (click)="setSection('timeline')">
+                <i class="fa-solid fa-timeline"></i>
+                <span>Timeline</span>
+                <span class="count">{{ timelineEvents.length }}</span>
+            </button>
+            <button class="tab-btn" [class.active]="activeSection === 'notes'" (click)="setSection('notes')">
+                <i class="fa-solid fa-sticky-note"></i>
+                <span>Notes</span>
+                <span class="count">{{ notes.length }}</span>
+            </button>
+            <button class="tab-btn" [class.active]="activeSection === 'notifications'"
+                (click)="setSection('notifications')">
+                <i class="fa-solid fa-bell"></i>
+                <span>Notifications</span>
+                <span class="count">{{ notifications.length }}</span>
+            </button>
+        </div>
+
+        <!-- Main Content Area -->
+        <main class="content-area">
+
+            <!-- Timeline Section -->
+            <section *ngIf="activeSection === 'timeline'" class="section-panel">
+                <div class="section-header">
+                    <h2><i class="fa-solid fa-timeline"></i> Event Timeline</h2>
+                </div>
+
+                <div *ngIf="isLoadingTimeline" class="section-loading">
+                    <div class="spinner-sm"></div>
+                    Loading timeline...
+                </div>
+
+                <div *ngIf="!isLoadingTimeline && timelineEvents.length === 0" class="empty-section">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <p>No timeline events</p>
+                </div>
+
+                <div *ngIf="!isLoadingTimeline && timelineEvents.length > 0" class="timeline">
+                    <div *ngFor="let event of timelineEvents" class="timeline-item">
+                        <div class="timeline-marker">
+                            <i class="fa-solid" [ngClass]="getEventIcon(event.incidentEventTypeId)"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <div class="timeline-header">
+                                <span class="event-type">{{ getEventTypeName(event.incidentEventTypeId) }}</span>
+                                <span class="event-time">{{ formatDateTime(event.timestamp) }}</span>
+                            </div>
+                            <p *ngIf="event.detailsJson" class="event-details">{{ event.detailsJson }}</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Notes Section -->
+            <section *ngIf="activeSection === 'notes'" class="section-panel">
+                <div class="section-header">
+                    <h2><i class="fa-solid fa-sticky-note"></i> Notes</h2>
+                </div>
+
+                <!-- Add Note Form -->
+                <div class="add-note-form">
+                    <textarea [(ngModel)]="newNoteContent" placeholder="Add a note..." rows="3"
+                        [disabled]="isAddingNote"></textarea>
+                    <button class="btn-add-note" [disabled]="!newNoteContent.trim() || isAddingNote"
+                        (click)="addNote()">
+                        <i class="fa-solid" [ngClass]="isAddingNote ? 'fa-spinner fa-spin' : 'fa-plus'"></i>
+                        <span>{{ isAddingNote ? 'Adding...' : 'Add Note' }}</span>
+                    </button>
+                </div>
+
+                <div *ngIf="isLoadingNotes" class="section-loading">
+                    <div class="spinner-sm"></div>
+                    Loading notes...
+                </div>
+
+                <div *ngIf="!isLoadingNotes && notes.length === 0" class="empty-section">
+                    <i class="fa-solid fa-sticky-note"></i>
+                    <p>No notes yet</p>
+                </div>
+
+                <div *ngIf="!isLoadingNotes && notes.length > 0" class="notes-list">
+                    <div *ngFor="let note of notes" class="note-card">
+                        <div class="note-header">
+                            <span class="note-author">
+                                <i class="fa-solid fa-user"></i>
+                                {{ getUserDisplayName(note.authorObjectGuid) || 'Unknown' }}
+                            </span>
+                            <span class="note-time">{{ formatDateTime(note.createdAt) }}</span>
+                        </div>
+                        <p class="note-content">{{ note.content }}</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Notifications Section -->
+            <section *ngIf="activeSection === 'notifications'" class="section-panel">
+                <div class="section-header">
+                    <h2><i class="fa-solid fa-bell"></i> Notifications</h2>
+                </div>
+
+                <div *ngIf="isLoadingNotifications" class="section-loading">
+                    <div class="spinner-sm"></div>
+                    Loading notifications...
+                </div>
+
+                <div *ngIf="!isLoadingNotifications && notifications.length === 0" class="empty-section">
+                    <i class="fa-solid fa-bell-slash"></i>
+                    <p>No notifications sent</p>
+                </div>
+
+                <div *ngIf="!isLoadingNotifications && notifications.length > 0" class="notifications-list">
+                    <div *ngFor="let notification of notifications" class="notification-card">
+                        <div class="notification-icon">
+                            <i class="fa-solid fa-bell"></i>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-header">
+                                <span class="notification-user">
+                                    {{ getUserDisplayName(notification.userObjectGuid) }}
+                                </span>
+                                <span class="notification-time">{{ formatDateTime(notification.firstNotifiedAt)
+                                    }}</span>
+                            </div>
+                            <div class="notification-status">
+                                <span class="badge" [ngClass]="{
+                                    'badge-success': notification.acknowledgedAt,
+                                    'badge-pending': !notification.acknowledgedAt
+                                }">
+                                    {{ notification.acknowledgedAt ? 'Acknowledged' : 'Pending' }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Description Panel (Always Visible) -->
+            <aside class="description-panel">
+                <h3>Description</h3>
+                <p *ngIf="incident.description">{{ incident.description }}</p>
+                <p *ngIf="!incident.description" class="no-description">No description provided</p>
+
+                <h3>Source Payload</h3>
+                <div *ngIf="incident.sourcePayloadJson" class="payload-container">
+                    <pre>{{ incident.sourcePayloadJson | json }}</pre>
+                </div>
+                <p *ngIf="!incident.sourcePayloadJson" class="no-payload">No source payload</p>
+            </aside>
+        </main>
+
+    </ng-container>
+</div>

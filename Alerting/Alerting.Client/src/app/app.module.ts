@@ -77,6 +77,9 @@ import { ScheduleManagementComponent } from './components/schedule-management/sc
 import { ScheduleEditorComponent } from './components/schedule-editor/schedule-editor.component';
 import { NotificationPreferencesEditorComponent } from './components/notification-preferences-editor/notification-preferences-editor.component';
 import { IncidentDashboardComponent } from './components/incident-dashboard/incident-dashboard.component';
+import { IncidentViewerComponent } from './components/incident-viewer/incident-viewer.component';
+import { ResponderConsoleComponent } from './components/responder-console/responder-console.component';
+import { MyShiftComponent } from './components/my-shift/my-shift.component';
 
 //
 // Custom Components
@@ -337,6 +340,9 @@ import { WebhookDeliveryAttemptTableComponent } from './alerting-data-components
     ScheduleEditorComponent,
     NotificationPreferencesEditorComponent,
     IncidentDashboardComponent,
+    IncidentViewerComponent,
+    ResponderConsoleComponent,
+    MyShiftComponent,
 
 
     //

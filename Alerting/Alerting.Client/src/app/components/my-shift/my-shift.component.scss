@@ -1,0 +1,497 @@
+/**
+ * My Shift Page - Mobile-First Styles
+ */
+
+// ===== Color Variables =====
+$on-call-primary: #22c55e;
+$on-call-dark: #166534;
+$off-duty-primary: #64748b;
+$off-duty-dark: #334155;
+$override-taking: #3b82f6;
+$override-replaced: #f59e0b;
+
+$bg-gradient: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+$text-light: #f1f5f9;
+$text-muted: #94a3b8;
+$card-bg: rgba(255, 255, 255, 0.05);
+
+// ===== Base Container =====
+.my-shift-page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background: $bg-gradient;
+    color: $text-light;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    padding-bottom: 80px;
+}
+
+// ===== Header =====
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+
+    h1 {
+        font-size: 1.125rem;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .back-btn,
+    .refresh-btn {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        border: none;
+        background: rgba(255, 255, 255, 0.1);
+        color: inherit;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+
+        &:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        &:disabled {
+            opacity: 0.5;
+        }
+    }
+}
+
+// ===== Loading & Error States =====
+.loading-state,
+.error-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+    text-align: center;
+}
+
+.spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid rgba(255, 255, 255, 0.2);
+    border-top-color: $on-call-primary;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.error-state i {
+    font-size: 3rem;
+    color: #ef4444;
+    margin-bottom: 16px;
+}
+
+.retry-btn {
+    margin-top: 16px;
+    padding: 12px 24px;
+    border-radius: 12px;
+    border: none;
+    background: $on-call-primary;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    min-height: 48px;
+}
+
+// ===== Main Content =====
+.page-content {
+    flex: 1;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+// ===== Status Hero =====
+.status-hero {
+    border-radius: 24px;
+    padding: 32px 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+
+    &.on-call {
+        background: linear-gradient(135deg, rgba($on-call-primary, 0.9), rgba($on-call-dark, 0.95));
+    }
+
+    &.off-duty {
+        background: linear-gradient(135deg, rgba($off-duty-primary, 0.7), rgba($off-duty-dark, 0.8));
+    }
+}
+
+.status-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+
+    i {
+        font-size: 2rem;
+    }
+}
+
+.status-text {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0 0 16px;
+}
+
+.current-shift-info,
+.next-shift-info,
+.no-shifts-info {
+    opacity: 0.9;
+
+    p {
+        margin: 4px 0;
+    }
+}
+
+.schedule-name {
+    font-size: 1.125rem;
+    font-weight: 600;
+}
+
+.time-remaining {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-top: 8px !important;
+}
+
+.shift-ends {
+    font-size: 0.875rem;
+    opacity: 0.8;
+}
+
+.next-label {
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.7;
+}
+
+.next-time {
+    font-size: 1.125rem;
+    font-weight: 600;
+}
+
+.next-schedule {
+    font-size: 0.875rem;
+    opacity: 0.8;
+}
+
+// ===== Section Titles =====
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 16px;
+    color: $text-muted;
+
+    i {
+        font-size: 0.875rem;
+    }
+}
+
+// ===== Shift List =====
+.shift-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.shift-card {
+    display: flex;
+    background: $card-bg;
+    border-radius: 16px;
+    overflow: hidden;
+    min-height: 80px;
+}
+
+.shift-date {
+    width: 70px;
+    background: rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 8px;
+    flex-shrink: 0;
+
+    .day {
+        font-size: 0.6875rem;
+        text-transform: uppercase;
+        opacity: 0.7;
+    }
+
+    .date-num {
+        font-size: 1.5rem;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+
+    .month {
+        font-size: 0.6875rem;
+        text-transform: uppercase;
+        opacity: 0.7;
+    }
+}
+
+.shift-details {
+    flex: 1;
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    p {
+        margin: 2px 0;
+    }
+
+    .shift-schedule {
+        font-weight: 600;
+        font-size: 0.9375rem;
+    }
+
+    .shift-layer {
+        font-size: 0.8125rem;
+        color: $text-muted;
+    }
+
+    .shift-time {
+        font-size: 0.8125rem;
+        color: $on-call-primary;
+        font-weight: 500;
+    }
+}
+
+// ===== Override List =====
+.override-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.override-card {
+    display: flex;
+    background: $card-bg;
+    border-radius: 16px;
+    overflow: hidden;
+    padding: 16px;
+    gap: 16px;
+
+    &.taking-over {
+        border-left: 4px solid $override-taking;
+    }
+
+    &.being-replaced {
+        border-left: 4px solid $override-replaced;
+    }
+}
+
+.override-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    .taking-over & {
+        background: rgba($override-taking, 0.2);
+        color: $override-taking;
+    }
+
+    .being-replaced & {
+        background: rgba($override-replaced, 0.2);
+        color: $override-replaced;
+    }
+}
+
+.override-details {
+    flex: 1;
+
+    p {
+        margin: 4px 0;
+    }
+
+    .override-type {
+        font-size: 0.9375rem;
+    }
+
+    .override-time {
+        font-size: 0.8125rem;
+        color: $text-muted;
+    }
+
+    .override-reason {
+        font-size: 0.8125rem;
+        font-style: italic;
+        color: $text-muted;
+        margin-top: 8px !important;
+    }
+}
+
+// ===== Policy List =====
+.policy-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.policy-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: $card-bg;
+    border-radius: 12px;
+    padding: 14px 16px;
+
+    .policy-name {
+        font-weight: 500;
+        font-size: 0.9375rem;
+    }
+
+    .policy-level {
+        font-size: 0.75rem;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 4px 10px;
+        border-radius: 100px;
+        color: $text-muted;
+    }
+}
+
+// ===== Empty Section =====
+.empty-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 48px 24px;
+
+    .empty-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 24px;
+
+        i {
+            font-size: 2rem;
+            color: $text-muted;
+        }
+    }
+
+    h3 {
+        font-size: 1.25rem;
+        margin: 0 0 8px;
+    }
+
+    p {
+        color: $text-muted;
+        margin: 0;
+        max-width: 280px;
+    }
+}
+
+// ===== Bottom Navigation =====
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 100;
+}
+
+.nav-item {
+    flex: 1;
+    height: 100%;
+    border: none;
+    background: none;
+    color: $text-muted;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: color 0.2s;
+
+    i {
+        font-size: 1.25rem;
+    }
+
+    span {
+        font-size: 0.6875rem;
+        font-weight: 500;
+    }
+
+    &.active {
+        color: $on-call-primary;
+    }
+
+    &:hover:not(:disabled) {
+        color: white;
+    }
+}
+
+// ===== Tablet+ =====
+@media (min-width: 768px) {
+    .page-header {
+        padding: 20px 32px;
+    }
+
+    .page-content {
+        padding: 24px 32px;
+        max-width: 600px;
+        margin: 0 auto;
+        width: 100%;
+    }
+
+    .status-hero {
+        padding: 40px 32px;
+    }
+
+    .status-text {
+        font-size: 1.75rem;
+    }
+}
