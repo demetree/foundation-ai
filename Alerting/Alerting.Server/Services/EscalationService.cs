@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Alerting.Server.Services.Notifications;
 using Foundation.Alerting.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -20,6 +21,7 @@ namespace Alerting.Server.Services
     public class EscalationService : IEscalationService
     {
         private readonly AlertingContext _context;
+        private readonly INotificationDispatcher _dispatcher;
         private readonly ILogger<EscalationService> _logger;
 
         // Well-known status/event IDs
@@ -28,9 +30,13 @@ namespace Alerting.Server.Services
         private const int StatusResolved = 3;
         private const int EventEscalated = 3;
 
-        public EscalationService(AlertingContext context, ILogger<EscalationService> logger)
+        public EscalationService(
+            AlertingContext context,
+            INotificationDispatcher dispatcher,
+            ILogger<EscalationService> logger)
         {
             _context = context;
+            _dispatcher = dispatcher;
             _logger = logger;
         }
 
@@ -249,43 +255,13 @@ namespace Alerting.Server.Services
 
         private async Task CreateNotificationAsync(Incident incident, EscalationRule rule, Guid userGuid)
         {
-            var notification = new IncidentNotification
-            {
-                tenantGuid = incident.tenantGuid,
-                incidentId = incident.id,
-                escalationRuleId = rule.id,
-                userObjectGuid = userGuid,
-                firstNotifiedAt = DateTime.UtcNow,
-                objectGuid = Guid.NewGuid(),
-                active = true,
-                deleted = false
-            };
-
-            _context.IncidentNotifications.Add(notification);
-            await _context.SaveChangesAsync().ConfigureAwait(false);
-
-            // Create delivery attempt for each enabled channel
-            // For now, just create a stub SMS delivery attempt
-            var smsChannelId = 1; // Assuming SMS is ID 1
-
-            var attempt = new NotificationDeliveryAttempt
-            {
-                tenantGuid = incident.tenantGuid,
-                incidentNotificationId = notification.id,
-                notificationChannelTypeId = smsChannelId,
-                attemptNumber = 1,
-                attemptedAt = DateTime.UtcNow,
-                status = "Pending", // Would be updated by actual delivery service
-                objectGuid = Guid.NewGuid(),
-                active = true,
-                deleted = false
-            };
-
-            _context.NotificationDeliveryAttempts.Add(attempt);
-            await _context.SaveChangesAsync().ConfigureAwait(false);
-
-            _logger.LogDebug("Created notification for user {UserGuid} on incident {IncidentId}",
-                userGuid, incident.id);
+            // Delegate to the notification dispatcher which handles:
+            // - Creating IncidentNotification record
+            // - Loading user preferences (DND, quiet hours)
+            // - Determining enabled channels
+            // - Sending via each channel provider
+            // - Recording delivery attempts
+            await _dispatcher.DispatchAsync(incident, userGuid, rule?.id);
         }
 
         private async Task AddTimelineEventAsync(Incident incident, int eventTypeId, Guid? actorGuid, object details)

@@ -1,5 +1,6 @@
 using Alerting.Server.Controllers;
 using Alerting.Server.Services;
+using Alerting.Server.Services.Notifications;
 using Foundation.Auditor.Controllers.WebAPI;
 using Foundation.Auditor.Database;
 using Foundation.Extensions;
@@ -318,6 +319,12 @@ namespace Foundation.Alerting
                 builder.Services.AddScoped<IDashboardService, DashboardService>();
                 builder.Services.AddScoped<IEscalationService, EscalationService>();
                 builder.Services.AddScoped<IUserService, UserService>();
+
+                //
+                // Notification Delivery Services
+                //
+                builder.Services.AddScoped<INotificationDispatcher, NotificationDispatcher>();
+                builder.Services.AddScoped<INotificationProvider, EmailNotificationProvider>();
 
                 //
                 // Background Workers
