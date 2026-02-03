@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -14,7 +15,9 @@ using Microsoft.Extensions.Configuration;
 namespace Foundation.Server.OIDC
 {
     /// <summary>
+    /// 
     /// Helper class for obtaining OIDC access tokens for service-to-service communication.
+    /// 
     /// </summary>
     public static class OidcTokenHelper
     {
@@ -25,43 +28,41 @@ namespace Foundation.Server.OIDC
         /// <param name="httpClient">HTTP client to use for the token request.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>Access token string.</returns>
-        public static async Task<string> GetServiceAccountTokenAsync(
-            IConfiguration configuration,
-            HttpClient httpClient,
-            CancellationToken cancellationToken = default)
+        public static async Task<string> GetServiceAccountTokenAsync(IConfiguration configuration,
+                                                                     HttpClient httpClient, 
+                                                                     string baseUrl,                   // base URL of endpoint to get credentails from 
+                                                                     string clientId,                  // OIDC client application id like alerting_spa or whatever you're getting a token from
+                                                                     CancellationToken cancellationToken = default)
         {
-            var username = configuration["ServiceAccount:Username"];
-            var password = configuration["ServiceAccount:Password"];
-            var selfUrl = configuration["Alerting:ServiceUrl"] ?? "https://localhost:9101";
+            string username = configuration["ServiceAccount:Username"];
+            string password = configuration["ServiceAccount:Password"];
 
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
             {
-                throw new InvalidOperationException(
-                    "ServiceAccount:Username and ServiceAccount:Password must be configured for Alerting integration.");
+                throw new InvalidOperationException("ServiceAccount:Username and ServiceAccount:Password must be configured for Alerting integration.");
             }
 
             // Build token request - call our own /connect/token endpoint
-            var tokenUrl = $"{selfUrl.TrimEnd('/')}/connect/token";
+            string tokenUrl = $"{baseUrl.TrimEnd('/')}/connect/token";
 
-            var content = new FormUrlEncodedContent(new Dictionary<string, string>
+            FormUrlEncodedContent content = new FormUrlEncodedContent(new Dictionary<string, string>
             {
                 ["grant_type"] = "password",
                 ["username"] = username,
                 ["password"] = password,
                 ["scope"] = "openid profile email roles",
-                ["client_id"] = "swagger"  // Use swagger client for service account auth
+                ["client_id"] = clientId
             });
 
-            var response = await httpClient.PostAsync(tokenUrl, content, cancellationToken).ConfigureAwait(false);
-            var responseBody = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            HttpResponseMessage response = await httpClient.PostAsync(tokenUrl, content, cancellationToken).ConfigureAwait(false);
+            string responseBody = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
             {
-                throw new HttpRequestException(
-                    $"Failed to obtain service account token: {response.StatusCode} - {responseBody}");
+                throw new HttpRequestException($"Failed to obtain service account token: {response.StatusCode} - {responseBody}");
             }
 
-            var tokenResponse = JsonSerializer.Deserialize<TokenResponse>(responseBody);
+            TokenResponse tokenResponse = JsonSerializer.Deserialize<TokenResponse>(responseBody);
             
             if (string.IsNullOrEmpty(tokenResponse?.AccessToken))
             {
@@ -73,9 +74,20 @@ namespace Foundation.Server.OIDC
 
         private class TokenResponse
         {
+            [JsonPropertyName("access_token")]
             public string AccessToken { get; set; }
+
+            [JsonPropertyName("token_type")]
             public string TokenType { get; set; }
+
+            [JsonPropertyName("expires_in")]
             public int ExpiresIn { get; set; }
+
+            [JsonPropertyName("id_token")]
+            public string IdToken { get; set; }
+
+
+            [JsonPropertyName("scope")]
             public string Scope { get; set; }
 
             // Constructor for JSON deserialization with snake_case

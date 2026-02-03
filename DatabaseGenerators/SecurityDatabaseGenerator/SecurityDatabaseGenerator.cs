@@ -37,6 +37,14 @@ namespace Foundation.Security.Database
             securityTenantIdActiveDeletedIndex.AddField("deleted");
 
 
+            securityTenantTable.AddData(new Dictionary<string, string> { { "name", "System Service" },
+                                                               { "description", "System Service Tenant - For Administrative purposes or single tenant use." },
+                                                               { "active", "1"},
+                                                               { "deleted", "0"},
+                                                               { "objectGuid", "c017cf97-ccbb-4686-98b3-c59efc1a3f45" }});
+
+
+
             Database.Table securityOrganizationTable = database.AddTable("SecurityOrganization");
             securityOrganizationTable.SetMinimumPermissionLevels(SECURITY_READER_PERMISSION_LEVEL, SECURITY_TENANT_WRITER_PERMISSION_LEVEL);
             securityOrganizationTable.displayNameForTable = "Organization";
@@ -199,6 +207,7 @@ namespace Foundation.Security.Database
                                                                { "mustChangePassword", "1" },
                                                                { "firstName", "Admin" },
                                                                { "lastName", "Account" },
+                                                               { "link:SecurityTenant:name:securityTenantId", "System Service" },
                                                                { "password", "$HASH$V1000$10000$7lx52j0Z5CjBUyu8L84pOmsOo+jNH/pVZ1VlI4EBjAftRag+" },    // The default password is 'Admin'
                                                                { "description", "System Aministrator account.  Refer to generator for default password." },
                                                                { "readPermissionLevel", SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL.ToString() },
@@ -221,6 +230,7 @@ namespace Foundation.Security.Database
                                                                { "firstName", "System" },
                                                                { "middleName", "Service" },
                                                                { "lastName", "Account" },
+                                                               { "link:SecurityTenant:name:securityTenantId", "System Service" },
                                                                { "password", "$HASH$V1000$10000$WeuGAJrhrIJWnWZIdyAQKvBEiFM0iMLiS+NJW8ws0YjSCbPq" },    // The default password is ('d80632a7-b1ff-47cb-9ecd-87f4a4a22763-Service2026!^#');
                                                                { "description", "System Service account for job/worker connection purposes.  Refer to generator for default password." },
                                                                { "readPermissionLevel", SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL.ToString() },

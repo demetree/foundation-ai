@@ -160,8 +160,15 @@ namespace Foundation.Server
                 Foundation.Web.Utility.StartupBasics.AddAuditorWebAPIControllers(controllers);                      // Auditor module
                 Foundation.Web.Utility.TelemetryStartupBasics.AddTelemetryWebAPIControllers(controllers);           // Telemetry historical data module
 
-
+                
                 logger.LogInformation("Controllers have been configured.");
+
+                //
+                // Auto-seed missing SecurityUserEventType records for easier upgrades
+                //
+                await SecurityLogic.EnsureSecurityUserEventTypesAsync(
+                    msg => logger.LogError(msg)
+                ).ConfigureAwait(false);
 
                 //
                 // Constrain this host to just use the dashboard controllers listed, not all the controllers in all the assemblies.  We want to hide the Foundation Security and Auditor controllers from outside access.
@@ -416,15 +423,6 @@ namespace Foundation.Server
                 await ValidateSecuritySchema(logger).ConfigureAwait(false);
                 await ValidateTelemetrySchema(logger).ConfigureAwait(false);
 
-                //
-                // Auto-seed missing SecurityUserEventType records for easier upgrades
-                //
-                await SecurityLogic.EnsureSecurityUserEventTypesAsync(
-                    msg => logger.LogError(msg)
-                ).ConfigureAwait(false);
-
-                
-
 
                 //
                 // Log database statistics for startup diagnostics
@@ -634,8 +632,8 @@ namespace Foundation.Server
         /// </summary>
         private static async Task RegisterWithAlertingAsync(WebApplication app, Logger logger)
         {
-            var config = app.Configuration;
-            var alertingUrl = config["Alerting:BaseUrl"];
+            IConfiguration config = app.Configuration;
+            string alertingUrl = config["Alerting:BaseUrl"];
 
             // Skip if Alerting is not configured
             if (string.IsNullOrEmpty(alertingUrl))
@@ -644,13 +642,13 @@ namespace Foundation.Server
                 return;
             }
 
-            var serviceName = config["Alerting:ServiceName"] ?? "Foundation";
-            var settingKey = $"Alerting:Integration:{serviceName}:ApiKey";
+            string serviceName = config["Alerting:ServiceName"] ?? "Foundation";
+            string settingKey = $"Alerting:Integration:{serviceName}:ApiKey";
 
             try
             {
                 // Check if already registered by looking for existing API key in SystemSettings
-                var existingKey = await SystemSettings.GetSystemSettingAsync(settingKey, null).ConfigureAwait(false);
+                string existingKey = await SystemSettings.GetSystemSettingAsync(settingKey, null).ConfigureAwait(false);
                 if (!string.IsNullOrEmpty(existingKey))
                 {
                     logger.LogInformation("Alerting integration already registered for {ServiceName}.", serviceName);
@@ -659,25 +657,36 @@ namespace Foundation.Server
 
                 logger.LogInformation("Registering with Alerting system at {Url}...", alertingUrl);
 
+
+                //
+                // Are we in the debugger?  If so, then we're probably launchig the whole suite together.  We need to give some time for Alerting to come online.
+                //
+                if (System.Diagnostics.Debugger.IsAttached == true)
+                {
+                    //
+                    // Sleep for10 seconds to allow the Alerting web server to come online
+                    //
+                    await Task.Delay(10000);
+                }
+
                 // Create HTTP client for token request (bypass SSL for local dev)
-                using var httpClientHandler = new HttpClientHandler
+                using HttpClientHandler httpClientHandler = new HttpClientHandler
                 {
                     ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
                 };
-                using var httpClient = new HttpClient(httpClientHandler);
+                using HttpClient httpClient = new HttpClient(httpClientHandler);
 
                 // Get access token via service account
-                var accessToken = await OidcTokenHelper.GetServiceAccountTokenAsync(
-                    config, httpClient).ConfigureAwait(false);
+                string accessToken = await OidcTokenHelper.GetServiceAccountTokenAsync(config, httpClient, alertingUrl, "alerting_spa").ConfigureAwait(false);
 
                 // Get the integration service from DI and register
-                using var scope = app.Services.CreateScope();
-                var alertingService = scope.ServiceProvider.GetRequiredService<IAlertingIntegrationService>();
+                using IServiceScope scope = app.Services.CreateScope();
 
-                var result = await alertingService.RegisterAsync(accessToken).ConfigureAwait(false);
+                IAlertingIntegrationService alertingService = scope.ServiceProvider.GetRequiredService<IAlertingIntegrationService>();
 
-                logger.LogInformation("Successfully registered with Alerting. ServiceId: {ServiceId}, IntegrationId: {IntegrationId}",
-                    result.ServiceId, result.IntegrationId);
+                RegistrationResponse result = await alertingService.RegisterAsync(accessToken).ConfigureAwait(false);
+
+                logger.LogInformation("Successfully registered with Alerting. ServiceId: {ServiceId}, IntegrationId: {IntegrationId}", result.ServiceId, result.IntegrationId);
             }
             catch (Exception ex)
             {

@@ -140,18 +140,19 @@ namespace Alerting.Server.Controllers
             }
             catch (Exception ex)
             {
-                await CreateAuditEventAsync(AuditEngine.AuditType.Error, 
-                    "Self-registration attempted by user without tenant: " + securityUser?.accountName, 
-                    securityUser?.accountName, ex);
+                await CreateAuditEventAsync(AuditEngine.AuditType.Error,
+                                            "Self-registration attempted by user without tenant: " + securityUser?.accountName,
+                                            securityUser?.accountName,
+                                            ex);
+
                 return Problem("Your user account is not configured with a tenant.");
             }
 
             // Find or create the Service
-            var serviceName = request.ServiceName.Trim();
-            var service = await _context.Services
-                .FirstOrDefaultAsync(s => s.name == serviceName && 
-                                         s.tenantGuid == userTenantGuid && 
-                                         s.deleted == false, cancellationToken);
+            string serviceName = request.ServiceName.Trim();
+            Service service = await _context.Services.FirstOrDefaultAsync(s => s.name == serviceName && 
+                                                                               s.tenantGuid == userTenantGuid && 
+                                                                               s.deleted == false, cancellationToken);
 
             if (service == null)
             {
@@ -168,18 +169,17 @@ namespace Alerting.Server.Controllers
                 };
 
                 var serviceChts = Service.GetChangeHistoryToolsetForWriting(_context, securityUser, false, cancellationToken);
+
                 await serviceChts.AddEntityAsync(service);
 
-                _logger.LogInformation("Created service {ServiceName} (ID: {ServiceId}) via self-registration",
-                    serviceName, service.id);
+                _logger.LogInformation("Created service {ServiceName} (ID: {ServiceId}) via self-registration", serviceName, service.id);
             }
 
             // Find existing integration or create new one
-            var integrationName = $"{serviceName} Auto-Integration";
-            var integration = await _context.Integrations
-                .FirstOrDefaultAsync(i => i.serviceId == service.id &&
-                                         i.tenantGuid == userTenantGuid &&
-                                         i.deleted == false, cancellationToken);
+            string integrationName = $"{serviceName} Auto-Integration";
+            Integration integration = await _context.Integrations.FirstOrDefaultAsync(i => i.serviceId == service.id &&
+                                                                                           i.tenantGuid == userTenantGuid &&
+                                                                                           i.deleted == false, cancellationToken);
 
             // Generate API key
             string plainApiKey = GenerateApiKey();
@@ -205,10 +205,10 @@ namespace Alerting.Server.Controllers
                 };
 
                 var integrationChts = Integration.GetChangeHistoryToolsetForWriting(_context, securityUser, false, cancellationToken);
+
                 await integrationChts.AddEntityAsync(integration);
 
-                _logger.LogInformation("Created integration {IntegrationName} (ID: {IntegrationId}) via self-registration",
-                    integrationName, integration.id);
+                _logger.LogInformation("Created integration {IntegrationName} (ID: {IntegrationId}) via self-registration", integrationName, integration.id);
             }
             else
             {
@@ -220,17 +220,16 @@ namespace Alerting.Server.Controllers
                 var integrationChts = Integration.GetChangeHistoryToolsetForWriting(_context, securityUser, false, cancellationToken);
                 await integrationChts.UpdateEntityAsync(integration);
 
-                _logger.LogInformation("Regenerated API key for existing integration {IntegrationId} via self-registration",
-                    integration.id);
+                _logger.LogInformation("Regenerated API key for existing integration {IntegrationId} via self-registration", integration.id);
             }
 
             await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
-                $"Self-registration completed for service '{serviceName}'",
-                true,
-                integration.id.ToString(),
-                "",
-                JsonSerializer.Serialize(new { ServiceId = service.id, IntegrationId = integration.id }),
-                null);
+                                        $"Self-registration completed for service '{serviceName}'",
+                                        true,
+                                        integration.id.ToString(),
+                                        "",
+                                        JsonSerializer.Serialize(new { ServiceId = service.id, IntegrationId = integration.id }),
+                                        null);
 
             return Ok(new SelfRegisterResponse
             {

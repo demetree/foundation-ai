@@ -115,6 +115,8 @@ CREATE INDEX "I_SecurityTenant_deleted" ON "SecurityTenant" ("deleted")
 CREATE INDEX "I_SecurityTenant_id_active_deleted" ON "SecurityTenant" ("id", "active", "deleted")
 ;
 
+INSERT INTO "SecurityTenant" ( "name", "description", "active", "deleted", "objectGuid" ) VALUES  ( 'System Service', 'System Service Tenant - For Administrative purposes not real use.', 1, 0, 'c017cf97-ccbb-4686-98b3-c59efc1a3f45' );
+
 
 CREATE TABLE "SecurityOrganization"
 (
@@ -346,9 +348,9 @@ CREATE INDEX "I_Scurtysr_ccuntNm_ctvDrctryccunt_ctv_dltd" ON "SecurityUser" ("ac
 CREATE INDEX "I_SecurityUser_id_active_deleted" ON "SecurityUser" ("id", "active", "deleted")
 ;
 
-INSERT INTO "SecurityUser" ( "accountName", "activeDirectoryAccount", "canLogin", "mustChangePassword", "firstName", "lastName", "password", "description", "readPermissionLevel", "writePermissionLevel", "objectGuid" ) VALUES  ( 'Admin', 0, 1, 1, 'Admin', 'Account', '$HASH$V1000$10000$7lx52j0Z5CjBUyu8L84pOmsOo+jNH/pVZ1VlI4EBjAftRag+', 'System Aministrator account.  Refer to generator for default password.', 255, 255, '4099226f-cc2f-46d2-9725-29de861c4fa9' );
+INSERT INTO "SecurityUser" ( "accountName", "activeDirectoryAccount", "canLogin", "mustChangePassword", "firstName", "lastName", "securityTenantId", "password", "description", "readPermissionLevel", "writePermissionLevel", "objectGuid" ) VALUES  ( 'Admin', 0, 1, 1, 'Admin', 'Account', ( SELECT id FROM "SecurityTenant" WHERE "name" = 'System Service' LIMIT 1), '$HASH$V1000$10000$7lx52j0Z5CjBUyu8L84pOmsOo+jNH/pVZ1VlI4EBjAftRag+', 'System Aministrator account.  Refer to generator for default password.', 255, 255, '4099226f-cc2f-46d2-9725-29de861c4fa9' );
 
-INSERT INTO "SecurityUser" ( "accountName", "activeDirectoryAccount", "canLogin", "mustChangePassword", "firstName", "middleName", "lastName", "password", "description", "readPermissionLevel", "writePermissionLevel", "objectGuid" ) VALUES  ( 'SystemService', 0, 1, 0, 'System', 'Service', 'Account', '$HASH$V1000$10000$WeuGAJrhrIJWnWZIdyAQKvBEiFM0iMLiS+NJW8ws0YjSCbPq', 'System Service account for job/worker connection purposes.  Refer to generator for default password.', 255, 255, 'd80632a7-b1ff-47cb-9ecd-87f4a4a22763' );
+INSERT INTO "SecurityUser" ( "accountName", "activeDirectoryAccount", "canLogin", "mustChangePassword", "firstName", "middleName", "lastName", "securityTenantId", "password", "description", "readPermissionLevel", "writePermissionLevel", "objectGuid" ) VALUES  ( 'SystemService', 0, 1, 0, 'System', 'Service', 'Account', ( SELECT id FROM "SecurityTenant" WHERE "name" = 'System Service' LIMIT 1), '$HASH$V1000$10000$WeuGAJrhrIJWnWZIdyAQKvBEiFM0iMLiS+NJW8ws0YjSCbPq', 'System Service account for job/worker connection purposes.  Refer to generator for default password.', 255, 255, 'd80632a7-b1ff-47cb-9ecd-87f4a4a22763' );
 
 
 CREATE TABLE "SecurityTenantUser"

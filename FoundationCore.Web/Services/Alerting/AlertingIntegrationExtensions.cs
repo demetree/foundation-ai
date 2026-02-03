@@ -15,7 +15,9 @@ namespace Foundation.Web.Services.Alerting
     public static class AlertingIntegrationExtensions
     {
         /// <summary>
+        /// 
         /// Add Alerting integration services to the DI container.
+        /// 
         /// </summary>
         /// <param name="services">The service collection.</param>
         /// <param name="configuration">Configuration containing "Alerting" section.</param>
@@ -25,8 +27,7 @@ namespace Foundation.Web.Services.Alerting
             IConfiguration configuration)
         {
             // Bind configuration
-            services.Configure<AlertingIntegrationOptions>(
-                configuration.GetSection(AlertingIntegrationOptions.SectionName));
+            services.Configure<AlertingIntegrationOptions>(configuration.GetSection(AlertingIntegrationOptions.SectionName));
 
             // Register HTTP client with retry policy
             services.AddHttpClient<IAlertingIntegrationService, AlertingIntegrationService>()
@@ -52,9 +53,7 @@ namespace Foundation.Web.Services.Alerting
         /// <param name="services">The service collection.</param>
         /// <param name="configure">Configuration action.</param>
         /// <returns>The service collection for chaining.</returns>
-        public static IServiceCollection AddAlertingIntegration(
-            this IServiceCollection services,
-            Action<AlertingIntegrationOptions> configure)
+        public static IServiceCollection AddAlertingIntegration(this IServiceCollection services, Action<AlertingIntegrationOptions> configure)
         {
             services.Configure(configure);
 
