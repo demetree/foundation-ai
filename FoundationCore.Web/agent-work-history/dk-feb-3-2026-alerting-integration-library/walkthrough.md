@@ -1,7 +1,7 @@
 # Walkthrough: Alerting Integration Library
 
 ## Summary
-Created a shared integration library in `FoundationCore.Web` enabling any Foundation-based application to easily integrate with Alerting.
+Created a shared integration library in `FoundationCore.Web` enabling any Foundation-based application to easily integrate with Alerting. API keys are stored in the Security database via `SystemSettings` for multi-node sync.
 
 ---
 
@@ -18,59 +18,29 @@ Created a shared integration library in `FoundationCore.Web` enabling any Founda
 | [AlertingIntegrationOptions.cs](file:///g:/source/repos/Scheduler/FoundationCore.Web/Services/Alerting/AlertingIntegrationOptions.cs) | Configuration options |
 | [AlertingIntegrationDtos.cs](file:///g:/source/repos/Scheduler/FoundationCore.Web/Services/Alerting/AlertingIntegrationDtos.cs) | Shared DTOs |
 | [IAlertingIntegrationService.cs](file:///g:/source/repos/Scheduler/FoundationCore.Web/Services/Alerting/IAlertingIntegrationService.cs) | Service interface |
-| [AlertingIntegrationService.cs](file:///g:/source/repos/Scheduler/FoundationCore.Web/Services/Alerting/AlertingIntegrationService.cs) | HTTP client implementation |
+| [AlertingIntegrationService.cs](file:///g:/source/repos/Scheduler/FoundationCore.Web/Services/Alerting/AlertingIntegrationService.cs) | HTTP client with SystemSettings |
 | [AlertingIntegrationExtensions.cs](file:///g:/source/repos/Scheduler/FoundationCore.Web/Services/Alerting/AlertingIntegrationExtensions.cs) | DI extension |
 | [AlertingWebhookControllerBase.cs](file:///g:/source/repos/Scheduler/FoundationCore.Web/Services/Alerting/AlertingWebhookControllerBase.cs) | Webhook handler base class |
 
 ---
 
-## Usage Example
+## API Key Storage (SystemSettings)
 
-### 1. Configuration (`appsettings.json`)
-```json
-"Alerting": {
-    "BaseUrl": "https://alerting.mycompany.com",
-    "ServiceName": "Foundation",
-    "CallbackUrl": "https://foundation.mycompany.com/api/alerting-webhook"
-}
-```
+After registration, credentials are stored in the Security database:
 
-### 2. Registration (`Program.cs`)
-```csharp
-builder.Services.AddAlertingIntegration(builder.Configuration);
-```
+| Setting Name | Description |
+|--------------|-------------|
+| `Alerting:Integration:{ServiceName}:ApiKey` | The API key for authenticated calls |
+| `Alerting:Integration:{ServiceName}:IntegrationId` | The integration record ID |
+| `Alerting:Integration:{ServiceName}:ServiceId` | The service record ID |
 
-### 3. Self-Registration (one-time)
-```csharp
-var alerting = app.Services.GetRequiredService<IAlertingIntegrationService>();
-var result = await alerting.RegisterAsync(accessToken);
-// Store result.ApiKey in config
-```
-
-### 4. Raise Incidents
-```csharp
-await alerting.RaiseIncidentAsync(new RaiseIncidentRequest
-{
-    Severity = "Critical",
-    Title = "Database connection failed",
-    Description = "Unable to connect to primary DB"
-});
-```
-
-### 5. Receive Webhooks
-```csharp
-[Route("api/alerting-webhook")]
-public class MyWebhookController : AlertingWebhookControllerBase
-{
-    protected override Task OnIncidentResolvedAsync(IncidentWebhookPayload p)
-    {
-        // Clear local alert state
-    }
-}
-```
+**Benefits:**
+- All server nodes share the same credentials
+- No risk of appsettings.json drift
+- Can be rotated without app restarts
 
 ---
 
 ## Verification
-- ✅ Alerting.Server: 0 errors
 - ✅ FoundationCore.Web: 0 errors
+- ✅ Alerting.Server: 0 errors

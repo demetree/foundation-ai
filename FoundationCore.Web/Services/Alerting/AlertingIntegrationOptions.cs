@@ -43,9 +43,11 @@ namespace Foundation.Web.Services.Alerting
         public string CallbackUrl { get; set; }
 
         /// <summary>
-        /// Path to file where API key should be stored after registration.
-        /// If not set, the key will only be logged (not recommended for production).
+        /// Obsolete: API keys are now stored in SystemSettings database.
+        /// The key is stored as "Alerting:Integration:{ServiceName}:ApiKey".
+        /// This property is no longer used.
         /// </summary>
+        [Obsolete("API keys are now stored in SystemSettings database, not file-based storage.")]
         public string ApiKeyFilePath { get; set; }
 
         /// <summary>
