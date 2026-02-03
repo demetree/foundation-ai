@@ -120,9 +120,9 @@ Designed to be independent while sharing the central Security database for users
             scheduleOverrideTypeTable.AddControlFields(false);
 
             //Valid values: SWAP, REPLACE, REMOVE
-            scheduleOverrideTypeTable.AddData(new Dictionary<string, string> { { "name", "Swap" }, { "description", "Swapped for another" } });
-            scheduleOverrideTypeTable.AddData(new Dictionary<string, string> { { "name", "Replace" }, { "description", "Replaced with another" } });
-            scheduleOverrideTypeTable.AddData(new Dictionary<string, string> { { "name", "Remove" }, { "description", "Removed" } });
+            scheduleOverrideTypeTable.AddData(new Dictionary<string, string> { { "name", "Swap" }, { "description", "Swap - Two users exchange shifts" } });
+            scheduleOverrideTypeTable.AddData(new Dictionary<string, string> { { "name", "Replace" }, { "description", "Replace - One user temporarily takes over for another" } });
+            scheduleOverrideTypeTable.AddData(new Dictionary<string, string> { { "name", "Remove" }, { "description", "Remove - User taken off the schedule with no replacement" } });
             
 
             #endregion

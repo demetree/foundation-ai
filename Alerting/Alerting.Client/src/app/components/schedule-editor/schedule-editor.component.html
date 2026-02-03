@@ -291,7 +291,8 @@
                                         <select class="form-select" [(ngModel)]="member.securityUserObjectGuid"
                                             (ngModelChange)="onMemberUserChange(layer, member)">
                                             <option value="">— Select User —</option>
-                                            <option *ngFor="let user of users" [value]="user.objectGuid">
+                                            <option *ngFor="let user of getAvailableUsersForMember(layer, member)"
+                                                [value]="user.objectGuid">
                                                 {{ user.displayName }}
                                             </option>
                                         </select>
@@ -455,7 +456,7 @@
                 <label class="form-label">Original User (being replaced)</label>
                 <select class="form-select" [(ngModel)]="editingOverride.originalUserObjectGuid">
                     <option [ngValue]="null">— None —</option>
-                    <option *ngFor="let user of users" [value]="user.objectGuid">
+                    <option *ngFor="let user of getAvailableOriginalUsers()" [value]="user.objectGuid">
                         {{ user.displayName }}
                     </option>
                 </select>
@@ -464,7 +465,7 @@
                 <label class="form-label">Replacement User</label>
                 <select class="form-select" [(ngModel)]="editingOverride.replacementUserObjectGuid">
                     <option [ngValue]="null">— None (Remove from schedule) —</option>
-                    <option *ngFor="let user of users" [value]="user.objectGuid">
+                    <option *ngFor="let user of getAvailableReplacementUsers()" [value]="user.objectGuid">
                         {{ user.displayName }}
                     </option>
                 </select>

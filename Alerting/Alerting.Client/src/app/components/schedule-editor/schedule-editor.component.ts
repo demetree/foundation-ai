@@ -702,6 +702,66 @@ export class ScheduleEditorComponent implements OnInit, OnDestroy {
         return user?.displayName || 'Unknown User';
     }
 
+    /**
+     * Returns users available for selection, excluding those already in the layer
+     * (except for the current member being edited)
+     */
+    getAvailableUsersForMember(layer: EditableLayer, currentMember: EditableMember): AlertingUser[] {
+        const usedGuids = layer.members
+            .filter(m => m !== currentMember && m.securityUserObjectGuid)
+            .map(m => m.securityUserObjectGuid);
+
+        return this.users.filter(u => !usedGuids.includes(u.objectGuid));
+    }
+
+    /**
+     * Returns users who are members of any layer on this schedule
+     */
+    getScheduleMemberUsers(): AlertingUser[] {
+        const memberGuids = new Set<string>();
+        for (const layer of this.layers) {
+            for (const member of layer.members) {
+                if (member.securityUserObjectGuid) {
+                    memberGuids.add(member.securityUserObjectGuid);
+                }
+            }
+        }
+        return this.users.filter(u => memberGuids.has(u.objectGuid));
+    }
+
+    /**
+     * Returns users available for "Original User" in override modal,
+     * limited to schedule members and excluding the currently selected replacement user
+     */
+    getAvailableOriginalUsers(): AlertingUser[] {
+        const scheduleMembers = this.getScheduleMemberUsers();
+        if (!this.editingOverride?.replacementUserObjectGuid) {
+            return scheduleMembers;
+        }
+        return scheduleMembers.filter(u => u.objectGuid !== this.editingOverride!.replacementUserObjectGuid);
+    }
+
+    /**
+     * Returns users available for "Replacement User" in override modal.
+     * - For Swap: must be a schedule member (reciprocal exchange)
+     * - For Replace: can be any user (one-way coverage)
+     * Always excludes the currently selected original user.
+     */
+    getAvailableReplacementUsers(): AlertingUser[] {
+        const swapTypeId = this.overrideTypes.find(t => t.name === 'Swap')?.id;
+        const isSwap = this.editingOverride?.scheduleOverrideTypeId === swapTypeId;
+
+        // Start with appropriate user pool based on type
+        let availableUsers = isSwap ? this.getScheduleMemberUsers() : this.users;
+
+        // Exclude the original user (can't replace yourself)
+        if (this.editingOverride?.originalUserObjectGuid) {
+            availableUsers = availableUsers.filter(u => u.objectGuid !== this.editingOverride!.originalUserObjectGuid);
+        }
+
+        return availableUsers;
+    }
+
     // ==================== Save Logic ====================
 
     markUnsavedChanges(): void {
