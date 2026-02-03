@@ -1,0 +1,322 @@
+<app-user-push-token-add-edit [showAddButton]="false"></app-user-push-token-add-edit>
+<div class="row" *ngIf="userIsAlertingUserPushTokenReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsAlertingUserPushTokenWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsAlertingUserPushTokenWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('userObjectGuid')">
+                User  Object  Guid
+                <span *ngIf="sortColumn === 'userObjectGuid'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('fcmToken')">
+                Fcm  Token
+                <span *ngIf="sortColumn === 'fcmToken'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('deviceFingerprint')">
+                Device  Fingerprint
+                <span *ngIf="sortColumn === 'deviceFingerprint'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('platform')">
+                Platform
+                <span *ngIf="sortColumn === 'platform'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('userAgent')">
+                User  Agent
+                <span *ngIf="sortColumn === 'userAgent'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('registeredAt')">
+                Registered  At
+                <span *ngIf="sortColumn === 'registeredAt'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('lastUpdatedAt')">
+                Last  Updated  At
+                <span *ngIf="sortColumn === 'lastUpdatedAt'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let userPushToken of filteredUserPushTokens; trackBy: getUserPushTokenId"
+              [ngClass]="{
+                 'row-inactive': userPushToken.active == false,
+                 'row-deleted': userPushToken.deleted == true 
+                 }">
+            <td class="header-action-button" *ngIf="userIsAlertingUserPushTokenWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleEdit(userPushToken)"
+                      ngbTooltip="Edit" 
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsAlertingUserPushTokenWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleDelete(userPushToken)"
+                      ngbTooltip="Delete" 
+                      placement="top"
+                      *ngIf="userPushToken.deleted == false">
+                <i class="fa fa-trash"></i>
+              </button>
+              <button class="btn btn-sm"
+                      (click)="handleUndelete(userPushToken)"
+                      ngbTooltip="Undelete" 
+                      placement="top"
+                      *ngIf="userPushToken.deleted == true">
+                <i class="fa fa-trash-arrow-up"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(userPushToken, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(userPushToken, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(userPushToken, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(userPushToken, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(userPushToken, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(userPushToken, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(userPushToken, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(userPushToken, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/userpushtoken', userPushToken.id]" class="btn btn-link text-left" ngbTooltip="Open User Push Token details">{{userPushToken.userObjectGuid}}</a></td>
+            <td class="text-truncate">{{userPushToken.fcmToken}}</td>
+            <td class="text-truncate">{{userPushToken.deviceFingerprint}}</td>
+            <td class="text-truncate">{{userPushToken.platform}}</td>
+            <td class="text-truncate">{{userPushToken.userAgent}}</td>
+            <td class="text-truncate">{{userPushToken.registeredAt | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate">{{userPushToken.lastUpdatedAt | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let userPushToken of filteredUserPushTokens; trackBy: getUserPushTokenId" class="card my-2"
+              [ngClass]="{
+                 'row-inactive': userPushToken.active == false,
+                 'row-deleted': userPushToken.deleted == true 
+                 }">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(userPushToken, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(userPushToken, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(userPushToken, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(userPushToken, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(userPushToken, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(userPushToken, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(userPushToken, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(userPushToken, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(userPushToken, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(userPushToken, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(userPushToken, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(userPushToken, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(userPushToken, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/userpushtoken', userPushToken.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(userPushToken)" *ngIf="userIsAlertingUserPushTokenWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(userPushToken)" *ngIf="userIsAlertingUserPushTokenWriter() && userPushToken.deleted == false" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+            <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(userPushToken)" *ngIf="userIsAlertingUserPushTokenWriter() && userPushToken.deleted == true" ngbTooltip="Undelete">
+              <i class="fa fa-trash-arrow-upp"></i> UnDelete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{userPushToken.id}}</strong>
+             </div>
+             <div>
+                <button class="btn btn-sm"
+                        [routerLink]="['/userpushtoken', userPushToken.id]"
+                        ngbTooltip="User Push Token Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="btn btn-sm"
+                        (click)="handleEdit(userPushToken)"
+                        ngbTooltip="Edit User Push Token">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleDelete(userPushToken)"
+                      ngbTooltip="Delete User Push Token" 
+                      placement="top"
+                      *ngIf="userPushToken.deleted == false">
+                  <i class="fa fa-trash"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleUndelete(userPushToken)"
+                      ngbTooltip="Undelete User Push Token" 
+                      placement="top"
+                      *ngIf="userPushToken.deleted == true">
+                 <i class="fa fa-trash-arrow-up"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="user-push-token-info" *ngIf="userPushToken.userObjectGuid != null">
+              <strong>User Object Guid: </strong>
+              {{userPushToken.userObjectGuid}}
+            </p>
+            <p class="user-push-token-info" *ngIf="userPushToken.fcmToken != null">
+              <strong>Fcm Token: </strong>
+              {{userPushToken.fcmToken}}
+            </p>
+            <p class="user-push-token-info" *ngIf="userPushToken.deviceFingerprint != null">
+              <strong>Device Fingerprint: </strong>
+              {{userPushToken.deviceFingerprint}}
+            </p>
+            <p class="user-push-token-info" *ngIf="userPushToken.platform != null">
+              <strong>Platform: </strong>
+              {{userPushToken.platform}}
+            </p>
+            <p class="user-push-token-info" *ngIf="userPushToken.userAgent != null">
+              <strong>User Agent: </strong>
+              {{userPushToken.userAgent}}
+            </p>
+            <p class="user-push-token-info" *ngIf="userPushToken.registeredAt != null">
+              <strong>Registered At: </strong>
+              {{userPushToken.registeredAt | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="user-push-token-info" *ngIf="userPushToken.lastUpdatedAt != null">
+              <strong>Last Updated At: </strong>
+              {{userPushToken.lastUpdatedAt | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+   </div>
+</div>

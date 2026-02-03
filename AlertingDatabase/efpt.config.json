@@ -152,6 +152,14 @@
          "ObjectType": 0
       },
       {
+         "Name": "[Alerting].[UserPushToken]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Alerting].[UserPushTokenChangeHistory]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[Alerting].[WebhookDeliveryAttempt]",
          "ObjectType": 0
       }

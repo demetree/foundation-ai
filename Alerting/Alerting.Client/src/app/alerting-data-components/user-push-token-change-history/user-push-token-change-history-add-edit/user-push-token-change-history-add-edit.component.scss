@@ -1,0 +1,70 @@
+.add-user-push-token-change-history {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.btn-add-user-push-token-change-history {
+  background-color: #0176d3;
+  border-color: #0176d3;
+  height: 37px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  width: 60px;
+}
+
+.user-push-token-change-history-modal-header {
+}
+
+.user-push-token-change-history-modal-body {
+  padding: 15px;
+  font-size: 1rem;
+}
+
+.section-heading {
+  font-weight: bold;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  color: black;
+}
+
+.user-push-token-change-history-input, .user-push-token-change-history-select {
+  margin-bottom: 15px;
+  border-radius: 5px;
+}
+
+.user-push-token-change-history-input::placeholder, .user-push-token-change-history-select::placeholder {
+  color: #6c757d;
+}
+
+
+
+// Styles for the color picker
+.color-picker {
+  // Native color inputs are usually square and small; make it a reasonable size
+  width: 60px;
+  height: 42px;
+  padding: 4px;
+  cursor: pointer;
+}
+
+// Style for the read-only hex display next to the picker
+.input-color-display {
+  margin-bottom: 0; // Align properly with the picker
+}
+
+
+.user-push-token-change-history-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 10px;
+  padding-bottom: 0px;
+  border: none;
+}
+
+.text-danger {
+  color: #dc3545 !important;
+}

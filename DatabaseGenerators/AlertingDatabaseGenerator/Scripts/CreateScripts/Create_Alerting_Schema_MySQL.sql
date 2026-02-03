@@ -17,6 +17,8 @@ USE `Alerting`;
 -- DROP TABLE `IncidentTimelineEvent`
 -- DROP TABLE `IncidentChangeHistory`
 -- DROP TABLE `Incident`
+-- DROP TABLE `UserPushTokenChangeHistory`
+-- DROP TABLE `UserPushToken`
 -- DROP TABLE `UserNotificationChannelPreferenceChangeHistory`
 -- DROP TABLE `UserNotificationChannelPreference`
 -- DROP TABLE `UserNotificationPreferenceChangeHistory`
@@ -25,6 +27,8 @@ USE `Alerting`;
 -- DROP TABLE `IntegrationCallbackIncidentEventType`
 -- DROP TABLE `IntegrationChangeHistory`
 -- DROP TABLE `Integration`
+-- DROP TABLE `ScheduleOverrideChangeHistory`
+-- DROP TABLE `ScheduleOverride`
 -- DROP TABLE `ScheduleLayerMemberChangeHistory`
 -- DROP TABLE `ScheduleLayerMember`
 -- DROP TABLE `ScheduleLayerChangeHistory`
@@ -37,6 +41,7 @@ USE `Alerting`;
 -- DROP TABLE `Service`
 -- DROP TABLE `EscalationPolicyChangeHistory`
 -- DROP TABLE `EscalationPolicy`
+-- DROP TABLE `ScheduleOverrideType`
 -- DROP TABLE `NotificationChannelType`
 -- DROP TABLE `IncidentEventType`
 -- DROP TABLE `IncidentStatusType`
@@ -51,6 +56,8 @@ USE `Alerting`;
 -- ALTER INDEX ALL ON `IncidentTimelineEvent` DISABLE
 -- ALTER INDEX ALL ON `IncidentChangeHistory` DISABLE
 -- ALTER INDEX ALL ON `Incident` DISABLE
+-- ALTER INDEX ALL ON `UserPushTokenChangeHistory` DISABLE
+-- ALTER INDEX ALL ON `UserPushToken` DISABLE
 -- ALTER INDEX ALL ON `UserNotificationChannelPreferenceChangeHistory` DISABLE
 -- ALTER INDEX ALL ON `UserNotificationChannelPreference` DISABLE
 -- ALTER INDEX ALL ON `UserNotificationPreferenceChangeHistory` DISABLE
@@ -59,6 +66,8 @@ USE `Alerting`;
 -- ALTER INDEX ALL ON `IntegrationCallbackIncidentEventType` DISABLE
 -- ALTER INDEX ALL ON `IntegrationChangeHistory` DISABLE
 -- ALTER INDEX ALL ON `Integration` DISABLE
+-- ALTER INDEX ALL ON `ScheduleOverrideChangeHistory` DISABLE
+-- ALTER INDEX ALL ON `ScheduleOverride` DISABLE
 -- ALTER INDEX ALL ON `ScheduleLayerMemberChangeHistory` DISABLE
 -- ALTER INDEX ALL ON `ScheduleLayerMember` DISABLE
 -- ALTER INDEX ALL ON `ScheduleLayerChangeHistory` DISABLE
@@ -71,6 +80,7 @@ USE `Alerting`;
 -- ALTER INDEX ALL ON `Service` DISABLE
 -- ALTER INDEX ALL ON `EscalationPolicyChangeHistory` DISABLE
 -- ALTER INDEX ALL ON `EscalationPolicy` DISABLE
+-- ALTER INDEX ALL ON `ScheduleOverrideType` DISABLE
 -- ALTER INDEX ALL ON `NotificationChannelType` DISABLE
 -- ALTER INDEX ALL ON `IncidentEventType` DISABLE
 -- ALTER INDEX ALL ON `IncidentStatusType` DISABLE
@@ -85,6 +95,8 @@ USE `Alerting`;
 -- ALTER INDEX ALL ON `IncidentTimelineEvent` REBUILD
 -- ALTER INDEX ALL ON `IncidentChangeHistory` REBUILD
 -- ALTER INDEX ALL ON `Incident` REBUILD
+-- ALTER INDEX ALL ON `UserPushTokenChangeHistory` REBUILD
+-- ALTER INDEX ALL ON `UserPushToken` REBUILD
 -- ALTER INDEX ALL ON `UserNotificationChannelPreferenceChangeHistory` REBUILD
 -- ALTER INDEX ALL ON `UserNotificationChannelPreference` REBUILD
 -- ALTER INDEX ALL ON `UserNotificationPreferenceChangeHistory` REBUILD
@@ -93,6 +105,8 @@ USE `Alerting`;
 -- ALTER INDEX ALL ON `IntegrationCallbackIncidentEventType` REBUILD
 -- ALTER INDEX ALL ON `IntegrationChangeHistory` REBUILD
 -- ALTER INDEX ALL ON `Integration` REBUILD
+-- ALTER INDEX ALL ON `ScheduleOverrideChangeHistory` REBUILD
+-- ALTER INDEX ALL ON `ScheduleOverride` REBUILD
 -- ALTER INDEX ALL ON `ScheduleLayerMemberChangeHistory` REBUILD
 -- ALTER INDEX ALL ON `ScheduleLayerMember` REBUILD
 -- ALTER INDEX ALL ON `ScheduleLayerChangeHistory` REBUILD
@@ -105,6 +119,7 @@ USE `Alerting`;
 -- ALTER INDEX ALL ON `Service` REBUILD
 -- ALTER INDEX ALL ON `EscalationPolicyChangeHistory` REBUILD
 -- ALTER INDEX ALL ON `EscalationPolicy` REBUILD
+-- ALTER INDEX ALL ON `ScheduleOverrideType` REBUILD
 -- ALTER INDEX ALL ON `NotificationChannelType` REBUILD
 -- ALTER INDEX ALL ON `IncidentEventType` REBUILD
 -- ALTER INDEX ALL ON `IncidentStatusType` REBUILD
@@ -220,6 +235,31 @@ INSERT INTO `NotificationChannelType` ( `name`, `description`, `defaultPriority`
 INSERT INTO `NotificationChannelType` ( `name`, `description`, `defaultPriority` ) VALUES  ( 'VoiceCall', 'Automated voice call', 5 );
 
 INSERT INTO `NotificationChannelType` ( `name`, `description`, `defaultPriority` ) VALUES  ( 'MobilePush', 'Mobile app push', 20 );
+
+
+-- Static schedule override types.
+CREATE TABLE `ScheduleOverrideType`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`name` VARCHAR(100) NOT NULL UNIQUE,
+	`description` VARCHAR(500) NULL,
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+);
+-- Index on the ScheduleOverrideType table's name field.
+CREATE INDEX `I_ScheduleOverrideType_name` ON `ScheduleOverrideType` (`name`);
+
+-- Index on the ScheduleOverrideType table's active field.
+CREATE INDEX `I_ScheduleOverrideType_active` ON `ScheduleOverrideType` (`active`);
+
+-- Index on the ScheduleOverrideType table's deleted field.
+CREATE INDEX `I_ScheduleOverrideType_deleted` ON `ScheduleOverrideType` (`deleted`);
+
+INSERT INTO `ScheduleOverrideType` ( `name`, `description` ) VALUES  ( 'Swap', 'Swap - Two users exchange shifts' );
+
+INSERT INTO `ScheduleOverrideType` ( `name`, `description` ) VALUES  ( 'Replace', 'Replace - One user temporarily takes over for another' );
+
+INSERT INTO `ScheduleOverrideType` ( `name`, `description` ) VALUES  ( 'Remove', 'Remove - User taken off the schedule with no replacement' );
 
 
 -- Escalation policies assigned to services.
@@ -563,6 +603,79 @@ CREATE INDEX `I_ScheduleLayerMemberChangeHistory_tenantGuid_userId` ON `Schedule
 CREATE INDEX `I_ScheduleLayerMemberChangeHistory_tenantGuid_scheduleLayerMembe` ON `ScheduleLayerMemberChangeHistory` (`tenantGuid`, `scheduleLayerMemberId`, `versionNumber`, `timeStamp`, `userId`);
 
 
+-- Temporary overrides for on-call schedules (vacations, swaps, emergency substitutions).
+CREATE TABLE `ScheduleOverride`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`onCallScheduleId` INT NOT NULL,		-- Link to the OnCallSchedule table.
+	`scheduleLayerId` INT NULL,		-- If null, override applies to all layers in the schedule.
+	`startDateTime` DATETIME NOT NULL,		-- Start of override period (inclusive).
+	`endDateTime` DATETIME NOT NULL,		-- End of override period (exclusive).
+	`scheduleOverrideTypeId` INT NOT NULL,		-- The type of override.  Will be one of Swap, Replace, or Remove
+	`originalUserObjectGuid` CHAR(38) NULL,		-- The user being replaced (null for layer-wide overrides).
+	`replacementUserObjectGuid` CHAR(38) NULL,		-- The substitute user (null for REMOVE type).
+	`reason` VARCHAR(500) NULL,		-- Optional explanation (vacation, sick, training, etc.).
+	`createdByUserObjectGuid` CHAR(38) NOT NULL,		-- References Security.SecurityUser.objectGuid - who created the override.
+	`versionNumber` INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY (`onCallScheduleId`) REFERENCES `OnCallSchedule`(`id`),		-- Foreign key to the OnCallSchedule table.
+	FOREIGN KEY (`scheduleLayerId`) REFERENCES `ScheduleLayer`(`id`),		-- Foreign key to the ScheduleLayer table.
+	FOREIGN KEY (`scheduleOverrideTypeId`) REFERENCES `ScheduleOverrideType`(`id`)		-- Foreign key to the ScheduleOverrideType table.
+);
+-- Index on the ScheduleOverride table's tenantGuid field.
+CREATE INDEX `I_ScheduleOverride_tenantGuid` ON `ScheduleOverride` (`tenantGuid`);
+
+-- Index on the ScheduleOverride table's tenantGuid,onCallScheduleId fields.
+CREATE INDEX `I_ScheduleOverride_tenantGuid_onCallScheduleId` ON `ScheduleOverride` (`tenantGuid`, `onCallScheduleId`);
+
+-- Index on the ScheduleOverride table's tenantGuid,scheduleLayerId fields.
+CREATE INDEX `I_ScheduleOverride_tenantGuid_scheduleLayerId` ON `ScheduleOverride` (`tenantGuid`, `scheduleLayerId`);
+
+-- Index on the ScheduleOverride table's tenantGuid,scheduleOverrideTypeId fields.
+CREATE INDEX `I_ScheduleOverride_tenantGuid_scheduleOverrideTypeId` ON `ScheduleOverride` (`tenantGuid`, `scheduleOverrideTypeId`);
+
+-- Index on the ScheduleOverride table's tenantGuid,active fields.
+CREATE INDEX `I_ScheduleOverride_tenantGuid_active` ON `ScheduleOverride` (`tenantGuid`, `active`);
+
+-- Index on the ScheduleOverride table's tenantGuid,deleted fields.
+CREATE INDEX `I_ScheduleOverride_tenantGuid_deleted` ON `ScheduleOverride` (`tenantGuid`, `deleted`);
+
+-- Index on the ScheduleOverride table's tenantGuid,onCallScheduleId,startDateTime,endDateTime fields.
+CREATE INDEX `I_ScheduleOverride_tenantGuid_onCallScheduleId_startDateTime_end` ON `ScheduleOverride` (`tenantGuid`, `onCallScheduleId`, `startDateTime`, `endDateTime`);
+
+-- Index on the ScheduleOverride table's tenantGuid,originalUserObjectGuid fields.
+CREATE INDEX `I_ScheduleOverride_tenantGuid_originalUserObjectGuid` ON `ScheduleOverride` (`tenantGuid`, `originalUserObjectGuid`);
+
+
+-- The change history for records from the ScheduleOverride table.
+CREATE TABLE `ScheduleOverrideChangeHistory`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`scheduleOverrideId` INT NOT NULL,		-- Link to the ScheduleOverride table.
+	`versionNumber` INT NOT NULL,		-- This is the version number that is being historized.
+	`timeStamp` DATETIME NOT NULL,		-- The time that the record version was created.
+	`userId` INT NOT NULL,
+	`data` TEXT NOT NULL,		-- This stores the JSON representing the object's historical state.
+	FOREIGN KEY (`scheduleOverrideId`) REFERENCES `ScheduleOverride`(`id`)		-- Foreign key to the ScheduleOverride table.
+);
+-- Index on the ScheduleOverrideChangeHistory table's tenantGuid field.
+CREATE INDEX `I_ScheduleOverrideChangeHistory_tenantGuid` ON `ScheduleOverrideChangeHistory` (`tenantGuid`);
+
+-- Index on the ScheduleOverrideChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX `I_ScheduleOverrideChangeHistory_tenantGuid_versionNumber` ON `ScheduleOverrideChangeHistory` (`tenantGuid`, `versionNumber`);
+
+-- Index on the ScheduleOverrideChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX `I_ScheduleOverrideChangeHistory_tenantGuid_timeStamp` ON `ScheduleOverrideChangeHistory` (`tenantGuid`, `timeStamp`);
+
+-- Index on the ScheduleOverrideChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX `I_ScheduleOverrideChangeHistory_tenantGuid_userId` ON `ScheduleOverrideChangeHistory` (`tenantGuid`, `userId`);
+
+-- Index on the ScheduleOverrideChangeHistory table's tenantGuid,scheduleOverrideId fields.
+CREATE INDEX `I_ScheduleOverrideChangeHistory_tenantGuid_scheduleOverrideId` ON `ScheduleOverrideChangeHistory` (`tenantGuid`, `scheduleOverrideId`, `versionNumber`, `timeStamp`, `userId`);
+
+
 -- API integrations for inbound alerts and outbound status callbacks.
 CREATE TABLE `Integration`(
 	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
@@ -797,6 +910,63 @@ CREATE INDEX `I_UserNotificationChannelPreferenceChangeHistory_tenantGuid_user` 
 
 -- Index on the UserNotificationChannelPreferenceChangeHistory table's tenantGuid,userNotificationChannelPreferenceId fields.
 CREATE INDEX `I_UserNotificationChannelPreferenceChangeHistory_tenantGuid_user` ON `UserNotificationChannelPreferenceChangeHistory` (`tenantGuid`, `userNotificationChannelPreferenceId`, `versionNumber`, `timeStamp`, `userId`);
+
+
+-- Push notification tokens for web and mobile devices. Each user can have multiple tokens (one per device).
+CREATE TABLE `UserPushToken`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`userObjectGuid` CHAR(38) NOT NULL,		-- References Security.SecurityUser.objectGuid - the token owner.
+	`fcmToken` VARCHAR(500) NOT NULL,		-- Firebase Cloud Messaging token for this device.
+	`deviceFingerprint` VARCHAR(100) NOT NULL,		-- Unique identifier for the device/browser to prevent duplicates.
+	`platform` VARCHAR(50) NOT NULL DEFAULT 'web',		-- Platform: 'web', 'ios', 'android'.
+	`userAgent` VARCHAR(500) NULL,		-- Browser/device user agent string for diagnostics.
+	`registeredAt` DATETIME NOT NULL,		-- When the token was first registered.
+	`lastUpdatedAt` DATETIME NOT NULL,		-- Last time the token was refreshed.
+	`versionNumber` INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	UNIQUE `UC_UserPushToken_tenantGuid_userObjectGuid_deviceFingerprint_Unique`( `tenantGuid`, `userObjectGuid`, `deviceFingerprint` ) 		-- Uniqueness enforced on the UserPushToken table's tenantGuid and userObjectGuid and deviceFingerprint fields.
+);
+-- Index on the UserPushToken table's tenantGuid field.
+CREATE INDEX `I_UserPushToken_tenantGuid` ON `UserPushToken` (`tenantGuid`);
+
+-- Index on the UserPushToken table's tenantGuid,active fields.
+CREATE INDEX `I_UserPushToken_tenantGuid_active` ON `UserPushToken` (`tenantGuid`, `active`);
+
+-- Index on the UserPushToken table's tenantGuid,deleted fields.
+CREATE INDEX `I_UserPushToken_tenantGuid_deleted` ON `UserPushToken` (`tenantGuid`, `deleted`);
+
+-- Index on the UserPushToken table's tenantGuid,userObjectGuid fields.
+CREATE INDEX `I_UserPushToken_tenantGuid_userObjectGuid` ON `UserPushToken` (`tenantGuid`, `userObjectGuid`);
+
+
+-- The change history for records from the UserPushToken table.
+CREATE TABLE `UserPushTokenChangeHistory`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`userPushTokenId` INT NOT NULL,		-- Link to the UserPushToken table.
+	`versionNumber` INT NOT NULL,		-- This is the version number that is being historized.
+	`timeStamp` DATETIME NOT NULL,		-- The time that the record version was created.
+	`userId` INT NOT NULL,
+	`data` TEXT NOT NULL,		-- This stores the JSON representing the object's historical state.
+	FOREIGN KEY (`userPushTokenId`) REFERENCES `UserPushToken`(`id`)		-- Foreign key to the UserPushToken table.
+);
+-- Index on the UserPushTokenChangeHistory table's tenantGuid field.
+CREATE INDEX `I_UserPushTokenChangeHistory_tenantGuid` ON `UserPushTokenChangeHistory` (`tenantGuid`);
+
+-- Index on the UserPushTokenChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX `I_UserPushTokenChangeHistory_tenantGuid_versionNumber` ON `UserPushTokenChangeHistory` (`tenantGuid`, `versionNumber`);
+
+-- Index on the UserPushTokenChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX `I_UserPushTokenChangeHistory_tenantGuid_timeStamp` ON `UserPushTokenChangeHistory` (`tenantGuid`, `timeStamp`);
+
+-- Index on the UserPushTokenChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX `I_UserPushTokenChangeHistory_tenantGuid_userId` ON `UserPushTokenChangeHistory` (`tenantGuid`, `userId`);
+
+-- Index on the UserPushTokenChangeHistory table's tenantGuid,userPushTokenId fields.
+CREATE INDEX `I_UserPushTokenChangeHistory_tenantGuid_userPushTokenId` ON `UserPushTokenChangeHistory` (`tenantGuid`, `userPushTokenId`, `versionNumber`, `timeStamp`, `userId`);
 
 
 -- Active and historical incidents.

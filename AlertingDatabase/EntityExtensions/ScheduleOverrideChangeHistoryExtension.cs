@@ -284,7 +284,7 @@ namespace Foundation.Alerting.Database
 				timeStamp = scheduleOverrideChangeHistory.timeStamp,
 				userId = scheduleOverrideChangeHistory.userId,
 				data = scheduleOverrideChangeHistory.data,
-				scheduleOverride = ScheduleOverride.CreateMinimalAnonymous(scheduleOverrideChangeHistory.scheduleOverride)
+				scheduleOverride = ScheduleOverride.CreateMinimalAnonymous(scheduleOverrideChangeHistory.scheduleOverride),
 			 };
 		}
 

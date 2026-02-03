@@ -25,6 +25,8 @@ GO
 -- DROP TABLE [Alerting].[IncidentTimelineEvent]
 -- DROP TABLE [Alerting].[IncidentChangeHistory]
 -- DROP TABLE [Alerting].[Incident]
+-- DROP TABLE [Alerting].[UserPushTokenChangeHistory]
+-- DROP TABLE [Alerting].[UserPushToken]
 -- DROP TABLE [Alerting].[UserNotificationChannelPreferenceChangeHistory]
 -- DROP TABLE [Alerting].[UserNotificationChannelPreference]
 -- DROP TABLE [Alerting].[UserNotificationPreferenceChangeHistory]
@@ -33,6 +35,8 @@ GO
 -- DROP TABLE [Alerting].[IntegrationCallbackIncidentEventType]
 -- DROP TABLE [Alerting].[IntegrationChangeHistory]
 -- DROP TABLE [Alerting].[Integration]
+-- DROP TABLE [Alerting].[ScheduleOverrideChangeHistory]
+-- DROP TABLE [Alerting].[ScheduleOverride]
 -- DROP TABLE [Alerting].[ScheduleLayerMemberChangeHistory]
 -- DROP TABLE [Alerting].[ScheduleLayerMember]
 -- DROP TABLE [Alerting].[ScheduleLayerChangeHistory]
@@ -45,6 +49,7 @@ GO
 -- DROP TABLE [Alerting].[Service]
 -- DROP TABLE [Alerting].[EscalationPolicyChangeHistory]
 -- DROP TABLE [Alerting].[EscalationPolicy]
+-- DROP TABLE [Alerting].[ScheduleOverrideType]
 -- DROP TABLE [Alerting].[NotificationChannelType]
 -- DROP TABLE [Alerting].[IncidentEventType]
 -- DROP TABLE [Alerting].[IncidentStatusType]
@@ -59,6 +64,8 @@ GO
 -- ALTER INDEX ALL ON [Alerting].[IncidentTimelineEvent] DISABLE
 -- ALTER INDEX ALL ON [Alerting].[IncidentChangeHistory] DISABLE
 -- ALTER INDEX ALL ON [Alerting].[Incident] DISABLE
+-- ALTER INDEX ALL ON [Alerting].[UserPushTokenChangeHistory] DISABLE
+-- ALTER INDEX ALL ON [Alerting].[UserPushToken] DISABLE
 -- ALTER INDEX ALL ON [Alerting].[UserNotificationChannelPreferenceChangeHistory] DISABLE
 -- ALTER INDEX ALL ON [Alerting].[UserNotificationChannelPreference] DISABLE
 -- ALTER INDEX ALL ON [Alerting].[UserNotificationPreferenceChangeHistory] DISABLE
@@ -67,6 +74,8 @@ GO
 -- ALTER INDEX ALL ON [Alerting].[IntegrationCallbackIncidentEventType] DISABLE
 -- ALTER INDEX ALL ON [Alerting].[IntegrationChangeHistory] DISABLE
 -- ALTER INDEX ALL ON [Alerting].[Integration] DISABLE
+-- ALTER INDEX ALL ON [Alerting].[ScheduleOverrideChangeHistory] DISABLE
+-- ALTER INDEX ALL ON [Alerting].[ScheduleOverride] DISABLE
 -- ALTER INDEX ALL ON [Alerting].[ScheduleLayerMemberChangeHistory] DISABLE
 -- ALTER INDEX ALL ON [Alerting].[ScheduleLayerMember] DISABLE
 -- ALTER INDEX ALL ON [Alerting].[ScheduleLayerChangeHistory] DISABLE
@@ -79,6 +88,7 @@ GO
 -- ALTER INDEX ALL ON [Alerting].[Service] DISABLE
 -- ALTER INDEX ALL ON [Alerting].[EscalationPolicyChangeHistory] DISABLE
 -- ALTER INDEX ALL ON [Alerting].[EscalationPolicy] DISABLE
+-- ALTER INDEX ALL ON [Alerting].[ScheduleOverrideType] DISABLE
 -- ALTER INDEX ALL ON [Alerting].[NotificationChannelType] DISABLE
 -- ALTER INDEX ALL ON [Alerting].[IncidentEventType] DISABLE
 -- ALTER INDEX ALL ON [Alerting].[IncidentStatusType] DISABLE
@@ -93,6 +103,8 @@ GO
 -- ALTER INDEX ALL ON [Alerting].[IncidentTimelineEvent] REBUILD
 -- ALTER INDEX ALL ON [Alerting].[IncidentChangeHistory] REBUILD
 -- ALTER INDEX ALL ON [Alerting].[Incident] REBUILD
+-- ALTER INDEX ALL ON [Alerting].[UserPushTokenChangeHistory] REBUILD
+-- ALTER INDEX ALL ON [Alerting].[UserPushToken] REBUILD
 -- ALTER INDEX ALL ON [Alerting].[UserNotificationChannelPreferenceChangeHistory] REBUILD
 -- ALTER INDEX ALL ON [Alerting].[UserNotificationChannelPreference] REBUILD
 -- ALTER INDEX ALL ON [Alerting].[UserNotificationPreferenceChangeHistory] REBUILD
@@ -101,6 +113,8 @@ GO
 -- ALTER INDEX ALL ON [Alerting].[IntegrationCallbackIncidentEventType] REBUILD
 -- ALTER INDEX ALL ON [Alerting].[IntegrationChangeHistory] REBUILD
 -- ALTER INDEX ALL ON [Alerting].[Integration] REBUILD
+-- ALTER INDEX ALL ON [Alerting].[ScheduleOverrideChangeHistory] REBUILD
+-- ALTER INDEX ALL ON [Alerting].[ScheduleOverride] REBUILD
 -- ALTER INDEX ALL ON [Alerting].[ScheduleLayerMemberChangeHistory] REBUILD
 -- ALTER INDEX ALL ON [Alerting].[ScheduleLayerMember] REBUILD
 -- ALTER INDEX ALL ON [Alerting].[ScheduleLayerChangeHistory] REBUILD
@@ -113,6 +127,7 @@ GO
 -- ALTER INDEX ALL ON [Alerting].[Service] REBUILD
 -- ALTER INDEX ALL ON [Alerting].[EscalationPolicyChangeHistory] REBUILD
 -- ALTER INDEX ALL ON [Alerting].[EscalationPolicy] REBUILD
+-- ALTER INDEX ALL ON [Alerting].[ScheduleOverrideType] REBUILD
 -- ALTER INDEX ALL ON [Alerting].[NotificationChannelType] REBUILD
 -- ALTER INDEX ALL ON [Alerting].[IncidentEventType] REBUILD
 -- ALTER INDEX ALL ON [Alerting].[IncidentStatusType] REBUILD
@@ -268,6 +283,40 @@ INSERT INTO [Alerting].[NotificationChannelType] ( [name], [description], [defau
 GO
 
 INSERT INTO [Alerting].[NotificationChannelType] ( [name], [description], [defaultPriority] ) VALUES  ( 'MobilePush', 'Mobile app push', 20 )
+GO
+
+
+-- Static schedule override types.
+CREATE TABLE [Alerting].[ScheduleOverrideType]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[name] NVARCHAR(100) NOT NULL UNIQUE,
+	[description] NVARCHAR(500) NULL,
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+)
+GO
+
+-- Index on the ScheduleOverrideType table's name field.
+CREATE INDEX [I_ScheduleOverrideType_name] ON [Alerting].[ScheduleOverrideType] ([name])
+GO
+
+-- Index on the ScheduleOverrideType table's active field.
+CREATE INDEX [I_ScheduleOverrideType_active] ON [Alerting].[ScheduleOverrideType] ([active])
+GO
+
+-- Index on the ScheduleOverrideType table's deleted field.
+CREATE INDEX [I_ScheduleOverrideType_deleted] ON [Alerting].[ScheduleOverrideType] ([deleted])
+GO
+
+INSERT INTO [Alerting].[ScheduleOverrideType] ( [name], [description] ) VALUES  ( 'Swap', 'Swap - Two users exchange shifts' )
+GO
+
+INSERT INTO [Alerting].[ScheduleOverrideType] ( [name], [description] ) VALUES  ( 'Replace', 'Replace - One user temporarily takes over for another' )
+GO
+
+INSERT INTO [Alerting].[ScheduleOverrideType] ( [name], [description] ) VALUES  ( 'Remove', 'Remove - User taken off the schedule with no replacement' )
 GO
 
 
@@ -718,6 +767,100 @@ CREATE INDEX [I_ScheduleLayerMemberChangeHistory_tenantGuid_scheduleLayerMemberI
 GO
 
 
+-- Temporary overrides for on-call schedules (vacations, swaps, emergency substitutions).
+CREATE TABLE [Alerting].[ScheduleOverride]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[onCallScheduleId] INT NOT NULL,		-- Link to the OnCallSchedule table.
+	[scheduleLayerId] INT NULL,		-- If null, override applies to all layers in the schedule.
+	[startDateTime] DATETIME2(7) NOT NULL,		-- Start of override period (inclusive).
+	[endDateTime] DATETIME2(7) NOT NULL,		-- End of override period (exclusive).
+	[scheduleOverrideTypeId] INT NOT NULL,		-- The type of override.  Will be one of Swap, Replace, or Remove
+	[originalUserObjectGuid] UNIQUEIDENTIFIER NULL,		-- The user being replaced (null for layer-wide overrides).
+	[replacementUserObjectGuid] UNIQUEIDENTIFIER NULL,		-- The substitute user (null for REMOVE type).
+	[reason] NVARCHAR(500) NULL,		-- Optional explanation (vacation, sick, training, etc.).
+	[createdByUserObjectGuid] UNIQUEIDENTIFIER NOT NULL,		-- References Security.SecurityUser.objectGuid - who created the override.
+	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_ScheduleOverride_OnCallSchedule_onCallScheduleId] FOREIGN KEY ([onCallScheduleId]) REFERENCES [Alerting].[OnCallSchedule] ([id]),		-- Foreign key to the OnCallSchedule table.
+	CONSTRAINT [FK_ScheduleOverride_ScheduleLayer_scheduleLayerId] FOREIGN KEY ([scheduleLayerId]) REFERENCES [Alerting].[ScheduleLayer] ([id]),		-- Foreign key to the ScheduleLayer table.
+	CONSTRAINT [FK_ScheduleOverride_ScheduleOverrideType_scheduleOverrideTypeId] FOREIGN KEY ([scheduleOverrideTypeId]) REFERENCES [Alerting].[ScheduleOverrideType] ([id])		-- Foreign key to the ScheduleOverrideType table.
+)
+GO
+
+-- Index on the ScheduleOverride table's tenantGuid field.
+CREATE INDEX [I_ScheduleOverride_tenantGuid] ON [Alerting].[ScheduleOverride] ([tenantGuid])
+GO
+
+-- Index on the ScheduleOverride table's tenantGuid,onCallScheduleId fields.
+CREATE INDEX [I_ScheduleOverride_tenantGuid_onCallScheduleId] ON [Alerting].[ScheduleOverride] ([tenantGuid], [onCallScheduleId])
+GO
+
+-- Index on the ScheduleOverride table's tenantGuid,scheduleLayerId fields.
+CREATE INDEX [I_ScheduleOverride_tenantGuid_scheduleLayerId] ON [Alerting].[ScheduleOverride] ([tenantGuid], [scheduleLayerId])
+GO
+
+-- Index on the ScheduleOverride table's tenantGuid,scheduleOverrideTypeId fields.
+CREATE INDEX [I_ScheduleOverride_tenantGuid_scheduleOverrideTypeId] ON [Alerting].[ScheduleOverride] ([tenantGuid], [scheduleOverrideTypeId])
+GO
+
+-- Index on the ScheduleOverride table's tenantGuid,active fields.
+CREATE INDEX [I_ScheduleOverride_tenantGuid_active] ON [Alerting].[ScheduleOverride] ([tenantGuid], [active])
+GO
+
+-- Index on the ScheduleOverride table's tenantGuid,deleted fields.
+CREATE INDEX [I_ScheduleOverride_tenantGuid_deleted] ON [Alerting].[ScheduleOverride] ([tenantGuid], [deleted])
+GO
+
+-- Index on the ScheduleOverride table's tenantGuid,onCallScheduleId,startDateTime,endDateTime fields.
+CREATE INDEX [I_ScheduleOverride_tenantGuid_onCallScheduleId_startDateTime_endDateTime] ON [Alerting].[ScheduleOverride] ([tenantGuid], [onCallScheduleId], [startDateTime], [endDateTime])
+GO
+
+-- Index on the ScheduleOverride table's tenantGuid,originalUserObjectGuid fields.
+CREATE INDEX [I_ScheduleOverride_tenantGuid_originalUserObjectGuid] ON [Alerting].[ScheduleOverride] ([tenantGuid], [originalUserObjectGuid])
+GO
+
+
+-- The change history for records from the ScheduleOverride table.
+CREATE TABLE [Alerting].[ScheduleOverrideChangeHistory]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[scheduleOverrideId] INT NOT NULL,		-- Link to the ScheduleOverride table.
+	[versionNumber] INT NOT NULL,		-- This is the version number that is being historized.
+	[timeStamp] DATETIME2(7) NOT NULL,		-- The time that the record version was created.
+	[userId] INT NOT NULL,
+	[data] NVARCHAR(MAX) NOT NULL		-- This stores the JSON representing the object's historical state.
+
+	CONSTRAINT [FK_ScheduleOverrideChangeHistory_ScheduleOverride_scheduleOverrideId] FOREIGN KEY ([scheduleOverrideId]) REFERENCES [Alerting].[ScheduleOverride] ([id])		-- Foreign key to the ScheduleOverride table.
+)
+GO
+
+-- Index on the ScheduleOverrideChangeHistory table's tenantGuid field.
+CREATE INDEX [I_ScheduleOverrideChangeHistory_tenantGuid] ON [Alerting].[ScheduleOverrideChangeHistory] ([tenantGuid])
+GO
+
+-- Index on the ScheduleOverrideChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX [I_ScheduleOverrideChangeHistory_tenantGuid_versionNumber] ON [Alerting].[ScheduleOverrideChangeHistory] ([tenantGuid], [versionNumber])
+GO
+
+-- Index on the ScheduleOverrideChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX [I_ScheduleOverrideChangeHistory_tenantGuid_timeStamp] ON [Alerting].[ScheduleOverrideChangeHistory] ([tenantGuid], [timeStamp])
+GO
+
+-- Index on the ScheduleOverrideChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX [I_ScheduleOverrideChangeHistory_tenantGuid_userId] ON [Alerting].[ScheduleOverrideChangeHistory] ([tenantGuid], [userId])
+GO
+
+-- Index on the ScheduleOverrideChangeHistory table's tenantGuid,scheduleOverrideId fields.
+CREATE INDEX [I_ScheduleOverrideChangeHistory_tenantGuid_scheduleOverrideId] ON [Alerting].[ScheduleOverrideChangeHistory] ([tenantGuid], [scheduleOverrideId]) INCLUDE ( versionNumber, timeStamp, userId )
+GO
+
+
 -- API integrations for inbound alerts and outbound status callbacks.
 CREATE TABLE [Alerting].[Integration]
 (
@@ -1022,6 +1165,80 @@ GO
 
 -- Index on the UserNotificationChannelPreferenceChangeHistory table's tenantGuid,userNotificationChannelPreferenceId fields.
 CREATE INDEX [I_UserNotificationChannelPreferenceChangeHistory_tenantGuid_userNotificationChannelPreferenceId] ON [Alerting].[UserNotificationChannelPreferenceChangeHistory] ([tenantGuid], [userNotificationChannelPreferenceId]) INCLUDE ( versionNumber, timeStamp, userId )
+GO
+
+
+-- Push notification tokens for web and mobile devices. Each user can have multiple tokens (one per device).
+CREATE TABLE [Alerting].[UserPushToken]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[userObjectGuid] UNIQUEIDENTIFIER NOT NULL,		-- References Security.SecurityUser.objectGuid - the token owner.
+	[fcmToken] NVARCHAR(500) NOT NULL,		-- Firebase Cloud Messaging token for this device.
+	[deviceFingerprint] NVARCHAR(100) NOT NULL,		-- Unique identifier for the device/browser to prevent duplicates.
+	[platform] NVARCHAR(50) NOT NULL DEFAULT 'web',		-- Platform: 'web', 'ios', 'android'.
+	[userAgent] NVARCHAR(500) NULL,		-- Browser/device user agent string for diagnostics.
+	[registeredAt] DATETIME2(7) NOT NULL,		-- When the token was first registered.
+	[lastUpdatedAt] DATETIME2(7) NOT NULL,		-- Last time the token was refreshed.
+	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [UC_UserPushToken_tenantGuid_userObjectGuid_deviceFingerprint] UNIQUE ( [tenantGuid], [userObjectGuid], [deviceFingerprint]) 		-- Uniqueness enforced on the UserPushToken table's tenantGuid and userObjectGuid and deviceFingerprint fields.
+)
+GO
+
+-- Index on the UserPushToken table's tenantGuid field.
+CREATE INDEX [I_UserPushToken_tenantGuid] ON [Alerting].[UserPushToken] ([tenantGuid])
+GO
+
+-- Index on the UserPushToken table's tenantGuid,active fields.
+CREATE INDEX [I_UserPushToken_tenantGuid_active] ON [Alerting].[UserPushToken] ([tenantGuid], [active])
+GO
+
+-- Index on the UserPushToken table's tenantGuid,deleted fields.
+CREATE INDEX [I_UserPushToken_tenantGuid_deleted] ON [Alerting].[UserPushToken] ([tenantGuid], [deleted])
+GO
+
+-- Index on the UserPushToken table's tenantGuid,userObjectGuid fields.
+CREATE INDEX [I_UserPushToken_tenantGuid_userObjectGuid] ON [Alerting].[UserPushToken] ([tenantGuid], [userObjectGuid])
+GO
+
+
+-- The change history for records from the UserPushToken table.
+CREATE TABLE [Alerting].[UserPushTokenChangeHistory]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[userPushTokenId] INT NOT NULL,		-- Link to the UserPushToken table.
+	[versionNumber] INT NOT NULL,		-- This is the version number that is being historized.
+	[timeStamp] DATETIME2(7) NOT NULL,		-- The time that the record version was created.
+	[userId] INT NOT NULL,
+	[data] NVARCHAR(MAX) NOT NULL		-- This stores the JSON representing the object's historical state.
+
+	CONSTRAINT [FK_UserPushTokenChangeHistory_UserPushToken_userPushTokenId] FOREIGN KEY ([userPushTokenId]) REFERENCES [Alerting].[UserPushToken] ([id])		-- Foreign key to the UserPushToken table.
+)
+GO
+
+-- Index on the UserPushTokenChangeHistory table's tenantGuid field.
+CREATE INDEX [I_UserPushTokenChangeHistory_tenantGuid] ON [Alerting].[UserPushTokenChangeHistory] ([tenantGuid])
+GO
+
+-- Index on the UserPushTokenChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX [I_UserPushTokenChangeHistory_tenantGuid_versionNumber] ON [Alerting].[UserPushTokenChangeHistory] ([tenantGuid], [versionNumber])
+GO
+
+-- Index on the UserPushTokenChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX [I_UserPushTokenChangeHistory_tenantGuid_timeStamp] ON [Alerting].[UserPushTokenChangeHistory] ([tenantGuid], [timeStamp])
+GO
+
+-- Index on the UserPushTokenChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX [I_UserPushTokenChangeHistory_tenantGuid_userId] ON [Alerting].[UserPushTokenChangeHistory] ([tenantGuid], [userId])
+GO
+
+-- Index on the UserPushTokenChangeHistory table's tenantGuid,userPushTokenId fields.
+CREATE INDEX [I_UserPushTokenChangeHistory_tenantGuid_userPushTokenId] ON [Alerting].[UserPushTokenChangeHistory] ([tenantGuid], [userPushTokenId]) INCLUDE ( versionNumber, timeStamp, userId )
 GO
 
 

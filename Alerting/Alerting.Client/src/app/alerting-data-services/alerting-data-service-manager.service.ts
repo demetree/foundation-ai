@@ -43,6 +43,8 @@ import {UserNotificationChannelPreferenceService} from  './user-notification-cha
 import {UserNotificationChannelPreferenceChangeHistoryService} from  './user-notification-channel-preference-change-history.service';
 import {UserNotificationPreferenceService} from  './user-notification-preference.service';
 import {UserNotificationPreferenceChangeHistoryService} from  './user-notification-preference-change-history.service';
+import {UserPushTokenService} from  './user-push-token.service';
+import {UserPushTokenChangeHistoryService} from  './user-push-token-change-history.service';
 import {WebhookDeliveryAttemptService} from  './webhook-delivery-attempt.service';
 
 
@@ -85,6 +87,8 @@ export class AlertingDataServiceManagerService  {
               , public userNotificationChannelPreferenceChangeHistoryService: UserNotificationChannelPreferenceChangeHistoryService
               , public userNotificationPreferenceService: UserNotificationPreferenceService
               , public userNotificationPreferenceChangeHistoryService: UserNotificationPreferenceChangeHistoryService
+              , public userPushTokenService: UserPushTokenService
+              , public userPushTokenChangeHistoryService: UserPushTokenChangeHistoryService
               , public webhookDeliveryAttemptService: WebhookDeliveryAttemptService
 ) { }  
 
@@ -125,6 +129,8 @@ export class AlertingDataServiceManagerService  {
         this.userNotificationChannelPreferenceChangeHistoryService.ClearAllCaches();
         this.userNotificationPreferenceService.ClearAllCaches();
         this.userNotificationPreferenceChangeHistoryService.ClearAllCaches();
+        this.userPushTokenService.ClearAllCaches();
+        this.userPushTokenChangeHistoryService.ClearAllCaches();
         this.webhookDeliveryAttemptService.ClearAllCaches();
     }
 }

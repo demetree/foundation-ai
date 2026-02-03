@@ -1,0 +1,125 @@
+<div class="container-fluid p-1 m-0 user-push-token-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="user-push-token-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">User Push Token</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit User Push Token' : 'Add User Push Token'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsAlertingUserPushTokenReader()">
+                <div class="col m-2 user-push-token-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="userPushTokenForm" (ngSubmit)="submitForm()" class="user-push-token-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('userObjectGuid')">
+                                <label for="UserPushToken-userObjectGuid" id="label-UserPushToken-userObjectGuid"><span class="text-danger">*</span>User Object Guid</label>
+                                <input type="text" id="UserPushToken-userObjectGuid" formControlName="userObjectGuid" placeholder="Enter User Object Guid" class="form-control user-push-token-input" [disabled]="!userIsAlertingUserPushTokenWriter()" aria-labelledby="label-userObjectGuid" />
+                                <div *ngIf="userPushTokenForm.get('userObjectGuid')?.invalid && userPushTokenForm.get('userObjectGuid')?.touched" class="text-danger">
+                                    User Object Guid is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('fcmToken')">
+                                <label for="UserPushToken-fcmToken" id="label-UserPushToken-fcmToken"><span class="text-danger">*</span>Fcm Token</label>
+                                <textarea id="UserPushToken-fcmToken" formControlName="fcmToken" placeholder="Enter Fcm Token" class="form-control user-push-token-input" [disabled]="!userIsAlertingUserPushTokenWriter()"></textarea>
+                                <div *ngIf="userPushTokenForm.get('fcmToken')?.invalid && userPushTokenForm.get('fcmToken')?.touched" class="text-danger">
+                                    Fcm Token is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('deviceFingerprint')">
+                                <label for="UserPushToken-deviceFingerprint" id="label-UserPushToken-deviceFingerprint"><span class="text-danger">*</span>Device Fingerprint</label>
+                                <input type="text" id="UserPushToken-deviceFingerprint" formControlName="deviceFingerprint" placeholder="Enter Device Fingerprint" class="form-control user-push-token-input" [disabled]="!userIsAlertingUserPushTokenWriter()" aria-labelledby="label-deviceFingerprint" />
+                                <div *ngIf="userPushTokenForm.get('deviceFingerprint')?.invalid && userPushTokenForm.get('deviceFingerprint')?.touched" class="text-danger">
+                                    Device Fingerprint is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('platform')">
+                                <label for="UserPushToken-platform" id="label-UserPushToken-platform"><span class="text-danger">*</span>Platform</label>
+                                <input type="text" id="UserPushToken-platform" formControlName="platform" placeholder="Enter Platform" class="form-control user-push-token-input" [disabled]="!userIsAlertingUserPushTokenWriter()" aria-labelledby="label-platform" />
+                                <div *ngIf="userPushTokenForm.get('platform')?.invalid && userPushTokenForm.get('platform')?.touched" class="text-danger">
+                                    Platform is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userAgent')">
+                                <label for="UserPushToken-userAgent" id="label-UserPushToken-userAgent">User Agent</label>
+                                <textarea id="UserPushToken-userAgent" formControlName="userAgent" placeholder="Enter User Agent" class="form-control user-push-token-input" [disabled]="!userIsAlertingUserPushTokenWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('registeredAt')">
+                                <label for="UserPushToken-registeredAt" id="label-UserPushToken-registeredAt"><span class="text-danger">*</span>Registered At</label>
+                                <input type="datetime-local" id="UserPushToken-registeredAt" formControlName="registeredAt" placeholder="Enter Registered At" class="form-control user-push-token-input" [disabled]="!userIsAlertingUserPushTokenWriter()" aria-labelledby="label-registeredAt" />
+                                <div *ngIf="userPushTokenForm.get('registeredAt')?.invalid && userPushTokenForm.get('registeredAt')?.touched" class="text-danger">
+                                    Registered At is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('lastUpdatedAt')">
+                                <label for="UserPushToken-lastUpdatedAt" id="label-UserPushToken-lastUpdatedAt"><span class="text-danger">*</span>Last Updated At</label>
+                                <input type="datetime-local" id="UserPushToken-lastUpdatedAt" formControlName="lastUpdatedAt" placeholder="Enter Last Updated At" class="form-control user-push-token-input" [disabled]="!userIsAlertingUserPushTokenWriter()" aria-labelledby="label-lastUpdatedAt" />
+                                <div *ngIf="userPushTokenForm.get('lastUpdatedAt')?.invalid && userPushTokenForm.get('lastUpdatedAt')?.touched" class="text-danger">
+                                    Last Updated At is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="UserPushToken-versionNumber" id="label-UserPushToken-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="UserPushToken-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control user-push-token-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="UserPushToken-active" formControlName="active" class="form-check-input" [disabled]="!userIsAlertingUserPushTokenWriter()" />
+                                <label for="UserPushToken-active" class="form-check-label" id="label-UserPushToken-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="UserPushToken-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsAlertingUserPushTokenWriter()" />
+                                <label for="UserPushToken-deleted" class="form-check-label" id="label-UserPushToken-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="user-push-token-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="userPushTokenForm.pristine" (click)="loadData(true)" ngbTooltip="Reload User Push Token">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !userPushTokenForm.valid || !userPushTokenForm.dirty || userPushTokenForm.pristine  || userIsAlertingUserPushTokenWriter() == false " ngbTooltip="Save the User Push Token changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add User Push Token' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsAlertingUserPushTokenReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 user-push-token-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="userPushTokenChangeHistoryService.userIsAlertingUserPushTokenChangeHistoryReader()">
+                            <button ngbNavLink>User Push Token Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (userPushTokenData?.UserPushTokenChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-user-push-token-change-history-table [queryParams]="{ userPushTokenId: userPushTokenData?.id }"></app-user-push-token-change-history-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-user-push-token-change-history-add-edit [preSeededData]="{ userPushTokenId: userPushTokenData?.id }" [hiddenFields]="['userPushTokenId']"></app-user-push-token-change-history-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -400,6 +400,35 @@ Designed to be independent while sharing the central Security database for users
 
 
 
+            // UserPushToken - stores FCM/APNs push tokens for web and mobile devices
+            Database.Table pushTokenTable = database.AddTable("UserPushToken");
+            pushTokenTable.SetMinimumPermissionLevels(ALERTING_READER_PERMISSION_LEVEL, ALERTING_USER_WRITER_PERMISSION_LEVEL);
+            pushTokenTable.comment = "Push notification tokens for web and mobile devices. Each user can have multiple tokens (one per device).";
+
+            //
+            // Must have Alerting User writer role to write to this table.
+            //
+            pushTokenTable.customWriteAccessRole = ALERTING_USER_WRITER_CUSTOM_ROLE_NAME;
+
+            pushTokenTable.AddIdField();
+            pushTokenTable.AddMultiTenantSupport();
+            pushTokenTable.AddGuidField("userObjectGuid", false).AddScriptComments("References Security.SecurityUser.objectGuid - the token owner.");
+            pushTokenTable.AddString500Field("fcmToken", false).AddScriptComments("Firebase Cloud Messaging token for this device.");
+            pushTokenTable.AddString100Field("deviceFingerprint", false).AddScriptComments("Unique identifier for the device/browser to prevent duplicates.");
+            pushTokenTable.AddString50Field("platform", false, "web").AddScriptComments("Platform: 'web', 'ios', 'android'.");
+            pushTokenTable.AddString500Field("userAgent", true).AddScriptComments("Browser/device user agent string for diagnostics.");
+            pushTokenTable.AddDateTimeField("registeredAt", false).AddScriptComments("When the token was first registered.");
+            pushTokenTable.AddDateTimeField("lastUpdatedAt", false).AddScriptComments("Last time the token was refreshed.");
+            pushTokenTable.AddVersionControl();
+            pushTokenTable.AddControlFields(true);
+
+            // Unique constraint: one token per device per user
+            pushTokenTable.AddUniqueConstraint("tenantGuid", "userObjectGuid", "deviceFingerprint");
+
+            // Index for finding all tokens for a user
+            pushTokenTable.CreateIndexForFields(new List<string> { "tenantGuid", "userObjectGuid" });
+
+
             #endregion
 
 
