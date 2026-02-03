@@ -28,6 +28,7 @@ namespace Foundation.Security.Database
             securityTenantTable.adminAccessNeededToWrite = true;
             securityTenantTable.AddIdField();
             securityTenantTable.AddNameAndDescriptionFields(true, true);
+            securityTenantTable.AddTextField("settings").AddScriptComments("To store a JSON object containing arbitrary tenant settings.");
             securityTenantTable.AddControlFields(true);
 
             Database.Table.Index securityTenantIdActiveDeletedIndex = securityTenantTable.CreateIndex("I_SecurityTenant_id_active_deleted");

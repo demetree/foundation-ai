@@ -36,6 +36,7 @@ import { AuthService } from '../../../services/auth.service';
 interface SecurityTenantFormValues {
   name: string,
   description: string | null,
+  settings: string | null,
   active: boolean,
   deleted: boolean,
 };
@@ -70,6 +71,7 @@ export class SecurityTenantAddEditComponent {
   public securityTenantForm: FormGroup = this.fb.group({
         name: ['', Validators.required],
         description: [''],
+        settings: [''],
         active: [true],
         deleted: [false],
       });
@@ -207,6 +209,7 @@ export class SecurityTenantAddEditComponent {
         id: this.securityTenantSubmitData?.id || 0,
         name: formValue.name!.trim(),
         description: formValue.description?.trim() || null,
+        settings: formValue.settings?.trim() || null,
         active: !!formValue.active,
         deleted: !!formValue.deleted,
    };
@@ -336,6 +339,7 @@ export class SecurityTenantAddEditComponent {
       this.securityTenantForm.reset({
         name: '',
         description: '',
+        settings: '',
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -349,6 +353,7 @@ export class SecurityTenantAddEditComponent {
         this.securityTenantForm.reset({
         name: securityTenantData.name ?? '',
         description: securityTenantData.description ?? '',
+        settings: securityTenantData.settings ?? '',
         active: securityTenantData.active ?? true,
         deleted: securityTenantData.deleted ?? false,
       }, { emitEvent: false});

@@ -96,6 +96,7 @@ CREATE TABLE `SecurityTenant`(
 	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
 	`name` VARCHAR(100) NOT NULL UNIQUE,
 	`description` VARCHAR(500) NULL,
+	`settings` TEXT NULL,		-- To store a JSON object containing arbitrary tenant settings.
 	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
 	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	`deleted` BIT NOT NULL DEFAULT 0		-- Soft deletion flag.

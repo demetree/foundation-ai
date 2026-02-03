@@ -105,6 +105,7 @@ CREATE TABLE [Security].[SecurityTenant]
 	[id] INT IDENTITY PRIMARY KEY NOT NULL,
 	[name] NVARCHAR(100) NOT NULL UNIQUE,
 	[description] NVARCHAR(500) NULL,
+	[settings] NVARCHAR(MAX) NULL,		-- To store a JSON object containing arbitrary tenant settings.
 	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
 	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.

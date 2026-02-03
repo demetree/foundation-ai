@@ -109,6 +109,7 @@ CREATE TABLE "Security"."SecurityTenant"
 	"id" SERIAL PRIMARY KEY NOT NULL,
 	"name" VARCHAR(100) NOT NULL UNIQUE,
 	"description" VARCHAR(500) NULL,
+	"settings" TEXT NULL,		-- To store a JSON object containing arbitrary tenant settings.
 	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
 	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
 	"deleted" BOOLEAN NOT NULL DEFAULT false		-- Soft deletion flag.

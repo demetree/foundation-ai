@@ -24,6 +24,7 @@ namespace Foundation.Security.Database
 			[Required]
 			public String name { get; set; }
 			public String description { get; set; }
+			public String settings { get; set; }
 			[Required]
 			public Guid objectGuid { get; set; }
 			public Boolean? active { get; set; }
@@ -55,6 +56,7 @@ namespace Foundation.Security.Database
 				id = this.id,
 				name = this.name,
 				description = this.description,
+				settings = this.settings,
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted
@@ -99,6 +101,7 @@ namespace Foundation.Security.Database
 				id = this.id,
 				name = this.name,
 				description = this.description,
+				settings = this.settings,
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted
@@ -143,6 +146,7 @@ namespace Foundation.Security.Database
 				id = dto.id,
 				name = dto.name,
 				description = dto.description,
+				settings = dto.settings,
 				objectGuid = dto.objectGuid,
 				active = dto.active ?? true,
 				deleted = dto.deleted ?? false
@@ -164,6 +168,7 @@ namespace Foundation.Security.Database
 
 			this.name = dto.name;
 			this.description = dto.description;
+			this.settings = dto.settings;
 			this.objectGuid = dto.objectGuid;
 			if (dto.active.HasValue == true)
 			{
@@ -190,6 +195,7 @@ namespace Foundation.Security.Database
 				id = this.id,
 				name = this.name,
 				description = this.description,
+				settings = this.settings,
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted,
@@ -248,6 +254,7 @@ namespace Foundation.Security.Database
 				id = securityTenant.id,
 				name = securityTenant.name,
 				description = securityTenant.description,
+				settings = securityTenant.settings,
 				objectGuid = securityTenant.objectGuid,
 				active = securityTenant.active,
 				deleted = securityTenant.deleted,
@@ -273,6 +280,7 @@ namespace Foundation.Security.Database
 				id = securityTenant.id,
 				name = securityTenant.name,
 				description = securityTenant.description,
+				settings = securityTenant.settings,
 				objectGuid = securityTenant.objectGuid,
 				active = securityTenant.active,
 				deleted = securityTenant.deleted,

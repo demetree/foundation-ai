@@ -168,6 +168,7 @@ export class SecurityTenantTableComponent implements OnInit, OnChanges, AfterVie
     const defaultColumns: TableColumn[] = [
     { key: 'name', label: 'Name', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/securitytenant', 'id']  },
     { key: 'description', label: 'Description', width: undefined },
+    { key: 'settings', label: 'Settings', width: undefined },
 
     ];
 
@@ -313,6 +314,7 @@ export class SecurityTenantTableComponent implements OnInit, OnChanges, AfterVie
         const filterFields = [
                       'name',
                       'description',
+                      'settings',
         ];
 
         result = result.filter((securityTenant) =>

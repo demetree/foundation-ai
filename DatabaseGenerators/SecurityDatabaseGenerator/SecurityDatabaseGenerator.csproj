@@ -10,8 +10,4 @@
     <ProjectReference Include="..\..\FoundationCommon\FoundationCommon.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Scripts\UpdateScripts\" />
-  </ItemGroup>
-
 </Project>

@@ -93,6 +93,7 @@ CREATE TABLE "SecurityTenant"
 	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
 	"name" VARCHAR(100) NOT NULL UNIQUE COLLATE NOCASE,
 	"description" VARCHAR(500) NULL COLLATE NOCASE,
+	"settings" TEXT NULL COLLATE NOCASE,		-- To store a JSON object containing arbitrary tenant settings.
 	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
 	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	"deleted" BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
