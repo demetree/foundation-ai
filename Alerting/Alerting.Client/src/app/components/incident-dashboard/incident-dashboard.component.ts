@@ -8,6 +8,7 @@ import { IncidentStatusTypeService, IncidentStatusTypeData } from '../../alertin
 import { SeverityTypeService, SeverityTypeData } from '../../alerting-data-services/severity-type.service';
 import { ServiceService, ServiceData } from '../../alerting-data-services/service.service';
 import { AlertService } from '../../services/alert.service';
+import { NavigationService } from '../../utility-services/navigation.service';
 
 /**
  * Status tab definition
@@ -75,7 +76,8 @@ export class IncidentDashboardComponent implements OnInit, OnDestroy {
         private incidentStatusTypeService: IncidentStatusTypeService,
         private severityTypeService: SeverityTypeService,
         private serviceService: ServiceService,
-        private alertService: AlertService
+        private alertService: AlertService,
+        private navigationService: NavigationService
     ) {
         this.activeTab = this.statusTabs[1]; // Default to Triggered
     }
@@ -439,5 +441,16 @@ export class IncidentDashboardComponent implements OnInit, OnDestroy {
     refresh(): void {
         this.loadIncidents();
         this.loadTabCounts();
+    }
+
+    /**
+     * Navigate back
+     */
+    goBack(): void {
+        this.navigationService.goBack();
+    }
+
+    canGoBack(): boolean {
+        return this.navigationService.canGoBack();
     }
 }

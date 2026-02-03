@@ -11,5 +11,24 @@
         "Action": "Start"
       }
     ]
+  },
+  {
+    "Name": "Foundation, Alerting, and Scheduler",
+    "Projects": [
+      {
+        "Path": "Alerting\\Alerting.Server\\Alerting.Server.csproj",
+        "Action": "Start",
+        "DebugTarget": "https"
+      },
+      {
+        "Path": "Scheduler\\Scheduler.Server\\Scheduler.Server.csproj",
+        "Action": "Start",
+        "DebugTarget": "https"
+      },
+      {
+        "Path": "Foundation\\Foundation.Server\\Foundation.Server.csproj",
+        "Action": "Start"
+      }
+    ]
   }
 ]

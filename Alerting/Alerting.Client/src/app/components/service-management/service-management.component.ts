@@ -6,6 +6,7 @@ import { ServiceService, ServiceData, ServiceSubmitData, ServiceQueryParameters 
 import { EscalationPolicyService, EscalationPolicyData } from '../../alerting-data-services/escalation-policy.service';
 import { IntegrationData } from '../../alerting-data-services/integration.service';
 import { AlertService } from '../../services/alert.service';
+import { NavigationService } from '../../utility-services/navigation.service';
 
 @Component({
     selector: 'app-service-management',
@@ -59,7 +60,8 @@ export class ServiceManagementComponent implements OnInit, OnDestroy {
         private serviceService: ServiceService,
         private escalationPolicyService: EscalationPolicyService,
         private alertService: AlertService,
-        private modalService: NgbModal
+        private modalService: NgbModal,
+        private navigationService: NavigationService
     ) { }
 
     ngOnInit(): void {
@@ -364,5 +366,14 @@ export class ServiceManagementComponent implements OnInit, OnDestroy {
     // Track by
     trackById(index: number, item: ServiceData): number | bigint {
         return item.id;
+    }
+
+    // Navigation
+    goBack(): void {
+        this.navigationService.goBack();
+    }
+
+    canGoBack(): boolean {
+        return this.navigationService.canGoBack();
     }
 }

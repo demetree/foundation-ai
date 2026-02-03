@@ -1,0 +1,223 @@
+<!-- Alerting Command Center Overview -->
+<div class="command-center">
+
+    <!-- Hero Header -->
+    <div class="hero-header" [ngClass]="getStatusDisplay().class">
+        <div class="floating-orb"></div>
+        <div class="header-content">
+            <div class="header-left">
+                <button *ngIf="canGoBack()" class="btn-back" (click)="goBack()" title="Go Back">
+                    <i class="bi bi-arrow-left"></i>
+                </button>
+                <div class="title-section">
+                    <h1><i class="bi bi-shield-check"></i> Alerting Command Center</h1>
+                    <p class="subtitle">Real-time operational overview</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="status-indicator">
+                    <i [ngClass]="getStatusDisplay().icon"></i>
+                    <span>{{ getStatusDisplay().label }}</span>
+                </div>
+                <button class="btn-refresh" (click)="refresh()" [disabled]="loading">
+                    <i class="bi bi-arrow-clockwise" [class.spin]="loading"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading && !dashboardSummary" class="loading-container">
+        <div class="loading-spinner"></div>
+        <p>Loading dashboard...</p>
+    </div>
+
+    <!-- Dashboard Content -->
+    <div *ngIf="dashboardSummary" class="dashboard-content">
+
+        <!-- Incident Metrics Row -->
+        <section class="metrics-section">
+            <h2><i class="bi bi-graph-up"></i> Incident Metrics</h2>
+            <div class="metrics-grid">
+                <!-- Active Incidents -->
+                <div class="metric-card active-incidents"
+                    [class.pulsing]="dashboardSummary.incidentMetrics.activeCount > 0">
+                    <div class="metric-icon">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                    </div>
+                    <div class="metric-content">
+                        <span class="metric-value">{{ dashboardSummary.incidentMetrics.activeCount }}</span>
+                        <span class="metric-label">Active Incidents</span>
+                    </div>
+                    <div class="metric-breakdown" *ngIf="dashboardSummary.incidentMetrics.activeCount > 0">
+                        <span class="triggered">{{ dashboardSummary.incidentMetrics.triggeredCount }} triggered</span>
+                        <span class="acknowledged">{{ dashboardSummary.incidentMetrics.acknowledgedCount }}
+                            acknowledged</span>
+                    </div>
+                </div>
+
+                <!-- Critical -->
+                <div class="metric-card critical"
+                    [class.highlight]="dashboardSummary.incidentMetrics.criticalCount > 0">
+                    <div class="metric-icon">
+                        <i class="bi bi-fire"></i>
+                    </div>
+                    <div class="metric-content">
+                        <span class="metric-value">{{ dashboardSummary.incidentMetrics.criticalCount }}</span>
+                        <span class="metric-label">Critical</span>
+                    </div>
+                </div>
+
+                <!-- High -->
+                <div class="metric-card high">
+                    <div class="metric-icon">
+                        <i class="bi bi-arrow-up-circle"></i>
+                    </div>
+                    <div class="metric-content">
+                        <span class="metric-value">{{ dashboardSummary.incidentMetrics.highCount }}</span>
+                        <span class="metric-label">High</span>
+                    </div>
+                </div>
+
+                <!-- Resolved Today -->
+                <div class="metric-card resolved">
+                    <div class="metric-icon">
+                        <i class="bi bi-check-circle-fill"></i>
+                    </div>
+                    <div class="metric-content">
+                        <span class="metric-value">{{ dashboardSummary.incidentMetrics.resolvedTodayCount }}</span>
+                        <span class="metric-label">Resolved Today</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Performance & On-Call Row -->
+        <div class="two-column-row">
+
+            <!-- Performance Metrics -->
+            <section class="performance-section">
+                <h2><i class="bi bi-speedometer2"></i> Performance (Last 7 Days)</h2>
+                <div class="performance-cards">
+                    <!-- MTTA -->
+                    <div class="performance-card">
+                        <div class="perf-header">
+                            <span class="perf-label">Mean Time to Acknowledge</span>
+                            <i [ngClass]="getTrendIcon(dashboardSummary.performance.mttaTrend)"
+                                [class]="getTrendClass(dashboardSummary.performance.mttaTrend)"></i>
+                        </div>
+                        <span class="perf-value">{{ formatMinutes(dashboardSummary.performance.mttaMinutes) }}</span>
+                    </div>
+                    <!-- MTTR -->
+                    <div class="performance-card">
+                        <div class="perf-header">
+                            <span class="perf-label">Mean Time to Resolve</span>
+                            <i [ngClass]="getTrendIcon(dashboardSummary.performance.mttrTrend)"
+                                [class]="getTrendClass(dashboardSummary.performance.mttrTrend)"></i>
+                        </div>
+                        <span class="perf-value">{{ formatMinutes(dashboardSummary.performance.mttrMinutes) }}</span>
+                    </div>
+                    <!-- Resolved Count -->
+                    <div class="performance-card resolved-count">
+                        <div class="perf-header">
+                            <span class="perf-label">Incidents Resolved</span>
+                        </div>
+                        <span class="perf-value">{{ dashboardSummary.performance.incidentsResolvedLast7Days }}</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Who's On Call -->
+            <section class="oncall-section">
+                <h2><i class="bi bi-person-badge"></i> Who's On Call</h2>
+                <div class="oncall-list" *ngIf="dashboardSummary.onCallSummary.length > 0">
+                    <div class="oncall-schedule" *ngFor="let schedule of dashboardSummary.onCallSummary">
+                        <div class="schedule-name">{{ schedule.scheduleName }}</div>
+                        <div class="oncall-users">
+                            <div class="oncall-user" *ngFor="let user of schedule.onCallUsers">
+                                <div class="user-avatar">
+                                    <i class="bi bi-person-fill"></i>
+                                </div>
+                                <div class="user-info">
+                                    <span class="user-name">{{ user.displayName }}</span>
+                                    <span class="layer-name" *ngIf="user.layerName">{{ user.layerName }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="no-oncall" *ngIf="dashboardSummary.onCallSummary.length === 0">
+                    <i class="bi bi-calendar-x"></i>
+                    <span>No active schedules</span>
+                </div>
+            </section>
+        </div>
+
+        <!-- Recent Activity -->
+        <section class="activity-section">
+            <h2><i class="bi bi-clock-history"></i> Recent Activity</h2>
+            <div class="activity-list" *ngIf="dashboardSummary.recentActivity.length > 0">
+                <div class="activity-item" *ngFor="let activity of dashboardSummary.recentActivity"
+                    (click)="viewIncident(activity.incidentId)">
+                    <div class="activity-time">{{ formatTimeAgo(activity.timestamp) }}</div>
+                    <div class="activity-icon" [ngClass]="getSeverityClass(activity.severityName)">
+                        <i class="bi bi-lightning-fill"></i>
+                    </div>
+                    <div class="activity-content">
+                        <span class="activity-type">{{ activity.eventType }}</span>
+                        <span class="activity-title">{{ activity.incidentTitle }}</span>
+                    </div>
+                    <div class="severity-badge" [ngClass]="getSeverityClass(activity.severityName)">
+                        {{ activity.severityName }}
+                    </div>
+                </div>
+            </div>
+            <div class="no-activity" *ngIf="dashboardSummary.recentActivity.length === 0">
+                <i class="bi bi-inbox"></i>
+                <span>No recent activity</span>
+            </div>
+        </section>
+
+        <!-- Quick Navigation Grid -->
+        <section class="nav-section">
+            <h2><i class="bi bi-grid-3x2"></i> Quick Navigation</h2>
+            <div class="nav-grid">
+                <div class="nav-card" *ngFor="let card of navCards" (click)="navigateTo(card.route)"
+                    [style.--card-color]="card.color">
+                    <div class="nav-icon">
+                        <i [ngClass]="card.icon"></i>
+                    </div>
+                    <div class="nav-content">
+                        <h3>{{ card.title }}</h3>
+                        <p>{{ card.description }}</p>
+                    </div>
+                    <i class="bi bi-chevron-right nav-arrow"></i>
+                </div>
+            </div>
+        </section>
+
+        <!-- Configuration Overview -->
+        <section class="config-section">
+            <h2><i class="bi bi-sliders"></i> Configuration</h2>
+            <div class="config-grid">
+                <div class="config-item" (click)="navigateTo('/service-management')">
+                    <span class="config-count">{{ dashboardSummary.configCounts.servicesCount }}</span>
+                    <span class="config-label">Services</span>
+                </div>
+                <div class="config-item" (click)="navigateTo('/integration-management')">
+                    <span class="config-count">{{ dashboardSummary.configCounts.integrationsCount }}</span>
+                    <span class="config-label">Integrations</span>
+                </div>
+                <div class="config-item" (click)="navigateTo('/schedule-management')">
+                    <span class="config-count">{{ dashboardSummary.configCounts.schedulesCount }}</span>
+                    <span class="config-label">Schedules</span>
+                </div>
+                <div class="config-item" (click)="navigateTo('/escalation-policy-management')">
+                    <span class="config-count">{{ dashboardSummary.configCounts.policiesCount }}</span>
+                    <span class="config-label">Policies</span>
+                </div>
+            </div>
+        </section>
+
+    </div>
+</div>

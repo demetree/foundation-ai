@@ -5,6 +5,10 @@
     <div class="listing-header">
         <div class="header-content">
             <div class="header-left">
+                <!-- Back Button -->
+                <button *ngIf="canGoBack()" class="btn-back" (click)="goBack()" title="Go Back">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
                 <div class="title-icon-wrapper">
                     <i class="fa-solid fa-route"></i>
                 </div>

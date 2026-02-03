@@ -7,6 +7,7 @@ import { OnCallScheduleService, OnCallScheduleData, OnCallScheduleSubmitData, On
 import { ScheduleLayerService, ScheduleLayerData } from '../../alerting-data-services/schedule-layer.service';
 import { AlertService } from '../../services/alert.service';
 import { AlertingUserService, AlertingUser } from '../../services/alerting-user.service';
+import { NavigationService } from '../../utility-services/navigation.service';
 
 @Component({
     selector: 'app-schedule-management',
@@ -80,7 +81,8 @@ export class ScheduleManagementComponent implements OnInit, OnDestroy {
         private alertService: AlertService,
         private alertingUserService: AlertingUserService,
         private modalService: NgbModal,
-        private router: Router
+        private router: Router,
+        private navigationService: NavigationService
     ) { }
 
     ngOnInit(): void {
@@ -318,5 +320,14 @@ export class ScheduleManagementComponent implements OnInit, OnDestroy {
     getTimezoneName(tzId: string): string {
         const tz = this.commonTimezones.find(t => t.id === tzId);
         return tz ? tz.label : tzId;
+    }
+
+    // Navigation
+    goBack(): void {
+        this.navigationService.goBack();
+    }
+
+    canGoBack(): boolean {
+        return this.navigationService.canGoBack();
     }
 }

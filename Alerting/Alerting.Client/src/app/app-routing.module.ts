@@ -31,6 +31,7 @@ import { IncidentDashboardComponent } from './components/incident-dashboard/inci
 import { IncidentViewerComponent } from './components/incident-viewer/incident-viewer.component';
 import { ResponderConsoleComponent } from './components/responder-console/responder-console.component';
 import { MyShiftComponent } from './components/my-shift/my-shift.component';
+import { AlertingOverviewComponent } from './components/alerting-overview/alerting-overview.component';
 
 //
 // Custom screens
@@ -142,7 +143,7 @@ const routes: Routes = [
   //
   // Admin routes
   //
-  { path: '', component: IncidentListingComponent, canActivate: [AuthGuard], title: 'Incidents' },
+  { path: '', component: AlertingOverviewComponent, canActivate: [AuthGuard], title: 'Command Center' },
   { path: 'login', component: LoginComponent, title: 'Login' },
   { path: 'google-login', component: AuthCallbackComponent, title: 'Google Login' },
   { path: 'facebook-login', component: AuthCallbackComponent, title: 'Facebook Login' },

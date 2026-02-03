@@ -14,6 +14,7 @@ import { ServiceService, ServiceData } from '../../alerting-data-services/servic
 import { IncidentEventTypeService, IncidentEventTypeData } from '../../alerting-data-services/incident-event-type.service';
 import { IntegrationManagementService, CreateIntegrationRequest, UpdateIntegrationRequest, IntegrationDto } from '../../services/integration-management.service';
 import { AlertService } from '../../services/alert.service';
+import { NavigationService } from '../../utility-services/navigation.service';
 
 @Component({
   selector: 'app-integration-management',
@@ -92,7 +93,8 @@ export class IntegrationManagementComponent implements OnInit, OnDestroy {
     private serviceService: ServiceService,
     private incidentEventTypeService: IncidentEventTypeService,
     private alertService: AlertService,
-    private modalService: NgbModal
+    private modalService: NgbModal,
+    private navigationService: NavigationService
   ) { }
 
 
@@ -513,5 +515,14 @@ export class IntegrationManagementComponent implements OnInit, OnDestroy {
 
   trackById(index: number, integration: IntegrationData): number | bigint {
     return integration.id;
+  }
+
+  // Navigation
+  goBack(): void {
+    this.navigationService.goBack();
+  }
+
+  canGoBack(): boolean {
+    return this.navigationService.canGoBack();
   }
 }

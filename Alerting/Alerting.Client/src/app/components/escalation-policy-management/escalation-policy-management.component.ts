@@ -6,6 +6,7 @@ import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { EscalationPolicyService, EscalationPolicyData, EscalationPolicySubmitData, EscalationPolicyQueryParameters } from '../../alerting-data-services/escalation-policy.service';
 import { ServiceData } from '../../alerting-data-services/service.service';
 import { AlertService } from '../../services/alert.service';
+import { NavigationService } from '../../utility-services/navigation.service';
 
 @Component({
     selector: 'app-escalation-policy-management',
@@ -59,7 +60,8 @@ export class EscalationPolicyManagementComponent implements OnInit, OnDestroy {
         private router: Router,
         private escalationPolicyService: EscalationPolicyService,
         private alertService: AlertService,
-        private modalService: NgbModal
+        private modalService: NgbModal,
+        private navigationService: NavigationService
     ) { }
 
     ngOnInit(): void {
@@ -350,5 +352,14 @@ export class EscalationPolicyManagementComponent implements OnInit, OnDestroy {
     // Track by
     trackById(index: number, item: EscalationPolicyData): number | bigint {
         return item.id;
+    }
+
+    // Navigation
+    goBack(): void {
+        this.navigationService.goBack();
+    }
+
+    canGoBack(): boolean {
+        return this.navigationService.canGoBack();
     }
 }

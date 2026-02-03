@@ -18,6 +18,7 @@ import {
   NoteDto
 } from '../../services/alert-test-harness.service';
 import { AlertService, MessageSeverity } from '../../services/alert.service';
+import { NavigationService } from '../../utility-services/navigation.service';
 import { IntegrationService, IntegrationData } from '../../alerting-data-services/integration.service';
 
 
@@ -84,7 +85,8 @@ export class TestHarnessComponent implements OnInit, OnDestroy {
   constructor(
     private testHarnessService: AlertTestHarnessService,
     private integrationService: IntegrationService,
-    private alertService: AlertService
+    private alertService: AlertService,
+    private navigationService: NavigationService
   ) { }
 
 
@@ -349,5 +351,18 @@ export class TestHarnessComponent implements OnInit, OnDestroy {
 
   getObjectKeys(obj: any): string[] {
     return obj ? Object.keys(obj) : [];
+  }
+
+
+  //
+  // Back Navigation
+  //
+  goBack(): void {
+    this.navigationService.goBack();
+  }
+
+
+  canGoBack(): boolean {
+    return this.navigationService.canGoBack();
   }
 }
