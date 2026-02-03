@@ -105,6 +105,8 @@ Designed to be independent while sharing the central Security database for users
             notificationChannelTypeTable.AddData(new Dictionary<string, string> { { "name", "SMS" }, { "description", "SMS text message" }, { "defaultPriority", "10" } });
             notificationChannelTypeTable.AddData(new Dictionary<string, string> { { "name", "VoiceCall" }, { "description", "Automated voice call" }, { "defaultPriority", "5" } });
             notificationChannelTypeTable.AddData(new Dictionary<string, string> { { "name", "MobilePush" }, { "description", "Mobile app push" }, { "defaultPriority", "20" } });
+            notificationChannelTypeTable.AddData(new Dictionary<string, string> { { "name", "WebPush" }, { "description", "Browser push notification" }, { "defaultPriority", "25" } });
+            notificationChannelTypeTable.AddData(new Dictionary<string, string> { { "name", "Teams" }, { "description", "Microsoft Teams message" }, { "defaultPriority", "40" } });
 
 
 

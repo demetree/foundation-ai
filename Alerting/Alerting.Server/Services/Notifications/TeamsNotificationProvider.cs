@@ -24,7 +24,7 @@ namespace Alerting.Server.Services.Notifications
         private readonly ILogger<TeamsNotificationProvider> _logger;
 
         // NotificationChannelType ID for Teams (needs to be added to database seed)
-        public int ChannelTypeId => 5; // Teams
+        public int ChannelTypeId => 6; // Teams
 
         public TeamsNotificationProvider(
             IHttpClientFactory httpClientFactory,

@@ -79,7 +79,9 @@ export class NotificationPreferencesEditorComponent implements OnInit, OnDestroy
         'Email': 'bi-envelope-fill',
         'SMS': 'bi-chat-text-fill',
         'VoiceCall': 'bi-telephone-fill',
-        'MobilePush': 'bi-phone-fill'
+        'MobilePush': 'bi-phone-fill',
+        'WebPush': 'bi-bell-fill',
+        'Teams': 'bi-chat-square-dots-fill'
     };
 
     constructor(

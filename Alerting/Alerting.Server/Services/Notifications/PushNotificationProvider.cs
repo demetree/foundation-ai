@@ -25,8 +25,8 @@ namespace Alerting.Server.Services.Notifications
         private bool _initialized;
         private static readonly object _initLock = new object();
 
-        // NotificationChannelType ID for MobilePush (from database seed data)
-        public int ChannelTypeId => 4; // MobilePush
+        // NotificationChannelType ID for WebPush (from database seed data)
+        public int ChannelTypeId => 5; // WebPush
 
         public PushNotificationProvider(
             IConfiguration config,

@@ -333,6 +333,7 @@ namespace Foundation.Alerting
                 // Background Workers
                 //
                 builder.Services.AddHostedService<EscalationWorker>();
+                builder.Services.AddHostedService<NotificationRetryWorker>();
 
                 //
                 // Configurations
