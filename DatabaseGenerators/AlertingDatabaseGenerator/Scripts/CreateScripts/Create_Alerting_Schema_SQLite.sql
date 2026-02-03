@@ -248,6 +248,10 @@ INSERT INTO "NotificationChannelType" ( "name", "description", "defaultPriority"
 
 INSERT INTO "NotificationChannelType" ( "name", "description", "defaultPriority" ) VALUES  ( 'MobilePush', 'Mobile app push', 20 );
 
+INSERT INTO "NotificationChannelType" ( "name", "description", "defaultPriority" ) VALUES  ( 'WebPush', 'Browser push notification', 25 );
+
+INSERT INTO "NotificationChannelType" ( "name", "description", "defaultPriority" ) VALUES  ( 'Teams', 'Microsoft Teams message', 40 );
+
 
 -- Static schedule override types.
 CREATE TABLE "ScheduleOverrideType"

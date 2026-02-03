@@ -264,6 +264,10 @@ INSERT INTO "Alerting"."NotificationChannelType" ( "name", "description", "defau
 
 INSERT INTO "Alerting"."NotificationChannelType" ( "name", "description", "defaultPriority" ) VALUES  ( 'MobilePush', 'Mobile app push', 20 );
 
+INSERT INTO "Alerting"."NotificationChannelType" ( "name", "description", "defaultPriority" ) VALUES  ( 'WebPush', 'Browser push notification', 25 );
+
+INSERT INTO "Alerting"."NotificationChannelType" ( "name", "description", "defaultPriority" ) VALUES  ( 'Teams', 'Microsoft Teams message', 40 );
+
 
 -- Static schedule override types.
 CREATE TABLE "Alerting"."ScheduleOverrideType"

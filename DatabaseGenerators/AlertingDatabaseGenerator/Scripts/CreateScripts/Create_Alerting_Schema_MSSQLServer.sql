@@ -285,6 +285,12 @@ GO
 INSERT INTO [Alerting].[NotificationChannelType] ( [name], [description], [defaultPriority] ) VALUES  ( 'MobilePush', 'Mobile app push', 20 )
 GO
 
+INSERT INTO [Alerting].[NotificationChannelType] ( [name], [description], [defaultPriority] ) VALUES  ( 'WebPush', 'Browser push notification', 25 )
+GO
+
+INSERT INTO [Alerting].[NotificationChannelType] ( [name], [description], [defaultPriority] ) VALUES  ( 'Teams', 'Microsoft Teams message', 40 )
+GO
+
 
 -- Static schedule override types.
 CREATE TABLE [Alerting].[ScheduleOverrideType]
