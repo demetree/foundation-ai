@@ -76,6 +76,7 @@ import { EscalationPolicyEditorComponent } from './components/escalation-policy-
 import { ScheduleManagementComponent } from './components/schedule-management/schedule-management.component';
 import { ScheduleEditorComponent } from './components/schedule-editor/schedule-editor.component';
 import { NotificationPreferencesEditorComponent } from './components/notification-preferences-editor/notification-preferences-editor.component';
+import { IncidentDashboardComponent } from './components/incident-dashboard/incident-dashboard.component';
 
 //
 // Custom Components
@@ -335,6 +336,7 @@ import { WebhookDeliveryAttemptTableComponent } from './alerting-data-components
     ScheduleManagementComponent,
     ScheduleEditorComponent,
     NotificationPreferencesEditorComponent,
+    IncidentDashboardComponent,
 
 
     //

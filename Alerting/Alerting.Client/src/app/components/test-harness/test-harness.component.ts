@@ -156,10 +156,12 @@ export class TestHarnessComponent implements OnInit, OnDestroy {
               `Incident ${response.isNew ? 'created' : 'updated'}: ${response.incidentKey}`,
               MessageSeverity.success
             );
+
+            this.integrationService.ClearAllCaches();
+
             this.loadIncidents();
             this.loadStats();
 
-            this.integrationService.ClearAllCaches();
           }
         },
         error: (err: Error) => {

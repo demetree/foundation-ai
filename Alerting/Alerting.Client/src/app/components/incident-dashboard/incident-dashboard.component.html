@@ -1,0 +1,192 @@
+<!-- Incident Dashboard - Command Center Style -->
+<div class="incident-dashboard">
+
+    <!-- Hero Header -->
+    <header class="dashboard-header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="header-title-section">
+                    <h1 class="page-title">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        Incident Command Center
+                    </h1>
+                    <p class="page-subtitle">Monitor and respond to active incidents</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn-secondary" (click)="refresh()">
+                    <i class="fa-solid fa-rotate"></i>
+                    <span>Refresh</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Status Tabs -->
+        <div class="status-tabs">
+            <button *ngFor="let tab of statusTabs" class="status-tab" [class.active]="activeTab.id === tab.id"
+                [ngClass]="tab.colorClass" (click)="selectTab(tab)">
+                <i class="fa-solid" [ngClass]="tab.icon"></i>
+                <span class="tab-label">{{ tab.name }}</span>
+                <span class="tab-count" [class.pulse]="tab.id === 'triggered' && tab.count > 0">
+                    {{ tab.count }}
+                </span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Filters Bar -->
+    <div class="filters-bar">
+        <div class="filters-content">
+            <!-- Search -->
+            <div class="search-box">
+                <i class="fa-solid fa-search"></i>
+                <input type="text" placeholder="Search incidents..." [(ngModel)]="searchQuery"
+                    (keyup.enter)="onSearch()">
+                <button *ngIf="searchQuery" class="clear-btn" (click)="searchQuery = ''; onSearch()">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Severity Filter -->
+            <div class="filter-group">
+                <label>Severity</label>
+                <select [(ngModel)]="selectedSeverityId" (change)="onSeverityFilterChange()">
+                    <option [ngValue]="null">All Severities</option>
+                    <option *ngFor="let severity of severityTypes" [ngValue]="severity.id">
+                        {{ severity.name }}
+                    </option>
+                </select>
+            </div>
+
+            <!-- Service Filter -->
+            <div class="filter-group">
+                <label>Service</label>
+                <select [(ngModel)]="selectedServiceId" (change)="onServiceFilterChange()">
+                    <option [ngValue]="null">All Services</option>
+                    <option *ngFor="let service of services" [ngValue]="service.id">
+                        {{ service.name }}
+                    </option>
+                </select>
+            </div>
+
+            <!-- Clear Filters -->
+            <button *ngIf="hasActiveFilters()" class="btn-clear-filters" (click)="clearFilters()">
+                <i class="fa-solid fa-filter-circle-xmark"></i>
+                Clear Filters
+            </button>
+
+            <!-- Results count -->
+            <div class="results-count">
+                <span>{{ totalCount }} incident{{ totalCount !== 1 ? 's' : '' }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="dashboard-content">
+
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="loading-container">
+            <div class="loading-spinner">
+                <div class="spinner-ring"></div>
+                <span>Loading incidents...</span>
+            </div>
+        </div>
+
+        <!-- Error State -->
+        <div *ngIf="errorMessage && !isLoading" class="error-container">
+            <div class="error-card">
+                <i class="fa-solid fa-exclamation-triangle"></i>
+                <p>{{ errorMessage }}</p>
+                <button class="btn-secondary" (click)="refresh()">
+                    <i class="fa-solid fa-rotate"></i>
+                    Retry
+                </button>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="!isLoading && !errorMessage && incidents.length === 0" class="empty-state">
+            <div class="empty-card">
+                <i class="fa-solid fa-check-circle"></i>
+                <h3>No incidents found</h3>
+                <p *ngIf="hasActiveFilters()">Try adjusting your filters</p>
+                <p *ngIf="!hasActiveFilters() && activeTab.id === 'triggered'">All clear! No active incidents.</p>
+                <p *ngIf="!hasActiveFilters() && activeTab.id !== 'triggered'">No incidents match the current criteria.
+                </p>
+            </div>
+        </div>
+
+        <!-- Incident Cards -->
+        <div *ngIf="!isLoading && !errorMessage && incidents.length > 0" class="incident-grid">
+            <div *ngFor="let incident of incidents" class="incident-card" [ngClass]="getStatusClass(incident)"
+                (click)="viewIncident(incident)">
+
+                <!-- Card Header -->
+                <div class="card-header">
+                    <div class="badges">
+                        <span class="severity-badge" [ngClass]="getSeverityClass(incident)">
+                            {{ getSeverityName(incident) }}
+                        </span>
+                        <span class="status-badge" [ngClass]="getStatusClass(incident)"
+                            [class.pulse]="isTriggered(incident)">
+                            <i class="fa-solid" [ngClass]="{
+                                'fa-bolt': isTriggered(incident),
+                                'fa-check': getStatusName(incident) === 'Acknowledged',
+                                'fa-check-double': getStatusName(incident) === 'Resolved'
+                            }"></i>
+                            {{ getStatusName(incident) }}
+                        </span>
+                    </div>
+                    <span class="time-ago">{{ getRelativeTime(incident.createdAt) }}</span>
+                </div>
+
+                <!-- Card Body -->
+                <div class="card-body">
+                    <h3 class="incident-title">{{ incident.title }}</h3>
+                    <p class="incident-key">{{ incident.incidentKey }}</p>
+                    <div class="incident-meta">
+                        <span class="meta-item service">
+                            <i class="fa-solid fa-server"></i>
+                            {{ getServiceName(incident) }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Card Actions -->
+                <div class="card-actions" *ngIf="getStatusName(incident) !== 'Resolved'">
+                    <button *ngIf="isTriggered(incident)" class="btn-action acknowledge"
+                        (click)="acknowledgeIncident(incident, $event)" title="Acknowledge">
+                        <i class="fa-solid fa-check"></i>
+                        <span>Ack</span>
+                    </button>
+                    <button *ngIf="getStatusName(incident) !== 'Resolved'" class="btn-action resolve"
+                        (click)="resolveIncident(incident, $event)" title="Resolve">
+                        <i class="fa-solid fa-check-double"></i>
+                        <span>Resolve</span>
+                    </button>
+                    <button class="btn-action view" title="View Details">
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div *ngIf="!isLoading && totalPages > 1" class="pagination">
+            <button class="page-btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+
+            <button *ngFor="let page of pageNumbers" class="page-btn" [class.active]="page === currentPage"
+                (click)="goToPage(page)">
+                {{ page }}
+            </button>
+
+            <button class="page-btn" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+        </div>
+
+    </main>
+</div>

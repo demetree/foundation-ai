@@ -27,6 +27,7 @@ import { EscalationPolicyEditorComponent } from './components/escalation-policy-
 import { ScheduleManagementComponent } from './components/schedule-management/schedule-management.component';
 import { ScheduleEditorComponent } from './components/schedule-editor/schedule-editor.component';
 import { NotificationPreferencesEditorComponent } from './components/notification-preferences-editor/notification-preferences-editor.component';
+import { IncidentDashboardComponent } from './components/incident-dashboard/incident-dashboard.component';
 
 //
 // Custom screens
@@ -170,6 +171,7 @@ const routes: Routes = [
   { path: 'schedule-management/new', component: ScheduleEditorComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'New Schedule' },
   { path: 'schedule-management/:id/edit', component: ScheduleEditorComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Schedule' },
   { path: 'notification-preferences', component: NotificationPreferencesEditorComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Notification Preferences' },
+  { path: 'incident-dashboard', component: IncidentDashboardComponent, canActivate: [AuthGuard], title: 'Incident Dashboard' },
 
 
 
