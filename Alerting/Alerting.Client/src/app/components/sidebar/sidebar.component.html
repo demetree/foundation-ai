@@ -52,6 +52,16 @@
       </a>
     </li>
 
+    <!-- Notification Preferences -->
+    <li class="nav-item">
+      <a routerLink="/notification-preferences" routerLinkActive="active" class="nav-link text-white"
+        [ngbTooltip]="!isExpanded ? 'Notification Preferences' : null" triggers="hover" #tNotifPrefs="ngbTooltip"
+        (click)="tNotifPrefs.close(); close()" placement="right" tooltipClass="sidebar-tip">
+        <i class="fa-solid fa-bell"></i>
+        <span class="label px-2">Notification Preferences</span>
+      </a>
+    </li>
+
     <!-- Test Harness -->
     <li class="nav-item">
       <a routerLink="/test-harness" routerLinkActive="active" class="nav-link text-white"

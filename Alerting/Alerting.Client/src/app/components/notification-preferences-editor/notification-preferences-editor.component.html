@@ -1,0 +1,230 @@
+<!-- Hero Header -->
+<div class="editor-header">
+    <div class="header-content">
+        <div class="header-left">
+            <button class="btn-back" (click)="goBack()" title="Go Back">
+                <i class="bi bi-arrow-left"></i>
+            </button>
+            <div class="header-title-section">
+                <h1 class="page-title">
+                    <i class="bi bi-bell-fill"></i>
+                    Notification Preferences
+                </h1>
+                <p class="page-subtitle">Configure how and when you receive incident notifications</p>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button class="btn-primary-gradient" (click)="save()" [disabled]="isSaving || !hasUnsavedChanges">
+                <i class="bi" [class.bi-check-lg]="!isSaving" [class.bi-arrow-repeat]="isSaving"
+                    [class.spin]="isSaving"></i>
+                {{ isSaving ? 'Saving...' : 'Save Changes' }}
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Loading State -->
+<div *ngIf="isLoading" class="loading-container">
+    <div class="loading-spinner">
+        <div class="spinner-ring"></div>
+        <span>Loading preferences...</span>
+    </div>
+</div>
+
+<!-- Error State -->
+<div *ngIf="errorMessage" class="error-container">
+    <div class="error-card">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <p>{{ errorMessage }}</p>
+        <button class="btn-secondary" (click)="loadData()">
+            <i class="bi bi-arrow-clockwise"></i> Retry
+        </button>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div *ngIf="!isLoading && !errorMessage" class="editor-content">
+
+    <!-- Notification Channels Section -->
+    <section class="preference-section channels-section">
+        <div class="section-header">
+            <div class="section-title">
+                <i class="bi bi-broadcast"></i>
+                <h2>Notification Channels</h2>
+            </div>
+            <div class="section-badge">
+                <span class="count-badge">{{ getEnabledChannelCount() }} of {{ channelPreferences.length }}
+                    enabled</span>
+            </div>
+        </div>
+        <p class="section-description">
+            Drag to reorder channels by priority. Notifications will be sent through enabled channels in order until you
+            acknowledge.
+        </p>
+
+        <div class="channel-cards" cdkDropList (cdkDropListDropped)="onChannelDrop($event)">
+
+            <div *ngFor="let channel of channelPreferences; let i = index" class="channel-card"
+                [class.disabled]="!channel.isEnabled" cdkDrag>
+
+                <!-- Drag Handle -->
+                <div class="drag-handle" cdkDragHandle>
+                    <i class="bi bi-grip-vertical"></i>
+                </div>
+
+                <!-- Priority Badge -->
+                <div class="priority-badge" [class.inactive]="!channel.isEnabled">
+                    {{ i + 1 }}
+                </div>
+
+                <!-- Channel Icon -->
+                <div class="channel-icon">
+                    <i class="bi" [ngClass]="channel.icon"></i>
+                </div>
+
+                <!-- Channel Info -->
+                <div class="channel-info">
+                    <h3 class="channel-name">{{ channel.channelName }}</h3>
+                    <p class="channel-desc">{{ channel.channelDescription }}</p>
+                </div>
+
+                <!-- Toggle Switch -->
+                <div class="channel-toggle">
+                    <label class="toggle-switch">
+                        <input type="checkbox" [checked]="channel.isEnabled" (change)="toggleChannel(channel)">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <!-- Drag Preview -->
+                <div *cdkDragPreview class="channel-card-preview">
+                    <i class="bi" [ngClass]="channel.icon"></i>
+                    <span>{{ channel.channelName }}</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quiet Hours Section -->
+    <section class="preference-section quiet-hours-section">
+        <div class="section-header">
+            <div class="section-title">
+                <i class="bi bi-moon-stars-fill"></i>
+                <h2>Quiet Hours</h2>
+            </div>
+            <div class="section-toggle">
+                <label class="toggle-switch">
+                    <input type="checkbox" [checked]="formQuietHoursEnabled" (change)="toggleQuietHours()">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+        </div>
+        <p class="section-description">
+            Suppress non-critical notifications during specified hours.
+        </p>
+
+        <div class="quiet-hours-config" [class.disabled]="!formQuietHoursEnabled">
+            <div class="time-range-row">
+                <div class="time-input-group">
+                    <label>From</label>
+                    <input type="time" [(ngModel)]="formQuietHoursStart" (change)="markAsModified()"
+                        [disabled]="!formQuietHoursEnabled">
+                </div>
+                <div class="time-separator">
+                    <i class="bi bi-arrow-right"></i>
+                </div>
+                <div class="time-input-group">
+                    <label>To</label>
+                    <input type="time" [(ngModel)]="formQuietHoursEnd" (change)="markAsModified()"
+                        [disabled]="!formQuietHoursEnabled">
+                </div>
+            </div>
+
+            <div class="timezone-row">
+                <label>Timezone</label>
+                <select [(ngModel)]="formTimeZoneId" (change)="markAsModified()" [disabled]="!formQuietHoursEnabled">
+                    <option *ngFor="let tz of commonTimezones" [value]="tz.id">
+                        {{ tz.label }}
+                    </option>
+                </select>
+            </div>
+        </div>
+    </section>
+
+    <!-- Do Not Disturb Section -->
+    <section class="preference-section dnd-section">
+        <div class="section-header">
+            <div class="section-title">
+                <i class="bi bi-bell-slash-fill"></i>
+                <h2>Do Not Disturb</h2>
+            </div>
+            <div class="section-toggle">
+                <label class="toggle-switch large" [class.active]="formDoNotDisturb">
+                    <input type="checkbox" [checked]="formDoNotDisturb" (change)="toggleDnd()">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+        </div>
+        <p class="section-description">
+            Pause all notifications. Critical incidents may still bypass this setting based on escalation policy.
+        </p>
+
+        <div class="dnd-config" *ngIf="formDoNotDisturb">
+            <div class="dnd-option">
+                <label class="checkbox-container">
+                    <input type="checkbox" [checked]="formDoNotDisturbPermanent" (change)="toggleDndPermanent()">
+                    <span class="checkmark"></span>
+                    <span class="checkbox-label">Keep enabled until I turn it off</span>
+                </label>
+            </div>
+
+            <div class="dnd-until" *ngIf="!formDoNotDisturbPermanent">
+                <label>Automatically disable at:</label>
+                <input type="datetime-local" [(ngModel)]="formDoNotDisturbUntil" (change)="markAsModified()">
+            </div>
+        </div>
+
+        <!-- DND Active Banner -->
+        <div class="dnd-active-banner" *ngIf="formDoNotDisturb">
+            <i class="bi bi-exclamation-circle-fill"></i>
+            <span *ngIf="formDoNotDisturbPermanent">DND is active (permanent)</span>
+            <span *ngIf="!formDoNotDisturbPermanent && formDoNotDisturbUntil">
+                DND active until {{ formatDndUntil() }}
+            </span>
+            <span *ngIf="!formDoNotDisturbPermanent && !formDoNotDisturbUntil">
+                DND is active (no expiration set)
+            </span>
+        </div>
+    </section>
+
+    <!-- Notification Preview Section -->
+    <section class="preference-section preview-section">
+        <div class="section-header">
+            <div class="section-title">
+                <i class="bi bi-lightning-charge-fill"></i>
+                <h2>Notification Preview</h2>
+            </div>
+        </div>
+
+        <div class="preview-card">
+            <div class="preview-scenario">
+                <span class="preview-label">If you were notified right now...</span>
+            </div>
+
+            <div class="preview-result" *ngIf="!formDoNotDisturb && hasEnabledChannels()">
+                <i class="bi bi-check-circle-fill success"></i>
+                <span>You would receive notifications via <strong>{{ getFirstEnabledChannel() }}</strong> first</span>
+            </div>
+
+            <div class="preview-result warning" *ngIf="formDoNotDisturb">
+                <i class="bi bi-pause-circle-fill"></i>
+                <span>Notifications are paused (Do Not Disturb is active)</span>
+            </div>
+
+            <div class="preview-result danger" *ngIf="!formDoNotDisturb && !hasEnabledChannels()">
+                <i class="bi bi-x-circle-fill"></i>
+                <span>No channels enabled - you won't receive notifications!</span>
+            </div>
+        </div>
+    </section>
+</div>
