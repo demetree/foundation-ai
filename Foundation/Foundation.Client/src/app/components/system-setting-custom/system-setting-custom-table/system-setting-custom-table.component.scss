@@ -1,0 +1,63 @@
+//
+// System Setting Custom Table Styles
+//
+
+.custom-table {
+    th {
+        font-weight: 600;
+        font-size: 0.875rem;
+        white-space: nowrap;
+    }
+
+    .sortable {
+        cursor: pointer;
+        user-select: none;
+
+        &:hover {
+            background-color: rgba(0, 0, 0, 0.04);
+        }
+    }
+}
+
+.arrow-up::after {
+    content: ' ▲';
+    font-size: 0.7rem;
+}
+
+.arrow-down::after {
+    content: ' ▼';
+    font-size: 0.7rem;
+}
+
+.setting-row {
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+
+    &:hover {
+        background-color: rgba(0, 105, 92, 0.04);
+    }
+}
+
+.value-display {
+    background: rgba(0, 0, 0, 0.04);
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    word-break: break-all;
+}
+
+.setting-card {
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1) !important;
+    }
+}
+
+.mobile-cards {
+    .card-header {
+        background: linear-gradient(135deg, rgba(0, 105, 92, 0.05), rgba(38, 166, 154, 0.05));
+    }
+}

@@ -1,0 +1,71 @@
+<ng-template #settingModal let-modal>
+    <div class="modal-header premium-modal-header">
+        <h5 class="modal-title text-white">
+            <i class="fa-solid fa-cog me-2"></i>
+            {{ isEditMode ? 'Edit System Setting' : 'Add System Setting' }}
+        </h5>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="closeModal()"></button>
+    </div>
+
+    <div class="modal-body">
+        <form [formGroup]="settingForm" (ngSubmit)="submitForm()">
+
+            <!-- Name Field -->
+            <div class="mb-3">
+                <label for="name" class="form-label fw-medium">
+                    Name <span class="text-danger">*</span>
+                </label>
+                <input type="text" class="form-control" id="name" formControlName="name"
+                    placeholder="Enter setting name" [class.is-invalid]="isFieldInvalid('name')" maxlength="256">
+                <div class="invalid-feedback" *ngIf="isFieldInvalid('name')">
+                    {{ getFieldError('name') }}
+                </div>
+                <div class="form-text">
+                    Unique identifier for this setting (e.g., "app.theme.color", "email.smtp.host")
+                </div>
+            </div>
+
+            <!-- Description Field -->
+            <div class="mb-3">
+                <label for="description" class="form-label fw-medium">Description</label>
+                <textarea class="form-control" id="description" formControlName="description"
+                    placeholder="Enter a description for this setting" rows="2"
+                    [class.is-invalid]="isFieldInvalid('description')" maxlength="1024"></textarea>
+                <div class="invalid-feedback" *ngIf="isFieldInvalid('description')">
+                    {{ getFieldError('description') }}
+                </div>
+            </div>
+
+            <!-- Value Field -->
+            <div class="mb-3">
+                <label for="value" class="form-label fw-medium">Value</label>
+                <textarea class="form-control font-monospace" id="value" formControlName="value"
+                    placeholder="Enter the setting value" rows="4" [class.is-invalid]="isFieldInvalid('value')"
+                    maxlength="4096"></textarea>
+                <div class="invalid-feedback" *ngIf="isFieldInvalid('value')">
+                    {{ getFieldError('value') }}
+                </div>
+                <div class="form-text">
+                    The value can be plain text, JSON, or any string format.
+                </div>
+            </div>
+
+        </form>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" (click)="closeModal()" [disabled]="isSaving">
+            Cancel
+        </button>
+        <button type="button" class="btn btn-primary" (click)="submitForm()"
+            [disabled]="isSaving || settingForm.invalid">
+            <span *ngIf="isSaving">
+                <i class="fa fa-spinner fa-spin me-1"></i> Saving...
+            </span>
+            <span *ngIf="!isSaving">
+                <i class="fa-solid fa-save me-1"></i>
+                {{ isEditMode ? 'Update' : 'Create' }}
+            </span>
+        </button>
+    </div>
+</ng-template>
