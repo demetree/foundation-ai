@@ -610,17 +610,12 @@ namespace Foundation.Scheduler
                 await Foundation.Web.Utility.StartupBasics.RegisterWithAlertingAsync(app, logger).ConfigureAwait(false);
 
                 //
-                // To test the new log notification system
-                //
-                logger.LogError("Test Error Level log message");
-                logger.LogException("Test Exception Level log message");
-
                 //
                 // Run Scheduler
                 //
                 logger.LogSystem("About to run Scheduler web server.");
-                app.Run();
 
+                app.Run();
             }
             catch (Exception ex)
             {
