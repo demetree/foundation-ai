@@ -1,0 +1,31 @@
+<div class="modal-header">
+    <h4 class="modal-title">
+        <i class="fas fa-check-circle me-2"></i>
+        Resolve Incident
+    </h4>
+    <button type="button" class="btn-close" aria-label="Close" (click)="cancel()"></button>
+</div>
+<div class="modal-body">
+    <div class="incident-info">
+        <div class="incident-key">{{ incidentKey }}</div>
+        <div class="incident-title">{{ incidentTitle }}</div>
+    </div>
+
+    <div class="confirmation-message">
+        <i class="fas fa-exclamation-triangle warning-icon"></i>
+        <p>Are you sure you want to resolve this incident?</p>
+    </div>
+
+    <div class="resolution-input">
+        <label for="resolution" class="form-label">Resolution Note <span class="optional">(optional)</span></label>
+        <textarea id="resolution" class="form-control" [(ngModel)]="resolution" rows="3"
+            placeholder="Enter resolution details or leave blank..."></textarea>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="cancel()">Cancel</button>
+    <button type="button" class="btn btn-success" (click)="confirm()">
+        <i class="fas fa-check me-1"></i>
+        Resolve
+    </button>
+</div>

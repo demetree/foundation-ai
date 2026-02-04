@@ -84,6 +84,7 @@ import { ConfirmationDialogComponent } from './services/confirmation-dialog/conf
 import { InputDialogService } from './services/input-dialog.service';
 import { InputDialogComponent } from './services/input-dialog/input-dialog.component';
 import { SessionActionDialogComponent } from './services/session-action-dialog/session-action-dialog.component';
+import { ResolveIncidentDialogComponent } from './services/resolve-incident-dialog/resolve-incident-dialog.component';
 
 //
 // Data support services
@@ -797,6 +798,7 @@ import { IncidentsService } from './services/incidents.service';
     ConfirmationDialogComponent,
     InputDialogComponent,
     SessionActionDialogComponent,
+    ResolveIncidentDialogComponent,
     UserCustomListingComponent,
     UserCustomTableComponent,
     UserCustomDetailComponent,

@@ -154,5 +154,59 @@ namespace Foundation.Server.Controllers
             public string IncidentKey { get; set; }
             public string Message { get; set; }
         }
+
+        /// <summary>
+        /// Resolve an incident by its key.
+        /// </summary>
+        [HttpPost("{incidentKey}/resolve")]
+        [ProducesResponseType(typeof(ResolveIncidentResponse), 200)]
+        public async Task<IActionResult> ResolveIncident(string incidentKey, [FromBody] ResolveIncidentRequest request = null, CancellationToken cancellationToken = default)
+        {
+            // Check if Alerting is configured
+            if (!_alertingService.IsConfigured)
+            {
+                return Ok(new ResolveIncidentResponse
+                {
+                    Success = false,
+                    Message = "Alerting integration is not configured."
+                });
+            }
+
+            try
+            {
+                IncidentStatusResponse result = await _alertingService.ResolveIncidentAsync(incidentKey, request?.Resolution, cancellationToken).ConfigureAwait(false);
+
+                _logger.LogInformation("Incident {IncidentKey} resolved via Foundation Admin", incidentKey);
+
+                return Ok(new ResolveIncidentResponse
+                {
+                    Success = true,
+                    IncidentKey = incidentKey,
+                    Message = "Incident resolved successfully"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to resolve incident {IncidentKey}", incidentKey);
+                return Ok(new ResolveIncidentResponse
+                {
+                    Success = false,
+                    IncidentKey = incidentKey,
+                    Message = $"Failed to resolve incident: {ex.Message}"
+                });
+            }
+        }
+
+        public class ResolveIncidentRequest
+        {
+            public string Resolution { get; set; }
+        }
+
+        public class ResolveIncidentResponse
+        {
+            public bool Success { get; set; }
+            public string IncidentKey { get; set; }
+            public string Message { get; set; }
+        }
     }
 }

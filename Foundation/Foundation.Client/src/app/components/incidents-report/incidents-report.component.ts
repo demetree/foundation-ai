@@ -6,7 +6,9 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subject, interval } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { IncidentsService, IncidentSummary, IncidentsResponse } from '../../services/incidents.service';
+import { ResolveIncidentDialogComponent, ResolveIncidentResult } from '../../services/resolve-incident-dialog/resolve-incident-dialog.component';
 
 @Component({
     selector: 'app-incidents-report',
@@ -56,7 +58,10 @@ export class IncidentsReportComponent implements OnInit, OnDestroy {
         return this.incidents.filter(i => i.severity === 'Critical').length;
     }
 
-    constructor(private incidentsService: IncidentsService) { }
+    constructor(
+        private incidentsService: IncidentsService,
+        private modalService: NgbModal
+    ) { }
 
     ngOnInit(): void {
         this.loadIncidents();
@@ -193,5 +198,54 @@ export class IncidentsReportComponent implements OnInit, OnDestroy {
                     setTimeout(() => this.testResult = null, 5000);
                 }
             });
+    }
+
+    // Resolve Incident
+    resolvingIncident: string | null = null;
+
+    resolveIncident(incident: IncidentSummary): void {
+        const modalRef = this.modalService.open(ResolveIncidentDialogComponent, { centered: true });
+        modalRef.componentInstance.incidentKey = incident.incidentKey;
+        modalRef.componentInstance.incidentTitle = incident.title;
+
+        modalRef.result.then((result: ResolveIncidentResult) => {
+            if (result?.confirmed) {
+                this.resolvingIncident = incident.incidentKey;
+                this.incidentsService.resolveIncident(incident.incidentKey, result.resolution)
+                    .pipe(takeUntil(this.destroy$))
+                    .subscribe({
+                        next: (response) => {
+                            this.resolvingIncident = null;
+                            if (response.success) {
+                                this.testResult = {
+                                    success: true,
+                                    message: `Incident ${incident.incidentKey} resolved successfully`
+                                };
+                                this.loadIncidents();
+                            } else {
+                                this.testResult = {
+                                    success: false,
+                                    message: response.message || 'Failed to resolve incident'
+                                };
+                            }
+                            setTimeout(() => this.testResult = null, 5000);
+                        },
+                        error: (err: Error) => {
+                            this.resolvingIncident = null;
+                            this.testResult = {
+                                success: false,
+                                message: 'Failed to resolve incident: ' + err.message
+                            };
+                            setTimeout(() => this.testResult = null, 5000);
+                        }
+                    });
+            }
+        }).catch(() => {
+            // Modal dismissed
+        });
+    }
+
+    canResolve(incident: IncidentSummary): boolean {
+        return incident.status !== 'Resolved' && this.resolvingIncident !== incident.incidentKey;
     }
 }

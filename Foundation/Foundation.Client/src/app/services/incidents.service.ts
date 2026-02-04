@@ -83,9 +83,26 @@ export class IncidentsService {
             headers: this.authHeaders
         });
     }
+
+    /**
+     * Resolve an incident by its key.
+     */
+    resolveIncident(incidentKey: string, resolution?: string): Observable<ResolveIncidentResponse> {
+        return this.http.post<ResolveIncidentResponse>(`/api/incidents/${encodeURIComponent(incidentKey)}/resolve`, {
+            resolution
+        }, {
+            headers: this.authHeaders
+        });
+    }
 }
 
 export interface TestIntegrationResponse {
+    success: boolean;
+    incidentKey?: string;
+    message?: string;
+}
+
+export interface ResolveIncidentResponse {
     success: boolean;
     incidentKey?: string;
     message?: string;

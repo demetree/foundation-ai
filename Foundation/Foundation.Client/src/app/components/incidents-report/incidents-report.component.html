@@ -129,6 +129,7 @@
                     <th class="col-status">Status</th>
                     <th class="col-title">Title</th>
                     <th class="col-time">Created</th>
+                    <th class="col-actions">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -150,6 +151,18 @@
                     <td class="col-time">
                         <span class="time-ago" [title]="incident.createdAt | date:'medium'">
                             {{ getTimeAgo(incident.createdAt) }}
+                        </span>
+                    </td>
+                    <td class="col-actions">
+                        <button *ngIf="canResolve(incident)" class="btn btn-sm btn-outline-success btn-resolve"
+                            (click)="resolveIncident(incident)" [disabled]="resolvingIncident === incident.incidentKey"
+                            ngbTooltip="Resolve this incident">
+                            <i class="fas fa-check" *ngIf="resolvingIncident !== incident.incidentKey"></i>
+                            <i class="fas fa-spinner fa-spin" *ngIf="resolvingIncident === incident.incidentKey"></i>
+                            <span class="d-none d-lg-inline ms-1">Resolve</span>
+                        </button>
+                        <span *ngIf="!canResolve(incident) && incident.status === 'Resolved'" class="text-muted small">
+                            <i class="fas fa-check-circle"></i>
                         </span>
                     </td>
                 </tr>
