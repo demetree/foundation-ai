@@ -98,6 +98,127 @@ namespace Foundation
         }
 
 
+        //
+        // Static Initialization Support (for use before DI or in console apps)
+        //
+
+        private static LogErrorNotificationConsumer _instance;
+        private static readonly object _initLock = new object();
+
+
+        /// <summary>
+        /// 
+        /// Initializes log error notification with programmatic options.
+        /// Call this early in startup (after Logger is created) for notifications before DI builds.
+        /// 
+        /// </summary>
+        /// <param name="options">Configuration options.</param>
+        /// <param name="sendEmailAsync">Optional email sender delegate: (subject, body) => success.</param>
+        /// <param name="raiseAlertAsync">Optional alerting delegate: (title, description) => void.</param>
+        /// <returns>The initialized consumer instance.</returns>
+        public static LogErrorNotificationConsumer Initialize(LogErrorNotificationOptions options,
+                                                               Func<string, string, Task<bool>> sendEmailAsync = null,
+                                                               Func<string, string, Task> raiseAlertAsync = null)
+        {
+            lock (_initLock)
+            {
+                if (_instance != null)
+                {
+                    Console.WriteLine("[LogErrorNotification] Already initialized. Ignoring duplicate initialization.");
+                    return _instance;
+                }
+
+                _instance = new LogErrorNotificationConsumer(options, sendEmailAsync, raiseAlertAsync);
+
+                //
+                // Register as a global consumer to receive log entries from ALL loggers
+                //
+                Logger.AddGlobalConsumer(_instance);
+
+                Console.WriteLine($"[LogErrorNotification] Initialized for {options.SystemName}. " +
+                                  $"Email: {options.EnableEmail}, " +
+                                  $"BatchWindow: {options.BatchWindowMinutes}min");
+
+                return _instance;
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// Initializes log error notification with email-only support (most common use case).
+        /// Uses SendGridEmailService for email delivery.
+        /// 
+        /// </summary>
+        /// <param name="systemName">Name of the system (e.g., "Scheduler").</param>
+        /// <param name="environment">Environment name (e.g., "Production").</param>
+        /// <param name="notificationEmails">Email addresses to notify.</param>
+        /// <param name="emailFromAddress">Sender email address.</param>
+        /// <param name="emailFromName">Sender display name.</param>
+        /// <returns>The initialized consumer instance.</returns>
+        public static LogErrorNotificationConsumer InitializeWithEmail(string systemName,
+                                                                        string environment,
+                                                                        string[] notificationEmails,
+                                                                        string emailFromAddress = null,
+                                                                        string emailFromName = null)
+        {
+            LogErrorNotificationOptions options = new LogErrorNotificationOptions
+            {
+                SystemName = systemName ?? "Application",
+                Environment = environment ?? "Unknown",
+                EnableEmail = true,
+                NotificationEmails = notificationEmails?.ToList() ?? new List<string>(),
+                EmailFromAddress = emailFromAddress ?? string.Empty,
+                EmailFromName = emailFromName ?? $"{systemName} Error Monitor"
+            };
+
+            Func<string, string, Task<bool>> emailSender = null;
+
+            if (notificationEmails?.Length > 0)
+            {
+                emailSender = (subject, body) =>
+                    Services.SendGridEmailService.SendEmailToMultipleRecipientsAsync(senderEmail: options.EmailFromAddress,
+                                                                                      senderName: options.EmailFromName,
+                                                                                      toEmails: options.NotificationEmails,
+                                                                                      subject: subject,
+                                                                                      body: body,
+                                                                                      includeSignature: false,
+                                                                                      bodyIsHtml: false);
+            }
+
+            return Initialize(options, emailSender, null);
+        }
+
+
+        /// <summary>
+        /// 
+        /// Gets the current singleton instance, or null if not initialized.
+        /// 
+        /// </summary>
+        public static LogErrorNotificationConsumer Instance => _instance;
+
+
+        /// <summary>
+        /// 
+        /// Shuts down the log error notification system.
+        /// 
+        /// </summary>
+        public static void Shutdown()
+        {
+            lock (_initLock)
+            {
+                if (_instance != null)
+                {
+                    Logger.RemoveGlobalConsumer(_instance);
+                    _instance.Dispose();
+                    _instance = null;
+
+                    Console.WriteLine("[LogErrorNotification] Shutdown complete.");
+                }
+            }
+        }
+
+
         /// <summary>
         /// 
         /// Implementation of Logger.ILogConsumer.Log.

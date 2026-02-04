@@ -1,12 +1,11 @@
-using Foundation.Auditor.Controllers.WebAPI;
 using Foundation.Auditor.Database;
 using Foundation.Extensions;
 using Foundation.Scheduler.Controllers.WebAPI;
 using Foundation.Scheduler.Database;
 using Foundation.Security.Configuration;
-using Foundation.Security.Controllers.WebAPI;
 using Foundation.Security.Database;
 using Foundation.Security.OIDC;
+using Foundation.Web.Services.Alerting;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -25,7 +24,6 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using static Foundation.Configuration;
 using static Foundation.StartupBasics;
-using Foundation.Web.Services;
 
 
 namespace Foundation.Scheduler
@@ -50,6 +48,12 @@ namespace Foundation.Scheduler
             IConfigurationRoot config = GetConfiguration();
 
             Logger logger = SetupLogger(config);
+
+            //
+            // Initialize log error notifications EARLY - before DI
+            // Reads from "LogErrorNotification" section in appsettings.json
+            //
+            Foundation.Web.Services.LogErrorNotificationExtensions.InitializeFromConfiguration(config);
 
             logger.LogSystem("Scheduler is starting.");
 
@@ -413,10 +417,12 @@ namespace Foundation.Scheduler
                 builder.Services.AddSingleton<Foundation.Services.IApplicationMetricsProvider,
                     global::Scheduler.Server.Services.SchedulerMetricsProvider>();
 
+
                 //
-                // Log Error Notification Consumer (for email/alerting on errors)
+                // Alerting Integration Service (for incident management)
                 //
-                builder.Services.AddLogErrorNotification(builder.Configuration);
+                builder.Services.AddAlertingIntegration(builder.Configuration);
+
 
                 //
                 // Configurations
@@ -597,6 +603,17 @@ namespace Foundation.Scheduler
                         ("Scheduler", schedulerContext)
                     );
                 }
+
+                //
+                // Auto-register with Alerting system (if configured)
+                //
+                await Foundation.Web.Utility.StartupBasics.RegisterWithAlertingAsync(app, logger).ConfigureAwait(false);
+
+                //
+                // To test the new log notification system
+                //
+                logger.LogError("Test Error Level log message");
+                logger.LogException("Test Exception Level log message");
 
                 //
                 // Run Scheduler

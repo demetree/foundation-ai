@@ -236,6 +236,7 @@ namespace Foundation.Services
                                                                           bool bodyIsHtml = false)
         {
             InitializeLogger();
+
             try
             {
                 //

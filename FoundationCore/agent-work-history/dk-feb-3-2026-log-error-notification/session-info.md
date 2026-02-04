@@ -2,32 +2,32 @@
 
 - **Conversation ID:** dd8b30c7-cddc-4511-858b-01bc22213e01
 - **Date:** 2026-02-03
-- **Time:** 22:30 NST (UTC-03:30)
-- **Duration:** Approximately 30 minutes
+- **Time:** 23:54 NST (-03:30)
+- **Duration:** ~3 hours
 
 ## Summary
 
-Implemented a reusable log error notification system for the Foundation framework. The system monitors for Exception/Error level log entries via the `Logger.ILogConsumer` interface and sends batched notifications via email (SendGrid) and/or the Alerting system.
+Implemented a comprehensive Log Error Notification System for the Foundation framework that captures Exception/Error level logs and sends batched notifications via email and/or the Alerting system. The system supports global consumer registration (applies to all loggers), early startup initialization (before DI), and standalone alerting via direct HTTP calls.
+
+## Key Features
+
+- **First-Failure Immediate Notification with Suppression:** Sends immediate notification on first error, then batches subsequent errors for a configurable window (default 10 minutes)
+- **Global Logger Consumer:** Uses `Logger.AddGlobalConsumer()` to receive logs from ALL logger instances
+- **Pre-DI Initialization:** `InitializeFromConfiguration()` method reads from appsettings.json and works before DI container builds
+- **Standalone Alerting:** Direct HTTP calls to Alerting API without requiring DI service, with API key retrieved from SystemSettings
 
 ## Files Created
 
 - `FoundationCore/Utility/LogErrorNotificationOptions.cs` - Configuration options class
-- `FoundationCore/Utility/LogErrorNotificationConsumer.cs` - Core consumer with rate-limited batching
-- `FoundationCore.Web/Services/LogErrorNotificationExtensions.cs` - DI extension method
+- `FoundationCore/Utility/LogErrorNotificationConsumer.cs` - Core consumer with static initialization
+- `FoundationCore.Web/Services/LogErrorNotificationExtensions.cs` - DI extensions and config-based initialization
 
 ## Files Modified
 
+- `FoundationCore/Utility/Logger.cs` - Added `AddGlobalConsumer()` and `RemoveGlobalConsumer()` static methods
+- `Scheduler/Scheduler.Server/Program.cs` - Added early initialization call and Alerting integration
 - `Scheduler/Scheduler.Server/appsettings.json` - Added LogErrorNotification configuration section
-- `Scheduler/Scheduler.Server/Program.cs` - Added service registration for log error notification
-
-## Key Features
-
-- **Dual-channel notification:** Supports both email (SendGrid) and Alerting incidents
-- **Rate-limited batching:** Sends first error immediately, then batches for 10 minutes
-- **Thread-safe:** Uses ConcurrentQueue for lock-free operation
-- **Reusable:** Built into FoundationCore for use across all Foundation projects
 
 ## Related Sessions
 
-- Previous session established the AlertingIntegrationService library used here
-- Builds on existing Logger.ILogConsumer interface pattern
+This is part of the ongoing Foundation framework enhancement effort, building on the Alerting and Incident Management module.

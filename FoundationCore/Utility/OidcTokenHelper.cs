@@ -12,7 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 
-namespace Foundation.Server.OIDC
+namespace Foundation.OIDC
 {
     /// <summary>
     /// 
@@ -30,7 +30,7 @@ namespace Foundation.Server.OIDC
         /// <returns>Access token string.</returns>
         public static async Task<string> GetServiceAccountTokenAsync(IConfiguration configuration,
                                                                      HttpClient httpClient, 
-                                                                     string baseUrl,                   // base URL of endpoint to get credentails from 
+                                                                     string baseUrl,                   // base URL of endpoint to get credentials from 
                                                                      string clientId,                  // OIDC client application id like alerting_spa or whatever you're getting a token from
                                                                      CancellationToken cancellationToken = default)
         {

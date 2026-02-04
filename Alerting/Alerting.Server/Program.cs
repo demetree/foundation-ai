@@ -469,6 +469,7 @@ namespace Foundation.Alerting
                     }
 
                     context.Response.Headers["Content-Security-Policy"] = cspPolicy;
+
                     await next();
                 });
 

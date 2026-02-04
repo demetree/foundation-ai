@@ -195,6 +195,9 @@ namespace Foundation
         // To hold a a reference to all loggers created.
         private static ConcurrentList<Logger> _allLoggers = new ConcurrentList<Logger>();
 
+        // Global consumers that receive log entries from ALL loggers (for system-wide notification)
+        private static readonly ConcurrentList<ILogConsumer> _globalConsumers = new ConcurrentList<ILogConsumer>();
+
         internal static List<Logger> Loggers
         {
             get { return _allLoggers.ToList(); }
@@ -400,10 +403,47 @@ namespace Foundation
         }
 
 
+        /// <summary>
+        /// 
+        /// Adds a global consumer that receives log entries from ALL loggers.
+        /// Use this for system-wide notification services.
+        /// 
+        /// </summary>
+        public static void AddGlobalConsumer(ILogConsumer consumer)
+        {
+            _globalConsumers.Add(consumer);
+        }
+
+
+        /// <summary>
+        /// 
+        /// Removes a global consumer.
+        /// 
+        /// </summary>
+        public static void RemoveGlobalConsumer(ILogConsumer consumer)
+        {
+            _globalConsumers.Remove(consumer);
+        }
+
+
         internal void DistributeToConsumer(LogEntry entry)
         {
             // Fire-and-forget — never block the writer
+            // First, notify instance-specific consumers
             foreach (ILogConsumer consumer in _consumers)
+            {
+                try
+                {
+                    consumer.Log(entry.Timestamp, entry.Level, entry.Message, entry.ThreadName);
+                }
+                catch
+                {
+                    /* consumer threw — ignore */
+                }
+            }
+
+            // Then, notify global consumers (for system-wide notification services)
+            foreach (ILogConsumer consumer in _globalConsumers)
             {
                 try
                 {
