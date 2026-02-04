@@ -1,0 +1,179 @@
+<!--
+    Configuration Health Checker
+    Admin tool for reviewing configuration chain health
+-->
+<div class="config-health-container">
+
+    <!-- Hero Header -->
+    <header class="hero-header" [ngClass]="getStatusClass(health?.overallStatus || 'Healthy')">
+        <div class="floating-orb"></div>
+        <div class="header-content">
+            <div class="header-left">
+                <button class="btn-back" *ngIf="canGoBack()" (click)="goBack()">
+                    <i class="bi bi-arrow-left"></i>
+                </button>
+                <div class="title-section">
+                    <h1>
+                        <i class="bi bi-shield-check"></i>
+                        Configuration Health
+                    </h1>
+                    <p class="subtitle">Validate your alerting configuration chain</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="status-indicator" *ngIf="health">
+                    <i class="bi" [ngClass]="{
+                        'bi-check-circle-fill': health.overallStatus === 'Healthy',
+                        'bi-exclamation-triangle-fill': health.overallStatus === 'Warning',
+                        'bi-x-circle-fill': health.overallStatus === 'Error'
+                    }"></i>
+                    {{ health.overallStatus }}
+                </div>
+                <button class="btn-refresh" (click)="refresh()" [disabled]="loading">
+                    <i class="bi bi-arrow-clockwise" [class.spin]="loading"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Loading State -->
+    <div class="loading-container" *ngIf="loading && !health">
+        <div class="loading-spinner"></div>
+        <p>Analyzing configuration...</p>
+    </div>
+
+    <!-- Error State -->
+    <div class="error-container" *ngIf="error">
+        <i class="bi bi-exclamation-triangle"></i>
+        <p>{{ error }}</p>
+        <button class="btn-retry" (click)="refresh()">Try Again</button>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" *ngIf="health && !error">
+
+        <!-- Summary Cards -->
+        <section class="summary-section">
+            <div class="summary-grid">
+                <div class="summary-card healthy">
+                    <div class="card-icon">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+                    <div class="card-content">
+                        <span class="card-value">{{ health.fullyConfiguredCount }}</span>
+                        <span class="card-label">Fully Configured</span>
+                    </div>
+                </div>
+                <div class="summary-card warning" *ngIf="health.partiallyConfiguredCount > 0">
+                    <div class="card-icon">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </div>
+                    <div class="card-content">
+                        <span class="card-value">{{ health.partiallyConfiguredCount }}</span>
+                        <span class="card-label">Partial Config</span>
+                    </div>
+                </div>
+                <div class="summary-card error" *ngIf="health.unconfiguredCount > 0">
+                    <div class="card-icon">
+                        <i class="bi bi-x-circle"></i>
+                    </div>
+                    <div class="card-content">
+                        <span class="card-value">{{ health.unconfiguredCount }}</span>
+                        <span class="card-label">Unconfigured</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Issues Section -->
+        <section class="issues-section" *ngIf="health.issues && health.issues.length > 0">
+            <div class="section-header">
+                <h2><i class="bi bi-list-check"></i> Configuration Issues</h2>
+                <div class="issue-counts">
+                    <span class="count-badge error" *ngIf="errorCount > 0">
+                        {{ errorCount }} Error{{ errorCount > 1 ? 's' : '' }}
+                    </span>
+                    <span class="count-badge warning" *ngIf="warningCount > 0">
+                        {{ warningCount }} Warning{{ warningCount > 1 ? 's' : '' }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters-bar">
+                <div class="filter-group">
+                    <label>Severity</label>
+                    <select [(ngModel)]="selectedSeverity">
+                        <option [ngValue]="null">All</option>
+                        <option value="Error">Errors Only</option>
+                        <option value="Warning">Warnings Only</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Entity Type</label>
+                    <select [(ngModel)]="selectedEntityType">
+                        <option [ngValue]="null">All</option>
+                        <option *ngFor="let type of uniqueEntityTypes" [value]="type">{{ type }}</option>
+                    </select>
+                </div>
+                <button class="btn-clear" *ngIf="selectedSeverity || selectedEntityType" (click)="clearFilters()">
+                    <i class="bi bi-x-lg"></i> Clear
+                </button>
+            </div>
+
+            <!-- Issues List -->
+            <div class="issues-list">
+                <div class="issue-card" *ngFor="let issue of filteredIssues"
+                    [class.severity-error]="issue.severity === 'Error'"
+                    [class.severity-warning]="issue.severity === 'Warning'" (click)="navigateToQuickFix(issue)">
+                    <div class="issue-icon">
+                        <i [ngClass]="getEntityIcon(issue.entityType)"></i>
+                    </div>
+                    <div class="issue-content">
+                        <div class="issue-header">
+                            <span class="entity-type">{{ issue.entityType }}</span>
+                            <span class="severity-badge" [ngClass]="getSeverityClass(issue.severity)">
+                                {{ issue.severity }}
+                            </span>
+                        </div>
+                        <div class="issue-name">{{ issue.entityName }}</div>
+                        <div class="issue-description">{{ issue.description }}</div>
+                    </div>
+                    <div class="issue-action">
+                        <i class="bi bi-chevron-right"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty Filtered State -->
+            <div class="no-results" *ngIf="filteredIssues.length === 0 && (selectedSeverity || selectedEntityType)">
+                <i class="bi bi-funnel"></i>
+                <p>No issues match your filters</p>
+                <button class="btn-clear" (click)="clearFilters()">Clear Filters</button>
+            </div>
+        </section>
+
+        <!-- All Good State -->
+        <section class="all-good-section" *ngIf="!health.issues || health.issues.length === 0">
+            <div class="all-good-card">
+                <div class="all-good-icon">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+                <h3>Configuration is Healthy</h3>
+                <p>All integrations are properly connected through the notification chain.</p>
+                <div class="chain-visual">
+                    <span class="chain-item">Integration</span>
+                    <i class="bi bi-arrow-right"></i>
+                    <span class="chain-item">Service</span>
+                    <i class="bi bi-arrow-right"></i>
+                    <span class="chain-item">Policy</span>
+                    <i class="bi bi-arrow-right"></i>
+                    <span class="chain-item">Schedule</span>
+                    <i class="bi bi-arrow-right"></i>
+                    <span class="chain-item">Members</span>
+                </div>
+            </div>
+        </section>
+
+    </div>
+</div>

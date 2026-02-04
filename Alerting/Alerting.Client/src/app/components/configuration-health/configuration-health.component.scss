@@ -1,0 +1,611 @@
+//
+// Configuration Health Checker Styles
+//
+// Premium glassmorphic design matching Command Center aesthetics.
+// AI-assisted development - February 2026
+//
+
+// Variables
+$bg-dark: #0f1419;
+$glass-bg: rgba(255, 255, 255, 0.03);
+$glass-border: rgba(255, 255, 255, 0.08);
+$text-primary: #e7e9ea;
+$text-secondary: rgba(255, 255, 255, 0.7);
+$text-muted: rgba(255, 255, 255, 0.5);
+$healthy-color: #10b981;
+$warning-color: #f59e0b;
+$error-color: #ef4444;
+$accent-blue: #3b82f6;
+
+// Container
+.config-health-container {
+    min-height: 100vh;
+    background: $bg-dark;
+    color: $text-primary;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+// Hero Header
+.hero-header {
+    position: relative;
+    padding: 2rem 2.5rem;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+    border-bottom: 1px solid $glass-border;
+    overflow: hidden;
+
+    &.status-healthy {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.02) 100%);
+    }
+
+    &.status-warning {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(245, 158, 11, 0.02) 100%);
+    }
+
+    &.status-error {
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(239, 68, 68, 0.02) 100%);
+    }
+
+    .floating-orb {
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
+        border-radius: 50%;
+        filter: blur(60px);
+        pointer-events: none;
+    }
+
+    .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+        z-index: 1;
+    }
+
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .btn-back {
+        background: $glass-bg;
+        border: 1px solid $glass-border;
+        color: $text-primary;
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(-2px);
+        }
+    }
+
+    .title-section h1 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+
+        i {
+            color: $accent-blue;
+        }
+    }
+
+    .subtitle {
+        margin: 0.25rem 0 0;
+        color: $text-secondary;
+        font-size: 0.95rem;
+    }
+
+    .header-right {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .status-indicator {
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: $glass-bg;
+        border: 1px solid $glass-border;
+
+        .bi-check-circle-fill {
+            color: $healthy-color;
+        }
+
+        .bi-exclamation-triangle-fill {
+            color: $warning-color;
+        }
+
+        .bi-x-circle-fill {
+            color: $error-color;
+        }
+    }
+
+    .btn-refresh {
+        background: $glass-bg;
+        border: 1px solid $glass-border;
+        color: $text-primary;
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .spin {
+            animation: spin 1s linear infinite;
+        }
+    }
+}
+
+// Main Content
+.main-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+// Summary Section
+.summary-section {
+    margin-bottom: 2rem;
+}
+
+.summary-grid {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.summary-card {
+    flex: 1;
+    min-width: 180px;
+    background: $glass-bg;
+    border: 1px solid $glass-border;
+    border-radius: 16px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    &.healthy {
+        border-color: rgba(16, 185, 129, 0.3);
+
+        .card-icon {
+            background: rgba(16, 185, 129, 0.15);
+            color: $healthy-color;
+        }
+    }
+
+    &.warning {
+        border-color: rgba(245, 158, 11, 0.3);
+
+        .card-icon {
+            background: rgba(245, 158, 11, 0.15);
+            color: $warning-color;
+        }
+    }
+
+    &.error {
+        border-color: rgba(239, 68, 68, 0.3);
+
+        .card-icon {
+            background: rgba(239, 68, 68, 0.15);
+            color: $error-color;
+        }
+    }
+
+    .card-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .card-content {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .card-value {
+        font-size: 2rem;
+        font-weight: 700;
+    }
+
+    .card-label {
+        font-size: 0.875rem;
+        color: $text-secondary;
+    }
+}
+
+// Issues Section
+.issues-section {
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+
+        h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+
+            i {
+                color: $text-secondary;
+            }
+        }
+    }
+
+    .issue-counts {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    .count-badge {
+        padding: 0.35rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+
+        &.error {
+            background: rgba(239, 68, 68, 0.2);
+            color: $error-color;
+        }
+
+        &.warning {
+            background: rgba(245, 158, 11, 0.2);
+            color: $warning-color;
+        }
+    }
+}
+
+// Filters
+.filters-bar {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    align-items: flex-end;
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+
+        label {
+            font-size: 0.75rem;
+            color: $text-muted;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        select {
+            background: $glass-bg;
+            border: 1px solid $glass-border;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            color: $text-primary;
+            font-size: 0.875rem;
+            min-width: 150px;
+            cursor: pointer;
+
+            &:focus {
+                outline: none;
+                border-color: $accent-blue;
+            }
+
+            option {
+                background: #1a1f2e;
+            }
+        }
+    }
+
+    .btn-clear {
+        background: transparent;
+        border: 1px solid $glass-border;
+        color: $text-secondary;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        transition: all 0.2s ease;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: $text-primary;
+        }
+    }
+}
+
+// Issues List
+.issues-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.issue-card {
+    background: $glass-bg;
+    border: 1px solid $glass-border;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.06);
+        transform: translateX(4px);
+    }
+
+    &.severity-error {
+        border-left: 3px solid $error-color;
+    }
+
+    &.severity-warning {
+        border-left: 3px solid $warning-color;
+    }
+
+    .issue-icon {
+        width: 44px;
+        height: 44px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        color: $text-secondary;
+        flex-shrink: 0;
+    }
+
+    .issue-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .issue-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .entity-type {
+        font-size: 0.75rem;
+        color: $text-muted;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .severity-badge {
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.65rem;
+        font-weight: 600;
+        text-transform: uppercase;
+
+        &.severity-error {
+            background: rgba(239, 68, 68, 0.2);
+            color: $error-color;
+        }
+
+        &.severity-warning {
+            background: rgba(245, 158, 11, 0.2);
+            color: $warning-color;
+        }
+    }
+
+    .issue-name {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .issue-description {
+        font-size: 0.875rem;
+        color: $text-secondary;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .issue-action {
+        color: $text-muted;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+    }
+}
+
+// No Results
+.no-results {
+    text-align: center;
+    padding: 3rem;
+    color: $text-muted;
+
+    i {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    p {
+        margin-bottom: 1rem;
+    }
+
+    .btn-clear {
+        background: $accent-blue;
+        border: none;
+        color: white;
+        padding: 0.5rem 1.25rem;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.875rem;
+
+        &:hover {
+            background: lighten($accent-blue, 5%);
+        }
+    }
+}
+
+// All Good Section
+.all-good-section {
+    display: flex;
+    justify-content: center;
+    padding: 3rem 0;
+}
+
+.all-good-card {
+    text-align: center;
+    max-width: 500px;
+
+    .all-good-icon {
+        width: 100px;
+        height: 100px;
+        margin: 0 auto 1.5rem;
+        background: rgba(16, 185, 129, 0.15);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        color: $healthy-color;
+    }
+
+    h3 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 0 0 0.5rem;
+        color: $healthy-color;
+    }
+
+    p {
+        color: $text-secondary;
+        margin: 0 0 2rem;
+    }
+
+    .chain-visual {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+
+        .chain-item {
+            background: $glass-bg;
+            border: 1px solid $glass-border;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+        }
+
+        .bi-arrow-right {
+            color: $healthy-color;
+        }
+    }
+}
+
+// Loading State
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem;
+    color: $text-muted;
+
+    .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid $glass-border;
+        border-top-color: $accent-blue;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 1rem;
+    }
+}
+
+// Error State
+.error-container {
+    text-align: center;
+    padding: 4rem;
+    color: $error-color;
+
+    i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    p {
+        margin-bottom: 1.5rem;
+    }
+
+    .btn-retry {
+        background: $error-color;
+        border: none;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.875rem;
+
+        &:hover {
+            background: lighten($error-color, 5%);
+        }
+    }
+}
+
+// Animations
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}

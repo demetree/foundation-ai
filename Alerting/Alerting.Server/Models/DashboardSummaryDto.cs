@@ -30,6 +30,7 @@ namespace Alerting.Server.Models
         public List<RecentActivityDto> RecentActivity { get; set; } = new();
         public ConfigurationCountsDto ConfigCounts { get; set; } = new();
         public PerformanceMetricsDto Performance { get; set; } = new();
+        public ConfigurationHealthDto ConfigurationHealth { get; set; } = new();
     }
 
     /// <summary>
@@ -129,4 +130,72 @@ namespace Alerting.Server.Models
         /// </summary>
         public int IncidentsResolvedLast7Days { get; set; }
     }
+
+    /// <summary>
+    /// Configuration health summary for alerting chain validation
+    /// </summary>
+    public class ConfigurationHealthDto
+    {
+        /// <summary>
+        /// Overall health status: Healthy, Warning, Error
+        /// </summary>
+        public string OverallStatus { get; set; } = "Healthy";
+
+        /// <summary>
+        /// Integrations with complete configuration chain
+        /// </summary>
+        public int FullyConfiguredCount { get; set; }
+
+        /// <summary>
+        /// Integrations with partial configuration (some gaps)
+        /// </summary>
+        public int PartiallyConfiguredCount { get; set; }
+
+        /// <summary>
+        /// Integrations with no service linked
+        /// </summary>
+        public int UnconfiguredCount { get; set; }
+
+        /// <summary>
+        /// Detailed list of configuration issues
+        /// </summary>
+        public List<ConfigurationIssueDto> Issues { get; set; } = new();
+    }
+
+    /// <summary>
+    /// Individual configuration issue
+    /// </summary>
+    public class ConfigurationIssueDto
+    {
+        /// <summary>
+        /// Type of entity: Integration, Service, EscalationPolicy, Schedule
+        /// </summary>
+        public string EntityType { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Entity database ID
+        /// </summary>
+        public int EntityId { get; set; }
+
+        /// <summary>
+        /// Entity display name
+        /// </summary>
+        public string EntityName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Issue severity: Warning, Error
+        /// </summary>
+        public string Severity { get; set; } = "Warning";
+
+        /// <summary>
+        /// Human-readable issue description
+        /// </summary>
+        public string Description { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Frontend route to fix the issue
+        /// </summary>
+        public string QuickFixRoute { get; set; } = string.Empty;
+    }
 }
+

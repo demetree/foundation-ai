@@ -193,14 +193,15 @@
                     <div class="feed-item" *ngFor="let delivery of summary.recentDeliveries"
                         (click)="openDeliveryDetail(delivery)">
                         <div class="feed-time">{{ formatTimeAgo(delivery.attemptedAt) }}</div>
-                        <div class="feed-channel">
+                        <div class="feed-channel" [ngClass]="getStatusClass(delivery.status)">
                             <i [ngClass]="getChannelIcon(delivery.channelName)"></i>
                         </div>
                         <div class="feed-content">
                             <span class="feed-title">{{ delivery.incidentTitle }}</span>
-                            <span class="feed-detail">{{ delivery.recipientSummary }}</span>
+                            <span class="feed-detail">User: {{ getUserDisplayName(delivery.userObjectGuid) }}</span>
                         </div>
                         <div class="feed-status" [ngClass]="getStatusClass(delivery.status)">
+                            <i *ngIf="delivery.errorMessage" class="bi bi-exclamation-triangle-fill me-1"></i>
                             {{ delivery.status }}
                         </div>
                     </div>

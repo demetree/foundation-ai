@@ -13,6 +13,7 @@ import { AuthService } from '../../services/auth.service';
 import { ConfigurationService } from '../../services/configuration.service';
 import { NavigationService } from '../../utility-services/navigation.service';
 import { AlertService } from '../../services/alert.service';
+import { AlertingUserService, AlertingUser } from '../../services/alerting-user.service';
 
 
 //
@@ -139,22 +140,59 @@ export class NotificationFlightControlComponent implements OnInit, OnDestroy {
     private readonly REFRESH_INTERVAL = 5000; // 5 seconds
     private refreshSubscription?: Subscription;
 
+    //
+    // User lookup map for GUID -> display name resolution
+    //
+    private userMap = new Map<string, AlertingUser>();
+
     constructor(
         private http: HttpClient,
         private config: ConfigurationService,
         private authService: AuthService,
         private navigationService: NavigationService,
         private alertService: AlertService,
-        private router: Router
+        private router: Router,
+        private userService: AlertingUserService
     ) { }
 
     ngOnInit(): void {
+        this.loadUsers();
         this.loadData();
         this.startAutoRefresh();
     }
 
     ngOnDestroy(): void {
         this.stopAutoRefresh();
+    }
+
+    //
+    // User Loading
+    //
+    private loadUsers(): void {
+        this.userService.getUsers().subscribe({
+            next: (users) => {
+                this.userMap.clear();
+                for (const user of users) {
+                    this.userMap.set(user.objectGuid, user);
+                }
+            },
+            error: (err) => {
+                console.error('Failed to load users for display name resolution', err);
+            }
+        });
+    }
+
+    /**
+     * Resolves a user GUID to a readable display name.
+     * Falls back to the GUID if user not found.
+     */
+    getUserDisplayName(guid: string | null): string {
+        if (!guid) return 'Unknown';
+        const user = this.userMap.get(guid);
+        if (user) {
+            return user.displayName || `${user.firstName} ${user.lastName}`.trim() || user.accountName;
+        }
+        return `User: ${guid}`;
     }
 
     //
@@ -296,10 +334,18 @@ export class NotificationFlightControlComponent implements OnInit, OnDestroy {
 
     getStatusClass(status: string): string {
         switch (status?.toLowerCase()) {
-            case 'delivered': return 'status-delivered';
-            case 'failed': return 'status-failed';
-            case 'pending': return 'status-pending';
-            default: return '';
+            case 'delivered':
+            case 'sent':
+                return 'status-delivered';
+            case 'pending':
+                return 'status-pending';
+            case 'failed':
+            case 'abandoned':
+            case 'error':
+                return 'status-failed';
+            default:
+                // Treat unknown statuses as failed for visibility
+                return status ? 'status-failed' : '';
         }
     }
 

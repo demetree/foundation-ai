@@ -719,6 +719,142 @@ section h2 {
     }
 }
 
+// Configuration Health Panel
+.config-health-panel {
+    margin-top: 1.5rem;
+    background: $glass-bg;
+    border: 1px solid $glass-border;
+    border-radius: 16px;
+    padding: 1.25rem;
+
+    .health-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+
+        .health-label {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: $text-primary;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+
+            i {
+                color: $text-secondary;
+            }
+        }
+
+        .health-badge {
+            padding: 0.35rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+
+            &.healthy {
+                background: rgba(16, 185, 129, 0.2);
+                color: $healthy-color;
+            }
+
+            &.warning {
+                background: rgba(245, 158, 11, 0.2);
+                color: $degraded-color;
+            }
+
+            &.error {
+                background: rgba(239, 68, 68, 0.2);
+                color: $critical-color;
+            }
+        }
+    }
+
+    .health-stats {
+        display: flex;
+        gap: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid $glass-border;
+
+        .health-stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+
+            .stat-value {
+                font-size: 1.5rem;
+                font-weight: 700;
+
+                &.healthy {
+                    color: $healthy-color;
+                }
+
+                &.warning {
+                    color: $degraded-color;
+                }
+
+                &.error {
+                    color: $critical-color;
+                }
+            }
+
+            .stat-label {
+                font-size: 0.75rem;
+                color: $text-muted;
+            }
+        }
+    }
+
+    .health-issues-summary {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1rem;
+
+        .issues-count {
+            color: $degraded-color;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+
+            i {
+                font-size: 1rem;
+            }
+        }
+
+        .view-details-link {
+            color: #3b82f6;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            transition: all 0.2s ease;
+
+            &:hover {
+                color: #60a5fa;
+                transform: translateX(2px);
+            }
+        }
+    }
+
+    .health-all-good {
+        margin-top: 1rem;
+        color: $healthy-color;
+        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        i {
+            font-size: 1rem;
+        }
+    }
+}
+
 // Animations
 @keyframes spin {
     from {

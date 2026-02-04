@@ -63,6 +63,7 @@ namespace Alerting.Server.Services
             var recentActivity = await GetRecentActivityAsync().ConfigureAwait(false);
             var configCounts = await GetConfigurationCountsAsync().ConfigureAwait(false);
             var performance = await GetPerformanceMetricsAsync(sevenDaysAgo, now).ConfigureAwait(false);
+            var configHealth = await GetConfigurationHealthAsync().ConfigureAwait(false);
 
             //
             // Determine operational status based on active incident count
@@ -82,7 +83,8 @@ namespace Alerting.Server.Services
                 OnCallSummary = onCallSummary,
                 RecentActivity = recentActivity,
                 ConfigCounts = configCounts,
-                Performance = performance
+                Performance = performance,
+                ConfigurationHealth = configHealth
             };
         }
 
@@ -324,6 +326,187 @@ namespace Alerting.Server.Services
                 MttaTrend = mttaTrend,
                 MttrTrend = mttrTrend,
                 IncidentsResolvedLast7Days = resolvedIncidents.Count
+            };
+        }
+
+        /// <summary>
+        /// Validates the configuration chain and reports any issues.
+        /// </summary>
+        private async Task<ConfigurationHealthDto> GetConfigurationHealthAsync()
+        {
+            var issues = new List<ConfigurationIssueDto>();
+            int fullyConfigured = 0;
+            int partiallyConfigured = 0;
+            int unconfigured = 0;
+
+            //
+            // Get all integrations with their related entities
+            //
+            var integrations = await _context.Integrations
+                .Include(i => i.service)
+                    .ThenInclude(s => s!.escalationPolicy)
+                        .ThenInclude(ep => ep!.EscalationRules.Where(r => !r.deleted))
+                .ToListAsync()
+                .ConfigureAwait(false);
+
+            //
+            // Get all schedules with their layers and members for lookup
+            //
+            var schedules = await _context.OnCallSchedules
+                .Include(s => s.ScheduleLayers.Where(l => !l.deleted))
+                    .ThenInclude(l => l.ScheduleLayerMembers.Where(m => !m.deleted))
+                .ToListAsync()
+                .ConfigureAwait(false);
+
+            var schedulesByGuid = schedules.ToDictionary(s => s.objectGuid, s => s);
+
+            foreach (var integration in integrations)
+            {
+                bool hasIssue = false;
+
+                // Check 1: Integration has no service
+                if (integration.serviceId == null)
+                {
+                    unconfigured++;
+                    issues.Add(new ConfigurationIssueDto
+                    {
+                        EntityType = "Integration",
+                        EntityId = integration.id,
+                        EntityName = integration.name,
+                        Severity = "Error",
+                        Description = "No service linked to this integration",
+                        QuickFixRoute = $"/integration-edit/{integration.id}"
+                    });
+                    continue;
+                }
+
+                var service = integration.service;
+
+                // Check 2: Service has no escalation policy
+                if (service!.escalationPolicyId == null)
+                {
+                    hasIssue = true;
+                    issues.Add(new ConfigurationIssueDto
+                    {
+                        EntityType = "Service",
+                        EntityId = service.id,
+                        EntityName = service.name,
+                        Severity = "Error",
+                        Description = "No escalation policy assigned",
+                        QuickFixRoute = $"/service-edit/{service.id}"
+                    });
+                }
+                else
+                {
+                    var policy = service.escalationPolicy;
+                    var rules = policy!.EscalationRules?.Where(r => !r.deleted).ToList() ?? new List<Foundation.Alerting.Database.EscalationRule>();
+
+                    // Check 3: Escalation policy has no rules
+                    if (!rules.Any())
+                    {
+                        hasIssue = true;
+                        issues.Add(new ConfigurationIssueDto
+                        {
+                            EntityType = "EscalationPolicy",
+                            EntityId = policy.id,
+                            EntityName = policy.name,
+                            Severity = "Error",
+                            Description = "No escalation rules defined",
+                            QuickFixRoute = $"/escalation-policy-management/{policy.id}/edit"
+                        });
+                    }
+                    else
+                    {
+                        // Check 4: Each rule's target schedule has active members
+                        foreach (var rule in rules)
+                        {
+                            // Only check rules targeting schedules
+                            if (rule.targetType == "schedule" && rule.targetObjectGuid.HasValue)
+                            {
+                                if (schedulesByGuid.TryGetValue(rule.targetObjectGuid.Value, out var schedule))
+                                {
+                                    var activeLayers = schedule.ScheduleLayers?.Where(l => !l.deleted).ToList() ?? new List<Foundation.Alerting.Database.ScheduleLayer>();
+                                    var memberCount = activeLayers.SelectMany(l => l.ScheduleLayerMembers?.Where(m => !m.deleted) ?? Enumerable.Empty<Foundation.Alerting.Database.ScheduleLayerMember>()).Count();
+
+                                    if (memberCount == 0)
+                                    {
+                                        hasIssue = true;
+                                        issues.Add(new ConfigurationIssueDto
+                                        {
+                                            EntityType = "Schedule",
+                                            EntityId = schedule.id,
+                                            EntityName = schedule.name,
+                                            Severity = "Warning",
+                                            Description = "Schedule has no active members",
+                                            QuickFixRoute = $"/schedule-management/{schedule.id}/edit"
+                                        });
+                                    }
+                                }
+                                else
+                                {
+                                    hasIssue = true;
+                                    issues.Add(new ConfigurationIssueDto
+                                    {
+                                        EntityType = "EscalationPolicy",
+                                        EntityId = policy.id,
+                                        EntityName = policy.name,
+                                        Severity = "Error",
+                                        Description = $"Rule references non-existent schedule",
+                                        QuickFixRoute = $"/escalation-policy-management/{policy.id}/edit"
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (hasIssue)
+                    partiallyConfigured++;
+                else
+                    fullyConfigured++;
+            }
+
+            //
+            // Check for orphaned schedules (not used by any policy)
+            // Query ALL escalation rules, not just those connected through integrations
+            //
+            var allRules = await _context.EscalationRules
+                .Where(r => !r.deleted && r.targetType == "schedule" && r.targetObjectGuid.HasValue)
+                .Select(r => r.targetObjectGuid!.Value)
+                .Distinct()
+                .ToListAsync()
+                .ConfigureAwait(false);
+
+            var usedScheduleGuids = allRules.ToHashSet();
+
+            foreach (var schedule in schedules)
+            {
+                if (!usedScheduleGuids.Contains(schedule.objectGuid))
+                {
+                    issues.Add(new ConfigurationIssueDto
+                    {
+                        EntityType = "Schedule",
+                        EntityId = schedule.id,
+                        EntityName = schedule.name,
+                        Severity = "Warning",
+                        Description = "Schedule is not used by any escalation policy",
+                        QuickFixRoute = $"/schedule-management/{schedule.id}/edit"
+                    });
+                }
+            }
+
+            // Determine overall status
+            var hasErrors = issues.Any(i => i.Severity == "Error");
+            var hasWarnings = issues.Any(i => i.Severity == "Warning");
+            var overallStatus = hasErrors ? "Error" : hasWarnings ? "Warning" : "Healthy";
+
+            return new ConfigurationHealthDto
+            {
+                OverallStatus = overallStatus,
+                FullyConfiguredCount = fullyConfigured,
+                PartiallyConfiguredCount = partiallyConfigured,
+                UnconfiguredCount = unconfigured,
+                Issues = issues
             };
         }
 

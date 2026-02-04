@@ -217,6 +217,50 @@
                     <span class="config-label">Policies</span>
                 </div>
             </div>
+
+            <!-- Configuration Health Summary -->
+            <ng-container *ngIf="dashboardSummary.configurationHealth as health">
+                <div class="config-health-panel">
+                    <div class="health-header">
+                        <span class="health-label">
+                            <i class="bi bi-shield-check"></i>
+                            Configuration Health
+                        </span>
+                        <span class="health-badge" [class.healthy]="health.overallStatus === 'Healthy'"
+                            [class.warning]="health.overallStatus === 'Warning'"
+                            [class.error]="health.overallStatus === 'Error'">
+                            {{ health.overallStatus }}
+                        </span>
+                    </div>
+                    <div class="health-stats">
+                        <div class="health-stat">
+                            <span class="stat-value healthy">{{ health.fullyConfiguredCount }}</span>
+                            <span class="stat-label">Fully Configured</span>
+                        </div>
+                        <div class="health-stat" *ngIf="health.partiallyConfiguredCount > 0">
+                            <span class="stat-value warning">{{ health.partiallyConfiguredCount }}</span>
+                            <span class="stat-label">Partial Config</span>
+                        </div>
+                        <div class="health-stat" *ngIf="health.unconfiguredCount > 0">
+                            <span class="stat-value error">{{ health.unconfiguredCount }}</span>
+                            <span class="stat-label">Unconfigured</span>
+                        </div>
+                    </div>
+                    <div class="health-issues-summary" *ngIf="health.issues && health.issues.length > 0">
+                        <span class="issues-count">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            {{ health.issues.length }} issue(s) found
+                        </span>
+                        <a class="view-details-link" routerLink="/configuration-health">
+                            View Details <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                    <div class="health-all-good" *ngIf="!health.issues || health.issues.length === 0">
+                        <i class="bi bi-check-circle-fill"></i>
+                        All integrations are properly configured
+                    </div>
+                </div>
+            </ng-container>
         </section>
 
     </div>

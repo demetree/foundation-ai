@@ -29,6 +29,7 @@ export interface DashboardSummary {
     recentActivity: RecentActivity[];
     configCounts: ConfigurationCounts;
     performance: PerformanceMetrics;
+    configurationHealth?: ConfigurationHealth;
 }
 
 export enum OperationalStatus {
@@ -87,6 +88,23 @@ export interface PerformanceMetrics {
     mttaTrend: string;
     mttrTrend: string;
     incidentsResolvedLast7Days: number;
+}
+
+export interface ConfigurationHealth {
+    overallStatus: string;
+    fullyConfiguredCount: number;
+    partiallyConfiguredCount: number;
+    unconfiguredCount: number;
+    issues: ConfigurationIssue[];
+}
+
+export interface ConfigurationIssue {
+    entityType: string;
+    entityId: number;
+    entityName: string;
+    severity: string;
+    description: string;
+    quickFixRoute: string;
 }
 
 @Component({

@@ -99,6 +99,16 @@
       </a>
     </li>
 
+    <!-- Configuration Health -->
+    <li class="nav-item">
+      <a routerLink="/configuration-health" routerLinkActive="active" class="nav-link text-white"
+        [ngbTooltip]="!isExpanded ? 'Configuration Health' : null" triggers="hover" #tConfigHealth="ngbTooltip"
+        (click)="tConfigHealth.close(); close()" placement="right" tooltipClass="sidebar-tip">
+        <i class="fa-solid fa-shield-halved"></i>
+        <span class="label px-2">Configuration Health</span>
+      </a>
+    </li>
+
     <!-- ═══ DEVELOPMENT ═══ -->
     <li class="nav-divider"></li>
 

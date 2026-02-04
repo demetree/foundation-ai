@@ -33,6 +33,7 @@ import { ResponderConsoleComponent } from './components/responder-console/respon
 import { MyShiftComponent } from './components/my-shift/my-shift.component';
 import { AlertingOverviewComponent } from './components/alerting-overview/alerting-overview.component';
 import { NotificationFlightControlComponent } from './components/notification-flight-control/notification-flight-control.component';
+import { ConfigurationHealthComponent } from './components/configuration-health/configuration-health.component';
 
 //
 // Custom screens
@@ -186,6 +187,7 @@ const routes: Routes = [
   { path: 'respond/:id', component: ResponderConsoleComponent, canActivate: [AuthGuard], title: 'Responder Console' },
   { path: 'my-shift', component: MyShiftComponent, canActivate: [AuthGuard], title: 'My Shift' },
   { path: 'flight-control', component: NotificationFlightControlComponent, canActivate: [AuthGuard], title: 'Notification Flight Control' },
+  { path: 'configuration-health', component: ConfigurationHealthComponent, canActivate: [AuthGuard], title: 'Configuration Health' },
 
 
 
