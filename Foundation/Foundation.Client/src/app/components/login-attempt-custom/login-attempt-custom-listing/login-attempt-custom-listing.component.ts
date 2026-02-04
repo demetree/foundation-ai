@@ -7,6 +7,7 @@
 //
 
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Location } from '@angular/common';
 import { BehaviorSubject, Subject, interval, Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { ChartConfiguration, ChartData } from 'chart.js';
@@ -148,6 +149,7 @@ export class LoginAttemptCustomListingComponent implements OnInit, OnDestroy {
 
 
     constructor(
+        private location: Location,
         private loginAttemptService: LoginAttemptService,
         private alertService: AlertService,
         private authService: AuthService,
@@ -766,5 +768,18 @@ export class LoginAttemptCustomListingComponent implements OnInit, OnDestroy {
     //
     userIsSecurityLoginAttemptReader(): boolean {
         return this.loginAttemptService.userIsSecurityLoginAttemptReader();
+    }
+
+
+    //
+    // Navigation
+    //
+    goBack(): void {
+        this.location.back();
+    }
+
+
+    canGoBack(): boolean {
+        return window.history.length > 1;
     }
 }

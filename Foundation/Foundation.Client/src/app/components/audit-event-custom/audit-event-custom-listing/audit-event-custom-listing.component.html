@@ -4,11 +4,17 @@
     <div class="card mb-4 header-card premium-header shadow-lg border-0">
         <div
             class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3 border-0 bg-transparent">
-            <div class="header-left">
-                <h3 class="page-title mb-0 fw-bold text-white">
-                    <i class="fa-solid fa-clipboard-list me-2"></i>Audit Events
-                </h3>
-                <small class="text-white-50">System activity log and monitoring</small>
+            <div class="header-left d-flex align-items-center gap-2">
+                <button class="btn btn-sm btn-glass back-button" (click)="goBack()" ngbTooltip="Go Back"
+                    *ngIf="canGoBack()">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <div>
+                    <h3 class="page-title mb-0 fw-bold text-white">
+                        <i class="fa-solid fa-clipboard-list me-2"></i>Audit Events
+                    </h3>
+                    <small class="text-white-50">System activity log and monitoring</small>
+                </div>
             </div>
             <div class="header-stats d-flex align-items-center gap-2" *ngIf="!(isLoading$ | async)">
                 <span class="badge badge-glass" *ngIf="failureCount > 0" ngbTooltip="Failed events in current view">

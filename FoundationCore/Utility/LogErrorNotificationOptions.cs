@@ -18,6 +18,16 @@ namespace Foundation
     public class LogErrorNotificationOptions
     {
         //
+        /// <summary>
+        /// 
+        /// Overall enabled flag.  Defaults to false.
+        /// 
+        /// </summary>
+        public bool Enabled { get; set; } = false;
+
+
+
+        //
         // System Identification
         //
 

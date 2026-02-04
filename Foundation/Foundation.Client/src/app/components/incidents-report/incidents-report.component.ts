@@ -4,6 +4,7 @@
 // Displays incidents from the Alerting system for this Foundation instance.
 //
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Location } from '@angular/common';
 import { Subject, interval } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -60,7 +61,8 @@ export class IncidentsReportComponent implements OnInit, OnDestroy {
 
     constructor(
         private incidentsService: IncidentsService,
-        private modalService: NgbModal
+        private modalService: NgbModal,
+        private location: Location
     ) { }
 
     ngOnInit(): void {
@@ -247,5 +249,14 @@ export class IncidentsReportComponent implements OnInit, OnDestroy {
 
     canResolve(incident: IncidentSummary): boolean {
         return incident.status !== 'Resolved' && this.resolvingIncident !== incident.incidentKey;
+    }
+
+    // Back navigation
+    goBack(): void {
+        this.location.back();
+    }
+
+    canGoBack(): boolean {
+        return window.history.length > 1;
     }
 }

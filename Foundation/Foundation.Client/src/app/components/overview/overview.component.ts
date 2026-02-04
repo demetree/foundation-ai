@@ -10,6 +10,7 @@
 
 import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
+import { Location } from '@angular/common';
 import { Title } from '@angular/platform-browser';
 import { forkJoin, Subject, Observable, of } from 'rxjs';
 import { takeUntil, map, catchError } from 'rxjs/operators';
@@ -199,6 +200,7 @@ export class OverviewComponent implements OnInit, OnDestroy, AfterViewInit {
   constructor(
     private router: Router,
     private route: ActivatedRoute,
+    private location: Location,
     private titleService: Title,
     private authService: AuthService,
     private utilityService: UtilityService,
@@ -678,5 +680,14 @@ export class OverviewComponent implements OnInit, OnDestroy, AfterViewInit {
     } else {
       this.loginTrend = 'stable';
     }
+  }
+
+  // Back navigation
+  goBack(): void {
+    this.location.back();
+  }
+
+  canGoBack(): boolean {
+    return window.history.length > 1;
   }
 }

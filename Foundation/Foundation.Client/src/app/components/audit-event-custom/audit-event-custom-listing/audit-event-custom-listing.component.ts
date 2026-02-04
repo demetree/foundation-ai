@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Location } from '@angular/common';
 import { BehaviorSubject, Subject, interval, Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { NgbDateStruct, NgbCalendar } from '@ng-bootstrap/ng-bootstrap';
@@ -121,6 +122,7 @@ export class AuditEventCustomListingComponent implements OnInit, OnDestroy {
     ];
 
     constructor(
+        private location: Location,
         private auditEventService: AuditEventService,
         private auditEventErrorMessageService: AuditEventErrorMessageService,
         private auditTypeService: AuditTypeService,
@@ -630,5 +632,18 @@ export class AuditEventCustomListingComponent implements OnInit, OnDestroy {
         URL.revokeObjectURL(url);
 
         this.alertService.showMessage('Export', `Exported ${events.length} events to CSV`, MessageSeverity.success);
+    }
+
+
+    //
+    // Navigation
+    //
+    goBack(): void {
+        this.location.back();
+    }
+
+
+    canGoBack(): boolean {
+        return window.history.length > 1;
     }
 }

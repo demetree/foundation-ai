@@ -10,11 +10,17 @@
     <div class="incidents-hero">
         <div class="hero-content">
             <div class="hero-title-section">
-                <h1 class="hero-title">
-                    <i class="fas fa-bell"></i>
-                    Incidents Report
-                </h1>
-                <p class="hero-subtitle">Incidents raised by this Foundation system</p>
+                <button class="btn btn-sm btn-glass back-button me-2" (click)="goBack()" ngbTooltip="Go Back"
+                    *ngIf="canGoBack()">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <div class="hero-title-content">
+                    <h1 class="hero-title">
+                        <i class="fas fa-bell"></i>
+                        Incidents Report
+                    </h1>
+                    <p class="hero-subtitle">Incidents raised by this Foundation system</p>
+                </div>
             </div>
             <div class="hero-actions">
                 <div class="hero-stats">

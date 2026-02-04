@@ -37,6 +37,20 @@
     }
 
     .hero-title-section {
+        display: flex;
+        align-items: center;
+
+        .back-button {
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
         .hero-title {
             color: #fff;
             font-size: 1.75rem;

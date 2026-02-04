@@ -47,6 +47,12 @@ namespace Foundation.Web.Services
             LogErrorNotificationOptions options = new LogErrorNotificationOptions();
             configuration.GetSection("LogErrorNotification").Bind(options);
 
+
+            if (options.Enabled == false) 
+            {
+                return null;
+            }
+
             //
             // Set up email sender delegate if configured
             //

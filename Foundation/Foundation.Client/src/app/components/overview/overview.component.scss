@@ -41,6 +41,32 @@ $gradient-purple: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     padding: 32px 40px;
   }
 
+  .btn-glass {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: white;
+    transition: all 0.3s ease;
+
+    &:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.25);
+      border-color: rgba(255, 255, 255, 0.4);
+      color: white;
+      transform: translateY(-1px);
+    }
+  }
+
+  .back-button {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
   .avatar-wrapper {
     flex-shrink: 0;
   }

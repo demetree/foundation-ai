@@ -26,7 +26,8 @@
         <div class="detail-header">
             <div class="header-content">
                 <div class="header-left">
-                    <button *ngIf="canGoBack()" class="btn btn-sm btn-glass back-btn" (click)="goBack()">
+                    <button *ngIf="canGoBack()" class="btn btn-sm btn-glass back-button" (click)="goBack()"
+                        ngbTooltip="Go Back">
                         <i class="fa-solid fa-arrow-left"></i>
                     </button>
                     <div class="module-info">

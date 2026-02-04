@@ -5,6 +5,11 @@
   <div class="header-card card mb-4 shadow-lg border-0">
     <div class="card-body d-flex align-items-center gap-4">
 
+      <!-- Back Button -->
+      <button class="btn btn-sm btn-glass back-button" (click)="goBack()" ngbTooltip="Go Back" *ngIf="canGoBack()">
+        <i class="fa-solid fa-arrow-left"></i>
+      </button>
+
       <!-- Admin Icon/Avatar -->
       <div class="avatar-wrapper">
         <div

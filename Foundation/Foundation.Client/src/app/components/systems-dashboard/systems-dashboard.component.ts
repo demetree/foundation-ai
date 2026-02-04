@@ -9,6 +9,7 @@
 //
 
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Location } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Subject, Subscription, interval, forkJoin, of } from 'rxjs';
 import { takeUntil, catchError } from 'rxjs/operators';
@@ -182,7 +183,8 @@ export class SystemsDashboardComponent implements OnInit, OnDestroy {
     constructor(
         private http: HttpClient,
         private telemetryService: TelemetryService,
-        private systemHealthService: SystemHealthService
+        private systemHealthService: SystemHealthService,
+        private location: Location
     ) { }
 
 
@@ -1657,5 +1659,14 @@ export class SystemsDashboardComponent implements OnInit, OnDestroy {
 
     trackByIndex(index: number): number {
         return index;
+    }
+
+    // Back navigation
+    goBack(): void {
+        this.location.back();
+    }
+
+    canGoBack(): boolean {
+        return window.history.length > 1;
     }
 }

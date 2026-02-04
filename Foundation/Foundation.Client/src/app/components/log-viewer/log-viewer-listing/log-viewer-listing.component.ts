@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Location } from '@angular/common';
 import { LogViewerService, LogFolder, LogFileInfo, LogEntry, RemoteApplication } from '../../../services/log-viewer.service';
 import { Subject, interval, Subscription } from 'rxjs';
 import { takeUntil, switchMap } from 'rxjs/operators';
@@ -59,7 +60,10 @@ export class LogViewerListingComponent implements OnInit, OnDestroy {
     Math = Math;
 
 
-    constructor(private logViewerService: LogViewerService) { }
+    constructor(
+        private logViewerService: LogViewerService,
+        private location: Location
+    ) { }
 
 
     ngOnInit(): void {
@@ -496,5 +500,14 @@ export class LogViewerListingComponent implements OnInit, OnDestroy {
         anchor.download = fileName;
         anchor.click();
         URL.revokeObjectURL(url);
+    }
+
+    // Back navigation
+    goBack(): void {
+        this.location.back();
+    }
+
+    canGoBack(): boolean {
+        return window.history.length > 1;
     }
 }
