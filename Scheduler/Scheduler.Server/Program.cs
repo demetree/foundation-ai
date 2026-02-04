@@ -25,6 +25,7 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using static Foundation.Configuration;
 using static Foundation.StartupBasics;
+using Foundation.Web.Services;
 
 
 namespace Foundation.Scheduler
@@ -411,6 +412,11 @@ namespace Foundation.Scheduler
                 //
                 builder.Services.AddSingleton<Foundation.Services.IApplicationMetricsProvider,
                     global::Scheduler.Server.Services.SchedulerMetricsProvider>();
+
+                //
+                // Log Error Notification Consumer (for email/alerting on errors)
+                //
+                builder.Services.AddLogErrorNotification(builder.Configuration);
 
                 //
                 // Configurations
