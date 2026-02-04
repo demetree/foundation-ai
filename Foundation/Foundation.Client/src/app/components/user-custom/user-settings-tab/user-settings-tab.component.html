@@ -1,17 +1,17 @@
-<!-- User Settings Tab -->
+<!-- User Settings Tab - Read-Only View -->
 <div class="settings-tab-container">
 
-    <!-- Header with Add Button -->
+    <!-- Header -->
     <div class="settings-header">
         <div class="header-info">
             <h5 class="mb-0">
                 <i class="fa-solid fa-sliders me-2"></i>User Settings
             </h5>
-            <small class="text-muted">Custom key-value settings for this user</small>
+            <small class="text-muted">Custom key-value settings stored for this user</small>
         </div>
-        <button class="btn btn-primary btn-sm" (click)="openAddModal()" [disabled]="isLoading">
-            <i class="fa-solid fa-plus me-1"></i>Add Setting
-        </button>
+        <span class="badge bg-secondary">
+            <i class="fa-solid fa-eye me-1"></i>Read-Only
+        </span>
     </div>
 
     <!-- Loading State -->
@@ -26,10 +26,7 @@
     <div *ngIf="!isLoading && settings.length === 0" class="empty-state">
         <i class="fa-solid fa-cog fa-3x text-muted opacity-50 mb-3"></i>
         <h6 class="text-muted">No Settings Configured</h6>
-        <p class="text-muted small mb-3">This user has no custom settings yet.</p>
-        <button class="btn btn-outline-primary btn-sm" (click)="openAddModal()">
-            <i class="fa-solid fa-plus me-1"></i>Add First Setting
-        </button>
+        <p class="text-muted small mb-0">This user has no custom settings.</p>
     </div>
 
     <!-- Settings Table -->
@@ -37,9 +34,8 @@
         <table class="table settings-table">
             <thead>
                 <tr>
-                    <th style="width: 30%;">Key</th>
-                    <th style="width: 55%;">Value</th>
-                    <th style="width: 15%;" class="text-end">Actions</th>
+                    <th style="width: 35%;">Key</th>
+                    <th style="width: 65%;">Value</th>
                 </tr>
             </thead>
             <tbody>
@@ -52,53 +48,9 @@
                             {{ truncateValue(setting.value) }}
                         </span>
                     </td>
-                    <td class="actions-cell text-end">
-                        <button class="btn btn-sm btn-outline-secondary me-1" (click)="openEditModal(setting)"
-                            ngbTooltip="Edit">
-                            <i class="fa-solid fa-pen"></i>
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger" (click)="deleteSetting(setting)"
-                            ngbTooltip="Delete">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </td>
                 </tr>
             </tbody>
         </table>
-    </div>
-
-    <!-- Add/Edit Modal -->
-    <div class="modal-backdrop" *ngIf="showModal" (click)="closeModal()"></div>
-    <div class="settings-modal" *ngIf="showModal">
-        <div class="modal-header">
-            <h5 class="modal-title">
-                <i class="fa-solid" [ngClass]="modalMode === 'add' ? 'fa-plus' : 'fa-pen'" class="me-2"></i>
-                {{ modalMode === 'add' ? 'Add Setting' : 'Edit Setting' }}
-            </h5>
-            <button type="button" class="btn-close" (click)="closeModal()"></button>
-        </div>
-        <div class="modal-body">
-            <div class="mb-3">
-                <label class="form-label">Key</label>
-                <input type="text" class="form-control" [(ngModel)]="editingKey" placeholder="e.g., preference.theme"
-                    [disabled]="isSaving">
-                <small class="text-muted">A unique identifier for this setting</small>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Value</label>
-                <textarea class="form-control" [(ngModel)]="editingValue" rows="3" placeholder="Setting value"
-                    [disabled]="isSaving"></textarea>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" (click)="closeModal()" [disabled]="isSaving">
-                Cancel
-            </button>
-            <button type="button" class="btn btn-primary" (click)="saveSetting()" [disabled]="isSaving">
-                <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-1"></span>
-                {{ modalMode === 'add' ? 'Add' : 'Save' }}
-            </button>
-        </div>
     </div>
 
 </div>

@@ -2,13 +2,13 @@
 // User Settings Tab Component
 //
 // Displays and manages user-specific settings stored in SecurityUser.settings.
+// For admin viewing: parses settings directly from the user object.
+// For mutations: uses the UserSettings API (currently only supports current user).
 //
 
 import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { SecurityUserData } from '../../../security-data-services/security-user.service';
-import { UserSettingsService } from '../../../services/user-settings.service';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 export interface SettingItem {
     key: string;
@@ -27,19 +27,9 @@ export class UserSettingsTabComponent implements OnInit, OnChanges {
 
     settings: SettingItem[] = [];
     isLoading = false;
-    isSaving = false;
-
-    // For add/edit modal
-    showModal = false;
-    modalMode: 'add' | 'edit' = 'add';
-    editingKey = '';
-    editingValue = '';
-    originalKey = '';
 
     constructor(
-        private userSettingsService: UserSettingsService,
-        private alertService: AlertService,
-        private modalService: NgbModal
+        private alertService: AlertService
     ) { }
 
 
@@ -56,142 +46,37 @@ export class UserSettingsTabComponent implements OnInit, OnChanges {
 
 
     /**
-     * Load all settings for the user
+     * Load all settings for the user by parsing the settings JSON from the user object
      */
     loadSettings(): void {
-        if (!this.user) return;
+        if (!this.user) {
+            this.settings = [];
+            return;
+        }
 
         this.isLoading = true;
-        this.userSettingsService.getAllSettings().subscribe({
-            next: (data) => {
-                this.settings = Object.entries(data)
+
+        try {
+            // Parse settings directly from the user object's settings JSON field
+            if (this.user.settings && this.user.settings.trim()) {
+                const parsedSettings = JSON.parse(this.user.settings);
+                this.settings = Object.entries(parsedSettings)
                     .filter(([key, value]) => value !== null)
                     .map(([key, value]) => ({
                         key,
                         value: typeof value === 'string' ? value : JSON.stringify(value)
                     }))
                     .sort((a, b) => a.key.localeCompare(b.key));
-                this.isLoading = false;
-            },
-            error: (err) => {
-                console.error('Error loading settings:', err);
-                this.alertService.showMessage('Error', 'Failed to load settings', MessageSeverity.error);
-                this.isLoading = false;
+            } else {
+                this.settings = [];
             }
-        });
-    }
-
-
-    /**
-     * Open modal to add a new setting
-     */
-    openAddModal(): void {
-        this.modalMode = 'add';
-        this.editingKey = '';
-        this.editingValue = '';
-        this.originalKey = '';
-        this.showModal = true;
-    }
-
-
-    /**
-     * Open modal to edit an existing setting
-     */
-    openEditModal(setting: SettingItem): void {
-        this.modalMode = 'edit';
-        this.editingKey = setting.key;
-        this.editingValue = setting.value;
-        this.originalKey = setting.key;
-        this.showModal = true;
-    }
-
-
-    /**
-     * Close the modal
-     */
-    closeModal(): void {
-        this.showModal = false;
-        this.editingKey = '';
-        this.editingValue = '';
-        this.originalKey = '';
-    }
-
-
-    /**
-     * Save the setting (add or update)
-     */
-    saveSetting(): void {
-        if (!this.editingKey.trim()) {
-            this.alertService.showMessage('Validation Error', 'Setting key cannot be empty', MessageSeverity.warn);
-            return;
+        } catch (error) {
+            console.error('Error parsing user settings:', error);
+            this.alertService.showMessage('Error', 'Failed to parse settings', MessageSeverity.error);
+            this.settings = [];
         }
 
-        // Check for duplicate key when adding
-        if (this.modalMode === 'add' && this.settings.some(s => s.key === this.editingKey)) {
-            this.alertService.showMessage('Validation Error', 'A setting with this key already exists', MessageSeverity.warn);
-            return;
-        }
-
-        this.isSaving = true;
-
-        // If we're editing and the key changed, we need to delete the old key first
-        if (this.modalMode === 'edit' && this.originalKey !== this.editingKey) {
-            this.userSettingsService.deleteSetting(this.originalKey).subscribe({
-                next: () => {
-                    this.saveNewSetting();
-                },
-                error: () => {
-                    this.alertService.showMessage('Error', 'Failed to update setting key', MessageSeverity.error);
-                    this.isSaving = false;
-                }
-            });
-        } else {
-            this.saveNewSetting();
-        }
-    }
-
-
-    private saveNewSetting(): void {
-        this.userSettingsService.setSetting(this.editingKey, this.editingValue).subscribe({
-            next: (success) => {
-                if (success) {
-                    this.alertService.showMessage('Success', 'Setting saved successfully', MessageSeverity.success);
-                    this.closeModal();
-                    this.loadSettings();
-                } else {
-                    this.alertService.showMessage('Error', 'Failed to save setting', MessageSeverity.error);
-                }
-                this.isSaving = false;
-            },
-            error: () => {
-                this.alertService.showMessage('Error', 'Failed to save setting', MessageSeverity.error);
-                this.isSaving = false;
-            }
-        });
-    }
-
-
-    /**
-     * Delete a setting
-     */
-    deleteSetting(setting: SettingItem): void {
-        if (!confirm(`Are you sure you want to delete the setting "${setting.key}"?`)) {
-            return;
-        }
-
-        this.userSettingsService.deleteSetting(setting.key).subscribe({
-            next: (success) => {
-                if (success) {
-                    this.alertService.showMessage('Success', 'Setting deleted successfully', MessageSeverity.success);
-                    this.loadSettings();
-                } else {
-                    this.alertService.showMessage('Error', 'Failed to delete setting', MessageSeverity.error);
-                }
-            },
-            error: () => {
-                this.alertService.showMessage('Error', 'Failed to delete setting', MessageSeverity.error);
-            }
-        });
+        this.isLoading = false;
     }
 
 
