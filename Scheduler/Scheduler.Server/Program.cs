@@ -171,18 +171,14 @@ namespace Foundation.Scheduler
                 List<Type> controllers = new List<Type>();
 
                 // 
-                // Add the Foundation controllers.
+                // Add the essential Foundation controllers for basic user login and config features
                 //
                 Foundation.Web.Utility.StartupBasics.AddFoundationEssentialWebAPIControllers(controllers);
-                Foundation.Web.Utility.StartupBasics.AddSystemHealthController(controllers);
-                Foundation.Web.Utility.StartupBasics.AddMonitoredApplicationsController(controllers);               // to allow this system to be monitored
-                
 
                 //
-                // No longerincluding these because their function has been moved into the Foundation Administration app
+                // Allow this sytem to be monitored
                 //
-                //Foundation.Web.Utility.StartupBasics.AddSecurityWebAPIControllers(controllers);
-                //Foundation.Web.Utility.StartupBasics.AddAuditorWebAPIControllers(controllers);
+                Foundation.Web.Utility.StartupBasics.AddSystemHealthControllers(controllers);
 
                 //
                 // Custom Scheduler controllers

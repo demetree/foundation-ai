@@ -143,6 +143,16 @@
                     </ng-template>
                 </li>
 
+                <!-- Settings Tab -->
+                <li [ngbNavItem]="'settings'">
+                    <button ngbNavLink>
+                        <i class="fa-solid fa-sliders me-2"></i>Settings
+                    </button>
+                    <ng-template ngbNavContent>
+                        <app-user-settings-tab [user]="user"></app-user-settings-tab>
+                    </ng-template>
+                </li>
+
             </ul>
             <div [ngbNavOutlet]="nav" class="tab-content-area"></div>
         </div>

@@ -474,6 +474,8 @@ import { TenantCustomDetailComponent } from './components/tenant-custom/tenant-c
 import { TenantOverviewTabComponent } from './components/tenant-custom/tenant-overview-tab/tenant-overview-tab.component';
 import { TenantUsersTabComponent } from './components/tenant-custom/tenant-users-tab/tenant-users-tab.component';
 import { TenantOrganizationsTabComponent } from './components/tenant-custom/tenant-organizations-tab/tenant-organizations-tab.component';
+import { UserSettingsTabComponent } from './components/user-custom/user-settings-tab/user-settings-tab.component';
+import { TenantSettingsTabComponent } from './components/tenant-custom/tenant-settings-tab/tenant-settings-tab.component';
 import { OrganizationDetailPanelComponent } from './components/tenant-custom/organization-detail-panel/organization-detail-panel.component';
 import { DepartmentDetailPanelComponent } from './components/tenant-custom/department-detail-panel/department-detail-panel.component';
 import { TeamDetailPanelComponent } from './components/tenant-custom/team-detail-panel/team-detail-panel.component';
@@ -821,6 +823,8 @@ import { IncidentsService } from './services/incidents.service';
     TenantOverviewTabComponent,
     TenantUsersTabComponent,
     TenantOrganizationsTabComponent,
+    UserSettingsTabComponent,
+    TenantSettingsTabComponent,
     OrganizationDetailPanelComponent,
     DepartmentDetailPanelComponent,
     TeamDetailPanelComponent,

@@ -13,8 +13,11 @@ using System.Threading.Tasks;
 
 namespace Foundation.Controllers.WebAPI
 {
+
     /// <summary>
+    /// 
     /// API for querying health status of monitored Foundation applications
+    /// 
     /// </summary>
     [Route("api/[controller]")]
     public class MonitoredApplicationsController : SecureWebAPIController
@@ -23,10 +26,8 @@ namespace Foundation.Controllers.WebAPI
         private readonly ILogger<MonitoredApplicationsController> _logger;
 
 
-        public MonitoredApplicationsController(
-            IMonitoredApplicationService monitoredAppService,
-            ILogger<MonitoredApplicationsController> logger)
-            : base("Auditor", "MonitoredApplications")
+        public MonitoredApplicationsController(IMonitoredApplicationService monitoredAppService,
+                                               ILogger<MonitoredApplicationsController> logger) : base("Auditor", "MonitoredApplications")
         {
             _monitoredAppService = monitoredAppService;
             _logger = logger;
@@ -70,7 +71,8 @@ namespace Foundation.Controllers.WebAPI
                 //
                 string userObjectGuid = User.FindFirst("sub")?.Value;
 
-                var statuses = await _monitoredAppService.GetAllApplicationStatusesAsync(userObjectGuid);
+                List<MonitoredApplicationStatus> statuses = await _monitoredAppService.GetAllApplicationStatusesAsync(userObjectGuid);
+
                 return Ok(statuses);
             }
             catch (Exception ex)
@@ -123,7 +125,8 @@ namespace Foundation.Controllers.WebAPI
                 //
                 string userObjectGuid = User.FindFirst("sub")?.Value;
 
-                var metrics = await _monitoredAppService.GetAllApplicationMetricsAsync(userObjectGuid);
+                ApplicationMetricsResponse metrics = await _monitoredAppService.GetAllApplicationMetricsAsync(userObjectGuid);
+
                 return Ok(metrics);
             }
             catch (Exception ex)

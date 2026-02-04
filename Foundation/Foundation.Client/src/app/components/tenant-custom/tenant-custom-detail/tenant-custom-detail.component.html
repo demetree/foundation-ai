@@ -104,6 +104,17 @@
                     </ng-template>
                 </li>
 
+                <!-- Settings Tab -->
+                <li [ngbNavItem]="4">
+                    <button ngbNavLink>
+                        <i class="fa-solid fa-sliders me-2"></i>
+                        Settings
+                    </button>
+                    <ng-template ngbNavContent>
+                        <app-tenant-settings-tab [tenant]="tenantData"></app-tenant-settings-tab>
+                    </ng-template>
+                </li>
+
             </ul>
             <div [ngbNavOutlet]="nav" class="tab-content"></div>
         </div>

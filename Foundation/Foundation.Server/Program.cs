@@ -155,10 +155,11 @@ namespace Foundation.Server
                 // Add the Foundation controllers.
                 //
                 Foundation.Web.Utility.StartupBasics.AddFoundationEssentialWebAPIControllers(controllers);          // For common foundation user related services and such
-                Foundation.Web.Utility.StartupBasics.AddSystemHealthController(controllers);                        // To allow cross system monitoring
+                Foundation.Web.Utility.StartupBasics.AddSystemHealthControllers(controllers);                        // To allow cross system monitoring
                 Foundation.Web.Utility.StartupBasics.AddMonitoredApplicationsController(controllers);               // To make this system monitorable
                 Foundation.Web.Utility.StartupBasics.AddSecurityWebAPIControllers(controllers);                     // Security module
                 Foundation.Web.Utility.StartupBasics.AddAuditorWebAPIControllers(controllers);                      // Auditor module
+                Foundation.Web.Utility.StartupBasics.AddFoundationAdvancedWebAPIControllers(controllers, true, true);           // Tenant Settings, System Settings, and Log File access
                 Foundation.Web.Utility.TelemetryStartupBasics.AddTelemetryWebAPIControllers(controllers);           // Telemetry historical data module
                 
                 // Provides visibility into the alerting system

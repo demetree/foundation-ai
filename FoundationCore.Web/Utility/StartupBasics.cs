@@ -1,22 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Foundation.Auditor.Controllers.WebAPI;
+﻿using Foundation.Auditor.Controllers.WebAPI;
 using Foundation.OIDC;
 using Foundation.Security;
 using Foundation.Security.Controllers.WebAPI;
 using Foundation.Web.Services.Alerting;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Foundation.Web.Utility
 {
     public class StartupBasics
     {
 
+        /// <summary>
+        ///   
+        /// These are standard controllers needed to support basic user authentication, and operation around 
+        /// theiur user account.
+        /// 
+        /// </summary>
+        /// <param name="controllers"></param>
         public static void AddFoundationEssentialWebAPIControllers(List<Type> controllers)
         {
             controllers.Add(typeof(AuthorizationController));           // Need this to authenticate
@@ -25,10 +33,45 @@ namespace Foundation.Web.Utility
             controllers.Add(typeof(ResetPasswordController));
             controllers.Add(typeof(NewUserController));
 
+            
+        }
+
+
+        /// <summary>
+        /// 
+        /// Allows the include of some additional foundation controllers for more advanced operations.
+        /// 
+        /// which might be userful for some advanced founation applications, such as one that allow configuration
+        /// and monitoring of the system through a UI.  These controllers would support that.
+        /// 
+        /// Most business applications won't need these controllers.  Their business logic can query for the data as they 
+        /// see fit, and they don't need WebAPI controllers to expose it.
+        /// 
+        /// </summary>
+        /// <param name="controllers"></param>
+        /// <param name="includeTenantSettings"></param>
+        /// <param name="includeSystemSettings"></param>
+        /// <param name="includeLogFileViewer"></param>
+        public static void AddFoundationAdvancedWebAPIControllers(List<Type> controllers,
+                                                                  bool includeTenantSettings = false,
+                                                                  bool includeSystemSettings = false)
+        {
             //
-            // Utility Controllers
+            // Abilitly to read and write tenant settings
             //
-            controllers.Add(typeof(Foundation.Controllers.WebAPI.LogViewerController));  // Log file viewer
+            if (includeTenantSettings == true)
+            {
+                controllers.Add(typeof(TenantSettingsController));          // Foundation security user settings    
+            }
+
+
+            // 
+            // Ability to read and write system settings
+            //
+            if (includeSystemSettings == true)
+            {
+                controllers.Add(typeof(SystemSettingsController));          // Foundation security user settings
+            }
         }
 
 
@@ -80,15 +123,16 @@ namespace Foundation.Web.Utility
         /// 
         /// </summary>
         /// <param name="controllers"></param>
-        public static void AddSystemHealthController(List<Type> controllers)
+        public static void AddSystemHealthControllers(List<Type> controllers)
         {
-            controllers.Add(typeof(Foundation.Controllers.WebAPI.SystemHealthController));  // System Health end poitns
+            controllers.Add(typeof(Foundation.Controllers.WebAPI.SystemHealthController));      // System Health end points
+            controllers.Add(typeof(Foundation.Controllers.WebAPI.LogViewerController));         // Log file viewer
         }
 
 
         /// <summary>
         /// 
-        /// This adds the foundation system health controller
+        ///  API for querying health status of monitored Foundation applications
         /// 
         /// </summary>
         /// <param name="controllers"></param>

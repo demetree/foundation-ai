@@ -1,0 +1,104 @@
+<!-- Tenant Settings Tab -->
+<div class="settings-tab-container">
+
+    <!-- Header with Add Button -->
+    <div class="settings-header">
+        <div class="header-info">
+            <h5 class="mb-0">
+                <i class="fa-solid fa-sliders me-2"></i>Tenant Settings
+            </h5>
+            <small class="text-muted">Custom key-value settings for this tenant</small>
+        </div>
+        <button class="btn btn-primary btn-sm" (click)="openAddModal()" [disabled]="isLoading">
+            <i class="fa-solid fa-plus me-1"></i>Add Setting
+        </button>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-state">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="text-muted mt-2 mb-0">Loading settings...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && settings.length === 0" class="empty-state">
+        <i class="fa-solid fa-cog fa-3x text-muted opacity-50 mb-3"></i>
+        <h6 class="text-muted">No Settings Configured</h6>
+        <p class="text-muted small mb-3">This tenant has no custom settings yet.</p>
+        <button class="btn btn-outline-primary btn-sm" (click)="openAddModal()">
+            <i class="fa-solid fa-plus me-1"></i>Add First Setting
+        </button>
+    </div>
+
+    <!-- Settings Table -->
+    <div *ngIf="!isLoading && settings.length > 0" class="settings-table-wrapper">
+        <table class="table settings-table">
+            <thead>
+                <tr>
+                    <th style="width: 30%;">Key</th>
+                    <th style="width: 55%;">Value</th>
+                    <th style="width: 15%;" class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let setting of settings">
+                    <td class="key-cell">
+                        <code class="setting-key">{{ setting.key }}</code>
+                    </td>
+                    <td class="value-cell">
+                        <span class="setting-value" [ngbTooltip]="setting.value.length > 50 ? setting.value : null">
+                            {{ truncateValue(setting.value) }}
+                        </span>
+                    </td>
+                    <td class="actions-cell text-end">
+                        <button class="btn btn-sm btn-outline-secondary me-1" (click)="openEditModal(setting)"
+                            ngbTooltip="Edit">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" (click)="deleteSetting(setting)"
+                            ngbTooltip="Delete">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div class="modal-backdrop" *ngIf="showModal" (click)="closeModal()"></div>
+    <div class="settings-modal" *ngIf="showModal">
+        <div class="modal-header">
+            <h5 class="modal-title">
+                <i class="fa-solid" [ngClass]="modalMode === 'add' ? 'fa-plus' : 'fa-pen'" class="me-2"></i>
+                {{ modalMode === 'add' ? 'Add Setting' : 'Edit Setting' }}
+            </h5>
+            <button type="button" class="btn-close" (click)="closeModal()"></button>
+        </div>
+        <div class="modal-body">
+            <div class="mb-3">
+                <label class="form-label">Key</label>
+                <input type="text" class="form-control" [(ngModel)]="editingKey"
+                    placeholder="e.g., config.feature.enabled" [disabled]="isSaving">
+                <small class="text-muted">A unique identifier for this setting</small>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Value</label>
+                <textarea class="form-control" [(ngModel)]="editingValue" rows="3" placeholder="Setting value"
+                    [disabled]="isSaving"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="closeModal()" [disabled]="isSaving">
+                Cancel
+            </button>
+            <button type="button" class="btn btn-primary" (click)="saveSetting()" [disabled]="isSaving">
+                <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-1"></span>
+                {{ modalMode === 'add' ? 'Add' : 'Save' }}
+            </button>
+        </div>
+    </div>
+
+</div>
