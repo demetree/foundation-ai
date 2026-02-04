@@ -79,9 +79,8 @@ namespace Foundation.Web.Utility
         public static void AddSecurityWebAPIControllers(List<Type> controllers)
         {
             //
-            // Custom for Foundation Admin user listing custom actions
+            // Session and user management controllers
             //
-            controllers.Add(typeof(AdminUserActionsController));             // Admin-only user management actions
             controllers.Add(typeof(SessionsController));                 // Session state management
             controllers.Add(typeof(UserSessionsController));                 // Session state management
 

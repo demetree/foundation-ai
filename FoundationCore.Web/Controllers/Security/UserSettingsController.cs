@@ -3,6 +3,7 @@ using Foundation.Controllers;
 using Foundation.Security;
 using Foundation.Security.Database;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,9 +33,18 @@ namespace Foundation.Security.Controllers.WebAPI
         //
         private const int WRITE_PERMISSION_LEVEL_REQUIRED = 1;
 
-        public UserSettingsController() : base("Security", "UserSettings")
+        //
+        // Admin permission level required to read/write other users' settings
+        //
+        private const int ADMIN_READ_PERMISSION_LEVEL_REQUIRED = 3;
+        private const int ADMIN_WRITE_PERMISSION_LEVEL_REQUIRED = 3;
+
+        private readonly SecurityContext _context;
+
+
+        public UserSettingsController(SecurityContext context) : base("Security", "UserSettings")
         { 
-        
+            _context = context;
         }
 
 
@@ -221,6 +231,198 @@ namespace Foundation.Security.Controllers.WebAPI
                     ex);
 
                 return Problem("Could not retrieve user settings.");
+            }
+        }
+
+
+        // ============================================================================
+        // ADMIN ENDPOINTS - For managing other users' settings
+        // ============================================================================
+
+
+        /// <summary>
+        /// 
+        /// Gets all settings for a specific user (admin only).
+        /// 
+        /// </summary>
+        /// <param name="userId">The ID of the user whose settings are being retrieved.</param>
+        /// <param name="cancellationToken">Optional cancellation token.</param>
+        /// <returns>A JSON object containing all user settings.</returns>
+        [HttpGet]
+        [RateLimit(RateLimitOption.TenPerMinute, Scope = RateLimitScope.PerUser)]
+        [Route("api/UserSettings/Admin")]
+        public async Task<IActionResult> GetAllSettingsAdmin(
+            [FromQuery] long userId,
+            CancellationToken cancellationToken = default)
+        {
+            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(ADMIN_READ_PERMISSION_LEVEL_REQUIRED) == false)
+            {
+                return Forbid();
+            }
+
+            if (userId <= 0)
+            {
+                return BadRequest("A valid userId must be provided.");
+            }
+
+            try
+            {
+                SecurityUser securityUser = await _context.SecurityUsers
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(u => u.id == userId && u.deleted == false, cancellationToken);
+
+                if (securityUser == null)
+                {
+                    return NotFound("User not found.");
+                }
+
+                string settingsJson = await UserSettings.GetUserSettingsAsync(securityUser, cancellationToken);
+
+                if (string.IsNullOrWhiteSpace(settingsJson))
+                {
+                    return Ok(new { });
+                }
+
+                return Content(settingsJson, "application/json");
+            }
+            catch (Exception ex)
+            {
+                await CreateAuditEventAsync(
+                    AuditEngine.AuditType.Error,
+                    $"Error getting all user settings for user {userId}.",
+                    ex.Message,
+                    ex);
+
+                return Problem("Could not retrieve user settings.");
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// Gets a specific setting value for a user by key (admin only).
+        /// 
+        /// </summary>
+        /// <param name="key">The setting key to retrieve.</param>
+        /// <param name="userId">The ID of the user whose setting is being retrieved.</param>
+        /// <param name="cancellationToken">Optional cancellation token.</param>
+        /// <returns>The setting key and value.</returns>
+        [HttpGet]
+        [RateLimit(RateLimitOption.OneHundredPerMinute, Scope = RateLimitScope.PerUser)]
+        [Route("api/UserSettings/Admin/{key}")]
+        public async Task<IActionResult> GetStringSettingAdmin(
+            string key,
+            [FromQuery] long userId,
+            CancellationToken cancellationToken = default)
+        {
+            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(ADMIN_READ_PERMISSION_LEVEL_REQUIRED) == false)
+            {
+                return Forbid();
+            }
+
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                return BadRequest("Setting key cannot be empty.");
+            }
+
+            if (userId <= 0)
+            {
+                return BadRequest("A valid userId must be provided.");
+            }
+
+            try
+            {
+                SecurityUser securityUser = await _context.SecurityUsers
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(u => u.id == userId && u.deleted == false, cancellationToken);
+
+                if (securityUser == null)
+                {
+                    return NotFound("User not found.");
+                }
+
+                string value = await UserSettings.GetStringSettingAsync(key, securityUser, cancellationToken);
+
+                return Ok(new { key = key, value = value });
+            }
+            catch (Exception ex)
+            {
+                await CreateAuditEventAsync(
+                    AuditEngine.AuditType.Error,
+                    $"Error getting user setting '{key}' for user {userId}.",
+                    ex.Message,
+                    ex);
+
+                return Problem($"Could not retrieve setting '{key}'.");
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// Sets (or updates) a specific setting value for a user by key (admin only).
+        /// 
+        /// </summary>
+        /// <param name="key">The setting key to set.</param>
+        /// <param name="userId">The ID of the user whose setting is being modified.</param>
+        /// <param name="request">The request body containing the new value.</param>
+        /// <param name="cancellationToken">Optional cancellation token.</param>
+        /// <returns>The updated setting key, value, and success status.</returns>
+        [HttpPut]
+        [RateLimit(RateLimitOption.OneHundredPerMinute, Scope = RateLimitScope.PerUser)]
+        [Route("api/UserSettings/Admin/{key}")]
+        public async Task<IActionResult> SetStringSettingAdmin(
+            string key,
+            [FromQuery] long userId,
+            [FromBody] SetSettingRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(ADMIN_WRITE_PERMISSION_LEVEL_REQUIRED) == false)
+            {
+                return Forbid();
+            }
+
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                return BadRequest("Setting key cannot be empty.");
+            }
+
+            if (userId <= 0)
+            {
+                return BadRequest("A valid userId must be provided.");
+            }
+
+            try
+            {
+                SecurityUser securityUser = await _context.SecurityUsers
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(u => u.id == userId && u.deleted == false, cancellationToken);
+
+                if (securityUser == null)
+                {
+                    return NotFound("User not found.");
+                }
+
+                bool success = await UserSettings.SetStringSettingAsync(key, request?.Value, securityUser, cancellationToken);
+
+                if (success == true)
+                {
+                    return Ok(new { key = key, value = request?.Value, success = true });
+                }
+                else
+                {
+                    return Problem($"Could not save setting '{key}'.");
+                }
+            }
+            catch (Exception ex)
+            {
+                await CreateAuditEventAsync(
+                    AuditEngine.AuditType.Error,
+                    $"Error setting user setting '{key}' for user {userId}.",
+                    ex.Message,
+                    ex);
+
+                return Problem($"Could not save setting '{key}'.");
             }
         }
 

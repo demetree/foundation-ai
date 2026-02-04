@@ -1,8 +1,13 @@
 //
-// AdminUserActionsController.cs
+// SecurityUsersController.AdminActions.cs
 //
-// AI-Generated: Provides admin-only endpoints for user management actions
-// such as password reset, account locking, and unlocking.
+// Partial class file containing admin-only user management actions:
+// - Password reset (send email, set password)
+// - Account locking/unlocking
+// - User creation with password
+//
+// Merged from AdminUserActionsController.cs to eliminate code duplication
+// and consolidate all user management in one controller.
 //
 // Each action logs a SecurityUserEvent for audit trail.
 //
@@ -13,7 +18,6 @@ using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -26,21 +30,17 @@ using SendGrid.Helpers.Mail;
 
 namespace Foundation.Security.Controllers.WebAPI
 {
-    [Authorize]
-    public partial class AdminUserActionsController : SecureWebAPIController
+    public partial class SecurityUsersController
     {
-        private SecurityContext _securityDb;
-
-
         //
-        // Request Models
+        // Request Models for Admin Actions
         //
-        public class SetPasswordRequest
+        public class AdminSetPasswordRequest
         {
             public string Password { get; set; }
         }
 
-        public class CreateUserRequest
+        public class AdminCreateUserRequest
         {
             [Required] public string AccountName { get; set; }
             [Required] public string Password { get; set; }
@@ -66,11 +66,7 @@ namespace Foundation.Security.Controllers.WebAPI
         }
 
 
-        public AdminUserActionsController(SecurityContext securityDb) : base("Security", "SecurityUser")
-        {
-            _securityDb = securityDb;
-        }
-
+        #region Admin User Actions
 
         /// <summary>
         /// 
@@ -79,7 +75,7 @@ namespace Foundation.Security.Controllers.WebAPI
         /// </summary>
         [Route("api/Admin/User/{id}/SendPasswordReset")]
         [HttpPost]
-        public async Task<IActionResult> SendPasswordReset(long id, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> AdminSendPasswordReset(long id, CancellationToken cancellationToken = default)
         {
             StartAuditEventClock();
 
@@ -98,7 +94,7 @@ namespace Foundation.Security.Controllers.WebAPI
                 //
                 // Get the target user
                 //
-                SecurityUser targetUser = await (from su in _securityDb.SecurityUsers
+                SecurityUser targetUser = await (from su in _context.SecurityUsers
                                                   where su.id == id &&
                                                   su.deleted == false
                                                   select su)
@@ -150,7 +146,7 @@ namespace Foundation.Security.Controllers.WebAPI
                     deleted = false
                 };
 
-                _securityDb.SecurityUserPasswordResetTokens.Add(resetTokenEntry);
+                _context.SecurityUserPasswordResetTokens.Add(resetTokenEntry);
 
                 //
                 // Log the event
@@ -165,8 +161,8 @@ namespace Foundation.Security.Controllers.WebAPI
                     deleted = false
                 };
 
-                _securityDb.SecurityUserEvents.Add(userEvent);
-                await _securityDb.SaveChangesAsync(cancellationToken);
+                _context.SecurityUserEvents.Add(userEvent);
+                await _context.SaveChangesAsync(cancellationToken);
 
                 await CreateAuditEventAsync(AuditEngine.AuditType.ConfirmationRequested, $"Admin-initiated password reset email sent for user {targetUser.accountName}", targetUser.id.ToString());
 
@@ -188,7 +184,7 @@ namespace Foundation.Security.Controllers.WebAPI
         /// </summary>
         [Route("api/Admin/User/{id}/SetPassword")]
         [HttpPost]
-        public async Task<IActionResult> SetPassword(long id, [FromBody] SetPasswordRequest request, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> AdminSetPassword(long id, [FromBody] AdminSetPasswordRequest request, CancellationToken cancellationToken = default)
         {
             StartAuditEventClock();
 
@@ -212,7 +208,7 @@ namespace Foundation.Security.Controllers.WebAPI
                 //
                 // Get the target user
                 //
-                SecurityUser targetUser = await (from su in _securityDb.SecurityUsers
+                SecurityUser targetUser = await (from su in _context.SecurityUsers
                                                   where su.id == id &&
                                                   su.deleted == false
                                                   select su)
@@ -251,8 +247,8 @@ namespace Foundation.Security.Controllers.WebAPI
                     deleted = false
                 };
 
-                _securityDb.SecurityUserEvents.Add(userEvent);
-                await _securityDb.SaveChangesAsync(cancellationToken);
+                _context.SecurityUserEvents.Add(userEvent);
+                await _context.SaveChangesAsync(cancellationToken);
 
                 await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, $"Admin set password for user {targetUser.accountName}", targetUser.id.ToString());
 
@@ -275,7 +271,7 @@ namespace Foundation.Security.Controllers.WebAPI
         /// </summary>
         [Route("api/Admin/CreateUser")]
         [HttpPost]
-        public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> AdminCreateUser([FromBody] AdminCreateUserRequest request, CancellationToken cancellationToken = default)
         {
             StartAuditEventClock();
 
@@ -309,7 +305,7 @@ namespace Foundation.Security.Controllers.WebAPI
                 //
                 // Check if account name already exists
                 //
-                bool accountExists = await (from su in _securityDb.SecurityUsers
+                bool accountExists = await (from su in _context.SecurityUsers
                                             where su.accountName == request.AccountName &&
                                             su.deleted == false
                                             select su).AnyAsync(cancellationToken);
@@ -361,8 +357,8 @@ namespace Foundation.Security.Controllers.WebAPI
                     deleted = false
                 };
 
-                _securityDb.SecurityUsers.Add(newUser);
-                await _securityDb.SaveChangesAsync(cancellationToken);
+                _context.SecurityUsers.Add(newUser);
+                await _context.SaveChangesAsync(cancellationToken);
 
                 //
                 // Log the user creation event
@@ -377,8 +373,21 @@ namespace Foundation.Security.Controllers.WebAPI
                     deleted = false
                 };
 
-                _securityDb.SecurityUserEvents.Add(userEvent);
-                await _securityDb.SaveChangesAsync(cancellationToken);
+                _context.SecurityUserEvents.Add(userEvent);
+                await _context.SaveChangesAsync(cancellationToken);
+
+                //
+                // Validate data visibility hierarchy and create mapping table entries
+                // Uses existing methods from the main SecurityUsersController
+                //
+                ValidateDataVisibilityDefaultsForUser(newUser);
+                await CreateOrUpdateUserDataVisibilityTablesAsync(newUser, cancellationToken);
+
+                //
+                // Clear security caches
+                //
+                SecurityFramework.ClearSecurityCaches();
+                SecurityLogic.ClearSecurityCaches();
 
                 await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity, $"Admin created new user {newUser.accountName}", newUser.id.ToString());
 
@@ -405,7 +414,7 @@ namespace Foundation.Security.Controllers.WebAPI
         /// </summary>
         [Route("api/Admin/User/{id}/Lock")]
         [HttpPost]
-        public async Task<IActionResult> LockAccount(long id, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> AdminLockAccount(long id, CancellationToken cancellationToken = default)
         {
             StartAuditEventClock();
 
@@ -424,7 +433,7 @@ namespace Foundation.Security.Controllers.WebAPI
                 //
                 // Get the target user
                 //
-                SecurityUser targetUser = await (from su in _securityDb.SecurityUsers
+                SecurityUser targetUser = await (from su in _context.SecurityUsers
                                                   where su.id == id &&
                                                   su.deleted == false
                                                   select su)
@@ -453,8 +462,8 @@ namespace Foundation.Security.Controllers.WebAPI
                     deleted = false
                 };
 
-                _securityDb.SecurityUserEvents.Add(userEvent);
-                await _securityDb.SaveChangesAsync(cancellationToken);
+                _context.SecurityUserEvents.Add(userEvent);
+                await _context.SaveChangesAsync(cancellationToken);
 
                 await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, $"Admin locked account for user {targetUser.accountName}", targetUser.id.ToString());
 
@@ -476,7 +485,7 @@ namespace Foundation.Security.Controllers.WebAPI
         /// </summary>
         [Route("api/Admin/User/{id}/Unlock")]
         [HttpPost]
-        public async Task<IActionResult> UnlockAccount(long id, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> AdminUnlockAccount(long id, CancellationToken cancellationToken = default)
         {
             StartAuditEventClock();
 
@@ -495,7 +504,7 @@ namespace Foundation.Security.Controllers.WebAPI
                 //
                 // Get the target user
                 //
-                SecurityUser targetUser = await (from su in _securityDb.SecurityUsers
+                SecurityUser targetUser = await (from su in _context.SecurityUsers
                                                   where su.id == id &&
                                                   su.deleted == false
                                                   select su)
@@ -525,8 +534,8 @@ namespace Foundation.Security.Controllers.WebAPI
                     deleted = false
                 };
 
-                _securityDb.SecurityUserEvents.Add(userEvent);
-                await _securityDb.SaveChangesAsync(cancellationToken);
+                _context.SecurityUserEvents.Add(userEvent);
+                await _context.SaveChangesAsync(cancellationToken);
 
                 await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, $"Admin unlocked account for user {targetUser.accountName}", targetUser.id.ToString());
 
@@ -540,6 +549,10 @@ namespace Foundation.Security.Controllers.WebAPI
             }
         }
 
+        #endregion
+
+
+        #region SendGrid Email Helpers
 
         //
         // Helper method to send password reset email via SendGrid
@@ -632,5 +645,7 @@ namespace Foundation.Security.Controllers.WebAPI
                 return false;
             }
         }
+
+        #endregion
     }
 }

@@ -95,4 +95,67 @@ export class UserSettingsService {
     deleteSetting(key: string): Observable<boolean> {
         return this.setSetting(key, null);
     }
+
+
+    // ============================================================================
+    // ADMIN METHODS - For managing other users' settings
+    // ============================================================================
+
+
+    /**
+     * Gets all settings for a specific user (admin only).
+     */
+    getAllSettingsForUser(userId: number | bigint): Observable<Record<string, any>> {
+        return this.http.get<Record<string, any>>(`${this.baseUrl}/Admin`, {
+            headers: this.authHeaders,
+            params: { userId: userId.toString() }
+        }).pipe(
+            catchError(error => {
+                console.error(`Error fetching settings for user ${userId}:`, error);
+                return of({});
+            })
+        );
+    }
+
+
+    /**
+     * Gets a specific setting value for a user by key (admin only).
+     */
+    getSettingForUser(userId: number | bigint, key: string): Observable<string | null> {
+        return this.http.get<SettingValue>(`${this.baseUrl}/Admin/${encodeURIComponent(key)}`, {
+            headers: this.authHeaders,
+            params: { userId: userId.toString() }
+        }).pipe(
+            map(response => response.value),
+            catchError(error => {
+                console.error(`Error fetching setting '${key}' for user ${userId}:`, error);
+                return of(null);
+            })
+        );
+    }
+
+
+    /**
+     * Sets a setting value for a specific user (admin only).
+     */
+    setSettingForUser(userId: number | bigint, key: string, value: string | null): Observable<boolean> {
+        return this.http.put<SetSettingResponse>(`${this.baseUrl}/Admin/${encodeURIComponent(key)}`, { value }, {
+            headers: this.authHeaders,
+            params: { userId: userId.toString() }
+        }).pipe(
+            map(response => response.success),
+            catchError(error => {
+                console.error(`Error setting '${key}' for user ${userId}:`, error);
+                return of(false);
+            })
+        );
+    }
+
+
+    /**
+     * Deletes a setting for a specific user by setting its value to null (admin only).
+     */
+    deleteSettingForUser(userId: number | bigint, key: string): Observable<boolean> {
+        return this.setSettingForUser(userId, key, null);
+    }
 }
