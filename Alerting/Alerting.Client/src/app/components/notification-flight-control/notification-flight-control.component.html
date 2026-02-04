@@ -1,0 +1,356 @@
+<!-- Notification Flight Control Dashboard -->
+<div class="flight-control">
+
+    <!-- Hero Header -->
+    <div class="hero-header" [class.loading]="loading">
+        <div class="floating-orb"></div>
+        <div class="header-content">
+            <div class="header-left">
+                <button *ngIf="canGoBack()" class="btn-back" (click)="goBack()" title="Go Back">
+                    <i class="bi bi-arrow-left"></i>
+                </button>
+                <div class="title-section">
+                    <h1><i class="bi bi-radar"></i> Notification Flight Control</h1>
+                    <p class="subtitle">Real-time notification engine monitoring</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="live-indicator" *ngIf="!error">
+                    <span class="pulse"></span>
+                    <span>LIVE</span>
+                </div>
+                <button class="btn-refresh" (click)="refresh()" [disabled]="loading">
+                    <i class="bi bi-arrow-clockwise" [class.spin]="loading"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error" class="error-container">
+        <div class="error-content">
+            <i class="bi bi-shield-lock"></i>
+            <h3>Access Denied</h3>
+            <p>{{ error }}</p>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading && !summary && !error" class="loading-container">
+        <div class="loading-spinner"></div>
+        <p>Loading flight control data...</p>
+    </div>
+
+    <!-- Dashboard Content -->
+    <div *ngIf="summary && !error" class="dashboard-content">
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <div class="filter-group">
+                <label>Time Range:</label>
+                <select [(ngModel)]="selectedTimeRange" (ngModelChange)="onTimeRangeChange()">
+                    <option *ngFor="let opt of timeRangeOptions" [value]="opt.value">{{ opt.label }}</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Channel:</label>
+                <button class="channel-btn" [class.active]="!selectedChannel"
+                    (click)="onChannelChange(null)">All</button>
+                <button class="channel-btn" *ngFor="let channel of summary.channelMetrics"
+                    [class.active]="selectedChannel === channel.channelName"
+                    (click)="onChannelChange(channel.channelName)">
+                    <i [ngClass]="getChannelIcon(channel.channelName)"></i>
+                    {{ channel.channelName }}
+                </button>
+            </div>
+            <div class="last-updated">
+                Updated: {{ formatDateTime(summary.generatedAt) }}
+            </div>
+        </div>
+
+        <!-- Worker Status Row -->
+        <section class="workers-section">
+            <h2><i class="bi bi-gear-wide-connected"></i> Background Workers</h2>
+            <div class="workers-grid">
+                <!-- Escalation Worker -->
+                <div class="worker-card" [ngClass]="getWorkerStatusClass(summary.escalationWorker)">
+                    <div class="worker-icon">
+                        <i class="bi bi-arrow-up-right-circle"></i>
+                    </div>
+                    <div class="worker-info">
+                        <h3>Escalation Worker</h3>
+                        <div class="worker-stats">
+                            <div class="stat">
+                                <span class="stat-label">Status</span>
+                                <span class="stat-value">{{ summary.escalationWorker.isRunning ? 'Running' : 'Stopped'
+                                    }}</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Last Run</span>
+                                <span class="stat-value">{{ summary.escalationWorker.lastRunAt ?
+                                    formatTimeAgo(summary.escalationWorker.lastRunAt) : 'Never' }}</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Processed</span>
+                                <span class="stat-value">{{ summary.escalationWorker.totalItemsProcessed }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Retry Worker -->
+                <div class="worker-card" [ngClass]="getWorkerStatusClass(summary.retryWorker)">
+                    <div class="worker-icon">
+                        <i class="bi bi-arrow-repeat"></i>
+                    </div>
+                    <div class="worker-info">
+                        <h3>Retry Worker</h3>
+                        <div class="worker-stats">
+                            <div class="stat">
+                                <span class="stat-label">Status</span>
+                                <span class="stat-value">{{ summary.retryWorker.isRunning ? 'Running' : 'Stopped'
+                                    }}</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Last Run</span>
+                                <span class="stat-value">{{ summary.retryWorker.lastRunAt ?
+                                    formatTimeAgo(summary.retryWorker.lastRunAt) : 'Never' }}</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Processed</span>
+                                <span class="stat-value">{{ summary.retryWorker.totalItemsProcessed }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Queue Metrics -->
+        <section class="queue-section">
+            <h2><i class="bi bi-inbox-fill"></i> Queue Metrics</h2>
+            <div class="queue-grid">
+                <div class="queue-card delivered">
+                    <span class="queue-value">{{ summary.queue.deliveredCount }}</span>
+                    <span class="queue-label">Delivered</span>
+                </div>
+                <div class="queue-card pending">
+                    <span class="queue-value">{{ summary.queue.pendingCount }}</span>
+                    <span class="queue-label">Pending</span>
+                </div>
+                <div class="queue-card failed">
+                    <span class="queue-value">{{ summary.queue.failedCount }}</span>
+                    <span class="queue-label">Failed</span>
+                </div>
+                <div class="queue-card total">
+                    <span class="queue-value">{{ summary.queue.totalAttempts }}</span>
+                    <span class="queue-label">Total Attempts</span>
+                </div>
+                <div class="queue-card success-rate" [ngClass]="getSuccessRateClass(summary.queue.successRate)">
+                    <span class="queue-value">{{ summary.queue.successRate }}%</span>
+                    <span class="queue-label">Success Rate</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Channel Breakdown -->
+        <section class="channels-section">
+            <h2><i class="bi bi-broadcast"></i> Channel Breakdown</h2>
+            <div class="channels-grid">
+                <div class="channel-card" *ngFor="let channel of summary.channelMetrics">
+                    <div class="channel-header">
+                        <i [ngClass]="getChannelIcon(channel.channelName)"></i>
+                        <span>{{ channel.channelName }}</span>
+                    </div>
+                    <div class="channel-stats">
+                        <div class="channel-stat">
+                            <span class="value delivered">{{ channel.successCount }}</span>
+                            <span class="label">Delivered</span>
+                        </div>
+                        <div class="channel-stat">
+                            <span class="value pending">{{ channel.pendingCount }}</span>
+                            <span class="label">Pending</span>
+                        </div>
+                        <div class="channel-stat">
+                            <span class="value failed">{{ channel.failedCount }}</span>
+                            <span class="label">Failed</span>
+                        </div>
+                    </div>
+                    <div class="channel-rate" [ngClass]="getSuccessRateClass(channel.successRate)">
+                        {{ channel.successRate }}% success
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Live Feeds Row -->
+        <div class="live-feeds">
+
+            <!-- Recent Deliveries -->
+            <section class="deliveries-section">
+                <h2><i class="bi bi-send-check"></i> Recent Deliveries</h2>
+                <div class="feed-list" *ngIf="summary.recentDeliveries.length > 0">
+                    <div class="feed-item" *ngFor="let delivery of summary.recentDeliveries"
+                        (click)="openDeliveryDetail(delivery)">
+                        <div class="feed-time">{{ formatTimeAgo(delivery.attemptedAt) }}</div>
+                        <div class="feed-channel">
+                            <i [ngClass]="getChannelIcon(delivery.channelName)"></i>
+                        </div>
+                        <div class="feed-content">
+                            <span class="feed-title">{{ delivery.incidentTitle }}</span>
+                            <span class="feed-detail">{{ delivery.recipientSummary }}</span>
+                        </div>
+                        <div class="feed-status" [ngClass]="getStatusClass(delivery.status)">
+                            {{ delivery.status }}
+                        </div>
+                    </div>
+                </div>
+                <div class="no-data" *ngIf="summary.recentDeliveries.length === 0">
+                    <i class="bi bi-inbox"></i>
+                    <span>No recent deliveries</span>
+                </div>
+            </section>
+
+            <!-- Recent Webhooks -->
+            <section class="webhooks-section">
+                <h2><i class="bi bi-webhook"></i> Recent Webhooks</h2>
+                <div class="feed-list" *ngIf="summary.recentWebhooks.length > 0">
+                    <div class="feed-item" *ngFor="let webhook of summary.recentWebhooks"
+                        (click)="openWebhookDetail(webhook)">
+                        <div class="feed-time">{{ formatTimeAgo(webhook.attemptedAt) }}</div>
+                        <div class="feed-icon">
+                            <i class="bi bi-cloud-arrow-up"></i>
+                        </div>
+                        <div class="feed-content">
+                            <span class="feed-title">{{ webhook.integrationName }}</span>
+                            <span class="feed-detail">{{ webhook.incidentTitle }}</span>
+                        </div>
+                        <div class="feed-status" [ngClass]="webhook.success ? 'status-delivered' : 'status-failed'">
+                            {{ webhook.success ? 'Success' : 'Failed' }}
+                            <span *ngIf="webhook.httpStatusCode">({{ webhook.httpStatusCode }})</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="no-data" *ngIf="summary.recentWebhooks.length === 0">
+                    <i class="bi bi-inbox"></i>
+                    <span>No recent webhooks</span>
+                </div>
+            </section>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Delivery Detail Modal -->
+<div class="modal-overlay" *ngIf="showDeliveryModal" (click)="closeDeliveryModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h3><i class="bi bi-send-check"></i> Delivery Attempt Detail</h3>
+            <button class="modal-close" (click)="closeDeliveryModal()"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="modal-body" *ngIf="selectedDelivery">
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="detail-label">Incident</span>
+                    <span class="detail-value clickable" (click)="viewIncident(selectedDelivery.incidentId)">
+                        #{{ selectedDelivery.incidentId }}: {{ selectedDelivery.incidentTitle }}
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Severity</span>
+                    <span class="detail-value">{{ selectedDelivery.severityName }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Channel</span>
+                    <span class="detail-value">
+                        <i [ngClass]="getChannelIcon(selectedDelivery.channelName)"></i>
+                        {{ selectedDelivery.channelName }}
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Status</span>
+                    <span class="detail-value" [ngClass]="getStatusClass(selectedDelivery.status)">
+                        {{ selectedDelivery.status }}
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Attempted At</span>
+                    <span class="detail-value">{{ formatDateTime(selectedDelivery.attemptedAt) }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Attempt #</span>
+                    <span class="detail-value">{{ selectedDelivery.attemptNumber }}</span>
+                </div>
+                <div class="detail-item full-width" *ngIf="selectedDelivery.incidentDescription">
+                    <span class="detail-label">Description</span>
+                    <span class="detail-value">{{ selectedDelivery.incidentDescription }}</span>
+                </div>
+                <div class="detail-item full-width" *ngIf="selectedDelivery.errorMessage">
+                    <span class="detail-label">Error</span>
+                    <span class="detail-value error">{{ selectedDelivery.errorMessage }}</span>
+                </div>
+                <div class="detail-item full-width" *ngIf="selectedDelivery.response">
+                    <span class="detail-label">Provider Response</span>
+                    <pre class="detail-code">{{ selectedDelivery.response }}</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Webhook Detail Modal -->
+<div class="modal-overlay" *ngIf="showWebhookModal" (click)="closeWebhookModal()">
+    <div class="modal-content large" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h3><i class="bi bi-webhook"></i> Webhook Attempt Detail</h3>
+            <button class="modal-close" (click)="closeWebhookModal()"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="modal-body" *ngIf="selectedWebhook">
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="detail-label">Integration</span>
+                    <span class="detail-value">{{ selectedWebhook.integrationName }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Incident</span>
+                    <span class="detail-value clickable" (click)="viewIncident(selectedWebhook.incidentId)">
+                        #{{ selectedWebhook.incidentId }}: {{ selectedWebhook.incidentTitle }}
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Status</span>
+                    <span class="detail-value"
+                        [ngClass]="selectedWebhook.success ? 'status-delivered' : 'status-failed'">
+                        {{ selectedWebhook.success ? 'Success' : 'Failed' }}
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">HTTP Status</span>
+                    <span class="detail-value">{{ selectedWebhook.httpStatusCode || 'N/A' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Attempted At</span>
+                    <span class="detail-value">{{ formatDateTime(selectedWebhook.attemptedAt) }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Attempt #</span>
+                    <span class="detail-value">{{ selectedWebhook.attemptNumber }}</span>
+                </div>
+                <div class="detail-item full-width" *ngIf="selectedWebhook.errorMessage">
+                    <span class="detail-label">Error</span>
+                    <span class="detail-value error">{{ selectedWebhook.errorMessage }}</span>
+                </div>
+                <div class="detail-item full-width" *ngIf="selectedWebhook.payloadJson">
+                    <span class="detail-label">Request Payload</span>
+                    <pre class="detail-code">{{ selectedWebhook.payloadJson }}</pre>
+                </div>
+                <div class="detail-item full-width" *ngIf="selectedWebhook.responseBody">
+                    <span class="detail-label">Response Body</span>
+                    <pre class="detail-code">{{ selectedWebhook.responseBody }}</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

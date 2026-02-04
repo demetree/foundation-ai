@@ -102,6 +102,16 @@
     <!-- ═══ DEVELOPMENT ═══ -->
     <li class="nav-divider"></li>
 
+    <!-- Flight Control (Admin Only) -->
+    <li class="nav-item" *ngIf="isUserAlertingAdmin">
+      <a routerLink="/flight-control" routerLinkActive="active" class="nav-link text-white"
+        [ngbTooltip]="!isExpanded ? 'Flight Control' : null" triggers="hover" #tFlightControl="ngbTooltip"
+        (click)="tFlightControl.close(); close()" placement="right" tooltipClass="sidebar-tip">
+        <i class="fa-solid fa-satellite-dish"></i>
+        <span class="label px-2">Flight Control</span>
+      </a>
+    </li>
+
     <!-- Test Harness -->
     <li class="nav-item">
       <a routerLink="/test-harness" routerLinkActive="active" class="nav-link text-white"

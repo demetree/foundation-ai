@@ -184,6 +184,7 @@ namespace Foundation.Alerting
                 controllers.Add(typeof(DashboardController));
                 controllers.Add(typeof(IncidentManagementController));
                 controllers.Add(typeof(IntegrationManagementController));
+                controllers.Add(typeof(NotificationFlightControlController));
                 controllers.Add(typeof(UsersController));
                 controllers.Add(typeof(IntegrationRegistrationController));
 
@@ -323,6 +324,7 @@ namespace Foundation.Alerting
                 builder.Services.AddScoped<IAlertingService, AlertingService>();
                 builder.Services.AddScoped<IDashboardService, DashboardService>();
                 builder.Services.AddScoped<IEscalationService, EscalationService>();
+                builder.Services.AddScoped<INotificationFlightControlService, NotificationFlightControlService>();
                 builder.Services.AddScoped<IUserService, UserService>();
 
                 //
