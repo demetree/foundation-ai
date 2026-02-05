@@ -90,25 +90,47 @@ $severity-info: #6b7280;
         gap: 1rem;
     }
 
-    .title-section {
-        h1 {
-            font-size: 1.75rem;
-            font-weight: 600;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
+    .title-icon-wrapper {
+        width: 56px;
+        height: 56px;
+        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 8px 32px rgba(59, 130, 246, 0.4);
+        animation: iconFloat 3s ease-in-out infinite;
 
-            i {
-                font-size: 1.5rem;
-                color: rgba(59, 130, 246, 0.9);
-            }
+        i {
+            font-size: 1.5rem;
+            color: white;
+        }
+    }
+
+    @keyframes iconFloat {
+
+        0%,
+        100% {
+            transform: translateY(0) rotate(0deg);
         }
 
-        .subtitle {
-            margin: 0.25rem 0 0 0;
-            color: $text-secondary;
-            font-size: 0.875rem;
+        50% {
+            transform: translateY(-8px) rotate(3deg);
+        }
+    }
+
+    .title-section {
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: -0.5px;
+        }
+
+        .page-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin: 0.25rem 0 0;
         }
     }
 

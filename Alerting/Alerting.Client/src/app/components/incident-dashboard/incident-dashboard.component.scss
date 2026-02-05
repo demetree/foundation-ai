@@ -60,25 +60,47 @@
         }
     }
 
+    .title-icon-wrapper {
+        width: 56px;
+        height: 56px;
+        background: linear-gradient(135deg, #f97316 0%, #dc2626 100%);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 8px 32px rgba(249, 115, 22, 0.4);
+        animation: iconFloat 3s ease-in-out infinite;
+
+        i {
+            font-size: 1.5rem;
+            color: white;
+        }
+    }
+
+    @keyframes iconFloat {
+
+        0%,
+        100% {
+            transform: translateY(0) rotate(0deg);
+        }
+
+        50% {
+            transform: translateY(-8px) rotate(3deg);
+        }
+    }
+
     .header-title-section {
         .page-title {
             margin: 0;
-            font-size: 1.5rem;
-            font-weight: 600;
+            font-size: 1.75rem;
+            font-weight: 700;
             color: white;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-
-            i {
-                font-size: 1.25rem;
-                opacity: 0.9;
-            }
+            letter-spacing: -0.5px;
         }
 
         .page-subtitle {
             margin: 0.25rem 0 0;
-            font-size: 0.875rem;
+            font-size: 0.9rem;
             color: rgba(255, 255, 255, 0.8);
         }
     }

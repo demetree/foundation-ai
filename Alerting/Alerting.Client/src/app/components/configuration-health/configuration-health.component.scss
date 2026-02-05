@@ -7,11 +7,11 @@
 
 
 :host {
-  display: block;
-  margin: -5px; // Counteract parent .main-content padding
-  padding: 0;
-  min-height: 100vh;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    display: block;
+    margin: -5px; // Counteract parent .main-content padding
+    padding: 0;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
 }
 
 
@@ -100,23 +100,48 @@ $accent-blue: #3b82f6;
         }
     }
 
-    .title-section h1 {
-        font-size: 1.75rem;
-        font-weight: 700;
-        margin: 0;
+    .title-icon-wrapper {
+        width: 56px;
+        height: 56px;
+        background: linear-gradient(135deg, #3b82f6 0%, #10b981 100%);
+        border-radius: 16px;
         display: flex;
         align-items: center;
-        gap: 0.75rem;
+        justify-content: center;
+        box-shadow: 0 8px 32px rgba(59, 130, 246, 0.4);
+        animation: iconFloat 3s ease-in-out infinite;
 
         i {
-            color: $accent-blue;
+            font-size: 1.5rem;
+            color: white;
         }
     }
 
-    .subtitle {
-        margin: 0.25rem 0 0;
-        color: $text-secondary;
-        font-size: 0.95rem;
+    @keyframes iconFloat {
+
+        0%,
+        100% {
+            transform: translateY(0) rotate(0deg);
+        }
+
+        50% {
+            transform: translateY(-8px) rotate(3deg);
+        }
+    }
+
+    .title-section {
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: -0.5px;
+        }
+
+        .page-subtitle {
+            margin: 0.25rem 0 0;
+            color: $text-secondary;
+            font-size: 0.9rem;
+        }
     }
 
     .header-right {

@@ -79,9 +79,22 @@ $card-shadow: 0 4px 6px rgba(0, 0, 0, 0.04), 0 8px 30px rgba(0, 0, 0, 0.06);
         display: flex;
         align-items: center;
         justify-content: center;
+        animation: iconFloat 3s ease-in-out infinite;
 
         i {
             font-size: 1.4rem;
+        }
+    }
+
+    @keyframes iconFloat {
+
+        0%,
+        100% {
+            transform: translateY(0) rotate(0deg);
+        }
+
+        50% {
+            transform: translateY(-6px) rotate(2deg);
         }
     }
 
