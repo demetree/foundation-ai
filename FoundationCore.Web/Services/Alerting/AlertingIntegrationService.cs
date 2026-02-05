@@ -113,7 +113,7 @@ namespace Foundation.Web.Services.Alerting
                     
                     await SystemSettings.SetSystemSettingAsync($"{settingPrefix}:ApiKey", result.ApiKey, cancellationToken).ConfigureAwait(false);
 
-                    await SystemSettings.SetSystemSettingAsync($"{settingPrefix}:IntegrationGui", result.IntegrationGuid.ToString(), cancellationToken).ConfigureAwait(false);
+                    await SystemSettings.SetSystemSettingAsync($"{settingPrefix}:IntegrationGuid", result.IntegrationGuid.ToString(), cancellationToken).ConfigureAwait(false);
 
                     await SystemSettings.SetSystemSettingAsync($"{settingPrefix}:ServiceGuid", result.ServiceGuid.ToString(), cancellationToken).ConfigureAwait(false);
 

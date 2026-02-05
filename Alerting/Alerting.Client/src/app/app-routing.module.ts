@@ -34,6 +34,7 @@ import { MyShiftComponent } from './components/my-shift/my-shift.component';
 import { AlertingOverviewComponent } from './components/alerting-overview/alerting-overview.component';
 import { NotificationFlightControlComponent } from './components/notification-flight-control/notification-flight-control.component';
 import { ConfigurationHealthComponent } from './components/configuration-health/configuration-health.component';
+import { AdminNotificationPreferencesComponent } from './components/admin-notification-preferences/admin-notification-preferences.component';
 
 //
 // Custom screens
@@ -188,6 +189,7 @@ const routes: Routes = [
   { path: 'my-shift', component: MyShiftComponent, canActivate: [AuthGuard], title: 'My Shift' },
   { path: 'flight-control', component: NotificationFlightControlComponent, canActivate: [AuthGuard], title: 'Notification Flight Control' },
   { path: 'configuration-health', component: ConfigurationHealthComponent, canActivate: [AuthGuard], title: 'Configuration Health' },
+  { path: 'admin-notification-preferences', component: AdminNotificationPreferencesComponent, canActivate: [AuthGuard], title: 'Admin Notification Preferences' },
 
 
 

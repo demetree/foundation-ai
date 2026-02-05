@@ -311,7 +311,7 @@
                             <div class="detail-section">
                                 <h5>
                                     <i class="fa-solid fa-clock-rotate-left"></i>
-                                    Timeline ({{ selectedIncident.timeline?.length || 0 }})
+                                    Timeline ({{ selectedIncident.timeline.length || 0 }})
                                 </h5>
                                 <div class="timeline-list">
                                     <div *ngFor="let event of selectedIncident.timeline" class="timeline-item">
@@ -328,7 +328,7 @@
                             <div class="detail-section">
                                 <h5>
                                     <i class="fa-solid fa-sticky-note"></i>
-                                    Notes ({{ selectedIncident.notes?.length || 0 }})
+                                    Notes ({{ selectedIncident.notes.length || 0 }})
                                 </h5>
                                 <div class="notes-list">
                                     <div *ngFor="let note of selectedIncident.notes" class="note-item">

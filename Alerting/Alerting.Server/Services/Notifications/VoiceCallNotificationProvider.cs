@@ -55,8 +55,11 @@ namespace Alerting.Server.Services.Notifications
 
         public async Task<NotificationResult> SendAsync(NotificationRequest request, CancellationToken cancellationToken = default)
         {
+            NotificationLogger.Debug($"VoiceCallNotificationProvider.SendAsync - User: {request.UserObjectGuid}, Phone: {MaskPhoneNumber(request.UserPhoneNumber)}");
+
             if (string.IsNullOrWhiteSpace(request.UserPhoneNumber))
             {
+                NotificationLogger.Warning($"Cannot send voice call to user {request.UserObjectGuid}: No phone number configured");
                 _logger.LogWarning("Cannot send voice call to user {UserGuid}: No phone number configured",
                     request.UserObjectGuid);
                 return NotificationResult.Failed("No phone number configured for user");
@@ -66,20 +69,26 @@ namespace Alerting.Server.Services.Notifications
             var fromNumber = _config["Twilio:VoiceFromNumber"] ?? _config["Twilio:FromNumber"];
             if (string.IsNullOrEmpty(fromNumber))
             {
+                NotificationLogger.Warning("Twilio FromNumber not configured - cannot send voice call");
                 _logger.LogWarning("Twilio FromNumber not configured - cannot send voice call");
                 return NotificationResult.Failed("Voice provider not configured");
             }
 
             try
             {
+                NotificationLogger.Debug("Ensuring Twilio client is initialized");
                 EnsureInitialized();
                 if (!_initialized)
                 {
+                    NotificationLogger.Error("Twilio not initialized - credentials missing");
                     return NotificationResult.Failed("Twilio not initialized - credentials missing");
                 }
 
+                NotificationLogger.Debug($"Building TwiML for incident {request.Incident.IncidentKey}");
                 var twiml = BuildTwiml(request);
+                NotificationLogger.Debug($"TwiML length: {twiml.Length} characters");
 
+                NotificationLogger.Debug($"Calling Twilio CallResource.CreateAsync to {MaskPhoneNumber(request.UserPhoneNumber)}");
                 var call = await CallResource.CreateAsync(
                     to: new PhoneNumber(request.UserPhoneNumber),
                     from: new PhoneNumber(fromNumber),
@@ -93,6 +102,7 @@ namespace Alerting.Server.Services.Notifications
 
                 if (success || call.Status == CallResource.StatusEnum.Queued || call.Status == CallResource.StatusEnum.Ringing)
                 {
+                    NotificationLogger.Info($"Voice call initiated to {MaskPhoneNumber(request.UserPhoneNumber)} for incident {request.Incident.IncidentKey} (SID: {call.Sid}, Status: {call.Status})");
                     _logger.LogInformation(
                         "Voice call initiated to {Phone} for incident {IncidentKey} (SID: {Sid}, Status: {Status})",
                         MaskPhoneNumber(request.UserPhoneNumber), request.Incident.IncidentKey, call.Sid, call.Status);
@@ -100,6 +110,7 @@ namespace Alerting.Server.Services.Notifications
                 }
                 else
                 {
+                    NotificationLogger.Error($"Voice call failed to {MaskPhoneNumber(request.UserPhoneNumber)}: Status {call.Status}");
                     _logger.LogError(
                         "Failed to initiate voice call to {Phone} for incident {IncidentKey}: Status {Status}",
                         MaskPhoneNumber(request.UserPhoneNumber), request.Incident.IncidentKey, call.Status);
@@ -108,6 +119,7 @@ namespace Alerting.Server.Services.Notifications
             }
             catch (Exception ex)
             {
+                NotificationLogger.Exception($"Exception sending voice call to {MaskPhoneNumber(request.UserPhoneNumber)} for incident {request.Incident.IncidentKey}", ex);
                 _logger.LogError(ex, "Exception sending voice call to {Phone} for incident {IncidentKey}",
                     MaskPhoneNumber(request.UserPhoneNumber), request.Incident.IncidentKey);
                 return NotificationResult.Failed(ex.Message);

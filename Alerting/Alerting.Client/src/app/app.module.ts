@@ -83,6 +83,7 @@ import { MyShiftComponent } from './components/my-shift/my-shift.component';
 import { AlertingOverviewComponent } from './components/alerting-overview/alerting-overview.component';
 import { NotificationFlightControlComponent } from './components/notification-flight-control/notification-flight-control.component';
 import { ConfigurationHealthComponent } from './components/configuration-health/configuration-health.component';
+import { AdminNotificationPreferencesComponent } from './components/admin-notification-preferences/admin-notification-preferences.component';
 
 //
 // Custom Components
@@ -359,6 +360,7 @@ import { WebhookDeliveryAttemptTableComponent } from './alerting-data-components
     AlertingOverviewComponent,
     NotificationFlightControlComponent,
     ConfigurationHealthComponent,
+    AdminNotificationPreferencesComponent,
 
 
     //

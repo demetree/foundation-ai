@@ -266,7 +266,7 @@ export class NotificationFlightControlComponent implements OnInit, OnDestroy {
     }
 
     viewIncident(incidentId: number): void {
-        this.router.navigate(['/incident-view', incidentId]);
+        this.router.navigate(['/incidents', incidentId]);
     }
 
     //

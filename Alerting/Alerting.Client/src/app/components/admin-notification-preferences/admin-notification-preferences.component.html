@@ -1,0 +1,231 @@
+<!-- Admin Notification Preferences -->
+<div class="admin-preferences">
+
+    <!-- Hero Header -->
+    <div class="hero-header">
+        <div class="floating-orb"></div>
+        <div class="header-content">
+            <div class="header-left">
+                <button *ngIf="canGoBack()" class="btn-back" (click)="goBack()" title="Go Back">
+                    <i class="bi bi-arrow-left"></i>
+                </button>
+                <div class="title-section">
+                    <h1><i class="bi bi-sliders"></i> Admin Notification Preferences</h1>
+                    <p class="subtitle">Manage notification preferences for all alerting users</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="stat-badge" *ngIf="!isLoadingUsers">
+                    <span class="value">{{ getConfiguredCount() }}</span>
+                    <span class="label">/ {{ users.length }} Configured</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="authError" class="error-container">
+        <div class="error-content">
+            <i class="bi bi-shield-lock"></i>
+            <h3>Access Denied</h3>
+            <p>{{ authError }}</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div *ngIf="isAuthorized" class="main-content">
+
+        <!-- User List Panel -->
+        <div class="user-list-panel">
+            <div class="panel-header">
+                <h2><i class="bi bi-people"></i> Users</h2>
+                <div class="search-box">
+                    <i class="bi bi-search"></i>
+                    <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="filterUsers()"
+                        placeholder="Search users...">
+                </div>
+            </div>
+
+            <div class="user-list" *ngIf="!isLoadingUsers">
+                <div class="user-card" *ngFor="let user of filteredUsers" [class.selected]="selectedUser === user"
+                    (click)="selectUser(user)">
+                    <div class="user-avatar">
+                        <i class="bi bi-person-circle"></i>
+                    </div>
+                    <div class="user-info">
+                        <span class="user-name">{{ user.displayName || user.accountName }}</span>
+                        <span class="user-email">{{ user.emailAddress }}</span>
+                    </div>
+                    <div class="user-status">
+                        <span class="status-badge" [class.configured]="user.hasPreferences"
+                            [class.default]="!user.hasPreferences">
+                            {{ user.hasPreferences ? 'Configured' : 'Default' }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="no-users" *ngIf="filteredUsers.length === 0">
+                    <i class="bi bi-person-x"></i>
+                    <span>No users found</span>
+                </div>
+            </div>
+
+            <div class="loading-users" *ngIf="isLoadingUsers">
+                <div class="spinner"></div>
+                <span>Loading users...</span>
+            </div>
+        </div>
+
+        <!-- Preference Editor Panel -->
+        <div class="editor-panel">
+
+            <!-- No User Selected -->
+            <div class="no-selection" *ngIf="!selectedUser">
+                <i class="bi bi-arrow-left-circle"></i>
+                <h3>Select a User</h3>
+                <p>Choose a user from the list to view and edit their notification preferences.</p>
+            </div>
+
+            <!-- User Selected - Show Editor -->
+            <div class="editor-content" *ngIf="selectedUser">
+
+                <!-- User Header -->
+                <div class="editor-header">
+                    <div class="user-info-header">
+                        <i class="bi bi-person-circle"></i>
+                        <div>
+                            <h3>{{ selectedUser.displayName }}</h3>
+                            <span class="email">{{ selectedUser.emailAddress }}</span>
+                        </div>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn-reset" (click)="resetToDefaults()" [disabled]="isSaving">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reset to Defaults
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Loading State -->
+                <div class="loading-preferences" *ngIf="isLoadingPreferences">
+                    <div class="spinner"></div>
+                    <span>Loading preferences...</span>
+                </div>
+
+                <!-- Error Message -->
+                <div class="error-message" *ngIf="errorMessage">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    {{ errorMessage }}
+                </div>
+
+                <!-- Preference Editor -->
+                <div class="preference-sections" *ngIf="!isLoadingPreferences">
+
+                    <!-- Channel Priorities -->
+                    <section class="preference-section">
+                        <h4><i class="bi bi-list-ol"></i> Channel Priorities</h4>
+                        <p class="section-description">Drag to reorder. Higher priority channels are attempted first
+                            during escalation.</p>
+
+                        <div class="channel-list" cdkDropList (cdkDropListDropped)="onChannelDrop($event)">
+                            <div class="channel-card" *ngFor="let channel of channelPreferences; let i = index" cdkDrag>
+                                <div class="drag-handle" cdkDragHandle>
+                                    <i class="bi bi-grip-vertical"></i>
+                                </div>
+                                <div class="channel-priority">{{ i + 1 }}</div>
+                                <div class="channel-icon">
+                                    <i [ngClass]="['bi', channel.icon]"></i>
+                                </div>
+                                <div class="channel-info">
+                                    <span class="channel-name">{{ channel.channelName }}</span>
+                                    <span class="channel-description">{{ channel.channelDescription }}</span>
+                                </div>
+                                <div class="channel-toggle">
+                                    <button class="toggle-btn" [class.enabled]="channel.isEnabled"
+                                        (click)="toggleChannel(channel)">
+                                        <i [ngClass]="channel.isEnabled ? 'bi bi-check-lg' : 'bi bi-x-lg'"></i>
+                                        {{ channel.isEnabled ? 'Enabled' : 'Disabled' }}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Timezone -->
+                    <section class="preference-section">
+                        <h4><i class="bi bi-globe"></i> Timezone</h4>
+                        <select class="form-select" [(ngModel)]="formTimeZoneId" (ngModelChange)="markAsModified()">
+                            <option *ngFor="let tz of commonTimezones" [value]="tz.id">{{ tz.label }}</option>
+                        </select>
+                    </section>
+
+                    <!-- Quiet Hours -->
+                    <section class="preference-section">
+                        <h4><i class="bi bi-moon-stars"></i> Quiet Hours</h4>
+                        <div class="toggle-row">
+                            <label class="toggle-label">
+                                <span>Enable Quiet Hours</span>
+                                <span class="toggle-hint">Suppress notifications during specified hours</span>
+                            </label>
+                            <button class="toggle-btn large" [class.enabled]="formQuietHoursEnabled"
+                                (click)="toggleQuietHours()">
+                                {{ formQuietHoursEnabled ? 'ON' : 'OFF' }}
+                            </button>
+                        </div>
+                        <div class="time-inputs" *ngIf="formQuietHoursEnabled">
+                            <div class="time-input">
+                                <label>Start</label>
+                                <input type="time" [(ngModel)]="formQuietHoursStart" (ngModelChange)="markAsModified()">
+                            </div>
+                            <div class="time-input">
+                                <label>End</label>
+                                <input type="time" [(ngModel)]="formQuietHoursEnd" (ngModelChange)="markAsModified()">
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Do Not Disturb -->
+                    <section class="preference-section">
+                        <h4><i class="bi bi-bell-slash"></i> Do Not Disturb</h4>
+                        <div class="toggle-row">
+                            <label class="toggle-label">
+                                <span>Enable Do Not Disturb</span>
+                                <span class="toggle-hint">Temporarily pause all notifications</span>
+                            </label>
+                            <button class="toggle-btn large" [class.enabled]="formDoNotDisturb" (click)="toggleDnd()">
+                                {{ formDoNotDisturb ? 'ON' : 'OFF' }}
+                            </button>
+                        </div>
+                        <div class="dnd-options" *ngIf="formDoNotDisturb">
+                            <div class="toggle-row sub">
+                                <label>Permanent (until manually disabled)</label>
+                                <button class="toggle-btn" [class.enabled]="formDoNotDisturbPermanent"
+                                    (click)="toggleDndPermanent()">
+                                    {{ formDoNotDisturbPermanent ? 'Yes' : 'No' }}
+                                </button>
+                            </div>
+                            <div class="datetime-input" *ngIf="!formDoNotDisturbPermanent">
+                                <label>Until</label>
+                                <input type="datetime-local" [(ngModel)]="formDoNotDisturbUntil"
+                                    (ngModelChange)="markAsModified()">
+                            </div>
+                        </div>
+                    </section>
+
+                </div>
+
+                <!-- Save Actions -->
+                <div class="editor-actions" *ngIf="!isLoadingPreferences">
+                    <div class="unsaved-indicator" *ngIf="hasUnsavedChanges">
+                        <i class="bi bi-exclamation-circle"></i> Unsaved changes
+                    </div>
+                    <button class="btn-save" (click)="save()" [disabled]="isSaving || !hasEnabledChannels()">
+                        <i [ngClass]="isSaving ? 'bi bi-hourglass-split spin' : 'bi bi-check-lg'"></i>
+                        {{ isSaving ? 'Saving...' : 'Save Changes' }}
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>

@@ -20,6 +20,7 @@ import {
 import { AlertService, MessageSeverity } from '../../services/alert.service';
 import { NavigationService } from '../../utility-services/navigation.service';
 import { IntegrationService, IntegrationData } from '../../alerting-data-services/integration.service';
+import { CacheManagerService } from '../../services/cache-manager.service';
 
 
 @Component({
@@ -86,14 +87,19 @@ export class TestHarnessComponent implements OnInit, OnDestroy {
     private testHarnessService: AlertTestHarnessService,
     private integrationService: IntegrationService,
     private alertService: AlertService,
-    private navigationService: NavigationService
+    private navigationService: NavigationService,
+    private cacheManagerService: CacheManagerService
   ) { }
 
 
   ngOnInit(): void {
+
+    this.cacheManagerService.ClearAllCaches();
+
     this.loadIntegrations();
     this.loadIncidents();
     this.loadStats();
+
   }
 
 
@@ -142,6 +148,7 @@ export class TestHarnessComponent implements OnInit, OnDestroy {
       return;
     }
 
+
     this.triggerLoading = true;
     this.lastTriggerResponse = null;
 
@@ -149,6 +156,9 @@ export class TestHarnessComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: AlertResponse) => {
+
+          this.cacheManagerService.ClearAllCaches();
+
           this.lastTriggerResponse = response;
           this.triggerLoading = false;
 
@@ -159,14 +169,15 @@ export class TestHarnessComponent implements OnInit, OnDestroy {
               MessageSeverity.success
             );
 
-            this.integrationService.ClearAllCaches();
-
             this.loadIncidents();
             this.loadStats();
 
           }
         },
         error: (err: Error) => {
+
+          this.cacheManagerService.ClearAllCaches();
+
           this.triggerLoading = false;
           this.lastTriggerResponse = {
             success: false,
@@ -237,6 +248,9 @@ export class TestHarnessComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
+
+          this.cacheManagerService.ClearAllCaches();
+
           this.alertService.showMessage('Success', 'Incident acknowledged', MessageSeverity.success);
           this.loadIncidents();
           this.loadStats();
@@ -245,6 +259,9 @@ export class TestHarnessComponent implements OnInit, OnDestroy {
           }
         },
         error: (err: Error) => {
+
+          this.cacheManagerService.ClearAllCaches();
+
           this.alertService.showMessage('Error', 'Failed to acknowledge: ' + err.message, MessageSeverity.error);
         }
       });
@@ -259,6 +276,9 @@ export class TestHarnessComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
+
+          this.cacheManagerService.ClearAllCaches();
+
           this.alertService.showMessage('Success', 'Incident resolved', MessageSeverity.success);
           this.loadIncidents();
           this.loadStats();
@@ -267,6 +287,9 @@ export class TestHarnessComponent implements OnInit, OnDestroy {
           }
         },
         error: (err: Error) => {
+
+          this.cacheManagerService.ClearAllCaches();
+
           this.alertService.showMessage('Error', 'Failed to resolve: ' + err.message, MessageSeverity.error);
         }
       });
@@ -285,6 +308,9 @@ export class TestHarnessComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (note: NoteDto) => {
+
+          this.cacheManagerService.ClearAllCaches();
+
           this.alertService.showMessage('Success', 'Note added', MessageSeverity.success);
           this.newNoteContent = '';
           this.addingNote = false;

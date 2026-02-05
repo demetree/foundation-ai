@@ -29,8 +29,11 @@ namespace Alerting.Server.Services.Notifications
 
         public async Task<NotificationResult> SendAsync(NotificationRequest request, CancellationToken cancellationToken = default)
         {
+            NotificationLogger.Debug($"EmailNotificationProvider.SendAsync - User: {request.UserObjectGuid}, Email: {request.UserEmail ?? "null"}");
+
             if (string.IsNullOrWhiteSpace(request.UserEmail))
             {
+                NotificationLogger.Warning($"Cannot send email notification to user {request.UserObjectGuid}: No email address configured");
                 _logger.LogWarning("Cannot send email notification to user {UserGuid}: No email address configured",
                     request.UserObjectGuid);
                 return NotificationResult.Failed("No email address configured for user");
@@ -38,8 +41,13 @@ namespace Alerting.Server.Services.Notifications
 
             try
             {
+                NotificationLogger.Debug($"Building email content for incident {request.Incident.IncidentKey}");
                 var subject = BuildSubject(request);
                 var body = BuildHtmlBody(request);
+
+                NotificationLogger.Debug($"Email subject: {subject}");
+                NotificationLogger.Debug($"Email body length: {body.Length} characters");
+                NotificationLogger.Debug($"Calling SendGridEmailService.SendEmailAsync to {request.UserEmail}");
 
                 var success = await SendGridEmailService.SendEmailAsync(
                     senderEmail: null,      // Use config default
@@ -54,12 +62,14 @@ namespace Alerting.Server.Services.Notifications
 
                 if (success)
                 {
+                    NotificationLogger.Info($"Email sent successfully to {request.UserEmail} for incident {request.Incident.IncidentKey}");
                     _logger.LogInformation("Email notification sent successfully to {Email} for incident {IncidentKey}",
                         request.UserEmail, request.Incident.IncidentKey);
                     return NotificationResult.Succeeded();
                 }
                 else
                 {
+                    NotificationLogger.Error($"SendGrid returned failure for email to {request.UserEmail} - incident {request.Incident.IncidentKey}");
                     _logger.LogError("Failed to send email notification to {Email} for incident {IncidentKey}",
                         request.UserEmail, request.Incident.IncidentKey);
                     return NotificationResult.Failed("SendGrid delivery failed");
@@ -67,6 +77,7 @@ namespace Alerting.Server.Services.Notifications
             }
             catch (Exception ex)
             {
+                NotificationLogger.Exception($"Exception sending email to {request.UserEmail} for incident {request.Incident.IncidentKey}", ex);
                 _logger.LogError(ex, "Exception sending email notification to {Email} for incident {IncidentKey}",
                     request.UserEmail, request.Incident.IncidentKey);
                 return NotificationResult.Failed(ex.Message);

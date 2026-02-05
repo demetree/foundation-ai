@@ -122,6 +122,17 @@
       </a>
     </li>
 
+    <!-- Admin Notification Preferences (Admin Only) -->
+    <li class="nav-item" *ngIf="isUserAlertingAdmin">
+      <a routerLink="/admin-notification-preferences" routerLinkActive="active" class="nav-link text-white"
+        [ngbTooltip]="!isExpanded ? 'Admin Notification Preferences' : null" triggers="hover"
+        #tAdminNotifPrefs="ngbTooltip" (click)="tAdminNotifPrefs.close(); close()" placement="right"
+        tooltipClass="sidebar-tip">
+        <i class="fa-solid fa-users-cog"></i>
+        <span class="label px-2">Admin Preferences</span>
+      </a>
+    </li>
+
     <!-- Test Harness -->
     <li class="nav-item">
       <a routerLink="/test-harness" routerLinkActive="active" class="nav-link text-white"

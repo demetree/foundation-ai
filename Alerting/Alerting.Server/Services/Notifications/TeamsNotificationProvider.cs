@@ -36,6 +36,8 @@ namespace Alerting.Server.Services.Notifications
 
         public async Task<NotificationResult> SendAsync(NotificationRequest request, CancellationToken cancellationToken = default)
         {
+            NotificationLogger.Debug($"TeamsNotificationProvider.SendAsync - Incident: {request.Incident.IncidentKey}, HasWebhookUrl: {!string.IsNullOrEmpty(request.TeamsWebhookUrl)}");
+
             // Teams webhooks are typically configured at the service/escalation policy level
             // For now, we'll check for a webhook URL in the incident's service configuration
             // This could be extended to support per-user Teams DMs via Graph API
@@ -46,6 +48,7 @@ namespace Alerting.Server.Services.Notifications
             
             if (string.IsNullOrEmpty(request.TeamsWebhookUrl))
             {
+                NotificationLogger.Debug($"Teams webhook URL not configured for incident {request.Incident.IncidentKey}");
                 _logger.LogDebug("Teams webhook URL not configured for incident {IncidentKey}", 
                     request.Incident.IncidentKey);
                 return NotificationResult.Failed("Teams webhook URL not configured");
@@ -53,9 +56,12 @@ namespace Alerting.Server.Services.Notifications
 
             try
             {
+                NotificationLogger.Debug($"Building Adaptive Card for incident {request.Incident.IncidentKey}");
                 var adaptiveCard = BuildAdaptiveCard(request);
                 var payload = BuildWebhookPayload(adaptiveCard);
+                NotificationLogger.Debug($"Teams payload length: {payload.Length} characters");
 
+                NotificationLogger.Debug($"Posting to Teams webhook URL");
                 using var client = _httpClientFactory.CreateClient();
                 var content = new StringContent(payload, Encoding.UTF8, "application/json");
                 
@@ -63,6 +69,7 @@ namespace Alerting.Server.Services.Notifications
 
                 if (response.IsSuccessStatusCode)
                 {
+                    NotificationLogger.Info($"Teams notification sent successfully for incident {request.Incident.IncidentKey}");
                     _logger.LogInformation("Teams notification sent successfully for incident {IncidentKey}",
                         request.Incident.IncidentKey);
                     return NotificationResult.Succeeded(null, $"HTTP {(int)response.StatusCode}");
@@ -70,6 +77,7 @@ namespace Alerting.Server.Services.Notifications
                 else
                 {
                     var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
+                    NotificationLogger.Error($"Teams webhook failed for incident {request.Incident.IncidentKey}: HTTP {(int)response.StatusCode} - {errorBody}");
                     _logger.LogError("Failed to send Teams notification for incident {IncidentKey}: {StatusCode} - {Error}",
                         request.Incident.IncidentKey, response.StatusCode, errorBody);
                     return NotificationResult.Failed($"HTTP {(int)response.StatusCode}: {errorBody}");
@@ -77,6 +85,7 @@ namespace Alerting.Server.Services.Notifications
             }
             catch (Exception ex)
             {
+                NotificationLogger.Exception($"Exception sending Teams notification for incident {request.Incident.IncidentKey}", ex);
                 _logger.LogError(ex, "Exception sending Teams notification for incident {IncidentKey}",
                     request.Incident.IncidentKey);
                 return NotificationResult.Failed(ex.Message);

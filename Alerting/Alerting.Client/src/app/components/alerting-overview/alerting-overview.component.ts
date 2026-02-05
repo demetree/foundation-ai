@@ -259,7 +259,7 @@ export class AlertingOverviewComponent implements OnInit, OnDestroy {
      * Navigate to incident viewer
      */
     viewIncident(incidentId: number): void {
-        this.router.navigate(['/incident-viewer', incidentId]);
+        this.router.navigate(['/incidents', incidentId]);
     }
 
     /**

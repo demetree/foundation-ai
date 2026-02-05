@@ -7,10 +7,10 @@ import { AuthService } from './auth.service';
 import { AlertService } from '../services/alert.service';
 import { CurrentUserService } from './current-user.service';
 import { AlertingDataServiceManagerService } from '../alerting-data-services/alerting-data-service-manager.service';
+import { IncidentService } from '../alerting-data-services/incident.service';
+import { IncidentNoteService } from '../alerting-data-services/incident-note.service';
+import { IncidentNotificationService } from '../alerting-data-services/incident-notification.service';
 
-//interface SetupDataChangeTime {
-//  latestSetupDataChangeTime: string;
-//}
 
 
 @Injectable({
@@ -32,6 +32,10 @@ export class CacheManagerService extends SecureEndpointBase {
     @Inject('BASE_URL') private baseUrl: string,
     private currentUserService: CurrentUserService,
     private alertingDataServiceManagerService: AlertingDataServiceManagerService,
+    private incidentService: IncidentService,
+    private incidentNoteService: IncidentNoteService,
+    private incidentNotificationService: IncidentNotificationService
+
   ) {
     super(http, alertService, authService);
 
@@ -45,6 +49,10 @@ export class CacheManagerService extends SecureEndpointBase {
     this.currentUserService.ClearAllCaches();
 
     this.alertingDataServiceManagerService.ClearAllCaches();
+
+    this.incidentNoteService.ClearAllCaches();
+    this.incidentNoteService.ClearAllCaches();
+    this.incidentNoteService.ClearAllCaches();
   }
 
 

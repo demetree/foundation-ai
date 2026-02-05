@@ -72,8 +72,11 @@ namespace Alerting.Server.Services.Notifications
 
         public async Task<NotificationResult> SendAsync(NotificationRequest request, CancellationToken cancellationToken = default)
         {
+            NotificationLogger.Debug($"PushNotificationProvider.SendAsync - User: {request.UserObjectGuid}, HasToken: {!string.IsNullOrWhiteSpace(request.PushToken)}");
+
             if (string.IsNullOrWhiteSpace(request.PushToken))
             {
+                NotificationLogger.Debug($"Cannot send push notification to user {request.UserObjectGuid}: No push token registered");
                 _logger.LogDebug("Cannot send push notification to user {UserGuid}: No push token registered",
                     request.UserObjectGuid);
                 return NotificationResult.Failed("No push token registered for user");
@@ -81,15 +84,21 @@ namespace Alerting.Server.Services.Notifications
 
             try
             {
+                NotificationLogger.Debug("Ensuring Firebase is initialized");
                 EnsureInitialized();
                 if (!_initialized)
                 {
+                    NotificationLogger.Error("Firebase not initialized - credentials missing");
                     return NotificationResult.Failed("Firebase not initialized - credentials missing");
                 }
 
+                NotificationLogger.Debug($"Building push message for incident {request.Incident.IncidentKey}");
                 var message = BuildMessage(request);
+
+                NotificationLogger.Debug($"Calling FirebaseMessaging.SendAsync to token {request.PushToken.Substring(0, Math.Min(20, request.PushToken.Length))}...");
                 var messageId = await FirebaseMessaging.DefaultInstance.SendAsync(message, cancellationToken);
 
+                NotificationLogger.Info($"Push notification sent to user {request.UserObjectGuid} for incident {request.Incident.IncidentKey} (MessageId: {messageId})");
                 _logger.LogInformation("Push notification sent successfully to user {UserGuid} for incident {IncidentKey} (MessageId: {MessageId})",
                     request.UserObjectGuid, request.Incident.IncidentKey, messageId);
 
@@ -97,12 +106,14 @@ namespace Alerting.Server.Services.Notifications
             }
             catch (FirebaseMessagingException ex)
             {
+                NotificationLogger.Error($"Firebase messaging error for incident {request.Incident.IncidentKey}: {ex.MessagingErrorCode} - {ex.Message}");
                 _logger.LogError(ex, "Firebase messaging error for incident {IncidentKey}: {Code}",
                     request.Incident.IncidentKey, ex.MessagingErrorCode);
 
                 // Handle specific error codes
                 if (ex.MessagingErrorCode == MessagingErrorCode.Unregistered)
                 {
+                    NotificationLogger.Warning($"Push token expired or unregistered for user {request.UserObjectGuid}");
                     // Token is no longer valid - should be removed from storage
                     return NotificationResult.Failed("Push token expired or unregistered", "TokenInvalid");
                 }
@@ -111,6 +122,7 @@ namespace Alerting.Server.Services.Notifications
             }
             catch (Exception ex)
             {
+                NotificationLogger.Exception($"Exception sending push notification for incident {request.Incident.IncidentKey}", ex);
                 _logger.LogError(ex, "Exception sending push notification for incident {IncidentKey}",
                     request.Incident.IncidentKey);
                 return NotificationResult.Failed(ex.Message);
