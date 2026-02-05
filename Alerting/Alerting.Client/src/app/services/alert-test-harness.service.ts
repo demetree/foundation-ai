@@ -53,6 +53,8 @@ export interface TimelineEventDto {
     timestamp: Date;
     actorObjectGuid?: string;
     detailsJson?: string;
+    notes?: string;
+    source?: string;
 }
 
 export interface NoteDto {

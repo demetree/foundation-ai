@@ -901,8 +901,9 @@ $trigger-gradient: linear-gradient(135deg, #f5af19 0%, #f12711 100%);
 
 .timeline-item {
     display: flex;
-    align-items: center;
-    gap: 0.75rem;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 0.5rem;
     padding: 0.5rem;
     border-bottom: 1px dashed rgba(0, 0, 0, 0.1);
 
@@ -922,6 +923,42 @@ $trigger-gradient: linear-gradient(135deg, #f5af19 0%, #f12711 100%);
         border-radius: 6px;
         font-size: 0.75rem;
         font-weight: 500;
+    }
+
+    .timeline-source {
+        font-size: 0.65rem;
+        padding: 0.125rem 0.4rem;
+        border-radius: 4px;
+        font-weight: 600;
+        text-transform: uppercase;
+
+        &.source-system {
+            background: rgba(99, 102, 241, 0.15);
+            color: #667eea;
+        }
+
+        &.source-user {
+            background: rgba(40, 167, 69, 0.15);
+            color: #28a745;
+        }
+
+        &.source-api {
+            background: rgba(255, 193, 7, 0.15);
+            color: #856404;
+        }
+
+        &.source-webhook {
+            background: rgba(139, 92, 246, 0.15);
+            color: #764ba2;
+        }
+    }
+
+    .timeline-notes {
+        width: 100%;
+        margin: 0.25rem 0 0;
+        font-size: 0.8rem;
+        color: #495057;
+        line-height: 1.3;
     }
 }
 

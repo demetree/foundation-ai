@@ -143,9 +143,14 @@
                         <div class="timeline-content">
                             <div class="timeline-header">
                                 <span class="event-type">{{ getEventTypeName(event.incidentEventTypeId) }}</span>
+                                <span class="source-badge" *ngIf="event.source" [ngClass]="'source-' + event.source">
+                                    {{ event.source }}
+                                </span>
                                 <span class="event-time">{{ formatDateTime(event.timestamp) }}</span>
                             </div>
-                            <p *ngIf="event.detailsJson" class="event-details">{{ event.detailsJson }}</p>
+                            <p *ngIf="event.notes" class="event-notes">{{ event.notes }}</p>
+                            <p *ngIf="event.detailsJson && !event.notes" class="event-details">{{ event.detailsJson }}
+                            </p>
                         </div>
                     </div>
                 </div>

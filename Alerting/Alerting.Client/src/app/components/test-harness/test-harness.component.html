@@ -317,6 +317,9 @@
                                     <div *ngFor="let event of selectedIncident.timeline" class="timeline-item">
                                         <span class="timeline-time">{{ event.timestamp | date:'short' }}</span>
                                         <span class="timeline-event">{{ event.eventType }}</span>
+                                        <span *ngIf="event.source" class="timeline-source"
+                                            [ngClass]="'source-' + event.source">{{ event.source }}</span>
+                                        <p *ngIf="event.notes" class="timeline-notes">{{ event.notes }}</p>
                                     </div>
                                     <div *ngIf="!selectedIncident.timeline?.length" class="timeline-empty">
                                         No timeline events
