@@ -37,8 +37,8 @@ namespace Alerting.Server.Services
 
         // Well-known event type IDs (from seed data)
         private const int EventTriggered = 1;
-        private const int EventAcknowledged = 2;
-        private const int EventEscalated = 3;
+        private const int EventEscalated = 2;      // Was incorrectly 3
+        private const int EventAcknowledged = 3;   // Was incorrectly 2
         private const int EventResolved = 4;
         private const int EventNoteAdded = 5;
         private const int EventReassigned = 6;
@@ -206,7 +206,7 @@ namespace Alerting.Server.Services
                 {
                     severity = payload.Severity,
                     source = integration.name
-                }).ConfigureAwait(false);
+                }, notes: $"Incident triggered via integration '{integration.name}'", source: "api").ConfigureAwait(false);
 
                 _logger.LogInformation("Created new incident {IncidentId} for service {ServiceName}",
                     incident.id, service.name);
@@ -258,7 +258,8 @@ namespace Alerting.Server.Services
 
             await _context.SaveChangesAsync().ConfigureAwait(false);
 
-            await AddTimelineEventAsync(incident, EventAcknowledged, actorObjectGuid, null).ConfigureAwait(false);
+            await AddTimelineEventAsync(incident, EventAcknowledged, actorObjectGuid, null, 
+                notes: "Incident acknowledged by responder", source: "user").ConfigureAwait(false);
 
             _logger.LogInformation("Incident {IncidentId} acknowledged by {ActorGuid}", incidentId, actorObjectGuid);
 
@@ -291,7 +292,8 @@ namespace Alerting.Server.Services
 
             await _context.SaveChangesAsync().ConfigureAwait(false);
 
-            await AddTimelineEventAsync(incident, EventResolved, actorObjectGuid, null).ConfigureAwait(false);
+            await AddTimelineEventAsync(incident, EventResolved, actorObjectGuid, null, 
+                notes: "Incident resolved by responder", source: "user").ConfigureAwait(false);
 
             _logger.LogInformation("Incident {IncidentId} resolved by {ActorGuid}", incidentId, actorObjectGuid);
 
@@ -328,7 +330,8 @@ namespace Alerting.Server.Services
             _context.IncidentNotes.Add(note);
             await _context.SaveChangesAsync().ConfigureAwait(false);
 
-            await AddTimelineEventAsync(incident, EventNoteAdded, authorObjectGuid, new { noteId = note.id }).ConfigureAwait(false);
+            await AddTimelineEventAsync(incident, EventNoteAdded, authorObjectGuid, new { noteId = note.id }, 
+                notes: "Note added to incident", source: "user").ConfigureAwait(false);
 
             return note;
         }
@@ -621,7 +624,7 @@ namespace Alerting.Server.Services
                 { 
                     resolution = resolution,
                     source = "API"
-                }).ConfigureAwait(false);
+                }, notes: $"Incident auto-resolved via API: {resolution ?? "No reason provided"}", source: "api").ConfigureAwait(false);
 
                 _logger.LogInformation("Incident {IncidentKey} resolved via API", incidentKey);
 
@@ -648,7 +651,7 @@ namespace Alerting.Server.Services
 
         #region Private Helpers
 
-        private async Task AddTimelineEventAsync(Incident incident, int eventTypeId, Guid? actorGuid, object details)
+        private async Task AddTimelineEventAsync(Incident incident, int eventTypeId, Guid? actorGuid, object details, string notes = null, string source = "system")
         {
             var timelineEvent = new IncidentTimelineEvent
             {
@@ -658,6 +661,8 @@ namespace Alerting.Server.Services
                 timestamp = DateTime.UtcNow,
                 actorObjectGuid = actorGuid,
                 detailsJson = details != null ? JsonSerializer.Serialize(details) : null,
+                notes = notes,
+                source = source,
                 objectGuid = Guid.NewGuid(),
                 active = true,
                 deleted = false

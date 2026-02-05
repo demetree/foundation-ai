@@ -43,6 +43,14 @@
                 Details  Json
                 <span *ngIf="sortColumn === 'detailsJson'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('notes')">
+                Notes
+                <span *ngIf="sortColumn === 'notes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('source')">
+                Source
+                <span *ngIf="sortColumn === 'source'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
 End of commented block for alternate definition option -->
           </tr>
         </thead>
@@ -130,6 +138,8 @@ End of commented block for alternate definition option -->
             <td class="text-truncate"><a [routerLink]="['/incidenttimelineevent', incidentTimelineEvent.id]" class="btn btn-link text-left" ngbTooltip="Open Incident Timeline Event details">{{incidentTimelineEvent.timestamp | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</a></td>
             <td class="text-truncate">{{incidentTimelineEvent.actorObjectGuid}}</td>
             <td class="text-truncate">{{incidentTimelineEvent.detailsJson}}</td>
+            <td class="text-truncate">{{incidentTimelineEvent.notes}}</td>
+            <td class="text-truncate">{{incidentTimelineEvent.source}}</td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -296,6 +306,14 @@ End of commented block for alternate definition option -->
             <p class="incident-timeline-event-info" *ngIf="incidentTimelineEvent.detailsJson != null">
               <strong>Details Json: </strong>
               {{incidentTimelineEvent.detailsJson}}
+            </p>
+            <p class="incident-timeline-event-info" *ngIf="incidentTimelineEvent.notes != null">
+              <strong>Notes: </strong>
+              {{incidentTimelineEvent.notes}}
+            </p>
+            <p class="incident-timeline-event-info" *ngIf="incidentTimelineEvent.source != null">
+              <strong>Source: </strong>
+              {{incidentTimelineEvent.source}}
             </p>
             </div>
          </div>

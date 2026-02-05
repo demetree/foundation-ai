@@ -21,6 +21,10 @@ public partial class IncidentTimelineEvent
 
     public string detailsJson { get; set; }
 
+    public string notes { get; set; }
+
+    public string source { get; set; }
+
     public Guid objectGuid { get; set; }
 
     public bool active { get; set; }

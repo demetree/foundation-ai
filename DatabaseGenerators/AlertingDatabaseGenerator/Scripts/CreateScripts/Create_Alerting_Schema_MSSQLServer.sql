@@ -1375,6 +1375,8 @@ CREATE TABLE [Alerting].[IncidentTimelineEvent]
 	[timestamp] DATETIME2(7) NOT NULL,
 	[actorObjectGuid] UNIQUEIDENTIFIER NULL,
 	[detailsJson] NVARCHAR(MAX) NULL,
+	[notes] NVARCHAR(500) NULL,		-- Human-readable context for this event (e.g., 'Escalation rule 1 fired - notifying on-call schedule').
+	[source] NVARCHAR(50) NULL DEFAULT 'system',		-- Event source: 'system', 'user', 'api', 'webhook'.
 	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
 	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.

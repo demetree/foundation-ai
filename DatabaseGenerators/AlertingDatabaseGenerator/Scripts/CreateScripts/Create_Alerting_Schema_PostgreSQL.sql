@@ -1269,6 +1269,8 @@ CREATE TABLE "Alerting"."IncidentTimelineEvent"
 	"timestamp" TIMESTAMP NOT NULL,
 	"actorObjectGuid" VARCHAR(50) NULL,
 	"detailsJson" TEXT NULL,
+	"notes" VARCHAR(500) NULL,		-- Human-readable context for this event (e.g., 'Escalation rule 1 fired - notifying on-call schedule').
+	"source" VARCHAR(50) NULL DEFAULT 'system',		-- Event source: 'system', 'user', 'api', 'webhook'.
 	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
 	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
 	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.

@@ -171,6 +171,8 @@ export class IncidentTimelineEventTableComponent implements OnInit, OnChanges, A
     { key: 'timestamp', label: 'Timestamp', width: undefined, template: 'date' },
     { key: 'actorObjectGuid', label: 'Actor Object Guid', width: undefined },
     { key: 'detailsJson', label: 'Details Json', width: undefined },
+    { key: 'notes', label: 'Notes', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/incidenttimelineevent', 'id']  },
+    { key: 'source', label: 'Source', width: undefined },
 
     ];
 
@@ -319,6 +321,8 @@ export class IncidentTimelineEventTableComponent implements OnInit, OnChanges, A
                       'timestamp',
                       'actorObjectGuid',
                       'detailsJson',
+                      'notes',
+                      'source',
         ];
 
         result = result.filter((incidentTimelineEvent) =>

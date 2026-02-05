@@ -284,7 +284,7 @@ namespace Foundation.Alerting.Database
 				timeStamp = userPushTokenChangeHistory.timeStamp,
 				userId = userPushTokenChangeHistory.userId,
 				data = userPushTokenChangeHistory.data,
-				userPushToken = UserPushToken.CreateMinimalAnonymous(userPushTokenChangeHistory.userPushToken)
+				userPushToken = UserPushToken.CreateMinimalAnonymous(userPushTokenChangeHistory.userPushToken),
 			 };
 		}
 

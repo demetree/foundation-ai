@@ -56,6 +56,14 @@
                 <label for="IncidentTimelineEvent-detailsJson" id="label-IncidentTimelineEvent-detailsJson">Details Json</label>
                 <textarea id="IncidentTimelineEvent-detailsJson" formControlName="detailsJson" placeholder="Enter Details Json" class="form-control incident-timeline-event-input" [disabled]="!userIsAlertingIncidentTimelineEventWriter()"></textarea>
             </div>
+            <div class="form-group" *ngIf="!isFieldHidden('notes')">
+                <label for="IncidentTimelineEvent-notes" id="label-IncidentTimelineEvent-notes">Notes</label>
+                <textarea id="IncidentTimelineEvent-notes" formControlName="notes" placeholder="Enter Notes" class="form-control incident-timeline-event-input" [disabled]="!userIsAlertingIncidentTimelineEventWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('source')">
+                <label for="IncidentTimelineEvent-source" id="label-IncidentTimelineEvent-source">Source</label>
+                <input type="text" id="IncidentTimelineEvent-source" formControlName="source" placeholder="Enter Source" class="form-control incident-timeline-event-input" [disabled]="!userIsAlertingIncidentTimelineEventWriter()" aria-labelledby="label-source" />
+            </div>
             <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
                 <input type="checkbox" id="IncidentTimelineEvent-active" formControlName="active" class="form-check-input" [disabled]="!userIsAlertingIncidentTimelineEventWriter()" />
                 <label for="IncidentTimelineEvent-active" class="form-check-label" id="label-IncidentTimelineEvent-active"><span class="text-danger">*</span>Active</label>

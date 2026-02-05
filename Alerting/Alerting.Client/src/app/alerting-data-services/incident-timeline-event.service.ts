@@ -35,6 +35,8 @@ export class IncidentTimelineEventQueryParameters {
     timestamp: string | null | undefined = null;        // ISO 8601
     actorObjectGuid: string | null | undefined = null;
     detailsJson: string | null | undefined = null;
+    notes: string | null | undefined = null;
+    source: string | null | undefined = null;
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
     deleted: boolean | null | undefined = null;
@@ -55,6 +57,8 @@ export class IncidentTimelineEventSubmitData {
     timestamp!: string;      // ISO 8601
     actorObjectGuid: string | null = null;
     detailsJson: string | null = null;
+    notes: string | null = null;
+    source: string | null = null;
     active!: boolean;
     deleted!: boolean;
 }
@@ -109,6 +113,8 @@ export class IncidentTimelineEventData {
     timestamp!: string;      // ISO 8601
     actorObjectGuid!: string | null;
     detailsJson!: string | null;
+    notes!: string | null;
+    source!: string | null;
     objectGuid!: string;
     active!: boolean;
     deleted!: boolean;
@@ -360,6 +366,8 @@ export class IncidentTimelineEventService extends SecureEndpointBase {
         output.timestamp = data.timestamp;
         output.actorObjectGuid = data.actorObjectGuid;
         output.detailsJson = data.detailsJson;
+        output.notes = data.notes;
+        output.source = data.source;
         output.active = data.active;
         output.deleted = data.deleted;
 

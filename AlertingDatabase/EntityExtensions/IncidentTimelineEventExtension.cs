@@ -29,6 +29,8 @@ namespace Foundation.Alerting.Database
 			public DateTime timestamp { get; set; }
 			public Guid? actorObjectGuid { get; set; }
 			public String detailsJson { get; set; }
+			public String notes { get; set; }
+			public String source { get; set; }
 			[Required]
 			public Guid objectGuid { get; set; }
 			public Boolean? active { get; set; }
@@ -65,6 +67,8 @@ namespace Foundation.Alerting.Database
 				timestamp = this.timestamp,
 				actorObjectGuid = this.actorObjectGuid,
 				detailsJson = this.detailsJson,
+				notes = this.notes,
+				source = this.source,
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted
@@ -112,6 +116,8 @@ namespace Foundation.Alerting.Database
 				timestamp = this.timestamp,
 				actorObjectGuid = this.actorObjectGuid,
 				detailsJson = this.detailsJson,
+				notes = this.notes,
+				source = this.source,
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted,
@@ -161,6 +167,8 @@ namespace Foundation.Alerting.Database
 				timestamp = dto.timestamp,
 				actorObjectGuid = dto.actorObjectGuid,
 				detailsJson = dto.detailsJson,
+				notes = dto.notes,
+				source = dto.source,
 				objectGuid = dto.objectGuid,
 				active = dto.active ?? true,
 				deleted = dto.deleted ?? false
@@ -185,6 +193,8 @@ namespace Foundation.Alerting.Database
 			this.timestamp = dto.timestamp;
 			this.actorObjectGuid = dto.actorObjectGuid;
 			this.detailsJson = dto.detailsJson;
+			this.notes = dto.notes;
+			this.source = dto.source;
 			this.objectGuid = dto.objectGuid;
 			if (dto.active.HasValue == true)
 			{
@@ -215,6 +225,8 @@ namespace Foundation.Alerting.Database
 				timestamp = this.timestamp,
 				actorObjectGuid = this.actorObjectGuid,
 				detailsJson = this.detailsJson,
+				notes = this.notes,
+				source = this.source,
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted,
@@ -276,6 +288,8 @@ namespace Foundation.Alerting.Database
 				timestamp = incidentTimelineEvent.timestamp,
 				actorObjectGuid = incidentTimelineEvent.actorObjectGuid,
 				detailsJson = incidentTimelineEvent.detailsJson,
+				notes = incidentTimelineEvent.notes,
+				source = incidentTimelineEvent.source,
 				objectGuid = incidentTimelineEvent.objectGuid,
 				active = incidentTimelineEvent.active,
 				deleted = incidentTimelineEvent.deleted,
@@ -304,6 +318,8 @@ namespace Foundation.Alerting.Database
 				timestamp = incidentTimelineEvent.timestamp,
 				actorObjectGuid = incidentTimelineEvent.actorObjectGuid,
 				detailsJson = incidentTimelineEvent.detailsJson,
+				notes = incidentTimelineEvent.notes,
+				source = incidentTimelineEvent.source,
 				objectGuid = incidentTimelineEvent.objectGuid,
 				active = incidentTimelineEvent.active,
 				deleted = incidentTimelineEvent.deleted,
@@ -329,8 +345,8 @@ namespace Foundation.Alerting.Database
 
 			return new {
 				id = incidentTimelineEvent.id,
-				name = incidentTimelineEvent.id,
-				description = incidentTimelineEvent.id
+				name = incidentTimelineEvent.notes,
+				description = string.Join(", ", new[] { incidentTimelineEvent.notes, incidentTimelineEvent.source}.Where(s => !string.IsNullOrWhiteSpace(s)))
 			 };
 		}
 	}

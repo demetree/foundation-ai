@@ -28,7 +28,7 @@ namespace Alerting.Server.Services
         private const int StatusTriggered = 1;
         private const int StatusAcknowledged = 2;
         private const int StatusResolved = 3;
-        private const int EventEscalated = 3;
+        private const int EventEscalated = 2;  // Fixed: was incorrectly 3
 
         public EscalationService(
             AlertingContext context,
@@ -203,12 +203,13 @@ namespace Alerting.Server.Services
             }
 
             // Add escalated timeline event
+            var escalationNote = $"Escalation step {currentRule.ruleOrder} fired - notified {targetUsers.Count} target(s)";
             await AddTimelineEventAsync(incident, EventEscalated, null, new
             {
                 ruleId = currentRule.id,
                 ruleOrder = currentRule.ruleOrder,
                 targetCount = targetUsers.Count
-            }).ConfigureAwait(false);
+            }, notes: escalationNote, source: "system").ConfigureAwait(false);
 
             // Determine next step
             if (incident.currentRepeatCount < currentRule.repeatCount)
@@ -264,7 +265,7 @@ namespace Alerting.Server.Services
             await _dispatcher.DispatchAsync(incident, userGuid, rule?.id);
         }
 
-        private async Task AddTimelineEventAsync(Incident incident, int eventTypeId, Guid? actorGuid, object details)
+        private async Task AddTimelineEventAsync(Incident incident, int eventTypeId, Guid? actorGuid, object details, string notes = null, string source = "system")
         {
             var timelineEvent = new IncidentTimelineEvent
             {
@@ -274,6 +275,8 @@ namespace Alerting.Server.Services
                 timestamp = DateTime.UtcNow,
                 actorObjectGuid = actorGuid,
                 detailsJson = details != null ? JsonSerializer.Serialize(details) : null,
+                notes = notes,
+                source = source,
                 objectGuid = Guid.NewGuid(),
                 active = true,
                 deleted = false

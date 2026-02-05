@@ -41,6 +41,8 @@ interface IncidentTimelineEventFormValues {
   timestamp: string,
   actorObjectGuid: string | null,
   detailsJson: string | null,
+  notes: string | null,
+  source: string | null,
   active: boolean,
   deleted: boolean,
 };
@@ -78,6 +80,8 @@ export class IncidentTimelineEventAddEditComponent {
         timestamp: ['', Validators.required],
         actorObjectGuid: [''],
         detailsJson: [''],
+        notes: [''],
+        source: [''],
         active: [true],
         deleted: [false],
       });
@@ -222,6 +226,8 @@ export class IncidentTimelineEventAddEditComponent {
         timestamp: dateTimeLocalToIsoUtc(formValue.timestamp!.trim())!,
         actorObjectGuid: formValue.actorObjectGuid?.trim() || null,
         detailsJson: formValue.detailsJson?.trim() || null,
+        notes: formValue.notes?.trim() || null,
+        source: formValue.source?.trim() || null,
         active: !!formValue.active,
         deleted: !!formValue.deleted,
    };
@@ -354,6 +360,8 @@ export class IncidentTimelineEventAddEditComponent {
         timestamp: '',
         actorObjectGuid: '',
         detailsJson: '',
+        notes: '',
+        source: '',
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -370,6 +378,8 @@ export class IncidentTimelineEventAddEditComponent {
         timestamp: isoUtcStringToDateTimeLocal(incidentTimelineEventData.timestamp) ?? '',
         actorObjectGuid: incidentTimelineEventData.actorObjectGuid ?? '',
         detailsJson: incidentTimelineEventData.detailsJson ?? '',
+        notes: incidentTimelineEventData.notes ?? '',
+        source: incidentTimelineEventData.source ?? '',
         active: incidentTimelineEventData.active ?? true,
         deleted: incidentTimelineEventData.deleted ?? false,
       }, { emitEvent: false});

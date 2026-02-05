@@ -1253,6 +1253,8 @@ CREATE TABLE "IncidentTimelineEvent"
 	"timestamp" DATETIME NOT NULL,
 	"actorObjectGuid" VARCHAR(50) NULL COLLATE NOCASE,
 	"detailsJson" TEXT NULL COLLATE NOCASE,
+	"notes" VARCHAR(500) NULL COLLATE NOCASE,		-- Human-readable context for this event (e.g., 'Escalation rule 1 fired - notifying on-call schedule').
+	"source" VARCHAR(50) NULL DEFAULT 'system' COLLATE NOCASE,		-- Event source: 'system', 'user', 'api', 'webhook'.
 	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
 	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.

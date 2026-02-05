@@ -67,6 +67,8 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			DateTime? timestamp = null,
 			Guid? actorObjectGuid = null,
 			string detailsJson = null,
+			string notes = null,
+			string source = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -148,6 +150,14 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			{
 				query = query.Where(ite => ite.detailsJson == detailsJson);
 			}
+			if (string.IsNullOrEmpty(notes) == false)
+			{
+				query = query.Where(ite => ite.notes == notes);
+			}
+			if (string.IsNullOrEmpty(source) == false)
+			{
+				query = query.Where(ite => ite.source == source);
+			}
 			if (objectGuid.HasValue == true)
 			{
 				query = query.Where(ite => ite.objectGuid == objectGuid);
@@ -177,7 +187,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				query = query.Where(ite => ite.deleted == false);
 			}
 
-			query = query.OrderBy(ite => ite.id);
+			query = query.OrderBy(ite => ite.notes).ThenBy(ite => ite.source);
 
 			if (pageNumber.HasValue == true &&
 			    pageSize.HasValue == true)
@@ -202,6 +212,8 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			{
 			   query = query.Where(x =>
 			       x.detailsJson.Contains(anyStringContains)
+			       || x.notes.Contains(anyStringContains)
+			       || x.source.Contains(anyStringContains)
 			       || (includeRelations == true && x.incident.incidentKey.Contains(anyStringContains))
 			       || (includeRelations == true && x.incident.title.Contains(anyStringContains))
 			       || (includeRelations == true && x.incident.description.Contains(anyStringContains))
@@ -255,6 +267,8 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			DateTime? timestamp = null,
 			Guid? actorObjectGuid = null,
 			string detailsJson = null,
+			string notes = null,
+			string source = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -316,6 +330,14 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			{
 				query = query.Where(ite => ite.detailsJson == detailsJson);
 			}
+			if (notes != null)
+			{
+				query = query.Where(ite => ite.notes == notes);
+			}
+			if (source != null)
+			{
+				query = query.Where(ite => ite.source == source);
+			}
 			if (objectGuid.HasValue == true)
 			{
 				query = query.Where(ite => ite.objectGuid == objectGuid);
@@ -354,6 +376,8 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			{
 			   query = query.Where(x =>
 			       x.detailsJson.Contains(anyStringContains)
+			       || x.notes.Contains(anyStringContains)
+			       || x.source.Contains(anyStringContains)
 			       || x.incident.incidentKey.Contains(anyStringContains)
 			       || x.incident.title.Contains(anyStringContains)
 			       || x.incident.description.Contains(anyStringContains)
@@ -438,7 +462,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 
 					await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, userIsAdmin == true ? "Alerting.IncidentTimelineEvent Entity was read with Admin privilege." : "Alerting.IncidentTimelineEvent Entity was read.");
 
-					BackgroundJob.Enqueue(() => SecurityLogic.AddToUserMostRecents(securityUser.id, "IncidentTimelineEvent", materialized.id, materialized.id.ToString()));
+					BackgroundJob.Enqueue(() => SecurityLogic.AddToUserMostRecents(securityUser.id, "IncidentTimelineEvent", materialized.id, materialized.notes));
 
 
 					// Create a new output object that only includes the relations if necessary, and doesn't include the empty list objects, so that we can reduce the amount of data being transferred.
@@ -584,6 +608,16 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				incidentTimelineEvent.timestamp = incidentTimelineEvent.timestamp.ToUniversalTime();
 			}
 
+			if (incidentTimelineEvent.notes != null && incidentTimelineEvent.notes.Length > 500)
+			{
+				incidentTimelineEvent.notes = incidentTimelineEvent.notes.Substring(0, 500);
+			}
+
+			if (incidentTimelineEvent.source != null && incidentTimelineEvent.source.Length > 50)
+			{
+				incidentTimelineEvent.source = incidentTimelineEvent.source.Substring(0, 50);
+			}
+
 			EntityEntry<Database.IncidentTimelineEvent> attached = _context.Entry(existing);
 			attached.CurrentValues.SetValues(incidentTimelineEvent);
 
@@ -678,6 +712,16 @@ namespace Foundation.Alerting.Controllers.WebAPI
 					incidentTimelineEvent.timestamp = incidentTimelineEvent.timestamp.ToUniversalTime();
 				}
 
+				if (incidentTimelineEvent.notes != null && incidentTimelineEvent.notes.Length > 500)
+				{
+					incidentTimelineEvent.notes = incidentTimelineEvent.notes.Substring(0, 500);
+				}
+
+				if (incidentTimelineEvent.source != null && incidentTimelineEvent.source.Length > 50)
+				{
+					incidentTimelineEvent.source = incidentTimelineEvent.source.Substring(0, 50);
+				}
+
 				incidentTimelineEvent.objectGuid = Guid.NewGuid();
 				_context.IncidentTimelineEvents.Add(incidentTimelineEvent);
 				await _context.SaveChangesAsync(cancellationToken);
@@ -699,7 +743,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			}
 
 
-			BackgroundJob.Enqueue(() => SecurityLogic.AddToUserMostRecents(securityUser.id, "IncidentTimelineEvent", incidentTimelineEvent.id, incidentTimelineEvent.id.ToString()));
+			BackgroundJob.Enqueue(() => SecurityLogic.AddToUserMostRecents(securityUser.id, "IncidentTimelineEvent", incidentTimelineEvent.id, incidentTimelineEvent.notes));
 
 			return CreatedAtRoute("IncidentTimelineEvent", new { id = incidentTimelineEvent.id }, Database.IncidentTimelineEvent.CreateAnonymousWithFirstLevelSubObjects(incidentTimelineEvent));
 		}
@@ -811,6 +855,8 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			DateTime? timestamp = null,
 			Guid? actorObjectGuid = null,
 			string detailsJson = null,
+			string notes = null,
+			string source = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -891,6 +937,14 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			{
 				query = query.Where(ite => ite.detailsJson == detailsJson);
 			}
+			if (string.IsNullOrEmpty(notes) == false)
+			{
+				query = query.Where(ite => ite.notes == notes);
+			}
+			if (string.IsNullOrEmpty(source) == false)
+			{
+				query = query.Where(ite => ite.source == source);
+			}
 			if (objectGuid.HasValue == true)
 			{
 				query = query.Where(ite => ite.objectGuid == objectGuid);
@@ -930,6 +984,8 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			{
 			   query = query.Where(x =>
 			       x.detailsJson.Contains(anyStringContains)
+			       || x.notes.Contains(anyStringContains)
+			       || x.source.Contains(anyStringContains)
 			       || x.incident.incidentKey.Contains(anyStringContains)
 			       || x.incident.title.Contains(anyStringContains)
 			       || x.incident.description.Contains(anyStringContains)
@@ -943,7 +999,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 
-			query = query.OrderBy(x => x.id);
+			query = query.OrderBy(x => x.notes).ThenBy(x => x.source);
 			if (pageNumber.HasValue == true &&
 			    pageSize.HasValue == true)
 			{

@@ -493,6 +493,8 @@ Designed to be independent while sharing the central Security database for users
             timelineEventTable.AddDateTimeField("timestamp", false).CreateIndex();
             timelineEventTable.AddGuidField("actorObjectGuid", true);
             timelineEventTable.AddTextField("detailsJson", true);
+            timelineEventTable.AddString500Field("notes", true).AddScriptComments("Human-readable context for this event (e.g., 'Escalation rule 1 fired - notifying on-call schedule').");
+            timelineEventTable.AddString50Field("source", true, "system").AddScriptComments("Event source: 'system', 'user', 'api', 'webhook'.");
             timelineEventTable.AddControlFields();
 
             timelineEventTable.CreateIndexForFields(new List<string> { "incidentId", "timestamp" });
