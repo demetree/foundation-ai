@@ -1,0 +1,154 @@
+<div class="service-health-matrix">
+    <!-- Hero Header -->
+    <div class="hero-header">
+        <div class="hero-content">
+            <div class="title-wrapper">
+                <div class="icon-wrapper">
+                    <i class="fa-solid fa-heart-pulse"></i>
+                </div>
+                <div class="title-text">
+                    <h1>Service Health Matrix</h1>
+                    <p class="subtitle">At-a-glance health status for all services</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-glass" (click)="refresh()" [disabled]="isLoading">
+                    <i class="fa-solid fa-rotate" [ngClass]="{'fa-spin': isLoading}"></i>
+                    Refresh
+                </button>
+                <button *ngIf="canGoBack()" class="btn btn-glass-secondary" (click)="goBack()">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    Back
+                </button>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="summary-cards">
+            <div class="summary-card healthy">
+                <div class="card-icon">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <div class="card-content">
+                    <span class="card-value">{{ healthyCount }}</span>
+                    <span class="card-label">Healthy</span>
+                </div>
+            </div>
+            <div class="summary-card degraded">
+                <div class="card-icon">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div class="card-content">
+                    <span class="card-value">{{ degradedCount }}</span>
+                    <span class="card-label">Degraded</span>
+                </div>
+            </div>
+            <div class="summary-card critical">
+                <div class="card-icon">
+                    <i class="fa-solid fa-circle-xmark"></i>
+                </div>
+                <div class="card-content">
+                    <span class="card-value">{{ criticalCount }}</span>
+                    <span class="card-label">Critical</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Last Updated -->
+    <div class="last-updated" *ngIf="lastUpdated">
+        <i class="fa-regular fa-clock"></i>
+        Last updated: {{ lastUpdated | date:'medium' }}
+    </div>
+
+    <!-- Table Section -->
+    <div class="table-section">
+        <!-- Loading -->
+        <div *ngIf="isLoading" class="loading-state">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p>Loading service health...</p>
+        </div>
+
+        <!-- Error -->
+        <div *ngIf="errorMessage && !isLoading" class="error-state">
+            <i class="fa-solid fa-triangle-exclamation text-danger"></i>
+            <p>{{ errorMessage }}</p>
+            <button class="btn btn-outline-primary" (click)="refresh()">
+                <i class="fa-solid fa-rotate me-1"></i>
+                Try Again
+            </button>
+        </div>
+
+        <!-- Empty -->
+        <div *ngIf="!isLoading && !errorMessage && services.length === 0" class="empty-state">
+            <i class="fa-solid fa-server text-muted"></i>
+            <p>No services found</p>
+            <span class="hint">Create services to see their health status here</span>
+        </div>
+
+        <!-- Table -->
+        <div class="table-wrapper" *ngIf="!isLoading && !errorMessage && services.length > 0">
+            <table class="premium-table">
+                <thead>
+                    <tr>
+                        <th class="col-status text-center">Status</th>
+                        <th class="col-name">Service</th>
+                        <th class="col-incidents text-center">Active Incidents</th>
+                        <th class="col-policy">Escalation Policy</th>
+                        <th class="col-oncall">On-Call Now</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let service of services; trackBy: trackByServiceId">
+                        <!-- Status -->
+                        <td class="col-status text-center">
+                            <div class="status-badge" [ngClass]="getStatusClass(service.status)">
+                                <i class="fa-solid" [ngClass]="getStatusIcon(service.status)"></i>
+                                <span>{{ service.status }}</span>
+                            </div>
+                        </td>
+
+                        <!-- Service Name -->
+                        <td class="col-name">
+                            <div class="service-name">
+                                <div class="service-icon">
+                                    <i class="fa-solid fa-server"></i>
+                                </div>
+                                <span class="name-text">{{ service.serviceName }}</span>
+                            </div>
+                        </td>
+
+                        <!-- Incidents -->
+                        <td class="col-incidents text-center">
+                            <span class="incident-count" [ngClass]="{'has-incidents': service.activeIncidentCount > 0}">
+                                {{ service.activeIncidentCount }}
+                                <span class="breakdown" *ngIf="getIncidentBreakdown(service)">
+                                    {{ getIncidentBreakdown(service) }}
+                                </span>
+                            </span>
+                        </td>
+
+                        <!-- Escalation Policy -->
+                        <td class="col-policy">
+                            <span class="policy-badge" *ngIf="service.escalationPolicyName">
+                                <i class="fa-solid fa-sitemap me-1"></i>
+                                {{ service.escalationPolicyName }}
+                            </span>
+                            <span class="no-policy" *ngIf="!service.escalationPolicyName">—</span>
+                        </td>
+
+                        <!-- On-Call Now -->
+                        <td class="col-oncall">
+                            <div class="oncall-badge">
+                                <i class="fa-solid fa-user-clock me-1"></i>
+                                <span class="oncall-name">{{ getOnCallDisplay(service) }}</span>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

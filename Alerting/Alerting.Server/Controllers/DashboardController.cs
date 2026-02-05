@@ -3,6 +3,7 @@
 //
 // REST API for the Alerting Command Center dashboard.
 //
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Alerting.Server.Models;
 using Alerting.Server.Services;
@@ -54,6 +55,30 @@ namespace Alerting.Server.Controllers
                 summary.Status, summary.IncidentMetrics.ActiveCount);
 
             return Ok(summary);
+        }
+
+        /// <summary>
+        /// Gets the service health matrix showing all services with their health status.
+        /// </summary>
+        /// <remarks>
+        /// Provides an at-a-glance view of all services including:
+        /// - Health status (Healthy, Degraded, Critical)
+        /// - Active incident counts by severity
+        /// - Assigned escalation policy
+        /// - Current on-call responder count
+        /// </remarks>
+        /// <returns>List of service health summaries.</returns>
+        [HttpGet("service-health")]
+        [ProducesResponseType(typeof(List<Models.ServiceHealthDto>), 200)]
+        public async Task<ActionResult<List<Models.ServiceHealthDto>>> GetServiceHealth()
+        {
+            _logger.LogDebug("Service health matrix requested");
+
+            var healthMatrix = await _dashboardService.GetServiceHealthMatrixAsync().ConfigureAwait(false);
+
+            _logger.LogDebug("Service health matrix returned: {ServiceCount} services", healthMatrix.Count);
+
+            return Ok(healthMatrix);
         }
     }
 }

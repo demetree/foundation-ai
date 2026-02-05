@@ -511,5 +511,101 @@ namespace Alerting.Server.Services
         }
 
         #endregion
+
+        #region Service Health Matrix
+
+        /// <summary>
+        /// Gets the service health matrix showing all services with their health status.
+        /// </summary>
+        public async Task<List<ServiceHealthDto>> GetServiceHealthMatrixAsync()
+        {
+            var services = await _context.Services
+                .Where(s => s.active && !s.deleted)
+                .Include(s => s.escalationPolicy)
+                .OrderBy(s => s.name)
+                .ToListAsync()
+                .ConfigureAwait(false);
+
+            var result = new List<ServiceHealthDto>();
+
+            foreach (var service in services)
+            {
+                // Get active incident counts by severity
+                var incidents = await _context.Incidents
+                    .Where(i => i.active && !i.deleted 
+                        && i.serviceId == service.id 
+                        && i.incidentStatusTypeId != StatusResolved)
+                    .GroupBy(i => i.severityTypeId)
+                    .Select(g => new { SeverityId = g.Key, Count = g.Count() })
+                    .ToListAsync()
+                    .ConfigureAwait(false);
+
+                var criticalCount = incidents.FirstOrDefault(i => i.SeverityId == SeverityCritical)?.Count ?? 0;
+                var highCount = incidents.FirstOrDefault(i => i.SeverityId == SeverityHigh)?.Count ?? 0;
+                var mediumCount = incidents.FirstOrDefault(i => i.SeverityId == SeverityMedium)?.Count ?? 0;
+                var totalActive = incidents.Sum(i => i.Count);
+
+                // Determine health status
+                var status = criticalCount > 0 ? "Critical" 
+                    : (highCount > 0 || mediumCount > 0) ? "Degraded" 
+                    : "Healthy";
+
+                // Get on-call user GUIDs from escalation policy's first schedule rule
+                var onCallUserGuids = new List<Guid>();
+                if (service.escalationPolicyId.HasValue)
+                {
+                    try
+                    {
+                        // Find first schedule rule in the policy (targetType = "schedule")
+                        var scheduleRule = await _context.EscalationRules
+                            .Where(r => r.escalationPolicyId == service.escalationPolicyId.Value
+                                && r.active && !r.deleted
+                                && r.targetType == "schedule"
+                                && r.targetObjectGuid.HasValue)
+                            .OrderBy(r => r.ruleOrder)
+                            .FirstOrDefaultAsync()
+                            .ConfigureAwait(false);
+
+                        if (scheduleRule?.targetObjectGuid != null)
+                        {
+                            // Look up the schedule by objectGuid to get its ID
+                            var schedule = await _context.OnCallSchedules
+                                .Where(s => s.objectGuid == scheduleRule.targetObjectGuid.Value && s.active && !s.deleted)
+                                .FirstOrDefaultAsync()
+                                .ConfigureAwait(false);
+
+                            if (schedule != null)
+                            {
+                                onCallUserGuids = await _escalationService
+                                    .GetCurrentOnCallUsersAsync(schedule.id)
+                                    .ConfigureAwait(false);
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        // Keep empty list on error
+                    }
+                }
+
+                result.Add(new ServiceHealthDto
+                {
+                    ServiceId = (int)service.id,
+                    ServiceObjectGuid = service.objectGuid,
+                    ServiceName = service.name ?? "Unnamed Service",
+                    Status = status,
+                    ActiveIncidentCount = totalActive,
+                    CriticalCount = criticalCount,
+                    HighCount = highCount,
+                    MediumCount = mediumCount,
+                    EscalationPolicyName = service.escalationPolicy?.name,
+                    OnCallUserGuids = onCallUserGuids
+                });
+            }
+
+            return result;
+        }
+
+        #endregion
     }
 }

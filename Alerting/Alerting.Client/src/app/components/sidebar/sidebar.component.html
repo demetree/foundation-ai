@@ -23,6 +23,16 @@
       </a>
     </li>
 
+    <!-- Service Health -->
+    <li class="nav-item">
+      <a routerLink="/service-health" routerLinkActive="active" class="nav-link text-white"
+        [ngbTooltip]="!isExpanded ? 'Service Health' : null" triggers="hover" #tHealth="ngbTooltip"
+        (click)="tHealth.close(); close()" placement="right" tooltipClass="sidebar-tip">
+        <i class="fa-solid fa-heart-pulse"></i>
+        <span class="label px-2">Service Health</span>
+      </a>
+    </li>
+
     <!-- Responder Console -->
     <li class="nav-item">
       <a routerLink="/respond" routerLinkActive="active" class="nav-link text-white"

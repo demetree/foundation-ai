@@ -3,6 +3,7 @@
 //
 // Defines the contract for aggregating dashboard data.
 //
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Alerting.Server.Models;
 
@@ -17,5 +18,10 @@ namespace Alerting.Server.Services
         /// Gets a complete dashboard summary with all metrics and data.
         /// </summary>
         Task<DashboardSummaryDto> GetSummaryAsync();
+
+        /// <summary>
+        /// Gets the service health matrix showing all services with their health status.
+        /// </summary>
+        Task<List<ServiceHealthDto>> GetServiceHealthMatrixAsync();
     }
 }
