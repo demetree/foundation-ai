@@ -53,6 +53,10 @@ export class ScheduleManagementComponent implements OnInit, OnDestroy {
     // On-call now cache (schedule guid -> user display name)
     onCallNow: Map<string, string> = new Map();
 
+    // Users for name resolution
+    private users: AlertingUser[] = [];
+    private userLookup: Map<string, string> = new Map();
+
     // Common timezones for dropdown
     commonTimezones = [
         { id: 'UTC', label: 'UTC' },
@@ -86,8 +90,21 @@ export class ScheduleManagementComponent implements OnInit, OnDestroy {
     ) { }
 
     ngOnInit(): void {
+        this.loadUsers();
         this.loadSchedules();
         this.setupFilterDebounce();
+    }
+
+    private loadUsers(): void {
+        this.alertingUserService.getUsers()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (users) => {
+                    this.users = users;
+                    this.userLookup.clear();
+                    users.forEach(u => this.userLookup.set(u.objectGuid, u.displayName));
+                }
+            });
     }
 
     ngOnDestroy(): void {
@@ -132,6 +149,7 @@ export class ScheduleManagementComponent implements OnInit, OnDestroy {
                     this.isLoading = false;
                     this.loadTotalCount();
                     this.loadLayerCounts(schedules);
+                    this.loadOnCallNow(schedules);
                 },
                 error: (err) => {
                     console.error('Error loading schedules:', err);
@@ -196,6 +214,61 @@ export class ScheduleManagementComponent implements OnInit, OnDestroy {
 
     getLayerCount(schedule: OnCallScheduleData): number {
         return this.layerCounts.get(schedule.id) || 0;
+    }
+
+    /**
+     * Calculate who is currently on-call for each schedule
+     */
+    private async loadOnCallNow(schedules: OnCallScheduleData[]): Promise<void> {
+        for (const schedule of schedules) {
+            try {
+                const layers = await schedule.ScheduleLayers;
+                if (layers.length === 0) {
+                    this.onCallNow.set(schedule.objectGuid, 'No layers');
+                    continue;
+                }
+
+                // Sort by layer level to get Layer 1 (primary) first
+                const sortedLayers = layers.sort((a, b) => Number(a.layerLevel) - Number(b.layerLevel));
+                const primaryLayer = sortedLayers[0];
+
+                const members = await primaryLayer.ScheduleLayerMembers;
+                if (members.length === 0) {
+                    this.onCallNow.set(schedule.objectGuid, 'No members');
+                    continue;
+                }
+
+                // Calculate current on-call based on rotation
+                const rotationMs = Number(primaryLayer.rotationDays) * 24 * 60 * 60 * 1000;
+                const rotationStart = new Date(primaryLayer.rotationStart);
+
+                // Parse handoff time
+                const handoffParts = (primaryLayer.handoffTime || '09:00').split(':');
+                const handoffHour = parseInt(handoffParts[0], 10);
+                const handoffMinute = parseInt(handoffParts[1] || '0', 10);
+                rotationStart.setHours(handoffHour, handoffMinute, 0, 0);
+
+                const now = new Date();
+                const elapsedMs = now.getTime() - rotationStart.getTime();
+                const rotationIndex = Math.floor(elapsedMs / rotationMs);
+
+                // Sort members by position
+                const sortedMembers = members.sort((a, b) => Number(a.position) - Number(b.position));
+                const memberIndex = ((rotationIndex % sortedMembers.length) + sortedMembers.length) % sortedMembers.length;
+                const currentMember = sortedMembers[memberIndex];
+
+                // Resolve user name
+                const userName = this.userLookup.get(currentMember.securityUserObjectGuid) || 'Unknown';
+                this.onCallNow.set(schedule.objectGuid, userName);
+            } catch (err) {
+                console.error('Error calculating on-call for schedule:', schedule.name, err);
+                this.onCallNow.set(schedule.objectGuid, '—');
+            }
+        }
+    }
+
+    getOnCallNow(schedule: OnCallScheduleData): string {
+        return this.onCallNow.get(schedule.objectGuid) || 'Loading...';
     }
 
     // Filter handlers

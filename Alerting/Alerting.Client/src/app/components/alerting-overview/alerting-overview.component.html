@@ -142,7 +142,7 @@
                                     <i class="bi bi-person-fill"></i>
                                 </div>
                                 <div class="user-info">
-                                    <span class="user-name">{{ user.displayName }}</span>
+                                    <span class="user-name">{{ resolveUserName(user.userObjectGuid) }}</span>
                                     <span class="layer-name" *ngIf="user.layerName">{{ user.layerName }}</span>
                                 </div>
                             </div>

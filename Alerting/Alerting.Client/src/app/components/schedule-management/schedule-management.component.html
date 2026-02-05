@@ -94,6 +94,7 @@
                         <th class="col-name">Schedule Name</th>
                         <th class="col-timezone">Timezone</th>
                         <th class="col-layers text-center">Layers</th>
+                        <th class="col-oncall">On-Call Now</th>
                         <th class="col-status text-center">Status</th>
                         <th class="col-actions text-center">Actions</th>
                     </tr>
@@ -130,6 +131,14 @@
                                 <i class="fa-solid fa-layer-group me-1"></i>
                                 {{ getLayerCount(schedule) }}
                             </span>
+                        </td>
+
+                        <!-- On-Call Now -->
+                        <td class="col-oncall">
+                            <div class="oncall-badge">
+                                <i class="fa-solid fa-user-clock me-1"></i>
+                                <span class="oncall-name">{{ getOnCallNow(schedule) }}</span>
+                            </div>
                         </td>
 
                         <!-- Status -->

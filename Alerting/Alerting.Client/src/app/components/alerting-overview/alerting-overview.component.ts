@@ -13,6 +13,7 @@ import { of } from 'rxjs';
 import { ConfigurationService } from '../../services/configuration.service';
 import { AlertService } from '../../services/alert.service';
 import { AuthService } from '../../services/auth.service';
+import { AlertingUserService, AlertingUser } from '../../services/alerting-user.service';
 import { NavigationService } from '../../utility-services/navigation.service';
 
 
@@ -120,6 +121,10 @@ export class AlertingOverviewComponent implements OnInit, OnDestroy {
     dashboardSummary: DashboardSummary | null = null;
     loading = true;
 
+    // User lookup for resolving display names
+    private users: AlertingUser[] = [];
+    private userLookup: Map<string, string> = new Map();
+
     // Auto-refresh interval (30 seconds)
     private readonly REFRESH_INTERVAL = 30000;
 
@@ -174,13 +179,40 @@ export class AlertingOverviewComponent implements OnInit, OnDestroy {
         private config: ConfigurationService,
         private alertService: AlertService,
         private authService: AuthService,
+        private alertingUserService: AlertingUserService,
         private navigationService: NavigationService,
         private router: Router
     ) { }
 
     ngOnInit(): void {
+        this.loadUsers();
         this.loadDashboard();
         this.startAutoRefresh();
+    }
+
+    /**
+     * Load users for display name resolution
+     */
+    private loadUsers(): void {
+        this.alertingUserService.getUsers()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (users) => {
+                    this.users = users;
+                    this.userLookup.clear();
+                    users.forEach(u => this.userLookup.set(u.objectGuid, u.displayName));
+                },
+                error: () => {
+                    // Silently fail - will just show "Unknown" for users
+                }
+            });
+    }
+
+    /**
+     * Resolve user display name from objectGuid
+     */
+    resolveUserName(userObjectGuid: string): string {
+        return this.userLookup.get(userObjectGuid) || 'Unknown User';
     }
 
     ngOnDestroy(): void {
