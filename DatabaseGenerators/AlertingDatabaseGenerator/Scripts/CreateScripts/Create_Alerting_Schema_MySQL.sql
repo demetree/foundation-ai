@@ -1205,6 +1205,9 @@ CREATE TABLE `NotificationDeliveryAttempt`(
 	`status` VARCHAR(50) NOT NULL DEFAULT 'Pending',
 	`errorMessage` TEXT NULL,
 	`response` TEXT NULL,
+	`recipientAddress` VARCHAR(250) NULL,		-- Email address, phone number, or device token that received the notification.
+	`subject` VARCHAR(500) NULL,		-- Subject line for email notifications, null for other channels.
+	`bodyContent` TEXT NULL,		-- Full message body content that was sent (HTML for email, plain text for SMS/voice).
 	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
 	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.

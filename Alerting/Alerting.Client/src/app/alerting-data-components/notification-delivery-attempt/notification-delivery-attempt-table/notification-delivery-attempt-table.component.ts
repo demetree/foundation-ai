@@ -173,6 +173,9 @@ export class NotificationDeliveryAttemptTableComponent implements OnInit, OnChan
     { key: 'status', label: 'Status', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/notificationdeliveryattempt', 'id']  },
     { key: 'errorMessage', label: 'Error Message', width: undefined },
     { key: 'response', label: 'Response', width: undefined },
+    { key: 'recipientAddress', label: 'Recipient Address', width: undefined },
+    { key: 'subject', label: 'Subject', width: undefined },
+    { key: 'bodyContent', label: 'Body Content', width: undefined },
 
     ];
 
@@ -323,6 +326,9 @@ export class NotificationDeliveryAttemptTableComponent implements OnInit, OnChan
                       'status',
                       'errorMessage',
                       'response',
+                      'recipientAddress',
+                      'subject',
+                      'bodyContent',
         ];
 
         result = result.filter((notificationDeliveryAttempt) =>

@@ -106,7 +106,14 @@ namespace Alerting.Server.Services.Notifications
                     _logger.LogInformation(
                         "Voice call initiated to {Phone} for incident {IncidentKey} (SID: {Sid}, Status: {Status})",
                         MaskPhoneNumber(request.UserPhoneNumber), request.Incident.IncidentKey, call.Sid, call.Status);
-                    return NotificationResult.Succeeded(call.Sid, call.Status?.ToString());
+                    return new NotificationResult
+                    {
+                        Success = true,
+                        ExternalMessageId = call.Sid,
+                        ProviderResponse = call.Status?.ToString(),
+                        RecipientAddress = request.UserPhoneNumber,
+                        BodyContent = twiml
+                    };
                 }
                 else
                 {
@@ -114,7 +121,14 @@ namespace Alerting.Server.Services.Notifications
                     _logger.LogError(
                         "Failed to initiate voice call to {Phone} for incident {IncidentKey}: Status {Status}",
                         MaskPhoneNumber(request.UserPhoneNumber), request.Incident.IncidentKey, call.Status);
-                    return NotificationResult.Failed($"Call failed with status: {call.Status}", call.Status?.ToString());
+                    return new NotificationResult
+                    {
+                        Success = false,
+                        ErrorMessage = $"Call failed with status: {call.Status}",
+                        ProviderResponse = call.Status?.ToString(),
+                        RecipientAddress = request.UserPhoneNumber,
+                        BodyContent = twiml
+                    };
                 }
             }
             catch (Exception ex)

@@ -36,6 +36,9 @@ export class NotificationDeliveryAttemptQueryParameters {
     status: string | null | undefined = null;
     errorMessage: string | null | undefined = null;
     response: string | null | undefined = null;
+    recipientAddress: string | null | undefined = null;
+    subject: string | null | undefined = null;
+    bodyContent: string | null | undefined = null;
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
     deleted: boolean | null | undefined = null;
@@ -58,6 +61,9 @@ export class NotificationDeliveryAttemptSubmitData {
     status!: string;
     errorMessage: string | null = null;
     response: string | null = null;
+    recipientAddress: string | null = null;
+    subject: string | null = null;
+    bodyContent: string | null = null;
     active!: boolean;
     deleted!: boolean;
 }
@@ -114,6 +120,9 @@ export class NotificationDeliveryAttemptData {
     status!: string;
     errorMessage!: string | null;
     response!: string | null;
+    recipientAddress!: string | null;
+    subject!: string | null;
+    bodyContent!: string | null;
     objectGuid!: string;
     active!: boolean;
     deleted!: boolean;
@@ -273,6 +282,9 @@ export class NotificationDeliveryAttemptService extends SecureEndpointBase {
         output.status = data.status;
         output.errorMessage = data.errorMessage;
         output.response = data.response;
+        output.recipientAddress = data.recipientAddress;
+        output.subject = data.subject;
+        output.bodyContent = data.bodyContent;
         output.active = data.active;
         output.deleted = data.deleted;
 

@@ -556,6 +556,12 @@ Designed to be independent while sharing the central Security database for users
             deliveryAttemptTable.AddString50Field("status", false, "Pending"); // Pending, Sent, Delivered, Failed
             deliveryAttemptTable.AddTextField("errorMessage", true);
             deliveryAttemptTable.AddTextField("response", true);
+            
+            // Content archival fields for forensic auditing
+            deliveryAttemptTable.AddString250Field("recipientAddress", true).AddScriptComments("Email address, phone number, or device token that received the notification.");
+            deliveryAttemptTable.AddString500Field("subject", true).AddScriptComments("Subject line for email notifications, null for other channels.");
+            deliveryAttemptTable.AddTextField("bodyContent", true).AddScriptComments("Full message body content that was sent (HTML for email, plain text for SMS/voice).");
+            
             deliveryAttemptTable.AddControlFields();
 
             deliveryAttemptTable.CreateIndexForFields(new List<string> { "tenantGuid", "incidentNotificationId", "notificationChannelTypeId" });

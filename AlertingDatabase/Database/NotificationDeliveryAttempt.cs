@@ -25,6 +25,12 @@ public partial class NotificationDeliveryAttempt
 
     public string response { get; set; }
 
+    public string recipientAddress { get; set; }
+
+    public string subject { get; set; }
+
+    public string bodyContent { get; set; }
+
     public Guid objectGuid { get; set; }
 
     public bool active { get; set; }

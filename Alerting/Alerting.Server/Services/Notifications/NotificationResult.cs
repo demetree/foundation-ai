@@ -37,6 +37,23 @@ namespace Alerting.Server.Services.Notifications
         /// </summary>
         public string ProviderResponse { get; set; }
 
+        // Content archival fields for forensic auditing
+        
+        /// <summary>
+        /// The recipient address (email, phone number, or device token).
+        /// </summary>
+        public string RecipientAddress { get; set; }
+
+        /// <summary>
+        /// The subject line (for email notifications).
+        /// </summary>
+        public string Subject { get; set; }
+
+        /// <summary>
+        /// The full message body content that was sent.
+        /// </summary>
+        public string BodyContent { get; set; }
+
         /// <summary>
         /// Creates a successful result.
         /// </summary>

@@ -66,6 +66,18 @@
                                 <label for="NotificationDeliveryAttempt-response" id="label-NotificationDeliveryAttempt-response">Response</label>
                                 <textarea id="NotificationDeliveryAttempt-response" formControlName="response" placeholder="Enter Response" class="form-control notification-delivery-attempt-input" [disabled]="!userIsAlertingNotificationDeliveryAttemptWriter()"></textarea>
                             </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('recipientAddress')">
+                                <label for="NotificationDeliveryAttempt-recipientAddress" id="label-NotificationDeliveryAttempt-recipientAddress">Recipient Address</label>
+                                <input type="text" id="NotificationDeliveryAttempt-recipientAddress" formControlName="recipientAddress" placeholder="Enter Recipient Address" class="form-control notification-delivery-attempt-input" [disabled]="!userIsAlertingNotificationDeliveryAttemptWriter()" aria-labelledby="label-recipientAddress" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('subject')">
+                                <label for="NotificationDeliveryAttempt-subject" id="label-NotificationDeliveryAttempt-subject">Subject</label>
+                                <textarea id="NotificationDeliveryAttempt-subject" formControlName="subject" placeholder="Enter Subject" class="form-control notification-delivery-attempt-input" [disabled]="!userIsAlertingNotificationDeliveryAttemptWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('bodyContent')">
+                                <label for="NotificationDeliveryAttempt-bodyContent" id="label-NotificationDeliveryAttempt-bodyContent">Body Content</label>
+                                <textarea id="NotificationDeliveryAttempt-bodyContent" formControlName="bodyContent" placeholder="Enter Body Content" class="form-control notification-delivery-attempt-input" [disabled]="!userIsAlertingNotificationDeliveryAttemptWriter()"></textarea>
+                            </div>
                             <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
                                 <input type="checkbox" id="NotificationDeliveryAttempt-active" formControlName="active" class="form-check-input" [disabled]="!userIsAlertingNotificationDeliveryAttemptWriter()" />
                                 <label for="NotificationDeliveryAttempt-active" class="form-check-label" id="label-NotificationDeliveryAttempt-active"><span class="text-danger">*</span>Active</label>

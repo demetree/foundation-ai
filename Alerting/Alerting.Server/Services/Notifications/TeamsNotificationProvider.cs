@@ -72,7 +72,13 @@ namespace Alerting.Server.Services.Notifications
                     NotificationLogger.Info($"Teams notification sent successfully for incident {request.Incident.IncidentKey}");
                     _logger.LogInformation("Teams notification sent successfully for incident {IncidentKey}",
                         request.Incident.IncidentKey);
-                    return NotificationResult.Succeeded(null, $"HTTP {(int)response.StatusCode}");
+                    return new NotificationResult
+                    {
+                        Success = true,
+                        ProviderResponse = $"HTTP {(int)response.StatusCode}",
+                        RecipientAddress = request.TeamsWebhookUrl,
+                        BodyContent = payload
+                    };
                 }
                 else
                 {
@@ -80,7 +86,13 @@ namespace Alerting.Server.Services.Notifications
                     NotificationLogger.Error($"Teams webhook failed for incident {request.Incident.IncidentKey}: HTTP {(int)response.StatusCode} - {errorBody}");
                     _logger.LogError("Failed to send Teams notification for incident {IncidentKey}: {StatusCode} - {Error}",
                         request.Incident.IncidentKey, response.StatusCode, errorBody);
-                    return NotificationResult.Failed($"HTTP {(int)response.StatusCode}: {errorBody}");
+                    return new NotificationResult
+                    {
+                        Success = false,
+                        ErrorMessage = $"HTTP {(int)response.StatusCode}: {errorBody}",
+                        RecipientAddress = request.TeamsWebhookUrl,
+                        BodyContent = payload
+                    };
                 }
             }
             catch (Exception ex)

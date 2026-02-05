@@ -91,7 +91,7 @@ public partial class AlertingContext : DbContext
     {
         modelBuilder.Entity<EscalationPolicy>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Escalati__3213E83F7866884A");
+            entity.HasKey(e => e.id).HasName("PK__Escalati__3213E83F641033C8");
 
             entity.ToTable("EscalationPolicy", "Alerting");
 
@@ -105,7 +105,7 @@ public partial class AlertingContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_EscalationPolicy_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Escalati__3E543F9497708C4D").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Escalati__3E543F94D71C83FD").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.description).HasMaxLength(500);
@@ -117,7 +117,7 @@ public partial class AlertingContext : DbContext
 
         modelBuilder.Entity<EscalationPolicyChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Escalati__3213E83F0D7D1CC9");
+            entity.HasKey(e => e.id).HasName("PK__Escalati__3213E83F2B9F3964");
 
             entity.ToTable("EscalationPolicyChangeHistory", "Alerting");
 
@@ -140,7 +140,7 @@ public partial class AlertingContext : DbContext
 
         modelBuilder.Entity<EscalationRule>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Escalati__3213E83F4DC5D6D1");
+            entity.HasKey(e => e.id).HasName("PK__Escalati__3213E83F95272307");
 
             entity.ToTable("EscalationRule", "Alerting");
 
@@ -156,7 +156,7 @@ public partial class AlertingContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.ruleOrder }, "I_EscalationRule_tenantGuid_ruleOrder");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Escalati__3E543F94DACF3B87").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Escalati__3E543F94EE399852").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.targetType)
@@ -171,7 +171,7 @@ public partial class AlertingContext : DbContext
 
         modelBuilder.Entity<EscalationRuleChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Escalati__3213E83FF5C5EFD4");
+            entity.HasKey(e => e.id).HasName("PK__Escalati__3213E83F21C85B3C");
 
             entity.ToTable("EscalationRuleChangeHistory", "Alerting");
 
@@ -194,7 +194,7 @@ public partial class AlertingContext : DbContext
 
         modelBuilder.Entity<Incident>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Incident__3213E83F9A427224");
+            entity.HasKey(e => e.id).HasName("PK__Incident__3213E83F01D4E146");
 
             entity.ToTable("Incident", "Alerting");
 
@@ -224,7 +224,7 @@ public partial class AlertingContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.incidentKey }, "UC_Incident_tenantGuid_incidentKey").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Incident__3E543F941B3C10A8").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Incident__3E543F9415A73391").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.currentRepeatCount).HasDefaultValue(0);
@@ -253,7 +253,7 @@ public partial class AlertingContext : DbContext
 
         modelBuilder.Entity<IncidentChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Incident__3213E83F82E2FEA7");
+            entity.HasKey(e => e.id).HasName("PK__Incident__3213E83FB614C15C");
 
             entity.ToTable("IncidentChangeHistory", "Alerting");
 
@@ -276,7 +276,7 @@ public partial class AlertingContext : DbContext
 
         modelBuilder.Entity<IncidentEventType>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Incident__3213E83FBE1B10FC");
+            entity.HasKey(e => e.id).HasName("PK__Incident__3213E83FE4392C2A");
 
             entity.ToTable("IncidentEventType", "Alerting");
 
@@ -286,7 +286,7 @@ public partial class AlertingContext : DbContext
 
             entity.HasIndex(e => e.name, "I_IncidentEventType_name");
 
-            entity.HasIndex(e => e.name, "UQ__Incident__72E12F1B3003AA42").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__Incident__72E12F1BFD474686").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.description).HasMaxLength(500);
@@ -297,7 +297,7 @@ public partial class AlertingContext : DbContext
 
         modelBuilder.Entity<IncidentNote>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Incident__3213E83F5D5763A3");
+            entity.HasKey(e => e.id).HasName("PK__Incident__3213E83F79AB4FFA");
 
             entity.ToTable("IncidentNote", "Alerting");
 
@@ -309,7 +309,7 @@ public partial class AlertingContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.incidentId }, "I_IncidentNote_tenantGuid_incidentId");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Incident__3E543F947338055F").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Incident__3E543F9445F093F7").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.content).IsRequired();
@@ -322,7 +322,7 @@ public partial class AlertingContext : DbContext
 
         modelBuilder.Entity<IncidentNoteChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Incident__3213E83F9B2E37CC");
+            entity.HasKey(e => e.id).HasName("PK__Incident__3213E83F0B0A928D");
 
             entity.ToTable("IncidentNoteChangeHistory", "Alerting");
 
@@ -345,7 +345,7 @@ public partial class AlertingContext : DbContext
 
         modelBuilder.Entity<IncidentNotification>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Incident__3213E83FA4973955");
+            entity.HasKey(e => e.id).HasName("PK__Incident__3213E83FCACC2AC0");
 
             entity.ToTable("IncidentNotification", "Alerting");
 
@@ -361,7 +361,7 @@ public partial class AlertingContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.incidentId }, "I_IncidentNotification_tenantGuid_incidentId");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Incident__3E543F9499299657").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Incident__3E543F94BD2615D3").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
 
@@ -374,7 +374,7 @@ public partial class AlertingContext : DbContext
 
         modelBuilder.Entity<IncidentStatusType>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Incident__3213E83F3E4F0CE9");
+            entity.HasKey(e => e.id).HasName("PK__Incident__3213E83F759FA580");
 
             entity.ToTable("IncidentStatusType", "Alerting");
 
@@ -384,7 +384,7 @@ public partial class AlertingContext : DbContext
 
             entity.HasIndex(e => e.name, "I_IncidentStatusType_name");
 
-            entity.HasIndex(e => e.name, "UQ__Incident__72E12F1B73879B05").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__Incident__72E12F1B67A2CABA").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.description).HasMaxLength(500);
@@ -395,7 +395,7 @@ public partial class AlertingContext : DbContext
 
         modelBuilder.Entity<IncidentTimelineEvent>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Incident__3213E83F7B705F18");
+            entity.HasKey(e => e.id).HasName("PK__Incident__3213E83FDE11B39A");
 
             entity.ToTable("IncidentTimelineEvent", "Alerting");
 
@@ -413,7 +413,7 @@ public partial class AlertingContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.timestamp }, "I_IncidentTimelineEvent_tenantGuid_timestamp");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Incident__3E543F94135E1898").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Incident__3E543F94DE5BA14E").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.notes).HasMaxLength(500);
@@ -432,7 +432,7 @@ public partial class AlertingContext : DbContext
 
         modelBuilder.Entity<Integration>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Integrat__3213E83FF0BC7A66");
+            entity.HasKey(e => e.id).HasName("PK__Integrat__3213E83F6D15652E");
 
             entity.ToTable("Integration", "Alerting");
 
@@ -448,9 +448,9 @@ public partial class AlertingContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_Integration_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.apiKeyHash, "UQ__Integrat__0295CF69D57D474F").IsUnique();
+            entity.HasIndex(e => e.apiKeyHash, "UQ__Integrat__0295CF69298E9673").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Integrat__3E543F944DE9A6B0").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Integrat__3E543F9440CE9249").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.apiKeyHash)
@@ -472,7 +472,7 @@ public partial class AlertingContext : DbContext
 
         modelBuilder.Entity<IntegrationCallbackIncidentEventType>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Integrat__3213E83F1634E140");
+            entity.HasKey(e => e.id).HasName("PK__Integrat__3213E83FF94AEBBD");
 
             entity.ToTable("IntegrationCallbackIncidentEventType", "Alerting");
 
@@ -486,7 +486,7 @@ public partial class AlertingContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.integrationId }, "I_IntegrationCallbackIncidentEventType_tenantGuid_integrationId");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Integrat__3E543F94A7D37D5D").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Integrat__3E543F942D955672").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.versionNumber).HasDefaultValue(1);
@@ -502,7 +502,7 @@ public partial class AlertingContext : DbContext
 
         modelBuilder.Entity<IntegrationCallbackIncidentEventTypeChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Integrat__3213E83F6A01CEBE");
+            entity.HasKey(e => e.id).HasName("PK__Integrat__3213E83F65EAF394");
 
             entity.ToTable("IntegrationCallbackIncidentEventTypeChangeHistory", "Alerting");
 
@@ -525,7 +525,7 @@ public partial class AlertingContext : DbContext
 
         modelBuilder.Entity<IntegrationChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Integrat__3213E83F07AEF04B");
+            entity.HasKey(e => e.id).HasName("PK__Integrat__3213E83FE348C79B");
 
             entity.ToTable("IntegrationChangeHistory", "Alerting");
 
@@ -548,7 +548,7 @@ public partial class AlertingContext : DbContext
 
         modelBuilder.Entity<NotificationChannelType>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Notifica__3213E83F8F541686");
+            entity.HasKey(e => e.id).HasName("PK__Notifica__3213E83F3D655FAF");
 
             entity.ToTable("NotificationChannelType", "Alerting");
 
@@ -558,7 +558,7 @@ public partial class AlertingContext : DbContext
 
             entity.HasIndex(e => e.name, "I_NotificationChannelType_name");
 
-            entity.HasIndex(e => e.name, "UQ__Notifica__72E12F1B3C791D71").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__Notifica__72E12F1BE37EC158").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.description).HasMaxLength(500);
@@ -569,7 +569,7 @@ public partial class AlertingContext : DbContext
 
         modelBuilder.Entity<NotificationDeliveryAttempt>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Notifica__3213E83F54472CA5");
+            entity.HasKey(e => e.id).HasName("PK__Notifica__3213E83F0ACEA00D");
 
             entity.ToTable("NotificationDeliveryAttempt", "Alerting");
 
@@ -585,14 +585,16 @@ public partial class AlertingContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.notificationChannelTypeId }, "I_NotificationDeliveryAttempt_tenantGuid_notificationChannelTypeId");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Notifica__3E543F94C5A54864").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Notifica__3E543F9457F2A37F").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.attemptNumber).HasDefaultValue(1);
+            entity.Property(e => e.recipientAddress).HasMaxLength(250);
             entity.Property(e => e.status)
                 .IsRequired()
                 .HasMaxLength(50)
                 .HasDefaultValue("Pending");
+            entity.Property(e => e.subject).HasMaxLength(500);
 
             entity.HasOne(d => d.incidentNotification).WithMany(p => p.NotificationDeliveryAttempts)
                 .HasForeignKey(d => d.incidentNotificationId)
@@ -605,7 +607,7 @@ public partial class AlertingContext : DbContext
 
         modelBuilder.Entity<OnCallSchedule>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__OnCallSc__3213E83F53AC443C");
+            entity.HasKey(e => e.id).HasName("PK__OnCallSc__3213E83FCF8011A0");
 
             entity.ToTable("OnCallSchedule", "Alerting");
 
@@ -619,7 +621,7 @@ public partial class AlertingContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_OnCallSchedule_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__OnCallSc__3E543F94C3F1CDED").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__OnCallSc__3E543F944D2BEFDF").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.description).HasMaxLength(500);
@@ -635,7 +637,7 @@ public partial class AlertingContext : DbContext
 
         modelBuilder.Entity<OnCallScheduleChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__OnCallSc__3213E83F4A0BAB94");
+            entity.HasKey(e => e.id).HasName("PK__OnCallSc__3213E83FDFC3C4EE");
 
             entity.ToTable("OnCallScheduleChangeHistory", "Alerting");
 
@@ -658,7 +660,7 @@ public partial class AlertingContext : DbContext
 
         modelBuilder.Entity<ScheduleLayer>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Schedule__3213E83F2B59CC4B");
+            entity.HasKey(e => e.id).HasName("PK__Schedule__3213E83F34FA65BF");
 
             entity.ToTable("ScheduleLayer", "Alerting");
 
@@ -674,7 +676,7 @@ public partial class AlertingContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_ScheduleLayer_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Schedule__3E543F94C4C13158").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Schedule__3E543F947A95AF9F").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.description).HasMaxLength(500);
@@ -696,7 +698,7 @@ public partial class AlertingContext : DbContext
 
         modelBuilder.Entity<ScheduleLayerChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Schedule__3213E83F2EFD5105");
+            entity.HasKey(e => e.id).HasName("PK__Schedule__3213E83F195B56F8");
 
             entity.ToTable("ScheduleLayerChangeHistory", "Alerting");
 
@@ -719,7 +721,7 @@ public partial class AlertingContext : DbContext
 
         modelBuilder.Entity<ScheduleLayerMember>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Schedule__3213E83F3A1088C5");
+            entity.HasKey(e => e.id).HasName("PK__Schedule__3213E83FE9A842DC");
 
             entity.ToTable("ScheduleLayerMember", "Alerting");
 
@@ -733,7 +735,7 @@ public partial class AlertingContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.scheduleLayerId, e.position }, "UC_ScheduleLayerMember_tenantGuid_scheduleLayerId_position").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Schedule__3E543F941C946015").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Schedule__3E543F9425C33468").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.versionNumber).HasDefaultValue(1);
@@ -745,7 +747,7 @@ public partial class AlertingContext : DbContext
 
         modelBuilder.Entity<ScheduleLayerMemberChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Schedule__3213E83F232834CE");
+            entity.HasKey(e => e.id).HasName("PK__Schedule__3213E83F55F9989B");
 
             entity.ToTable("ScheduleLayerMemberChangeHistory", "Alerting");
 
@@ -768,7 +770,7 @@ public partial class AlertingContext : DbContext
 
         modelBuilder.Entity<ScheduleOverride>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Schedule__3213E83F47FE8E12");
+            entity.HasKey(e => e.id).HasName("PK__Schedule__3213E83F1317F768");
 
             entity.ToTable("ScheduleOverride", "Alerting");
 
@@ -788,7 +790,7 @@ public partial class AlertingContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.scheduleOverrideTypeId }, "I_ScheduleOverride_tenantGuid_scheduleOverrideTypeId");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Schedule__3E543F94AF5779DD").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Schedule__3E543F94C3CA1EE3").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.reason).HasMaxLength(500);
@@ -807,7 +809,7 @@ public partial class AlertingContext : DbContext
 
         modelBuilder.Entity<ScheduleOverrideChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Schedule__3213E83FFA58730E");
+            entity.HasKey(e => e.id).HasName("PK__Schedule__3213E83F8FF7B957");
 
             entity.ToTable("ScheduleOverrideChangeHistory", "Alerting");
 
@@ -830,7 +832,7 @@ public partial class AlertingContext : DbContext
 
         modelBuilder.Entity<ScheduleOverrideType>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Schedule__3213E83F441A5C62");
+            entity.HasKey(e => e.id).HasName("PK__Schedule__3213E83F99FAAE21");
 
             entity.ToTable("ScheduleOverrideType", "Alerting");
 
@@ -840,7 +842,7 @@ public partial class AlertingContext : DbContext
 
             entity.HasIndex(e => e.name, "I_ScheduleOverrideType_name");
 
-            entity.HasIndex(e => e.name, "UQ__Schedule__72E12F1B0E456AF9").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__Schedule__72E12F1B035A48AC").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.description).HasMaxLength(500);
@@ -851,7 +853,7 @@ public partial class AlertingContext : DbContext
 
         modelBuilder.Entity<Service>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Service__3213E83FA5A50542");
+            entity.HasKey(e => e.id).HasName("PK__Service__3213E83FBD1EF89D");
 
             entity.ToTable("Service", "Alerting");
 
@@ -867,7 +869,7 @@ public partial class AlertingContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_Service_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Service__3E543F9400D95AB3").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Service__3E543F94E4915737").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.description).HasMaxLength(500);
@@ -881,7 +883,7 @@ public partial class AlertingContext : DbContext
 
         modelBuilder.Entity<ServiceChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__ServiceC__3213E83F7D97A3FF");
+            entity.HasKey(e => e.id).HasName("PK__ServiceC__3213E83FD92EE475");
 
             entity.ToTable("ServiceChangeHistory", "Alerting");
 
@@ -904,7 +906,7 @@ public partial class AlertingContext : DbContext
 
         modelBuilder.Entity<SeverityType>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Severity__3213E83FA6A0C152");
+            entity.HasKey(e => e.id).HasName("PK__Severity__3213E83FB32E218C");
 
             entity.ToTable("SeverityType", "Alerting");
 
@@ -914,7 +916,7 @@ public partial class AlertingContext : DbContext
 
             entity.HasIndex(e => e.name, "I_SeverityType_name");
 
-            entity.HasIndex(e => e.name, "UQ__Severity__72E12F1B0A8259E8").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__Severity__72E12F1B59E89139").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.description).HasMaxLength(500);
@@ -925,7 +927,7 @@ public partial class AlertingContext : DbContext
 
         modelBuilder.Entity<UserNotificationChannelPreference>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__UserNoti__3213E83F31E71726");
+            entity.HasKey(e => e.id).HasName("PK__UserNoti__3213E83F556974E7");
 
             entity.ToTable("UserNotificationChannelPreference", "Alerting");
 
@@ -941,7 +943,7 @@ public partial class AlertingContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.userNotificationPreferenceId, e.notificationChannelTypeId }, "UC_UserNotificationChannelPreference_tenantGuid_userNotificationPreferenceId_notificationChannelTypeId").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__UserNoti__3E543F94EE3AADB4").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__UserNoti__3E543F943F81A883").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.isEnabled).HasDefaultValue(true);
@@ -958,7 +960,7 @@ public partial class AlertingContext : DbContext
 
         modelBuilder.Entity<UserNotificationChannelPreferenceChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__UserNoti__3213E83FC9FCB5F1");
+            entity.HasKey(e => e.id).HasName("PK__UserNoti__3213E83FBD3707FA");
 
             entity.ToTable("UserNotificationChannelPreferenceChangeHistory", "Alerting");
 
@@ -981,7 +983,7 @@ public partial class AlertingContext : DbContext
 
         modelBuilder.Entity<UserNotificationPreference>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__UserNoti__3213E83F732E429A");
+            entity.HasKey(e => e.id).HasName("PK__UserNoti__3213E83FF0FEDF17");
 
             entity.ToTable("UserNotificationPreference", "Alerting");
 
@@ -995,7 +997,7 @@ public partial class AlertingContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.securityUserObjectGuid, e.active, e.deleted }, "UC_UserNotificationPreference_tenantGuid_securityUserObjectGuid_active_deleted").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__UserNoti__3E543F94576D1007").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__UserNoti__3E543F9445805809").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.quietHoursEnd).HasMaxLength(10);
@@ -1008,7 +1010,7 @@ public partial class AlertingContext : DbContext
 
         modelBuilder.Entity<UserNotificationPreferenceChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__UserNoti__3213E83FD23E141C");
+            entity.HasKey(e => e.id).HasName("PK__UserNoti__3213E83FE7B52A42");
 
             entity.ToTable("UserNotificationPreferenceChangeHistory", "Alerting");
 
@@ -1031,7 +1033,7 @@ public partial class AlertingContext : DbContext
 
         modelBuilder.Entity<UserPushToken>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__UserPush__3213E83F79037070");
+            entity.HasKey(e => e.id).HasName("PK__UserPush__3213E83F505665E5");
 
             entity.ToTable("UserPushToken", "Alerting");
 
@@ -1045,7 +1047,7 @@ public partial class AlertingContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.userObjectGuid, e.deviceFingerprint }, "UC_UserPushToken_tenantGuid_userObjectGuid_deviceFingerprint").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__UserPush__3E543F94B44498AB").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__UserPush__3E543F94DD4F3D10").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.deviceFingerprint)
@@ -1064,7 +1066,7 @@ public partial class AlertingContext : DbContext
 
         modelBuilder.Entity<UserPushTokenChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__UserPush__3213E83F9F19F7D3");
+            entity.HasKey(e => e.id).HasName("PK__UserPush__3213E83F6ABA19D8");
 
             entity.ToTable("UserPushTokenChangeHistory", "Alerting");
 
@@ -1087,7 +1089,7 @@ public partial class AlertingContext : DbContext
 
         modelBuilder.Entity<WebhookDeliveryAttempt>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__WebhookD__3213E83F096F8DA0");
+            entity.HasKey(e => e.id).HasName("PK__WebhookD__3213E83F1CF2F5F9");
 
             entity.ToTable("WebhookDeliveryAttempt", "Alerting");
 
@@ -1105,7 +1107,7 @@ public partial class AlertingContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.integrationId }, "I_WebhookDeliveryAttempt_tenantGuid_integrationId");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__WebhookD__3E543F94C984E59B").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__WebhookD__3E543F94A6B01248").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.attemptNumber).HasDefaultValue(1);

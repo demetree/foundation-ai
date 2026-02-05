@@ -182,6 +182,11 @@ namespace Alerting.Server.Services.Notifications
                 attempt.status = result.Success ? "Sent" : "Failed";
                 attempt.errorMessage = result.ErrorMessage;
                 attempt.response = result.ProviderResponse ?? result.ExternalMessageId;
+                
+                // Content archival for forensic auditing
+                attempt.recipientAddress = result.RecipientAddress;
+                attempt.subject = result.Subject;
+                attempt.bodyContent = result.BodyContent;
 
                 if (result.Success)
                 {

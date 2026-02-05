@@ -43,6 +43,9 @@ interface NotificationDeliveryAttemptFormValues {
   status: string,
   errorMessage: string | null,
   response: string | null,
+  recipientAddress: string | null,
+  subject: string | null,
+  bodyContent: string | null,
   active: boolean,
   deleted: boolean,
 };
@@ -79,6 +82,9 @@ export class NotificationDeliveryAttemptDetailComponent implements OnInit, CanCo
         status: ['', Validators.required],
         errorMessage: [''],
         response: [''],
+        recipientAddress: [''],
+        subject: [''],
+        bodyContent: [''],
         active: [true],
         deleted: [false],
       });
@@ -392,6 +398,9 @@ export class NotificationDeliveryAttemptDetailComponent implements OnInit, CanCo
         status: '',
         errorMessage: '',
         response: '',
+        recipientAddress: '',
+        subject: '',
+        bodyContent: '',
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -410,6 +419,9 @@ export class NotificationDeliveryAttemptDetailComponent implements OnInit, CanCo
         status: notificationDeliveryAttemptData.status ?? '',
         errorMessage: notificationDeliveryAttemptData.errorMessage ?? '',
         response: notificationDeliveryAttemptData.response ?? '',
+        recipientAddress: notificationDeliveryAttemptData.recipientAddress ?? '',
+        subject: notificationDeliveryAttemptData.subject ?? '',
+        bodyContent: notificationDeliveryAttemptData.bodyContent ?? '',
         active: notificationDeliveryAttemptData.active ?? true,
         deleted: notificationDeliveryAttemptData.deleted ?? false,
       }, { emitEvent: false});
@@ -478,6 +490,9 @@ export class NotificationDeliveryAttemptDetailComponent implements OnInit, CanCo
         status: formValue.status!.trim(),
         errorMessage: formValue.errorMessage?.trim() || null,
         response: formValue.response?.trim() || null,
+        recipientAddress: formValue.recipientAddress?.trim() || null,
+        subject: formValue.subject?.trim() || null,
+        bodyContent: formValue.bodyContent?.trim() || null,
         active: !!formValue.active,
         deleted: !!formValue.deleted,
    };

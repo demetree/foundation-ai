@@ -65,14 +65,27 @@ namespace Alerting.Server.Services.Notifications
                     NotificationLogger.Info($"Email sent successfully to {request.UserEmail} for incident {request.Incident.IncidentKey}");
                     _logger.LogInformation("Email notification sent successfully to {Email} for incident {IncidentKey}",
                         request.UserEmail, request.Incident.IncidentKey);
-                    return NotificationResult.Succeeded();
+                    return new NotificationResult
+                    {
+                        Success = true,
+                        RecipientAddress = request.UserEmail,
+                        Subject = subject,
+                        BodyContent = body
+                    };
                 }
                 else
                 {
                     NotificationLogger.Error($"SendGrid returned failure for email to {request.UserEmail} - incident {request.Incident.IncidentKey}");
                     _logger.LogError("Failed to send email notification to {Email} for incident {IncidentKey}",
                         request.UserEmail, request.Incident.IncidentKey);
-                    return NotificationResult.Failed("SendGrid delivery failed");
+                    return new NotificationResult
+                    {
+                        Success = false,
+                        ErrorMessage = "SendGrid delivery failed",
+                        RecipientAddress = request.UserEmail,
+                        Subject = subject,
+                        BodyContent = body
+                    };
                 }
             }
             catch (Exception ex)

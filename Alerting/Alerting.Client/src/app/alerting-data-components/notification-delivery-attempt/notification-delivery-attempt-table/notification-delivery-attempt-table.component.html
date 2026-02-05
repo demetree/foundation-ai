@@ -51,6 +51,18 @@
                 Response
                 <span *ngIf="sortColumn === 'response'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('recipientAddress')">
+                Recipient  Address
+                <span *ngIf="sortColumn === 'recipientAddress'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('subject')">
+                Subject
+                <span *ngIf="sortColumn === 'subject'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('bodyContent')">
+                Body  Content
+                <span *ngIf="sortColumn === 'bodyContent'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
 End of commented block for alternate definition option -->
           </tr>
         </thead>
@@ -140,6 +152,9 @@ End of commented block for alternate definition option -->
             <td class="text-truncate">{{notificationDeliveryAttempt.status}}</td>
             <td class="text-truncate">{{notificationDeliveryAttempt.errorMessage}}</td>
             <td class="text-truncate">{{notificationDeliveryAttempt.response}}</td>
+            <td class="text-truncate">{{notificationDeliveryAttempt.recipientAddress}}</td>
+            <td class="text-truncate">{{notificationDeliveryAttempt.subject}}</td>
+            <td class="text-truncate">{{notificationDeliveryAttempt.bodyContent}}</td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -314,6 +329,18 @@ End of commented block for alternate definition option -->
             <p class="notification-delivery-attempt-info" *ngIf="notificationDeliveryAttempt.response != null">
               <strong>Response: </strong>
               {{notificationDeliveryAttempt.response}}
+            </p>
+            <p class="notification-delivery-attempt-info" *ngIf="notificationDeliveryAttempt.recipientAddress != null">
+              <strong>Recipient Address: </strong>
+              {{notificationDeliveryAttempt.recipientAddress}}
+            </p>
+            <p class="notification-delivery-attempt-info" *ngIf="notificationDeliveryAttempt.subject != null">
+              <strong>Subject: </strong>
+              {{notificationDeliveryAttempt.subject}}
+            </p>
+            <p class="notification-delivery-attempt-info" *ngIf="notificationDeliveryAttempt.bodyContent != null">
+              <strong>Body Content: </strong>
+              {{notificationDeliveryAttempt.bodyContent}}
             </p>
             </div>
          </div>

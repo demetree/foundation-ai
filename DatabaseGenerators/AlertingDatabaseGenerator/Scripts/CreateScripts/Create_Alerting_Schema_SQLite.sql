@@ -1410,6 +1410,9 @@ CREATE TABLE "NotificationDeliveryAttempt"
 	"status" VARCHAR(50) NOT NULL DEFAULT 'Pending' COLLATE NOCASE,
 	"errorMessage" TEXT NULL COLLATE NOCASE,
 	"response" TEXT NULL COLLATE NOCASE,
+	"recipientAddress" VARCHAR(250) NULL COLLATE NOCASE,		-- Email address, phone number, or device token that received the notification.
+	"subject" VARCHAR(500) NULL COLLATE NOCASE,		-- Subject line for email notifications, null for other channels.
+	"bodyContent" TEXT NULL COLLATE NOCASE,		-- Full message body content that was sent (HTML for email, plain text for SMS/voice).
 	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
 	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.

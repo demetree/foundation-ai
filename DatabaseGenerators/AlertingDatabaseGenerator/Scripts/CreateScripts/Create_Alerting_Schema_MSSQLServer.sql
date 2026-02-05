@@ -1544,6 +1544,9 @@ CREATE TABLE [Alerting].[NotificationDeliveryAttempt]
 	[status] NVARCHAR(50) NOT NULL DEFAULT 'Pending',
 	[errorMessage] NVARCHAR(MAX) NULL,
 	[response] NVARCHAR(MAX) NULL,
+	[recipientAddress] NVARCHAR(250) NULL,		-- Email address, phone number, or device token that received the notification.
+	[subject] NVARCHAR(500) NULL,		-- Subject line for email notifications, null for other channels.
+	[bodyContent] NVARCHAR(MAX) NULL,		-- Full message body content that was sent (HTML for email, plain text for SMS/voice).
 	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
 	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.

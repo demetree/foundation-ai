@@ -69,6 +69,9 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			string status = null,
 			string errorMessage = null,
 			string response = null,
+			string recipientAddress = null,
+			string subject = null,
+			string bodyContent = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -158,6 +161,18 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			{
 				query = query.Where(nda => nda.response == response);
 			}
+			if (string.IsNullOrEmpty(recipientAddress) == false)
+			{
+				query = query.Where(nda => nda.recipientAddress == recipientAddress);
+			}
+			if (string.IsNullOrEmpty(subject) == false)
+			{
+				query = query.Where(nda => nda.subject == subject);
+			}
+			if (string.IsNullOrEmpty(bodyContent) == false)
+			{
+				query = query.Where(nda => nda.bodyContent == bodyContent);
+			}
 			if (objectGuid.HasValue == true)
 			{
 				query = query.Where(nda => nda.objectGuid == objectGuid);
@@ -187,7 +202,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				query = query.Where(nda => nda.deleted == false);
 			}
 
-			query = query.OrderBy(nda => nda.status);
+			query = query.OrderBy(nda => nda.status).ThenBy(nda => nda.recipientAddress).ThenBy(nda => nda.subject);
 
 			if (pageNumber.HasValue == true &&
 			    pageSize.HasValue == true)
@@ -214,6 +229,9 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			       x.status.Contains(anyStringContains)
 			       || x.errorMessage.Contains(anyStringContains)
 			       || x.response.Contains(anyStringContains)
+			       || x.recipientAddress.Contains(anyStringContains)
+			       || x.subject.Contains(anyStringContains)
+			       || x.bodyContent.Contains(anyStringContains)
 			       || (includeRelations == true && x.notificationChannelType.name.Contains(anyStringContains))
 			       || (includeRelations == true && x.notificationChannelType.description.Contains(anyStringContains))
 			   );
@@ -265,6 +283,9 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			string status = null,
 			string errorMessage = null,
 			string response = null,
+			string recipientAddress = null,
+			string subject = null,
+			string bodyContent = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -334,6 +355,18 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			{
 				query = query.Where(nda => nda.response == response);
 			}
+			if (recipientAddress != null)
+			{
+				query = query.Where(nda => nda.recipientAddress == recipientAddress);
+			}
+			if (subject != null)
+			{
+				query = query.Where(nda => nda.subject == subject);
+			}
+			if (bodyContent != null)
+			{
+				query = query.Where(nda => nda.bodyContent == bodyContent);
+			}
 			if (objectGuid.HasValue == true)
 			{
 				query = query.Where(nda => nda.objectGuid == objectGuid);
@@ -374,6 +407,9 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			       x.status.Contains(anyStringContains)
 			       || x.errorMessage.Contains(anyStringContains)
 			       || x.response.Contains(anyStringContains)
+			       || x.recipientAddress.Contains(anyStringContains)
+			       || x.subject.Contains(anyStringContains)
+			       || x.bodyContent.Contains(anyStringContains)
 			       || x.notificationChannelType.name.Contains(anyStringContains)
 			       || x.notificationChannelType.description.Contains(anyStringContains)
 			   );
@@ -605,6 +641,16 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				notificationDeliveryAttempt.status = notificationDeliveryAttempt.status.Substring(0, 50);
 			}
 
+			if (notificationDeliveryAttempt.recipientAddress != null && notificationDeliveryAttempt.recipientAddress.Length > 250)
+			{
+				notificationDeliveryAttempt.recipientAddress = notificationDeliveryAttempt.recipientAddress.Substring(0, 250);
+			}
+
+			if (notificationDeliveryAttempt.subject != null && notificationDeliveryAttempt.subject.Length > 500)
+			{
+				notificationDeliveryAttempt.subject = notificationDeliveryAttempt.subject.Substring(0, 500);
+			}
+
 			EntityEntry<Database.NotificationDeliveryAttempt> attached = _context.Entry(existing);
 			attached.CurrentValues.SetValues(notificationDeliveryAttempt);
 
@@ -702,6 +748,16 @@ namespace Foundation.Alerting.Controllers.WebAPI
 				if (notificationDeliveryAttempt.status != null && notificationDeliveryAttempt.status.Length > 50)
 				{
 					notificationDeliveryAttempt.status = notificationDeliveryAttempt.status.Substring(0, 50);
+				}
+
+				if (notificationDeliveryAttempt.recipientAddress != null && notificationDeliveryAttempt.recipientAddress.Length > 250)
+				{
+					notificationDeliveryAttempt.recipientAddress = notificationDeliveryAttempt.recipientAddress.Substring(0, 250);
+				}
+
+				if (notificationDeliveryAttempt.subject != null && notificationDeliveryAttempt.subject.Length > 500)
+				{
+					notificationDeliveryAttempt.subject = notificationDeliveryAttempt.subject.Substring(0, 500);
 				}
 
 				notificationDeliveryAttempt.objectGuid = Guid.NewGuid();
@@ -839,6 +895,9 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			string status = null,
 			string errorMessage = null,
 			string response = null,
+			string recipientAddress = null,
+			string subject = null,
+			string bodyContent = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -927,6 +986,18 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			{
 				query = query.Where(nda => nda.response == response);
 			}
+			if (string.IsNullOrEmpty(recipientAddress) == false)
+			{
+				query = query.Where(nda => nda.recipientAddress == recipientAddress);
+			}
+			if (string.IsNullOrEmpty(subject) == false)
+			{
+				query = query.Where(nda => nda.subject == subject);
+			}
+			if (string.IsNullOrEmpty(bodyContent) == false)
+			{
+				query = query.Where(nda => nda.bodyContent == bodyContent);
+			}
 			if (objectGuid.HasValue == true)
 			{
 				query = query.Where(nda => nda.objectGuid == objectGuid);
@@ -968,6 +1039,9 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			       x.status.Contains(anyStringContains)
 			       || x.errorMessage.Contains(anyStringContains)
 			       || x.response.Contains(anyStringContains)
+			       || x.recipientAddress.Contains(anyStringContains)
+			       || x.subject.Contains(anyStringContains)
+			       || x.bodyContent.Contains(anyStringContains)
 			       || x.notificationChannelType.name.Contains(anyStringContains)
 			       || x.notificationChannelType.description.Contains(anyStringContains)
 			   );
@@ -977,7 +1051,7 @@ namespace Foundation.Alerting.Controllers.WebAPI
 			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 
-			query = query.OrderBy(x => x.status);
+			query = query.OrderBy(x => x.status).ThenBy(x => x.recipientAddress).ThenBy(x => x.subject);
 			if (pageNumber.HasValue == true &&
 			    pageSize.HasValue == true)
 			{

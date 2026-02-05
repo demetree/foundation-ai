@@ -100,14 +100,28 @@ namespace Alerting.Server.Services.Notifications
                     NotificationLogger.Info($"SMS sent successfully to {MaskPhoneNumber(request.UserPhoneNumber)} for incident {request.Incident.IncidentKey} (SID: {message.Sid})");
                     _logger.LogInformation("SMS notification sent successfully to {Phone} for incident {IncidentKey} (SID: {Sid})",
                         MaskPhoneNumber(request.UserPhoneNumber), request.Incident.IncidentKey, message.Sid);
-                    return NotificationResult.Succeeded(message.Sid, message.Status?.ToString());
+                    return new NotificationResult
+                    {
+                        Success = true,
+                        ExternalMessageId = message.Sid,
+                        ProviderResponse = message.Status?.ToString(),
+                        RecipientAddress = request.UserPhoneNumber,
+                        BodyContent = messageBody
+                    };
                 }
                 else
                 {
                     NotificationLogger.Error($"Twilio SMS failed to {MaskPhoneNumber(request.UserPhoneNumber)}: {message.ErrorMessage} (Status: {message.Status})");
                     _logger.LogError("Failed to send SMS notification to {Phone} for incident {IncidentKey}: {Error}",
                         MaskPhoneNumber(request.UserPhoneNumber), request.Incident.IncidentKey, message.ErrorMessage);
-                    return NotificationResult.Failed(message.ErrorMessage ?? "SMS delivery failed", message.Status?.ToString());
+                    return new NotificationResult
+                    {
+                        Success = false,
+                        ErrorMessage = message.ErrorMessage ?? "SMS delivery failed",
+                        ProviderResponse = message.Status?.ToString(),
+                        RecipientAddress = request.UserPhoneNumber,
+                        BodyContent = messageBody
+                    };
                 }
             }
             catch (Exception ex)

@@ -33,6 +33,9 @@ namespace Foundation.Alerting.Database
 			public String status { get; set; }
 			public String errorMessage { get; set; }
 			public String response { get; set; }
+			public String recipientAddress { get; set; }
+			public String subject { get; set; }
+			public String bodyContent { get; set; }
 			[Required]
 			public Guid objectGuid { get; set; }
 			public Boolean? active { get; set; }
@@ -71,6 +74,9 @@ namespace Foundation.Alerting.Database
 				status = this.status,
 				errorMessage = this.errorMessage,
 				response = this.response,
+				recipientAddress = this.recipientAddress,
+				subject = this.subject,
+				bodyContent = this.bodyContent,
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted
@@ -120,6 +126,9 @@ namespace Foundation.Alerting.Database
 				status = this.status,
 				errorMessage = this.errorMessage,
 				response = this.response,
+				recipientAddress = this.recipientAddress,
+				subject = this.subject,
+				bodyContent = this.bodyContent,
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted,
@@ -171,6 +180,9 @@ namespace Foundation.Alerting.Database
 				status = dto.status,
 				errorMessage = dto.errorMessage,
 				response = dto.response,
+				recipientAddress = dto.recipientAddress,
+				subject = dto.subject,
+				bodyContent = dto.bodyContent,
 				objectGuid = dto.objectGuid,
 				active = dto.active ?? true,
 				deleted = dto.deleted ?? false
@@ -197,6 +209,9 @@ namespace Foundation.Alerting.Database
 			this.status = dto.status;
 			this.errorMessage = dto.errorMessage;
 			this.response = dto.response;
+			this.recipientAddress = dto.recipientAddress;
+			this.subject = dto.subject;
+			this.bodyContent = dto.bodyContent;
 			this.objectGuid = dto.objectGuid;
 			if (dto.active.HasValue == true)
 			{
@@ -229,6 +244,9 @@ namespace Foundation.Alerting.Database
 				status = this.status,
 				errorMessage = this.errorMessage,
 				response = this.response,
+				recipientAddress = this.recipientAddress,
+				subject = this.subject,
+				bodyContent = this.bodyContent,
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted,
@@ -292,6 +310,9 @@ namespace Foundation.Alerting.Database
 				status = notificationDeliveryAttempt.status,
 				errorMessage = notificationDeliveryAttempt.errorMessage,
 				response = notificationDeliveryAttempt.response,
+				recipientAddress = notificationDeliveryAttempt.recipientAddress,
+				subject = notificationDeliveryAttempt.subject,
+				bodyContent = notificationDeliveryAttempt.bodyContent,
 				objectGuid = notificationDeliveryAttempt.objectGuid,
 				active = notificationDeliveryAttempt.active,
 				deleted = notificationDeliveryAttempt.deleted,
@@ -322,6 +343,9 @@ namespace Foundation.Alerting.Database
 				status = notificationDeliveryAttempt.status,
 				errorMessage = notificationDeliveryAttempt.errorMessage,
 				response = notificationDeliveryAttempt.response,
+				recipientAddress = notificationDeliveryAttempt.recipientAddress,
+				subject = notificationDeliveryAttempt.subject,
+				bodyContent = notificationDeliveryAttempt.bodyContent,
 				objectGuid = notificationDeliveryAttempt.objectGuid,
 				active = notificationDeliveryAttempt.active,
 				deleted = notificationDeliveryAttempt.deleted,
@@ -348,7 +372,7 @@ namespace Foundation.Alerting.Database
 			return new {
 				id = notificationDeliveryAttempt.id,
 				name = notificationDeliveryAttempt.status,
-				description = string.Join(", ", new[] { notificationDeliveryAttempt.status}.Where(s => !string.IsNullOrWhiteSpace(s)))
+				description = string.Join(", ", new[] { notificationDeliveryAttempt.status, notificationDeliveryAttempt.recipientAddress, notificationDeliveryAttempt.subject}.Where(s => !string.IsNullOrWhiteSpace(s)))
 			 };
 		}
 	}
