@@ -153,6 +153,15 @@
     <ul>
       <li class="nav-section-label">Development</li>
 
+      <!-- Notification Audit (Admin Only) -->
+      <li class="nav-item" *ngIf="isUserAlertingAdmin">
+        <a class="nav-link text-white" routerLink="/notification-audit" routerLinkActive="active"
+          (click)="closeMobileMenu()">
+          <i class="fa fa-envelope-open-text me-2"></i>
+          Notification Audit
+        </a>
+      </li>
+
       <!-- Test Harness -->
       <li class="nav-item">
         <a class="nav-link text-white" routerLink="/test-harness" routerLinkActive="active" (click)="closeMobileMenu()">

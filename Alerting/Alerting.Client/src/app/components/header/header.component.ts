@@ -94,4 +94,8 @@ export class HeaderComponent implements OnInit {
       .join('');
     return initials || 'U';
   }
+
+  get isUserAlertingAdmin(): boolean {
+    return this.authService.isAlertingAdministrator;
+  }
 }

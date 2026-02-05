@@ -1,0 +1,273 @@
+<!-- Notification Audit Console - Premium Admin Interface -->
+<div class="notification-audit-container">
+
+    <!-- Hero Header -->
+    <header class="hero-header">
+        <div class="header-content">
+            <div class="title-section">
+                <button class="back-btn" *ngIf="canGoBack()" (click)="goBack()">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <div class="icon-wrapper">
+                    <i class="fa-solid fa-envelope-open-text"></i>
+                </div>
+                <div class="title-text">
+                    <h1>Notification Audit Console</h1>
+                    <p>Forensic audit trail of all notification deliveries</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="refresh-btn" (click)="refresh()">
+                    <i class="fa-solid fa-sync-alt"></i>
+                    Refresh
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Metrics Cards -->
+    <section class="metrics-section" *ngIf="metrics">
+        <div class="metric-card sent">
+            <div class="metric-icon">
+                <i class="fa-solid fa-paper-plane"></i>
+            </div>
+            <div class="metric-content">
+                <span class="metric-value">{{ metrics.sentToday }}</span>
+                <span class="metric-label">Sent Today</span>
+            </div>
+        </div>
+
+        <div class="metric-card failed">
+            <div class="metric-icon">
+                <i class="fa-solid fa-exclamation-triangle"></i>
+            </div>
+            <div class="metric-content">
+                <span class="metric-value">{{ metrics.failedToday }}</span>
+                <span class="metric-label">Failed Today</span>
+            </div>
+        </div>
+
+        <div class="metric-card pending">
+            <div class="metric-icon">
+                <i class="fa-solid fa-hourglass-half"></i>
+            </div>
+            <div class="metric-content">
+                <span class="metric-value">{{ metrics.pendingNow }}</span>
+                <span class="metric-label">Pending Now</span>
+            </div>
+        </div>
+
+        <div class="metric-card success-rate">
+            <div class="metric-icon">
+                <i class="fa-solid fa-chart-line"></i>
+            </div>
+            <div class="metric-content">
+                <span class="metric-value">{{ metrics.successRate7Day }}%</span>
+                <span class="metric-label">7-Day Success Rate</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content Area -->
+    <div class="main-content" [class.has-detail]="selectedDelivery">
+
+        <!-- Left Panel: List -->
+        <section class="list-panel">
+
+            <!-- Filters -->
+            <div class="filters-bar">
+                <div class="filter-group">
+                    <select [(ngModel)]="channelFilter" (change)="applyFilters()" class="filter-select">
+                        <option [ngValue]="null">All Channels</option>
+                        <option *ngFor="let channel of channelOptions" [ngValue]="channel.id">
+                            {{ channel.name }}
+                        </option>
+                    </select>
+
+                    <select [(ngModel)]="statusFilter" (change)="applyFilters()" class="filter-select">
+                        <option [ngValue]="null">All Statuses</option>
+                        <option *ngFor="let status of statusOptions" [ngValue]="status">
+                            {{ status }}
+                        </option>
+                    </select>
+
+                    <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="applyFilters()"
+                        placeholder="Search recipient, subject, incident..." class="search-input">
+
+                    <button class="filter-btn" (click)="applyFilters()">
+                        <i class="fa-solid fa-search"></i>
+                    </button>
+
+                    <button class="clear-btn" *ngIf="hasActiveFilters()" (click)="clearFilters()">
+                        <i class="fa-solid fa-times"></i> Clear
+                    </button>
+                </div>
+
+                <div class="results-summary">
+                    {{ totalCount }} result{{ totalCount !== 1 ? 's' : '' }}
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div class="loading-state" *ngIf="isLoading">
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                <span>Loading deliveries...</span>
+            </div>
+
+            <!-- Error State -->
+            <div class="error-state" *ngIf="errorMessage">
+                <i class="fa-solid fa-exclamation-circle"></i>
+                <span>{{ errorMessage }}</span>
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty-state" *ngIf="!isLoading && !errorMessage && deliveries.length === 0">
+                <i class="fa-solid fa-inbox"></i>
+                <span>No delivery attempts found</span>
+            </div>
+
+            <!-- Delivery List -->
+            <div class="delivery-list" *ngIf="!isLoading && deliveries.length > 0">
+                <div class="delivery-row" *ngFor="let delivery of deliveries"
+                    [class.selected]="selectedDelivery?.id === delivery.id" (click)="selectDelivery(delivery)">
+
+                    <div class="channel-icon" [title]="delivery.channelName">
+                        <i class="fa-solid" [ngClass]="getChannelIcon(delivery.channelTypeId)"></i>
+                    </div>
+
+                    <div class="delivery-info">
+                        <div class="recipient">{{ delivery.recipientDisplay }}</div>
+                        <div class="incident-ref" *ngIf="delivery.incidentKey">
+                            {{ delivery.incidentKey }}
+                        </div>
+                    </div>
+
+                    <div class="delivery-meta">
+                        <span class="status-badge" [ngClass]="getStatusClass(delivery.status)">
+                            {{ delivery.status }}
+                        </span>
+                        <span class="time">{{ getRelativeTime(delivery.attemptedAt) }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination" *ngIf="totalPages > 1">
+                <button class="page-btn" [disabled]="pageNumber === 1" (click)="goToPage(pageNumber - 1)">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+
+                <button class="page-btn" *ngFor="let page of pageNumbers" [class.active]="page === pageNumber"
+                    (click)="goToPage(page)">
+                    {{ page }}
+                </button>
+
+                <button class="page-btn" [disabled]="pageNumber === totalPages" (click)="goToPage(pageNumber + 1)">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- Right Panel: Detail -->
+        <section class="detail-panel" *ngIf="selectedDelivery">
+
+            <div class="detail-header">
+                <h2>Delivery Details</h2>
+                <button class="close-btn" (click)="closeDetail()">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Loading Detail -->
+            <div class="loading-state" *ngIf="isLoadingDetail">
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                <span>Loading details...</span>
+            </div>
+
+            <!-- Detail Content -->
+            <div class="detail-content" *ngIf="!isLoadingDetail && selectedDelivery">
+
+                <!-- Summary Info -->
+                <div class="detail-section">
+                    <h3>Summary</h3>
+                    <div class="info-grid">
+                        <div class="info-row">
+                            <span class="label">Channel</span>
+                            <span class="value">
+                                <i class="fa-solid" [ngClass]="getChannelIcon(selectedDelivery.channelTypeId)"></i>
+                                {{ selectedDelivery.channelName }}
+                            </span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Status</span>
+                            <span class="value">
+                                <span class="status-badge" [ngClass]="getStatusClass(selectedDelivery.status)">
+                                    {{ selectedDelivery.status }}
+                                </span>
+                            </span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Recipient</span>
+                            <span class="value">{{ selectedDelivery.recipientAddress || '—' }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Sent At</span>
+                            <span class="value">{{ formatDateTime(selectedDelivery.attemptedAt) }}</span>
+                        </div>
+                        <div class="info-row" *ngIf="selectedDelivery.incidentKey">
+                            <span class="label">Incident</span>
+                            <span class="value">{{ selectedDelivery.incidentKey }}</span>
+                        </div>
+                        <div class="info-row" *ngIf="selectedDelivery.incidentTitle">
+                            <span class="label">Title</span>
+                            <span class="value">{{ selectedDelivery.incidentTitle }}</span>
+                        </div>
+                        <div class="info-row" *ngIf="selectedDelivery.attemptNumber > 1">
+                            <span class="label">Attempt</span>
+                            <span class="value">{{ selectedDelivery.attemptNumber }} of {{
+                                selectedDelivery.totalAttempts }}</span>
+                        </div>
+                        <div class="info-row" *ngIf="selectedDelivery.errorMessage">
+                            <span class="label">Error</span>
+                            <span class="value error">{{ selectedDelivery.errorMessage }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Subject (for Email) -->
+                <div class="detail-section" *ngIf="selectedDelivery.subject">
+                    <h3>Subject</h3>
+                    <div class="subject-box">{{ selectedDelivery.subject }}</div>
+                </div>
+
+                <!-- Content Preview -->
+                <div class="detail-section" *ngIf="selectedDelivery.bodyContent">
+                    <div class="section-header">
+                        <h3>Content</h3>
+                        <button class="new-window-btn" *ngIf="selectedDelivery.channelTypeId === 1"
+                            (click)="openInNewWindow()" title="Open in new window">
+                            <i class="fa-solid fa-external-link-alt"></i>
+                        </button>
+                    </div>
+
+                    <!-- Email HTML Preview -->
+                    <div class="content-preview email-preview"
+                        *ngIf="selectedDelivery.channelTypeId === 1 && renderedHtml">
+                        <iframe [srcdoc]="selectedDelivery.bodyContent" sandbox="allow-same-origin"
+                            title="Email content preview"></iframe>
+                    </div>
+
+                    <!-- Text/JSON Content -->
+                    <pre class="content-preview text-preview"
+                        *ngIf="selectedDelivery.channelTypeId !== 1">{{ selectedDelivery.bodyContent }}</pre>
+                </div>
+
+                <!-- Provider Response -->
+                <div class="detail-section" *ngIf="selectedDelivery.response">
+                    <h3>Provider Response</h3>
+                    <div class="response-box">{{ selectedDelivery.response }}</div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>

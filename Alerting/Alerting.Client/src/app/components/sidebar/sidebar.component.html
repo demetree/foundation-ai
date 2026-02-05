@@ -143,6 +143,16 @@
       </a>
     </li>
 
+    <!-- Notification Audit (Admin Only) -->
+    <li class="nav-item" *ngIf="isUserAlertingAdmin">
+      <a routerLink="/notification-audit" routerLinkActive="active" class="nav-link text-white"
+        [ngbTooltip]="!isExpanded ? 'Notification Audit' : null" triggers="hover" #tNotifAudit="ngbTooltip"
+        (click)="tNotifAudit.close(); close()" placement="right" tooltipClass="sidebar-tip">
+        <i class="fa-solid fa-envelope-open-text"></i>
+        <span class="label px-2">Notification Audit</span>
+      </a>
+    </li>
+
     <!-- Test Harness -->
     <li class="nav-item">
       <a routerLink="/test-harness" routerLinkActive="active" class="nav-link text-white"
