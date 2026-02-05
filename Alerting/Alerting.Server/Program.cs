@@ -172,9 +172,10 @@ namespace Foundation.Alerting
                 Foundation.Web.Utility.StartupBasics.AddFoundationEssentialWebAPIControllers(controllers);
 
                 //
-                // Allow this sytem to be monitored
+                // Allow this sytem to be monitored and the system-health UI to work
                 //
                 Foundation.Web.Utility.StartupBasics.AddSystemHealthControllers(controllers);
+                Foundation.Web.Utility.StartupBasics.AddMonitoredApplicationsController(controllers);
 
 
                 //
@@ -336,6 +337,19 @@ namespace Foundation.Alerting
                 builder.Services.AddScoped<INotificationProvider, VoiceCallNotificationProvider>();
                 builder.Services.AddScoped<INotificationProvider, TeamsNotificationProvider>();
                 builder.Services.AddScoped<INotificationProvider, PushNotificationProvider>();
+
+                //
+                // Notification Engine Configuration
+                //
+                var notificationEngineSection = builder.Configuration.GetSection(NotificationEngineOptions.SectionName);
+                builder.Services.Configure<NotificationEngineOptions>(notificationEngineSection);
+                
+                // Configure the static NotificationLogger with settings from appsettings.json
+                var notificationEngineOptions = notificationEngineSection.Get<NotificationEngineOptions>() ?? new NotificationEngineOptions();
+                NotificationLogger.Configure(notificationEngineOptions);
+                logger.LogInformation($"Notification engine configured: LogLevel={notificationEngineOptions.LogLevel}, " +
+                    $"EscalationInterval={notificationEngineOptions.EscalationWorkerIntervalSeconds}s, " +
+                    $"RetryInterval={notificationEngineOptions.RetryWorkerIntervalSeconds}s");
 
                 //
                 // Background Workers

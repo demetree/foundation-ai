@@ -366,6 +366,77 @@
     }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Timing Info Card
+// ─────────────────────────────────────────────────────────────────────────────
+
+.timing-info-card {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%);
+    border: 1px solid rgba(59, 130, 246, 0.25);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+
+    .info-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+
+        i {
+            color: #3b82f6;
+            font-size: 1rem;
+        }
+
+        strong {
+            color: #93c5fd;
+            font-size: 0.9rem;
+        }
+    }
+
+    .info-content {
+        p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85rem;
+            line-height: 1.5;
+            margin: 0 0 0.5rem 0;
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+
+            strong {
+                color: rgba(255, 255, 255, 0.9);
+            }
+        }
+
+        .timing-example {
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid rgba(59, 130, 246, 0.15);
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+
+            i {
+                color: #fbbf24;
+                margin-top: 0.1rem;
+            }
+
+            em {
+                color: rgba(255, 255, 255, 0.6);
+                font-style: normal;
+            }
+        }
+    }
+}
+
+// Delay help icon styling
+.delay-help {
+    font-size: 0.75rem;
+    cursor: help;
+}
+
 .timeline-container {
     min-height: 100px;
 }

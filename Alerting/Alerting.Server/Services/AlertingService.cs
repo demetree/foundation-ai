@@ -78,6 +78,40 @@ namespace Alerting.Server.Services
                 var service = integration.service;
                 var tenantGuid = integration.tenantGuid;
 
+                // Diagnostic logging for escalation setup
+                _logger.LogInformation("Service {ServiceId} ({ServiceName}) has escalationPolicyId: {PolicyId}", 
+                    service.id, service.name, service.escalationPolicyId);
+
+                // Fallback: explicitly load escalation policy if Include chain didn't load it
+                if (service.escalationPolicyId.HasValue && service.escalationPolicy == null)
+                {
+                    _logger.LogWarning("Include chain failed to load escalationPolicy - loading explicitly");
+                    service.escalationPolicy = await _context.EscalationPolicies
+                        .Include(ep => ep.EscalationRules)
+                        .FirstOrDefaultAsync(ep => ep.id == service.escalationPolicyId.Value)
+                        .ConfigureAwait(false);
+                }
+
+                // Fallback: explicitly load escalation rules if they weren't loaded
+                if (service.escalationPolicy != null && 
+                    (service.escalationPolicy.EscalationRules == null || service.escalationPolicy.EscalationRules.Count == 0))
+                {
+                    _logger.LogWarning("Include chain failed to load EscalationRules - loading explicitly");
+                    await _context.Entry(service.escalationPolicy)
+                        .Collection(ep => ep.EscalationRules)
+                        .LoadAsync()
+                        .ConfigureAwait(false);
+                }
+
+                _logger.LogInformation("Service.escalationPolicy is {IsNull}", 
+                    service.escalationPolicy == null ? "NULL" : "loaded");
+                if (service.escalationPolicy != null)
+                {
+                    _logger.LogInformation("EscalationPolicy {PolicyId} has {RuleCount} rules loaded", 
+                        service.escalationPolicy.id, 
+                        service.escalationPolicy.EscalationRules?.Count ?? 0);
+                }
+
                 // Generate incident key if not provided
                 var incidentKey = string.IsNullOrWhiteSpace(payload.IncidentKey)
                     ? $"{service.name}-{DateTime.UtcNow:yyyyMMdd-HHmmss}-{Guid.NewGuid():N}"[..50]
@@ -130,7 +164,17 @@ namespace Alerting.Server.Services
                     if (firstRule != null)
                     {
                         nextEscalationAt = DateTime.UtcNow.AddMinutes(firstRule.delayMinutes);
+                        _logger.LogInformation("Set nextEscalationAt to {NextEscalation} using rule {RuleId} (delay: {DelayMinutes}min)",
+                            nextEscalationAt, firstRule.id, firstRule.delayMinutes);
                     }
+                    else
+                    {
+                        _logger.LogWarning("No active escalation rules found for policy {PolicyId}", service.escalationPolicy.id);
+                    }
+                }
+                else
+                {
+                    _logger.LogWarning("Service {ServiceId} has no escalation policy", service.id);
                 }
 
                 // Create new incident

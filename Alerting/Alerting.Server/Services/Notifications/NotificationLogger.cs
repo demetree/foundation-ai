@@ -23,6 +23,10 @@ namespace Alerting.Server.Services.Notifications
         private static readonly Logger _logger = new Logger();
         private static bool _initialized = false;
         private static readonly object _initLock = new object();
+        
+        // Configuration (set via Configure before first use)
+        private static Logger.LogLevels _logLevel = Logger.LogLevels.Debug;
+        private static bool _disableThrottling = true;
 
         /// <summary>
         /// Gets the shared logger instance for notification operations.
@@ -33,6 +37,41 @@ namespace Alerting.Server.Services.Notifications
             {
                 EnsureInitialized();
                 return _logger;
+            }
+        }
+
+        /// <summary>
+        /// Configures the notification logger with the specified options.
+        /// Call this early in startup before any logging occurs.
+        /// </summary>
+        /// <param name="options">The notification engine options.</param>
+        public static void Configure(NotificationEngineOptions options)
+        {
+            if (options == null) return;
+
+            lock (_initLock)
+            {
+                // Parse log level from string
+                _logLevel = options.LogLevel?.ToLowerInvariant() switch
+                {
+                    "debug" => Logger.LogLevels.Debug,
+                    "information" => Logger.LogLevels.Information,
+                    "warning" => Logger.LogLevels.Warning,
+                    "error" => Logger.LogLevels.Error,
+                    _ => Logger.LogLevels.Debug
+                };
+
+                _disableThrottling = options.DisableLogThrottling;
+
+                // If already initialized, update the logger settings
+                if (_initialized)
+                {
+                    _logger.Level = _logLevel;
+                    if (_disableThrottling)
+                    {
+                        _logger.DisableThrottling();
+                    }
+                }
             }
         }
 
@@ -54,17 +93,19 @@ namespace Alerting.Server.Services.Notifications
                     _logger.SetDirectory(Path.Combine(currentPath, LOG_DIRECTORY));
                     _logger.SetFileName(LOG_FILENAME);
 
-                    // Set to Debug level for verbose notification logging
-                    // This allows debug messages to be logged when enabled
-                    _logger.Level = Logger.LogLevels.Debug;
+                    // Apply configured log level (or default)
+                    _logger.Level = _logLevel;
 
-                    // Disable throttling for this logger to ensure all notification events are captured
-                    _logger.DisableThrottling();
+                    // Apply throttling setting
+                    if (_disableThrottling)
+                    {
+                        _logger.DisableThrottling();
+                    }
 
                     _initialized = true;
 
                     // Log startup at System level
-                    _logger.LogSystem("NotificationEngine logger initialized");
+                    _logger.LogSystem($"NotificationEngine logger initialized (Level: {_logLevel})");
                 }
                 catch (Exception ex)
                 {
@@ -127,3 +168,4 @@ namespace Alerting.Server.Services.Notifications
         #endregion
     }
 }
+

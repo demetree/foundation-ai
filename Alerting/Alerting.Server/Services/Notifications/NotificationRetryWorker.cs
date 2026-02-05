@@ -7,34 +7,38 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Alerting.Server.Services;
 using Foundation.Alerting.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Alerting.Server.Services.Notifications
 {
     /// <summary>
     /// Background service that retries failed notification delivery attempts.
-    /// Uses exponential backoff: 1 min, 5 min, 15 min.
+    /// Uses configurable exponential backoff.
     /// </summary>
     public class NotificationRetryWorker : BackgroundService
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<NotificationRetryWorker> _logger;
-        private readonly TimeSpan _interval = TimeSpan.FromSeconds(60);
-        private const int MaxRetryAttempts = 3;
-
-        // Backoff intervals in minutes: attempt 1 = 1 min, attempt 2 = 5 min, attempt 3 = 15 min
-        private static readonly int[] BackoffMinutes = { 1, 5, 15 };
+        private readonly TimeSpan _interval;
+        private readonly int _maxRetryAttempts;
+        private readonly int[] _backoffMinutes;
 
         public NotificationRetryWorker(
             IServiceProvider serviceProvider,
-            ILogger<NotificationRetryWorker> logger)
+            ILogger<NotificationRetryWorker> logger,
+            IOptions<NotificationEngineOptions> options)
         {
             _serviceProvider = serviceProvider;
             _logger = logger;
+            _interval = TimeSpan.FromSeconds(options.Value.RetryWorkerIntervalSeconds);
+            _maxRetryAttempts = options.Value.MaxRetryAttempts;
+            _backoffMinutes = options.Value.RetryBackoffMinutes;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -44,15 +48,19 @@ namespace Alerting.Server.Services.Notifications
 
             while (!stoppingToken.IsCancellationRequested)
             {
+                int retryCount = 0;
                 try
                 {
-                    await ProcessFailedAttemptsAsync(stoppingToken).ConfigureAwait(false);
+                    retryCount = await ProcessFailedAttemptsAsync(stoppingToken).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
                     NotificationLogger.Exception("Error in NotificationRetryWorker processing loop", ex);
                     _logger.LogError(ex, "Error in NotificationRetryWorker");
                 }
+
+                // Always update worker status for flight control
+                NotificationFlightControlService.UpdateRetryWorkerStatus(DateTime.UtcNow, retryCount);
 
                 await Task.Delay(_interval, stoppingToken).ConfigureAwait(false);
             }
@@ -61,9 +69,10 @@ namespace Alerting.Server.Services.Notifications
             _logger.LogInformation("NotificationRetryWorker stopping");
         }
 
-        private async Task ProcessFailedAttemptsAsync(CancellationToken cancellationToken)
+        private async Task<int> ProcessFailedAttemptsAsync(CancellationToken cancellationToken)
         {
             NotificationLogger.Debug("=== NotificationRetryWorker: Starting retry processing cycle ===");
+            int retriesProcessed = 0;
 
             using var scope = _serviceProvider.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<AlertingContext>();
@@ -78,7 +87,7 @@ namespace Alerting.Server.Services.Notifications
                     .ThenInclude(n => n.incident)
                 .Where(a => 
                     a.status == "Failed" &&
-                    a.attemptNumber < MaxRetryAttempts &&
+                    a.attemptNumber < _maxRetryAttempts &&
                     a.active == true &&
                     a.deleted == false)
                 .ToListAsync(cancellationToken)
@@ -87,7 +96,7 @@ namespace Alerting.Server.Services.Notifications
             if (failedAttempts.Count == 0)
             {
                 NotificationLogger.Debug("No failed attempts found that need retry");
-                return;
+                return 0;
             }
 
             NotificationLogger.Debug($"Found {failedAttempts.Count} failed notification attempts to evaluate for retry");
@@ -96,9 +105,9 @@ namespace Alerting.Server.Services.Notifications
             foreach (var attempt in failedAttempts)
             {
                 // Check if enough time has passed for backoff
-                var backoffMinutes = attempt.attemptNumber < BackoffMinutes.Length 
-                    ? BackoffMinutes[attempt.attemptNumber] 
-                    : BackoffMinutes[BackoffMinutes.Length - 1];
+                var backoffMinutes = attempt.attemptNumber < _backoffMinutes.Length 
+                    ? _backoffMinutes[attempt.attemptNumber] 
+                    : _backoffMinutes[_backoffMinutes.Length - 1];
 
                 var nextRetryTime = attempt.attemptedAt.AddMinutes(backoffMinutes);
                 
@@ -115,9 +124,11 @@ namespace Alerting.Server.Services.Notifications
 
                 NotificationLogger.Debug($"Attempt {attempt.id} is ready for retry - backoff period has elapsed");
                 await RetryAttemptAsync(context, providers, attempt, cancellationToken).ConfigureAwait(false);
+                retriesProcessed++;
             }
 
-            NotificationLogger.Debug("=== NotificationRetryWorker: Retry processing cycle complete ===");
+            NotificationLogger.Debug($"=== NotificationRetryWorker: Retry processing cycle complete ({retriesProcessed} retried) ===");
+            return retriesProcessed;
         }
 
         private async Task RetryAttemptAsync(
@@ -230,20 +241,20 @@ namespace Alerting.Server.Services.Notifications
             }
             catch (Exception ex)
             {
-                attempt.status = attempt.attemptNumber >= MaxRetryAttempts ? "Abandoned" : "Failed";
+                attempt.status = attempt.attemptNumber >= _maxRetryAttempts ? "Abandoned" : "Failed";
                 attempt.errorMessage = ex.Message;
                 NotificationLogger.Exception($"Exception during retry of attempt {attempt.id}", ex);
                 _logger.LogError(ex, "Exception during retry of attempt {AttemptId}", attempt.id);
             }
 
             // Mark as abandoned if max retries reached
-            if (attempt.attemptNumber >= MaxRetryAttempts && attempt.status == "Failed")
+            if (attempt.attemptNumber >= _maxRetryAttempts && attempt.status == "Failed")
             {
                 attempt.status = "Abandoned";
-                NotificationLogger.Warning($"Attempt {attempt.id} ABANDONED after {MaxRetryAttempts} retries for incident {incident.incidentKey}");
+                NotificationLogger.Warning($"Attempt {attempt.id} ABANDONED after {_maxRetryAttempts} retries for incident {incident.incidentKey}");
                 _logger.LogWarning(
                     "Attempt {AttemptId} abandoned after {MaxRetries} retries",
-                    attempt.id, MaxRetryAttempts);
+                    attempt.id, _maxRetryAttempts);
             }
 
             await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);

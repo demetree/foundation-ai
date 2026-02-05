@@ -5,6 +5,15 @@
 // AI-assisted development - February 2026
 //
 
+:host {
+  display: block;
+  margin: -5px; // Counteract parent .main-content padding
+  padding: 0;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+
+
 .admin-preferences {
     min-height: 100vh;
     background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3a 50%, #0f0f2f 100%);

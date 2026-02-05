@@ -93,6 +93,30 @@
                     <span class="rule-count">{{ rules.length }} step{{ rules.length !== 1 ? 's' : '' }}</span>
                 </div>
 
+                <!-- Timing Explanation Info Card -->
+                <div class="timing-info-card">
+                    <div class="info-header">
+                        <i class="fa-solid fa-clock"></i>
+                        <strong>Understanding Notification Timing</strong>
+                    </div>
+                    <div class="info-content">
+                        <p>
+                            <strong>Step 1 Delay:</strong> When an incident is triggered, the first notification
+                            is sent after the Step 1 delay. Set to <strong>0 minutes</strong> for immediate
+                            notification.
+                        </p>
+                        <p>
+                            <strong>Subsequent Steps:</strong> If the incident is not acknowledged,
+                            escalation continues to the next step after its delay expires.
+                        </p>
+                        <p class="timing-example">
+                            <i class="fa-solid fa-lightbulb"></i>
+                            <em>Example: Step 1 (5 min) → Step 2 (10 min) means first notification at 5 minutes,
+                                then escalates to Step 2 at 15 minutes total if unacknowledged.</em>
+                        </p>
+                    </div>
+                </div>
+
                 <div class="timeline-container" cdkDropList (cdkDropListDropped)="onRuleDrop($event)">
 
                     <!-- Empty State -->
@@ -121,7 +145,10 @@
 
                             <!-- Delay Input -->
                             <div class="config-row">
-                                <label>Delay (minutes)</label>
+                                <label>Delay (minutes)
+                                    <i class="fa-solid fa-info-circle ms-1 text-muted delay-help"
+                                        ngbTooltip="Time to wait before sending notification. Use 0 for immediate notification when incident is triggered."></i>
+                                </label>
                                 <input type="number" class="form-control form-control-sm"
                                     [(ngModel)]="rule.delayMinutes" (ngModelChange)="onRuleChange(rule)" min="0"
                                     max="1440">

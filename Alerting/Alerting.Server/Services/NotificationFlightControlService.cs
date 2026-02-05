@@ -206,7 +206,7 @@ namespace Alerting.Server.Services
             }
 
             var totalAttempts = await attemptsQuery.CountAsync(cancellationToken).ConfigureAwait(false);
-            var delivered = await attemptsQuery.CountAsync(a => a.status == "Delivered", cancellationToken).ConfigureAwait(false);
+            var delivered = await attemptsQuery.CountAsync(a => a.status == "Sent", cancellationToken).ConfigureAwait(false);
             var failed = await attemptsQuery.CountAsync(a => a.status == "Failed", cancellationToken).ConfigureAwait(false);
             var pending = await attemptsQuery.CountAsync(a => a.status == "Pending", cancellationToken).ConfigureAwait(false);
 
@@ -242,7 +242,7 @@ namespace Alerting.Server.Services
                                 a.attemptedAt >= from && a.attemptedAt <= to);
 
                 var total = await attemptsQuery.CountAsync(cancellationToken).ConfigureAwait(false);
-                var success = await attemptsQuery.CountAsync(a => a.status == "Delivered", cancellationToken).ConfigureAwait(false);
+                var success = await attemptsQuery.CountAsync(a => a.status == "Sent", cancellationToken).ConfigureAwait(false);
                 var failed = await attemptsQuery.CountAsync(a => a.status == "Failed", cancellationToken).ConfigureAwait(false);
                 var pending = await attemptsQuery.CountAsync(a => a.status == "Pending", cancellationToken).ConfigureAwait(false);
 

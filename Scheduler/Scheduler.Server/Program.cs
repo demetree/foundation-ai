@@ -529,29 +529,36 @@ namespace Foundation.Scheduler
                 //
                 app.Use(async (context, next) =>
                 {
-                    string cspPolicy;
-
-                    if (app.Environment.IsDevelopment())
+                    try
                     {
-                        // More permissive policy for development, allowing API calls, inline scripts, and styles
-                        cspPolicy = "default-src 'self'; " +
-                                    "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
-                                    "style-src 'self' 'unsafe-inline'; " +
-                                    "img-src 'self' data: blob: ; " +
-                                    "connect-src 'self';";
-                    }
-                    else
-                    {
-                        // Stricter policy for production, ensuring API calls to GitHub and the software registration API are allowed
-                        cspPolicy = "default-src 'self'; " +
-                                    "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
-                                    "style-src 'self' 'unsafe-inline'; " +
-                                    "img-src 'self' data: blob: ; " +
-                                    "connect-src 'self' ;";
-                    }
+                        string cspPolicy;
 
-                    context.Response.Headers["Content-Security-Policy"] = cspPolicy;
-                    await next();
+                        if (app.Environment.IsDevelopment())
+                        {
+                            // More permissive policy for development, allowing API calls, inline scripts, and styles
+                            cspPolicy = "default-src 'self'; " +
+                                        "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
+                                        "style-src 'self' 'unsafe-inline'; " +
+                                        "img-src 'self' data: blob: ; " +
+                                        "connect-src 'self';";
+                        }
+                        else
+                        {
+                            // Stricter policy for production, ensuring API calls to GitHub and the software registration API are allowed
+                            cspPolicy = "default-src 'self'; " +
+                                        "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
+                                        "style-src 'self' 'unsafe-inline'; " +
+                                        "img-src 'self' data: blob: ; " +
+                                        "connect-src 'self' ;";
+                        }
+
+                        context.Response.Headers["Content-Security-Policy"] = cspPolicy;
+                        await next();
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogException("Error adding CSP header", ex);
+                    }
                 });
 
 
