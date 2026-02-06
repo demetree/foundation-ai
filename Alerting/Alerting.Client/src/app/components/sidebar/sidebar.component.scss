@@ -1,3 +1,11 @@
+// ============================================================================
+// Sidebar - Premium Glassmorphic Theme
+// ============================================================================
+//
+// AI-ASSISTED: Enhanced with premium glassmorphic styling to match
+// the Command Center theme across the Alerting system (Feb 2026).
+//
+
 /* sizing tokens */
 $sidebar-collapsed-w: 68px;
 $sidebar-expanded-w: 240px;
@@ -13,8 +21,15 @@ $nav-gap: 4px;
 $toggle-size: 32px;
 $toggle-half: calc($toggle-size / 2);
 
+/* Premium color palette */
+$sidebar-gradient-start: #0f172a;
+$sidebar-gradient-end: #1e293b;
+$accent-blue: #3b82f6;
+$accent-blue-light: #60a5fa;
+$accent-blue-glow: rgba(59, 130, 246, 0.4);
+
 .sidebar {
-  background-color: #343a40;
+  background: linear-gradient(180deg, $sidebar-gradient-start 0%, $sidebar-gradient-end 100%);
   position: fixed;
   inset: $header-height auto 0 0;
   display: flex;
@@ -24,6 +39,7 @@ $toggle-half: calc($toggle-size / 2);
   z-index: 1030;
   transition: width .25s ease, box-shadow .25s ease, transform .25s ease;
   font-family: sans-serif;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
 
   .nav {
     padding: $nav-pad-y 0 $nav-pad-y;
@@ -33,7 +49,10 @@ $toggle-half: calc($toggle-size / 2);
   .nav-divider {
     height: 1px;
     margin: 8px 12px;
-    background: rgba(255, 255, 255, 0.12);
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.12) 50%,
+        transparent 100%);
     list-style: none;
   }
 
@@ -42,10 +61,11 @@ $toggle-half: calc($toggle-size / 2);
     align-items: center;
     min-height: $item-h;
     padding: 0 12px;
-    color: #fff !important;
+    color: rgba(255, 255, 255, 0.75) !important;
     border-radius: 0;
-    transition: background-color .15s ease, opacity .15s ease;
+    transition: all .2s ease;
     cursor: pointer;
+    position: relative;
 
     i {
       font-size: 20px;
@@ -54,6 +74,7 @@ $toggle-half: calc($toggle-size / 2);
       text-align: center;
       display: inline-block;
       /* ensures consistent centering */
+      transition: transform 0.2s ease, color 0.2s ease;
     }
 
     .label {
@@ -66,18 +87,50 @@ $toggle-half: calc($toggle-size / 2);
   }
 
   .nav-link:hover:not(.active) {
-    background-color: rgba(255, 255, 255, 0.08);
+    background: linear-gradient(90deg,
+        rgba(59, 130, 246, 0.08) 0%,
+        rgba(59, 130, 246, 0.04) 100%);
+    color: white !important;
+
+    i {
+      color: $accent-blue-light;
+      transform: scale(1.1);
+    }
   }
 
   .nav-link:focus-visible {
-    outline: 2px solid rgba(255, 255, 255, 0.55);
-    outline-offset: 2px;
+    outline: 2px solid $accent-blue;
+    outline-offset: -2px;
   }
 
+  //
+  // Active state with blue accent bar
+  //
   .nav-link.active {
-    background-color: #000;
-    color: #fff !important;
+    background: linear-gradient(90deg,
+        rgba(59, 130, 246, 0.2) 0%,
+        rgba(59, 130, 246, 0.08) 100%);
+    color: white !important;
     border-radius: 0;
+
+    //
+    // Blue accent bar on the left
+    //
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 6px;
+      bottom: 6px;
+      width: 3px;
+      background: linear-gradient(180deg, $accent-blue-light 0%, $accent-blue 100%);
+      border-radius: 0 2px 2px 0;
+      box-shadow: 0 0 8px $accent-blue-glow;
+    }
+
+    i {
+      color: $accent-blue-light;
+    }
   }
 
   /* Toggle: fully hidden off-canvas by default; appears only when hovering the sidebar */
@@ -88,11 +141,11 @@ $toggle-half: calc($toggle-size / 2);
     /* completely off the rail */
     width: $toggle-size;
     height: $toggle-size;
-    border: 0;
+    border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 999px;
     display: grid;
     place-items: center;
-    background: #343a40;
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
     color: #fff;
     cursor: pointer;
     outline: none;
@@ -104,9 +157,12 @@ $toggle-half: calc($toggle-size / 2);
     transition: left .2s ease, opacity .2s ease, visibility 0s linear .2s,
       /* delay visibility toggle so fade-out completes */
       background .2s ease, transform .2s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 
     &:hover {
-      background: rgba(0, 0, 0, 1);
+      background: linear-gradient(135deg, $accent-blue 0%, #2563eb 100%);
+      border-color: $accent-blue;
+      box-shadow: 0 4px 16px $accent-blue-glow;
     }
 
     &:active {
@@ -140,7 +196,8 @@ $toggle-half: calc($toggle-size / 2);
 
   &.expanded {
     width: $sidebar-expanded-w;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, .5),
+      0 0 60px rgba(59, 130, 246, 0.05);
 
     .nav-link {
       justify-content: flex-start;
@@ -156,12 +213,12 @@ $toggle-half: calc($toggle-size / 2);
 
   /* Accordion styling (dark theme, bold headers, no chevron, indented submenu) */
   .custom-accordion {
-    background-color: #343a40 !important;
+    background-color: transparent !important;
     width: 100%;
     border: none;
 
     .custom-accordion-header {
-      background-color: #343a40 !important;
+      background-color: transparent !important;
       color: #e6e6e6 !important;
       /* a touch dimmer than pure white */
       border: none;
@@ -170,7 +227,7 @@ $toggle-half: calc($toggle-size / 2);
     }
 
     .accordion-button {
-      background-color: #25292d !important;
+      background: rgba(255, 255, 255, 0.03) !important;
       color: #f1f1f1 !important;
       border: none;
       box-shadow: none;
@@ -198,16 +255,13 @@ $toggle-half: calc($toggle-size / 2);
 
     .accordion-button:hover,
     .accordion-button:focus {
-      background-color: #292f34 !important;
-      /* a notch darker */
+      background: rgba(59, 130, 246, 0.08) !important;
       color: #ffffff !important;
-      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.05) inset;
-      /* subtle focus ring */
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1) inset;
     }
 
     .accordion-button:not(.collapsed) {
-      background-color: #1e2226 !important;
-      /* darkest tone for active */
+      background: rgba(59, 130, 246, 0.1) !important;
       color: #ffffff !important;
     }
 
@@ -217,42 +271,51 @@ $toggle-half: calc($toggle-size / 2);
 
     .accordion-body {
       padding: 0;
-      background-color: #343a40 !important;
+      background-color: transparent !important;
     }
 
     .custom-accordion-content {
-      background-color: #343a40 !important;
+      background-color: transparent !important;
       color: #e0e0e0 !important;
       padding: 0.25rem 0 0.25rem 0;
       /* subtle nudge to the right */
       margin-left: 0.25rem;
       font-weight: 700;
-      // border-left: 2px solid rgba(255,255,255,0.08); /* optional vertical cue */
     }
 
     .custom-accordion-content .nav-link {
       color: #cfd3da !important;
-      // padding-left: 8px; /* optional extra indent */
       font-size: 16px;
       min-height: $item-h;
     }
 
     .custom-accordion-content .nav-link:hover,
     .custom-accordion-content .nav-link.active {
-      background-color: rgba(255, 255, 255, 0.08);
+      background: rgba(59, 130, 246, 0.1);
       color: #ffffff !important;
       border-radius: 6px;
     }
   }
 }
 
-/* Backdrop for overlay mode */
+/* Backdrop for overlay mode - Premium blur */
 .sidebar-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, .2);
+  background: rgba(0, 0, 0, .4);
   z-index: 1025;
-  backdrop-filter: blur(.5px);
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 /* Keep content offset by rail only; no layout shift on expand */
@@ -260,24 +323,28 @@ $toggle-half: calc($toggle-size / 2);
   margin-left: $sidebar-collapsed-w;
 }
 
-/* Global safeguard */
+/* Global safeguard - Active state with blue accent */
 .nav-link.active {
-  background: #000;
+  background: linear-gradient(90deg,
+      rgba(59, 130, 246, 0.2) 0%,
+      rgba(59, 130, 246, 0.08) 100%);
   color: #fff !important;
   border-radius: 0;
 }
 
 /* Tooltip theme used by tooltipClass="sidebar-tip" */
 .sidebar-tip .tooltip-inner {
-  background-color: #000;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
   color: #fff;
   border-radius: 8px;
   font-family: sans-serif;
   font-size: 0.875rem;
-  padding: 6px 10px;
+  padding: 6px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .sidebar-tip.bs-tooltip-end .tooltip-arrow::before,
 .sidebar-tip.bs-tooltip-auto[data-popper-placement^="right"] .tooltip-arrow::before {
-  border-right-color: #000;
+  border-right-color: #1e293b;
 }

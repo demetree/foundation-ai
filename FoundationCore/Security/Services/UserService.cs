@@ -315,35 +315,36 @@ namespace Foundation.Security.Services
             if (multiTenancyModeOn == true && dataVisibilityModeOn == true)
             {
                 return await (from users in _securityContext.SecurityUsers
-                                where users.accountName == username &&
-                                users.active == true &&
-                                users.deleted == false
-                                select users)
-                                .Include("securityTenant")
-                                .Include("securityOrganization")
-                                .Include("securityDepartment")
-                                .Include("securityTeam")
+                              where users.accountName == username &&
+                              users.active == true &&
+                              users.deleted == false
+                              select users)
+                                .Include(x => x.securityTenant)
+                                .Include(x => x.securityOrganization)
+                                .Include(x => x.securityDepartment)
+                                .Include(x => x.securityTeam)
                                 .AsNoTracking()
                                 .FirstOrDefaultAsync();
             }
             else if (multiTenancyModeOn == true)
             {
                 return await (from users in _securityContext.SecurityUsers
-                        where users.accountName == username &&
-                        users.active == true &&
-                        users.deleted == false
-                        select users)
-                                .Include("securityTenant")
+                              where users.accountName == username &&
+                              users.active == true &&
+                              users.deleted == false
+                              select users)
+                                .Include(x => x.securityTenant)
                                 .AsNoTracking()
                                 .FirstOrDefaultAsync();
             }
             else
             {
                 return await (from users in _securityContext.SecurityUsers
-                        where users.accountName == username &&
-                        users.active == true &&
-                        users.deleted == false
-                        select users)
+                              where users.accountName == username &&
+                              users.active == true &&
+                              users.deleted == false
+                              select users)
+                        .Include(x => x.securityTenant)    // Note We always need the navigation property for securityTenant to be loaded, because the auth controller verification expects it if the user has a securityTenantId value.   This will allow for user sharing between Multi Tenanted and non multi tenanted systems.  
                         .AsNoTracking()
                         .FirstOrDefaultAsync();
             }
@@ -406,35 +407,36 @@ namespace Foundation.Security.Services
             if (multiTenancyModeOn == true && dataVisibilityModeOn == true)
             {
                 return await (from users in _securityContext.SecurityUsers
-                                where users.objectGuid == userObjectGuid &&
-                                users.active == true &&
-                                users.deleted == false
-                                select users)
-                                .Include("securityTenant")
-                                .Include("securityOrganization")
-                                .Include("securityDepartment")
-                                .Include("securityTeam")
+                              where users.objectGuid == userObjectGuid &&
+                              users.active == true &&
+                              users.deleted == false
+                              select users)
+                                .Include(x => x.securityTenant)
+                                .Include(x => x.securityOrganization)
+                                .Include(x => x.securityDepartment)
+                                .Include(x => x.securityTeam)
                                 .AsNoTracking()
                                 .FirstOrDefaultAsync();
             }
             else if (multiTenancyModeOn == true)
             {
                 return await (from users in _securityContext.SecurityUsers
-                                where  users.objectGuid == userObjectGuid &&
-                                users.active == true &&
-                                users.deleted == false
-                                select users)
-                                .Include("securityTenant")
+                              where users.objectGuid == userObjectGuid &&
+                              users.active == true &&
+                              users.deleted == false
+                              select users)
+                                .Include(x => x.securityTenant)
                                 .AsNoTracking()
                                 .FirstOrDefaultAsync();
             }
             else
             {
                 return await (from users in _securityContext.SecurityUsers
-                         where users.objectGuid == userObjectGuid &&
-                         users.active == true &&
-                         users.deleted == false
-                         select users)
+                              where users.objectGuid == userObjectGuid &&
+                              users.active == true &&
+                              users.deleted == false
+                              select users)
+                         .Include(x => x.securityTenant)    // Note We always need the navigation property for securityTenant to be loaded, because the auth controller verification expects it if the user has a securityTenantId value.   This will allow for user sharing between Multi Tenanted and non multi tenanted systems.  
                         .AsNoTracking()
                         .FirstOrDefaultAsync();
             }

@@ -1,23 +1,272 @@
-#forgot-email::placeholder {
-  color: grey;
-}
-#login-username::placeholder,
-#login-password::placeholder {
-  color: #e0e0e0;
-  opacity: 1;
+// ============================================================================
+// Login Component - Premium Glassmorphic Theme
+// ============================================================================
+//
+// AI-ASSISTED: Enhanced with premium glassmorphic styling to match
+// the Command Center theme across the Alerting system (Feb 2026).
+//
+
+/* Premium color palette */
+$gradient-start: #0f172a;
+$gradient-end: #1e293b;
+$accent-blue: #3b82f6;
+$accent-blue-light: #60a5fa;
+$accent-cyan: #22d3ee;
+$accent-blue-glow: rgba(59, 130, 246, 0.4);
+
+//
+// Login container positioning - ensures proper centering
+//
+:host {
+  display: block;
+  width: 100%;
+  min-height: calc(100vh - 56px); // Full height minus header
+  position: relative; // Anchor for absolutely positioned card
 }
 
+//
+// Premium glassmorphic login card
+//
+.card {
+  background: rgba(15, 23, 42, 0.92) !important;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5),
+    0 0 40px rgba(59, 130, 246, 0.05) !important;
+  overflow: hidden;
+}
+
+//
+// Card header with gradient accent
+//
+.card-header {
+  background: rgba(15, 23, 42, 0.95) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+  padding: 1.25rem 1.5rem !important;
+
+  h5 {
+    font-weight: 600;
+    letter-spacing: 0.02em;
+
+    i {
+      color: $accent-blue-light;
+    }
+  }
+}
+
+//
+// Card body styling
+//
+.card-body {
+  background: transparent !important;
+}
+
+//
+// Form labels
+//
+.form-label {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+//
+// Form inputs with premium styling
+//
+.form-control {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 10px !important;
+  color: #ffffff !important;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.4) !important;
+    opacity: 1;
+  }
+
+  &:focus {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: $accent-blue !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15),
+      0 0 20px rgba(59, 130, 246, 0.1) !important;
+    outline: none;
+  }
+
+  &.is-valid {
+    border-color: #22c55e !important;
+    background: rgba(34, 197, 94, 0.05) !important;
+  }
+
+  &.is-invalid {
+    border-color: #ef4444 !important;
+    background: rgba(239, 68, 68, 0.05) !important;
+  }
+}
+
+//
+// Input group (password field with eye toggle)
+//
+.input-group {
+  .form-control {
+    border-right: none !important;
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+  }
+
+  .btn {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-left: none !important;
+    border-top-right-radius: 10px !important;
+    border-bottom-right-radius: 10px !important;
+    color: rgba(255, 255, 255, 0.6);
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1) !important;
+      color: $accent-blue-light;
+    }
+
+    &:focus {
+      box-shadow: none !important;
+    }
+  }
+}
+
+//
+// Checkbox styling
+//
+.form-check-input {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 4px !important;
+  width: 1.1em;
+  height: 1.1em;
+
+  &:checked {
+    background-color: $accent-blue !important;
+    border-color: $accent-blue !important;
+  }
+
+  &:focus {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15) !important;
+  }
+}
+
+.form-check-label {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+}
+
+//
+// Primary button with gradient
+//
+.btn-secondary {
+  background: $accent-blue !important;
+  border: none !important;
+  border-radius: 8px !important;
+  color: white !important;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.25);
+
+  &:hover:not(:disabled) {
+    background: lighten($accent-blue, 5%) !important;
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
+  }
+
+  &:active:not(:disabled) {
+    background: darken($accent-blue, 3%) !important;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+//
+// Outline button
+//
+.btn-outline-secondary {
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 10px !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    color: white !important;
+  }
+}
+
+//
+// Link button (Forgot Password)
+//
+.btn-link {
+  color: $accent-blue-light !important;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: $accent-cyan !important;
+    text-decoration: underline;
+  }
+}
+
+//
+// Invalid feedback styling
+//
+.invalid-feedback {
+  color: #fca5a5;
+  font-size: 0.8rem;
+  margin-top: 0.5rem;
+}
+
+//
+// Autofill styling for dark theme
+//
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
-  -webkit-text-fill-color: #ffffff;
+  -webkit-text-fill-color: #ffffff !important;
   caret-color: #ffffff;
-  -webkit-box-shadow: 0 0 0px 1000px #212529 inset;
-  box-shadow: 0 0 0px 1000px #212529 inset;
+  -webkit-box-shadow: 0 0 0px 1000px rgba(15, 23, 42, 0.95) inset !important;
+  box-shadow: 0 0 0px 1000px rgba(15, 23, 42, 0.95) inset !important;
   font-family: inherit;
   font-size: inherit;
   font-weight: inherit;
   letter-spacing: inherit;
   transition: background-color 9999s ease-in-out 0s;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+//
+// Close button styling
+//
+.btn-close-white {
+  opacity: 0.6;
+  transition: all 0.2s ease;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+//
+// Loading spinner
+//
+.fa-circle-notch {
+  color: white;
 }

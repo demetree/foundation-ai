@@ -1,43 +1,257 @@
-.boxshadow {
-  position: relative;
-  /*box-shadow: 1px 2px 4px rgba(0, 0, 0, .5);*/
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-  padding: 10px;
-  background: white;
-}
+// ============================================================================
+// Auth Callback Component - Premium Glassmorphic Theme
+// ============================================================================
+//
+// AI-ASSISTED: Enhanced with premium glassmorphic styling to match
+// the Command Center theme across the Foundation system (Feb 2026).
+//
 
-.boxshadow::after {
-  content: '';
-  position: absolute;
-  z-index: -1; /* hide shadow behind image */
-  box-shadow: 0 15px 20px rgba(0, 0, 0, 0.3);
-  width: 70%;
-  left: 15%; /* one half of the remaining 30% */
-  height: 50px;
-  bottom: 0;
-}
+/* Premium color palette */
+$gradient-start: #0f172a;
+$gradient-end: #1e293b;
+$accent-blue: #3b82f6;
+$accent-blue-light: #60a5fa;
+$accent-cyan: #22d3ee;
+$accent-blue-glow: rgba(59, 130, 246, 0.4);
 
-.card-header {
-  padding: 0.75rem 1.25rem;
-}
-
-.last-control-group {
-  margin-bottom: -0.75rem;
-}
-
+//
+// Container layout
+//
 .h-90 {
   height: 90%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
+//
+// Login container sizing
+//
+.login-container {
+  width: 100%;
+  max-width: 420px;
+  padding: 0 1rem;
+}
 
 @media (min-width: 768px) {
   .login-container {
-    width: 670px;
+    width: 500px;
+    max-width: none;
+    padding: 0;
   }
 }
 
 @media (min-width: 1200px) {
   .login-container {
-    width: 700px;
+    width: 520px;
   }
+}
+
+//
+// Premium glassmorphic card (replaces boxshadow)
+//
+.card,
+.boxshadow {
+  position: relative;
+  background: rgba(15, 23, 42, 0.85) !important;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5),
+    0 0 60px rgba(59, 130, 246, 0.08) !important;
+  padding: 0 !important;
+  overflow: hidden;
+
+  // Remove the old pseudo-element shadow
+  &::after {
+    display: none;
+  }
+}
+
+//
+// Card header with gradient accent
+//
+.card-header {
+  background: linear-gradient(135deg,
+      rgba(59, 130, 246, 0.15) 0%,
+      rgba(15, 23, 42, 0.95) 100%) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  padding: 1.25rem 1.5rem !important;
+  position: relative;
+  color: white !important;
+
+  //
+  // Blue accent line at top
+  //
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, $accent-blue 0%, $accent-cyan 100%);
+  }
+
+  // Override Bootstrap bg-primary
+  &.bg-primary {
+    background: linear-gradient(135deg,
+        rgba(59, 130, 246, 0.2) 0%,
+        rgba(15, 23, 42, 0.95) 100%) !important;
+  }
+
+  i {
+    color: $accent-blue-light;
+  }
+}
+
+//
+// Card body styling
+//
+.card-body {
+  background: transparent !important;
+  padding: 1.5rem !important;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+//
+// Loading/message state
+//
+.text-center {
+  color: rgba(255, 255, 255, 0.8);
+  padding: 2rem 1rem;
+
+  .fa-spinner {
+    color: $accent-blue-light;
+    font-size: 1.5rem;
+    margin-right: 0.5rem;
+  }
+}
+
+//
+// Form labels
+//
+.form-label,
+.col-form-label {
+  color: rgba(255, 255, 255, 0.8) !important;
+  font-size: 0.875rem;
+}
+
+//
+// Form inputs
+//
+.form-control {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 10px !important;
+  color: #ffffff !important;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.4) !important;
+  }
+
+  &:focus {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: $accent-blue !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15),
+      0 0 20px rgba(59, 130, 246, 0.1) !important;
+    outline: none;
+  }
+
+  &.is-valid {
+    border-color: #22c55e !important;
+  }
+
+  &.is-invalid {
+    border-color: #ef4444 !important;
+  }
+}
+
+//
+// Plaintext form control (readonly email)
+//
+.form-control-plaintext {
+  color: rgba(255, 255, 255, 0.7) !important;
+  padding: 0.75rem 0;
+}
+
+//
+// Primary button with gradient
+//
+.btn-primary {
+  background: linear-gradient(135deg, $accent-blue 0%, #2563eb 100%) !important;
+  border: none !important;
+  border-radius: 10px !important;
+  color: white !important;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+//
+// Invalid feedback
+//
+.invalid-feedback {
+  color: #fca5a5;
+  font-size: 0.8rem;
+}
+
+//
+// Separator
+//
+.hr-separator {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  margin: 1.5rem 0;
+}
+
+//
+// Links
+//
+.card-link,
+.text-link {
+  color: $accent-blue-light !important;
+  text-decoration: none;
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: $accent-cyan !important;
+    text-decoration: underline;
+  }
+}
+
+//
+// Account controls section
+//
+.last-control-group {
+  margin-bottom: 0;
+  padding-bottom: 1rem;
+}
+
+.account-controls {
+  padding-top: 0.5rem;
+}
+
+//
+// Loading spinner
+//
+.fa-circle-o-notch {
+  color: white;
 }

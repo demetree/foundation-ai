@@ -18,8 +18,13 @@
   <link href="/assets/styles-external.css" rel="preload" as="style" onload="this.rel='stylesheet'">
 
   <style>
+    /* ================================================================
+       Pre-Bootstrap Loading Screen - Premium Glassmorphic Theme
+       AI-ASSISTED: Enhanced styling matching Command Center theme
+       ================================================================ */
+
     #pre-bootstrap {
-      background-color: white;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
       bottom: 0;
       left: 0;
       position: fixed;
@@ -28,64 +33,128 @@
       z-index: 999999;
     }
 
-      #pre-bootstrap div.pre-load-navbar-simulator {
-        background-color: #212529;
-        font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif;
-        font-size: 20px;
-        color: white;
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 56px;
-        width: 100%;
-        display: block;
-        margin-top: 0px;
-        text-align: center;
-        line-height: 50px;
-      }
-
-      #pre-bootstrap div.messaging {
-        color: black;
-        font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif;
-        position: absolute;
-        top: 56px;
-        left: 0;
-        width: 100%;
-        height: calc(100% - 56px);
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-      }
-
-      #pre-bootstrap h1 {
-        font-size: 30px;
-        width: 100%;
-        font-weight: normal;
-        line-height: 50px;
-        margin: 0 0 10px 0;
-        text-align: center;
-      }
-
-      #pre-bootstrap p {
-        font-size: 18px;
-        width: 100%;
-        text-align: center;
-        line-height: 32px;
-        margin: 0 0 0 0;
-      }
-
-    .cs-loader {
+    /* Premium navbar simulator with gradient */
+    #pre-bootstrap div.pre-load-navbar-simulator {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif;
+      font-size: 20px;
+      color: white;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 56px;
+      width: 100%;
       display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Logo text with gradient effect */
+    #pre-bootstrap .navbar-brand {
+      background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.85) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 600;
+      font-size: 1.25rem;
+    }
+
+    /* Messaging container with centered content */
+    #pre-bootstrap div.messaging {
+      color: rgba(255, 255, 255, 0.8);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif;
+      position: absolute;
+      top: 56px;
+      left: 0;
+      width: 100%;
+      height: calc(100% - 56px);
+      display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
     }
 
+    /* Loading container with glassmorphic card */
+    .cs-loader-container {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 24px;
+      padding: 48px 64px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3),
+        0 0 40px rgba(59, 130, 246, 0.05);
+    }
+
+    /* Logo container with glow effect */
+    .cs-loader {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    /* Animated logo */
     .cs-logo {
-      width: 60px;
-      height: 60px;
-      opacity: 0.4;
-      animation: spin 3s linear infinite;
+      width: 72px;
+      height: 72px;
+      opacity: 0.9;
+      animation: pulse 2s ease-in-out infinite;
+      filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.3));
+    }
+
+    /* Spinning ring around logo */
+    .cs-loader::before {
+      content: '';
+      position: absolute;
+      width: 96px;
+      height: 96px;
+      border: 2px solid transparent;
+      border-top-color: #3b82f6;
+      border-right-color: rgba(59, 130, 246, 0.3);
+      border-radius: 50%;
+      animation: spin 1.5s linear infinite;
+    }
+
+    /* Loading text */
+    .cs-loading-text {
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.6);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+
+    /* Dot animation for loading text */
+    .cs-loading-text::after {
+      content: '';
+      animation: dots 1.5s steps(4, end) infinite;
+    }
+
+    @keyframes dots {
+
+      0%,
+      20% {
+        content: '';
+      }
+
+      40% {
+        content: '.';
+      }
+
+      60% {
+        content: '..';
+      }
+
+      80%,
+      100% {
+        content: '...';
+      }
     }
 
     @keyframes spin {
@@ -98,10 +167,35 @@
       }
     }
 
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 0.9;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 1;
+        transform: scale(1.05);
+      }
+    }
+
+    /* Reduced motion preferences */
     @media (prefers-reduced-motion: reduce) {
       .cs-logo {
         animation: none;
-        opacity: 0.6;
+        opacity: 0.9;
+      }
+
+      .cs-loader::before {
+        animation: none;
+        border-color: rgba(59, 130, 246, 0.3);
+      }
+
+      .cs-loading-text::after {
+        animation: none;
+        content: '...';
       }
     }
   </style>
@@ -111,14 +205,19 @@
   <app-root>
     <div id="pre-bootstrap">
       <div class="pre-load-navbar-simulator">
+        <span class="navbar-brand">Scheduler</span>
       </div>
       <div class="messaging">
-        <div class="cs-loader">
-          <img src="/assets/favicon/apple-touch-icon.png" class="cs-logo">
+        <div class="cs-loader-container">
+          <div class="cs-loader">
+            <img src="/assets/favicon/apple-touch-icon.png" class="cs-logo" alt="Loading">
+          </div>
+          <span class="cs-loading-text">Loading</span>
         </div>
       </div>
     </div>
   </app-root>
   <script src="/assets/bootstrap/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

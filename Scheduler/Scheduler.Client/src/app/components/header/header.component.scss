@@ -1,3 +1,19 @@
+// ============================================================================
+// Header - Premium Glassmorphic Theme
+// ============================================================================
+//
+// AI-ASSISTED: Enhanced with premium glassmorphic styling to match
+// the Command Center theme across the Scheduler system (Feb 2026).
+//
+
+/* Premium color palette */
+$header-gradient-start: #0f172a;
+$header-gradient-end: #1e293b;
+$accent-blue: #3b82f6;
+$accent-blue-light: #60a5fa;
+$accent-cyan: #22d3ee;
+$accent-blue-glow: rgba(59, 130, 246, 0.4);
+
 :host {
   header.navbar {
     width: 100%;
@@ -7,6 +23,14 @@
     left: 0;
     right: 0;
     z-index: 1050; // above content
+
+    //
+    // Premium gradient background with subtle blur
+    //
+    background: linear-gradient(135deg, $header-gradient-start 0%, $header-gradient-end 100%) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   }
 
   .navbar {
@@ -21,15 +45,45 @@
     display: flex;
     justify-content: flex-start;
     align-items: center;
+
+    a {
+      transition: opacity 0.2s ease;
+
+      &:hover {
+        opacity: 0.9;
+      }
+    }
+
+    .fs-4 {
+      background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.85) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
   }
 
+  //
+  // Profile button with premium styling
+  //
   .profile-btn {
     border-radius: 999px;
-    padding: 6px 10px;
+    padding: 4px 12px 4px 4px;
     line-height: 1;
     position: relative;
+    background: rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1) !important;
+      border-color: rgba(255, 255, 255, 0.2) !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
   }
 
+  //
+  // User avatar with premium blue gradient
+  //
   .avatar {
     width: 28px;
     height: 28px;
@@ -38,63 +92,138 @@
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     text-transform: uppercase;
-    background: linear-gradient(135deg, #6ea8fe 0%, #5bc0de 100%);
-    color: #0b1320;
+    background: linear-gradient(135deg, $accent-blue 0%, $accent-cyan 100%);
+    color: white;
+    box-shadow: 0 2px 8px $accent-blue-glow;
+    transition: all 0.2s ease;
   }
+
+  .profile-btn:hover .avatar {
+    box-shadow: 0 4px 16px $accent-blue-glow;
+    transform: scale(1.05);
+  }
+
   /* Dropdown container positioning */
   .ms-2.position-relative {
     position: relative !important;
+    margin-right: 12px; // Match left logo margin for consistent spacing
+    display: flex;
+    align-items: center;
+    height: 100%; // Take full height to center content vertically
   }
-  /* Dropdown menu positioning and styling */
+
+  //
+  // Premium dropdown menu with glassmorphism
+  //
   .header-profile-menu {
-    border-radius: 12px;
+    border-radius: 16px;
     overflow: hidden;
     z-index: 1060 !important;
-    min-width: 220px;
-    border: 1px solid rgba(0,0,0,0.15);
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.175) !important;
+    min-width: 240px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4),
+      0 0 40px rgba(59, 130, 246, 0.1) !important;
     position: absolute !important;
     top: 100% !important;
     right: 0 !important;
     left: auto !important;
     transform: none !important;
-    margin-top: 2px;
+    margin-top: 8px;
+    background: linear-gradient(135deg,
+        rgba(30, 41, 59, 0.98) 0%,
+        rgba(15, 23, 42, 0.98) 100%);
+    backdrop-filter: blur(20px);
   }
-  /* Animate a child wrapper so we don't fight the placement transform */
+
+  //
+  // Animated dropdown content
+  //
   .header-profile-menu .menu-anim {
     opacity: 0;
-    transform: translateY(8px) scale(0.98);
-    transition: opacity 120ms ease, transform 120ms ease;
+    transform: translateY(-10px) scale(0.95);
+    transition: opacity 200ms ease, transform 200ms ease;
   }
 
   .header-profile-menu.show .menu-anim {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
-  /* Ensure dropdown items are properly styled */
+
+  //
+  // User info section in dropdown
+  //
+  .header-profile-menu .px-3.py-2 {
+    background: rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    padding: 1rem !important;
+
+    .fw-semibold {
+      color: white;
+      font-size: 0.95rem;
+    }
+
+    .text-muted {
+      color: rgba(255, 255, 255, 0.5) !important;
+      font-size: 0.8rem;
+    }
+  }
+
+  //
+  // Dropdown items with hover effects
+  //
   .header-profile-menu .dropdown-item {
-    padding: 0.5rem 1rem;
+    padding: 0.75rem 1rem;
     display: flex;
     align-items: center;
+    color: rgba(255, 255, 255, 0.8);
+    transition: all 0.2s ease;
+
+    i {
+      color: rgba(255, 255, 255, 0.5);
+      transition: color 0.2s ease;
+    }
   }
 
   .header-profile-menu .dropdown-item:hover {
-    background-color: #f8f9fa;
+    background: linear-gradient(90deg,
+        rgba(59, 130, 246, 0.15) 0%,
+        rgba(59, 130, 246, 0.05) 100%);
+    color: white;
+
+    i {
+      color: $accent-blue-light;
+    }
   }
+
   /* Mobile accordion link colors */
   .text-grey {
-    color: #000 !important;
+    color: rgba(255, 255, 255, 0.7) !important;
   }
 
   .custom-accordion-content .nav-link {
-    color: #000 !important;
+    color: rgba(255, 255, 255, 0.8) !important;
     text-decoration: none;
   }
 
   .custom-accordion-content .nav-link:hover {
-    color: #000 !important;
+    color: white !important;
+  }
+
+  //
+  // Mobile menu toggle button
+  //
+  .btn-outline-light {
+    border-color: rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.8);
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.3);
+      color: white;
+    }
   }
 }
 
@@ -104,43 +233,186 @@
   top: 56px;
   width: 100%;
   z-index: 1050;
-  border-top: 1px solid #444;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-
+//
+// Mobile sidebar overlay with premium blur
+//
 .mobile-sidebar-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
   z-index: 1050;
   display: flex;
   justify-content: flex-end;
+  animation: overlayFadeIn 0.25s ease;
 }
 
+@keyframes overlayFadeIn {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+
+  to {
+    opacity: 1;
+    backdrop-filter: blur(4px);
+  }
+}
+
+//
+// Mobile sidebar with premium glassmorphic styling
+//
 .mobile-sidebar {
-  width: 280px;
+  width: 300px;
   height: 100%;
-  background-color: #212529;
+  background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
   display: flex;
   flex-direction: column;
   z-index: 1051;
-  animation: slideIn 0.3s ease-out;
+  animation: slideInFromRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
+
+  //
+  // Close button
+  //
+  .btn-close-white {
+    opacity: 0.7;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+
+    &:hover {
+      opacity: 1;
+      transform: rotate(90deg);
+    }
+  }
+
+  //
+  // Section dividers
+  //
+  hr {
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    margin: 0.5rem 1rem;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0 0.75rem;
+    margin: 0;
+  }
 }
 
-@keyframes slideIn {
+@keyframes slideInFromRight {
   from {
     transform: translateX(100%);
+    opacity: 0.5;
   }
 
   to {
     transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+//
+// Mobile nav links with premium active state
+//
+.mobile-sidebar .nav-link {
+  display: block;
+  padding: 0.75rem 1rem;
+  color: rgba(255, 255, 255, 0.75) !important;
+  border-radius: 10px;
+  margin: 2px 0;
+  transition: all 0.2s ease;
+  position: relative;
+
+  i {
+    transition: color 0.2s ease, transform 0.2s ease;
+  }
+
+  &:hover {
+    background: rgba(59, 130, 246, 0.08);
+    color: white !important;
+
+    i {
+      color: #60a5fa;
+    }
   }
 }
 
 .mobile-sidebar .nav-link.active {
-  background-color: rgba(255, 255, 255, 0.1);
-  border-radius: 0.375rem;
+  background: linear-gradient(90deg,
+      rgba(59, 130, 246, 0.2) 0%,
+      rgba(59, 130, 246, 0.08) 100%);
+  color: white !important;
+
+  //
+  // Blue accent bar on the left
+  //
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 8px;
+    bottom: 8px;
+    width: 3px;
+    background: linear-gradient(180deg, #60a5fa 0%, #3b82f6 100%);
+    border-radius: 0 2px 2px 0;
+    box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
+  }
+
+  i {
+    color: #60a5fa;
+  }
+}
+
+//
+// Section labels in mobile menu
+//
+.mobile-sidebar .nav-section-label {
+  padding: 12px 16px 6px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.4);
+  list-style: none;
+}
+
+//
+// Logout button in mobile menu
+//
+.mobile-sidebar .mt-auto {
+  margin-top: auto;
+  padding: 1rem !important;
+  background: rgba(0, 0, 0, 0.2);
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+
+  .btn-outline-light {
+    border-color: rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.8);
+    border-radius: 10px;
+    padding: 0.75rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+    }
+
+    i {
+      transition: transform 0.2s ease;
+    }
+
+    &:hover i {
+      transform: translateX(-2px);
+    }
+  }
 }

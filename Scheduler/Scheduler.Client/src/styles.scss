@@ -1,5 +1,3 @@
-
-
 /* Importing Bootstrap SCSS file. */
 @import 'app/assets/styles/styles-vendor.css';
 @import "bootstrap-icons/font/bootstrap-icons.css";
@@ -25,13 +23,29 @@
 }
 
 
+// ============================================================================
+// Pre-Login Background - Premium Glassmorphic Theme
+// ============================================================================
 .pre-login-background {
-  background: url(assets/images/backgrounds/background.jpg) no-repeat center center fixed;
+  // Multi-stop gradient to reduce color banding
+  background:
+    linear-gradient(135deg,
+      rgba(15, 23, 42, 0.90) 0%,
+      rgba(20, 30, 50, 0.85) 20%,
+      rgba(30, 41, 59, 0.80) 40%,
+      rgba(25, 35, 55, 0.82) 60%,
+      rgba(20, 28, 45, 0.86) 80%,
+      rgba(15, 23, 42, 0.90) 100%),
+    url(assets/images/backgrounds/background.jpg) no-repeat center center fixed;
   background-size: cover;
+  background-color: #0f172a;
+
+  // Full viewport height for proper centering
+  min-height: 100vh;
 }
 
 .post-login-background {
-  background-color: #f9f9f9;  // a light grey
+  background-color: #f9f9f9; // a light grey
 }
 
 
@@ -47,7 +61,8 @@
 html, body {
   height: 100%;
   margin: 0;
-  font-family: 'k2', sans-serif;*/ /* Apply K2 as the default font */
+  font-family: 'k2', sans-serif;*/
+/* Apply K2 as the default font */
 /*}
 
 // Make body use the Calibri font from the style guidelines
@@ -85,7 +100,14 @@ table {
   user-select: none
 }
 
-h1, h2, h3, h4, h5, h6, label, th {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+label,
+th {
   user-select: none;
 }
 
