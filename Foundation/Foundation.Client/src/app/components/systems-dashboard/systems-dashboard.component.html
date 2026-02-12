@@ -217,7 +217,7 @@
           </div>
           <div class="card-content">
             <h4>
-              {{ fleetMetrics.system.avgSystemMemoryPercent?.toFixed(1) }}%
+              {{ fleetMetrics.system.avgSystemMemoryPercent.toFixed(1) }}%
               <i class="fas ms-1 small" *ngIf="systemMemorySparkline"
                 [ngClass]="getTrendArrowClass(getMetricTrend(systemMemorySparkline), true)"></i>
             </h4>
@@ -271,7 +271,7 @@
           </div>
           <div class="card-content">
             <h4>
-              {{ fleetMetrics.system.avgSystemCpuPercent?.toFixed(1) }}%
+              {{ fleetMetrics.system.avgSystemCpuPercent.toFixed(1) }}%
               <i class="fas ms-1 small" *ngIf="systemCpuSparkline"
                 [ngClass]="getTrendArrowClass(getMetricTrend(systemCpuSparkline), true)"></i>
             </h4>
@@ -607,19 +607,19 @@
                   <div class="d-flex justify-content-between align-items-center mb-1">
                     <span class="small text-muted">Server Memory Usage</span>
                     <span class="fw-bold" [ngClass]="{
-                          'text-success' : (healthStatus.application.memory?.systemPercent || 0) < 50,
-                          'text-warning': (healthStatus.application.memory?.systemPercent || 0) >= 50 && (healthStatus.application.memory?.systemPercent || 0) < 80,
-                          'text-danger': (healthStatus.application.memory?.systemPercent || 0) >= 80
+                          'text-success' : (healthStatus.application.memory.systemPercent || 0) < 50,
+                          'text-warning': (healthStatus.application.memory.systemPercent || 0) >= 50 && (healthStatus.application.memory.systemPercent || 0) < 80,
+                          'text-danger': (healthStatus.application.memory.systemPercent || 0) >= 80
                         }">
-                      {{ formatPercent(healthStatus.application.memory?.systemPercent) }}
+                      {{ formatPercent(healthStatus.application.memory.systemPercent) }}
                     </span>
                   </div>
                   <div class="progress" style="height: 8px;">
                     <div class="progress-bar" [ngClass]="{
-                         'bg-success' : (healthStatus.application.memory?.systemPercent || 0) < 50,
-                          'bg-warning': (healthStatus.application.memory?.systemPercent || 0) >= 50 && (healthStatus.application.memory?.systemPercent || 0) < 80,
-                          'bg-danger': (healthStatus.application.memory?.systemPercent || 0) >= 80
-                        }" [style.width.%]="healthStatus.application.memory?.systemPercent || 0" role="progressbar">
+                         'bg-success' : (healthStatus.application.memory.systemPercent || 0) < 50,
+                          'bg-warning': (healthStatus.application.memory.systemPercent || 0) >= 50 && (healthStatus.application.memory.systemPercent || 0) < 80,
+                          'bg-danger': (healthStatus.application.memory.systemPercent || 0) >= 80
+                        }" [style.width.%]="healthStatus.application.memory.systemPercent || 0" role="progressbar">
                     </div>
                   </div>
                 </div>
@@ -964,7 +964,7 @@
                         </div>
                       </div>
                       <div class="d-flex justify-content-between small text-muted">
-                        <span>{{ nic.utilizationPercent?.toFixed(1) || 0 }}% utilized</span>
+                        <span>{{ nic.utilizationPercent.toFixed(1) || 0 }}% utilized</span>
                         <span>{{ nic.linkSpeedMbps }} Mbps</span>
                       </div>
                     </div>
