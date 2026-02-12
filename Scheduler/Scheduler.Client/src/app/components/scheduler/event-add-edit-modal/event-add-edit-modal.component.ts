@@ -131,6 +131,7 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
 
     if (!this.isEditMode) {
       // Pre-fill dates from calendar selection
+      // FullCalendar gives local ISO strings — just trim for datetime-local input
       if (this.initialStart) {
         this.eventForm.patchValue({
           startDateTime: this.initialStart.slice(0, 16),
@@ -345,6 +346,33 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
     this.assignments.push(group);
   }
 
+
+  // -------------------------------------------------------------------------
+  // UTC ↔ Local Date Helpers
+  // -------------------------------------------------------------------------
+
+  /**
+   * Convert a UTC ISO 8601 string to a local datetime-local input value.
+   * e.g. "2026-02-10T14:00:00.000Z" → "2026-02-10T10:30" (for NST -3:30)
+   */
+  private toLocalDateTimeString(utcIso: string): string {
+    const d = new Date(utcIso);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  }
+
+  /**
+   * Convert a local datetime-local input value to a UTC ISO 8601 string.
+   * e.g. "2026-02-10T10:30" → "2026-02-10T14:00:00.000Z" (for NST -3:30)
+   */
+  private toUtcIsoString(localStr: string): string {
+    return new Date(localStr).toISOString();
+  }
+
   // -------------------------------------------------------------------------
   // Lookup Helpers
   // -------------------------------------------------------------------------
@@ -484,8 +512,8 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
       name: eventData.name,
       description: eventData.description,
       schedulingTargetId: eventData.schedulingTargetId,
-      startDateTime: eventData.startDateTime.slice(0, 16),
-      endDateTime: eventData.endDateTime.slice(0, 16),
+      startDateTime: this.toLocalDateTimeString(eventData.startDateTime),
+      endDateTime: this.toLocalDateTimeString(eventData.endDateTime),
       location: eventData.location,
       timeZoneId: eventData.timeZoneId,
       notes: eventData.notes,
@@ -566,8 +594,8 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
         name: formVal.name?.trim(),
         description: formVal.description?.trim() || null,
         schedulingTargetId: formVal.schedulingTargetId || null,
-        startDateTime: formVal.startDateTime,
-        endDateTime: formVal.endDateTime,
+        startDateTime: this.toUtcIsoString(formVal.startDateTime),
+        endDateTime: this.toUtcIsoString(formVal.endDateTime),
         location: formVal.location?.trim() || null,
         timeZoneId: formVal.timeZoneId || null,
         notes: formVal.notes?.trim() || null,
@@ -724,8 +752,10 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
       submitData.resourceId = control.get('resourceId')?.value || null;
       submitData.crewId = control.get('crewId')?.value || null;
       submitData.assignmentRoleId = control.get('assignmentRoleId')?.value || null;
-      submitData.assignmentStartDateTime = control.get('assignmentStartDateTime')?.value || null;
-      submitData.assignmentEndDateTime = control.get('assignmentEndDateTime')?.value || null;
+      const aStart = control.get('assignmentStartDateTime')?.value;
+      const aEnd = control.get('assignmentEndDateTime')?.value;
+      submitData.assignmentStartDateTime = aStart ? this.toUtcIsoString(aStart) : null;
+      submitData.assignmentEndDateTime = aEnd ? this.toUtcIsoString(aEnd) : null;
       submitData.notes = control.get('notes')?.value || null;
       submitData.active = true;
       submitData.deleted = false;

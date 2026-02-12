@@ -211,18 +211,30 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let assignment of assignments.controls; let i = index" class="assignment-row">
+            <tr *ngFor="let assignment of assignments.controls; let i = index" class="assignment-row"
+              [formGroup]="$any(assignment)">
               <td>
-                <span *ngIf="assignment.get('resourceId')?.value" class="d-flex align-items-center gap-1">
-                  <i class="bi bi-person-fill text-primary"></i>
-                  {{ getResourceName(assignment.get('resourceId')?.value) }}
-                </span>
-                <span *ngIf="assignment.get('crewId')?.value" class="d-flex align-items-center gap-1">
-                  <i class="bi bi-people-fill text-info"></i>
-                  {{ getCrewName(assignment.get('crewId')?.value) }}
-                </span>
+                <!-- Resource dropdown (for individual assignments) -->
+                <ng-container *ngIf="assignment.get('resourceId')?.validator">
+                  <select class="form-select form-select-sm" formControlName="resourceId">
+                    <option [ngValue]="null" disabled>Select resource...</option>
+                    <option *ngFor="let r of resources" [ngValue]="r.id">{{ r.name }}</option>
+                  </select>
+                </ng-container>
+                <!-- Crew dropdown (for crew assignments) -->
+                <ng-container *ngIf="assignment.get('crewId')?.validator">
+                  <select class="form-select form-select-sm" formControlName="crewId">
+                    <option [ngValue]="null" disabled>Select crew...</option>
+                    <option *ngFor="let c of crews" [ngValue]="c.id">{{ c.name }}</option>
+                  </select>
+                </ng-container>
               </td>
-              <td>{{ getRoleName(assignment.get('assignmentRoleId')?.value) }}</td>
+              <td>
+                <select class="form-select form-select-sm" formControlName="assignmentRoleId">
+                  <option [ngValue]="null">— No Role —</option>
+                  <option *ngFor="let role of roles" [ngValue]="role.id">{{ role.name }}</option>
+                </select>
+              </td>
               <td>{{ assignment.get('assignmentStartDateTime')?.value | date:'short' }}</td>
               <td>{{ assignment.get('assignmentEndDateTime')?.value | date:'short' }}</td>
               <td class="text-end">

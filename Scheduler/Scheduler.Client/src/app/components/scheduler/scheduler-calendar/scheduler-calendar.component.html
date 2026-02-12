@@ -127,8 +127,30 @@
           <span>{{ hoveredEvent.eventStatus.name }}</span>
         </div>
 
-        <!-- Resource / Crew -->
-        <div class="popover-row" *ngIf="hoveredEvent.resource || hoveredEvent.crew">
+        <!-- Scheduling Target -->
+        <div class="popover-row" *ngIf="hoveredEvent.schedulingTarget">
+          <i class="bi bi-bullseye"></i>
+          <span>{{ hoveredEvent.schedulingTarget.name }}</span>
+        </div>
+
+        <!-- Assignments (lazy-loaded) -->
+        <div class="popover-assignments" *ngIf="hoveredAssignments.length > 0">
+          <div class="popover-assignments-label">
+            <i class="bi bi-people-fill"></i> Assignments
+          </div>
+          <div class="popover-assignment-item" *ngFor="let a of hoveredAssignments.slice(0, 4)">
+            <i class="bi" [class.bi-person-fill]="a.resource" [class.bi-people-fill]="a.crew && !a.resource"></i>
+            <span class="popover-assignment-name">{{ a.resource?.name || a.crew?.name || '—' }}</span>
+            <span class="popover-assignment-role" *ngIf="a.assignmentRole">{{ a.assignmentRole.name }}</span>
+          </div>
+          <div class="popover-assignment-more" *ngIf="hoveredAssignments.length > 4">
+            +{{ hoveredAssignments.length - 4 }} more
+          </div>
+        </div>
+
+        <!-- Primary Resource / Crew (fallback when no assignments loaded yet) -->
+        <div class="popover-row"
+          *ngIf="hoveredAssignments.length === 0 && (hoveredEvent.resource || hoveredEvent.crew)">
           <i class="bi bi-person"></i>
           <span>{{ hoveredEvent.resource?.name || hoveredEvent.crew?.name }}</span>
         </div>

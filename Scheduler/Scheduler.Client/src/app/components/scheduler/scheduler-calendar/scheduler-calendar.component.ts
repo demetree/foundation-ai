@@ -27,6 +27,7 @@ import { ConflictDetectionService, ScheduleConflict } from '../../../services/co
 import { ResourceService } from '../../../scheduler-data-services/resource.service';
 import { CrewService } from '../../../scheduler-data-services/crew.service';
 import { ScheduledEventDependencyService } from '../../../scheduler-data-services/scheduled-event-dependency.service';
+import { EventResourceAssignmentService, EventResourceAssignmentData } from '../../../scheduler-data-services/event-resource-assignment.service';
 
 @Component({
   selector: 'app-scheduler-calendar',
@@ -62,6 +63,8 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
   conflictEventIds: Set<number> = new Set();
   conflictPanelVisible: boolean = false;
   dependencyCountMap: Map<number, number> = new Map();
+  hoveredAssignments: EventResourceAssignmentData[] = [];
+  private assignmentsCache: Map<number, EventResourceAssignmentData[]> = new Map();
 
 
   //
@@ -101,7 +104,8 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
     private conflictDetectionService: ConflictDetectionService,
     private resourceService: ResourceService,
     private crewService: CrewService,
-    private dependencyService: ScheduledEventDependencyService
+    private dependencyService: ScheduledEventDependencyService,
+    private assignmentService: EventResourceAssignmentService
   ) { }
 
 
@@ -280,6 +284,7 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
     this.popoverShowTimer = setTimeout(() => {
       this.hoveredEvent = eventData;
       this.positionPopover(info.el);
+      this.loadHoveredAssignments(eventData);
     }, this.POPOVER_SHOW_DELAY);
   }
 
@@ -295,6 +300,7 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
     //
     this.popoverHideTimer = setTimeout(() => {
       this.hoveredEvent = null;
+      this.hoveredAssignments = [];
     }, this.POPOVER_HIDE_DELAY);
   }
 
@@ -688,5 +694,35 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
    */
   getDependencyCount(event: ScheduledEventData): number {
     return this.dependencyCountMap.get(Number(event.id)) || 0;
+  }
+
+
+  /**
+   * Lazy-load resource assignments for the hovered event.
+   * Results are cached to avoid re-fetching on subsequent hovers.
+   */
+  private loadHoveredAssignments(event: ScheduledEventData): void {
+    const eventId = Number(event.id);
+
+    // Use cache if available
+    if (this.assignmentsCache.has(eventId)) {
+      this.hoveredAssignments = this.assignmentsCache.get(eventId) || [];
+      return;
+    }
+
+    this.hoveredAssignments = [];
+    this.assignmentService.GetEventResourceAssignmentList({
+      scheduledEventId: eventId,
+      active: true,
+      deleted: false,
+      includeRelations: true
+    }).subscribe(assignments => {
+      this.assignmentsCache.set(eventId, assignments);
+
+      // Only apply if we're still hovering the same event
+      if (this.hoveredEvent && Number(this.hoveredEvent.id) === eventId) {
+        this.hoveredAssignments = assignments;
+      }
+    });
   }
 }

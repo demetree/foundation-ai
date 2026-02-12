@@ -716,6 +716,70 @@ $accent-secondary: #764ba2;
         }
     }
 
+    .popover-assignments {
+        margin-top: 0.5rem;
+        border-top: 1px solid #f1f3f7;
+        padding-top: 0.45rem;
+
+        .popover-assignments-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            margin-bottom: 0.3rem;
+
+            i {
+                font-size: 0.7rem;
+                margin-right: 0.2rem;
+            }
+        }
+
+        .popover-assignment-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.15rem 0;
+            font-size: 0.78rem;
+            color: #334155;
+
+            >i {
+                flex-shrink: 0;
+                font-size: 0.75rem;
+                color: $accent-primary;
+                width: 14px;
+                text-align: center;
+            }
+
+            .popover-assignment-name {
+                flex: 1;
+                min-width: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                font-weight: 500;
+            }
+
+            .popover-assignment-role {
+                font-size: 0.65rem;
+                font-weight: 600;
+                padding: 0.1rem 0.35rem;
+                border-radius: 3px;
+                background: rgba($accent-primary, 0.08);
+                color: $accent-primary;
+                white-space: nowrap;
+            }
+        }
+
+        .popover-assignment-more {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            font-weight: 500;
+            padding-top: 0.15rem;
+            padding-left: 18px;
+        }
+    }
+
     .popover-status-dot {
         display: inline-block;
         width: 8px;
