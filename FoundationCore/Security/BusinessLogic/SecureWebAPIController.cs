@@ -410,7 +410,7 @@ namespace Foundation.Security
             {
                 SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
-                await CreateAuditEventAsync(AuditEngine.AuditType.UnauthorizedAccessAttempt, "User attempted to access a resource requiring reader privilege to which they are not entitled.  User is: " + (securityUser != null ? securityUser.accountName : "null"));
+                await CreateAuditEventAsync(AuditEngine.AuditType.UnauthorizedAccessAttempt, $"User attempted to access a {moduleName} {entityName} resource requiring reader privilege to which they are not entitled.  User is: " + (securityUser != null ? securityUser.accountName : "null"));
                 DestroySessionAndAuthentication();
                 return false;
             }
@@ -427,7 +427,7 @@ namespace Foundation.Security
             {
                 SecurityUser securityUser = GetSecurityUser();
 
-                CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, "User attempted to access a resource requiring reader privilege to which they are not entitled.  User is: " + (securityUser != null ? securityUser.accountName : "null"));
+                CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, $"User attempted to access a {moduleName} {entityName} resource requiring reader privilege to which they are not entitled.  User is: " + (securityUser != null ? securityUser.accountName : "null"));
                 DestroySessionAndAuthentication();
                 return false;
             }
@@ -443,7 +443,7 @@ namespace Foundation.Security
             //
             if (await this.UserHasNoAccessAsync(cancellationToken) == true || await this.UserCanWriteAsync(writePrivilegeRequired, cancellationToken) == false)
             {
-                await CreateAuditEventAsync(AuditEngine.AuditType.UnauthorizedAccessAttempt, "User attempted to access a resource requiring writer privilege to which they are not entitled", false);
+                await CreateAuditEventAsync(AuditEngine.AuditType.UnauthorizedAccessAttempt, $"User attempted to access a {moduleName} {entityName}  resource requiring writer privilege to which they are not entitled", false);
 
                 DestroySessionAndAuthentication();
 
@@ -461,7 +461,7 @@ namespace Foundation.Security
             //
             if (this.UserHasNoAccess() == true || this.UserCanWrite(writePrivilegeRequired) == false)
             {
-                CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, "User attempted to access a resource requiring writer privilege to which they are not entitled", false);
+                CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, $"User attempted to access a {moduleName} {entityName}  resource requiring writer privilege to which they are not entitled", false);
                 DestroySessionAndAuthentication();
                 return false;
             }
@@ -477,7 +477,7 @@ namespace Foundation.Security
             //
             if (await this.UserHasNoAccessAsync(cancellationToken) == true || await this.UserCanAdministerAsync(cancellationToken) == false)
             {
-                CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, "User attempted to access a resource requiring administrator privilege to which they are not entitled", false);
+                CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, $"User attempted to access a {moduleName} {entityName}  resource requiring administrator privilege to which they are not entitled", false);
 
                 DestroySessionAndAuthentication();
 
@@ -495,7 +495,7 @@ namespace Foundation.Security
             //
             if (this.UserHasNoAccess() == true || this.UserCanAdminister() == false)
             {
-                CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, "User attempted to access a resource requiring administrator privilege to which they are not entitled", false);
+                CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, $"User attempted to access a {moduleName} {entityName}  resource requiring administrator privilege to which they are not entitled", false);
                 DestroySessionAndAuthentication();
                 return false;
             }
@@ -511,7 +511,7 @@ namespace Foundation.Security
             //
             if (await this.UserHasNoAccessAsync(cancellationToken) == true || await this.UserHasCustomRoleAsync(roleName, cancellationToken) == false)
             {
-                CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, "User attempted to access a resource requiring administrator privilege to which they are not entitled", false);
+                CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, $"User attempted to access a {moduleName} {entityName}  resource requiring administrator privilege to which they are not entitled", false);
 
                 DestroySessionAndAuthentication();
 

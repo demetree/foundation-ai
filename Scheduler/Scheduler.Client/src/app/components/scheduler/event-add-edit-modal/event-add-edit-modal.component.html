@@ -92,20 +92,59 @@
             <button class="btn btn-sm btn-outline-primary" (click)="addCrewAssignment()">Add Crew</button>
           </div>
         </div>
-        <div class="alert alert-info small">Assignment table coming soon...</div>
-        <div class="alert alert-warning" *ngIf="qualificationWarnings.length">
-          <strong>Warnings:</strong> {{ qualificationWarnings.join('; ') }}
+        <table class="table table-sm table-hover" *ngIf="assignments.length > 0">
+          <thead>
+            <tr>
+              <th>Resource / Crew</th>
+              <th>Role</th>
+              <th>Start</th>
+              <th>End</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let assignment of assignments.controls; let i = index">
+              <td>
+                <span *ngIf="assignment.get('resourceId')?.value">
+                  {{ (resources | keyvalue | slice:0:resources.length) ? (resources | slice:0) : '' }}
+                  Resource #{{ assignment.get('resourceId')?.value }}
+                </span>
+                <span *ngIf="assignment.get('crewId')?.value">
+                  Crew #{{ assignment.get('crewId')?.value }}
+                </span>
+              </td>
+              <td>{{ assignment.get('assignmentRoleId')?.value || '—' }}</td>
+              <td>{{ assignment.get('assignmentStartDateTime')?.value | date:'short' }}</td>
+              <td>{{ assignment.get('assignmentEndDateTime')?.value | date:'short' }}</td>
+              <td>
+                <button class="btn btn-sm btn-outline-danger" (click)="removeAssignment(i)" title="Remove">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="text-muted small text-center py-2" *ngIf="assignments.length === 0">
+          No assignments yet. Use the buttons above to add resources or crews.
+        </div>
+        <div class="alert alert-warning mt-2" *ngIf="qualificationWarnings.length > 0">
+          <strong><i class="bi bi-exclamation-triangle me-1"></i>Qualification Warnings:</strong>
+          <ul class="mb-0 mt-1">
+            <li *ngFor="let warning of qualificationWarnings">{{ warning }}</li>
+          </ul>
         </div>
       </div>
 
       <!-- Recurrence Tab -->
       <div class="tab-pane fade" id="recurrence">
-        <div class="form-check">
-          <input class="form-check-input" type="checkbox" id="recurring" [(ngModel)]="isRecurring">
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" id="recurring" [(ngModel)]="isRecurring"
+            [ngModelOptions]="{standalone: true}" (change)="onRecurrenceToggle()">
           <label class="form-check-label" for="recurring">Recurring Event</label>
         </div>
-        <div class="mt-3 p-3 border rounded bg-light" *ngIf="isRecurring">
-          <em>Recurrence editor coming soon...</em>
+        <div class="p-3 border rounded bg-light" *ngIf="isRecurring">
+          <app-recurrence-builder [recurrenceRule]="recurrenceRule"
+            (recurrenceRuleChange)="recurrenceRule = $event"></app-recurrence-builder>
         </div>
       </div>
 
@@ -115,9 +154,22 @@
           <div class="col-md-6">
             <label class="form-label">Time Zone</label>
             <select class="form-select" formControlName="timeZoneId">
-              <option value="">System Default</option>
-              <option value="America/Chicago">Central Time</option>
-              <option value="America/New_York">Eastern Time</option>
+              <option [ngValue]="null">System Default</option>
+              <option value="America/New_York">Eastern Time (US)</option>
+              <option value="America/Chicago">Central Time (US)</option>
+              <option value="America/Denver">Mountain Time (US)</option>
+              <option value="America/Los_Angeles">Pacific Time (US)</option>
+              <option value="America/Anchorage">Alaska Time</option>
+              <option value="Pacific/Honolulu">Hawaii Time</option>
+              <option value="America/St_Johns">Newfoundland Time</option>
+              <option value="America/Halifax">Atlantic Time</option>
+              <option value="America/Toronto">Eastern Time (Canada)</option>
+              <option value="Europe/London">GMT / London</option>
+              <option value="Europe/Paris">Central European Time</option>
+              <option value="Europe/Berlin">Berlin / Frankfurt</option>
+              <option value="Asia/Tokyo">Japan Standard Time</option>
+              <option value="Australia/Sydney">Australian Eastern Time</option>
+              <option value="UTC">UTC</option>
             </select>
           </div>
           <div class="col-md-6">

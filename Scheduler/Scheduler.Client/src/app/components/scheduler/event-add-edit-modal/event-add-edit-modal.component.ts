@@ -1,7 +1,7 @@
-import { Component, OnInit, OnDestroy, Input, Output, EventEmitter, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input, Output, EventEmitter } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
-import {  NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { forkJoin, Subscription } from 'rxjs';
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { forkJoin, Subscription, lastValueFrom } from 'rxjs';
 import { ScheduledEventService, ScheduledEventData, ScheduledEventSubmitData } from '../../../scheduler-data-services/scheduled-event.service';
 import { EventResourceAssignmentService, EventResourceAssignmentData, EventResourceAssignmentSubmitData } from '../../../scheduler-data-services/event-resource-assignment.service';
 import { SchedulingTargetService, SchedulingTargetData } from '../../../scheduler-data-services/scheduling-target.service';
@@ -13,6 +13,7 @@ import { QualificationService } from '../../../scheduler-data-services/qualifica
 import { AssignmentRoleQualificationRequirementService } from '../../../scheduler-data-services/assignment-role-qualification-requirement.service';
 import { SchedulingTargetQualificationRequirementService } from '../../../scheduler-data-services/scheduling-target-qualification-requirement.service';
 import { ResourceQualificationService } from '../../../scheduler-data-services/resource-qualification.service';
+import { RecurrenceRuleService, RecurrenceRuleData } from '../../../scheduler-data-services/recurrence-rule.service';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 
 @Component({
@@ -37,6 +38,7 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
   isVisible = false;
   saving = false;
   isRecurring = false;
+  recurrenceRule: RecurrenceRuleData | null = null;
 
   // Template picker
   selectedTemplateId: number | null = null;
@@ -56,18 +58,10 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
   selectedTarget: SchedulingTargetData | null = null;
   qualificationWarnings: string[] = [];
 
+  // Track which existing assignments to keep (for diff-based save)
+  private existingAssignmentIds: Set<number> = new Set();
+
   private subscriptions = new Subscription();
-
-
-  //
-  // Hacks for compilation purposes only
-  //
-  public currentAssignments: Array<EventResourceAssignmentData> = new Array<EventResourceAssignmentData>();
-  public recurrenceInterval: any | null = null;
-  public recurrenceFrequency: string | null = null;
-  public recurrenceEndType: string | null = null;
-  public recurrenceEndDate: string | null = null;
-  public recurrenceCount: number | null = null;
 
   constructor(
     public activeModal: NgbActiveModal,
@@ -83,6 +77,7 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
     private roleQualService: AssignmentRoleQualificationRequirementService,
     private targetQualService: SchedulingTargetQualificationRequirementService,
     private resourceQualService: ResourceQualificationService,
+    private recurrenceRuleService: RecurrenceRuleService,
     private alertService: AlertService
   ) {
     this.buildForm();
@@ -168,7 +163,11 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
       includeRelations: true,
       active: true
     }).subscribe(assignments => {
-      assignments.forEach(assignment => this.addAssignmentToForm(assignment));
+      this.existingAssignmentIds.clear();
+      assignments.forEach(assignment => {
+        this.existingAssignmentIds.add(Number(assignment.id));
+        this.addAssignmentToForm(assignment);
+      });
       this.validateQualifications();
     });
   }
@@ -203,7 +202,6 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
       });
     }
 
-    // TODO: Apply default assignments from template when you add that feature
     this.validateQualifications();
   }
 
@@ -216,7 +214,9 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
 
   addIndividualAssignment(): void {
     const group = this.fb.group({
+      id: [null],
       resourceId: [null, Validators.required],
+      crewId: [null],
       assignmentRoleId: [null],
       assignmentStartDateTime: [this.eventForm.get('startDateTime')?.value],
       assignmentEndDateTime: [this.eventForm.get('endDateTime')?.value],
@@ -228,7 +228,9 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
 
   addCrewAssignment(): void {
     const group = this.fb.group({
+      id: [null],
       crewId: [null, Validators.required],
+      resourceId: [null],
       assignmentRoleId: [null],
       assignmentStartDateTime: [this.eventForm.get('startDateTime')?.value],
       assignmentEndDateTime: [this.eventForm.get('endDateTime')?.value],
@@ -238,13 +240,21 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
     this.validateQualifications();
   }
 
-  editAssignment(assignnment: any) {
-    alert('fix this');
+  editAssignment(index: number): void {
+    // Toggle expanded/editing state for the assignment row
+    const control = this.assignments.at(index);
+    if (control) {
+      const current = control.get('_editing')?.value ?? false;
+      if (control.get('_editing')) {
+        control.get('_editing')!.setValue(!current);
+      } else {
+        // Add a transient editing flag
+        (control as FormGroup).addControl('_editing', this.fb.control(true));
+      }
+    }
   }
 
-
-
-  removeAssignment(index: any): void {
+  removeAssignment(index: number): void {
     this.assignments.removeAt(index);
     this.validateQualifications();
   }
@@ -265,36 +275,77 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
   // -------------------------------------------------------------------------
   // Qualification Validation
   // -------------------------------------------------------------------------
-  private validateQualifications(): void {
+  private async validateQualifications(): Promise<void> {
     this.qualificationWarnings = [];
 
     const targetId = this.eventForm.get('schedulingTargetId')?.value;
 
-    // Collect all required qualifications from role and target
+    // Collect required qualification IDs from all sources
     const requiredQualIds = new Set<number>();
 
-    // From assignments (role requirements)
-    this.assignments.controls.forEach(control => {
+    // From assignment roles
+    for (const control of this.assignments.controls) {
       const roleId = control.get('assignmentRoleId')?.value;
       if (roleId) {
-        // You'd load these in advance or query here
-        // For demo: assume you have a method to get required quals for role
+        try {
+          const roleQuals = await lastValueFrom(
+            this.roleQualService.GetAssignmentRoleQualificationRequirementList({
+              assignmentRoleId: roleId,
+              active: true
+            })
+          );
+          roleQuals.forEach(rq => requiredQualIds.add(Number((rq as any).qualificationId)));
+        } catch {
+          // Silently skip — don't block the user over qualification lookup failures
+        }
       }
-    });
-
-    // From target
-    if (targetId) {
-      // Load target requirements and add to set
     }
 
-    // Check each assigned resource
-    this.assignments.controls.forEach(control => {
-      const resourceId = control.get('resourceId')?.value;
-      if (resourceId && requiredQualIds.size > 0) {
-        // Check if resource has all required quals
-        // Add warning if missing
+    // From scheduling target
+    if (targetId) {
+      try {
+        const targetQuals = await lastValueFrom(
+          this.targetQualService.GetSchedulingTargetQualificationRequirementList({
+            schedulingTargetId: targetId,
+            active: true
+          })
+        );
+        targetQuals.forEach(tq => requiredQualIds.add(Number((tq as any).qualificationId)));
+      } catch {
+        // Silently skip
       }
-    });
+    }
+
+    if (requiredQualIds.size === 0) return;
+
+    // Check each assigned resource against required qualifications
+    for (const control of this.assignments.controls) {
+      const resourceId = control.get('resourceId')?.value;
+      if (!resourceId) continue;
+
+      try {
+        const resourceQuals = await lastValueFrom(
+          this.resourceQualService.GetResourceQualificationList({
+            resourceId: resourceId,
+            active: true
+          })
+        );
+        const resourceQualIds = new Set(resourceQuals.map(rq => Number((rq as any).qualificationId)));
+
+        for (const reqQualId of requiredQualIds) {
+          if (!resourceQualIds.has(reqQualId)) {
+            // Find resource name for a readable warning
+            const resource = this.resources.find(r => Number(r.id) === Number(resourceId));
+            const resourceName = resource?.name || `Resource #${resourceId}`;
+            this.qualificationWarnings.push(
+              `${resourceName} may be missing a required qualification (ID: ${reqQualId})`
+            );
+          }
+        }
+      } catch {
+        // Skip resource qualification check on error
+      }
+    }
   }
 
   // -------------------------------------------------------------------------
@@ -314,83 +365,173 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
     });
 
     this.selectedTarget = eventData.schedulingTarget || null;
+
+    if (eventData.recurrenceRule) {
+      this.isRecurring = true;
+      this.recurrenceRule = eventData.recurrenceRule;
+    } else {
+      this.isRecurring = false;
+      this.recurrenceRule = null;
+    }
+  }
+
+  onRecurrenceToggle(): void {
+    if (this.isRecurring && !this.recurrenceRule) {
+      // Initialize with defaults if enabling and no rule exists
+      this.recurrenceRule = new RecurrenceRuleData();
+      this.recurrenceRule.id = 0 as any;           // Explicitly 0 for "new rule"
+      this.recurrenceRule.recurrenceFrequencyId = 2; // Daily default
+      this.recurrenceRule.interval = 1;
+      this.recurrenceRule.versionNumber = 0 as any;
+      this.recurrenceRule.active = true;
+      this.recurrenceRule.deleted = false;
+    }
   }
 
   // -------------------------------------------------------------------------
   // Save Logic
   // -------------------------------------------------------------------------
-  save(): void {
+  async save(): Promise<void> {
     if (this.eventForm.invalid) {
       this.alertService.showMessage('Please correct form errors', '', MessageSeverity.warn);
       this.eventForm.markAllAsTouched();
       return;
     }
 
-    if (this.qualificationWarnings.length > 0) {
-      this.alertService.showMessage('Resolve qualification warnings before saving', '', MessageSeverity.warn);
-      return;
-    }
-
     this.saving = true;
 
-    const submitData: ScheduledEventSubmitData = {
-      id: this.event?.id || 0,
-      name: this.eventForm.get('name')?.value.trim(),
-      description: this.eventForm.get('description')?.value?.trim() || null,
-      schedulingTargetId: this.eventForm.get('schedulingTargetId')?.value || null,
-      startDateTime: this.eventForm.get('startDateTime')?.value,
-      endDateTime: this.eventForm.get('endDateTime')?.value,
-      location: this.eventForm.get('location')?.value?.trim() || null,
-      timeZoneId: this.eventForm.get('timeZoneId')?.value || null,
-      notes: this.eventForm.get('notes')?.value?.trim() || null,
-      externalId: this.eventForm.get('externalId')?.value?.trim() || null,
-      versionNumber: this.event?.versionNumber || 0,
-      recurrenceRuleId: null,
-      scheduledEventTemplateId: null, // need to fix this
-      clientId: null,     // need to fix this
-      resourceId: null,   // need to fix this
-      crewId: null,     // fix this
-      parentScheduledEventId: null,
-      recurrenceInstanceDate: null,
-      attributes: null,
-      isAllDay: false,
-      priorityId: null,
-      eventStatusId: 1,   // fix this
-      bookingSourceTypeId: null,  // fix this
-      officeId: null, // fix this
-      partySize: null,
-      color: null,
-      active: true,
-      deleted: false
-    };
+    try {
+      let recurrenceRuleId: number | null = null;
 
-    const eventSave$ = this.isEditMode
-      ? this.scheduledEventService.PutScheduledEvent(submitData.id, submitData)
-      : this.scheduledEventService.PostScheduledEvent(submitData);
-
-    eventSave$.subscribe({
-      next: (savedEvent) => {
-        // Handle assignments save (your existing logic)
-        this.handleAssignmentsSave(savedEvent.id as number);
-      },
-      error: (err) => {
-        this.saving = false;
-        this.alertService.showMessage('Failed to save event', err.message || 'Unknown error', MessageSeverity.error);
+      // 1. Handle Recurrence Rule Save/Update
+      if (this.isRecurring && this.recurrenceRule) {
+        const ruleId = Number(this.recurrenceRule.id || 0);
+        if (ruleId > 0) {
+          // Update existing
+          await lastValueFrom(this.recurrenceRuleService.PutRecurrenceRule(this.recurrenceRule.id, this.recurrenceRule));
+          recurrenceRuleId = ruleId;
+        } else {
+          // Create new
+          const newRule = await lastValueFrom(this.recurrenceRuleService.PostRecurrenceRule(this.recurrenceRule));
+          recurrenceRuleId = Number(newRule.id);
+        }
+      } else {
+        // Not recurring, ensure we decouple if previously recurring
+        recurrenceRuleId = null;
       }
-    });
+
+      // 2. Prepare Event Data
+      const submitData: ScheduledEventSubmitData = {
+        id: this.event?.id || 0,
+        name: this.eventForm.get('name')?.value.trim(),
+        description: this.eventForm.get('description')?.value?.trim() || null,
+        schedulingTargetId: this.eventForm.get('schedulingTargetId')?.value || null,
+        startDateTime: this.eventForm.get('startDateTime')?.value,
+        endDateTime: this.eventForm.get('endDateTime')?.value,
+        location: this.eventForm.get('location')?.value?.trim() || null,
+        timeZoneId: this.eventForm.get('timeZoneId')?.value || null,
+        notes: this.eventForm.get('notes')?.value?.trim() || null,
+        externalId: this.eventForm.get('externalId')?.value?.trim() || null,
+        versionNumber: this.event?.versionNumber || 0,
+        recurrenceRuleId: recurrenceRuleId as number,
+        scheduledEventTemplateId: null,
+        clientId: null,
+        resourceId: null,
+        crewId: null,
+        parentScheduledEventId: null,
+        recurrenceInstanceDate: null,
+        attributes: null,
+        isAllDay: false,
+        priorityId: null as any,
+        eventStatusId: 1,
+        bookingSourceTypeId: null,
+        officeId: null,
+        partySize: null,
+        color: null,
+        active: true,
+        deleted: false
+      };
+
+      // 3. Save Event
+      const savedEvent = this.isEditMode
+        ? await lastValueFrom(this.scheduledEventService.PutScheduledEvent(submitData.id, submitData))
+        : await lastValueFrom(this.scheduledEventService.PostScheduledEvent(submitData));
+
+      // 4. Handle Assignments
+      await this.handleAssignmentsSave(Number(savedEvent.id));
+
+      this.saving = false;
+      this.saved.emit(true);
+      this.activeModal.close(true);
+      this.alertService.showMessage(
+        this.isEditMode ? 'Event updated successfully' : 'Event created successfully',
+        '',
+        MessageSeverity.success
+      );
+
+    } catch (err: any) {
+      this.saving = false;
+      this.alertService.showMessage('Failed to save event', err.message || 'Unknown error', MessageSeverity.error);
+    }
   }
 
-  private handleAssignmentsSave(eventId: number): void {
-    // Your existing assignment save logic (delete old, create new)
-    // ... (reuse your previous implementation)
-    this.saving = false;
-    this.saved.emit(true);
-    this.activeModal.close(true);
-    this.alertService.showMessage(
-      this.isEditMode ? 'Event updated successfully' : 'Event created successfully',
-      '',
-      MessageSeverity.success
-    );
+  private async handleAssignmentsSave(eventId: number): Promise<void> {
+    // Collect the IDs of assignments currently in the form
+    const currentFormIds = new Set<number>();
+
+    for (const control of this.assignments.controls) {
+      const assignmentId = control.get('id')?.value;
+      if (assignmentId) {
+        currentFormIds.add(Number(assignmentId));
+      }
+    }
+
+    // Delete removed assignments (existed before but no longer in form)
+    for (const existingId of this.existingAssignmentIds) {
+      if (!currentFormIds.has(existingId)) {
+        try {
+          await lastValueFrom(this.assignmentService.DeleteEventResourceAssignment(existingId));
+        } catch (err: any) {
+          console.error(`Failed to delete assignment ${existingId}`, err);
+        }
+      }
+    }
+
+    // Create or update assignments
+    for (const control of this.assignments.controls) {
+      const assignmentId = control.get('id')?.value;
+      const submitData = new EventResourceAssignmentSubmitData();
+
+      submitData.scheduledEventId = eventId;
+      submitData.resourceId = control.get('resourceId')?.value || null;
+      submitData.crewId = control.get('crewId')?.value || null;
+      submitData.assignmentRoleId = control.get('assignmentRoleId')?.value || null;
+      submitData.assignmentStartDateTime = control.get('assignmentStartDateTime')?.value || null;
+      submitData.assignmentEndDateTime = control.get('assignmentEndDateTime')?.value || null;
+      submitData.notes = control.get('notes')?.value || null;
+      submitData.active = true;
+      submitData.deleted = false;
+      submitData.isVolunteer = false;
+      submitData.reimbursementRequested = false;
+      submitData.assignmentStatusId = 1; // Default status
+
+      try {
+        if (assignmentId && Number(assignmentId) > 0) {
+          // Update existing
+          submitData.id = Number(assignmentId);
+          submitData.versionNumber = 0; // Server handles optimistic concurrency
+          await lastValueFrom(this.assignmentService.PutEventResourceAssignment(submitData.id, submitData));
+        } else {
+          // Create new
+          submitData.id = 0 as any;
+          submitData.versionNumber = 0 as any;
+          await lastValueFrom(this.assignmentService.PostEventResourceAssignment(submitData));
+        }
+      } catch (err: any) {
+        console.error('Failed to save assignment', err);
+        // Continue with other assignments rather than failing completely
+      }
+    }
   }
 
   // -------------------------------------------------------------------------
@@ -400,8 +541,17 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
     this.event = event || null;
     this.isVisible = true;
     this.isEditMode = !!event;
-    if (event) {
-      this.populateForm(event);
+
+    // Reset form and state
+    this.eventForm.reset();
+    this.assignments.clear();
+    this.isRecurring = false;
+    this.recurrenceRule = null;
+    this.existingAssignmentIds.clear();
+
+    if (this.isEditMode && this.event) {
+      // populateForm will handle setting isRecurring and recurrenceRule
+      this.populateForm(this.event);
     }
   }
 

@@ -9,7 +9,7 @@
 
 */
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
-import { Inject, Injectable } from '@angular/core';
+import { Inject, Injectable, Injector } from '@angular/core';
 import { Observable, BehaviorSubject, catchError, throwError, lastValueFrom, map } from 'rxjs';
 import { shareReplay, tap } from 'rxjs/operators';
 import { UtilityService } from '../utility-services/utility.service'
@@ -56,8 +56,8 @@ export class RecurrenceFrequencySubmitData {
 
 
 export class RecurrenceFrequencyBasicListData {
-  id!: bigint | number;
-  name!: string;
+    id!: bigint | number;
+    name!: string;
 }
 
 
@@ -110,15 +110,15 @@ export class RecurrenceFrequencyData {
     // Private lazy-loading caches for related collections
     //
     private _recurrenceRules: RecurrenceRuleData[] | null = null;
-    private _recurrenceRulesPromise: Promise<RecurrenceRuleData[]> | null  = null;
+    private _recurrenceRulesPromise: Promise<RecurrenceRuleData[]> | null = null;
     private _recurrenceRulesSubject = new BehaviorSubject<RecurrenceRuleData[] | null>(null);
 
-                
+
     private _pledges: PledgeData[] | null = null;
-    private _pledgesPromise: Promise<PledgeData[]> | null  = null;
+    private _pledgesPromise: Promise<PledgeData[]> | null = null;
     private _pledgesSubject = new BehaviorSubject<PledgeData[] | null>(null);
 
-                
+
 
     //
     // Public observables — use with | async in templates
@@ -130,17 +130,18 @@ export class RecurrenceFrequencyData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-          if (this._recurrenceRules === null && this._recurrenceRulesPromise === null) {
-            this.loadRecurrenceRules(); // Private method to start fetch
-          }
+            if (this._recurrenceRules === null && this._recurrenceRulesPromise === null) {
+                this.loadRecurrenceRules(); // Private method to start fetch
+            }
         }),
         shareReplay(1) // Cache last emit
     );
 
-  
-    public RecurrenceRulesCount$ = RecurrenceRuleService.Instance.GetRecurrenceRulesRowCount({recurrenceFrequencyId: this.id,
-      active: true,
-      deleted: false
+
+    public RecurrenceRulesCount$ = RecurrenceRuleService.Instance.GetRecurrenceRulesRowCount({
+        recurrenceFrequencyId: this.id,
+        active: true,
+        deleted: false
     });
 
 
@@ -149,68 +150,69 @@ export class RecurrenceFrequencyData {
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-          if (this._pledges === null && this._pledgesPromise === null) {
-            this.loadPledges(); // Private method to start fetch
-          }
+            if (this._pledges === null && this._pledgesPromise === null) {
+                this.loadPledges(); // Private method to start fetch
+            }
         }),
         shareReplay(1) // Cache last emit
     );
 
-  
-    public PledgesCount$ = PledgeService.Instance.GetPledgesRowCount({recurrenceFrequencyId: this.id,
-      active: true,
-      deleted: false
+
+    public PledgesCount$ = PledgeService.Instance.GetPledgesRowCount({
+        recurrenceFrequencyId: this.id,
+        active: true,
+        deleted: false
     });
 
 
 
 
-  //
-  // Full reload — refreshes the entire object and clears all lazy caches 
-  //
-  // Promise based reload method to allow rebuilding of any RecurrenceFrequencyData object with all of it's relations on demand.  Useful for navigating into nav property
-  // objects and getting full state after put or post that may not have returned all nav properties.
-  //
-  // Usage examples:;
-  //
-  //  Async:
-  //   await this.recurrenceFrequency.Reload();
-  //
-  //  Non Async:
-  //
-  //     recurrenceFrequency[0].Reload().then(x => {
-  //        this.recurrenceFrequency = x;
-  //    });
-  //
-  public async Reload(includeRelations: boolean = true): Promise<this> {
+    //
+    // Full reload — refreshes the entire object and clears all lazy caches 
+    //
+    // Promise based reload method to allow rebuilding of any RecurrenceFrequencyData object with all of it's relations on demand.  Useful for navigating into nav property
+    // objects and getting full state after put or post that may not have returned all nav properties.
+    //
+    // Usage examples:;
+    //
+    //  Async:
+    //   await this.recurrenceFrequency.Reload();
+    //
+    //  Non Async:
+    //
+    //     recurrenceFrequency[0].Reload().then(x => {
+    //        this.recurrenceFrequency = x;
+    //    });
+    //
+    public async Reload(includeRelations: boolean = true): Promise<this> {
 
-    const fresh = await lastValueFrom(
-      RecurrenceFrequencyService.Instance.GetRecurrenceFrequency(this.id, includeRelations)
-    );
+        const fresh = await lastValueFrom(
+            RecurrenceFrequencyService.Instance.GetRecurrenceFrequency(this.id, includeRelations)
+        );
 
-    // Merge fresh data into this instance (preserves reference)
-    this.UpdateFrom(fresh as this);
+        // Merge fresh data into this instance (preserves reference)
+        this.UpdateFrom(fresh as this);
 
-    // Clear all lazy caches to force re-load on next access
-    this.clearAllLazyCaches();
+        // Clear all lazy caches to force re-load on next access
+        this.clearAllLazyCaches();
 
-    return this;
-  }
+        return this;
+    }
 
 
-  private clearAllLazyCaches(): void {
-     //
-     // Reset every collection cache and notify subscribers
-     //
-     this._recurrenceRules = null;
-     this._recurrenceRulesPromise = null;
-     this._recurrenceRulesSubject.next(null);
+    private clearAllLazyCaches(): void {
+        //
+        // Reset every collection cache and notify subscribers
+        //
+        this._recurrenceRules = null;
+        this._recurrenceRulesPromise = null;
+        this._recurrenceRulesSubject.next(null);
 
-     this._pledges = null;
-     this._pledgesPromise = null;
-     this._pledgesSubject.next(null);
+        this._pledges = null;
+        this._pledgesPromise = null;
+        this._pledgesSubject.next(null);
 
-  }
+    }
 
     //
     // Promise-based getters below — same lazy-load logic as observables
@@ -252,19 +254,19 @@ export class RecurrenceFrequencyData {
         this._recurrenceRulesPromise = lastValueFrom(
             RecurrenceFrequencyService.Instance.GetRecurrenceRulesForRecurrenceFrequency(this.id)
         )
-        .then(RecurrenceRules => {
-            this._recurrenceRules = RecurrenceRules ?? [];
-            this._recurrenceRulesSubject.next(this._recurrenceRules);
-            return this._recurrenceRules;
-         })
-        .catch(err => {
-            this._recurrenceRules = [];
-            this._recurrenceRulesSubject.next(this._recurrenceRules);
-            throw err;
-        })
-        .finally(() => {
-            this._recurrenceRulesPromise = null; // Allow retry if needed
-        });
+            .then(RecurrenceRules => {
+                this._recurrenceRules = RecurrenceRules ?? [];
+                this._recurrenceRulesSubject.next(this._recurrenceRules);
+                return this._recurrenceRules;
+            })
+            .catch(err => {
+                this._recurrenceRules = [];
+                this._recurrenceRulesSubject.next(this._recurrenceRules);
+                throw err;
+            })
+            .finally(() => {
+                this._recurrenceRulesPromise = null; // Allow retry if needed
+            });
     }
 
     /**
@@ -317,19 +319,19 @@ export class RecurrenceFrequencyData {
         this._pledgesPromise = lastValueFrom(
             RecurrenceFrequencyService.Instance.GetPledgesForRecurrenceFrequency(this.id)
         )
-        .then(Pledges => {
-            this._pledges = Pledges ?? [];
-            this._pledgesSubject.next(this._pledges);
-            return this._pledges;
-         })
-        .catch(err => {
-            this._pledges = [];
-            this._pledgesSubject.next(this._pledges);
-            throw err;
-        })
-        .finally(() => {
-            this._pledgesPromise = null; // Allow retry if needed
-        });
+            .then(Pledges => {
+                this._pledges = Pledges ?? [];
+                this._pledgesSubject.next(this._pledges);
+                return this._pledges;
+            })
+            .catch(err => {
+                this._pledges = [];
+                this._pledgesSubject.next(this._pledges);
+                throw err;
+            })
+            .finally(() => {
+                this._pledgesPromise = null; // Allow retry if needed
+            });
     }
 
     /**
@@ -366,7 +368,7 @@ export class RecurrenceFrequencyData {
 
 
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root'
 })
 export class RecurrenceFrequencyService extends SecureEndpointBase {
 
@@ -381,7 +383,7 @@ export class RecurrenceFrequencyService extends SecureEndpointBase {
         authService: AuthService,
         alertService: AlertService,
         private utilityService: UtilityService,
-        private recurrenceRuleService: RecurrenceRuleService,
+        private injector: Injector,
         private pledgeService: PledgeService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
@@ -395,7 +397,7 @@ export class RecurrenceFrequencyService extends SecureEndpointBase {
     }
 
     public static get Instance(): RecurrenceFrequencyService {
-      return RecurrenceFrequencyService._instance;
+        return RecurrenceFrequencyService._instance;
     }
 
 
@@ -404,7 +406,7 @@ export class RecurrenceFrequencyService extends SecureEndpointBase {
         const configHash = this.getConfigHash(config);
 
         if (this.listCache.has(configHash)) {
-          this.listCache.delete(configHash);
+            this.listCache.delete(configHash);
         }
 
         if (this.rowCountCache.has(configHash)) {
@@ -449,7 +451,7 @@ export class RecurrenceFrequencyService extends SecureEndpointBase {
         return output;
     }
 
-    public GetRecurrenceFrequency(id: bigint | number, includeRelations: boolean = true) : Observable<RecurrenceFrequencyData> {
+    public GetRecurrenceFrequency(id: bigint | number, includeRelations: boolean = true): Observable<RecurrenceFrequencyData> {
 
         const configHash = this.utilityService.hashCode("_" + id.toString() + "_" + includeRelations.toString());
 
@@ -459,7 +461,7 @@ export class RecurrenceFrequencyService extends SecureEndpointBase {
                 shareReplay({ bufferSize: SHARE_REPLAY_CACHE_SIZE, refCount: true }),
                 catchError((error) => {
                     this.recordCache.delete(configHash);
-          
+
                     //this.alertService.showHttpErrorMessage("Unable to get RecurrenceFrequency", error);
 
                     return throwError(() => error);
@@ -474,7 +476,7 @@ export class RecurrenceFrequencyService extends SecureEndpointBase {
         return this.recordCache.get(configHash) as Observable<RecurrenceFrequencyData>;
     }
 
-    private requestRecurrenceFrequency(id: bigint | number, includeRelations: boolean = true) : Observable<RecurrenceFrequencyData> {
+    private requestRecurrenceFrequency(id: bigint | number, includeRelations: boolean = true): Observable<RecurrenceFrequencyData> {
 
         let queryParams = new HttpParams();
 
@@ -482,16 +484,17 @@ export class RecurrenceFrequencyService extends SecureEndpointBase {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.get<RecurrenceFrequencyData>(this.baseUrl + 'api/RecurrenceFrequency/' + id.toString(), { 
-            params: queryParams, 
-            headers: authenticationHeaders }).pipe(
+        return this.http.get<RecurrenceFrequencyData>(this.baseUrl + 'api/RecurrenceFrequency/' + id.toString(), {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
             map(raw => this.ReviveRecurrenceFrequency(raw)),
             catchError(error => {
                 return this.handleError(error, () => this.requestRecurrenceFrequency(id, includeRelations));
             }));
     }
 
-    public GetRecurrenceFrequencyList(config: RecurrenceFrequencyQueryParameters | any = null) : Observable<Array<RecurrenceFrequencyData>> {
+    public GetRecurrenceFrequencyList(config: RecurrenceFrequencyQueryParameters | any = null): Observable<Array<RecurrenceFrequencyData>> {
 
         const configHash = this.getConfigHash(config);
 
@@ -516,7 +519,7 @@ export class RecurrenceFrequencyService extends SecureEndpointBase {
     }
 
 
-    private requestRecurrenceFrequencyList(config: RecurrenceFrequencyQueryParameters | any) : Observable <Array<RecurrenceFrequencyData>> {
+    private requestRecurrenceFrequencyList(config: RecurrenceFrequencyQueryParameters | any): Observable<Array<RecurrenceFrequencyData>> {
 
         let queryParams = new HttpParams();
 
@@ -531,16 +534,17 @@ export class RecurrenceFrequencyService extends SecureEndpointBase {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.get<Array<RecurrenceFrequencyData>>(this.baseUrl + 'api/RecurrenceFrequencies', { 
-            params: queryParams, 
-            headers: authenticationHeaders }).pipe(
+        return this.http.get<Array<RecurrenceFrequencyData>>(this.baseUrl + 'api/RecurrenceFrequencies', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
             map(rawList => this.ReviveRecurrenceFrequencyList(rawList)),
             catchError(error => {
                 return this.handleError(error, () => this.requestRecurrenceFrequencyList(config));
             }));
     }
 
-    public GetRecurrenceFrequenciesRowCount(config: RecurrenceFrequencyQueryParameters | any = null) : Observable<bigint | number> {
+    public GetRecurrenceFrequenciesRowCount(config: RecurrenceFrequencyQueryParameters | any = null): Observable<bigint | number> {
 
         const configHash = this.getConfigHash(config);
 
@@ -549,7 +553,7 @@ export class RecurrenceFrequencyService extends SecureEndpointBase {
                 shareReplay({ bufferSize: SHARE_REPLAY_CACHE_SIZE, refCount: true }),
                 catchError((error) => {
                     this.rowCountCache.delete(configHash);
-          
+
                     //this.alertService.showHttpErrorMessage("Unable to get RecurrenceFrequencies row count", error);
 
                     return throwError(() => error);
@@ -564,7 +568,7 @@ export class RecurrenceFrequencyService extends SecureEndpointBase {
         return this.rowCountCache.get(configHash) as Observable<bigint | number>;
     }
 
-    private requestRecurrenceFrequenciesRowCount(config: RecurrenceFrequencyQueryParameters | any) : Observable<bigint | number> {
+    private requestRecurrenceFrequenciesRowCount(config: RecurrenceFrequencyQueryParameters | any): Observable<bigint | number> {
 
         let queryParams = new HttpParams();
 
@@ -585,7 +589,7 @@ export class RecurrenceFrequencyService extends SecureEndpointBase {
             }));
     }
 
-    public GetRecurrenceFrequenciesBasicListData(config: RecurrenceFrequencyQueryParameters | any = null) : Observable<Array<RecurrenceFrequencyBasicListData>> {
+    public GetRecurrenceFrequenciesBasicListData(config: RecurrenceFrequencyQueryParameters | any = null): Observable<Array<RecurrenceFrequencyBasicListData>> {
 
         const configHash = this.getConfigHash(config);
 
@@ -600,7 +604,7 @@ export class RecurrenceFrequencyService extends SecureEndpointBase {
                     return throwError(() => error);
                 })
             );
-      
+
             this.basicListDataCache.set(configHash, recurrenceFrequenciesBasicListData$);
 
             return recurrenceFrequenciesBasicListData$;
@@ -610,7 +614,7 @@ export class RecurrenceFrequencyService extends SecureEndpointBase {
     }
 
 
-    private requestRecurrenceFrequenciesBasicListData(config: RecurrenceFrequencyQueryParameters | any) : Observable<Array<RecurrenceFrequencyBasicListData>> {
+    private requestRecurrenceFrequenciesBasicListData(config: RecurrenceFrequencyQueryParameters | any): Observable<Array<RecurrenceFrequencyBasicListData>> {
 
         let queryParams = new HttpParams();
 
@@ -633,11 +637,11 @@ export class RecurrenceFrequencyService extends SecureEndpointBase {
     }
 
 
-    public PutRecurrenceFrequency(id: bigint | number, recurrenceFrequency: RecurrenceFrequencySubmitData) : Observable<RecurrenceFrequencyData> {
+    public PutRecurrenceFrequency(id: bigint | number, recurrenceFrequency: RecurrenceFrequencySubmitData): Observable<RecurrenceFrequencyData> {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.put<RecurrenceFrequencyData>(this.baseUrl + 'api/RecurrenceFrequency/' + id.toString(), recurrenceFrequency, { headers: authenticationHeaders } ).pipe(
+        return this.http.put<RecurrenceFrequencyData>(this.baseUrl + 'api/RecurrenceFrequency/' + id.toString(), recurrenceFrequency, { headers: authenticationHeaders }).pipe(
             tap(() => this.ClearAllCaches()),
             map(raw => this.ReviveRecurrenceFrequency(raw)),
             catchError(error => {
@@ -646,24 +650,24 @@ export class RecurrenceFrequencyService extends SecureEndpointBase {
     }
 
 
-    public PostRecurrenceFrequency(recurrenceFrequency: RecurrenceFrequencySubmitData) : Observable<RecurrenceFrequencyData> {
+    public PostRecurrenceFrequency(recurrenceFrequency: RecurrenceFrequencySubmitData): Observable<RecurrenceFrequencyData> {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.post<RecurrenceFrequencyData>(this.baseUrl + 'api/RecurrenceFrequency', recurrenceFrequency, { headers: authenticationHeaders } ).pipe(
+        return this.http.post<RecurrenceFrequencyData>(this.baseUrl + 'api/RecurrenceFrequency', recurrenceFrequency, { headers: authenticationHeaders }).pipe(
             tap(() => this.ClearAllCaches()),
             map(raw => this.ReviveRecurrenceFrequency(raw)),
             catchError(error => {
-              return this.handleError(error, () => this.PostRecurrenceFrequency(recurrenceFrequency));
+                return this.handleError(error, () => this.PostRecurrenceFrequency(recurrenceFrequency));
             }));
     }
 
-  
-    public DeleteRecurrenceFrequency(id: bigint | number) : Observable<any> {
+
+    public DeleteRecurrenceFrequency(id: bigint | number): Observable<any> {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.delete<void>(this.baseUrl + 'api/RecurrenceFrequency/' + id.toString(), { headers: authenticationHeaders } ).pipe(
+        return this.http.delete<void>(this.baseUrl + 'api/RecurrenceFrequency/' + id.toString(), { headers: authenticationHeaders }).pipe(
             tap(() => this.ClearAllCaches()),
             catchError(error => {
                 return this.handleError(error, () => this.DeleteRecurrenceFrequency(id));
@@ -729,20 +733,21 @@ export class RecurrenceFrequencyService extends SecureEndpointBase {
         // Next test to see if the user has a high enough write permission level to write to Scheduler.RecurrenceFrequencies
         //
         if (userIsSchedulerRecurrenceFrequencyWriter == true) {
-          let user = this.authService.currentUser;
+            let user = this.authService.currentUser;
 
-          if (user != null) {
-            userIsSchedulerRecurrenceFrequencyWriter = user.writePermission >= 255;
-          } else {
-            userIsSchedulerRecurrenceFrequencyWriter = false;
-          }      
+            if (user != null) {
+                userIsSchedulerRecurrenceFrequencyWriter = user.writePermission >= 255;
+            } else {
+                userIsSchedulerRecurrenceFrequencyWriter = false;
+            }
         }
 
         return userIsSchedulerRecurrenceFrequencyWriter;
     }
 
     public GetRecurrenceRulesForRecurrenceFrequency(recurrenceFrequencyId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<RecurrenceRuleData[]> {
-        return this.recurrenceRuleService.GetRecurrenceRuleList({
+        const recurrenceRuleService = this.injector.get(RecurrenceRuleService);
+        return recurrenceRuleService.GetRecurrenceRuleList({
             recurrenceFrequencyId: recurrenceFrequencyId,
             active: active,
             deleted: deleted,
@@ -761,104 +766,106 @@ export class RecurrenceFrequencyService extends SecureEndpointBase {
     }
 
 
- /**
-   *
-   * Revives a plain object from the server into a full RecurrenceFrequencyData instance.
-   *
-   * This is critical for the lazy-loading pattern to work correctly.
-   *
-   * When the server returns JSON, it is a plain object with no prototype methods
-   * or observable properties. This method:
-   * 1. Re-attaches the RecurrenceFrequencyData prototype
-   * 2. Copies all properties from the raw object
-   * 3. Re-initializes all private caches and BehaviorSubjects
-   * 4. Re-creates all public observable properties ($ suffixed) with their
-   *    original tap() triggers that initiate lazy loading on first subscription
-   *
-   * Without this, revived objects would not trigger loads when RecurrenceFrequencyTags$ etc.
-   * are subscribed to in templates.
-   *
-   */
-  public ReviveRecurrenceFrequency(raw: any): RecurrenceFrequencyData {
-    if (!raw) return raw;
+    /**
+      *
+      * Revives a plain object from the server into a full RecurrenceFrequencyData instance.
+      *
+      * This is critical for the lazy-loading pattern to work correctly.
+      *
+      * When the server returns JSON, it is a plain object with no prototype methods
+      * or observable properties. This method:
+      * 1. Re-attaches the RecurrenceFrequencyData prototype
+      * 2. Copies all properties from the raw object
+      * 3. Re-initializes all private caches and BehaviorSubjects
+      * 4. Re-creates all public observable properties ($ suffixed) with their
+      *    original tap() triggers that initiate lazy loading on first subscription
+      *
+      * Without this, revived objects would not trigger loads when RecurrenceFrequencyTags$ etc.
+      * are subscribed to in templates.
+      *
+      */
+    public ReviveRecurrenceFrequency(raw: any): RecurrenceFrequencyData {
+        if (!raw) return raw;
 
-    //
-    // Create a RecurrenceFrequencyData object instance with correct prototype
-    //
-    const revived = Object.create(RecurrenceFrequencyData.prototype) as RecurrenceFrequencyData;
+        //
+        // Create a RecurrenceFrequencyData object instance with correct prototype
+        //
+        const revived = Object.create(RecurrenceFrequencyData.prototype) as RecurrenceFrequencyData;
 
-    //
-    // Copy all raw properties
-    //
-    Object.assign(revived, raw);
+        //
+        // Copy all raw properties
+        //
+        Object.assign(revived, raw);
 
-    //
-    // Explicitly initialize all private caches
-    // This ensures the getters work correctly on revived objects
-    //
-    (revived as any)._recurrenceRules = null;
-    (revived as any)._recurrenceRulesPromise = null;
-    (revived as any)._recurrenceRulesSubject = new BehaviorSubject<RecurrenceRuleData[] | null>(null);
+        //
+        // Explicitly initialize all private caches
+        // This ensures the getters work correctly on revived objects
+        //
+        (revived as any)._recurrenceRules = null;
+        (revived as any)._recurrenceRulesPromise = null;
+        (revived as any)._recurrenceRulesSubject = new BehaviorSubject<RecurrenceRuleData[] | null>(null);
 
-    (revived as any)._pledges = null;
-    (revived as any)._pledgesPromise = null;
-    (revived as any)._pledgesSubject = new BehaviorSubject<PledgeData[] | null>(null);
-
-
-    //
-    // Re-attach ALL public observables with their lazy-load tap() triggers
-    // This mirrors the original class definition exactly
-    //
-    //
-    // Re-create all public observables with their lazy-load triggers
-    // We use 'as any' because:
-    // 1. The revived object has the correct prototype
-    // 2. But private methods (loadRecurrenceFrequencyXYZ, etc.) are not accessible via the typed variable
-    // 3. This is a controlled revival context — safe and necessary
-    //
-    (revived as any).RecurrenceRules$ = (revived as any)._recurrenceRulesSubject.asObservable().pipe(
-        tap(() => {
-              if ((revived as any)._recurrenceRules === null && (revived as any)._recurrenceRulesPromise === null) {
-                (revived as any).loadRecurrenceRules();        // Need to cast to any to invoke private load method
-              }
-        }),
-        shareReplay(1)
-      );
-
-    (revived as any).RecurrenceRulesCount$ = RecurrenceRuleService.Instance.GetRecurrenceRulesRowCount({recurrenceFrequencyId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
+        (revived as any)._pledges = null;
+        (revived as any)._pledgesPromise = null;
+        (revived as any)._pledgesSubject = new BehaviorSubject<PledgeData[] | null>(null);
 
 
+        //
+        // Re-attach ALL public observables with their lazy-load tap() triggers
+        // This mirrors the original class definition exactly
+        //
+        //
+        // Re-create all public observables with their lazy-load triggers
+        // We use 'as any' because:
+        // 1. The revived object has the correct prototype
+        // 2. But private methods (loadRecurrenceFrequencyXYZ, etc.) are not accessible via the typed variable
+        // 3. This is a controlled revival context — safe and necessary
+        //
+        (revived as any).RecurrenceRules$ = (revived as any)._recurrenceRulesSubject.asObservable().pipe(
+            tap(() => {
+                if ((revived as any)._recurrenceRules === null && (revived as any)._recurrenceRulesPromise === null) {
+                    (revived as any).loadRecurrenceRules();        // Need to cast to any to invoke private load method
+                }
+            }),
+            shareReplay(1)
+        );
 
-    (revived as any).Pledges$ = (revived as any)._pledgesSubject.asObservable().pipe(
-        tap(() => {
-              if ((revived as any)._pledges === null && (revived as any)._pledgesPromise === null) {
-                (revived as any).loadPledges();        // Need to cast to any to invoke private load method
-              }
-        }),
-        shareReplay(1)
-      );
-
-    (revived as any).PledgesCount$ = PledgeService.Instance.GetPledgesRowCount({recurrenceFrequencyId: (revived as any).id,
-      active: true,
-      deleted: false
-    });
+        (revived as any).RecurrenceRulesCount$ = RecurrenceRuleService.Instance.GetRecurrenceRulesRowCount({
+            recurrenceFrequencyId: (revived as any).id,
+            active: true,
+            deleted: false
+        });
 
 
 
+        (revived as any).Pledges$ = (revived as any)._pledgesSubject.asObservable().pipe(
+            tap(() => {
+                if ((revived as any)._pledges === null && (revived as any)._pledgesPromise === null) {
+                    (revived as any).loadPledges();        // Need to cast to any to invoke private load method
+                }
+            }),
+            shareReplay(1)
+        );
 
-    return revived;
-  }
+        (revived as any).PledgesCount$ = PledgeService.Instance.GetPledgesRowCount({
+            recurrenceFrequencyId: (revived as any).id,
+            active: true,
+            deleted: false
+        });
 
-  private ReviveRecurrenceFrequencyList(rawList: any[]): RecurrenceFrequencyData[] {
 
-    if (!rawList) {
-        return [];
+
+
+        return revived;
     }
 
-    return rawList.map(raw => this.ReviveRecurrenceFrequency(raw));
-  }
+    private ReviveRecurrenceFrequencyList(rawList: any[]): RecurrenceFrequencyData[] {
+
+        if (!rawList) {
+            return [];
+        }
+
+        return rawList.map(raw => this.ReviveRecurrenceFrequency(raw));
+    }
 
 }

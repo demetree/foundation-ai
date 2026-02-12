@@ -84,6 +84,7 @@ import { SchedulerCalendarComponent } from './components/scheduler/scheduler-cal
 import { EventAddEditModalComponent } from './components/scheduler/event-add-edit-modal/event-add-edit-modal.component';
 import { AdministrationComponent } from './components/administration/administration.component';
 import { AddTenantProfileComponent } from './components/add-tenant-profile/add-tenant-profile.component';
+import { RecurrenceBuilderComponent } from './components/scheduler/recurrence-builder/recurrence-builder.component';
 
 
 // Rate Sheet Customizations
@@ -964,6 +965,7 @@ import { VolunteerStatusTableComponent } from './scheduler-data-components/volun
     //
     SchedulerCalendarComponent,
     EventAddEditModalComponent,
+    RecurrenceBuilderComponent,
     AdministrationComponent,
     AddTenantProfileComponent,
     RateSheetCustomListingComponent,

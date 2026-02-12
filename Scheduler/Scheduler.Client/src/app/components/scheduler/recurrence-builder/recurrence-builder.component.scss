@@ -1,0 +1,49 @@
+.recurrence-builder {
+  .btn-group {
+    .btn {
+      &.active {
+        font-weight: 600;
+      }
+    }
+  }
+
+  // Day picker buttons (weekly)
+  .day-picker {
+    .btn {
+      min-width: 38px;
+      padding: 0.25rem 0.4rem;
+      font-weight: 500;
+    }
+  }
+
+  .recurrence-config-card {
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background-color: #f8f9fa;
+    border-radius: 0.5rem;
+  }
+
+  // Inline form controls inside labels
+  .inline-number-input {
+    max-width: 65px;
+    height: 28px;
+    padding: 0.15rem 0.35rem;
+    text-align: center;
+  }
+
+  .inline-select {
+    width: auto;
+    height: 28px;
+    padding: 0.15rem 1.5rem 0.15rem 0.35rem;
+  }
+
+  .inline-date-input {
+    width: auto;
+    height: 28px;
+    padding: 0.15rem 0.35rem;
+  }
+
+  .interval-input {
+    max-width: 65px;
+    text-align: center;
+  }
+}

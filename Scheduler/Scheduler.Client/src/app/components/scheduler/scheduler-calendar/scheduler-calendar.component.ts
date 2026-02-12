@@ -75,8 +75,10 @@ export class SchedulerCalendarComponent implements OnInit {
   }
 
   private getEventColor(event: ScheduledEventData): string {
-    // Placeholder — later tie to calendar or status
-    return '#3788d8';
+    if (event.color) return event.color;
+    if (event.eventStatus?.color) return event.eventStatus.color;
+    if (event.schedulingTarget?.color) return event.schedulingTarget.color;
+    return '#3788d8'; // Default blue
   }
 
   handleDateSelect(selectInfo: any): void {
@@ -146,11 +148,21 @@ export class SchedulerCalendarComponent implements OnInit {
   }
 
   renderEventContent(eventInfo: any): any {
+    const escape = (str: string): string => {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    };
+    const title = escape(eventInfo.event.title || '');
+    const time = escape(eventInfo.timeText || '');
+    const location = eventInfo.event.extendedProps.location
+      ? `<div class="small">${escape(eventInfo.event.extendedProps.location)}</div>`
+      : '';
     return {
       html: `
-        <div class="fc-event-title">${eventInfo.event.title}</div>
-        <div class="fc-event-time small">${eventInfo.timeText}</div>
-        ${eventInfo.event.extendedProps.location ? `<div class="small">${eventInfo.event.extendedProps.location}</div>` : ''}
+        <div class="fc-event-title">${title}</div>
+        <div class="fc-event-time small">${time}</div>
+        ${location}
       `
     };
   }

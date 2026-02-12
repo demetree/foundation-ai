@@ -1,0 +1,147 @@
+<div class="recurrence-builder">
+
+  <!-- Loading State -->
+  <div class="text-center py-3" *ngIf="frequenciesLoading">
+    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+    Loading recurrence options...
+  </div>
+
+  <!-- Error State -->
+  <div class="alert alert-danger small" *ngIf="frequenciesError">
+    <i class="bi bi-exclamation-triangle me-1"></i>{{ frequenciesError }}
+    <button class="btn btn-sm btn-outline-danger ms-2" (click)="loadFrequencies()">Retry</button>
+  </div>
+
+  <!-- Main content (only when loaded) -->
+  <div *ngIf="!frequenciesLoading && !frequenciesError">
+
+    <!-- Frequency Selector -->
+    <div class="mb-3">
+      <label class="form-label fw-semibold">Frequency</label>
+      <div class="btn-group w-100" role="group" aria-label="Recurrence frequency">
+        <button type="button" class="btn btn-outline-primary" [class.active]="selectedFrequencyId === FREQ_DAILY"
+          (click)="onFrequencyChange(FREQ_DAILY)">Daily</button>
+        <button type="button" class="btn btn-outline-primary" [class.active]="selectedFrequencyId === FREQ_WEEKLY"
+          (click)="onFrequencyChange(FREQ_WEEKLY)">Weekly</button>
+        <button type="button" class="btn btn-outline-primary" [class.active]="selectedFrequencyId === FREQ_MONTHLY"
+          (click)="onFrequencyChange(FREQ_MONTHLY)">Monthly</button>
+        <button type="button" class="btn btn-outline-primary" [class.active]="selectedFrequencyId === FREQ_YEARLY"
+          (click)="onFrequencyChange(FREQ_YEARLY)">Yearly</button>
+      </div>
+    </div>
+
+    <!-- Configuration Panel -->
+    <div class="card recurrence-config-card mb-3" *ngIf="selectedFrequencyId">
+      <div class="card-body">
+
+        <!-- Interval Section -->
+        <div class="d-flex align-items-center mb-3">
+          <span class="me-2">Repeat every</span>
+          <input type="number" class="form-control form-control-sm interval-input me-2" [(ngModel)]="recurrenceInterval"
+            [ngModelOptions]="{standalone: true}" (ngModelChange)="updateRule()" min="1">
+          <span>
+            <ng-container [ngSwitch]="selectedFrequencyId">
+              <span *ngSwitchCase="FREQ_DAILY">day(s)</span>
+              <span *ngSwitchCase="FREQ_WEEKLY">week(s)</span>
+              <span *ngSwitchCase="FREQ_MONTHLY">month(s)</span>
+              <span *ngSwitchCase="FREQ_YEARLY">year(s)</span>
+            </ng-container>
+          </span>
+        </div>
+
+        <!-- Weekly Options -->
+        <div *ngIf="selectedFrequencyId === FREQ_WEEKLY" class="mb-3">
+          <label class="form-label d-block fw-semibold">On these days:</label>
+          <div class="btn-group day-picker" role="group" aria-label="Select days of week">
+            <button *ngFor="let day of daysOfWeek" type="button" class="btn btn-sm"
+              [class.btn-primary]="isDaySelected(day.value)" [class.btn-outline-secondary]="!isDaySelected(day.value)"
+              (click)="toggleDay(day.value)" [title]="day.label" [attr.aria-pressed]="isDaySelected(day.value)">
+              {{ day.name }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Monthly Options -->
+        <div *ngIf="selectedFrequencyId === FREQ_MONTHLY" class="mb-3">
+          <label class="form-label fw-semibold">Repeat on:</label>
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="radio" name="monthlyType" id="monthByDay"
+              [checked]="monthlyType === 'dayOfMonth'" (change)="monthlyType = 'dayOfMonth'; updateRule()">
+            <label class="form-check-label d-inline-flex align-items-center gap-1" for="monthByDay">
+              On day
+              <input type="number" class="form-control form-control-sm inline-number-input" [(ngModel)]="dayOfMonth"
+                [ngModelOptions]="{standalone: true}" (ngModelChange)="updateRule()" min="1" max="31"
+                [disabled]="monthlyType !== 'dayOfMonth'">
+              of the month
+            </label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="monthlyType" id="monthByWeek"
+              [checked]="monthlyType === 'dayOfWeek'" (change)="monthlyType = 'dayOfWeek'; updateRule()">
+            <label class="form-check-label d-inline-flex align-items-center gap-1" for="monthByWeek">
+              On the
+              <select class="form-select form-select-sm inline-select" [(ngModel)]="dayOfWeekInMonth"
+                [ngModelOptions]="{standalone: true}" (ngModelChange)="updateRule()"
+                [disabled]="monthlyType !== 'dayOfWeek'">
+                <option *ngFor="let order of weekOrders" [ngValue]="order.value">{{ order.label }}</option>
+              </select>
+              <select class="form-select form-select-sm inline-select" [(ngModel)]="selectedDayOfWeekForMonthly"
+                [ngModelOptions]="{standalone: true}" (ngModelChange)="updateRule()"
+                [disabled]="monthlyType !== 'dayOfWeek'">
+                <option *ngFor="let day of daysOfWeek" [ngValue]="day.value">{{ day.label }}</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <!-- Yearly Options -->
+        <div *ngIf="selectedFrequencyId === FREQ_YEARLY" class="mb-3">
+          <label class="form-label fw-semibold">Repeat on:</label>
+          <div class="d-inline-flex align-items-center gap-1">
+            <select class="form-select form-select-sm inline-select" [(ngModel)]="yearlyMonth"
+              [ngModelOptions]="{standalone: true}" (ngModelChange)="updateRule()">
+              <option *ngFor="let m of months" [ngValue]="m.value">{{ m.label }}</option>
+            </select>
+            <input type="number" class="form-control form-control-sm inline-number-input" [(ngModel)]="yearlyDayOfMonth"
+              [ngModelOptions]="{standalone: true}" (ngModelChange)="updateRule()" min="1" max="31">
+          </div>
+        </div>
+
+        <!-- End Condition -->
+        <hr>
+        <div class="mb-2">
+          <label class="form-label fw-semibold">Ends</label>
+
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="radio" name="endCondition" id="endNever"
+              [checked]="endType === 'never'" (change)="onEndTypeChange('never')">
+            <label class="form-check-label" for="endNever">Never</label>
+          </div>
+
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="radio" name="endCondition" id="endAfter"
+              [checked]="endType === 'count'" (change)="onEndTypeChange('count')">
+            <label class="form-check-label d-inline-flex align-items-center gap-1" for="endAfter">
+              After
+              <input type="number" class="form-control form-control-sm inline-number-input"
+                [(ngModel)]="recurrenceCount" [ngModelOptions]="{standalone: true}" (ngModelChange)="updateRule()"
+                [disabled]="endType !== 'count'" min="1">
+              occurrences
+            </label>
+          </div>
+
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="endCondition" id="endOn" [checked]="endType === 'until'"
+              (change)="onEndTypeChange('until')">
+            <label class="form-check-label d-inline-flex align-items-center gap-1" for="endOn">
+              On
+              <input type="date" class="form-control form-control-sm inline-date-input" [(ngModel)]="recurrenceUntilStr"
+                [ngModelOptions]="{standalone: true}" (ngModelChange)="updateRule()" [disabled]="endType !== 'until'">
+            </label>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
