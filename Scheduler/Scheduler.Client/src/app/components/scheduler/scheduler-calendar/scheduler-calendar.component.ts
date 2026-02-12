@@ -30,12 +30,13 @@ export class SchedulerCalendarComponent implements OnInit {
     selectMirror: true,
     dayMaxEvents: true,
     weekends: true,
-    events: [], // Filled in ngOnInit
+    events: [], // Filled by loadEvents
     select: this.handleDateSelect.bind(this),
     eventClick: this.handleEventClick.bind(this),
     eventDrop: this.handleEventDrop.bind(this),
     eventResize: this.handleEventResize.bind(this),
-    eventContent: this.renderEventContent.bind(this)
+    eventContent: this.renderEventContent.bind(this),
+    datesSet: this.handleDatesSet.bind(this)
   };
 
   constructor(
@@ -44,20 +45,41 @@ export class SchedulerCalendarComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.loadEvents();
+    //
+    // Initial load is triggered by FullCalendar's datesSet callback when the view renders.
+    //
   }
 
-  private loadEvents(): void {
-    // Pull last 3 months to next 6 months for smooth scrolling
-    const today = new Date();
-    const start = new Date(today.getFullYear(), today.getMonth() - 3, 1);
-    const end = new Date(today.getFullYear(), today.getMonth() + 6, 0);
 
-    this.scheduledEventService.GetScheduledEventList({
-      startDateTime: start.toISOString(),
-      endDateTime: end.toISOString(),
-      includeRelations: true
-    }).subscribe(events => {
+  /**
+   *
+   * Called by FullCalendar whenever the visible date range changes (view switch, prev/next navigation, etc).
+   *
+   * Loads all events for the visible range using the server-side Calendar endpoint,
+   * which returns both standalone events and expanded recurring event instances.
+   *
+   */
+  handleDatesSet(dateInfo: any): void {
+    this.loadEvents(dateInfo.startStr, dateInfo.endStr);
+  }
+
+
+  private loadEvents(rangeStart?: string, rangeEnd?: string): void {
+
+    //
+    // If no range provided, use a default window of 3 months back to 6 months forward
+    //
+    if (rangeStart == null || rangeEnd == null) {
+
+      const today = new Date();
+      const defaultStart = new Date(today.getFullYear(), today.getMonth() - 3, 1);
+      const defaultEnd = new Date(today.getFullYear(), today.getMonth() + 6, 0);
+
+      rangeStart = defaultStart.toISOString();
+      rangeEnd = defaultEnd.toISOString();
+    }
+
+    this.scheduledEventService.GetCalendarEvents(rangeStart, rangeEnd).subscribe(events => {
       this.calendarOptions.events = events.map(event => ({
         id: event.id.toString(),
         title: event.name,

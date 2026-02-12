@@ -62,12 +62,8 @@ namespace Foundation.Security.Controllers.WebAPI
         public async Task<IActionResult> GetStringSetting(string key, CancellationToken cancellationToken = default)
         {
             //
-            // Permission check - users can read their own settings
+            // Permission check - This is a cross module function for a user to read their settings.  We do not enforce the security module readership role here.
             //
-            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED) == false)
-            {
-                return Forbid();
-            }
 
             //
             // Validate input
@@ -85,6 +81,15 @@ namespace Foundation.Security.Controllers.WebAPI
                 {
                     return Unauthorized("User not found.");
                 }
+
+                //
+                // Must have read permission level of at least one to read this
+                //
+                if (securityUser.readPermissionLevel < 0)
+                {
+                    return Forbid();
+                }
+
 
                 //
                 // Retrieve the setting using Foundation's UserSettings API
@@ -124,12 +129,8 @@ namespace Foundation.Security.Controllers.WebAPI
         public async Task<IActionResult> SetStringSetting(string key, [FromBody] SetSettingRequest request, CancellationToken cancellationToken = default)
         {
             //
-            // Permission check - users can write their own settings
+            // Permission check - This is a cross module function for a user to read their settings.  We do not enforce the security module readership role here.
             //
-            if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED) == false)
-            {
-                return Forbid();
-            }
 
             //
             // Validate input
@@ -146,6 +147,14 @@ namespace Foundation.Security.Controllers.WebAPI
                 if (securityUser == null)
                 {
                     return Unauthorized("User not found.");
+                }
+
+                //
+                // Must have read permission level of at least one to read this
+                //
+                if (securityUser.readPermissionLevel < 0)
+                {
+                    return Forbid();
                 }
 
                 //
@@ -188,12 +197,8 @@ namespace Foundation.Security.Controllers.WebAPI
         public async Task<IActionResult> GetAllSettings(CancellationToken cancellationToken = default)
         {
             //
-            // Permission check
+            // Permission check - This is a cross module function for a user to read their settings.  We do not enforce the security module readership role here.
             //
-            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED) == false)
-            {
-                return Forbid();
-            }
 
             try
             {
@@ -203,6 +208,15 @@ namespace Foundation.Security.Controllers.WebAPI
                 {
                     return Unauthorized("User not found.");
                 }
+
+                //
+                // Must have read permission level of at least one to read this
+                //
+                if (securityUser.readPermissionLevel < 0)
+                {
+                    return Forbid();
+                }
+
 
                 //
                 // Get the raw settings JSON string
@@ -251,10 +265,12 @@ namespace Foundation.Security.Controllers.WebAPI
         [HttpGet]
         [RateLimit(RateLimitOption.TenPerMinute, Scope = RateLimitScope.PerUser)]
         [Route("api/UserSettings/Admin")]
-        public async Task<IActionResult> GetAllSettingsAdmin(
-            [FromQuery] long userId,
-            CancellationToken cancellationToken = default)
+        public async Task<IActionResult> GetAllSettingsAdmin([FromQuery] long userId,
+                                                             CancellationToken cancellationToken = default)
         {
+            // 
+            // Security module reader role required for this.
+            //
             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(ADMIN_READ_PERMISSION_LEVEL_REQUIRED) == false)
             {
                 return Forbid();
@@ -310,11 +326,13 @@ namespace Foundation.Security.Controllers.WebAPI
         [HttpGet]
         [RateLimit(RateLimitOption.OneHundredPerMinute, Scope = RateLimitScope.PerUser)]
         [Route("api/UserSettings/Admin/{key}")]
-        public async Task<IActionResult> GetStringSettingAdmin(
-            string key,
-            [FromQuery] long userId,
-            CancellationToken cancellationToken = default)
+        public async Task<IActionResult> GetStringSettingAdmin(string key,
+                                                               [FromQuery] long userId,
+                                                               CancellationToken cancellationToken = default)
         {
+            //
+            // This settings getter is cross user, so a security module reader role is required
+            //
             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(ADMIN_READ_PERMISSION_LEVEL_REQUIRED) == false)
             {
                 return Forbid();
@@ -371,12 +389,14 @@ namespace Foundation.Security.Controllers.WebAPI
         [HttpPut]
         [RateLimit(RateLimitOption.OneHundredPerMinute, Scope = RateLimitScope.PerUser)]
         [Route("api/UserSettings/Admin/{key}")]
-        public async Task<IActionResult> SetStringSettingAdmin(
-            string key,
-            [FromQuery] long userId,
-            [FromBody] SetSettingRequest request,
-            CancellationToken cancellationToken = default)
+        public async Task<IActionResult> SetStringSettingAdmin(string key,
+                                                               [FromQuery] long userId,
+                                                               [FromBody] SetSettingRequest request,
+                                                               CancellationToken cancellationToken = default)
         {
+            //
+            // This cross user setting save function requires a security module write role
+            //
             if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(ADMIN_WRITE_PERMISSION_LEVEL_REQUIRED) == false)
             {
                 return Forbid();
@@ -441,12 +461,10 @@ namespace Foundation.Security.Controllers.WebAPI
         public async Task<IActionResult> GetFavourites(string entityType = null, CancellationToken cancellationToken = default)
         {
             //
-            // Permission check
+            // NOTE - Not doing a security check here for a role because this controller is in the security module, which most user's won't have a read role in.
             //
-            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED) == false)
-            {
-                return Forbid();
-            }
+            // We will enforce read security here stricly by read permission being > 0.
+            //
 
             try
             {
@@ -456,6 +474,17 @@ namespace Foundation.Security.Controllers.WebAPI
                 {
                     return Unauthorized("User not found.");
                 }
+
+
+                //
+                // Security check for user to have at least a read permission level of 1 to read their favourites.  - Note no Security module role check done here.
+                //
+                if (securityUser.readPermissionLevel < 1)
+                {
+                    return Forbid();
+                }
+
+
 
                 //
                 // Get favourites using SecurityLogic
@@ -491,12 +520,10 @@ namespace Foundation.Security.Controllers.WebAPI
         public async Task<IActionResult> GetMostRecents(string entityType = null, CancellationToken cancellationToken = default)
         {
             //
-            // Permission check
+            // NOTE - Not doing a security check here for a role because this controller is in the security module, which most user's won't have a read role in.
             //
-            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED) == false)
-            {
-                return Forbid();
-            }
+            // We will enforce read security here stricly by read permission being > 0.
+            //
 
             try
             {
@@ -506,6 +533,17 @@ namespace Foundation.Security.Controllers.WebAPI
                 {
                     return Unauthorized("User not found.");
                 }
+
+
+                //
+                // Security check for user to have at least a read permission level of 1 to read their favourites.  - Note no Security module role check done here.
+                //
+                if (securityUser.readPermissionLevel < 1)
+                {
+                    return Forbid();
+                }
+
+
 
                 //
                 // Get most recents using SecurityLogic

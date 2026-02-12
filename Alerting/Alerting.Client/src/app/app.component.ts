@@ -112,13 +112,12 @@ export class AppComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       if (this.isUserLoggedIn) {
 
-        if (this.authService.isSecurityReader == false &&
-          this.authService.isAuditorReader == false) {
+        if (this.authService.isAlertingReader == false) {
           //
           // Display can't read alert
           //
           this.alertService.resetStickyMessage();
-          this.alertService.showMessage(this.gT('app.alerts.Login'), "Your account does not have the privilege to read from Auditor or Security", MessageSeverity.error);
+          this.alertService.showMessage(this.gT('app.alerts.Login'), "Your account does not have the privilege to read from the Alerting module.", MessageSeverity.error);
 
         } else {
 

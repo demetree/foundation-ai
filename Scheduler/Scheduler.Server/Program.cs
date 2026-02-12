@@ -116,6 +116,9 @@ namespace Foundation.Scheduler
                 // Register Donor Journey Calculator
                 builder.Services.AddScoped<Foundation.Scheduler.Services.DonorJourneyCalculator>();
 
+                // Register Recurrence Expansion Service (for server-side expansion of recurring events)
+                builder.Services.AddScoped<global::Scheduler.Server.Services.RecurrenceExpansionService>();
+
                 //
                 // Add the Scheduler Database context
                 //

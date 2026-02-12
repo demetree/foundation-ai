@@ -81,8 +81,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                     contactForCurrentUser.firstName = securityUser.firstName;
                     contactForCurrentUser.middleName = securityUser.middleName;
                     contactForCurrentUser.lastName = securityUser.lastName;
-                    contactForCurrentUser.lastName = securityUser.lastName;
-                    contactForCurrentUser.email = securityUser.emailAddress;
+                    contactForCurrentUser.email = securityUser.emailAddress;                    // this is a unique key.  Contact would have been found by this.
                     contactForCurrentUser.phone = securityUser.phoneNumber;
                     contactForCurrentUser.externalId = securityUser.objectGuid.ToString();       // User object guid becomes the contact's external id to link the contact to the tenant user.
 
@@ -173,7 +172,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
             Contact contactForCurrentUser = await (from c in _context.Contacts
                                                    where
                                                    c.tenantGuid == userTenantGuid &&
-                                                   c.externalId == securityUser.objectGuid.ToString()         // Match user to contact by it having it's externalId match match the user obejct guid.  This will allow the same user to have contacts across tenants if they move companies (public emails, or test accounts at risk for this)
+                                                   (c.externalId == securityUser.objectGuid.ToString()  ||       // Match user to contact by it having it's externalId match match the user obejct guid.  This will allow the same user to have contacts across tenants if they move companies (public emails, or test accounts at risk for this)  
+                                                   c.email == securityUser.emailAddress)                         // also allow match by email address.   Email is a tenant Unique constraint
                                                    select c)
                                                    .Include(x => x.contactType)
                                                    .Include(x => x.salutation)
