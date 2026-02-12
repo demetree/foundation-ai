@@ -36,10 +36,12 @@
 
         <!-- View Toggle -->
         <div class="btn-group-glass">
-          <button class="btn-glass" [class.active]="currentView === 'dayGridMonth'" (click)="changeView('dayGridMonth')">
+          <button class="btn-glass" [class.active]="currentView === 'dayGridMonth'"
+            (click)="changeView('dayGridMonth')">
             Month
           </button>
-          <button class="btn-glass" [class.active]="currentView === 'timeGridWeek'" (click)="changeView('timeGridWeek')">
+          <button class="btn-glass" [class.active]="currentView === 'timeGridWeek'"
+            (click)="changeView('timeGridWeek')">
             Week
           </button>
           <button class="btn-glass" [class.active]="currentView === 'timeGridDay'" (click)="changeView('timeGridDay')">
@@ -47,6 +49,41 @@
           </button>
         </div>
 
+        <!-- Conflict Indicator -->
+        <button class="btn-glass btn-conflict" *ngIf="conflicts.length > 0" (click)="toggleConflictPanel()"
+          [class.active]="conflictPanelVisible">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          {{ conflicts.length }} conflict{{ conflicts.length !== 1 ? 's' : '' }}
+        </button>
+
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Conflict Panel (collapsible) -->
+  <div class="conflict-panel" *ngIf="conflictPanelVisible && conflicts.length > 0">
+    <div class="conflict-panel-header">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      <span>Scheduling Conflicts</span>
+      <button class="btn-close-panel" (click)="conflictPanelVisible = false">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+    <div class="conflict-list">
+      <div class="conflict-row" *ngFor="let c of conflicts" (click)="openConflictEvent(c)">
+        <div class="conflict-events">
+          <span class="conflict-event-name">{{ c.eventA.name }}</span>
+          <i class="bi bi-arrow-left-right conflict-arrow"></i>
+          <span class="conflict-event-name">{{ c.eventB.name }}</span>
+        </div>
+        <div class="conflict-meta">
+          <span class="conflict-entity">
+            <i class="bi" [ngClass]="c.type === 'resource' ? 'bi-person-fill' : 'bi-people-fill'"></i>
+            {{ c.entityName || (c.type === 'resource' ? 'Resource' : 'Crew') + ' #' + c.entityId }}
+          </span>
+          <span class="conflict-overlap">{{ formatOverlap(c.overlapMinutes) }}</span>
+        </div>
       </div>
     </div>
   </div>
@@ -59,12 +96,8 @@
 
 
   <!-- Quick Peek Popover -->
-  <div class="quick-peek-popover"
-       [class.visible]="hoveredEvent != null"
-       [style.top.px]="popoverPosition.top"
-       [style.left.px]="popoverPosition.left"
-       (mouseenter)="onPopoverMouseEnter()"
-       (mouseleave)="onPopoverMouseLeave()">
+  <div class="quick-peek-popover" [class.visible]="hoveredEvent != null" [style.top.px]="popoverPosition.top"
+    [style.left.px]="popoverPosition.left" (mouseenter)="onPopoverMouseEnter()" (mouseleave)="onPopoverMouseLeave()">
 
     <ng-container *ngIf="hoveredEvent">
 
@@ -109,6 +142,12 @@
         <div class="popover-badge-series" *ngIf="isRecurringInstance(hoveredEvent)">
           <i class="bi bi-arrow-repeat"></i>
           Part of recurring series
+        </div>
+
+        <!-- Dependency Count -->
+        <div class="popover-badge-deps" *ngIf="getDependencyCount(hoveredEvent) > 0">
+          <i class="bi bi-diagram-3"></i>
+          {{ getDependencyCount(hoveredEvent) }} dependenc{{ getDependencyCount(hoveredEvent) === 1 ? 'y' : 'ies' }}
         </div>
 
       </div>

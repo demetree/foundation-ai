@@ -404,6 +404,205 @@ $accent-secondary: #764ba2;
             font-size: 0.55rem;
         }
     }
+
+    .fc-event-conflict-badge {
+        position: absolute;
+        top: 2px;
+        right: 4px;
+        z-index: 2;
+        color: #fff;
+        font-size: 0.6rem;
+        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+        animation: conflict-pulse 2s ease-in-out infinite;
+
+        i {
+            color: #fbbf24;
+            font-size: 0.7rem;
+        }
+    }
+}
+
+@keyframes conflict-pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+
+// ---------------------------------------------------------------------------
+// Conflict Header Button
+// ---------------------------------------------------------------------------
+.btn-conflict {
+    background: rgba(239, 68, 68, 0.25) !important;
+    border-color: rgba(239, 68, 68, 0.4) !important;
+    color: #fef2f2 !important;
+    animation: conflict-btn-pulse 3s ease-in-out infinite;
+
+    i {
+        color: #fbbf24;
+        margin-right: 0.25rem;
+    }
+
+    &.active {
+        background: rgba(239, 68, 68, 0.4) !important;
+    }
+
+    &:hover {
+        background: rgba(239, 68, 68, 0.35) !important;
+    }
+}
+
+@keyframes conflict-btn-pulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.3);
+    }
+
+    50% {
+        box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+    }
+}
+
+
+// ---------------------------------------------------------------------------
+// Conflict Panel
+// ---------------------------------------------------------------------------
+.conflict-panel {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(16px);
+    border-radius: $card-radius;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-left: 4px solid #ef4444;
+    box-shadow: 0 4px 16px rgba(239, 68, 68, 0.08), 0 1px 3px rgba(0, 0, 0, 0.06);
+    margin-bottom: 1rem;
+    overflow: hidden;
+    animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.conflict-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgba(239, 68, 68, 0.1);
+    background: rgba(239, 68, 68, 0.03);
+
+    >i {
+        color: #ef4444;
+        font-size: 1rem;
+    }
+
+    >span {
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: #1e293b;
+        flex: 1;
+    }
+}
+
+.btn-close-panel {
+    background: none;
+    border: none;
+    padding: 0.25rem;
+    cursor: pointer;
+    color: #94a3b8;
+    transition: color 0.15s;
+
+    &:hover {
+        color: #ef4444;
+    }
+
+    i {
+        font-size: 0.85rem;
+    }
+}
+
+.conflict-list {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.conflict-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.6rem 1rem;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-bottom: 1px solid #f1f3f7;
+
+    &:last-child {
+        border-bottom: none;
+    }
+
+    &:hover {
+        background: rgba(239, 68, 68, 0.04);
+    }
+}
+
+.conflict-events {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.conflict-event-name {
+    max-width: 140px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.conflict-arrow {
+    color: #ef4444;
+    font-size: 0.7rem;
+    flex-shrink: 0;
+}
+
+.conflict-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.7rem;
+    color: #64748b;
+}
+
+.conflict-entity {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+
+    i {
+        font-size: 0.7rem;
+        color: #94a3b8;
+    }
+}
+
+.conflict-overlap {
+    color: #ef4444;
+    font-weight: 600;
 }
 
 
@@ -490,6 +689,23 @@ $accent-secondary: #764ba2;
         margin-top: 0.5rem;
         background: rgba($accent-primary, 0.08);
         color: $accent-primary;
+        font-size: 0.7rem;
+        font-weight: 600;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+
+        i {
+            font-size: 0.7rem;
+        }
+    }
+
+    .popover-badge-deps {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        margin-top: 0.35rem;
+        background: rgba($accent-secondary, 0.08);
+        color: $accent-secondary;
         font-size: 0.7rem;
         font-weight: 600;
         padding: 0.2rem 0.5rem;

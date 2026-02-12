@@ -22,6 +22,11 @@ import { ScheduledEventService, ScheduledEventData } from '../../../scheduler-da
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { EventAddEditModalComponent } from '../event-add-edit-modal/event-add-edit-modal.component';
 import { format, parseISO } from 'date-fns';
+import { forkJoin } from 'rxjs';
+import { ConflictDetectionService, ScheduleConflict } from '../../../services/conflict-detection.service';
+import { ResourceService } from '../../../scheduler-data-services/resource.service';
+import { CrewService } from '../../../scheduler-data-services/crew.service';
+import { ScheduledEventDependencyService } from '../../../scheduler-data-services/scheduled-event-dependency.service';
 
 @Component({
   selector: 'app-scheduler-calendar',
@@ -48,6 +53,15 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
   private popoverHideTimer: any = null;
   private readonly POPOVER_SHOW_DELAY = 300;   // ms before showing
   private readonly POPOVER_HIDE_DELAY = 200;   // ms before hiding (allows mouse-to-popover)
+
+
+  //
+  // Conflict Detection state
+  //
+  conflicts: ScheduleConflict[] = [];
+  conflictEventIds: Set<number> = new Set();
+  conflictPanelVisible: boolean = false;
+  dependencyCountMap: Map<number, number> = new Map();
 
 
   //
@@ -83,7 +97,11 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
 
   constructor(
     private scheduledEventService: ScheduledEventService,
-    private modalService: NgbModal
+    private modalService: NgbModal,
+    private conflictDetectionService: ConflictDetectionService,
+    private resourceService: ResourceService,
+    private crewService: CrewService,
+    private dependencyService: ScheduledEventDependencyService
   ) { }
 
 
@@ -182,7 +200,29 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
       rangeEnd = defaultEnd.toISOString();
     }
 
-    this.scheduledEventService.GetCalendarEvents(rangeStart, rangeEnd).subscribe(events => {
+    forkJoin({
+      events: this.scheduledEventService.GetCalendarEvents(rangeStart, rangeEnd),
+      deps: this.dependencyService.GetScheduledEventDependencyList({ active: true, deleted: false })
+    }).subscribe(({ events, deps }) => {
+
+      //
+      // Build dependency count map
+      //
+      this.dependencyCountMap = new Map();
+      for (const dep of deps) {
+        const predId = Number(dep.predecessorEventId);
+        const succId = Number(dep.successorEventId);
+        this.dependencyCountMap.set(predId, (this.dependencyCountMap.get(predId) || 0) + 1);
+        this.dependencyCountMap.set(succId, (this.dependencyCountMap.get(succId) || 0) + 1);
+      }
+
+      //
+      // Run conflict detection on loaded events
+      //
+      this.conflicts = this.conflictDetectionService.detectConflicts(events);
+      this.conflictEventIds = this.conflictDetectionService.getConflictEventIds(this.conflicts);
+      this.enrichConflictNames();
+
       this.calendarOptions.events = events.map(event => ({
         id: event.id.toString(),
         title: event.name,
@@ -193,7 +233,9 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
           eventData: event,
           location: event.location,
           notes: event.notes,
-          isRecurringInstance: this.isRecurringInstance(event)
+          isRecurringInstance: this.isRecurringInstance(event),
+          hasConflict: this.conflictEventIds.has(Number(event.id)),
+          dependencyCount: this.dependencyCountMap.get(Number(event.id)) || 0
         },
         backgroundColor: this.getEventColor(event),
         borderColor: this.getEventColor(event),
@@ -549,8 +591,16 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
     const time = escape(eventInfo.timeText || '');
     const location = eventInfo.event.extendedProps?.location;
     const isRecurring = eventInfo.event.extendedProps?.isRecurringInstance === true;
+    const hasConflict = eventInfo.event.extendedProps?.hasConflict === true;
 
-    let html = `<div class="fc-event-title-custom">${title}</div>`;
+    let html = '';
+
+    // Conflict indicator — corner triangle
+    if (hasConflict) {
+      html += `<div class="fc-event-conflict-badge" title="Scheduling conflict"><i class="bi bi-exclamation-triangle-fill"></i></div>`;
+    }
+
+    html += `<div class="fc-event-title-custom">${title}</div>`;
 
     if (time) {
       html += `<div class="fc-event-time-custom">${time}</div>`;
@@ -565,5 +615,78 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
     }
 
     return { html };
+  }
+
+
+  // =========================================================================
+  // Conflict Detection Helpers
+  // =========================================================================
+
+  toggleConflictPanel(): void {
+    this.conflictPanelVisible = !this.conflictPanelVisible;
+  }
+
+  /**
+   * Look up resource/crew names and populate entityName on each conflict.
+   */
+  private enrichConflictNames(): void {
+    if (this.conflicts.length === 0) return;
+
+    // Collect unique resource/crew IDs
+    const resourceIds = new Set<number>();
+    const crewIds = new Set<number>();
+
+    for (const c of this.conflicts) {
+      if (c.type === 'resource') resourceIds.add(Number(c.entityId));
+      if (c.type === 'crew') crewIds.add(Number(c.entityId));
+    }
+
+    // Load resources
+    if (resourceIds.size > 0) {
+      this.resourceService.GetResourceList({ active: true, deleted: false }).subscribe(resources => {
+        const map = new Map(resources.map(r => [Number(r.id), r.name]));
+        for (const c of this.conflicts) {
+          if (c.type === 'resource') c.entityName = map.get(Number(c.entityId)) || `Resource #${c.entityId}`;
+        }
+      });
+    }
+
+    // Load crews
+    if (crewIds.size > 0) {
+      this.crewService.GetCrewList({ active: true, deleted: false }).subscribe(crews => {
+        const map = new Map(crews.map(cr => [Number(cr.id), cr.name]));
+        for (const c of this.conflicts) {
+          if (c.type === 'crew') c.entityName = map.get(Number(c.entityId)) || `Crew #${c.entityId}`;
+        }
+      });
+    }
+  }
+
+
+  /**
+   * Open the edit modal for the first event of a conflict.
+   */
+  openConflictEvent(conflict: ScheduleConflict): void {
+    this.conflictPanelVisible = false;
+    this.openEditModal(conflict.eventA);
+  }
+
+
+  /**
+   * Format overlap duration for display.
+   */
+  formatOverlap(minutes: number): string {
+    if (minutes < 60) return `${minutes}m overlap`;
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    return m > 0 ? `${h}h ${m}m overlap` : `${h}h overlap`;
+  }
+
+
+  /**
+   * Get the dependency count for a given event (for Quick Peek display).
+   */
+  getDependencyCount(event: ScheduledEventData): number {
+    return this.dependencyCountMap.get(Number(event.id)) || 0;
   }
 }

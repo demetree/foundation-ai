@@ -21,6 +21,10 @@ import { PriorityService, PriorityData } from '../../../scheduler-data-services/
 import { OfficeService, OfficeData } from '../../../scheduler-data-services/office.service';
 import { ClientService, ClientData } from '../../../scheduler-data-services/client.service';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
+import { ScheduledEventDependencyService, ScheduledEventDependencyData, ScheduledEventDependencySubmitData } from '../../../scheduler-data-services/scheduled-event-dependency.service';
+import { DependencyTypeService, DependencyTypeData } from '../../../scheduler-data-services/dependency-type.service';
+import { ScheduledEventBasicListData } from '../../../scheduler-data-services/scheduled-event.service';
+import { ConflictDetectionService } from '../../../services/conflict-detection.service';
 
 @Component({
   selector: 'app-event-add-edit-modal',
@@ -80,6 +84,16 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
   // Track which existing assignments to keep (for diff-based save)
   private existingAssignmentIds: Set<number> = new Set();
 
+  // Dependency state
+  predecessors: ScheduledEventDependencyData[] = [];
+  successors: ScheduledEventDependencyData[] = [];
+  dependencyTypes: DependencyTypeData[] = [];
+  allEventsList: ScheduledEventBasicListData[] = [];
+  pendingNewDeps: { predecessorEventId: number; successorEventId: number; dependencyTypeId: number; lagMinutes: number }[] = [];
+  deletedDepIds: number[] = [];
+  newDep = { eventId: 0, dependencyTypeId: 0, lagMinutes: 0, direction: 'predecessor' as 'predecessor' | 'successor' };
+  addingDependency = false;
+
   private subscriptions = new Subscription();
 
   constructor(
@@ -103,7 +117,10 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
     private priorityService: PriorityService,
     private officeService: OfficeService,
     private clientService: ClientService,
-    private alertService: AlertService
+    private alertService: AlertService,
+    private dependencyService: ScheduledEventDependencyService,
+    private dependencyTypeService: DependencyTypeService,
+    private conflictDetectionService: ConflictDetectionService
   ) {
     this.buildForm();
   }
@@ -122,6 +139,7 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
       }
     } else if (this.event) {
       this.populateForm(this.event);
+      this.loadExistingDependencies();
     }
   }
 
@@ -515,6 +533,15 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
 
     this.saving = true;
 
+    //
+    // Pre-save conflict check: warn if any assignments overlap other events
+    //
+    try {
+      await this.checkForConflictsOnSave();
+    } catch {
+      // Non-blocking — continue saving even if the check fails
+    }
+
     try {
       let recurrenceRuleId: number | null = null;
 
@@ -576,6 +603,9 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
       // 5. Handle Recurrence Exceptions
       await this.handleExceptionsSave(Number(savedEvent.id));
 
+      // 6. Handle Dependencies
+      await this.handleDependenciesSave(Number(savedEvent.id));
+
       this.saving = false;
       this.saved.emit(true);
       this.activeModal.close(true);
@@ -590,6 +620,79 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
       this.alertService.showMessage('Failed to save event', err.message || 'Unknown error', MessageSeverity.error);
     }
   }
+
+  private async checkForConflictsOnSave(): Promise<void> {
+    const formVal = this.eventForm.value;
+    const start = formVal.startDateTime;
+    const end = formVal.endDateTime;
+
+    if (!start || !end) return;
+
+    // Collect resource/crew IDs from current assignments
+    const resourceIds = new Set<number>();
+    const crewIds = new Set<number>();
+
+    for (const control of this.assignments.controls) {
+      const resId = control.get('resourceId')?.value;
+      const crewId = control.get('crewId')?.value;
+      if (resId) resourceIds.add(Number(resId));
+      if (crewId) crewIds.add(Number(crewId));
+    }
+
+    if (resourceIds.size === 0 && crewIds.size === 0) return;
+
+    // Load events in a window around this event's time range
+    const rangeStart = new Date(new Date(start).getTime() - 86400000).toISOString(); // -1 day
+    const rangeEnd = new Date(new Date(end).getTime() + 86400000).toISOString();     // +1 day
+
+    const nearbyEvents = await lastValueFrom(
+      this.scheduledEventService.GetCalendarEvents(rangeStart, rangeEnd)
+    );
+
+    // Build a virtual event representing the form state for each resource/crew
+    const virtualEvents: ScheduledEventData[] = [];
+    const currentId = Number(this.event?.id || -9999);
+
+    for (const resId of resourceIds) {
+      const ve = new ScheduledEventData();
+      ve.id = currentId as any;
+      ve.name = formVal.name || 'This Event';
+      ve.startDateTime = start;
+      ve.endDateTime = end;
+      ve.resourceId = resId as any;
+      ve.crewId = null as any;
+      virtualEvents.push(ve);
+    }
+
+    for (const crId of crewIds) {
+      const ve = new ScheduledEventData();
+      ve.id = currentId as any;
+      ve.name = formVal.name || 'This Event';
+      ve.startDateTime = start;
+      ve.endDateTime = end;
+      ve.resourceId = null as any;
+      ve.crewId = crId as any;
+      virtualEvents.push(ve);
+    }
+
+    // Filter out the current event from nearby events (to avoid self-conflict in edit mode)
+    const otherEvents = nearbyEvents.filter(e => Number(e.id) !== currentId);
+
+    // Combine and detect
+    const allEvents = [...otherEvents, ...virtualEvents];
+    const conflicts = this.conflictDetectionService.detectConflicts(allEvents);
+
+    if (conflicts.length > 0) {
+      const names = conflicts.map(c => {
+        const other = Number(c.eventA.id) === currentId ? c.eventB.name : c.eventA.name;
+        return other;
+      });
+      const uniqueNames = [...new Set(names)].slice(0, 3);
+      const msg = `Potential scheduling conflict with: ${uniqueNames.join(', ')}${names.length > 3 ? ` (+${names.length - 3} more)` : ''}`;
+      this.alertService.showMessage('Conflict Warning', msg, MessageSeverity.warn);
+    }
+  }
+
 
   private async handleAssignmentsSave(eventId: number): Promise<void> {
     const currentFormIds = new Set<number>();
@@ -707,5 +810,134 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
   close(): void {
     this.isVisible = false;
     this.activeModal.dismiss('cancel');
+  }
+
+
+  // -------------------------------------------------------------------------
+  // Dependencies
+  // -------------------------------------------------------------------------
+
+  loadExistingDependencies(): void {
+    if (!this.event) return;
+    const eventId = Number(this.event.id);
+
+    // Load predecessors (this event appears as successorEventId)
+    this.subscriptions.add(
+      this.dependencyService.GetScheduledEventDependencyList({
+        successorEventId: eventId, active: true, deleted: false, includeRelations: true
+      }).subscribe(deps => this.predecessors = deps)
+    );
+
+    // Load successors (this event appears as predecessorEventId)
+    this.subscriptions.add(
+      this.dependencyService.GetScheduledEventDependencyList({
+        predecessorEventId: eventId, active: true, deleted: false, includeRelations: true
+      }).subscribe(deps => this.successors = deps)
+    );
+
+    // Load dependency types lookup
+    this.subscriptions.add(
+      this.dependencyTypeService.GetDependencyTypeList({ active: true, deleted: false }).subscribe(
+        types => this.dependencyTypes = types
+      )
+    );
+
+    // Load all events for picker dropdown
+    this.subscriptions.add(
+      this.scheduledEventService.GetScheduledEventsBasicListData({ active: true, deleted: false }).subscribe(
+        events => this.allEventsList = events.filter(e => Number(e.id) !== eventId)
+      )
+    );
+  }
+
+
+  showAddDependency(direction: 'predecessor' | 'successor'): void {
+    this.addingDependency = true;
+    this.newDep = { eventId: 0, dependencyTypeId: this.dependencyTypes[0]?.id as number || 0, lagMinutes: 0, direction };
+  }
+
+  cancelAddDependency(): void {
+    this.addingDependency = false;
+  }
+
+  confirmAddDependency(): void {
+    if (!this.newDep.eventId || !this.newDep.dependencyTypeId) return;
+
+    const currentEventId = Number(this.event?.id || 0);
+    if (this.newDep.direction === 'predecessor') {
+      this.pendingNewDeps.push({
+        predecessorEventId: this.newDep.eventId,
+        successorEventId: currentEventId,
+        dependencyTypeId: this.newDep.dependencyTypeId,
+        lagMinutes: this.newDep.lagMinutes
+      });
+    } else {
+      this.pendingNewDeps.push({
+        predecessorEventId: currentEventId,
+        successorEventId: this.newDep.eventId,
+        dependencyTypeId: this.newDep.dependencyTypeId,
+        lagMinutes: this.newDep.lagMinutes
+      });
+    }
+
+    this.addingDependency = false;
+  }
+
+  removeExistingDep(dep: ScheduledEventDependencyData, type: 'predecessor' | 'successor'): void {
+    this.deletedDepIds.push(Number(dep.id));
+    if (type === 'predecessor') {
+      this.predecessors = this.predecessors.filter(d => Number(d.id) !== Number(dep.id));
+    } else {
+      this.successors = this.successors.filter(d => Number(d.id) !== Number(dep.id));
+    }
+  }
+
+  removePendingDep(index: number): void {
+    this.pendingNewDeps.splice(index, 1);
+  }
+
+  getDependencyTypeName(typeId: any): string {
+    return this.dependencyTypes.find(t => Number(t.id) === Number(typeId))?.name || 'Unknown';
+  }
+
+  getDependencyTypeColor(typeId: any): string {
+    return this.dependencyTypes.find(t => Number(t.id) === Number(typeId))?.color || '#6c757d';
+  }
+
+  getEventNameById(eventId: number): string {
+    return this.allEventsList.find(e => Number(e.id) === eventId)?.name || `Event #${eventId}`;
+  }
+
+  private async handleDependenciesSave(eventId: number): Promise<void> {
+    // Delete removed dependencies
+    for (const deletedId of this.deletedDepIds) {
+      try {
+        await lastValueFrom(this.dependencyService.DeleteScheduledEventDependency(deletedId));
+      } catch (err: any) {
+        console.error(`Failed to delete dependency ${deletedId}`, err);
+      }
+    }
+
+    // Create new dependencies
+    for (const pending of this.pendingNewDeps) {
+      const submitData = new ScheduledEventDependencySubmitData();
+      submitData.id = 0 as any;
+      submitData.predecessorEventId = pending.predecessorEventId === 0 ? eventId : pending.predecessorEventId;
+      submitData.successorEventId = pending.successorEventId === 0 ? eventId : pending.successorEventId;
+      submitData.dependencyTypeId = pending.dependencyTypeId;
+      submitData.lagMinutes = pending.lagMinutes;
+      submitData.versionNumber = 0 as any;
+      submitData.active = true;
+      submitData.deleted = false;
+
+      try {
+        await lastValueFrom(this.dependencyService.PostScheduledEventDependency(submitData));
+      } catch (err: any) {
+        console.error('Failed to create dependency', err);
+      }
+    }
+
+    this.deletedDepIds = [];
+    this.pendingNewDeps = [];
   }
 }

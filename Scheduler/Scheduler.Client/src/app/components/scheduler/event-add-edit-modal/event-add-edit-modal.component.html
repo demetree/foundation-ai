@@ -59,6 +59,15 @@
         <i class="bi bi-gear me-1"></i>Advanced
       </button>
     </li>
+    <li class="nav-item" *ngIf="isEditMode">
+      <button class="nav-link" [class.active]="activeTab === 'dependencies'" (click)="setActiveTab('dependencies')">
+        <i class="bi bi-diagram-3 me-1"></i>Dependencies
+        <span class="badge bg-primary-subtle text-primary ms-1"
+          *ngIf="predecessors.length + successors.length + pendingNewDeps.length > 0">
+          {{ predecessors.length + successors.length + pendingNewDeps.length }}
+        </span>
+      </button>
+    </li>
   </ul>
 
   <form [formGroup]="eventForm">
@@ -357,6 +366,135 @@
             placeholder="External system reference" />
         </div>
       </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- DEPENDENCIES TAB -->
+    <!-- ============================================================== -->
+    <div class="tab-pane-content" *ngIf="activeTab === 'dependencies'">
+
+      <!-- Predecessors Section -->
+      <div class="dep-section">
+        <div class="dep-section-header">
+          <i class="bi bi-box-arrow-in-right text-primary"></i>
+          <span class="fw-semibold">Predecessors</span>
+          <span class="text-muted small">(must finish before this event)</span>
+          <button class="btn btn-sm btn-outline-primary ms-auto" (click)="showAddDependency('predecessor')"
+            *ngIf="!addingDependency">
+            <i class="bi bi-plus-lg me-1"></i>Add
+          </button>
+        </div>
+
+        <!-- Existing predecessors -->
+        <div class="dep-row" *ngFor="let dep of predecessors">
+          <span class="dep-type-dot" [style.background]="getDependencyTypeColor(dep.dependencyTypeId)"></span>
+          <span class="dep-event-name">{{ dep.predecessorEvent?.name || 'Event #' + dep.predecessorEventId }}</span>
+          <span class="dep-type-badge" [style.borderColor]="getDependencyTypeColor(dep.dependencyTypeId)">
+            {{ getDependencyTypeName(dep.dependencyTypeId) }}
+          </span>
+          <span class="dep-lag" *ngIf="dep.lagMinutes">+{{ dep.lagMinutes }}m lag</span>
+          <button class="btn btn-sm btn-outline-danger btn-icon ms-auto"
+            (click)="removeExistingDep(dep, 'predecessor')">
+            <i class="bi bi-trash3"></i>
+          </button>
+        </div>
+
+        <div class="empty-state small py-2" *ngIf="predecessors.length === 0 && !addingDependency">
+          <i class="bi bi-dash-circle text-muted me-1"></i>No predecessors
+        </div>
+      </div>
+
+      <!-- Successors Section -->
+      <div class="dep-section mt-3">
+        <div class="dep-section-header">
+          <i class="bi bi-box-arrow-right text-success"></i>
+          <span class="fw-semibold">Successors</span>
+          <span class="text-muted small">(can start after this event)</span>
+          <button class="btn btn-sm btn-outline-success ms-auto" (click)="showAddDependency('successor')"
+            *ngIf="!addingDependency">
+            <i class="bi bi-plus-lg me-1"></i>Add
+          </button>
+        </div>
+
+        <div class="dep-row" *ngFor="let dep of successors">
+          <span class="dep-type-dot" [style.background]="getDependencyTypeColor(dep.dependencyTypeId)"></span>
+          <span class="dep-event-name">{{ dep.successorEvent?.name || 'Event #' + dep.successorEventId }}</span>
+          <span class="dep-type-badge" [style.borderColor]="getDependencyTypeColor(dep.dependencyTypeId)">
+            {{ getDependencyTypeName(dep.dependencyTypeId) }}
+          </span>
+          <span class="dep-lag" *ngIf="dep.lagMinutes">+{{ dep.lagMinutes }}m lag</span>
+          <button class="btn btn-sm btn-outline-danger btn-icon ms-auto" (click)="removeExistingDep(dep, 'successor')">
+            <i class="bi bi-trash3"></i>
+          </button>
+        </div>
+
+        <div class="empty-state small py-2" *ngIf="successors.length === 0 && !addingDependency">
+          <i class="bi bi-dash-circle text-muted me-1"></i>No successors
+        </div>
+      </div>
+
+      <!-- Pending New Dependencies -->
+      <div class="dep-section mt-3" *ngIf="pendingNewDeps.length > 0">
+        <div class="dep-section-header">
+          <i class="bi bi-plus-circle text-warning"></i>
+          <span class="fw-semibold">Pending New</span>
+          <span class="badge bg-success-subtle text-success ms-1">Unsaved</span>
+        </div>
+        <div class="dep-row dep-row-new" *ngFor="let pd of pendingNewDeps; let i = index">
+          <span class="dep-type-dot" [style.background]="getDependencyTypeColor(pd.dependencyTypeId)"></span>
+          <span class="dep-event-name">
+            {{ getEventNameById(pd.predecessorEventId === (event?.id || 0) ? pd.successorEventId :
+            pd.predecessorEventId) }}
+          </span>
+          <span class="dep-type-badge" [style.borderColor]="getDependencyTypeColor(pd.dependencyTypeId)">
+            {{ getDependencyTypeName(pd.dependencyTypeId) }}
+          </span>
+          <span class="dep-lag" *ngIf="pd.lagMinutes">+{{ pd.lagMinutes }}m lag</span>
+          <span class="badge bg-success-subtle text-success ms-1">New</span>
+          <button class="btn btn-sm btn-outline-danger btn-icon ms-auto" (click)="removePendingDep(i)">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Add Dependency Inline Form -->
+      <div class="dep-add-form mt-3" *ngIf="addingDependency">
+        <div class="dep-form-header">
+          <i class="bi bi-plus-circle-fill text-primary me-2"></i>
+          <span class="fw-semibold">Add {{ newDep.direction === 'predecessor' ? 'Predecessor' : 'Successor' }}</span>
+        </div>
+        <div class="row g-2 mt-2">
+          <div class="col-md-5">
+            <label class="form-label small fw-semibold">Event</label>
+            <select class="form-select form-select-sm" [(ngModel)]="newDep.eventId"
+              [ngModelOptions]="{standalone: true}">
+              <option [ngValue]="0" disabled>Select event...</option>
+              <option *ngFor="let ev of allEventsList" [ngValue]="ev.id">{{ ev.name }}</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label small fw-semibold">Type</label>
+            <select class="form-select form-select-sm" [(ngModel)]="newDep.dependencyTypeId"
+              [ngModelOptions]="{standalone: true}">
+              <option *ngFor="let dt of dependencyTypes" [ngValue]="dt.id">{{ dt.name }}</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label small fw-semibold">Lag (min)</label>
+            <input type="number" class="form-control form-control-sm" [(ngModel)]="newDep.lagMinutes"
+              [ngModelOptions]="{standalone: true}" min="0" />
+          </div>
+          <div class="col-md-2 d-flex align-items-end gap-1">
+            <button class="btn btn-sm btn-primary" (click)="confirmAddDependency()">
+              <i class="bi bi-check-lg"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="cancelAddDependency()">
+              <i class="bi bi-x-lg"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
     </div>
   </form>
 </div>
