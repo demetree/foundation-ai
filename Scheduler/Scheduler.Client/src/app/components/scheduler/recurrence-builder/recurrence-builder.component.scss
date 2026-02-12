@@ -1,49 +1,225 @@
+// ============================================================================
+// Recurrence Builder – Premium Styling
+// ============================================================================
+
+$accent: #667eea;
+$accent-light: rgba(102, 126, 234, 0.08);
+$accent-border: rgba(102, 126, 234, 0.2);
+$text-muted: #64748b;
+$border-light: rgba(0, 0, 0, 0.06);
+$radius-md: 0.5rem;
+
 .recurrence-builder {
-  .btn-group {
-    .btn {
-      &.active {
-        font-weight: 600;
-      }
+
+  // -------------------------------------------------------------------------
+  // Frequency Selector — Gradient Active State
+  // -------------------------------------------------------------------------
+  .frequency-selector {
+    display: flex;
+    gap: 0.35rem;
+    padding: 0.25rem;
+    background: rgba(0, 0, 0, 0.03);
+    border-radius: $radius-md;
+  }
+
+  .freq-btn {
+    flex: 1;
+    border: none;
+    background: transparent;
+    color: $text-muted;
+    font-weight: 500;
+    font-size: 0.85rem;
+    padding: 0.45rem 0.75rem;
+    border-radius: calc(#{$radius-md} - 2px);
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.04);
+      color: #1e293b;
+    }
+
+    &.active {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff;
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
     }
   }
 
-  // Day picker buttons (weekly)
-  .day-picker {
-    .btn {
-      min-width: 38px;
-      padding: 0.25rem 0.4rem;
-      font-weight: 500;
-    }
-  }
-
+  // -------------------------------------------------------------------------
+  // Configuration Card — Glass Effect
+  // -------------------------------------------------------------------------
   .recurrence-config-card {
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    background-color: #f8f9fa;
-    border-radius: 0.5rem;
+    border: 1px solid $accent-border;
+    border-left: 3px solid $accent;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.03) 0%, rgba(118, 75, 162, 0.02) 100%);
+    border-radius: $radius-md;
+    transition: border-color 0.2s ease;
+
+    &:hover {
+      border-color: rgba(102, 126, 234, 0.35);
+    }
   }
 
-  // Inline form controls inside labels
+  // -------------------------------------------------------------------------
+  // Day Picker — Circular Toggle Buttons
+  // -------------------------------------------------------------------------
+  .day-picker {
+    display: flex;
+    gap: 0.35rem;
+  }
+
+  .day-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 2px solid rgba(0, 0, 0, 0.1);
+    background: #fff;
+    color: $text-muted;
+    font-weight: 600;
+    font-size: 0.8rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+
+    &:hover {
+      border-color: $accent;
+      color: $accent;
+      transform: scale(1.05);
+    }
+
+    &.active {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border-color: transparent;
+      color: #fff;
+      box-shadow: 0 2px 6px rgba(102, 126, 234, 0.3);
+      transform: scale(1.05);
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Section Label
+  // -------------------------------------------------------------------------
+  .section-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: $text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .section-icon {
+    font-size: 1rem;
+  }
+
+  // -------------------------------------------------------------------------
+  // Inline Form Controls
+  // -------------------------------------------------------------------------
   .inline-number-input {
     max-width: 65px;
-    height: 28px;
-    padding: 0.15rem 0.35rem;
+    height: 32px;
+    padding: 0.2rem 0.4rem;
     text-align: center;
+    border-radius: $radius-md;
+    font-weight: 600;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    transition: border-color 0.2s, box-shadow 0.2s;
+
+    &:focus {
+      border-color: $accent;
+      box-shadow: 0 0 0 3px $accent-light;
+    }
   }
 
   .inline-select {
     width: auto;
-    height: 28px;
-    padding: 0.15rem 1.5rem 0.15rem 0.35rem;
+    height: 32px;
+    padding: 0.2rem 1.5rem 0.2rem 0.4rem;
+    border-radius: $radius-md;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    transition: border-color 0.2s, box-shadow 0.2s;
+
+    &:focus {
+      border-color: $accent;
+      box-shadow: 0 0 0 3px $accent-light;
+    }
   }
 
   .inline-date-input {
     width: auto;
-    height: 28px;
-    padding: 0.15rem 0.35rem;
+    height: 32px;
+    padding: 0.2rem 0.4rem;
+    border-radius: $radius-md;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    transition: border-color 0.2s, box-shadow 0.2s;
+
+    &:focus {
+      border-color: $accent;
+      box-shadow: 0 0 0 3px $accent-light;
+    }
   }
 
   .interval-input {
     max-width: 65px;
     text-align: center;
+    font-weight: 600;
+    border-radius: $radius-md;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+
+    &:focus {
+      border-color: $accent;
+      box-shadow: 0 0 0 3px $accent-light;
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // End Condition — Refined Radio Group
+  // -------------------------------------------------------------------------
+  .end-section {
+    border-top: 1px solid $border-light;
+    padding-top: 0.75rem;
+    margin-top: 0.75rem;
+  }
+
+  .end-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.5rem;
+    border-radius: $radius-md;
+    transition: background 0.15s ease;
+
+    &:hover {
+      background: $accent-light;
+    }
+  }
+
+  .form-check-input:checked {
+    background-color: $accent;
+    border-color: $accent;
+  }
+
+  // -------------------------------------------------------------------------
+  // Recurrence Preview
+  // -------------------------------------------------------------------------
+  .recurrence-preview {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 0.75rem;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.06) 0%, rgba(118, 75, 162, 0.04) 100%);
+    border: 1px solid $accent-border;
+    border-radius: $radius-md;
+    font-size: 0.85rem;
+    color: #4c1d95;
+    font-weight: 500;
+    margin-top: 0.75rem;
   }
 }

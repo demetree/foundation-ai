@@ -271,4 +271,55 @@ export class RecurrenceBuilderComponent implements OnInit, OnChanges {
     isDaySelected(dayValue: number): boolean {
         return (this.selectedDaysMask & dayValue) === dayValue;
     }
+
+    // Generate human-readable recurrence preview
+    getRecurrenceSummary(): string {
+        if (!this.selectedFrequencyId) return '';
+
+        const interval = this.recurrenceInterval || 1;
+        let summary = 'Repeats ';
+
+        switch (this.selectedFrequencyId) {
+            case this.FREQ_DAILY:
+                summary += interval === 1 ? 'every day' : `every ${interval} days`;
+                break;
+            case this.FREQ_WEEKLY:
+                summary += interval === 1 ? 'every week' : `every ${interval} weeks`;
+                const selectedDays = this.daysOfWeek
+                    .filter(d => this.isDaySelected(d.value))
+                    .map(d => d.label.substring(0, 3));
+                if (selectedDays.length > 0) {
+                    summary += ` on ${selectedDays.join(', ')}`;
+                }
+                break;
+            case this.FREQ_MONTHLY:
+                summary += interval === 1 ? 'every month' : `every ${interval} months`;
+                if (this.monthlyType === 'dayOfMonth') {
+                    summary += ` on day ${this.dayOfMonth}`;
+                } else {
+                    const order = this.weekOrders.find(w => w.value === this.dayOfWeekInMonth)?.label?.toLowerCase() || '';
+                    const dayName = this.daysOfWeek.find(d => d.value === this.selectedDayOfWeekForMonthly)?.label || '';
+                    summary += ` on the ${order} ${dayName}`;
+                }
+                break;
+            case this.FREQ_YEARLY:
+                summary += interval === 1 ? 'every year' : `every ${interval} years`;
+                const monthName = this.months.find(m => m.value === this.yearlyMonth)?.label || '';
+                summary += ` on ${monthName} ${this.yearlyDayOfMonth}`;
+                break;
+        }
+
+        switch (this.endType) {
+            case 'count':
+                summary += `, ${this.recurrenceCount} times`;
+                break;
+            case 'until':
+                if (this.recurrenceUntilStr) {
+                    summary += `, until ${this.recurrenceUntilStr}`;
+                }
+                break;
+        }
+
+        return summary;
+    }
 }

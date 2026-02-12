@@ -1,0 +1,347 @@
+// ============================================================================
+// Event Add/Edit Modal – Premium Styling
+// ============================================================================
+
+// Design tokens (matches calendar page gradient family)
+$gradient-start: #667eea;
+$gradient-end: #764ba2;
+$accent: #667eea;
+$accent-light: rgba(102, 126, 234, 0.08);
+$text-primary: #1e293b;
+$text-muted: #64748b;
+$border-light: rgba(0, 0, 0, 0.06);
+$radius-lg: 0.75rem;
+$radius-md: 0.5rem;
+$shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+
+// -------------------------------------------------------------------------
+// Modal Header — Gradient
+// -------------------------------------------------------------------------
+.event-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    background: linear-gradient(135deg, $gradient-start 0%, $gradient-end 100%);
+    color: #fff;
+    border-bottom: none;
+
+    .modal-title {
+        font-weight: 700;
+        font-size: 1.15rem;
+        letter-spacing: -0.01em;
+    }
+
+    .header-subtitle {
+        opacity: 0.8;
+        font-size: 0.8rem;
+    }
+}
+
+.header-icon-badge {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    backdrop-filter: blur(4px);
+}
+
+// -------------------------------------------------------------------------
+// Modal Body
+// -------------------------------------------------------------------------
+.event-modal-body {
+    padding: 1.25rem 1.5rem;
+    max-height: 70vh;
+    overflow-y: auto;
+
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.15);
+        border-radius: 3px;
+    }
+}
+
+// -------------------------------------------------------------------------
+// Template Picker
+// -------------------------------------------------------------------------
+.template-picker {
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.06) 0%, rgba(255, 152, 0, 0.04) 100%);
+    border: 1px solid rgba(255, 193, 7, 0.15);
+    border-radius: $radius-md;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+
+    .ls-1 {
+        letter-spacing: 0.05em;
+    }
+}
+
+// -------------------------------------------------------------------------
+// Tab Navigation — Pill Style
+// -------------------------------------------------------------------------
+.event-tab-nav {
+    display: flex;
+    gap: 0.25rem;
+    border-bottom: 2px solid $border-light;
+    padding-bottom: 0;
+
+    .nav-link {
+        border: none;
+        border-radius: $radius-md $radius-md 0 0;
+        background: transparent;
+        color: $text-muted;
+        font-size: 0.875rem;
+        font-weight: 500;
+        padding: 0.5rem 1rem;
+        transition: all 0.2s ease;
+        position: relative;
+
+        &:hover {
+            color: $accent;
+            background: $accent-light;
+        }
+
+        &.active {
+            color: $accent;
+            font-weight: 600;
+            background: $accent-light;
+
+            &::after {
+                content: '';
+                position: absolute;
+                bottom: -2px;
+                left: 0;
+                right: 0;
+                height: 2px;
+                background: $accent;
+                border-radius: 2px 2px 0 0;
+            }
+        }
+    }
+}
+
+// -------------------------------------------------------------------------
+// Tab Pane Content
+// -------------------------------------------------------------------------
+.tab-pane-content {
+    animation: fadeIn 0.15s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+// -------------------------------------------------------------------------
+// Form Overrides
+// -------------------------------------------------------------------------
+.form-label {
+    font-size: 0.8rem;
+    color: $text-muted;
+    margin-bottom: 0.3rem;
+}
+
+.form-control,
+.form-select {
+    border-radius: $radius-md;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    font-size: 0.9rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+
+    &:focus {
+        border-color: $accent;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
+    }
+}
+
+.form-control-color {
+    width: 48px;
+    height: 38px;
+    padding: 4px;
+    cursor: pointer;
+}
+
+// -------------------------------------------------------------------------
+// Assignment Table
+// -------------------------------------------------------------------------
+.assignment-table-wrapper {
+    border: 1px solid $border-light;
+    border-radius: $radius-md;
+    overflow: hidden;
+}
+
+.assignment-table {
+    margin-bottom: 0;
+
+    thead th {
+        background: rgba(0, 0, 0, 0.02);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: $text-muted;
+        font-weight: 600;
+        border-bottom: 1px solid $border-light;
+        padding: 0.6rem 0.75rem;
+    }
+
+    tbody td {
+        padding: 0.6rem 0.75rem;
+        font-size: 0.875rem;
+        vertical-align: middle;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+    }
+
+    .assignment-row {
+        transition: background 0.15s ease;
+
+        &:hover {
+            background: $accent-light;
+        }
+
+        &:last-child td {
+            border-bottom: none;
+        }
+    }
+}
+
+.btn-icon {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: $radius-md;
+}
+
+// -------------------------------------------------------------------------
+// Empty State
+// -------------------------------------------------------------------------
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    text-align: center;
+    border: 2px dashed rgba(0, 0, 0, 0.06);
+    border-radius: $radius-md;
+    background: rgba(0, 0, 0, 0.01);
+}
+
+// -------------------------------------------------------------------------
+// Recurrence Panel
+// -------------------------------------------------------------------------
+.recurrence-panel {
+    background: rgba(0, 0, 0, 0.015);
+    border: 1px solid $border-light;
+    border-radius: $radius-md;
+    padding: 1rem;
+}
+
+// -------------------------------------------------------------------------
+// Recurrence Exceptions
+// -------------------------------------------------------------------------
+.exceptions-panel {
+    border-top: 1px solid $border-light;
+    padding-top: 1rem;
+}
+
+.exception-add-form {
+    background: rgba(255, 193, 7, 0.04);
+    border: 1px solid rgba(255, 193, 7, 0.15);
+    border-radius: $radius-md;
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.exception-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.exception-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: $radius-md;
+    transition: background 0.15s ease;
+
+    &:hover {
+        background: rgba(0, 0, 0, 0.02);
+    }
+}
+
+.exception-item-new {
+    background: rgba(25, 135, 84, 0.04);
+    border: 1px dashed rgba(25, 135, 84, 0.2);
+}
+
+.exception-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.exception-dot-existing {
+    background: #f59e0b;
+}
+
+.exception-dot-new {
+    background: #22c55e;
+}
+
+.exception-content {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    font-size: 0.875rem;
+}
+
+// -------------------------------------------------------------------------
+// Modal Footer
+// -------------------------------------------------------------------------
+.event-modal-footer {
+    border-top: 1px solid $border-light;
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    background: rgba(0, 0, 0, 0.01);
+
+    .btn-save {
+        min-width: 120px;
+        font-weight: 600;
+        background: linear-gradient(135deg, $gradient-start, $gradient-end);
+        border: none;
+        border-radius: $radius-md;
+        transition: all 0.2s ease;
+
+        &:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        &:disabled {
+            opacity: 0.6;
+        }
+    }
+}

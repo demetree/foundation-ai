@@ -14,6 +14,12 @@ import { AssignmentRoleQualificationRequirementService } from '../../../schedule
 import { SchedulingTargetQualificationRequirementService } from '../../../scheduler-data-services/scheduling-target-qualification-requirement.service';
 import { ResourceQualificationService } from '../../../scheduler-data-services/resource-qualification.service';
 import { RecurrenceRuleService, RecurrenceRuleData } from '../../../scheduler-data-services/recurrence-rule.service';
+import { RecurrenceExceptionService, RecurrenceExceptionData, RecurrenceExceptionSubmitData } from '../../../scheduler-data-services/recurrence-exception.service';
+import { TimeZoneService, TimeZoneData } from '../../../scheduler-data-services/time-zone.service';
+import { EventStatusService, EventStatusData } from '../../../scheduler-data-services/event-status.service';
+import { PriorityService, PriorityData } from '../../../scheduler-data-services/priority.service';
+import { OfficeService, OfficeData } from '../../../scheduler-data-services/office.service';
+import { ClientService, ClientData } from '../../../scheduler-data-services/client.service';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 
 @Component({
@@ -39,6 +45,7 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
   saving = false;
   isRecurring = false;
   recurrenceRule: RecurrenceRuleData | null = null;
+  activeTab = 'basic';
 
   // Template picker
   selectedTemplateId: number | null = null;
@@ -53,6 +60,18 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
   crews: CrewData[] = [];
   resources: ResourceData[] = [];
   roles: AssignmentRoleData[] = [];
+  timeZones: TimeZoneData[] = [];
+  eventStatuses: EventStatusData[] = [];
+  priorities: PriorityData[] = [];
+  offices: OfficeData[] = [];
+  clients: ClientData[] = [];
+
+  // Recurrence Exceptions
+  recurrenceExceptions: RecurrenceExceptionData[] = [];
+  newException = { exceptionDateTime: '', movedToDateTime: '', reason: '' };
+  pendingNewExceptions: { exceptionDateTime: string; movedToDateTime: string | null; reason: string | null }[] = [];
+  deletedExceptionIds: number[] = [];
+  addingException = false;
 
   // Derived data
   selectedTarget: SchedulingTargetData | null = null;
@@ -78,15 +97,19 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
     private targetQualService: SchedulingTargetQualificationRequirementService,
     private resourceQualService: ResourceQualificationService,
     private recurrenceRuleService: RecurrenceRuleService,
+    private recurrenceExceptionService: RecurrenceExceptionService,
+    private timeZoneService: TimeZoneService,
+    private eventStatusService: EventStatusService,
+    private priorityService: PriorityService,
+    private officeService: OfficeService,
+    private clientService: ClientService,
     private alertService: AlertService
   ) {
     this.buildForm();
   }
 
   ngOnInit(): void {
-
     this.isEditMode = !!this.event;
-
     this.loadLookupData();
 
     if (!this.isEditMode) {
@@ -119,7 +142,13 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
       location: [''],
       timeZoneId: [null],
       notes: [''],
-      externalId: ['']
+      externalId: [''],
+      eventStatusId: [null],
+      priorityId: [null],
+      officeId: [null],
+      clientId: [null],
+      color: [null],
+      isAllDay: [false]
     });
 
     // Assignments array (managed separately for easier sub-table integration)
@@ -136,7 +165,12 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
       targets: this.targetService.GetSchedulingTargetList({ active: true, includeRelations: true }),
       crews: this.crewService.GetCrewList({ active: true, includeRelations: true }),
       resources: this.resourceService.GetResourceList({ active: true, includeRelations: true }),
-      roles: this.roleService.GetAssignmentRoleList({ active: true })
+      roles: this.roleService.GetAssignmentRoleList({ active: true }),
+      timeZones: this.timeZoneService.GetTimeZoneList({ active: true }),
+      eventStatuses: this.eventStatusService.GetEventStatusList({ active: true }),
+      priorities: this.priorityService.GetPriorityList({ active: true }),
+      offices: this.officeService.GetOfficeList({ active: true }),
+      clients: this.clientService.GetClientList({ active: true })
     }).subscribe({
       next: (data) => {
         this.templates = data.templates;
@@ -144,9 +178,15 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
         this.crews = data.crews;
         this.resources = data.resources;
         this.roles = data.roles;
+        this.timeZones = data.timeZones;
+        this.eventStatuses = data.eventStatuses;
+        this.priorities = data.priorities;
+        this.offices = data.offices;
+        this.clients = data.clients;
 
         if (this.isEditMode) {
           this.loadExistingAssignments();
+          this.loadExistingExceptions();
         }
       },
       error: () => {
@@ -172,12 +212,29 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
     });
   }
 
+  private loadExistingExceptions(): void {
+    if (!this.event) return;
+
+    this.scheduledEventService.GetRecurrenceExceptionsForScheduledEvent(
+      Number(this.event.id)
+    ).subscribe(exceptions => {
+      this.recurrenceExceptions = exceptions;
+    });
+  }
+
+  // -------------------------------------------------------------------------
+  // Tab Navigation
+  // -------------------------------------------------------------------------
+  setActiveTab(tab: string): void {
+    this.activeTab = tab;
+  }
+
   // -------------------------------------------------------------------------
   // Template Handling
   // -------------------------------------------------------------------------
   applyTemplate(): void {
     if (!this.selectedTemplateId) {
-      this.eventForm.reset();
+      this.eventForm.reset({ isAllDay: false });
       this.assignmentsFormArray.clear();
       return;
     }
@@ -241,14 +298,12 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
   }
 
   editAssignment(index: number): void {
-    // Toggle expanded/editing state for the assignment row
     const control = this.assignments.at(index);
     if (control) {
       const current = control.get('_editing')?.value ?? false;
       if (control.get('_editing')) {
         control.get('_editing')!.setValue(!current);
       } else {
-        // Add a transient editing flag
         (control as FormGroup).addControl('_editing', this.fb.control(true));
       }
     }
@@ -273,14 +328,70 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
   }
 
   // -------------------------------------------------------------------------
+  // Lookup Helpers
+  // -------------------------------------------------------------------------
+  getResourceName(resourceId: any): string {
+    if (!resourceId) return '—';
+    const resource = this.resources.find(r => Number(r.id) === Number(resourceId));
+    return resource?.name || `Resource #${resourceId}`;
+  }
+
+  getCrewName(crewId: any): string {
+    if (!crewId) return '—';
+    const crew = this.crews.find(c => Number(c.id) === Number(crewId));
+    return crew?.name || `Crew #${crewId}`;
+  }
+
+  getRoleName(roleId: any): string {
+    if (!roleId) return '—';
+    const role = this.roles.find(r => Number(r.id) === Number(roleId));
+    return role?.name || `Role #${roleId}`;
+  }
+
+  // -------------------------------------------------------------------------
+  // Recurrence Exceptions
+  // -------------------------------------------------------------------------
+  showAddException(): void {
+    this.addingException = true;
+    this.newException = { exceptionDateTime: '', movedToDateTime: '', reason: '' };
+  }
+
+  cancelAddException(): void {
+    this.addingException = false;
+  }
+
+  confirmAddException(): void {
+    if (!this.newException.exceptionDateTime) return;
+
+    this.pendingNewExceptions.push({
+      exceptionDateTime: this.newException.exceptionDateTime,
+      movedToDateTime: this.newException.movedToDateTime || null,
+      reason: this.newException.reason || null
+    });
+
+    this.addingException = false;
+    this.newException = { exceptionDateTime: '', movedToDateTime: '', reason: '' };
+  }
+
+  removeExistingException(index: number): void {
+    const exception = this.recurrenceExceptions[index];
+    if (exception) {
+      this.deletedExceptionIds.push(Number(exception.id));
+      this.recurrenceExceptions.splice(index, 1);
+    }
+  }
+
+  removePendingException(index: number): void {
+    this.pendingNewExceptions.splice(index, 1);
+  }
+
+  // -------------------------------------------------------------------------
   // Qualification Validation
   // -------------------------------------------------------------------------
   private async validateQualifications(): Promise<void> {
     this.qualificationWarnings = [];
 
     const targetId = this.eventForm.get('schedulingTargetId')?.value;
-
-    // Collect required qualification IDs from all sources
     const requiredQualIds = new Set<number>();
 
     // From assignment roles
@@ -296,7 +407,7 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
           );
           roleQuals.forEach(rq => requiredQualIds.add(Number((rq as any).qualificationId)));
         } catch {
-          // Silently skip — don't block the user over qualification lookup failures
+          // Silently skip
         }
       }
     }
@@ -334,7 +445,6 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
 
         for (const reqQualId of requiredQualIds) {
           if (!resourceQualIds.has(reqQualId)) {
-            // Find resource name for a readable warning
             const resource = this.resources.find(r => Number(r.id) === Number(resourceId));
             const resourceName = resource?.name || `Resource #${resourceId}`;
             this.qualificationWarnings.push(
@@ -361,7 +471,13 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
       location: eventData.location,
       timeZoneId: eventData.timeZoneId,
       notes: eventData.notes,
-      externalId: eventData.externalId
+      externalId: eventData.externalId,
+      eventStatusId: eventData.eventStatusId,
+      priorityId: eventData.priorityId,
+      officeId: eventData.officeId,
+      clientId: eventData.clientId,
+      color: eventData.color,
+      isAllDay: eventData.isAllDay || false
     });
 
     this.selectedTarget = eventData.schedulingTarget || null;
@@ -377,9 +493,8 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
 
   onRecurrenceToggle(): void {
     if (this.isRecurring && !this.recurrenceRule) {
-      // Initialize with defaults if enabling and no rule exists
       this.recurrenceRule = new RecurrenceRuleData();
-      this.recurrenceRule.id = 0 as any;           // Explicitly 0 for "new rule"
+      this.recurrenceRule.id = 0 as any;
       this.recurrenceRule.recurrenceFrequencyId = 2; // Daily default
       this.recurrenceRule.interval = 1;
       this.recurrenceRule.versionNumber = 0 as any;
@@ -407,47 +522,45 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
       if (this.isRecurring && this.recurrenceRule) {
         const ruleId = Number(this.recurrenceRule.id || 0);
         if (ruleId > 0) {
-          // Update existing
           await lastValueFrom(this.recurrenceRuleService.PutRecurrenceRule(this.recurrenceRule.id, this.recurrenceRule));
           recurrenceRuleId = ruleId;
         } else {
-          // Create new
           const newRule = await lastValueFrom(this.recurrenceRuleService.PostRecurrenceRule(this.recurrenceRule));
           recurrenceRuleId = Number(newRule.id);
         }
       } else {
-        // Not recurring, ensure we decouple if previously recurring
         recurrenceRuleId = null;
       }
 
       // 2. Prepare Event Data
+      const formVal = this.eventForm.value;
       const submitData: ScheduledEventSubmitData = {
         id: this.event?.id || 0,
-        name: this.eventForm.get('name')?.value.trim(),
-        description: this.eventForm.get('description')?.value?.trim() || null,
-        schedulingTargetId: this.eventForm.get('schedulingTargetId')?.value || null,
-        startDateTime: this.eventForm.get('startDateTime')?.value,
-        endDateTime: this.eventForm.get('endDateTime')?.value,
-        location: this.eventForm.get('location')?.value?.trim() || null,
-        timeZoneId: this.eventForm.get('timeZoneId')?.value || null,
-        notes: this.eventForm.get('notes')?.value?.trim() || null,
-        externalId: this.eventForm.get('externalId')?.value?.trim() || null,
+        name: formVal.name?.trim(),
+        description: formVal.description?.trim() || null,
+        schedulingTargetId: formVal.schedulingTargetId || null,
+        startDateTime: formVal.startDateTime,
+        endDateTime: formVal.endDateTime,
+        location: formVal.location?.trim() || null,
+        timeZoneId: formVal.timeZoneId || null,
+        notes: formVal.notes?.trim() || null,
+        externalId: formVal.externalId?.trim() || null,
         versionNumber: this.event?.versionNumber || 0,
         recurrenceRuleId: recurrenceRuleId as number,
         scheduledEventTemplateId: null,
-        clientId: null,
+        clientId: formVal.clientId || null,
         resourceId: null,
         crewId: null,
         parentScheduledEventId: null,
         recurrenceInstanceDate: null,
         attributes: null,
-        isAllDay: false,
-        priorityId: null as any,
-        eventStatusId: 1,
+        isAllDay: formVal.isAllDay || false,
+        priorityId: formVal.priorityId || null,
+        eventStatusId: formVal.eventStatusId || 1,
         bookingSourceTypeId: null,
-        officeId: null,
+        officeId: formVal.officeId || null,
         partySize: null,
-        color: null,
+        color: formVal.color || null,
         active: true,
         deleted: false
       };
@@ -459,6 +572,9 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
 
       // 4. Handle Assignments
       await this.handleAssignmentsSave(Number(savedEvent.id));
+
+      // 5. Handle Recurrence Exceptions
+      await this.handleExceptionsSave(Number(savedEvent.id));
 
       this.saving = false;
       this.saved.emit(true);
@@ -476,7 +592,6 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
   }
 
   private async handleAssignmentsSave(eventId: number): Promise<void> {
-    // Collect the IDs of assignments currently in the form
     const currentFormIds = new Set<number>();
 
     for (const control of this.assignments.controls) {
@@ -486,7 +601,7 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
       }
     }
 
-    // Delete removed assignments (existed before but no longer in form)
+    // Delete removed assignments
     for (const existingId of this.existingAssignmentIds) {
       if (!currentFormIds.has(existingId)) {
         try {
@@ -513,25 +628,56 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
       submitData.deleted = false;
       submitData.isVolunteer = false;
       submitData.reimbursementRequested = false;
-      submitData.assignmentStatusId = 1; // Default status
+      submitData.assignmentStatusId = 1;
 
       try {
         if (assignmentId && Number(assignmentId) > 0) {
-          // Update existing
           submitData.id = Number(assignmentId);
-          submitData.versionNumber = 0; // Server handles optimistic concurrency
+          submitData.versionNumber = 0;
           await lastValueFrom(this.assignmentService.PutEventResourceAssignment(submitData.id, submitData));
         } else {
-          // Create new
           submitData.id = 0 as any;
           submitData.versionNumber = 0 as any;
           await lastValueFrom(this.assignmentService.PostEventResourceAssignment(submitData));
         }
       } catch (err: any) {
         console.error('Failed to save assignment', err);
-        // Continue with other assignments rather than failing completely
       }
     }
+  }
+
+  private async handleExceptionsSave(eventId: number): Promise<void> {
+    // Delete removed exceptions
+    for (const deletedId of this.deletedExceptionIds) {
+      try {
+        await lastValueFrom(this.recurrenceExceptionService.DeleteRecurrenceException(deletedId));
+      } catch (err: any) {
+        console.error(`Failed to delete exception ${deletedId}`, err);
+      }
+    }
+
+    // Create new exceptions
+    for (const pending of this.pendingNewExceptions) {
+      const submitData = new RecurrenceExceptionSubmitData();
+      submitData.id = 0 as any;
+      submitData.scheduledEventId = eventId;
+      submitData.exceptionDateTime = pending.exceptionDateTime;
+      submitData.movedToDateTime = pending.movedToDateTime;
+      submitData.reason = pending.reason;
+      submitData.versionNumber = 0 as any;
+      submitData.active = true;
+      submitData.deleted = false;
+
+      try {
+        await lastValueFrom(this.recurrenceExceptionService.PostRecurrenceException(submitData));
+      } catch (err: any) {
+        console.error('Failed to create exception', err);
+      }
+    }
+
+    // Reset state
+    this.deletedExceptionIds = [];
+    this.pendingNewExceptions = [];
   }
 
   // -------------------------------------------------------------------------
@@ -543,14 +689,17 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
     this.isEditMode = !!event;
 
     // Reset form and state
-    this.eventForm.reset();
+    this.eventForm.reset({ isAllDay: false });
     this.assignments.clear();
     this.isRecurring = false;
     this.recurrenceRule = null;
     this.existingAssignmentIds.clear();
+    this.recurrenceExceptions = [];
+    this.pendingNewExceptions = [];
+    this.deletedExceptionIds = [];
+    this.activeTab = 'basic';
 
     if (this.isEditMode && this.event) {
-      // populateForm will handle setting isRecurring and recurrenceRule
       this.populateForm(this.event);
     }
   }
