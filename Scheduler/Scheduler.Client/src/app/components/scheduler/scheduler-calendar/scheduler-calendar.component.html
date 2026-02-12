@@ -1,3 +1,124 @@
-<div class="container-fluid py-3">
-  <full-calendar [options]="calendarOptions" #calendar></full-calendar>
+<!--
+  Scheduler Calendar — Premium Layout
+  AI-Developed — This file was significantly developed with AI assistance.
+-->
+
+<div class="scheduler-calendar-container">
+
+  <!-- Premium Gradient Header -->
+  <div class="premium-header">
+    <div class="card-header">
+
+      <!-- Left: Icon + Title -->
+      <div class="header-left">
+        <i class="bi bi-calendar3 page-icon text-white"></i>
+        <h2 class="page-title">Schedule</h2>
+      </div>
+
+      <!-- Right: Nav + View Toggle -->
+      <div class="header-right">
+
+        <!-- Navigation -->
+        <button class="btn-glass" (click)="navigateCalendar('today')" title="Today">
+          Today
+        </button>
+        <button class="btn-glass" (click)="navigateCalendar('prev')" title="Previous">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        <button class="btn-glass" (click)="navigateCalendar('next')" title="Next">
+          <i class="bi bi-chevron-right"></i>
+        </button>
+
+        <!-- Current Date Range Title -->
+        <span class="text-white fw-semibold mx-2" style="font-size: 1rem; text-shadow: 0 1px 3px rgba(0,0,0,0.15);">
+          {{ currentTitle }}
+        </span>
+
+        <!-- View Toggle -->
+        <div class="btn-group-glass">
+          <button class="btn-glass" [class.active]="currentView === 'dayGridMonth'" (click)="changeView('dayGridMonth')">
+            Month
+          </button>
+          <button class="btn-glass" [class.active]="currentView === 'timeGridWeek'" (click)="changeView('timeGridWeek')">
+            Week
+          </button>
+          <button class="btn-glass" [class.active]="currentView === 'timeGridDay'" (click)="changeView('timeGridDay')">
+            Day
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Calendar Card -->
+  <div class="calendar-card">
+    <full-calendar [options]="calendarOptions" #calendar></full-calendar>
+  </div>
+
+
+  <!-- Quick Peek Popover -->
+  <div class="quick-peek-popover"
+       [class.visible]="hoveredEvent != null"
+       [style.top.px]="popoverPosition.top"
+       [style.left.px]="popoverPosition.left"
+       (mouseenter)="onPopoverMouseEnter()"
+       (mouseleave)="onPopoverMouseLeave()">
+
+    <ng-container *ngIf="hoveredEvent">
+
+      <!-- Color Accent Bar -->
+      <div class="popover-accent" [style.background]="getEventColor(hoveredEvent)"></div>
+
+      <div class="popover-body">
+
+        <!-- Title -->
+        <div class="popover-title">{{ hoveredEvent.name }}</div>
+
+        <!-- Time -->
+        <div class="popover-row">
+          <i class="bi bi-clock"></i>
+          <span>{{ formatTimeRange(hoveredEvent) }}</span>
+        </div>
+
+        <!-- Location -->
+        <div class="popover-row" *ngIf="hoveredEvent.location">
+          <i class="bi bi-geo-alt"></i>
+          <span>{{ hoveredEvent.location }}</span>
+        </div>
+
+        <!-- Status -->
+        <div class="popover-row" *ngIf="hoveredEvent.eventStatus">
+          <span class="popover-status-dot" [style.background]="hoveredEvent.eventStatus.color || '#6c757d'"></span>
+          <span>{{ hoveredEvent.eventStatus.name }}</span>
+        </div>
+
+        <!-- Resource / Crew -->
+        <div class="popover-row" *ngIf="hoveredEvent.resource || hoveredEvent.crew">
+          <i class="bi bi-person"></i>
+          <span>{{ hoveredEvent.resource?.name || hoveredEvent.crew?.name }}</span>
+        </div>
+
+        <!-- Notes -->
+        <div class="popover-notes" *ngIf="hoveredEvent.notes">
+          {{ hoveredEvent.notes }}
+        </div>
+
+        <!-- Series Badge -->
+        <div class="popover-badge-series" *ngIf="isRecurringInstance(hoveredEvent)">
+          <i class="bi bi-arrow-repeat"></i>
+          Part of recurring series
+        </div>
+
+      </div>
+
+      <!-- Footer Hint -->
+      <div class="popover-footer">
+        <span class="popover-hint">Click to open details</span>
+      </div>
+
+    </ng-container>
+  </div>
+
 </div>

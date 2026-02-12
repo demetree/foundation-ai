@@ -1,48 +1,91 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+/**
+ *
+ * SchedulerCalendarComponent
+ *
+ * AI-Developed — This file was significantly developed with AI assistance.
+ *
+ * Premium calendar view using FullCalendar with:
+ *   - Custom gradient header with glassmorphic navigation controls
+ *   - Quick Peek hover popover for event details
+ *   - Drag-n-Drop guard for recurring instances
+ *   - Server-side recurrence expansion via Calendar API endpoint
+ *
+ */
+
+import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import { FullCalendarComponent } from '@fullcalendar/angular';
-import { CalendarOptions } from '@fullcalendar/core'; // useful for typechecking
+import { CalendarOptions } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { ScheduledEventService, ScheduledEventData } from '../../../scheduler-data-services/scheduled-event.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { EventAddEditModalComponent } from '../event-add-edit-modal/event-add-edit-modal.component';
-import { formatISO } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 
 @Component({
   selector: 'app-scheduler-calendar',
   templateUrl: './scheduler-calendar.component.html',
   styleUrls: ['./scheduler-calendar.component.scss']
 })
-export class SchedulerCalendarComponent implements OnInit {
+export class SchedulerCalendarComponent implements OnInit, OnDestroy {
   @ViewChild('calendar') calendarComponent!: FullCalendarComponent;
 
+
+  //
+  // Header state
+  //
+  currentView: string = 'timeGridWeek';
+  currentTitle: string = '';
+
+
+  //
+  // Quick Peek state
+  //
+  hoveredEvent: ScheduledEventData | null = null;
+  popoverPosition = { top: 0, left: 0 };
+  private popoverShowTimer: any = null;
+  private popoverHideTimer: any = null;
+  private readonly POPOVER_SHOW_DELAY = 300;   // ms before showing
+  private readonly POPOVER_HIDE_DELAY = 200;   // ms before hiding (allows mouse-to-popover)
+
+
+  //
+  // FullCalendar options
+  //
   calendarOptions: CalendarOptions = {
     plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
     initialView: 'timeGridWeek',
-    headerToolbar: {
-      left: 'prev,next today',
-      center: 'title',
-      right: 'dayGridMonth,timeGridWeek,timeGridDay'
-    },
+    headerToolbar: false,  // We use our own premium header
     editable: true,
     selectable: true,
     selectMirror: true,
     dayMaxEvents: true,
     weekends: true,
-    events: [], // Filled by loadEvents
+    nowIndicator: true,
+    height: 'auto',
+    allDaySlot: true,
+    slotMinTime: '06:00:00',
+    slotMaxTime: '22:00:00',
+    expandRows: true,
+    stickyHeaderDates: true,
+    events: [],
     select: this.handleDateSelect.bind(this),
     eventClick: this.handleEventClick.bind(this),
     eventDrop: this.handleEventDrop.bind(this),
     eventResize: this.handleEventResize.bind(this),
     eventContent: this.renderEventContent.bind(this),
-    datesSet: this.handleDatesSet.bind(this)
+    datesSet: this.handleDatesSet.bind(this),
+    eventMouseEnter: this.handleEventMouseEnter.bind(this),
+    eventMouseLeave: this.handleEventMouseLeave.bind(this)
   };
+
 
   constructor(
     private scheduledEventService: ScheduledEventService,
     private modalService: NgbModal
   ) { }
+
 
   ngOnInit(): void {
     //
@@ -51,15 +94,76 @@ export class SchedulerCalendarComponent implements OnInit {
   }
 
 
+  ngOnDestroy(): void {
+    this.clearPopoverTimers();
+  }
+
+
+  // =========================================================================
+  // Custom Header Navigation
+  // =========================================================================
+
   /**
-   *
-   * Called by FullCalendar whenever the visible date range changes (view switch, prev/next navigation, etc).
-   *
-   * Loads all events for the visible range using the server-side Calendar endpoint,
-   * which returns both standalone events and expanded recurring event instances.
-   *
+   * Navigate the calendar (prev / next / today).
+   */
+  navigateCalendar(action: 'prev' | 'next' | 'today'): void {
+    const calendarApi = this.calendarComponent?.getApi();
+
+    if (calendarApi == null) {
+      return;
+    }
+
+    switch (action) {
+      case 'prev':
+        calendarApi.prev();
+        break;
+      case 'next':
+        calendarApi.next();
+        break;
+      case 'today':
+        calendarApi.today();
+        break;
+    }
+
+    this.updateHeaderState(calendarApi);
+  }
+
+
+  /**
+   * Switch the calendar view.
+   */
+  changeView(viewName: string): void {
+    const calendarApi = this.calendarComponent?.getApi();
+
+    if (calendarApi == null) {
+      return;
+    }
+
+    calendarApi.changeView(viewName);
+    this.currentView = viewName;
+    this.updateHeaderState(calendarApi);
+  }
+
+
+  /**
+   * Sync the header title with the calendar's current date range.
+   */
+  private updateHeaderState(calendarApi: any): void {
+    this.currentTitle = calendarApi.view.title;
+    this.currentView = calendarApi.view.type;
+  }
+
+
+  // =========================================================================
+  // Data Loading
+  // =========================================================================
+
+  /**
+   * Called by FullCalendar whenever the visible date range changes.
    */
   handleDatesSet(dateInfo: any): void {
+    this.currentTitle = dateInfo.view.title;
+    this.currentView = dateInfo.view.type;
     this.loadEvents(dateInfo.startStr, dateInfo.endStr);
   }
 
@@ -67,10 +171,9 @@ export class SchedulerCalendarComponent implements OnInit {
   private loadEvents(rangeStart?: string, rangeEnd?: string): void {
 
     //
-    // If no range provided, use a default window of 3 months back to 6 months forward
+    // If no range provided, use a default window
     //
     if (rangeStart == null || rangeEnd == null) {
-
       const today = new Date();
       const defaultStart = new Date(today.getFullYear(), today.getMonth() - 3, 1);
       const defaultEnd = new Date(today.getFullYear(), today.getMonth() + 6, 0);
@@ -85,32 +188,204 @@ export class SchedulerCalendarComponent implements OnInit {
         title: event.name,
         start: event.startDateTime,
         end: event.endDateTime,
+        allDay: event.isAllDay === true,
         extendedProps: {
           eventData: event,
           location: event.location,
-          notes: event.notes
+          notes: event.notes,
+          isRecurringInstance: this.isRecurringInstance(event)
         },
         backgroundColor: this.getEventColor(event),
-        borderColor: this.getEventColor(event)
+        borderColor: this.getEventColor(event),
+        // Prevent dragging of recurring virtual instances
+        editable: !this.isRecurringInstance(event)
       }));
     });
   }
 
-  private getEventColor(event: ScheduledEventData): string {
+
+  // =========================================================================
+  // Event Color
+  // =========================================================================
+
+  getEventColor(event: ScheduledEventData): string {
     if (event.color) return event.color;
     if (event.eventStatus?.color) return event.eventStatus.color;
     if (event.schedulingTarget?.color) return event.schedulingTarget.color;
-    return '#3788d8'; // Default blue
+    return '#667eea';  // Match our accent color
   }
 
+
+  // =========================================================================
+  // Quick Peek Popover
+  // =========================================================================
+
+  handleEventMouseEnter(info: any): void {
+    const eventData = info.event.extendedProps?.eventData as ScheduledEventData;
+
+    if (eventData == null) {
+      return;
+    }
+
+    //
+    // Clear any pending hide
+    //
+    this.clearHideTimer();
+
+    //
+    // Debounce show to avoid flicker on fast mouse movement
+    //
+    this.popoverShowTimer = setTimeout(() => {
+      this.hoveredEvent = eventData;
+      this.positionPopover(info.el);
+    }, this.POPOVER_SHOW_DELAY);
+  }
+
+
+  handleEventMouseLeave(info: any): void {
+    //
+    // Clear the show timer if user moved away before it fired
+    //
+    this.clearShowTimer();
+
+    //
+    // Delayed hide — allows the user to mouse into the popover itself
+    //
+    this.popoverHideTimer = setTimeout(() => {
+      this.hoveredEvent = null;
+    }, this.POPOVER_HIDE_DELAY);
+  }
+
+
+  /**
+   * Keep the popover visible while the mouse is inside it.
+   */
+  onPopoverMouseEnter(): void {
+    this.clearHideTimer();
+  }
+
+
+  /**
+   * Hide the popover when the mouse leaves it.
+   */
+  onPopoverMouseLeave(): void {
+    this.hoveredEvent = null;
+  }
+
+
+  /**
+   * Position the popover near the event element, keeping it within the viewport.
+   */
+  private positionPopover(eventEl: HTMLElement): void {
+    const rect = eventEl.getBoundingClientRect();
+    const popoverWidth = 300;
+    const popoverEstimatedHeight = 200;
+    const offset = 8;
+
+    //
+    // Default: position to the right of the event
+    //
+    let left = rect.right + offset;
+    let top = rect.top;
+
+    //
+    // If it would go off the right edge, position to the left instead
+    //
+    if (left + popoverWidth > window.innerWidth - 16) {
+      left = rect.left - popoverWidth - offset;
+    }
+
+    //
+    // If it would go below the viewport, shift up
+    //
+    if (top + popoverEstimatedHeight > window.innerHeight - 16) {
+      top = window.innerHeight - popoverEstimatedHeight - 16;
+    }
+
+    //
+    // Clamp to positive values
+    //
+    this.popoverPosition = {
+      top: Math.max(8, top),
+      left: Math.max(8, left)
+    };
+  }
+
+
+  private clearPopoverTimers(): void {
+    this.clearShowTimer();
+    this.clearHideTimer();
+  }
+
+  private clearShowTimer(): void {
+    if (this.popoverShowTimer) {
+      clearTimeout(this.popoverShowTimer);
+      this.popoverShowTimer = null;
+    }
+  }
+
+  private clearHideTimer(): void {
+    if (this.popoverHideTimer) {
+      clearTimeout(this.popoverHideTimer);
+      this.popoverHideTimer = null;
+    }
+  }
+
+
+  // =========================================================================
+  // Recurring Instance Helpers
+  // =========================================================================
+
+  /**
+   * Virtual recurring instances have negative IDs assigned by the server-side expansion service.
+   */
+  isRecurringInstance(event: ScheduledEventData): boolean {
+    return Number(event.id) < 0;
+  }
+
+
+  /**
+   * Format a human-readable time range for display in the Quick Peek popover.
+   */
+  formatTimeRange(event: ScheduledEventData): string {
+    try {
+      if (event.isAllDay) {
+        const startDate = parseISO(event.startDateTime);
+        return format(startDate, 'EEE, MMM d, yyyy') + ' (All Day)';
+      }
+
+      const start = parseISO(event.startDateTime);
+      const end = parseISO(event.endDateTime);
+
+      const startStr = format(start, 'EEE, MMM d · h:mm a');
+      const endStr = format(end, 'h:mm a');
+
+      return `${startStr} – ${endStr}`;
+    } catch {
+      return event.startDateTime || '';
+    }
+  }
+
+
+  // =========================================================================
+  // Event Interactions
+  // =========================================================================
+
+  /**
+   * Select a date range on the calendar → open the Add Event modal.
+   */
   handleDateSelect(selectInfo: any): void {
+    //
+    // Hide popover if shown
+    //
+    this.hoveredEvent = null;
+
     const modalRef = this.modalService.open(EventAddEditModalComponent, {
       size: 'xl',
       backdrop: 'static',
       keyboard: false
     });
 
-    // Pass initial dates
     modalRef.componentInstance.initialStart = selectInfo.startStr;
     modalRef.componentInstance.initialEnd = selectInfo.endStr || selectInfo.startStr;
 
@@ -125,8 +400,53 @@ export class SchedulerCalendarComponent implements OnInit {
   }
 
 
+  /**
+   * Click an event → open the Edit modal.
+   *
+   * For recurring virtual instances, open the master (parent) event instead.
+   */
   handleEventClick(clickInfo: any): void {
-    const eventData = (clickInfo.event.extendedProps as any).eventData as ScheduledEventData;
+    //
+    // Hide popover
+    //
+    this.hoveredEvent = null;
+
+    const eventData = clickInfo.event.extendedProps?.eventData as ScheduledEventData;
+
+    if (eventData == null) {
+      return;
+    }
+
+    //
+    // For recurring instances, we should open the master event.
+    // The parentScheduledEventId links back to the series master.
+    //
+    if (this.isRecurringInstance(eventData) && eventData.parentScheduledEventId) {
+
+      //
+      // Fetch the master event from the server to get full details
+      //
+      this.scheduledEventService.GetScheduledEvent(Number(eventData.parentScheduledEventId)).subscribe({
+        next: (masterEvent: ScheduledEventData) => {
+          this.openEditModal(masterEvent);
+        },
+        error: (err: any) => {
+          console.error('Failed to load master event for recurring instance', err);
+          //
+          // Fall back to opening the instance data we have
+          //
+          this.openEditModal(eventData);
+        }
+      });
+
+      return;
+    }
+
+    this.openEditModal(eventData);
+  }
+
+
+  private openEditModal(eventData: ScheduledEventData): void {
     const modalRef = this.modalService.open(EventAddEditModalComponent, { size: 'lg' });
     modalRef.componentInstance.event = eventData;
 
@@ -134,58 +454,116 @@ export class SchedulerCalendarComponent implements OnInit {
       if (updated) {
         this.loadEvents();
       }
-    });
+    },
+      () => { /* dismissed */ });
   }
 
+
+  // =========================================================================
+  // Drag-n-Drop
+  // =========================================================================
+
+  /**
+   * Drag an event to a new time slot.
+   *
+   * Virtual recurring instances cannot be saved individually — revert the drop.
+   */
   handleEventDrop(dropInfo: any): void {
-    this.updateEventTime(dropInfo.event);
+    const eventData = dropInfo.event.extendedProps?.eventData as ScheduledEventData;
+
+    if (eventData == null || this.isRecurringInstance(eventData)) {
+      dropInfo.revert();
+      return;
+    }
+
+    this.updateEventTime(dropInfo.event, dropInfo.revert);
   }
 
+
+  /**
+   * Resize an event to change its duration.
+   */
   handleEventResize(resizeInfo: any): void {
-    this.updateEventTime(resizeInfo.event);
+    const eventData = resizeInfo.event.extendedProps?.eventData as ScheduledEventData;
+
+    if (eventData == null || this.isRecurringInstance(eventData)) {
+      resizeInfo.revert();
+      return;
+    }
+
+    this.updateEventTime(resizeInfo.event, resizeInfo.revert);
   }
 
-  private updateEventTime(fcEvent: any): void {
-    const eventData = (fcEvent.extendedProps as any).eventData as ScheduledEventData;
 
-    // Mutate the existing object — no need to create a new instance
+  /**
+   * Persist a drag/resize update to the server.
+   */
+  private updateEventTime(fcEvent: any, revertFn: () => void): void {
+    const eventData = fcEvent.extendedProps?.eventData as ScheduledEventData;
+
+    if (eventData == null) {
+      return;
+    }
+
+    //
+    // Mutate the data object with the new times
+    //
     eventData.startDateTime = fcEvent.start.toISOString();
     eventData.endDateTime = fcEvent.end
       ? fcEvent.end.toISOString()
       : fcEvent.start.toISOString();
 
-    // Convert and submit
+    //
+    // Submit to server
+    //
     const submit = this.scheduledEventService.ConvertToScheduledEventSubmitData(eventData);
+
     this.scheduledEventService.PutScheduledEvent(submit.id, submit).subscribe({
       next: () => {
         // Success — calendar already reflects change
-        // Optional: clear caches if needed
-        // eventData.ClearAssignmentsCache(); // example
       },
       error: (err) => {
         console.error('Failed to update event time', err);
-        // Optional: revert UI change or show alert
+        //
+        // Revert the visual change on failure
+        //
+        revertFn();
       }
     });
   }
 
+
+  // =========================================================================
+  // Custom Event Rendering
+  // =========================================================================
+
   renderEventContent(eventInfo: any): any {
+
     const escape = (str: string): string => {
       const div = document.createElement('div');
       div.textContent = str;
       return div.innerHTML;
     };
+
     const title = escape(eventInfo.event.title || '');
     const time = escape(eventInfo.timeText || '');
-    const location = eventInfo.event.extendedProps.location
-      ? `<div class="small">${escape(eventInfo.event.extendedProps.location)}</div>`
-      : '';
-    return {
-      html: `
-        <div class="fc-event-title">${title}</div>
-        <div class="fc-event-time small">${time}</div>
-        ${location}
-      `
-    };
+    const location = eventInfo.event.extendedProps?.location;
+    const isRecurring = eventInfo.event.extendedProps?.isRecurringInstance === true;
+
+    let html = `<div class="fc-event-title-custom">${title}</div>`;
+
+    if (time) {
+      html += `<div class="fc-event-time-custom">${time}</div>`;
+    }
+
+    if (location) {
+      html += `<div class="fc-event-location-custom"><i class="bi bi-geo-alt-fill"></i>${escape(location)}</div>`;
+    }
+
+    if (isRecurring) {
+      html += `<div class="fc-event-series-badge"><i class="bi bi-arrow-repeat"></i> Series</div>`;
+    }
+
+    return { html };
   }
 }
