@@ -1,56 +1,229 @@
-import { Injectable, Inject } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, Subject, BehaviorSubject, of } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { Injectable } from '@angular/core';
+import { Router, NavigationExtras } from '@angular/router';
+import { Observable, Subject, throwError } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+import { HttpHeaders } from '@angular/common/http';
 
-export interface LoginResponse {
-    access_token: string;
-    refresh_token?: string;
-    expires_in: number;
-    token_type: string;
-}
-
-export interface UserInfo {
-    userName: string;
-    fullName: string;
-    email?: string;
-    tenantName?: string;
-    roles?: string[];
-}
+import { LocalStoreManager } from './local-store-manager.service';
+import { OidcHelperService } from './oidc-helper.service';
+import { ConfigurationService } from './configuration.service';
+import { DBkeys } from './db-keys';
+import { JwtHelper } from './jwt-helper';
+import { Utilities } from './utilities';
+import { IdToken, LoginResponse } from '../models/login-response.model';
+import { User } from '../models/user.model';
 
 
-@Injectable({ providedIn: 'root' })
+@Injectable()
 export class AuthService {
+    public get loginUrl() { return this.configurations.loginUrl; }
+    public get homeUrl() { return this.configurations.homeUrl; }
 
+    public loginRedirectUrl: string | null = null;
+    public logoutRedirectUrl: string | null = null;
+    public reLoginDelegate: { (): void } | undefined;
+
+    private previousIsLoggedInCheck = false;
     private loginStatus = new Subject<boolean>();
-    private _currentUser: UserInfo | null = null;
-    private accessToken: string | null = null;
-
-    reLoginDelegate: (() => void) | undefined;
-
+    private tokenRefreshTimer: any = null;
 
     constructor(
-        private http: HttpClient,
-        @Inject('BASE_URL') private baseUrl: string
-    ) {
-        // Restore token from storage on startup
-        this.accessToken = localStorage.getItem('bmc_access_token');
-        const storedUser = localStorage.getItem('bmc_current_user');
-        if (storedUser) {
-            try {
-                this._currentUser = JSON.parse(storedUser);
-            } catch { }
+        private router: Router,
+        private oidcHelperService: OidcHelperService,
+        private configurations: ConfigurationService,
+        private localStorage: LocalStoreManager) {
+
+        this.initializeLoginStatus();
+        this.startTokenRefreshTimer();
+    }
+
+
+    private initializeLoginStatus() {
+        this.localStorage.getInitEvent().subscribe(() => {
+            this.reevaluateLoginStatus();
+        });
+    }
+
+
+    gotoPage(page: string, preserveParams = true) {
+        const navigationExtras: NavigationExtras = {
+            queryParamsHandling: preserveParams ? 'merge' : '', preserveFragment: preserveParams
+        };
+        this.router.navigate([page], navigationExtras);
+    }
+
+    gotoHomePage() {
+        this.router.navigate([this.homeUrl]);
+    }
+
+
+    redirectLoginUser() {
+        const redirect = this.loginRedirectUrl && this.loginRedirectUrl !== '/' &&
+            this.loginRedirectUrl !== ConfigurationService.defaultHomeUrl ? this.loginRedirectUrl : this.homeUrl;
+        this.loginRedirectUrl = null;
+
+        const urlParamsAndFragment = Utilities.splitInTwo(redirect, '#');
+        const urlAndParams = Utilities.splitInTwo(urlParamsAndFragment.firstPart, '?');
+
+        const navigationExtras: NavigationExtras = {
+            fragment: urlParamsAndFragment.secondPart,
+            queryParams: urlAndParams.secondPart ? Utilities.getQueryParamsFromString(urlAndParams.secondPart) : null,
+            queryParamsHandling: 'merge'
+        };
+
+        this.router.navigate([urlAndParams.firstPart], navigationExtras);
+    }
+
+
+    redirectLogoutUser() {
+        const redirect = this.logoutRedirectUrl ? this.logoutRedirectUrl : this.loginUrl;
+        this.logoutRedirectUrl = null;
+        this.router.navigate([redirect]);
+    }
+
+
+    redirectForLogin() {
+        this.loginRedirectUrl = this.router.url;
+        this.router.navigate([this.loginUrl]);
+    }
+
+
+    reLogin() {
+        if (this.reLoginDelegate) {
+            this.reLoginDelegate();
+        } else {
+            this.redirectForLogin();
         }
     }
 
 
-    get isLoggedIn(): boolean {
-        return !!this.accessToken;
+    refreshLogin() {
+        return this.oidcHelperService.refreshLogin().pipe(
+            map(resp => this.processLoginResponse(resp, this.rememberMe)),
+            catchError(() => {
+                this.reLogin();
+                return throwError('Session expired, please log in again.');
+            })
+        );
     }
 
 
-    get currentUser(): UserInfo | null {
-        return this._currentUser;
+    loginWithPassword(userName: string, password: string, rememberMe?: boolean) {
+        if (this.isLoggedIn) {
+            this.logout();
+        }
+
+        return this.oidcHelperService.loginWithPassword(userName, password)
+            .pipe(map(resp => this.processLoginResponse(resp, rememberMe)));
+    }
+
+
+    private processLoginResponse(response: LoginResponse, rememberMe?: boolean) {
+        const idToken = response.id_token;
+        const accessToken = response.access_token;
+        const refreshToken = response.refresh_token;
+
+        if (idToken == null) { throw new Error('idToken cannot be null'); }
+        if (accessToken == null) { throw new Error('accessToken cannot be null'); }
+
+        rememberMe = rememberMe ?? this.rememberMe;
+
+        const accessTokenExpiry = new Date();
+        accessTokenExpiry.setSeconds(accessTokenExpiry.getSeconds() + response.expires_in);
+
+        const jwtHelper = new JwtHelper();
+        const decodedIdToken = jwtHelper.decodeToken(idToken) as IdToken;
+
+        //
+        // Force the roles from the decoded token into a string array.
+        //
+        var roles: Array<string>;
+
+        if (decodedIdToken.role && decodedIdToken.role.length > 0 && decodedIdToken.role[0] != undefined) {
+            roles = Array.isArray(decodedIdToken.role) ? decodedIdToken.role : [decodedIdToken.role];
+        } else {
+            roles = new Array<string>();
+        }
+
+        var user = new User(
+            decodedIdToken.sub,
+            decodedIdToken.name,
+            decodedIdToken.full_name,
+            decodedIdToken.email,
+            decodedIdToken.settings,
+            parseInt(decodedIdToken.read_permission, 10) || 0,
+            parseInt(decodedIdToken.write_permission, 10) || 0,
+            decodedIdToken.tenant_name,
+            roles);
+
+        this.saveUserDetails(user, roles, accessToken, refreshToken, accessTokenExpiry, rememberMe);
+        this.reevaluateLoginStatus(user);
+        this.startTokenRefreshTimer();
+
+        return user;
+    }
+
+
+    private startTokenRefreshTimer() {
+        if (this.tokenRefreshTimer) {
+            clearTimeout(this.tokenRefreshTimer);
+        }
+
+        if (this.accessTokenExpiryDate == null) {
+            return;
+        }
+
+        const millisecondsBeforeTokenRefresh = this.accessTokenExpiryDate.getTime() - Date.now() - 60000;
+        console.log('Access token refresh in ' + millisecondsBeforeTokenRefresh + ' milliseconds');
+
+        this.tokenRefreshTimer = setTimeout(() => {
+            this.refreshLogin().subscribe(
+                () => { console.log('Relogged in prior to refresh token expiry.'); },
+                () => this.reLogin()
+            );
+        }, millisecondsBeforeTokenRefresh);
+    }
+
+
+    private saveUserDetails(user: User, roles: string[], accessToken: string, refreshToken: string, expiresIn: Date, rememberMe: boolean) {
+        if (rememberMe) {
+            this.localStorage.savePermanentData(accessToken, DBkeys.ACCESS_TOKEN);
+            this.localStorage.savePermanentData(refreshToken, DBkeys.REFRESH_TOKEN);
+            this.localStorage.savePermanentData(expiresIn, DBkeys.TOKEN_EXPIRES_IN);
+            this.localStorage.savePermanentData(roles, DBkeys.USER_ROLES);
+            this.localStorage.savePermanentData(user, DBkeys.CURRENT_USER);
+        } else {
+            this.localStorage.saveSyncedSessionData(accessToken, DBkeys.ACCESS_TOKEN);
+            this.localStorage.saveSyncedSessionData(refreshToken, DBkeys.REFRESH_TOKEN);
+            this.localStorage.saveSyncedSessionData(expiresIn, DBkeys.TOKEN_EXPIRES_IN);
+            this.localStorage.saveSyncedSessionData(roles, DBkeys.USER_ROLES);
+            this.localStorage.saveSyncedSessionData(user, DBkeys.CURRENT_USER);
+        }
+
+        this.localStorage.savePermanentData(rememberMe, DBkeys.REMEMBER_ME);
+    }
+
+
+    logout(): void {
+        this.localStorage.deleteData(DBkeys.ACCESS_TOKEN);
+        this.localStorage.deleteData(DBkeys.REFRESH_TOKEN);
+        this.localStorage.deleteData(DBkeys.TOKEN_EXPIRES_IN);
+        this.localStorage.deleteData(DBkeys.USER_ROLES);
+        this.localStorage.deleteData(DBkeys.CURRENT_USER);
+
+        this.reevaluateLoginStatus();
+    }
+
+
+    private reevaluateLoginStatus(currentUser?: User | null) {
+        const user = currentUser ?? this.localStorage.getDataObject<User>(DBkeys.CURRENT_USER);
+        const isLoggedIn = user != null;
+
+        if (this.previousIsLoggedInCheck !== isLoggedIn) {
+            setTimeout(() => { this.loginStatus.next(isLoggedIn); });
+        }
+
+        this.previousIsLoggedInCheck = isLoggedIn;
     }
 
 
@@ -59,58 +232,57 @@ export class AuthService {
     }
 
 
-    loginWithPassword(userName: string, password: string): Observable<LoginResponse> {
-        const url = `${this.baseUrl}connect/token`;
+    get currentUser(): User | null {
+        const user = this.localStorage.getDataObject<User>(DBkeys.CURRENT_USER);
+        this.reevaluateLoginStatus(user);
+        return user;
+    }
 
-        const body = new URLSearchParams();
-        body.set('grant_type', 'password');
-        body.set('username', userName);
-        body.set('password', password);
-        body.set('scope', 'openid email phone profile offline_access roles');
+    get userRoles(): string[] {
+        return this.localStorage.getDataObject<string[]>(DBkeys.USER_ROLES) ?? [];
+    }
 
-        const headers = new HttpHeaders({
-            'Content-Type': 'application/x-www-form-urlencoded'
+    get accessToken(): string | null {
+        return this.oidcHelperService.accessToken;
+    }
+
+    get accessTokenExpiryDate(): Date | null {
+        return this.oidcHelperService.accessTokenExpiryDate;
+    }
+
+    get refreshToken(): string | null {
+        return this.oidcHelperService.refreshToken;
+    }
+
+    get isSessionExpired(): boolean {
+        return this.oidcHelperService.isSessionExpired;
+    }
+
+    get isLoggedIn(): boolean {
+        return this.currentUser != null;
+    }
+
+    get rememberMe(): boolean {
+        return this.localStorage.getDataObject<boolean>(DBkeys.REMEMBER_ME) === true;
+    }
+
+    get userName(): string {
+        return this.currentUser?.userName ?? '';
+    }
+
+    get fullName(): string {
+        return this.currentUser?.fullName ?? '';
+    }
+
+
+    ///
+    /// Returns the headers needed to authenticate requests to the server.
+    ///
+    public GetAuthenticationHeaders(): HttpHeaders {
+        return new HttpHeaders({
+            Authorization: `Bearer ${this.accessToken}`,
+            'Content-Type': 'application/json',
+            Accept: 'application/json, text/plain, */*'
         });
-
-        return this.http.post<LoginResponse>(url, body.toString(), { headers })
-            .pipe(
-                map(response => {
-                    this.processLoginResponse(response, userName);
-                    return response;
-                })
-            );
-    }
-
-
-    private processLoginResponse(response: LoginResponse, userName: string) {
-        this.accessToken = response.access_token;
-        localStorage.setItem('bmc_access_token', this.accessToken);
-
-        this._currentUser = {
-            userName: userName,
-            fullName: userName,
-        };
-
-        localStorage.setItem('bmc_current_user', JSON.stringify(this._currentUser));
-        this.loginStatus.next(true);
-    }
-
-
-    logout() {
-        this.accessToken = null;
-        this._currentUser = null;
-        localStorage.removeItem('bmc_access_token');
-        localStorage.removeItem('bmc_current_user');
-        this.loginStatus.next(false);
-    }
-
-
-    redirectLogoutUser() {
-        window.location.href = '/login';
-    }
-
-
-    getAccessToken(): string | null {
-        return this.accessToken;
     }
 }

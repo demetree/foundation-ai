@@ -3,34 +3,38 @@
 - **Conversation ID:** 17622316-b829-41ad-b715-2107280fa4f4
 - **Date:** 2026-02-13
 - **Time:** 17:37 NST (UTC-3:30)
-- **Duration:** ~3.5 hours
+- **Duration:** ~4 hours
 
 ## Summary
 
-Scaffolded the entire BMC project suite from scratch — database generator, EF Core context, server-side API with 12 DataControllers, code generation tooling, and a complete Angular 17 client application with premium warm amber/orange design system. Fixed SPA proxy configuration to enable Visual Studio F5 launch.
+Scaffolded the BMC Angular 17 client from scratch with premium warm brick design system, fixed SPA proxy configuration for Visual Studio F5 launch, created custom SVG favicon, and built complete Foundation-compatible auth infrastructure (OIDC password grant, token refresh, auth guard, cross-tab persistence).
 
 ## Files Modified
 
-### New Projects Created
-- `BmcDatabase/` — EF Core context and entity classes
-- `BmcDatabaseGenerator/` — Database schema generation
-- `BmcTools/` — Application code generator
-- `BMC/BMC.Server/` — ASP.NET Core Web API (port 12101)
-- `BMC/BMC.Client/` — Angular 17 SPA (port 12200)
-- `BMC/BMC.Physics/` — Physics engine library (placeholder)
+### Angular Client — New
+- `src/favicon.svg` — Custom brick-stack SVG favicon
+- `src/app/models/login-response.model.ts` — OIDC token interfaces
+- `src/app/models/user.model.ts` — User class with roles/permissions
+- `src/app/services/db-keys.ts` — bmc-prefixed localStorage keys
+- `src/app/services/jwt-helper.ts` — JWT decode and expiry
+- `src/app/services/utilities.ts` — HTTP response helpers
+- `src/app/services/auth-guard.ts` — Route guard (CanActivateFn)
+- All UI components (header, sidebar, login, dashboard, not-found)
 
-### Key Files Modified
-- `BMC/BMC.Server/Program.cs` — Activated BMCContext, health providers, schema validation, 12 controllers
-- `BMC/BMC.Server/Properties/launchSettings.json` — Fixed SPA proxy env var and ports
-- `BMC/BMC.Server/BMC.Server.csproj` — Fixed SpaProxyServerUrl port
-- `BmcDatabase/Database/BMCContextCustom.cs` — Parameterless constructor, debug logging, bug fixes
-- `BmcTools/Program.cs` — Full application code generation
-- `BmcTools/appsettings.json` — Deployment paths
+### Angular Client — Rewritten/Updated
+- `src/app/services/auth.service.ts` — Full OIDC auth with token refresh
+- `src/app/services/oidc-helper.service.ts` — Password/refresh grant flows
+- `src/app/services/local-store-manager.service.ts` — Cross-tab sync
+- `src/app/services/configuration.service.ts` — Added homeUrl, import(), clearLocalChanges()
+- `src/app/app.module.ts` — Added DBkeys, JwtHelper providers
+- `src/app/app-routing.module.ts` — AuthGuard on dashboard
+- `src/app/app.component.ts` — LocalStoreManager init
+- `src/app/components/login/login.component.ts` — redirectLoginUser()
 
-### Angular Client (Created from Scratch)
-- Project config, design system, 5 UI components, 6 Foundation services
-- 157 generated files (data services + data components) integrated
+### Server Fixes
+- `BMC.Server/Properties/launchSettings.json` — Added ASPNETCORE_HOSTINGSTARTUPASSEMBLIES, fixed ports
+- `BMC.Server/BMC.Server.csproj` — Fixed SpaProxyServerUrl port
 
 ## Related Sessions
 
-- Initial BMC project creation session — no prior sessions.
+- Initial BMC project creation (database, server, code generation) in earlier conversation

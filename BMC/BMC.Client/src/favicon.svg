@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1a1005"/>
+      <stop offset="100%" stop-color="#2d1a08"/>
+    </linearGradient>
+    <linearGradient id="b1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e65100"/>
+      <stop offset="100%" stop-color="#ff6d00"/>
+    </linearGradient>
+    <linearGradient id="b2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ff8f00"/>
+      <stop offset="100%" stop-color="#ffa726"/>
+    </linearGradient>
+    <linearGradient id="b3" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffb74d"/>
+      <stop offset="100%" stop-color="#ffcc02"/>
+    </linearGradient>
+  </defs>
+  <!-- Background -->
+  <rect width="64" height="64" rx="12" fill="url(#bg)"/>
+  <!-- Bottom row: two bricks -->
+  <rect x="8" y="38" width="22" height="10" rx="2.5" fill="url(#b1)"/>
+  <rect x="34" y="38" width="22" height="10" rx="2.5" fill="url(#b1)"/>
+  <!-- Middle row: offset brick -->
+  <rect x="18" y="25" width="28" height="10" rx="2.5" fill="url(#b2)"/>
+  <!-- Top row: small brick -->
+  <rect x="22" y="12" width="20" height="10" rx="2.5" fill="url(#b3)"/>
+  <!-- Studs on top brick -->
+  <circle cx="29" cy="12" r="2.5" fill="#ffe082" opacity="0.6"/>
+  <circle cx="35" cy="12" r="2.5" fill="#ffe082" opacity="0.6"/>
+</svg>

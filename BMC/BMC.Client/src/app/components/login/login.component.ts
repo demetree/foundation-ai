@@ -43,7 +43,7 @@ export class LoginComponent {
                     if (this.isModal && this.modalClosedCallback) {
                         this.modalClosedCallback();
                     } else {
-                        this.router.navigate(['/dashboard']);
+                        this.authService.redirectLoginUser();
                     }
                 },
                 error: (error) => {

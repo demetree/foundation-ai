@@ -5,6 +5,7 @@ import { ToastaService, ToastaConfig, ToastOptions, ToastData } from 'ngx-toasta
 import { AlertService, AlertCommand, MessageSeverity } from './services/alert.service';
 import { AuthService } from './services/auth.service';
 import { ConfigurationService } from './services/configuration.service';
+import { LocalStoreManager } from './services/local-store-manager.service';
 
 @Component({
     selector: 'app-root',
@@ -28,6 +29,7 @@ export class AppComponent implements OnInit {
         private authService: AuthService,
         public configurations: ConfigurationService,
         public router: Router,
+        private localStorage: LocalStoreManager,
     ) {
         this.toastaConfig.theme = 'bootstrap';
         this.toastaConfig.position = 'top-right';
@@ -38,6 +40,7 @@ export class AppComponent implements OnInit {
 
 
     ngOnInit() {
+        this.localStorage.initialiseStorageSyncListener();
         this.isUserLoggedIn = this.authService.isLoggedIn;
         this.checkScreenSize();
 

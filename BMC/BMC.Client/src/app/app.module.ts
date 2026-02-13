@@ -22,6 +22,8 @@ import { ConfigurationService } from './services/configuration.service';
 import { LocalStoreManager } from './services/local-store-manager.service';
 import { OidcHelperService } from './services/oidc-helper.service';
 import { AppTitleService } from './services/app-title.service';
+import { DBkeys } from './services/db-keys';
+import { JwtHelper } from './services/jwt-helper';
 
 
 @NgModule({
@@ -51,6 +53,8 @@ import { AppTitleService } from './services/app-title.service';
         LocalStoreManager,
         OidcHelperService,
         AppTitleService,
+        DBkeys,
+        JwtHelper,
     ],
     bootstrap: [AppComponent]
 })
