@@ -26,6 +26,7 @@ import { SystemHealthComponent } from './components/system-health/system-health.
 import { OverviewComponent } from './components/overview/overview.component'
 import { SchedulerCalendarComponent } from './components/scheduler/scheduler-calendar/scheduler-calendar.component';
 import { AdministrationComponent } from './components/administration/administration.component';
+import { TemplateManagerComponent } from './components/scheduler/template-manager/template-manager.component';
 
 import { RateSheetCustomListingComponent } from './components/rate-sheet-custom/rate-sheet-custom-listing/rate-sheet-custom-listing.component';
 
@@ -409,6 +410,7 @@ const routes: Routes = [
   { path: 'schedule', component: SchedulerCalendarComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Schedule' },
   { path: 'administration', component: AdministrationComponent, canActivate: [AuthGuard], title: 'Administration' },
   { path: 'ratesheets', component: RateSheetCustomListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Rate Sheets' },
+  { path: 'templates', component: TemplateManagerComponent, canActivate: [AuthGuard], title: 'Event Templates' },
 
   //
   // Override the resource paths with custom implementations

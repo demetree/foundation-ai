@@ -1,0 +1,66 @@
+// =============================================================================
+// Template Add/Edit Modal — Styles
+// =============================================================================
+// AI-Developed — This file was significantly developed with AI assistance.
+// =============================================================================
+
+$accent-primary: #667eea;
+$accent-secondary: #764ba2;
+
+.template-modal-header {
+    background: linear-gradient(135deg, $accent-primary 0%, $accent-secondary 100%);
+    color: #fff;
+    border-bottom: none;
+    padding: 1rem 1.25rem;
+
+    .modal-title {
+        font-weight: 700;
+        font-size: 1.1rem;
+
+        i {
+            opacity: 0.85;
+        }
+    }
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.duration-picker {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    .duration-part {
+        flex: 1;
+        position: relative;
+
+        input {
+            text-align: center;
+            padding-right: 3.5rem;
+        }
+
+        .duration-label {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.75rem;
+            color: #94a3b8;
+            font-weight: 500;
+            pointer-events: none;
+        }
+    }
+
+    .duration-sep {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #94a3b8;
+    }
+}
+
+.modal-footer {
+    border-top: 1px solid #f1f3f7;
+    padding: 0.75rem 1.25rem;
+}

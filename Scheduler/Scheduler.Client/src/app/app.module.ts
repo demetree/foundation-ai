@@ -85,6 +85,8 @@ import { EventAddEditModalComponent } from './components/scheduler/event-add-edi
 import { AdministrationComponent } from './components/administration/administration.component';
 import { AddTenantProfileComponent } from './components/add-tenant-profile/add-tenant-profile.component';
 import { RecurrenceBuilderComponent } from './components/scheduler/recurrence-builder/recurrence-builder.component';
+import { TemplateManagerComponent } from './components/scheduler/template-manager/template-manager.component';
+import { TemplateAddEditModalComponent } from './components/scheduler/template-add-edit-modal/template-add-edit-modal.component';
 
 
 // Rate Sheet Customizations
@@ -214,6 +216,11 @@ import { NavigationService } from './utility-services/navigation.service';
 // Custom confirmation dialog
 //
 import { ConfirmationService } from './services/confirmation-service';
+import { ConfirmationDialogComponent } from './services/confirmation-dialog/confirmation-dialog.component';
+
+import { InputDialogService } from './services/input-dialog.service';
+import { InputDialogComponent } from './services/input-dialog/input-dialog.component';
+
 
 //
 // Data support services
@@ -966,6 +973,8 @@ import { VolunteerStatusTableComponent } from './scheduler-data-components/volun
     SchedulerCalendarComponent,
     EventAddEditModalComponent,
     RecurrenceBuilderComponent,
+    TemplateManagerComponent,
+    TemplateAddEditModalComponent,
     AdministrationComponent,
     AddTenantProfileComponent,
     RateSheetCustomListingComponent,
@@ -1646,6 +1655,8 @@ import { VolunteerStatusTableComponent } from './scheduler-data-components/volun
     OverviewDispatcherTabComponent,
     OverviewSchedulerTabComponent,
     IntelligenceModalComponent,
+    ConfirmationDialogComponent,
+    InputDialogComponent,
 
   ],
   imports: [
@@ -1697,6 +1708,7 @@ import { VolunteerStatusTableComponent } from './scheduler-data-components/volun
     CacheManagerService,
     TenantHelperService,
     ConfirmationService,
+    InputDialogService,
     CrewWithMembersService,
     AssignmentService,
     SchedulerHelperService,

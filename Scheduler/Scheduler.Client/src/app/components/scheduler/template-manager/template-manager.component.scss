@@ -1,0 +1,310 @@
+// =============================================================================
+// Template Manager — Premium Theme
+// =============================================================================
+// AI-Developed — This file was significantly developed with AI assistance.
+// =============================================================================
+
+// ---------------------------------------------------------------------------
+// Design Tokens
+// ---------------------------------------------------------------------------
+$gradient-scheduler: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+$glass-bg: rgba(255, 255, 255, 0.15);
+$glass-border: rgba(255, 255, 255, 0.2);
+$page-bg: #f4f6f9;
+$card-radius: 16px;
+$btn-radius: 8px;
+$accent-primary: #667eea;
+$accent-secondary: #764ba2;
+
+
+// ---------------------------------------------------------------------------
+// Page Container
+// ---------------------------------------------------------------------------
+.template-manager-container {
+    background-color: $page-bg;
+    min-height: 100%;
+    padding: 1.5rem;
+}
+
+
+// ---------------------------------------------------------------------------
+// Premium Header
+// ---------------------------------------------------------------------------
+.premium-header {
+    border: none;
+    border-radius: $card-radius;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+
+    .card-header {
+        background: $gradient-scheduler;
+        padding: 1.25rem 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+}
+
+.header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.header-subtitle {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.85rem;
+    font-weight: 400;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.search-box {
+    position: relative;
+
+    i {
+        position: absolute;
+        left: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.85rem;
+    }
+
+    input {
+        background: $glass-bg;
+        border: 1px solid $glass-border;
+        color: #fff;
+        border-radius: $btn-radius;
+        padding: 0.4rem 0.75rem 0.4rem 2rem;
+        font-size: 0.85rem;
+        width: 220px;
+        transition: all 0.2s ease;
+
+        &::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        &:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.2);
+            width: 260px;
+        }
+    }
+}
+
+.btn-glass {
+    background: $glass-bg;
+    border: 1px solid $glass-border;
+    color: #fff;
+    border-radius: $btn-radius;
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 0.4rem 1rem;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.25);
+        color: #fff;
+        transform: translateY(-1px);
+    }
+}
+
+
+// ---------------------------------------------------------------------------
+// Empty State
+// ---------------------------------------------------------------------------
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+
+    .empty-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, rgba($accent-primary, 0.1), rgba($accent-secondary, 0.1));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+
+        i {
+            font-size: 2rem;
+            color: $accent-primary;
+        }
+    }
+
+    h5 {
+        color: #1e293b;
+        font-weight: 700;
+    }
+}
+
+
+// ---------------------------------------------------------------------------
+// Template Card Grid
+// ---------------------------------------------------------------------------
+.template-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+}
+
+.template-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.25rem;
+    border: 1px solid #edf0f5;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+
+    &:hover {
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+        transform: translateY(-2px);
+        border-color: rgba($accent-primary, 0.3);
+
+        .card-footer-hint {
+            opacity: 1;
+        }
+
+        .btn-delete {
+            opacity: 1;
+        }
+    }
+
+    .card-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+    }
+
+    .template-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, rgba($accent-primary, 0.1), rgba($accent-secondary, 0.1));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        i {
+            font-size: 1.1rem;
+            color: $accent-primary;
+        }
+    }
+
+    .btn-delete {
+        opacity: 0;
+        background: none;
+        border: none;
+        padding: 0.25rem 0.4rem;
+        border-radius: 6px;
+        color: #94a3b8;
+        cursor: pointer;
+        transition: all 0.15s ease;
+
+        &:hover {
+            background: rgba(239, 68, 68, 0.08);
+            color: #ef4444;
+        }
+
+        i {
+            font-size: 0.9rem;
+        }
+    }
+
+    .template-name {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 0.35rem;
+        line-height: 1.3;
+    }
+
+    .template-desc {
+        font-size: 0.8rem;
+        color: #64748b;
+        line-height: 1.5;
+        margin-bottom: 0.75rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .template-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: auto;
+
+        .meta-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #64748b;
+            background: #f8fafc;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            border: 1px solid #f1f3f7;
+            white-space: nowrap;
+
+            i {
+                font-size: 0.7rem;
+                color: $accent-primary;
+            }
+        }
+    }
+
+    .card-footer-hint {
+        opacity: 0;
+        text-align: center;
+        margin-top: 0.75rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid #f1f3f7;
+        font-size: 0.7rem;
+        color: #94a3b8;
+        font-weight: 500;
+        transition: opacity 0.15s ease;
+
+        i {
+            margin-right: 0.2rem;
+        }
+    }
+}
+
+
+// ---------------------------------------------------------------------------
+// Responsive
+// ---------------------------------------------------------------------------
+@media (max-width: 768px) {
+    .premium-header .card-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .header-right {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .template-grid {
+        grid-template-columns: 1fr;
+    }
+}

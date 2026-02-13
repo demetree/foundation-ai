@@ -49,6 +49,11 @@
           </button>
         </div>
 
+        <!-- Templates Shortcut -->
+        <button class="btn-glass ms-2" routerLink="/templates" title="Manage Event Templates">
+          <i class="bi bi-bookmark"></i>
+        </button>
+
         <!-- Conflict Indicator -->
         <button class="btn-glass btn-conflict" *ngIf="conflicts.length > 0" (click)="toggleConflictPanel()"
           [class.active]="conflictPanelVisible">

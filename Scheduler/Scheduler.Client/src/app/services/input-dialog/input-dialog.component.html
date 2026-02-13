@@ -1,0 +1,41 @@
+<div class="modal-header">
+    <h4 class="modal-title">{{ options.title }}</h4>
+    <button type="button" class="btn-close" aria-label="Close" (click)="cancel()"></button>
+</div>
+
+<div class="modal-body">
+    <!-- Optional message/instructions -->
+    <p *ngIf="options.message" class="input-dialog-message">{{ options.message }}</p>
+
+    <!-- Input field -->
+    <div class="input-dialog-field">
+        <label *ngIf="options.inputLabel" class="form-label">{{ options.inputLabel }}</label>
+
+        <div class="input-group">
+            <input [type]="actualInputType" class="form-control" [class.is-invalid]="errorMessage"
+                [(ngModel)]="inputValue" [placeholder]="options.inputPlaceholder || ''"
+                [attr.minlength]="options.minLength" [attr.maxlength]="options.maxLength" (keydown)="onKeyDown($event)"
+                autofocus />
+
+            <!-- Password visibility toggle -->
+            <button *ngIf="options.inputType === 'password' && options.showPasswordToggle !== false" type="button"
+                class="btn btn-outline-secondary password-toggle" (click)="togglePasswordVisibility()" tabindex="-1">
+                <i class="bi" [class.bi-eye]="!showPassword" [class.bi-eye-slash]="showPassword"></i>
+            </button>
+        </div>
+
+        <!-- Validation error -->
+        <div *ngIf="errorMessage" class="invalid-feedback d-block">
+            {{ errorMessage }}
+        </div>
+    </div>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="cancel()">
+        {{ options.cancelButtonText || 'Cancel' }}
+    </button>
+    <button type="button" class="btn btn-primary" (click)="confirm()">
+        {{ options.confirmButtonText || 'OK' }}
+    </button>
+</div>

@@ -2569,7 +2569,7 @@ Hierarchy Logic (System should look for the first match in this order):
 
 
 
-            scheduledEventTable.comment = @"Core scheduling entity – any planned activity with a defined time range.  This managest recurrences with the 'Detachment Model'
+            scheduledEventTable.comment = @"Core scheduling entity – any planned activity with a defined time range.  This manages recurrences with the 'Detachment Model'
 
 How it works:
 The Master: You create the Series (Event A). It has the RecurrenceRule.

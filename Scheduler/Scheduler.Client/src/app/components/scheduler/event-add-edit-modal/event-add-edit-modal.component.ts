@@ -5,7 +5,7 @@ import { forkJoin, Subscription, lastValueFrom } from 'rxjs';
 import { ScheduledEventService, ScheduledEventData, ScheduledEventSubmitData } from '../../../scheduler-data-services/scheduled-event.service';
 import { EventResourceAssignmentService, EventResourceAssignmentData, EventResourceAssignmentSubmitData } from '../../../scheduler-data-services/event-resource-assignment.service';
 import { SchedulingTargetService, SchedulingTargetData } from '../../../scheduler-data-services/scheduling-target.service';
-import { ScheduledEventTemplateService, ScheduledEventTemplateData } from '../../../scheduler-data-services/scheduled-event-template.service';
+import { ScheduledEventTemplateService, ScheduledEventTemplateData, ScheduledEventTemplateSubmitData } from '../../../scheduler-data-services/scheduled-event-template.service';
 import { CrewService, CrewData } from '../../../scheduler-data-services/crew.service';
 import { ResourceService, ResourceData } from '../../../scheduler-data-services/resource.service';
 import { AssignmentRoleService, AssignmentRoleData } from '../../../scheduler-data-services/assignment-role.service';
@@ -25,6 +25,7 @@ import { ScheduledEventDependencyService, ScheduledEventDependencyData, Schedule
 import { DependencyTypeService, DependencyTypeData } from '../../../scheduler-data-services/dependency-type.service';
 import { ScheduledEventBasicListData } from '../../../scheduler-data-services/scheduled-event.service';
 import { ConflictDetectionService } from '../../../services/conflict-detection.service';
+import { InputDialogService } from '../../../services/input-dialog.service';
 
 @Component({
   selector: 'app-event-add-edit-modal',
@@ -120,7 +121,8 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
     private alertService: AlertService,
     private dependencyService: ScheduledEventDependencyService,
     private dependencyTypeService: DependencyTypeService,
-    private conflictDetectionService: ConflictDetectionService
+    private conflictDetectionService: ConflictDetectionService,
+    private inputDialogService: InputDialogService
   ) {
     this.buildForm();
   }
@@ -253,31 +255,44 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
   // -------------------------------------------------------------------------
   applyTemplate(): void {
     if (!this.selectedTemplateId) {
-      this.eventForm.reset({ isAllDay: false });
-      this.assignmentsFormArray.clear();
+      // Reset to blank
+      this.eventForm.patchValue({
+        name: '',
+        description: '',
+        location: '',
+        priorityId: null,
+        isAllDay: false
+      });
       return;
     }
 
-    const template = this.templates.find(t => t.id === this.selectedTemplateId);
+    const template = this.templates.find(t => Number(t.id) === Number(this.selectedTemplateId));
     if (!template) return;
 
-    // Apply basic fields
+    // Apply template fields to form
     this.eventForm.patchValue({
-      name: template.name,
+      name: template.name || '',
       description: template.description || '',
-      defaultLocationPattern: template.defaultLocationPattern || ''
+      location: template.defaultLocationPattern || '',
+      priorityId: template.priorityId ? Number(template.priorityId) : null,
+      isAllDay: template.defaultAllDay || false
     });
 
-    // Apply duration if dates are empty
-    if (!this.eventForm.get('startDateTime')?.value) {
-      const now = new Date();
-      const end = new Date(now.getTime() + (template.defaultDurationMinutes as number) * 60000);
-      this.eventForm.patchValue({
-        startDateTime: now.toISOString().slice(0, 16),
-        endDateTime: end.toISOString().slice(0, 16)
-      });
+    // Calculate end time from duration if start is set
+    const startVal = this.eventForm.get('startDateTime')?.value;
+    if (startVal && template.defaultDurationMinutes) {
+      const startDate = new Date(startVal);
+      startDate.setMinutes(startDate.getMinutes() + Number(template.defaultDurationMinutes));
+      // Use local ISO format for datetime-local input
+      const y = startDate.getFullYear();
+      const mo = String(startDate.getMonth() + 1).padStart(2, '0');
+      const d = String(startDate.getDate()).padStart(2, '0');
+      const h = String(startDate.getHours()).padStart(2, '0');
+      const mi = String(startDate.getMinutes()).padStart(2, '0');
+      this.eventForm.patchValue({ endDateTime: `${y}-${mo}-${d}T${h}:${mi}` });
     }
 
+    this.alertService.showMessage('Template Applied', `"${template.name}" applied`, MessageSeverity.success);
     this.validateQualifications();
   }
 
@@ -969,5 +984,52 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
 
     this.deletedDepIds = [];
     this.pendingNewDeps = [];
+  }
+
+  // -------------------------------------------------------------------------
+  // Save As Template
+  // -------------------------------------------------------------------------
+  async saveAsTemplate(): Promise<void> {
+    const templateName = await this.inputDialogService.promptText('Save as Template', {
+      inputLabel: 'Template Name',
+      inputPlaceholder: 'e.g., Standard Installation',
+      confirmButtonText: 'Save Template',
+      cancelButtonText: 'Cancel'
+    });
+
+    if (!templateName || !templateName.trim()) return;
+
+    const formVal = this.eventForm.value;
+
+    // Calculate duration from start/end
+    let durationMinutes = 60;
+    if (formVal.startDateTime && formVal.endDateTime) {
+      const diffMs = new Date(formVal.endDateTime).getTime() - new Date(formVal.startDateTime).getTime();
+      durationMinutes = Math.max(1, Math.round(diffMs / 60000));
+    }
+
+    const submitData = new ScheduledEventTemplateSubmitData();
+    submitData.id = 0 as any;
+    submitData.name = templateName.trim();
+    submitData.description = formVal.description || null;
+    submitData.defaultAllDay = formVal.isAllDay || false;
+    submitData.defaultDurationMinutes = durationMinutes;
+    submitData.priorityId = formVal.priorityId ? Number(formVal.priorityId) : null;
+    submitData.defaultLocationPattern = formVal.location || null;
+    submitData.versionNumber = 0 as any;
+    submitData.active = true;
+    submitData.deleted = false;
+
+    try {
+      await lastValueFrom(this.templateService.PostScheduledEventTemplate(submitData));
+      this.alertService.showMessage('Template Saved', `"${templateName}" saved as template`, MessageSeverity.success);
+
+      // Refresh templates list
+      this.templateService.GetScheduledEventTemplateList({ active: true }).subscribe(templates => {
+        this.templates = templates;
+      });
+    } catch (err: any) {
+      this.alertService.showMessage('Error', 'Failed to save template', MessageSeverity.error);
+    }
   }
 }

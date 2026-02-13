@@ -1,0 +1,94 @@
+<!-- Template Add/Edit Modal -->
+<div class="modal-header template-modal-header">
+    <h5 class="modal-title">
+        <i class="bi bi-clipboard2-check me-2"></i>
+        {{ isEditMode ? 'Edit Template' : 'Create Template' }}
+    </h5>
+    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="activeModal.dismiss()"></button>
+</div>
+
+<div class="modal-body">
+    <form [formGroup]="templateForm">
+        <div class="row g-3">
+
+            <!-- Template Name -->
+            <div class="col-12">
+                <label class="form-label fw-semibold">Template Name <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" formControlName="name"
+                    placeholder="e.g. Morning Shift, Team Meeting" />
+            </div>
+
+            <!-- Description -->
+            <div class="col-12">
+                <label class="form-label fw-semibold">Description</label>
+                <textarea class="form-control" formControlName="description" rows="2"
+                    placeholder="Brief description of what this template is for..."></textarea>
+            </div>
+
+            <!-- Duration -->
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Default Duration <span class="text-danger">*</span></label>
+                <div class="duration-picker">
+                    <div class="duration-part">
+                        <input type="number" class="form-control" [ngModel]="durationHours"
+                            (ngModelChange)="durationHours = $event" [ngModelOptions]="{standalone: true}" min="0"
+                            max="72" placeholder="0" />
+                        <span class="duration-label">hours</span>
+                    </div>
+                    <span class="duration-sep">:</span>
+                    <div class="duration-part">
+                        <input type="number" class="form-control" [ngModel]="durationMinutesPart"
+                            (ngModelChange)="durationMinutesPart = $event" [ngModelOptions]="{standalone: true}" min="0"
+                            max="59" step="5" placeholder="0" />
+                        <span class="duration-label">minutes</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- All-Day Toggle -->
+            <div class="col-md-6 d-flex align-items-end pb-2">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="defaultAllDay" formControlName="defaultAllDay">
+                    <label class="form-check-label fw-semibold" for="defaultAllDay">All-Day Event</label>
+                </div>
+            </div>
+
+            <!-- Priority -->
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Default Priority</label>
+                <select class="form-select" formControlName="priorityId">
+                    <option [ngValue]="null">No default</option>
+                    <option *ngFor="let p of priorities" [ngValue]="p.id">{{ p.name }}</option>
+                </select>
+            </div>
+
+            <!-- Target Type -->
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Scheduling Target Type</label>
+                <select class="form-select" formControlName="schedulingTargetTypeId">
+                    <option [ngValue]="null">No default</option>
+                    <option *ngFor="let t of targetTypes" [ngValue]="t.id">{{ t.name }}</option>
+                </select>
+            </div>
+
+            <!-- Default Location -->
+            <div class="col-12">
+                <label class="form-label fw-semibold">Default Location</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                    <input type="text" class="form-control" formControlName="defaultLocationPattern"
+                        placeholder="e.g. Room 204, Main Office" />
+                </div>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary" (click)="activeModal.dismiss()">Cancel</button>
+    <button type="button" class="btn btn-primary" (click)="save()" [disabled]="templateForm.invalid || saving">
+        <span *ngIf="saving" class="spinner-border spinner-border-sm me-1"></span>
+        {{ isEditMode ? 'Update Template' : 'Create Template' }}
+    </button>
+</div>
