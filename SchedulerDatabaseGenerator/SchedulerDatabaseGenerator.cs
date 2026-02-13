@@ -27,10 +27,26 @@ namespace Foundation.Scheduler.Database
     /// </summary>
     public class SchedulerDatabaseGenerator : DatabaseGenerator
     {
-        private const int CLIENT_REGULAR_USER_SECURITY_LEVEL = 1;
-        private const int CLIENT_ADMIN_USER_SECURITY_LEVEL = 50;
-        private const int SYSTEM_ADMIN_SECURITY_LEVEL = 150;
-        private const int FOUNDATION_ADMIN_SECURITY_LEVEL = 255;
+        // ── Permission levels ──
+        // Read level for all tenant-visible tables
+        private const int SCHEDULER_READER_PERMISSION_LEVEL = 1;
+
+        // Write levels – tiered by functional area
+        private const int SCHEDULER_BASIC_WRITER_PERMISSION_LEVEL = 1;            // Operational / day-to-day tables (events, assignments)
+        private const int SCHEDULER_CONTACT_WRITER_PERMISSION_LEVEL = 20;         // Contact management tables
+        private const int SCHEDULER_RESOURCE_WRITER_PERMISSION_LEVEL = 30;        // Resource, crew, availability, shift tables
+        private const int SCHEDULER_VOLUNTEER_WRITER_PERMISSION_LEVEL = 40;       // Volunteer profile and group tables
+        private const int SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL = 50;          // Admin config: types, templates, calendars, qualifications
+        private const int SCHEDULER_FUNDRAISING_WRITER_PERMISSION_LEVEL = 60;     // Fundraising module tables
+        private const int SCHEDULER_SUPER_ADMIN_WRITER_PERMISSION_LEVEL = 255;    // Foundation / system admin only
+
+        // ── Custom role names ──
+        private const string SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME = "Scheduler Config Writer";
+        private const string SCHEDULER_CONTACT_WRITER_CUSTOM_ROLE_NAME = "Scheduler Contact Writer";
+        private const string SCHEDULER_RESOURCE_WRITER_CUSTOM_ROLE_NAME = "Scheduler Resource Writer";
+        private const string SCHEDULER_FUNDRAISING_WRITER_CUSTOM_ROLE_NAME = "Scheduler Fundraising Writer";
+        private const string SCHEDULER_VOLUNTEER_WRITER_CUSTOM_ROLE_NAME = "Scheduler Volunteer Writer";
+
 
         public SchedulerDatabaseGenerator() : base("Scheduler", "Scheduler")
         {
@@ -42,6 +58,13 @@ All operational tables include multi-tenant support, versioning where appropriat
 
             this.database.SetSchemaName("Scheduler");
 
+            // Register custom roles for granular write access control
+            this.database.AddCustomRole(SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME, $"{SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME} Role");                      // Admin config: types, templates, calendars, qualifications
+            this.database.AddCustomRole(SCHEDULER_CONTACT_WRITER_CUSTOM_ROLE_NAME, $"{SCHEDULER_CONTACT_WRITER_CUSTOM_ROLE_NAME} Role");                    // Contact management
+            this.database.AddCustomRole(SCHEDULER_RESOURCE_WRITER_CUSTOM_ROLE_NAME, $"{SCHEDULER_RESOURCE_WRITER_CUSTOM_ROLE_NAME} Role");                  // Resources, crews, availability, shifts
+            this.database.AddCustomRole(SCHEDULER_FUNDRAISING_WRITER_CUSTOM_ROLE_NAME, $"{SCHEDULER_FUNDRAISING_WRITER_CUSTOM_ROLE_NAME} Role");            // Fundraising module
+            this.database.AddCustomRole(SCHEDULER_VOLUNTEER_WRITER_CUSTOM_ROLE_NAME, $"{SCHEDULER_VOLUNTEER_WRITER_CUSTOM_ROLE_NAME} Role");                // Volunteer extensions
+
 
             #region Setup Master Data - Resource Types, Countries, states, time zones etc..
 
@@ -50,7 +73,7 @@ All operational tables include multi-tenant support, versioning where appropriat
             //
             Database.Table attributeDefinitionTypeTable = database.AddTable("AttributeDefinitionType");
             attributeDefinitionTypeTable.comment = "Master list of available attribute data types.";
-            attributeDefinitionTypeTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            attributeDefinitionTypeTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
             attributeDefinitionTypeTable.AddIdField();
             attributeDefinitionTypeTable.AddNameAndDescriptionFields(true, true, false);
             attributeDefinitionTypeTable.AddSequenceField();
@@ -69,7 +92,7 @@ All operational tables include multi-tenant support, versioning where appropriat
             //
             Database.Table attributeDefinitionEntityTable = database.AddTable("AttributeDefinitionEntity");
             attributeDefinitionEntityTable.comment = "Master list of entities that support custom attributes.";
-            attributeDefinitionEntityTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            attributeDefinitionEntityTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
             attributeDefinitionEntityTable.AddIdField();
             attributeDefinitionEntityTable.AddNameAndDescriptionFields(true, true, false);
             attributeDefinitionEntityTable.AddControlFields();
@@ -80,7 +103,8 @@ All operational tables include multi-tenant support, versioning where appropriat
 
             Database.Table attributeDefinitionTable = database.AddTable("AttributeDefinition");
             attributeDefinitionTable.comment = "Definitions for custom attributes on various entities (Contact, Constituent, etc.)";
-            attributeDefinitionTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            attributeDefinitionTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            attributeDefinitionTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
             attributeDefinitionTable.AddIdField();
             attributeDefinitionTable.AddMultiTenantSupport();
             
@@ -104,7 +128,7 @@ All operational tables include multi-tenant support, versioning where appropriat
 
             Database.Table iconTable = database.AddTable("Icon");
             iconTable.comment = "List of icons to use on user interfaces.  Not tenant editable.";
-            iconTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, FOUNDATION_ADMIN_SECURITY_LEVEL);
+            iconTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
             iconTable.AddIdField();
             iconTable.AddNameField(true, true);
             iconTable.AddString50Field("fontAwesomeCode");
@@ -749,7 +773,7 @@ All operational tables include multi-tenant support, versioning where appropriat
 
             Database.Table salutationTable = database.AddTable("Salutation");
             salutationTable.comment = "The master list of salutations";
-            salutationTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, FOUNDATION_ADMIN_SECURITY_LEVEL);
+            salutationTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
             salutationTable.AddIdField();
             salutationTable.AddNameAndDescriptionFields(true, true, false);
             salutationTable.AddSequenceField();
@@ -794,7 +818,8 @@ All operational tables include multi-tenant support, versioning where appropriat
 
             Database.Table resourceTypeTable = database.AddTable("ResourceType");
             resourceTypeTable.comment = "Tenant specific master list of resource categories.";
-            resourceTypeTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            resourceTypeTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            resourceTypeTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
             resourceTypeTable.AddIdField();
             resourceTypeTable.AddMultiTenantSupport();
             resourceTypeTable.AddNameAndDescriptionFields(true, true, false);
@@ -842,7 +867,8 @@ All operational tables include multi-tenant support, versioning where appropriat
 
             Database.Table priorityTable = database.AddTable("Priority");
             priorityTable.comment = "List of priority values - Tenant configurable for flexibilty";
-            priorityTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            priorityTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            priorityTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
             priorityTable.AddIdField();
             priorityTable.AddMultiTenantSupport();
             priorityTable.AddNameAndDescriptionFields(true, true, false);
@@ -880,7 +906,7 @@ All operational tables include multi-tenant support, versioning where appropriat
 
             Database.Table contactMethodTable = database.AddTable("ContactMethod");
             contactMethodTable.comment = "List of standard contact methods";
-            contactMethodTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, FOUNDATION_ADMIN_SECURITY_LEVEL);
+            contactMethodTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
             contactMethodTable.AddIdField();
             contactMethodTable.AddNameAndDescriptionFields(true, true, false);
             contactMethodTable.AddSequenceField();
@@ -930,7 +956,8 @@ All operational tables include multi-tenant support, versioning where appropriat
             // Master list of rate types
             Database.Table rateTypeTable = database.AddTable("RateType");
             rateTypeTable.comment = "The rate types";
-            rateTypeTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            rateTypeTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            rateTypeTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
             rateTypeTable.AddIdField();
             rateTypeTable.AddMultiTenantSupport();
             rateTypeTable.AddNameAndDescriptionFields(true, true, false);
@@ -971,7 +998,7 @@ All operational tables include multi-tenant support, versioning where appropriat
 
             Database.Table interactionTypeTable = database.AddTable("InteractionType");
             interactionTypeTable.comment = "Master list of interaction types.";
-            interactionTypeTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, FOUNDATION_ADMIN_SECURITY_LEVEL);
+            interactionTypeTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
             interactionTypeTable.AddIdField();
             interactionTypeTable.AddNameAndDescriptionFields(true, true, false);
             interactionTypeTable.AddSequenceField();
@@ -1014,7 +1041,8 @@ All operational tables include multi-tenant support, versioning where appropriat
             // Master list of currencies
             Database.Table currencyTable = database.AddTable("Currency");
             currencyTable.comment = "The currencies";
-            currencyTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            currencyTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            currencyTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
             currencyTable.AddIdField();
             currencyTable.AddMultiTenantSupport();
             currencyTable.AddNameAndDescriptionFields(true, true, false);
@@ -1052,7 +1080,8 @@ All operational tables include multi-tenant support, versioning where appropriat
  Tied to RateType for billing context.
  ====================================================================================================";
 
-            chargeTypeTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            chargeTypeTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            chargeTypeTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
             chargeTypeTable.AddIdField();
             chargeTypeTable.AddMultiTenantSupport();
             chargeTypeTable.AddNameAndDescriptionFields(true, true, false);
@@ -1074,8 +1103,9 @@ All operational tables include multi-tenant support, versioning where appropriat
 
 
             Database.Table tagTable = database.AddTable("Tag");
-            tagTable.comment = "Tenant specific master list of tags.";
-            tagTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            tagTable.comment = "List of tags";
+            tagTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            tagTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
             tagTable.AddIdField();
             tagTable.AddMultiTenantSupport();
             tagTable.AddNameAndDescriptionFields(true, true, false);
@@ -1097,13 +1127,13 @@ All operational tables include multi-tenant support, versioning where appropriat
             //
             // Add the standard time zone table
             //
-            Database.Table timeZoneTable = database.AddStandardTimeZoneTable(CLIENT_REGULAR_USER_SECURITY_LEVEL, FOUNDATION_ADMIN_SECURITY_LEVEL);
+            Database.Table timeZoneTable = database.AddStandardTimeZoneTable(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
 
 
-            Database.Table countryTable = database.AddStandardCountryTable(0, FOUNDATION_ADMIN_SECURITY_LEVEL);
+            Database.Table countryTable = database.AddStandardCountryTable(0, SCHEDULER_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
 
 
-            Database.Table stateProvinceTable = database.AddStandardStateProvinceTable(countryTable, 0, FOUNDATION_ADMIN_SECURITY_LEVEL, "StateProvince");
+            Database.Table stateProvinceTable = database.AddStandardStateProvinceTable(countryTable, 0, SCHEDULER_SUPER_ADMIN_WRITER_PERMISSION_LEVEL, "StateProvince");
 
 
             #endregion
@@ -1119,7 +1149,8 @@ All operational tables include multi-tenant support, versioning where appropriat
             volunteerStatusTable.comment = @"Master list of volunteer lifecycle/status values.
 Examples: Prospect, Active, On Leave, Inactive, Not Re-invited.
 Used to track engagement level and control visibility/assignment rules.";
-            volunteerStatusTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            volunteerStatusTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_VOLUNTEER_WRITER_PERMISSION_LEVEL);
+            volunteerStatusTable.customWriteAccessRole = SCHEDULER_VOLUNTEER_WRITER_CUSTOM_ROLE_NAME;
             volunteerStatusTable.AddIdField();
             volunteerStatusTable.AddNameAndDescriptionFields(true, true, false);
             volunteerStatusTable.AddSequenceField();
@@ -1195,8 +1226,8 @@ Used to track engagement level and control visibility/assignment rules.";
             // The contact types - Not tenant specific
             //
             Database.Table contactTypeTable = database.AddTable("ContactType");
-            contactTypeTable.comment = "Master list of office types.  Used for categorizing offices.  Not tenant specific";
-            contactTypeTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, FOUNDATION_ADMIN_SECURITY_LEVEL);
+            contactTypeTable.comment = "the contact types";
+            contactTypeTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
             contactTypeTable.AddIdField();
             contactTypeTable.AddNameAndDescriptionFields(true, true, false);
             contactTypeTable.AddSequenceField();
@@ -1279,7 +1310,8 @@ Used to track engagement level and control visibility/assignment rules.";
             Database.Table contactTable = database.AddTable("Contact");
             contactTable.maxPostBytes = 5_000_000;          // Cap posts at 5 mb
             contactTable.comment = "The contact data";
-            contactTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_REGULAR_USER_SECURITY_LEVEL);
+            contactTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            contactTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
             contactTable.AddIdField();
             contactTable.AddMultiTenantSupport();
             contactTable.AddForeignKeyField(contactTypeTable, false, true);
@@ -1308,7 +1340,7 @@ Used to track engagement level and control visibility/assignment rules.";
             contactTable.AddBinaryDataFields("avatar");            // avatar details
 
             Database.Table.Field cteiField = contactTable.AddString100Field("externalId", true);
-            cteiField.readPermissionLevelNeeded = CLIENT_ADMIN_USER_SECURITY_LEVEL;                     // arbitrary key for an external system's key
+            cteiField.readPermissionLevelNeeded = SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL;                     // arbitrary key for an external system's key
             cteiField.hideOnDefaultLists = true;
 
             contactTable.AddVersionControl();
@@ -1325,7 +1357,8 @@ Used to track engagement level and control visibility/assignment rules.";
 
             Database.Table contactTagTable = database.AddTable("ContactTag");
             contactTagTable.comment = "The contact Tag data";
-            contactTagTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_REGULAR_USER_SECURITY_LEVEL);
+            contactTagTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            contactTagTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
             contactTagTable.AddIdField();
             contactTagTable.AddMultiTenantSupport();
             contactTagTable.AddForeignKeyField(contactTable, false, true);
@@ -1339,8 +1372,8 @@ Used to track engagement level and control visibility/assignment rules.";
             // The relationship types - Not tenant specific
             //
             Database.Table relationshipTypeTable = database.AddTable("RelationshipType");
-            relationshipTypeTable.comment = "Master list of office types.  Used for categorizing offices.  Not tenant specific";
-            relationshipTypeTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, FOUNDATION_ADMIN_SECURITY_LEVEL);
+            relationshipTypeTable.comment = "Master list of relationship types";
+            relationshipTypeTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
             relationshipTypeTable.AddIdField();
             relationshipTypeTable.AddNameAndDescriptionFields(true, true, false);
             relationshipTypeTable.AddBoolField("isEmergencyEligible", false, false);
@@ -1447,7 +1480,8 @@ Used to track engagement level and control visibility/assignment rules.";
 
             Database.Table contactContactTable = database.AddTable("ContactContact");
             contactContactTable.comment = "The link between a contact and other contacts.";
-            contactContactTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_REGULAR_USER_SECURITY_LEVEL);
+            contactContactTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            contactContactTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
             contactContactTable.AddIdField();
             contactContactTable.AddMultiTenantSupport();
             contactContactTable.AddForeignKeyField(contactTable, false, true);
@@ -1469,8 +1503,8 @@ Used to track engagement level and control visibility/assignment rules.";
             // The office types - Not tenant specific
             //
             Database.Table officeTypeTable = database.AddTable("OfficeType");
-            officeTypeTable.comment = "Master list of office types.  Used for categorizing offices.  Not tenant specific";
-            officeTypeTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, FOUNDATION_ADMIN_SECURITY_LEVEL);
+            officeTypeTable.comment = "Master list of office types";
+            officeTypeTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
             officeTypeTable.AddIdField();
             officeTypeTable.AddNameAndDescriptionFields(true, true, false);
             officeTypeTable.AddSequenceField();
@@ -1537,7 +1571,8 @@ Used to track engagement level and control visibility/assignment rules.";
             Database.Table officeTable = database.AddTable("Office");
             officeTable.maxPostBytes = 5_000_000;          // Cap posts at 5 mb
             officeTable.comment = @"The main list of offices operated by an organization using the Scheduler.  Allows schedule and resource grouping.";
-            officeTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            officeTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            officeTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
             officeTable.AddIdField();
             officeTable.AddMultiTenantSupport();
             officeTable.AddNameAndDescriptionFields(true, true, true);
@@ -1558,7 +1593,7 @@ Used to track engagement level and control visibility/assignment rules.";
 
             officeTable.AddTextField("notes", true);
             Database.Table.Field oeiField = officeTable.AddString100Field("externalId", true).AddScriptComments("Optional reference to an ID in an external system ");
-            oeiField.readPermissionLevelNeeded = CLIENT_ADMIN_USER_SECURITY_LEVEL;
+            oeiField.readPermissionLevelNeeded = SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL;
             oeiField.hideOnDefaultLists = true;
 
             officeTable.AddHTMLColorField("color", true).AddScriptComments("Override of Target Type Hex color for UI display");
@@ -1575,7 +1610,8 @@ Used to track engagement level and control visibility/assignment rules.";
 
             Database.Table officeContactTable = database.AddTable("OfficeContact");
             officeContactTable.comment = "The link between contacts and offices.";
-            officeContactTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_REGULAR_USER_SECURITY_LEVEL);
+            officeContactTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            officeContactTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
             officeContactTable.AddIdField();
             officeContactTable.AddMultiTenantSupport();
             officeContactTable.AddForeignKeyField(officeTable, false, true);
@@ -1599,7 +1635,8 @@ Used to track engagement level and control visibility/assignment rules.";
 
             Database.Table calendarTable = database.AddTable("Calendar");
             calendarTable.comment = "Optional logical grouping of events for visibility and filtering (e.g., '2026 Road Projects', 'Maintenance Calendar').";
-            calendarTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            calendarTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            calendarTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
             calendarTable.AddIdField();
             calendarTable.AddMultiTenantSupport();
             calendarTable.AddNameAndDescriptionFields(true, true, true);
@@ -1621,7 +1658,8 @@ Used to track engagement level and control visibility/assignment rules.";
 
             Database.Table clientTypeTable = database.AddTable("ClientType");
             clientTypeTable.comment = "Master list of client types.  Used for categorizing clients.";
-            clientTypeTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            clientTypeTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            clientTypeTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
             clientTypeTable.AddIdField();
             clientTypeTable.AddMultiTenantSupport();
             clientTypeTable.AddNameAndDescriptionFields(true, true, false);
@@ -1650,7 +1688,8 @@ Used to track engagement level and control visibility/assignment rules.";
             Database.Table clientTable = database.AddTable("Client");
             clientTable.maxPostBytes = 5_000_000;          // Cap posts at 5 mb
             clientTable.comment = @"The main client list.  Is not directly schedulable, but provides billing details.  Contains scheduling targets which are schedulable.";
-            clientTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            clientTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            clientTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
             clientTable.AddIdField();
             clientTable.AddMultiTenantSupport();
             clientTable.AddNameAndDescriptionFields(true, true, true);
@@ -1672,7 +1711,7 @@ Used to track engagement level and control visibility/assignment rules.";
 
             clientTable.AddTextField("notes", true);
             Database.Table.Field ceiField = clientTable.AddString100Field("externalId", true).AddScriptComments("Optional reference to an ID in an external system");
-            ceiField.readPermissionLevelNeeded = CLIENT_ADMIN_USER_SECURITY_LEVEL;
+            ceiField.readPermissionLevelNeeded = SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL;
             ceiField.hideOnDefaultLists = true;
 
 
@@ -1690,7 +1729,8 @@ Used to track engagement level and control visibility/assignment rules.";
 
             Database.Table clientContactTable = database.AddTable("ClientContact");
             clientContactTable.comment = "The link between contacts and clients.";
-            clientContactTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_REGULAR_USER_SECURITY_LEVEL);
+            clientContactTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            clientContactTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
             clientContactTable.AddIdField();
             clientContactTable.AddMultiTenantSupport();
             clientContactTable.AddForeignKeyField(clientTable, false, true);
@@ -1709,7 +1749,8 @@ Used to track engagement level and control visibility/assignment rules.";
 
             #region Tenant Profile 
             Database.Table tenantProfile = database.AddTable("TenantProfile");
-            tenantProfile.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            tenantProfile.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            tenantProfile.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
             tenantProfile.comment = "Tenant-level information. Client admins manage this data.";
             tenantProfile.AddIdField();
             tenantProfile.AddMultiTenantSupport();
@@ -1746,7 +1787,8 @@ Used to track engagement level and control visibility/assignment rules.";
             // Tenant specific master list of qualifications/certifications
             Database.Table qualificationTable = database.AddTable("Qualification");
             qualificationTable.comment = @"Master list of qualifications, certifications, or competencies required for certain work.  Examples: RN License, Crane Operator Certification, OSHA 30, Pediatric Specialty, Confined Space Entry.";
-            qualificationTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, FOUNDATION_ADMIN_SECURITY_LEVEL);
+            qualificationTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            qualificationTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
             qualificationTable.AddIdField();
             qualificationTable.AddMultiTenantSupport();
             qualificationTable.AddNameAndDescriptionFields(true, true, false);
@@ -1779,7 +1821,8 @@ Used to track engagement level and control visibility/assignment rules.";
 
             Database.Table assignmentRoleTable = database.AddTable("AssignmentRole");
             assignmentRoleTable.comment = @"Tenant-configurable roles that a resource can fulfil during an event.  Examples: Operator, Supervisor, Driver, Spotter, Safety Officer.  Used for business rule enforcement and richer reporting.";
-            assignmentRoleTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            assignmentRoleTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            assignmentRoleTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
             assignmentRoleTable.AddIdField();
             assignmentRoleTable.AddMultiTenantSupport();
             assignmentRoleTable.AddNameAndDescriptionFields(true, true, true);
@@ -1825,7 +1868,8 @@ Used to track engagement level and control visibility/assignment rules.";
             //
             Database.Table assignmentRoleQualificationRequirementTable = database.AddTable("AssignmentRoleQualificationRequirement");
             assignmentRoleQualificationRequirementTable.comment = @"Defines which qualifications are required to fulfill a specific AssignmentRole.  This is the most common way to enforce certification requirements.";
-            assignmentRoleQualificationRequirementTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            assignmentRoleQualificationRequirementTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            assignmentRoleQualificationRequirementTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
             assignmentRoleQualificationRequirementTable.AddIdField();
             assignmentRoleQualificationRequirementTable.AddMultiTenantSupport();
             assignmentRoleQualificationRequirementTable.AddForeignKeyField(assignmentRoleTable, false, true);
@@ -1843,7 +1887,7 @@ Used to track engagement level and control visibility/assignment rules.";
 
             Database.Table eventStatusTable = database.AddTable("EventStatus");
             eventStatusTable.comment = "Master list of event statuses (Planned, In Progress, Completed, No-Show, Canceled, etc.)";
-            eventStatusTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, FOUNDATION_ADMIN_SECURITY_LEVEL);
+            eventStatusTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
             eventStatusTable.AddIdField();
             eventStatusTable.AddNameAndDescriptionFields(true, true, false);
             eventStatusTable.AddHTMLColorField("color", true).AddScriptComments("Hex color for UI display");
@@ -1870,7 +1914,7 @@ Used to track engagement level and control visibility/assignment rules.";
 
             Database.Table paymentTypeTable = database.AddTable("PaymentType");
             paymentTypeTable.comment = "Master list of payment types ( credit card, check, cash, etc..)";
-            paymentTypeTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, FOUNDATION_ADMIN_SECURITY_LEVEL);
+            paymentTypeTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
             paymentTypeTable.AddIdField();
             paymentTypeTable.AddNameAndDescriptionFields(true, true, false);
             paymentTypeTable.AddSequenceField();
@@ -1909,7 +1953,7 @@ Used to track engagement level and control visibility/assignment rules.";
 
             Database.Table receiptTypeTable = database.AddTable("ReceiptType");
             receiptTypeTable.comment = "Master list of receipt types";
-            receiptTypeTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, FOUNDATION_ADMIN_SECURITY_LEVEL);
+            receiptTypeTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
             receiptTypeTable.AddIdField();
             receiptTypeTable.AddNameAndDescriptionFields(true, true, false);
             receiptTypeTable.AddSequenceField();
@@ -1932,7 +1976,7 @@ Used to track engagement level and control visibility/assignment rules.";
 
             Database.Table bookingSourceTypeTable = database.AddTable("BookingSourceType");
             bookingSourceTypeTable.comment = "Master list of booking sources ( walk-in, phone, online)";
-            bookingSourceTypeTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, FOUNDATION_ADMIN_SECURITY_LEVEL);
+            bookingSourceTypeTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
             bookingSourceTypeTable.AddIdField();
             bookingSourceTypeTable.AddNameAndDescriptionFields(true, true, false);
             bookingSourceTypeTable.AddHTMLColorField("color", true).AddScriptComments("Hex color for UI display");
@@ -1971,7 +2015,7 @@ Used to track engagement level and control visibility/assignment rules.";
             // Master table for assignment statuses
             Database.Table assignmentStatusTable = database.AddTable("AssignmentStatus");
             assignmentStatusTable.comment = "Master list of assignment statuses (Planned, In Progress, Completed, No-Show, Canceled, etc.)";
-            assignmentStatusTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, FOUNDATION_ADMIN_SECURITY_LEVEL);
+            assignmentStatusTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
             assignmentStatusTable.AddIdField();
             assignmentStatusTable.AddNameAndDescriptionFields(true, true, false);
             assignmentStatusTable.AddHTMLColorField("color", true).AddScriptComments("Hex color for UI display");
@@ -2018,7 +2062,8 @@ Used to track engagement level and control visibility/assignment rules.";
             // Master list of target types
             Database.Table schedulingTargetTypeTable = database.AddTable("SchedulingTargetType");
             schedulingTargetTypeTable.comment = "Master list of scheduling target categories (e.g., Project, Patient, Customer). Used for UI grouping and filtering.";
-            schedulingTargetTypeTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            schedulingTargetTypeTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            schedulingTargetTypeTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
             schedulingTargetTypeTable.AddIdField();
             schedulingTargetTypeTable.AddMultiTenantSupport();
             schedulingTargetTypeTable.AddNameAndDescriptionFields(true, true, false);
@@ -2054,7 +2099,8 @@ Used to track engagement level and control visibility/assignment rules.";
             Database.Table schedulingTargetTable = database.AddTable("SchedulingTarget");
             schedulingTargetTable.maxPostBytes = 5_000_000;          // Cap posts at 5 mb
             schedulingTargetTable.comment = @"The core container that ScheduledEvents are scheduled into.   Examples: a construction project, a healthcare patient, a service customer.  Supports multiple addresses and recurring scheduling patterns.";
-            schedulingTargetTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            schedulingTargetTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            schedulingTargetTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
             schedulingTargetTable.AddIdField();
             schedulingTargetTable.AddMultiTenantSupport();
             schedulingTargetTable.AddNameAndDescriptionFields(true, true, true);
@@ -2067,7 +2113,7 @@ Used to track engagement level and control visibility/assignment rules.";
 
             schedulingTargetTable.AddTextField("notes", true);
             Database.Table.Field steiField = schedulingTargetTable.AddString100Field("externalId", true).AddScriptComments("Optional reference to an ID in an external system");
-            steiField.readPermissionLevelNeeded = CLIENT_ADMIN_USER_SECURITY_LEVEL;
+            steiField.readPermissionLevelNeeded = SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL;
             steiField.hideOnDefaultLists = true;
 
 
@@ -2086,7 +2132,7 @@ Used to track engagement level and control visibility/assignment rules.";
 
             Database.Table schedulingTargetContactTable = database.AddTable("SchedulingTargetContact");
             schedulingTargetContactTable.comment = "The link between scheduling targets and contacts.";
-            schedulingTargetContactTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_REGULAR_USER_SECURITY_LEVEL);
+            schedulingTargetContactTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_READER_PERMISSION_LEVEL);
             schedulingTargetContactTable.AddIdField();
             schedulingTargetContactTable.AddMultiTenantSupport();
             schedulingTargetContactTable.AddForeignKeyField(schedulingTargetTable, false, true);
@@ -2106,7 +2152,8 @@ Used to track engagement level and control visibility/assignment rules.";
             //
             Database.Table schedulingTargetAddressTable = database.AddTable("SchedulingTargetAddress");
             schedulingTargetAddressTable.comment = "Links SchedulingTargets to multiple addresses (e.g., multiple job sites, patient home + hospital).";
-            schedulingTargetAddressTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            schedulingTargetAddressTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            schedulingTargetAddressTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
             schedulingTargetAddressTable.AddIdField();
             schedulingTargetAddressTable.AddMultiTenantSupport();
             schedulingTargetAddressTable.AddForeignKeyField(schedulingTargetTable, false, true).AddScriptComments("Primary  schuduling target for this address - could be null if there is a client linked to this, so the address would be for all targets in the client."); ;
@@ -2133,7 +2180,8 @@ Used to track engagement level and control visibility/assignment rules.";
             // Requirements for SchedulingTargets (projects/patients)
             Database.Table schedulingTargetQualificationRequirementTable = database.AddTable("SchedulingTargetQualificationRequirement");
             schedulingTargetQualificationRequirementTable.comment = @"Defines which qualifications are required (or preferred) for working on a specific SchedulingTarget.  - isRequired = true then resource MUST have qualification  - isRequired = false then nice-to-have (warning only)";
-            schedulingTargetQualificationRequirementTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            schedulingTargetQualificationRequirementTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            schedulingTargetQualificationRequirementTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
             schedulingTargetQualificationRequirementTable.AddIdField();
             schedulingTargetQualificationRequirementTable.AddMultiTenantSupport();
             schedulingTargetQualificationRequirementTable.AddForeignKeyField(schedulingTargetTable, false, true);
@@ -2154,7 +2202,7 @@ Used to track engagement level and control visibility/assignment rules.";
             // Master list of recurrence frequencies 
             Database.Table recurrenceFrequencyTable = database.AddTable("RecurrenceFrequency");
             recurrenceFrequencyTable.comment = "Master list of recurrence frequencies. Mirrors common iCalendar frequencies.";
-            recurrenceFrequencyTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, FOUNDATION_ADMIN_SECURITY_LEVEL);
+            recurrenceFrequencyTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
             recurrenceFrequencyTable.AddIdField();
             recurrenceFrequencyTable.AddNameAndDescriptionFields(true, true, false);
             recurrenceFrequencyTable.AddSequenceField();
@@ -2194,7 +2242,7 @@ Used to track engagement level and control visibility/assignment rules.";
             // The recurrence rule attached to a ScheduledEvent (one-to-one for simplicity)
             Database.Table recurrenceRuleTable = database.AddTable("RecurrenceRule");
             recurrenceRuleTable.comment = @"Defines a recurrence pattern for a ScheduledEvent.  One ScheduledEvent can have zero or one RecurrenceRule (for recurring series).  Instances are generated on-the-fly or materialized as needed.";
-            recurrenceRuleTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_REGULAR_USER_SECURITY_LEVEL);
+            recurrenceRuleTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_READER_PERMISSION_LEVEL);
             recurrenceRuleTable.AddIdField();
             recurrenceRuleTable.AddMultiTenantSupport();
             recurrenceRuleTable.AddForeignKeyField(recurrenceFrequencyTable, false, true);
@@ -2224,7 +2272,8 @@ Used to track engagement level and control visibility/assignment rules.";
             #region Shift Patterns
             Database.Table shiftPatternTable = database.AddTable("ShiftPattern");
             shiftPatternTable.comment = @"Reusable standard shift patterns (e.g., 'Day Shift', 'Night Shift', 'Weekend Crew').  Resources can be assigned to a pattern, or have custom overrides.";
-            shiftPatternTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            shiftPatternTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            shiftPatternTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
             shiftPatternTable.AddIdField();
             shiftPatternTable.AddMultiTenantSupport();
             shiftPatternTable.AddNameAndDescriptionFields(true, true, true);
@@ -2256,7 +2305,8 @@ Used to track engagement level and control visibility/assignment rules.";
             Database.Table resourceTable = database.AddTable("Resource");
             resourceTable.maxPostBytes = 5_000_000;          // Cap posts at 5 mb
             resourceTable.comment = @"The schedulable entities – people and assets.  Examples: 'John Doe (Operator)', 'CAT CP56B Roller #12', 'Conference Room A'.";
-            resourceTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            resourceTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_RESOURCE_WRITER_PERMISSION_LEVEL);
+            resourceTable.customWriteAccessRole = SCHEDULER_RESOURCE_WRITER_CUSTOM_ROLE_NAME;
             resourceTable.AddIdField();
             resourceTable.AddMultiTenantSupport();
             resourceTable.AddNameAndDescriptionFields(true, true, true);
@@ -2268,7 +2318,7 @@ Used to track engagement level and control visibility/assignment rules.";
             resourceTable.AddTextField("notes", true);
 
             Database.Table.Field rteiField = resourceTable.AddString100Field("externalId", true).AddScriptComments("Optional reference to an ID in an external system");
-            rteiField.readPermissionLevelNeeded = CLIENT_ADMIN_USER_SECURITY_LEVEL;
+            rteiField.readPermissionLevelNeeded = SCHEDULER_RESOURCE_WRITER_PERMISSION_LEVEL;
             rteiField.hideOnDefaultLists = true;
 
             resourceTable.AddHTMLColorField("color", true).AddScriptComments("Hex color for UI display");
@@ -2288,7 +2338,7 @@ Used to track engagement level and control visibility/assignment rules.";
 
             Database.Table resourceContactTable = database.AddTable("ResourceContact");
             resourceContactTable.comment = "The link between scheduling targets and contacts.";
-            resourceContactTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_REGULAR_USER_SECURITY_LEVEL);
+            resourceContactTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_READER_PERMISSION_LEVEL);
             resourceContactTable.AddIdField();
             resourceContactTable.AddMultiTenantSupport();
             resourceContactTable.AddForeignKeyField(resourceTable, false, true);
@@ -2336,7 +2386,8 @@ Hierarchy Logic (System should look for the first match in this order):
 
             rateSheetTable.SetTableToBeReadonlyForControllerCreationPurposes();     // make this read only so we can override the put/post to add some business rules to validate the hierarchical specificity rules
 
-            rateSheetTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            rateSheetTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_RESOURCE_WRITER_PERMISSION_LEVEL);
+            rateSheetTable.customWriteAccessRole = SCHEDULER_RESOURCE_WRITER_CUSTOM_ROLE_NAME;
             rateSheetTable.AddIdField();
             rateSheetTable.AddMultiTenantSupport();
 
@@ -2375,7 +2426,8 @@ Hierarchy Logic (System should look for the first match in this order):
             // Which resources hold which qualifications
             Database.Table resourceQualificationTable = database.AddTable("ResourceQualification");
             resourceQualificationTable.comment = @"Links resources to qualifications they possess.  Includes expiry date, issuing authority, and notes.";
-            resourceQualificationTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            resourceQualificationTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_RESOURCE_WRITER_PERMISSION_LEVEL);
+            resourceQualificationTable.customWriteAccessRole = SCHEDULER_RESOURCE_WRITER_CUSTOM_ROLE_NAME;
             resourceQualificationTable.AddIdField();
             resourceQualificationTable.AddMultiTenantSupport();
             resourceQualificationTable.AddForeignKeyField(resourceTable, false, true);
@@ -2401,7 +2453,8 @@ Hierarchy Logic (System should look for the first match in this order):
 
             Database.Table resourceAvailabilityTable = database.AddTable("ResourceAvailability");
             resourceAvailabilityTable.comment = @"Defines periods when a resource is unavailable (blackouts).  Used for vacations, maintenance, training, etc.  If endDateTime is NULL the blackout is ongoing until cleared.";
-            resourceAvailabilityTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            resourceAvailabilityTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_RESOURCE_WRITER_PERMISSION_LEVEL);
+            resourceAvailabilityTable.customWriteAccessRole = SCHEDULER_RESOURCE_WRITER_CUSTOM_ROLE_NAME;
             resourceAvailabilityTable.AddIdField();
             resourceAvailabilityTable.AddMultiTenantSupport();
             resourceAvailabilityTable.AddForeignKeyField(resourceTable, false, true);
@@ -2420,7 +2473,8 @@ Hierarchy Logic (System should look for the first match in this order):
             // shift for a resource - for override purposes
             Database.Table resourceShiftTable = database.AddTable("ResourceShift").AddScriptComments("Ovrerride shift for a resource");
             resourceShiftTable.comment = @"Defines regular working shifts for a resource (e.g., clinician hours).  Used to determine baseline availability. Blackouts (ResourceAvailability) override these for exceptions.";
-            resourceShiftTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            resourceShiftTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_RESOURCE_WRITER_PERMISSION_LEVEL);
+            resourceShiftTable.customWriteAccessRole = SCHEDULER_RESOURCE_WRITER_CUSTOM_ROLE_NAME;
             resourceShiftTable.AddIdField();
             resourceShiftTable.AddMultiTenantSupport();
             resourceShiftTable.AddForeignKeyField(resourceTable, false, true);
@@ -2453,7 +2507,8 @@ Hierarchy Logic (System should look for the first match in this order):
             crewTable.maxPostBytes = 5_000_000;          // Cap posts at 5 mb
             crewTable.comment = @"Named, reusable group of resources that are typically scheduled together.  Common in construction (e.g., a roller + operator + spotter).  Crews can be assigned to events as a single unit.";
 
-            crewTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            crewTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_RESOURCE_WRITER_PERMISSION_LEVEL);
+            crewTable.customWriteAccessRole = SCHEDULER_RESOURCE_WRITER_CUSTOM_ROLE_NAME;
             crewTable.AddIdField();
             crewTable.AddMultiTenantSupport();
             crewTable.AddNameAndDescriptionFields(true, true, true);
@@ -2469,7 +2524,8 @@ Hierarchy Logic (System should look for the first match in this order):
 
             Database.Table crewMemberTable = database.AddTable("CrewMember");
             crewMemberTable.comment = @"Membership definition for a crew.  Specifies which resource belongs to which crew, the role they play within the crew, and a display sequence.";
-            crewMemberTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            crewMemberTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_RESOURCE_WRITER_PERMISSION_LEVEL);
+            crewMemberTable.customWriteAccessRole = SCHEDULER_RESOURCE_WRITER_CUSTOM_ROLE_NAME;
             crewMemberTable.AddIdField();
             crewMemberTable.AddMultiTenantSupport();
             crewMemberTable.AddForeignKeyField(crewTable, false, true);
@@ -2491,7 +2547,8 @@ Hierarchy Logic (System should look for the first match in this order):
 
             Database.Table scheduledEventTemplateTable = database.AddTable("ScheduledEventTemplate");
             scheduledEventTemplateTable.comment = @"Pre-defined event templates for common appointment/activity types.   Includes default duration, required roles, default assignments, etc.";
-            scheduledEventTemplateTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            scheduledEventTemplateTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            scheduledEventTemplateTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
             scheduledEventTemplateTable.AddIdField();
             scheduledEventTemplateTable.AddMultiTenantSupport();
             scheduledEventTemplateTable.AddNameAndDescriptionFields(true, true, true);
@@ -2521,7 +2578,8 @@ Hierarchy Logic (System should look for the first match in this order):
  Defines default charges for ScheduledEventTemplate).
  When an event is created from a template, these charges are auto-dropped onto the event.
  ====================================================================================================";
-            scheduledEventTemplateChargeTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            scheduledEventTemplateChargeTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            scheduledEventTemplateChargeTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
             scheduledEventTemplateChargeTable.AddIdField();
             scheduledEventTemplateChargeTable.AddMultiTenantSupport();
             scheduledEventTemplateChargeTable.AddForeignKeyField(scheduledEventTemplateTable, false, true).AddScriptComments("Link to ScheduledEventTemplate");
@@ -2536,7 +2594,8 @@ Hierarchy Logic (System should look for the first match in this order):
             // Template-level qualification defaults
             Database.Table scheduledEventTemplateQualificationRequirementTable = database.AddTable("ScheduledEventTemplateQualificationRequirement");
             scheduledEventTemplateQualificationRequirementTable.comment = "Default qualification requirements for events created from a template.";
-            scheduledEventTemplateQualificationRequirementTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            scheduledEventTemplateQualificationRequirementTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            scheduledEventTemplateQualificationRequirementTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
             scheduledEventTemplateQualificationRequirementTable.AddIdField();
             scheduledEventTemplateQualificationRequirementTable.AddMultiTenantSupport();
             scheduledEventTemplateQualificationRequirementTable.AddForeignKeyField(scheduledEventTemplateTable, false, true);
@@ -2579,7 +2638,7 @@ It creates a new row in ScheduledEvent (Event B).
 Event B is linked to Event A via a parentScheduledEventId.
 You add a record to RecurrenceException for Event A saying ""Skip the normal generation for Date X.""
 You attach the specific Crew/Resource to Event B.";
-            scheduledEventTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_REGULAR_USER_SECURITY_LEVEL);
+            scheduledEventTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_READER_PERMISSION_LEVEL);
             scheduledEventTable.AddIdField();
             scheduledEventTable.AddMultiTenantSupport();
 
@@ -2614,7 +2673,7 @@ You attach the specific Crew/Resource to Event B.";
 
 
             Database.Table.Field seeiField = scheduledEventTable.AddString100Field("externalId", true).AddScriptComments("Optional link to an entity in another system");
-            seeiField.readPermissionLevelNeeded = CLIENT_ADMIN_USER_SECURITY_LEVEL;
+            seeiField.readPermissionLevelNeeded = SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL;
             seeiField.hideOnDefaultLists = true;
 
             Database.Table.Field seaField = scheduledEventTable.AddTextField("attributes", true).AddScriptComments("to store arbitrary JSON");
@@ -2630,7 +2689,7 @@ You attach the specific Crew/Resource to Event B.";
 
             Database.Table chargeStatusTable = database.AddTable("ChargeStatus");
             chargeStatusTable.comment = "Master list of charge statuses (Pending, Approved, Invoiced, Void)";
-            chargeStatusTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, FOUNDATION_ADMIN_SECURITY_LEVEL);
+            chargeStatusTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
             chargeStatusTable.AddIdField();
             chargeStatusTable.AddNameAndDescriptionFields(true, true, false);
             chargeStatusTable.AddHTMLColorField("color", true).AddScriptComments("Hex color for UI display");
@@ -2685,7 +2744,7 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
 
 ====================================================================================================";
 
-            eventChargeTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_REGULAR_USER_SECURITY_LEVEL);
+            eventChargeTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_READER_PERMISSION_LEVEL);
             eventChargeTable.AddIdField();
             eventChargeTable.AddMultiTenantSupport();
             eventChargeTable.AddForeignKeyField(scheduledEventTable, false, true).AddScriptComments("Link to the ScheduledEvent table.");
@@ -2714,7 +2773,7 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
             //
             Database.Table contactInteractionTable = database.AddTable("ContactInteraction");
             contactInteractionTable.comment = "The contact interaction data";
-            contactInteractionTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_REGULAR_USER_SECURITY_LEVEL);
+            contactInteractionTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_READER_PERMISSION_LEVEL);
             contactInteractionTable.AddIdField();
             contactInteractionTable.AddMultiTenantSupport();
             contactInteractionTable.AddForeignKeyField(contactTable, false, true).AddScriptComments("The contact that is the target of the interaction.");
@@ -2730,7 +2789,7 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
             contactInteractionTable.AddForeignKeyField(priorityTable, true, true).AddScriptComments("Optional priority for the interaction.");
 
             Database.Table.Field cieiField = contactInteractionTable.AddString100Field("externalId", true);
-            cieiField.readPermissionLevelNeeded = CLIENT_ADMIN_USER_SECURITY_LEVEL;                     // arbitrary key for an external system's key
+            cieiField.readPermissionLevelNeeded = SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL;                     // arbitrary key for an external system's key
             cieiField.hideOnDefaultLists = true;
             cieiField.CreateIndex();
 
@@ -2757,7 +2816,7 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
 
             Database.Table dependencyTypeTable = database.AddTable("DependencyType");
             dependencyTypeTable.comment = "Master list of depedency types";
-            dependencyTypeTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, FOUNDATION_ADMIN_SECURITY_LEVEL);
+            dependencyTypeTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
             dependencyTypeTable.AddIdField();
             dependencyTypeTable.AddNameAndDescriptionFields(true, true, false);
             dependencyTypeTable.AddSequenceField();
@@ -2793,7 +2852,7 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
 
 
             scheduledEventDependencyTable.comment = @"Dependencies that a scheduled event has that could affect it.";
-            scheduledEventDependencyTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_REGULAR_USER_SECURITY_LEVEL);
+            scheduledEventDependencyTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_READER_PERMISSION_LEVEL);
             scheduledEventDependencyTable.AddIdField();
             scheduledEventDependencyTable.AddMultiTenantSupport();
             scheduledEventDependencyTable.AddForeignKeyField("predecessorEventId", scheduledEventTable, false, true).AddScriptComments("The task that must happen first");
@@ -2810,7 +2869,7 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
             Database.Table scheduledEventQualificationRequirementTable = database.AddTable("ScheduledEventQualificationRequirement");
 
             scheduledEventQualificationRequirementTable.comment = @"Specific qualifications required for a single event instance, overriding or adding to role/site reqs..";
-            scheduledEventQualificationRequirementTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_REGULAR_USER_SECURITY_LEVEL);
+            scheduledEventQualificationRequirementTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_READER_PERMISSION_LEVEL);
             scheduledEventQualificationRequirementTable.AddIdField();
             scheduledEventQualificationRequirementTable.AddMultiTenantSupport();
             scheduledEventQualificationRequirementTable.AddForeignKeyField(scheduledEventTable, false);
@@ -2823,7 +2882,7 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
             // Exception dates (canceled or moved instances)
             Database.Table recurrenceExceptionTable = database.AddTable("RecurrenceException");
             recurrenceExceptionTable.comment = @"Exceptions to a recurring series.  Used for canceled dates or moved instances (original date + new date).";
-            recurrenceExceptionTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_REGULAR_USER_SECURITY_LEVEL);
+            recurrenceExceptionTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_READER_PERMISSION_LEVEL);
             recurrenceExceptionTable.AddIdField();
             recurrenceExceptionTable.AddMultiTenantSupport();
             recurrenceExceptionTable.AddForeignKeyField(scheduledEventTable, false, true);
@@ -2844,7 +2903,7 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
 
             Database.Table notificationTypeTable = database.AddTable("NotificationType");
             notificationTypeTable.comment = "Master list of notification types";
-            notificationTypeTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, FOUNDATION_ADMIN_SECURITY_LEVEL);
+            notificationTypeTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
             notificationTypeTable.AddIdField();
             notificationTypeTable.AddNameAndDescriptionFields(true, true, false);
             notificationTypeTable.AddSequenceField();
@@ -2873,7 +2932,7 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
 
             Database.Table notificationSubscriptionTable = database.AddTable("NotificationSubscription");
             notificationSubscriptionTable.comment = @"Links resources (or entire crews) to events.  Supports partial assignments and role designation.  - If crewId is non-NULL → this row represents assignment of the whole crew - If resourceId is non-NULL and crewId is NULL → individual resource assignment - assignmentStart/End NULL → uses full event duration";
-            notificationSubscriptionTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_REGULAR_USER_SECURITY_LEVEL);
+            notificationSubscriptionTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_READER_PERMISSION_LEVEL);
             notificationSubscriptionTable.AddIdField();
             notificationSubscriptionTable.AddMultiTenantSupport();
             notificationSubscriptionTable.AddForeignKeyField(resourceTable, true, true).AddScriptComments("Optional resource for this notification subscription.  Needs either this or contact to be valid.");
@@ -2903,7 +2962,8 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
 
 -- FUNDS (General Ledger Codes)";
 
-            fundTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            fundTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_FUNDRAISING_WRITER_PERMISSION_LEVEL);
+            fundTable.customWriteAccessRole = SCHEDULER_FUNDRAISING_WRITER_CUSTOM_ROLE_NAME;
             fundTable.AddIdField();
             fundTable.AddMultiTenantSupport();
             fundTable.AddNameAndDescriptionFields(true, true, true);
@@ -2923,7 +2983,8 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
 
             campaignTable.comment = @" 2. CAMPAIGNS (Broad Initiatives)";
 
-            campaignTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            campaignTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_FUNDRAISING_WRITER_PERMISSION_LEVEL);
+            campaignTable.customWriteAccessRole = SCHEDULER_FUNDRAISING_WRITER_CUSTOM_ROLE_NAME;
             campaignTable.AddIdField();
             campaignTable.AddMultiTenantSupport();
             campaignTable.AddNameAndDescriptionFields(true, true, true);
@@ -2942,7 +3003,8 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
 
             appealTable.comment = @" 3. APPEALS (Specific Solicitations)";
 
-            appealTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            appealTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_FUNDRAISING_WRITER_PERMISSION_LEVEL);
+            appealTable.customWriteAccessRole = SCHEDULER_FUNDRAISING_WRITER_CUSTOM_ROLE_NAME;
             appealTable.AddIdField();
             appealTable.AddMultiTenantSupport();
             appealTable.AddForeignKeyField(campaignTable, true).AddScriptComments("Optional link to parent campaign");
@@ -2966,7 +3028,7 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
    This allows for ""The Smith Family"" recognition even if John and Jane have separate records.
    ====================================================================================================";
 
-            householdTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_REGULAR_USER_SECURITY_LEVEL);
+            householdTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_READER_PERMISSION_LEVEL);
             householdTable.AddIdField();
             householdTable.AddMultiTenantSupport();
             householdTable.AddNameAndDescriptionFields(true, true, true);
@@ -3003,7 +3065,8 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
 
             Database.Table constituentJourneyStageTable = database.AddTable("ConstituentJourneyStage");
             constituentJourneyStageTable.comment = "Defines stages in a donor's journey (e.g., Target, Qualified, Cultivated, Solicited, Stewardship).";
-            constituentJourneyStageTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            constituentJourneyStageTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_FUNDRAISING_WRITER_PERMISSION_LEVEL);
+            constituentJourneyStageTable.customWriteAccessRole = SCHEDULER_FUNDRAISING_WRITER_CUSTOM_ROLE_NAME;
             constituentJourneyStageTable.AddIdField();
             constituentJourneyStageTable.AddMultiTenantSupport();
             constituentJourneyStageTable.AddNameAndDescriptionFields(true, true, true);
@@ -3083,7 +3146,7 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
    This table stores the ""Fundraising Intelligence"" (RFM metrics).
    ====================================================================================================";
 
-            constituentTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_REGULAR_USER_SECURITY_LEVEL);
+            constituentTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_READER_PERMISSION_LEVEL);
             constituentTable.AddIdField();
             constituentTable.AddMultiTenantSupport();
 
@@ -3144,7 +3207,8 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
    A promise to pay. Gifts will link to this to ""pay it down"".
    ====================================================================================================";
 
-            pledgeTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            pledgeTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_FUNDRAISING_WRITER_PERMISSION_LEVEL);
+            pledgeTable.customWriteAccessRole = SCHEDULER_FUNDRAISING_WRITER_CUSTOM_ROLE_NAME;
             pledgeTable.AddIdField();
             pledgeTable.AddMultiTenantSupport();
             pledgeTable.AddForeignKeyField(constituentTable, false);
@@ -3173,7 +3237,7 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
 
             Database.Table tributeTypeTable = database.AddTable("TributeType");
             tributeTypeTable.comment = "Master list of tribute types ( memory, honor, etc..)";
-            tributeTypeTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, FOUNDATION_ADMIN_SECURITY_LEVEL);
+            tributeTypeTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
             tributeTypeTable.AddIdField();
             tributeTypeTable.AddNameAndDescriptionFields(true, true, false);
             tributeTypeTable.AddSequenceField();
@@ -3199,7 +3263,7 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
    BATCH CONTROL
    This prevents data entry errors by forcing the user to balance ""Control Totals"" vs ""Actual Totals"".
    ====================================================================================================";
-            batchStatusTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, FOUNDATION_ADMIN_SECURITY_LEVEL);
+            batchStatusTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
             batchStatusTable.AddIdField();
             batchStatusTable.AddNameAndDescriptionFields(true, true, false);
             batchStatusTable.AddSequenceField();
@@ -3236,7 +3300,7 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
 
             batchTable.comment = "The Batch Header for processing gifts.";
 
-            batchTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_REGULAR_USER_SECURITY_LEVEL);
+            batchTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_READER_PERMISSION_LEVEL);
             batchTable.AddIdField();
             batchTable.AddMultiTenantSupport();
             batchTable.AddString100Field("batchNumber", false).AddScriptComments("User-facing ID (e.g., \"2026-01-15-MAIL\"");
@@ -3299,7 +3363,7 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
    The money coming in.
    ====================================================================================================";
 
-            giftTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_REGULAR_USER_SECURITY_LEVEL);
+            giftTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_READER_PERMISSION_LEVEL);
             giftTable.AddIdField();
             giftTable.AddMultiTenantSupport();
             giftTable.AddForeignKeyField(officeTable, true).AddScriptComments("Which office received/owns this gift");
@@ -3374,7 +3438,8 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
             volunteerProfileTable.comment = @"Volunteer-specific extended profile.
 One-to-one with Resource — allows volunteers to be scheduled just like paid resources
 while carrying volunteer-specific metadata, hours tracking, preferences, etc.";
-            volunteerProfileTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            volunteerProfileTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_VOLUNTEER_WRITER_PERMISSION_LEVEL);
+            volunteerProfileTable.customWriteAccessRole = SCHEDULER_VOLUNTEER_WRITER_CUSTOM_ROLE_NAME;
             volunteerProfileTable.AddIdField();
             volunteerProfileTable.AddMultiTenantSupport();
             volunteerProfileTable.AddForeignKeyField(resourceTable, false, true).AddScriptComments("The Resource this volunteer profile belongs to (1:1)");
@@ -3409,7 +3474,8 @@ while carrying volunteer-specific metadata, hours tracking, preferences, etc.";
             volunteerGroupTable.comment = @"Named, persistent groups of volunteers that are often scheduled together.
 Examples: 'Saturday Soup Kitchen Team', 'Festival Setup Crew', 'Board of Directors Helpers'.
 Similar to Crew table but volunteer-specific with lighter structure and volunteer-oriented metadata.";
-            volunteerGroupTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            volunteerGroupTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_VOLUNTEER_WRITER_PERMISSION_LEVEL);
+            volunteerGroupTable.customWriteAccessRole = SCHEDULER_VOLUNTEER_WRITER_CUSTOM_ROLE_NAME;
             volunteerGroupTable.AddIdField();
             volunteerGroupTable.AddMultiTenantSupport();
             volunteerGroupTable.AddNameAndDescriptionFields(true, true, true);
@@ -3430,7 +3496,8 @@ Similar to Crew table but volunteer-specific with lighter structure and voluntee
             Database.Table volunteerGroupMemberTable = database.AddTable("VolunteerGroupMember");
             volunteerGroupMemberTable.comment = @"Membership in a VolunteerGroup.
 Links Resources (volunteers) to groups, with optional default role and sequence.";
-            volunteerGroupMemberTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_ADMIN_USER_SECURITY_LEVEL);
+            volunteerGroupMemberTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_VOLUNTEER_WRITER_PERMISSION_LEVEL);
+            volunteerGroupMemberTable.customWriteAccessRole = SCHEDULER_VOLUNTEER_WRITER_CUSTOM_ROLE_NAME;
             volunteerGroupMemberTable.AddIdField();
             volunteerGroupMemberTable.AddMultiTenantSupport();
             volunteerGroupMemberTable.AddForeignKeyField(volunteerGroupTable, false, true);
@@ -3454,7 +3521,7 @@ Links Resources (volunteers) to groups, with optional default role and sequence.
 
             Database.Table eventResourceAssignmentTable = database.AddTable("EventResourceAssignment");
             eventResourceAssignmentTable.comment = @"Links resources, crews, or volunteer groups o events.  Supports partial assignments and role designation.  - If crewId is non-NULL → this row represents assignment of the whole crew - If resourceId is non-NULL and crewId is NULL → individual resource assignment - assignmentStart/End NULL → uses full event duration.  only one of crewId, volunteerGroupId, resourceId should be populated per row (business rule in app layer).";
-            eventResourceAssignmentTable.SetMinimumPermissionLevels(CLIENT_REGULAR_USER_SECURITY_LEVEL, CLIENT_REGULAR_USER_SECURITY_LEVEL);
+            eventResourceAssignmentTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_READER_PERMISSION_LEVEL);
             eventResourceAssignmentTable.AddIdField();
             eventResourceAssignmentTable.AddMultiTenantSupport();
             eventResourceAssignmentTable.AddForeignKeyField(scheduledEventTable, false, true);

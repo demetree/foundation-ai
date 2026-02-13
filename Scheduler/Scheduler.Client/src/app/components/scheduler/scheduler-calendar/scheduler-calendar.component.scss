@@ -607,6 +607,28 @@ $accent-secondary: #764ba2;
 
 
 // ---------------------------------------------------------------------------
+// Availability Overlay — Background Events
+// ---------------------------------------------------------------------------
+
+:host ::ng-deep {
+
+    // Blackout periods (red tint)
+    .fc-bg-event.blackout-overlay {
+        background: rgba(239, 68, 68, 0.10) !important;
+        border-left: 3px solid rgba(239, 68, 68, 0.35);
+        opacity: 1 !important;
+    }
+
+    // Shift windows (blue tint)
+    .fc-bg-event.shift-overlay {
+        background: rgba(59, 130, 246, 0.05) !important;
+        border-left: 2px solid rgba(59, 130, 246, 0.15);
+        opacity: 1 !important;
+    }
+}
+
+
+// ---------------------------------------------------------------------------
 // Quick Peek Popover
 // ---------------------------------------------------------------------------
 .quick-peek-popover {
@@ -826,12 +848,12 @@ $accent-secondary: #764ba2;
     border-bottom: 1px solid #f1f3f7;
     background: #fafbfd;
 
-    > i {
+    >i {
         color: $accent-primary;
         font-size: 0.9rem;
     }
 
-    > span {
+    >span {
         font-weight: 700;
         font-size: 0.85rem;
         color: #1e293b;

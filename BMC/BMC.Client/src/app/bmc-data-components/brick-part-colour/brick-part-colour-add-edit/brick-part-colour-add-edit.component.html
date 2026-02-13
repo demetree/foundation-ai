@@ -1,0 +1,67 @@
+<div class="add-brick-part-colour" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-brick-part-colour me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Brick Part Colour" 
+        *ngIf="userIsBMCBrickPartColourWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #brickPartColourModal let-modal>
+   <div class="modal-header bg-dark text-light brick-part-colour-modal-header">
+      <h5 class="modal-title mb-0" id="brickPartColourModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Brick Part Colour' : 'Add Brick Part Colour' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body brick-part-colour-modal-body">
+      <form [formGroup]="brickPartColourForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('brickPartId')">
+                <label for="BrickPartColour-brickPartId" id="label-BrickPartColour-brickPartId"><span class="text-danger">*</span>Brick Part</label>
+                <select id="BrickPartColour-brickPartId" formControlName="brickPartId" class="form-select brick-part-colour-select" [disabled]="!userIsBMCBrickPartColourWriter()">
+                    <option [ngValue]="null">Select Brick Part</option>
+                    <option *ngFor="let brickPart of brickParts$ | async" [ngValue]="brickPart.id">{{brickPart.name}}</option>
+                </select>
+                <div *ngIf="brickPartColourForm.get('brickPartId')?.invalid && brickPartColourForm.get('brickPartId')?.touched" class="text-danger">
+                    Brick Part is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('brickColourId')">
+                <label for="BrickPartColour-brickColourId" id="label-BrickPartColour-brickColourId"><span class="text-danger">*</span>Brick Colour</label>
+                <select id="BrickPartColour-brickColourId" formControlName="brickColourId" class="form-select brick-part-colour-select" [disabled]="!userIsBMCBrickPartColourWriter()">
+                    <option [ngValue]="null">Select Brick Colour</option>
+                    <option *ngFor="let brickColour of brickColours$ | async" [ngValue]="brickColour.id">{{brickColour.name}}</option>
+                </select>
+                <div *ngIf="brickPartColourForm.get('brickColourId')?.invalid && brickPartColourForm.get('brickColourId')?.touched" class="text-danger">
+                    Brick Colour is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="BrickPartColour-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCBrickPartColourWriter()" />
+                <label for="BrickPartColour-active" class="form-check-label" id="label-BrickPartColour-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="BrickPartColour-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCBrickPartColourWriter()" />
+                <label for="BrickPartColour-deleted" class="form-check-label" id="label-BrickPartColour-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer brick-part-colour-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Brick Part Colour changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !brickPartColourForm.valid || brickPartColourForm.pristine  || userIsBMCBrickPartColourWriter() == false " ngbTooltip="Save the Brick Part Colour changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Brick Part Colour' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

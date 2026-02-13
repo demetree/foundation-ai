@@ -1,0 +1,126 @@
+<div class="container-fluid p-1 m-0 brick-colour-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="brick-colour-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Brick Colour</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Brick Colour' : 'Add Brick Colour'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCBrickColourReader()">
+                <div class="col m-2 brick-colour-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="brickColourForm" (ngSubmit)="submitForm()" class="brick-colour-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="BrickColour-name" id="label-BrickColour-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="BrickColour-name" formControlName="name" placeholder="Enter Name" class="form-control brick-colour-input" [disabled]="!userIsBMCBrickColourWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="brickColourForm.get('name')?.invalid && brickColourForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('ldrawColourCode')">
+                                <label for="BrickColour-ldrawColourCode" id="label-BrickColour-ldrawColourCode"><span class="text-danger">*</span>Ldraw Colour Code</label>
+                                <input type="number" id="BrickColour-ldrawColourCode" formControlName="ldrawColourCode" placeholder="Enter Ldraw Colour Code" class="form-control brick-colour-input" [disabled]="!userIsBMCBrickColourWriter()" aria-labelledby="label-ldrawColourCode" />
+                                <div *ngIf="brickColourForm.get('ldrawColourCode')?.invalid && brickColourForm.get('ldrawColourCode')?.touched" class="text-danger">
+                                    Ldraw Colour Code is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('hexRgb')">
+                                <label for="BrickColour-hexRgb" id="label-BrickColour-hexRgb">Hex Rgb</label>
+                                <input type="text" id="BrickColour-hexRgb" formControlName="hexRgb" placeholder="Enter Hex Rgb" class="form-control brick-colour-input" [disabled]="!userIsBMCBrickColourWriter()" aria-labelledby="label-hexRgb" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('alpha')">
+                                <label for="BrickColour-alpha" id="label-BrickColour-alpha">Alpha</label>
+                                <input type="number" id="BrickColour-alpha" formControlName="alpha" placeholder="Enter Alpha" class="form-control brick-colour-input" [disabled]="!userIsBMCBrickColourWriter()" aria-labelledby="label-alpha" />
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isTransparent')">
+                                <input type="checkbox" id="BrickColour-isTransparent" formControlName="isTransparent" class="form-check-input" [disabled]="!userIsBMCBrickColourWriter()" />
+                                <label for="BrickColour-isTransparent" class="form-check-label" id="label-BrickColour-isTransparent"><span class="text-danger">*</span>Is Transparent</label>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isMetallic')">
+                                <input type="checkbox" id="BrickColour-isMetallic" formControlName="isMetallic" class="form-check-input" [disabled]="!userIsBMCBrickColourWriter()" />
+                                <label for="BrickColour-isMetallic" class="form-check-label" id="label-BrickColour-isMetallic"><span class="text-danger">*</span>Is Metallic</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                                <label for="BrickColour-sequence" id="label-BrickColour-sequence">Sequence</label>
+                                <input type="number" id="BrickColour-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control brick-colour-input" [disabled]="!userIsBMCBrickColourWriter()" aria-labelledby="label-sequence" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="BrickColour-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCBrickColourWriter()" />
+                                <label for="BrickColour-active" class="form-check-label" id="label-BrickColour-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="BrickColour-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCBrickColourWriter()" />
+                                <label for="BrickColour-deleted" class="form-check-label" id="label-BrickColour-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="brick-colour-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="brickColourForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Brick Colour">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !brickColourForm.valid || !brickColourForm.dirty || brickColourForm.pristine  || userIsBMCBrickColourWriter() == false " ngbTooltip="Save the Brick Colour changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Brick Colour' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsBMCBrickColourReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 brick-colour-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="brickPartColourService.userIsBMCBrickPartColourReader()">
+                            <button ngbNavLink>Brick Part Colours
+                                <span class="badge bg-primary ms-2">
+                                    {{ (brickColourData?.BrickPartColoursCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-brick-part-colour-table [queryParams]="{ brickColourId: brickColourData?.id }"></app-brick-part-colour-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-brick-part-colour-add-edit [preSeededData]="{ brickColourId: brickColourData?.id }" [hiddenFields]="['brickColourId']"></app-brick-part-colour-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="placedBrickService.userIsBMCPlacedBrickReader()">
+                            <button ngbNavLink>Placed Bricks
+                                <span class="badge bg-primary ms-2">
+                                    {{ (brickColourData?.PlacedBricksCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-placed-brick-table [queryParams]="{ brickColourId: brickColourData?.id }"></app-placed-brick-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-placed-brick-add-edit [preSeededData]="{ brickColourId: brickColourData?.id }" [hiddenFields]="['brickColourId']"></app-placed-brick-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

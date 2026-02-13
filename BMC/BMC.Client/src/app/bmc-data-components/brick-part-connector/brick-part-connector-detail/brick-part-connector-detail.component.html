@@ -1,0 +1,90 @@
+<div class="container-fluid p-1 m-0 brick-part-connector-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="brick-part-connector-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Brick Part Connector</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Brick Part Connector' : 'Add Brick Part Connector'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCBrickPartConnectorReader()">
+                <div class="col m-2 brick-part-connector-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="brickPartConnectorForm" (ngSubmit)="submitForm()" class="brick-part-connector-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('brickPartId')">
+                                <label for="BrickPartConnector-brickPartId" id="label-BrickPartConnector-brickPartId">Brick Part</label>
+                                <select id="BrickPartConnector-brickPartId" formControlName="brickPartId" class="form-select brick-part-connector-select" [disabled]="!userIsBMCBrickPartConnectorWriter()">
+                                    <option [ngValue]="null">Select Brick Part</option>
+                                    <option *ngFor="let brickPart of brickParts$ | async" [ngValue]="brickPart.id">{{brickPart.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('connectorTypeId')">
+                                <label for="BrickPartConnector-connectorTypeId" id="label-BrickPartConnector-connectorTypeId">Connector Type</label>
+                                <select id="BrickPartConnector-connectorTypeId" formControlName="connectorTypeId" class="form-select brick-part-connector-select" [disabled]="!userIsBMCBrickPartConnectorWriter()">
+                                    <option [ngValue]="null">Select Connector Type</option>
+                                    <option *ngFor="let connectorType of connectorTypes$ | async" [ngValue]="connectorType.id">{{connectorType.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('positionX')">
+                                <label for="BrickPartConnector-positionX" id="label-BrickPartConnector-positionX">Position X</label>
+                                <input type="number" id="BrickPartConnector-positionX" formControlName="positionX" placeholder="Enter Position X" class="form-control brick-part-connector-input" [disabled]="!userIsBMCBrickPartConnectorWriter()" aria-labelledby="label-positionX" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('positionY')">
+                                <label for="BrickPartConnector-positionY" id="label-BrickPartConnector-positionY">Position Y</label>
+                                <input type="number" id="BrickPartConnector-positionY" formControlName="positionY" placeholder="Enter Position Y" class="form-control brick-part-connector-input" [disabled]="!userIsBMCBrickPartConnectorWriter()" aria-labelledby="label-positionY" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('positionZ')">
+                                <label for="BrickPartConnector-positionZ" id="label-BrickPartConnector-positionZ">Position Z</label>
+                                <input type="number" id="BrickPartConnector-positionZ" formControlName="positionZ" placeholder="Enter Position Z" class="form-control brick-part-connector-input" [disabled]="!userIsBMCBrickPartConnectorWriter()" aria-labelledby="label-positionZ" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('orientationX')">
+                                <label for="BrickPartConnector-orientationX" id="label-BrickPartConnector-orientationX">Orientation X</label>
+                                <input type="number" id="BrickPartConnector-orientationX" formControlName="orientationX" placeholder="Enter Orientation X" class="form-control brick-part-connector-input" [disabled]="!userIsBMCBrickPartConnectorWriter()" aria-labelledby="label-orientationX" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('orientationY')">
+                                <label for="BrickPartConnector-orientationY" id="label-BrickPartConnector-orientationY">Orientation Y</label>
+                                <input type="number" id="BrickPartConnector-orientationY" formControlName="orientationY" placeholder="Enter Orientation Y" class="form-control brick-part-connector-input" [disabled]="!userIsBMCBrickPartConnectorWriter()" aria-labelledby="label-orientationY" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('orientationZ')">
+                                <label for="BrickPartConnector-orientationZ" id="label-BrickPartConnector-orientationZ">Orientation Z</label>
+                                <input type="number" id="BrickPartConnector-orientationZ" formControlName="orientationZ" placeholder="Enter Orientation Z" class="form-control brick-part-connector-input" [disabled]="!userIsBMCBrickPartConnectorWriter()" aria-labelledby="label-orientationZ" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                                <label for="BrickPartConnector-sequence" id="label-BrickPartConnector-sequence">Sequence</label>
+                                <input type="number" id="BrickPartConnector-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control brick-part-connector-input" [disabled]="!userIsBMCBrickPartConnectorWriter()" aria-labelledby="label-sequence" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="BrickPartConnector-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCBrickPartConnectorWriter()" />
+                                <label for="BrickPartConnector-active" class="form-check-label" id="label-BrickPartConnector-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="BrickPartConnector-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCBrickPartConnectorWriter()" />
+                                <label for="BrickPartConnector-deleted" class="form-check-label" id="label-BrickPartConnector-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="brick-part-connector-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="brickPartConnectorForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Brick Part Connector">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !brickPartConnectorForm.valid || !brickPartConnectorForm.dirty || brickPartConnectorForm.pristine  || userIsBMCBrickPartConnectorWriter() == false " ngbTooltip="Save the Brick Part Connector changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Brick Part Connector' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

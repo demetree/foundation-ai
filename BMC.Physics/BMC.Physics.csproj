@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <RootNamespace>BMC.Physics</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="README.md" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FoundationCommon\FoundationCommon.csproj" />
+  </ItemGroup>
+
+</Project>

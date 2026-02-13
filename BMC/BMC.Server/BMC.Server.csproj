@@ -1,0 +1,73 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <SpaRoot>..\BMC.Client</SpaRoot>
+    <SpaProxyLaunchCommand>npm start</SpaProxyLaunchCommand>
+    <SpaProxyServerUrl>https://localhost:12901</SpaProxyServerUrl>
+    <Version>1.0.0</Version>
+    <Company>K2 Research</Company>
+    <Authors></Authors>
+    <Description>BMC - Brick Machine Construction</Description>
+    <Copyright>Copyright 2026 K2 Research</Copyright>
+    <PackageProjectUrl>https://www.k2research.ca</PackageProjectUrl>
+	<DefaultItemExcludes>$(DefaultItemExcludes);$(SpaRoot)**\node_modules\**</DefaultItemExcludes>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Remove="appsettings.development.json" />
+  </ItemGroup>
+
+	<Target Name="PublishSPA" AfterTargets="ComputeFilesToPublish">
+		<!-- Run npm install -->
+		<Message Importance="high" Text="Starting npm install in $(SpaRoot)" />
+		<Exec Command="npm install" WorkingDirectory="$(SpaRoot)" />
+
+		<!-- Run Angular build -->
+		<Message Importance="high" Text="Running Angular build in $(SpaRoot)" />
+		<Exec Command="npm run build" WorkingDirectory="$(SpaRoot)" />
+		
+		
+		<!-- Copy the Angular build output to wwwroot -->
+		<Message Importance="high" Text="Copying Angular build output from $(SpaRoot)\dist to wwwroot..." />
+		<ItemGroup>
+			<DistFiles Include="$(SpaRoot)\dist\bmc.client\browser\**; $(SpaRoot)\dist\**" />
+			<ResolvedFileToPublish Include="@(DistFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
+				<RelativePath>wwwroot\%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
+				<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+				<ExcludeFromSingleFile>false</ExcludeFromSingleFile>
+			</ResolvedFileToPublish>
+		</ItemGroup>
+
+	    <Message Importance="high" Text="Finished copying Angular build output from $(SpaRoot)\dist to wwwroot." />
+
+	</Target>
+	
+	<ItemGroup>
+		<None Include="appsettings.Development.json" Condition="Exists('appsettings.Development.json')">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Include="appsettings.development.json" />
+	</ItemGroup>
+
+	
+  <ItemGroup>
+	  <PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="10.0.2" />
+	  <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.1" />
+	  <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.15.0" />
+	  <PackageReference Include="OpenIddict.AspNetCore" Version="7.2.0" />
+	  <PackageReference Include="OpenIddict.EntityFrameworkCore" Version="7.2.0" />
+	  <PackageReference Include="OpenIddict.Quartz" Version="7.2.0" />
+	  <PackageReference Include="Quartz.Extensions.Hosting" Version="3.15.1" />
+	  <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="10.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\FoundationCore.Web\Foundation.Web.csproj" />
+    <ProjectReference Include="..\..\BmcDatabase\BmcDatabase.csproj" />
+    <ProjectReference Include="..\..\BMC.Physics\BMC.Physics.csproj" />
+    <ProjectReference Include="..\BMC.Client\BMC.Client.esproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,74 @@
+<div class="add-placed-brick-change-history" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-placed-brick-change-history me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Placed Brick Change History" 
+        *ngIf="userIsBMCPlacedBrickChangeHistoryWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #placedBrickChangeHistoryModal let-modal>
+   <div class="modal-header bg-dark text-light placed-brick-change-history-modal-header">
+      <h5 class="modal-title mb-0" id="placedBrickChangeHistoryModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Placed Brick Change History' : 'Add Placed Brick Change History' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body placed-brick-change-history-modal-body">
+      <form [formGroup]="placedBrickChangeHistoryForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('placedBrickId')">
+                <label for="PlacedBrickChangeHistory-placedBrickId" id="label-PlacedBrickChangeHistory-placedBrickId"><span class="text-danger">*</span>Placed Brick</label>
+                <select id="PlacedBrickChangeHistory-placedBrickId" formControlName="placedBrickId" class="form-select placed-brick-change-history-select" [disabled]="!userIsBMCPlacedBrickChangeHistoryWriter()">
+                    <option [ngValue]="null">Select Placed Brick</option>
+                    <option *ngFor="let placedBrick of placedBricks$ | async" [ngValue]="placedBrick.id">{{placedBrick.id}}</option>
+                </select>
+                <div *ngIf="placedBrickChangeHistoryForm.get('placedBrickId')?.invalid && placedBrickChangeHistoryForm.get('placedBrickId')?.touched" class="text-danger">
+                    Placed Brick is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="PlacedBrickChangeHistory-versionNumber" id="label-PlacedBrickChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="PlacedBrickChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control placed-brick-change-history-input" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                <label for="PlacedBrickChangeHistory-timeStamp" id="label-PlacedBrickChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                <input type="datetime-local" id="PlacedBrickChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control placed-brick-change-history-input" [disabled]="!userIsBMCPlacedBrickChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                <div *ngIf="placedBrickChangeHistoryForm.get('timeStamp')?.invalid && placedBrickChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                    Time Stamp is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                <label for="PlacedBrickChangeHistory-userId" id="label-PlacedBrickChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                <input type="number" id="PlacedBrickChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control placed-brick-change-history-input" [disabled]="!userIsBMCPlacedBrickChangeHistoryWriter()" aria-labelledby="label-userId" />
+                <div *ngIf="placedBrickChangeHistoryForm.get('userId')?.invalid && placedBrickChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                    User Id is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                <label for="PlacedBrickChangeHistory-data" id="label-PlacedBrickChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                <textarea id="PlacedBrickChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control placed-brick-change-history-input" [disabled]="!userIsBMCPlacedBrickChangeHistoryWriter()"></textarea>
+                <div *ngIf="placedBrickChangeHistoryForm.get('data')?.invalid && placedBrickChangeHistoryForm.get('data')?.touched" class="text-danger">
+                    Data is required
+                </div>
+            </div>
+         <div class="modal-footer placed-brick-change-history-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Placed Brick Change History changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !placedBrickChangeHistoryForm.valid || placedBrickChangeHistoryForm.pristine  || userIsBMCPlacedBrickChangeHistoryWriter() == false " ngbTooltip="Save the Placed Brick Change History changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Placed Brick Change History' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

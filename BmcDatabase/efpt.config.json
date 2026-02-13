@@ -1,0 +1,97 @@
+﻿{
+   "CodeGenerationMode": 4,
+   "ContextClassName": "BMCContext",
+   "ContextNamespace": null,
+   "FilterSchemas": false,
+   "IncludeConnectionString": false,
+   "IrregularWords": null,
+   "MinimumProductVersion": "2.6.1301",
+   "ModelNamespace": null,
+   "OutputContextPath": null,
+   "OutputPath": "Database",
+   "PluralRules": null,
+   "PreserveCasingWithRegex": true,
+   "ProjectRootNamespace": "Foundation.BMC",
+   "Schemas": null,
+   "SelectedHandlebarsLanguage": 2,
+   "SelectedToBeGenerated": 0,
+   "SingularRules": null,
+   "T4TemplatePath": null,
+   "Tables": [
+      {
+         "Name": "[BMC].[BrickCategory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[BrickColour]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[BrickConnection]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[BrickPart]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[BrickPartChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[BrickPartColour]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[BrickPartConnector]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[ConnectorType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[PlacedBrick]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[PlacedBrickChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[Project]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[ProjectChangeHistory]",
+         "ObjectType": 0
+      }
+   ],
+   "UiHint": null,
+   "UncountableWords": null,
+   "UseAsyncStoredProcedureCalls": true,
+   "UseBoolPropertiesWithoutDefaultSql": false,
+   "UseDatabaseNames": true,
+   "UseDatabaseNamesForRoutines": true,
+   "UseDateOnlyTimeOnly": true,
+   "UseDbContextSplitting": false,
+   "UseDecimalDataAnnotationForSprocResult": true,
+   "UseFluentApiOnly": true,
+   "UseHandleBars": false,
+   "UseHierarchyId": false,
+   "UseInflector": true,
+   "UseInternalAccessModifiersForSprocsAndFunctions": false,
+   "UseLegacyPluralizer": false,
+   "UseManyToManyEntity": false,
+   "UseNoDefaultConstructor": false,
+   "UseNoNavigations": false,
+   "UseNoObjectFilter": false,
+   "UseNodaTime": false,
+   "UseNullableReferences": false,
+   "UsePrefixNavigationNaming": false,
+   "UseSchemaFolders": false,
+   "UseSchemaNamespaces": false,
+   "UseSpatial": false,
+   "UseT4": false,
+   "UseT4Split": false
+}

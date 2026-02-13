@@ -1,0 +1,75 @@
+<div class="modal-header">
+    <h5 class="modal-title">
+        {{ isEditMode ? 'Edit Shift' : 'Add Shift' }}
+        <small class="text-muted d-block" *ngIf="resourceName">
+            for {{ resourceName }}
+        </small>
+    </h5>
+    <button type="button" class="btn-close" (click)="cancel()" aria-label="Close"></button>
+</div>
+
+<div class="modal-body">
+    <form [formGroup]="shiftForm">
+
+        <!-- Day of Week -->
+        <div class="mb-3">
+            <label for="dayOfWeek" class="form-label">
+                <span class="text-danger">*</span> Day of Week
+            </label>
+            <select id="dayOfWeek" formControlName="dayOfWeek" class="form-select">
+                <option *ngFor="let day of dayOptions" [ngValue]="day.value">
+                    {{ day.label }}
+                </option>
+            </select>
+        </div>
+
+        <div class="row">
+            <!-- Start Time -->
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="startTime" class="form-label">
+                        <span class="text-danger">*</span> Start Time
+                    </label>
+                    <input type="time" id="startTime" formControlName="startTime" class="form-control" />
+                </div>
+            </div>
+
+            <!-- Duration -->
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="hours" class="form-label">
+                        <span class="text-danger">*</span> Duration (hours)
+                    </label>
+                    <input type="number" id="hours" formControlName="hours" class="form-control" min="0.5" max="24"
+                        step="0.5" />
+                    <small class="form-text text-muted">
+                        Min 0.5, max 24 hours
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Label -->
+        <div class="mb-3">
+            <label for="label" class="form-label">
+                Label
+            </label>
+            <input type="text" id="label" formControlName="label" class="form-control"
+                placeholder="e.g., Morning Shift, Night Shift, On Call" />
+            <small class="form-text text-muted">
+                Optional name for this shift
+            </small>
+        </div>
+
+    </form>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="cancel()" [disabled]="isSaving">
+        Cancel
+    </button>
+    <button type="button" class="btn btn-primary" (click)="submit()" [disabled]="isSaving || !shiftForm.valid">
+        <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2" role="status"></span>
+        {{ isEditMode ? 'Save Changes' : 'Add Shift' }}
+    </button>
+</div>

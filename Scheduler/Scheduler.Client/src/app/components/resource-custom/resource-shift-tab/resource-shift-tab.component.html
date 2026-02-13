@@ -1,0 +1,143 @@
+<div class="card h-100">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <h6 class="mb-0 fw-semibold">
+            <i class="fa-solid fa-clock me-2"></i>
+            Shifts / Work Schedule
+        </h6>
+        <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-primary" (click)="openAddShiftModal()">
+                <i class="fa fa-plus me-1"></i> Add Shift
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="loadShifts()">
+                <i class="fa fa-sync" [ngClass]="{'fa-spin': isLoading}"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <!-- Loading -->
+        <div class="text-center py-4" *ngIf="isLoading">
+            <div class="spinner-border spinner-border-sm text-primary" role="status">
+                <span class="visually-hidden">Loading shifts...</span>
+            </div>
+        </div>
+
+        <!-- Error -->
+        <div class="alert alert-danger small" *ngIf="error">
+            <i class="fa-solid fa-exclamation-triangle me-2"></i>
+            {{ error }}
+        </div>
+
+        <!-- Empty State -->
+        <div class="text-center py-5 text-muted" *ngIf="!isLoading && (!shifts || shifts.length === 0)">
+            <i class="fa-solid fa-clock fa-3x mb-3 opacity-50"></i>
+            <div>No shifts configured</div>
+            <div class="small mt-2">Add shifts to define this resource's work schedule</div>
+        </div>
+
+        <!-- Weekly Timetable + Shift List -->
+        <ng-container *ngIf="!isLoading && hasTimetableData">
+
+            <!-- ═══════════════════════════════════════════════════════════════ -->
+            <!-- Weekly Timetable Visualization                                 -->
+            <!-- ═══════════════════════════════════════════════════════════════ -->
+            <div class="timetable-container mb-4">
+                <div class="timetable-label text-muted small fw-semibold mb-2">
+                    <i class="fa-solid fa-calendar-week me-1"></i> Weekly Overview
+                </div>
+
+                <!-- Hour headers -->
+                <div class="timetable-grid">
+                    <div class="timetable-header">
+                        <div class="timetable-day-label"></div>
+                        <div class="timetable-hours">
+                            <span class="timetable-hour-mark" *ngFor="let h of timetableHourLabels"
+                                [style.left.%]="((h - timetableStartHour) / timetableTotalHours) * 100">
+                                {{ formatHourLabel(h) }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Day rows -->
+                    <div class="timetable-row" *ngFor="let day of timetableDayOrder">
+                        <div class="timetable-day-label">
+                            <span class="day-badge" [style.background-color]="dayColors[day]">
+                                {{ dayAbbrevs[day] }}
+                            </span>
+                        </div>
+                        <div class="timetable-track">
+                            <!-- Hour grid lines -->
+                            <div class="timetable-gridline" *ngFor="let h of timetableHourLabels"
+                                [style.left.%]="((h - timetableStartHour) / timetableTotalHours) * 100">
+                            </div>
+
+                            <!-- Shift blocks -->
+                            <div class="shift-block" *ngFor="let shift of getShiftsForDay(day)"
+                                [style.left.%]="getShiftLeft(shift)" [style.width.%]="getShiftWidth(shift)"
+                                [style.background-color]="dayColors[day]"
+                                [title]="(shift.label || 'Shift') + ': ' + formatTime(shift.startTime) + ' – ' + formatEndTime(shift)"
+                                (click)="openEditShiftModal(shift)">
+                                <span class="shift-block-label" *ngIf="getShiftWidth(shift) > 8">
+                                    {{ shift.label || formatTime(shift.startTime) }}
+                                </span>
+                            </div>
+
+                            <!-- Empty row indicator -->
+                            <div class="timetable-empty" *ngIf="getShiftsForDay(day).length === 0">
+                                <span class="text-muted small">—</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══════════════════════════════════════════════════════════════ -->
+            <!-- Shift List                                                     -->
+            <!-- ═══════════════════════════════════════════════════════════════ -->
+            <div class="shift-list-label text-muted small fw-semibold mb-2">
+                <i class="fa-solid fa-list me-1"></i> All Shifts ({{ shifts?.length || 0 }})
+            </div>
+
+            <div class="list-group list-group-flush">
+                <div class="list-group-item px-0 py-3 shift-list-item" *ngFor="let shift of shifts">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-3 flex-grow-1">
+                            <!-- Day badge -->
+                            <span class="day-badge day-badge-lg"
+                                [style.background-color]="dayColors[toNum(shift.dayOfWeek)]">
+                                {{ dayAbbrevs[toNum(shift.dayOfWeek)] }}
+                            </span>
+
+                            <!-- Shift details -->
+                            <div>
+                                <div class="fw-semibold">
+                                    {{ dayNames[toNum(shift.dayOfWeek)] }}
+                                    <span class="text-muted fw-normal ms-1" *ngIf="shift.label">— {{ shift.label
+                                        }}</span>
+                                </div>
+                                <div class="small text-muted mt-1">
+                                    <i class="fa fa-clock me-1"></i>
+                                    {{ formatTime(shift.startTime) }} → {{ formatEndTime(shift) }}
+                                    <span class="ms-2 badge bg-light text-dark border">{{ formatHours(shift.hours)
+                                        }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="d-flex gap-1">
+                            <button class="btn btn-sm btn-outline-primary" (click)="openEditShiftModal(shift)"
+                                title="Edit Shift">
+                                <i class="fa fa-pen"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" (click)="deleteShift(shift)"
+                                title="Delete Shift">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </ng-container>
+    </div>
+</div>

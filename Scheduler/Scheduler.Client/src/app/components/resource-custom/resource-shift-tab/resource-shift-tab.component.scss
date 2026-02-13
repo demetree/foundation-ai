@@ -1,0 +1,180 @@
+// =============================================================================
+// Resource Shift Tab — Timetable & List Styles
+// =============================================================================
+
+.clickable {
+    cursor: pointer;
+}
+
+
+// ---------------------------------------------------------------------------
+// Weekly Timetable Visualization
+// ---------------------------------------------------------------------------
+
+.timetable-container {
+    background: #fafbfd;
+    border: 1px solid #edf0f5;
+    border-radius: 8px;
+    padding: 1rem;
+    overflow-x: auto;
+}
+
+.timetable-grid {
+    min-width: 600px;
+}
+
+// Hour header row
+.timetable-header {
+    display: flex;
+    align-items: flex-end;
+    margin-bottom: 0.25rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+// Day rows
+.timetable-row {
+    display: flex;
+    align-items: center;
+    height: 36px;
+    margin-bottom: 2px;
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+}
+
+
+// Day label column (shared between header and rows)
+.timetable-day-label {
+    width: 52px;
+    min-width: 52px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+// Time track (the horizontal bar area)
+.timetable-hours,
+.timetable-track {
+    flex: 1;
+    position: relative;
+    height: 100%;
+}
+
+.timetable-hours {
+    height: 20px;
+}
+
+
+// Hour marks in the header
+.timetable-hour-mark {
+    position: absolute;
+    transform: translateX(-50%);
+    font-size: 0.65rem;
+    color: #94a3b8;
+    white-space: nowrap;
+    user-select: none;
+}
+
+
+// Vertical grid lines in the track
+.timetable-gridline {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: #edf0f5;
+}
+
+
+// The track background
+.timetable-track {
+    background: #f1f3f7;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+
+// Shift blocks within a track
+.shift-block {
+    position: absolute;
+    top: 3px;
+    bottom: 3px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 0 6px;
+    transition: filter 0.15s, transform 0.1s;
+    z-index: 1;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+
+    &:hover {
+        filter: brightness(1.1);
+        transform: scaleY(1.1);
+        z-index: 2;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+}
+
+.shift-block-label {
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    line-height: 1;
+}
+
+
+// Empty row indicator
+.timetable-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+
+// ---------------------------------------------------------------------------
+// Day Badges
+// ---------------------------------------------------------------------------
+
+.day-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 22px;
+    border-radius: 4px;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    user-select: none;
+}
+
+.day-badge-lg {
+    width: 42px;
+    height: 28px;
+    font-size: 0.75rem;
+    border-radius: 6px;
+}
+
+
+// ---------------------------------------------------------------------------
+// Shift List
+// ---------------------------------------------------------------------------
+
+.shift-list-item {
+    transition: background 0.15s;
+
+    &:hover {
+        background: #f8fafc;
+    }
+}

@@ -1,0 +1,112 @@
+<div class="add-brick-part" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-brick-part me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Brick Part" 
+        *ngIf="userIsBMCBrickPartWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #brickPartModal let-modal>
+   <div class="modal-header bg-dark text-light brick-part-modal-header">
+      <h5 class="modal-title mb-0" id="brickPartModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Brick Part' : 'Add Brick Part' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body brick-part-modal-body">
+      <form [formGroup]="brickPartForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="BrickPart-name" id="label-BrickPart-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="BrickPart-name" formControlName="name" placeholder="Enter Name" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-name" />
+                <div *ngIf="brickPartForm.get('name')?.invalid && brickPartForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('ldrawPartId')">
+                <label for="BrickPart-ldrawPartId" id="label-BrickPart-ldrawPartId"><span class="text-danger">*</span>Ldraw Part Id</label>
+                <input type="text" id="BrickPart-ldrawPartId" formControlName="ldrawPartId" placeholder="Enter Ldraw Part Id" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-ldrawPartId" />
+                <div *ngIf="brickPartForm.get('ldrawPartId')?.invalid && brickPartForm.get('ldrawPartId')?.touched" class="text-danger">
+                    Ldraw Part Id is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('brickCategoryId')">
+                <label for="BrickPart-brickCategoryId" id="label-BrickPart-brickCategoryId">Brick Category</label>
+                <select id="BrickPart-brickCategoryId" formControlName="brickCategoryId" class="form-select brick-part-select" [disabled]="!userIsBMCBrickPartWriter()">
+                    <option [ngValue]="null">Select Brick Category</option>
+                    <option *ngFor="let brickCategory of brickCategories$ | async" [ngValue]="brickCategory.id">{{brickCategory.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('widthLdu')">
+                <label for="BrickPart-widthLdu" id="label-BrickPart-widthLdu"><span class="text-danger">*</span>Width Ldu</label>
+                <input type="number" id="BrickPart-widthLdu" formControlName="widthLdu" placeholder="Enter Width Ldu" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-widthLdu" />
+                <div *ngIf="brickPartForm.get('widthLdu')?.invalid && brickPartForm.get('widthLdu')?.touched" class="text-danger">
+                    Width Ldu is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('heightLdu')">
+                <label for="BrickPart-heightLdu" id="label-BrickPart-heightLdu"><span class="text-danger">*</span>Height Ldu</label>
+                <input type="number" id="BrickPart-heightLdu" formControlName="heightLdu" placeholder="Enter Height Ldu" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-heightLdu" />
+                <div *ngIf="brickPartForm.get('heightLdu')?.invalid && brickPartForm.get('heightLdu')?.touched" class="text-danger">
+                    Height Ldu is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('depthLdu')">
+                <label for="BrickPart-depthLdu" id="label-BrickPart-depthLdu"><span class="text-danger">*</span>Depth Ldu</label>
+                <input type="number" id="BrickPart-depthLdu" formControlName="depthLdu" placeholder="Enter Depth Ldu" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-depthLdu" />
+                <div *ngIf="brickPartForm.get('depthLdu')?.invalid && brickPartForm.get('depthLdu')?.touched" class="text-danger">
+                    Depth Ldu is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('massGrams')">
+                <label for="BrickPart-massGrams" id="label-BrickPart-massGrams"><span class="text-danger">*</span>Mass Grams</label>
+                <input type="number" id="BrickPart-massGrams" formControlName="massGrams" placeholder="Enter Mass Grams" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-massGrams" />
+                <div *ngIf="brickPartForm.get('massGrams')?.invalid && brickPartForm.get('massGrams')?.touched" class="text-danger">
+                    Mass Grams is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('geometryFilePath')">
+                <label for="BrickPart-geometryFilePath" id="label-BrickPart-geometryFilePath">Geometry File Path</label>
+                <input type="text" id="BrickPart-geometryFilePath" formControlName="geometryFilePath" placeholder="Enter Geometry File Path" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-geometryFilePath" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('toothCount')">
+                <label for="BrickPart-toothCount" id="label-BrickPart-toothCount">Tooth Count</label>
+                <input type="number" id="BrickPart-toothCount" formControlName="toothCount" placeholder="Enter Tooth Count" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-toothCount" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('gearRatio')">
+                <label for="BrickPart-gearRatio" id="label-BrickPart-gearRatio">Gear Ratio</label>
+                <input type="number" id="BrickPart-gearRatio" formControlName="gearRatio" placeholder="Enter Gear Ratio" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-gearRatio" />
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="BrickPart-versionNumber" id="label-BrickPart-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="BrickPart-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control brick-part-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="BrickPart-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCBrickPartWriter()" />
+                <label for="BrickPart-active" class="form-check-label" id="label-BrickPart-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="BrickPart-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCBrickPartWriter()" />
+                <label for="BrickPart-deleted" class="form-check-label" id="label-BrickPart-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer brick-part-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Brick Part changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !brickPartForm.valid || brickPartForm.pristine  || userIsBMCBrickPartWriter() == false " ngbTooltip="Save the Brick Part changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Brick Part' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

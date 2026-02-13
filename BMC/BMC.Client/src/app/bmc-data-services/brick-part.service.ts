@@ -1,0 +1,1342 @@
+/*
+
+   GENERATED SERVICE FOR THE BRICKPART TABLE - DO NOT MODIFY DIRECTLY
+   =======================================================================================
+   This is the default data interaction service for the BrickPart table.
+
+   It should suffice for many workflows and data access needs, but if anything more is needed, then extend this in a 
+   custom version or add an additional targeted helper service.
+
+*/
+import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
+import { Inject, Injectable } from '@angular/core';
+import { Observable, BehaviorSubject, catchError, throwError, lastValueFrom, map } from 'rxjs';
+import { shareReplay, tap } from 'rxjs/operators';
+import { UtilityService } from '../utility-services/utility.service'
+import { AlertService } from '../services/alert.service';
+import { AuthService } from '../services/auth.service';
+import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
+import { BrickCategoryData } from './brick-category.service';
+import { BrickPartChangeHistoryService, BrickPartChangeHistoryData } from './brick-part-change-history.service';
+import { BrickPartConnectorService, BrickPartConnectorData } from './brick-part-connector.service';
+import { BrickPartColourService, BrickPartColourData } from './brick-part-colour.service';
+import { PlacedBrickService, PlacedBrickData } from './placed-brick.service';
+
+const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
+//
+// This class defines the query parameters used for GET API endpoints that return arrays
+//
+// - Use `QueryParameters` for type-safe queries (e.g., `{ name: 'Test', pageSize: 10 }`).
+// - Arbitrary objects are supported but should contain simple values(strings, numbers, booleans) to ensure consistent caching.
+// - Avoid passing nested objects or arrays, as they may not serialize correctly.
+// - Dates are typed as strings because the server requires ISO UTC dates.  The Javascript date object does not naturally construct with that input.  The string format used in 'Date' fields is to be ISO 8601, including millisconds.  For example, 2025-12-09T01:09:27.093Z
+//
+export class BrickPartQueryParameters {
+    name: string | null | undefined = null;
+    ldrawPartId: string | null | undefined = null;
+    brickCategoryId: bigint | number | null | undefined = null;
+    widthLdu: number | null | undefined = null;
+    heightLdu: number | null | undefined = null;
+    depthLdu: number | null | undefined = null;
+    massGrams: number | null | undefined = null;
+    geometryFilePath: string | null | undefined = null;
+    toothCount: bigint | number | null | undefined = null;
+    gearRatio: number | null | undefined = null;
+    versionNumber: bigint | number | null | undefined = null;
+    objectGuid: string | null | undefined = null;
+    active: boolean | null | undefined = null;
+    deleted: boolean | null | undefined = null;
+    pageSize: bigint | number | null | undefined = null;
+    pageNumber: bigint | number | null | undefined = null;
+    includeRelations: boolean | null | undefined = null;
+    anyStringContains: string | null | undefined = null;
+}
+
+
+//
+// This class is for sending to the server for saving with.  It includes only the fields that are necessary for saving data.
+//
+export class BrickPartSubmitData {
+    id!: bigint | number;
+    name!: string;
+    ldrawPartId!: string;
+    brickCategoryId: bigint | number | null = null;
+    widthLdu!: number;
+    heightLdu!: number;
+    depthLdu!: number;
+    massGrams!: number;
+    geometryFilePath: string | null = null;
+    toothCount: bigint | number | null = null;
+    gearRatio: number | null = null;
+    versionNumber!: bigint | number;
+    active!: boolean;
+    deleted!: boolean;
+}
+
+
+
+//
+// Version history information returned from version history API endpoints.
+// Matches server-side VersionInformation<T> structure.
+//
+export interface VersionInformationUser {
+    id: bigint | number;
+    userName: string;
+    firstName: string | null;
+    middleName: string | null;
+    lastName: string | null;
+}
+
+export interface VersionInformation<T> {
+    timeStamp: string;           // ISO 8601
+    user: VersionInformationUser;
+    versionNumber: number;
+    data: T | null;
+}
+
+export class BrickPartBasicListData {
+  id!: bigint | number;
+  name!: string;
+}
+
+
+
+
+//
+// Core model returned from the server.
+//
+// Key design notes:
+//
+// 1. **Lazy loading of related collections**:
+//    - Each related collection (e.g. BrickPartChildren) is loaded on-demand.
+//    - Two access patterns are provided:
+//        • Observable: `brickPart.BrickPartChildren$` — use with `| async` in templates
+//        • Promise:    `brickPart.BrickPartChildren`  — use with `await` or `.then()` in code
+//
+// 2. **How lazy loading works**:
+//    - The observable has a `tap()` that checks if data is already loaded.
+//    - On first subscription, it triggers the private `loadX()` method.
+//    - The promise getter does the same check and starts the load if needed.
+//
+// 3. **Important usage rule**:
+//    - To trigger loading, you must either:
+//        • Subscribe to the `$` observable (e.g., via `*ngIf="brickPart.BrickPartChildren$ | async"`), or
+//        • Access the promise getter (`brickPart.BrickPartChildren` or `await brickPart.BrickPartChildren`)
+//    - Simply reading `brickPart.BrickPartChildren` without awaiting does **not** trigger load.
+//
+// 4. **Reload()**:
+//    - Call `await brickPart.Reload()` to refresh the entire object and clear all lazy caches.
+//    - Useful after mutations or when navigating into a navigation property.
+//
+// 5. **Cache clearing**:
+//    - Use `ClearXCache()` methods after mutations to force fresh data on next access.
+//
+// 6. **Nav Properties**: if loaded with 'includeRelations = true' will be data objects of their appropriate types in data only.  They
+//     will need to be 'Revived' and 'Reloaded' to access their nav properties, or lazy load their children.
+//
+// 7. **Dates are typed as strings**: because the server requires ISO UTC dates.  The Javascript date object does not naturally construct with that input.  The string format used in 'Date' fields is to be ISO 8601, including millisconds.  For example, 2025-12-09T01:09:27.093Z");
+//
+export class BrickPartData {
+    id!: bigint | number;
+    name!: string;
+    ldrawPartId!: string;
+    brickCategoryId!: bigint | number;
+    widthLdu!: number;
+    heightLdu!: number;
+    depthLdu!: number;
+    massGrams!: number;
+    geometryFilePath!: string | null;
+    toothCount!: bigint | number;
+    gearRatio!: number | null;
+    versionNumber!: bigint | number;
+    objectGuid!: string;
+    active!: boolean;
+    deleted!: boolean;
+    brickCategory: BrickCategoryData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
+
+    //
+    // Private lazy-loading caches for related collections
+    //
+    private _brickPartChangeHistories: BrickPartChangeHistoryData[] | null = null;
+    private _brickPartChangeHistoriesPromise: Promise<BrickPartChangeHistoryData[]> | null  = null;
+    private _brickPartChangeHistoriesSubject = new BehaviorSubject<BrickPartChangeHistoryData[] | null>(null);
+
+                
+    private _brickPartConnectors: BrickPartConnectorData[] | null = null;
+    private _brickPartConnectorsPromise: Promise<BrickPartConnectorData[]> | null  = null;
+    private _brickPartConnectorsSubject = new BehaviorSubject<BrickPartConnectorData[] | null>(null);
+
+                
+    private _brickPartColours: BrickPartColourData[] | null = null;
+    private _brickPartColoursPromise: Promise<BrickPartColourData[]> | null  = null;
+    private _brickPartColoursSubject = new BehaviorSubject<BrickPartColourData[] | null>(null);
+
+                
+    private _placedBricks: PlacedBrickData[] | null = null;
+    private _placedBricksPromise: Promise<PlacedBrickData[]> | null  = null;
+    private _placedBricksSubject = new BehaviorSubject<PlacedBrickData[] | null>(null);
+
+                
+
+
+    //
+    // Version history lazy-loading cache for current version metadata
+    //
+    private _currentVersionInfo: VersionInformation<BrickPartData> | null = null;
+    private _currentVersionInfoPromise: Promise<VersionInformation<BrickPartData>> | null = null;
+    private _currentVersionInfoSubject = new BehaviorSubject<VersionInformation<BrickPartData> | null>(null);
+
+
+    //
+    // Public observables — use with | async in templates
+    // Subscription triggers lazy load if not already cached
+    //
+    // Also includes an observable for each child list to access its row count.
+    //
+    public BrickPartChangeHistories$ = this._brickPartChangeHistoriesSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._brickPartChangeHistories === null && this._brickPartChangeHistoriesPromise === null) {
+            this.loadBrickPartChangeHistories(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public BrickPartChangeHistoriesCount$ = BrickPartChangeHistoryService.Instance.GetBrickPartChangeHistoriesRowCount({brickPartId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    public BrickPartConnectors$ = this._brickPartConnectorsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._brickPartConnectors === null && this._brickPartConnectorsPromise === null) {
+            this.loadBrickPartConnectors(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public BrickPartConnectorsCount$ = BrickPartConnectorService.Instance.GetBrickPartConnectorsRowCount({brickPartId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    public BrickPartColours$ = this._brickPartColoursSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._brickPartColours === null && this._brickPartColoursPromise === null) {
+            this.loadBrickPartColours(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public BrickPartColoursCount$ = BrickPartColourService.Instance.GetBrickPartColoursRowCount({brickPartId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    public PlacedBricks$ = this._placedBricksSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._placedBricks === null && this._placedBricksPromise === null) {
+            this.loadPlacedBricks(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public PlacedBricksCount$ = PlacedBrickService.Instance.GetPlacedBricksRowCount({brickPartId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
+
+  //
+  // Full reload — refreshes the entire object and clears all lazy caches 
+  //
+  // Promise based reload method to allow rebuilding of any BrickPartData object with all of it's relations on demand.  Useful for navigating into nav property
+  // objects and getting full state after put or post that may not have returned all nav properties.
+  //
+  // Usage examples:;
+  //
+  //  Async:
+  //   await this.brickPart.Reload();
+  //
+  //  Non Async:
+  //
+  //     brickPart[0].Reload().then(x => {
+  //        this.brickPart = x;
+  //    });
+  //
+  public async Reload(includeRelations: boolean = true): Promise<this> {
+
+    const fresh = await lastValueFrom(
+      BrickPartService.Instance.GetBrickPart(this.id, includeRelations)
+    );
+
+    // Merge fresh data into this instance (preserves reference)
+    this.UpdateFrom(fresh as this);
+
+    // Clear all lazy caches to force re-load on next access
+    this.clearAllLazyCaches();
+
+    return this;
+  }
+
+
+  private clearAllLazyCaches(): void {
+     //
+     // Reset every collection cache and notify subscribers
+     //
+     this._brickPartChangeHistories = null;
+     this._brickPartChangeHistoriesPromise = null;
+     this._brickPartChangeHistoriesSubject.next(null);
+
+     this._brickPartConnectors = null;
+     this._brickPartConnectorsPromise = null;
+     this._brickPartConnectorsSubject.next(null);
+
+     this._brickPartColours = null;
+     this._brickPartColoursPromise = null;
+     this._brickPartColoursSubject.next(null);
+
+     this._placedBricks = null;
+     this._placedBricksPromise = null;
+     this._placedBricksSubject.next(null);
+
+     this._currentVersionInfo = null;
+     this._currentVersionInfoPromise = null;
+     this._currentVersionInfoSubject.next(null);
+  }
+
+    //
+    // Promise-based getters below — same lazy-load logic as observables
+    // Use these in component code with await or .then()
+    //
+    /**
+     *
+     * Gets the BrickPartChangeHistories for this BrickPart.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.brickPart.BrickPartChangeHistories.then(brickParts => { ... })
+     *   or
+     *   await this.brickPart.brickParts
+     *
+    */
+    public get BrickPartChangeHistories(): Promise<BrickPartChangeHistoryData[]> {
+        if (this._brickPartChangeHistories !== null) {
+            return Promise.resolve(this._brickPartChangeHistories);
+        }
+
+        if (this._brickPartChangeHistoriesPromise !== null) {
+            return this._brickPartChangeHistoriesPromise;
+        }
+
+        // Start the load
+        this.loadBrickPartChangeHistories();
+
+        return this._brickPartChangeHistoriesPromise!;
+    }
+
+
+
+    private loadBrickPartChangeHistories(): void {
+
+        this._brickPartChangeHistoriesPromise = lastValueFrom(
+            BrickPartService.Instance.GetBrickPartChangeHistoriesForBrickPart(this.id)
+        )
+        .then(BrickPartChangeHistories => {
+            this._brickPartChangeHistories = BrickPartChangeHistories ?? [];
+            this._brickPartChangeHistoriesSubject.next(this._brickPartChangeHistories);
+            return this._brickPartChangeHistories;
+         })
+        .catch(err => {
+            this._brickPartChangeHistories = [];
+            this._brickPartChangeHistoriesSubject.next(this._brickPartChangeHistories);
+            throw err;
+        })
+        .finally(() => {
+            this._brickPartChangeHistoriesPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached BrickPartChangeHistory. Call after mutations to force refresh.
+     */
+    public ClearBrickPartChangeHistoriesCache(): void {
+        this._brickPartChangeHistories = null;
+        this._brickPartChangeHistoriesPromise = null;
+        this._brickPartChangeHistoriesSubject.next(this._brickPartChangeHistories);      // Emit to observable
+    }
+
+    public get HasBrickPartChangeHistories(): Promise<boolean> {
+        return this.BrickPartChangeHistories.then(brickPartChangeHistories => brickPartChangeHistories.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the BrickPartConnectors for this BrickPart.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.brickPart.BrickPartConnectors.then(brickParts => { ... })
+     *   or
+     *   await this.brickPart.brickParts
+     *
+    */
+    public get BrickPartConnectors(): Promise<BrickPartConnectorData[]> {
+        if (this._brickPartConnectors !== null) {
+            return Promise.resolve(this._brickPartConnectors);
+        }
+
+        if (this._brickPartConnectorsPromise !== null) {
+            return this._brickPartConnectorsPromise;
+        }
+
+        // Start the load
+        this.loadBrickPartConnectors();
+
+        return this._brickPartConnectorsPromise!;
+    }
+
+
+
+    private loadBrickPartConnectors(): void {
+
+        this._brickPartConnectorsPromise = lastValueFrom(
+            BrickPartService.Instance.GetBrickPartConnectorsForBrickPart(this.id)
+        )
+        .then(BrickPartConnectors => {
+            this._brickPartConnectors = BrickPartConnectors ?? [];
+            this._brickPartConnectorsSubject.next(this._brickPartConnectors);
+            return this._brickPartConnectors;
+         })
+        .catch(err => {
+            this._brickPartConnectors = [];
+            this._brickPartConnectorsSubject.next(this._brickPartConnectors);
+            throw err;
+        })
+        .finally(() => {
+            this._brickPartConnectorsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached BrickPartConnector. Call after mutations to force refresh.
+     */
+    public ClearBrickPartConnectorsCache(): void {
+        this._brickPartConnectors = null;
+        this._brickPartConnectorsPromise = null;
+        this._brickPartConnectorsSubject.next(this._brickPartConnectors);      // Emit to observable
+    }
+
+    public get HasBrickPartConnectors(): Promise<boolean> {
+        return this.BrickPartConnectors.then(brickPartConnectors => brickPartConnectors.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the BrickPartColours for this BrickPart.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.brickPart.BrickPartColours.then(brickParts => { ... })
+     *   or
+     *   await this.brickPart.brickParts
+     *
+    */
+    public get BrickPartColours(): Promise<BrickPartColourData[]> {
+        if (this._brickPartColours !== null) {
+            return Promise.resolve(this._brickPartColours);
+        }
+
+        if (this._brickPartColoursPromise !== null) {
+            return this._brickPartColoursPromise;
+        }
+
+        // Start the load
+        this.loadBrickPartColours();
+
+        return this._brickPartColoursPromise!;
+    }
+
+
+
+    private loadBrickPartColours(): void {
+
+        this._brickPartColoursPromise = lastValueFrom(
+            BrickPartService.Instance.GetBrickPartColoursForBrickPart(this.id)
+        )
+        .then(BrickPartColours => {
+            this._brickPartColours = BrickPartColours ?? [];
+            this._brickPartColoursSubject.next(this._brickPartColours);
+            return this._brickPartColours;
+         })
+        .catch(err => {
+            this._brickPartColours = [];
+            this._brickPartColoursSubject.next(this._brickPartColours);
+            throw err;
+        })
+        .finally(() => {
+            this._brickPartColoursPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached BrickPartColour. Call after mutations to force refresh.
+     */
+    public ClearBrickPartColoursCache(): void {
+        this._brickPartColours = null;
+        this._brickPartColoursPromise = null;
+        this._brickPartColoursSubject.next(this._brickPartColours);      // Emit to observable
+    }
+
+    public get HasBrickPartColours(): Promise<boolean> {
+        return this.BrickPartColours.then(brickPartColours => brickPartColours.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the PlacedBricks for this BrickPart.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.brickPart.PlacedBricks.then(brickParts => { ... })
+     *   or
+     *   await this.brickPart.brickParts
+     *
+    */
+    public get PlacedBricks(): Promise<PlacedBrickData[]> {
+        if (this._placedBricks !== null) {
+            return Promise.resolve(this._placedBricks);
+        }
+
+        if (this._placedBricksPromise !== null) {
+            return this._placedBricksPromise;
+        }
+
+        // Start the load
+        this.loadPlacedBricks();
+
+        return this._placedBricksPromise!;
+    }
+
+
+
+    private loadPlacedBricks(): void {
+
+        this._placedBricksPromise = lastValueFrom(
+            BrickPartService.Instance.GetPlacedBricksForBrickPart(this.id)
+        )
+        .then(PlacedBricks => {
+            this._placedBricks = PlacedBricks ?? [];
+            this._placedBricksSubject.next(this._placedBricks);
+            return this._placedBricks;
+         })
+        .catch(err => {
+            this._placedBricks = [];
+            this._placedBricksSubject.next(this._placedBricks);
+            throw err;
+        })
+        .finally(() => {
+            this._placedBricksPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached PlacedBrick. Call after mutations to force refresh.
+     */
+    public ClearPlacedBricksCache(): void {
+        this._placedBricks = null;
+        this._placedBricksPromise = null;
+        this._placedBricksSubject.next(this._placedBricks);      // Emit to observable
+    }
+
+    public get HasPlacedBricks(): Promise<boolean> {
+        return this.PlacedBricks.then(placedBricks => placedBricks.length > 0);
+    }
+
+
+
+
+    //
+    // Version History — Lazy-loading observable for current version metadata
+    //
+    // Usage examples:
+    //   Template: {{ (brickPart.CurrentVersionInfo$ | async)?.userName }}
+    //   Code:     const info = await brickPart.CurrentVersionInfo;
+    //
+    public CurrentVersionInfo$ = this._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if (this._currentVersionInfo === null && this._currentVersionInfoPromise === null) {
+                this.loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
+
+
+    public get CurrentVersionInfo(): Promise<VersionInformation<BrickPartData>> {
+        if (this._currentVersionInfoPromise === null) {
+            this._currentVersionInfoPromise = this.loadCurrentVersionInfo();
+        }
+        return this._currentVersionInfoPromise;
+    }
+
+
+    private async loadCurrentVersionInfo(): Promise<VersionInformation<BrickPartData>> {
+        const info = await lastValueFrom(
+            BrickPartService.Instance.GetBrickPartChangeMetadata(this.id, this.versionNumber as number)
+        );
+        this._currentVersionInfo = info;
+        this._currentVersionInfoSubject.next(info);
+        return info;
+    }
+
+
+    public ClearCurrentVersionInfoCache(): void {
+        this._currentVersionInfo = null;
+        this._currentVersionInfoPromise = null;
+        this._currentVersionInfoSubject.next(null);
+    }
+
+
+
+    /**
+     * Updates the state of this BrickPartData object using values from another object that has some or all of the fields needed.
+     */
+    public UpdateFrom(other: Partial<this>): void {
+        Object.assign(this, other);
+    }
+
+
+    /**
+     * Converts this BrickPartData object to a submission object for sending to the server.
+     */
+    public ConvertToSubmitData(): BrickPartSubmitData {
+        return BrickPartService.Instance.ConvertToBrickPartSubmitData(this);
+    }
+}
+
+
+@Injectable({
+  providedIn: 'root'
+})
+export class BrickPartService extends SecureEndpointBase {
+
+    private static _instance: BrickPartService;
+    private listCache: Map<string, Observable<Array<BrickPartData>>>;
+    private rowCountCache: Map<string, Observable<bigint | number>>;
+    private basicListDataCache: Map<string, Observable<Array<BrickPartBasicListData>>>;
+    private recordCache: Map<string, Observable<BrickPartData>>;
+
+
+    constructor(http: HttpClient,
+        authService: AuthService,
+        alertService: AlertService,
+        private utilityService: UtilityService,
+        private brickPartChangeHistoryService: BrickPartChangeHistoryService,
+        private brickPartConnectorService: BrickPartConnectorService,
+        private brickPartColourService: BrickPartColourService,
+        private placedBrickService: PlacedBrickService,
+        @Inject('BASE_URL') private baseUrl: string) {
+        super(http, alertService, authService);
+
+        this.listCache = new Map<string, Observable<Array<BrickPartData>>>();
+        this.rowCountCache = new Map<string, Observable<bigint | number>>();
+        this.basicListDataCache = new Map<string, Observable<Array<BrickPartBasicListData>>>();
+        this.recordCache = new Map<string, Observable<BrickPartData>>();
+
+        BrickPartService._instance = this;
+    }
+
+    public static get Instance(): BrickPartService {
+      return BrickPartService._instance;
+    }
+
+
+    public ClearListCaches(config: BrickPartQueryParameters | null = null) {
+
+        const configHash = this.getConfigHash(config);
+
+        if (this.listCache.has(configHash)) {
+          this.listCache.delete(configHash);
+        }
+
+        if (this.rowCountCache.has(configHash)) {
+            this.rowCountCache.delete(configHash);
+        }
+
+        if (this.basicListDataCache.has(configHash)) {
+            this.basicListDataCache.delete(configHash);
+        }
+    }
+
+
+    public ClearRecordCache(id: bigint | number, includeRelations: boolean = true) {
+
+        const configHash = this.utilityService.hashCode(`_${id}_${includeRelations}`);
+
+        if (this.recordCache.has(configHash)) {
+            this.recordCache.delete(configHash);
+        }
+    }
+
+
+    public ClearAllCaches() {
+        this.listCache.clear();
+        this.rowCountCache.clear();
+        this.basicListDataCache.clear();
+        this.recordCache.clear();
+    }
+
+
+    public ConvertToBrickPartSubmitData(data: BrickPartData): BrickPartSubmitData {
+
+        let output = new BrickPartSubmitData();
+
+        output.id = data.id;
+        output.name = data.name;
+        output.ldrawPartId = data.ldrawPartId;
+        output.brickCategoryId = data.brickCategoryId;
+        output.widthLdu = data.widthLdu;
+        output.heightLdu = data.heightLdu;
+        output.depthLdu = data.depthLdu;
+        output.massGrams = data.massGrams;
+        output.geometryFilePath = data.geometryFilePath;
+        output.toothCount = data.toothCount;
+        output.gearRatio = data.gearRatio;
+        output.versionNumber = data.versionNumber;
+        output.active = data.active;
+        output.deleted = data.deleted;
+
+        return output;
+    }
+
+    public GetBrickPart(id: bigint | number, includeRelations: boolean = true) : Observable<BrickPartData> {
+
+        const configHash = this.utilityService.hashCode("_" + id.toString() + "_" + includeRelations.toString());
+
+        if (this.recordCache.has(configHash) == false) {
+
+            const brickPart$ = this.requestBrickPart(id, includeRelations).pipe(
+                shareReplay({ bufferSize: SHARE_REPLAY_CACHE_SIZE, refCount: true }),
+                catchError((error) => {
+                    this.recordCache.delete(configHash);
+          
+                    //this.alertService.showHttpErrorMessage("Unable to get BrickPart", error);
+
+                    return throwError(() => error);
+                })
+            );
+
+            this.recordCache.set(configHash, brickPart$);
+
+            return brickPart$;
+        }
+
+        return this.recordCache.get(configHash) as Observable<BrickPartData>;
+    }
+
+    private requestBrickPart(id: bigint | number, includeRelations: boolean = true) : Observable<BrickPartData> {
+
+        let queryParams = new HttpParams();
+
+        queryParams = queryParams.append("includeRelations", includeRelations.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<BrickPartData>(this.baseUrl + 'api/BrickPart/' + id.toString(), { 
+            params: queryParams, 
+            headers: authenticationHeaders }).pipe(
+            map(raw => this.ReviveBrickPart(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.requestBrickPart(id, includeRelations));
+            }));
+    }
+
+    public GetBrickPartList(config: BrickPartQueryParameters | any = null) : Observable<Array<BrickPartData>> {
+
+        const configHash = this.getConfigHash(config);
+
+        if (!this.listCache.has(configHash)) {
+            const brickPartList$ = this.requestBrickPartList(config).pipe(
+                shareReplay({ bufferSize: SHARE_REPLAY_CACHE_SIZE, refCount: true }),
+                catchError((error) => {
+                    this.listCache.delete(configHash);
+
+                    //this.alertService.showHttpErrorMessage("Unable to get BrickPart list", error);
+
+                    return throwError(() => error);
+                })
+            );
+
+            this.listCache.set(configHash, brickPartList$);
+
+            return brickPartList$;
+        }
+
+        return this.listCache.get(configHash) as Observable<Array<BrickPartData>>;
+    }
+
+
+    private requestBrickPartList(config: BrickPartQueryParameters | any) : Observable <Array<BrickPartData>> {
+
+        let queryParams = new HttpParams();
+
+        if (config != null) {
+
+            for (const property in config) {
+                if (config[property] != null) {
+                    queryParams = queryParams.append(property, config[property].toString());
+                }
+            }
+        }
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<Array<BrickPartData>>(this.baseUrl + 'api/BrickParts', { 
+            params: queryParams, 
+            headers: authenticationHeaders }).pipe(
+            map(rawList => this.ReviveBrickPartList(rawList)),
+            catchError(error => {
+                return this.handleError(error, () => this.requestBrickPartList(config));
+            }));
+    }
+
+    public GetBrickPartsRowCount(config: BrickPartQueryParameters | any = null) : Observable<bigint | number> {
+
+        const configHash = this.getConfigHash(config);
+
+        if (!this.rowCountCache.has(configHash)) {
+            const brickPartsRowCount$ = this.requestBrickPartsRowCount(config).pipe(
+                shareReplay({ bufferSize: SHARE_REPLAY_CACHE_SIZE, refCount: true }),
+                catchError((error) => {
+                    this.rowCountCache.delete(configHash);
+          
+                    //this.alertService.showHttpErrorMessage("Unable to get BrickParts row count", error);
+
+                    return throwError(() => error);
+                })
+            )
+
+            this.rowCountCache.set(configHash, brickPartsRowCount$);
+
+            return brickPartsRowCount$;
+        }
+
+        return this.rowCountCache.get(configHash) as Observable<bigint | number>;
+    }
+
+    private requestBrickPartsRowCount(config: BrickPartQueryParameters | any) : Observable<bigint | number> {
+
+        let queryParams = new HttpParams();
+
+        if (config != null) {
+
+            for (const property in config) {
+                if (config[property] != null) {
+                    queryParams = queryParams.append(property, config[property].toString());
+                }
+            }
+        }
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<bigint | number>(this.baseUrl + 'api/BrickParts/RowCount', { params: queryParams, headers: authenticationHeaders }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.requestBrickPartsRowCount(config));
+            }));
+    }
+
+    public GetBrickPartsBasicListData(config: BrickPartQueryParameters | any = null) : Observable<Array<BrickPartBasicListData>> {
+
+        const configHash = this.getConfigHash(config);
+
+        if (!this.basicListDataCache.has(configHash)) {
+            const brickPartsBasicListData$ = this.requestBrickPartsBasicListData(config).pipe(
+                shareReplay({ bufferSize: SHARE_REPLAY_CACHE_SIZE, refCount: true }),
+                catchError((error) => {
+                    this.basicListDataCache.delete(configHash);
+
+                    //this.alertService.showHttpErrorMessage("Unable to get BrickParts basic list data", error);
+
+                    return throwError(() => error);
+                })
+            );
+      
+            this.basicListDataCache.set(configHash, brickPartsBasicListData$);
+
+            return brickPartsBasicListData$;
+        }
+
+        return this.basicListDataCache.get(configHash) as Observable<Array<BrickPartBasicListData>>;
+    }
+
+
+    private requestBrickPartsBasicListData(config: BrickPartQueryParameters | any) : Observable<Array<BrickPartBasicListData>> {
+
+        let queryParams = new HttpParams();
+
+        if (config != null) {
+
+            for (const property in config) {
+                if (config[property] != null) {
+                    queryParams = queryParams.append(property, config[property].toString());
+                }
+            }
+        }
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<Array<BrickPartBasicListData>>(this.baseUrl + 'api/BrickParts/ListData', { params: queryParams, headers: authenticationHeaders }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.requestBrickPartsBasicListData(config));
+            }));
+
+    }
+
+
+    public PutBrickPart(id: bigint | number, brickPart: BrickPartSubmitData) : Observable<BrickPartData> {
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.put<BrickPartData>(this.baseUrl + 'api/BrickPart/' + id.toString(), brickPart, { headers: authenticationHeaders } ).pipe(
+            tap(() => this.ClearAllCaches()),
+            map(raw => this.ReviveBrickPart(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.PutBrickPart(id, brickPart));
+            }));
+    }
+
+
+    public PostBrickPart(brickPart: BrickPartSubmitData) : Observable<BrickPartData> {
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.post<BrickPartData>(this.baseUrl + 'api/BrickPart', brickPart, { headers: authenticationHeaders } ).pipe(
+            tap(() => this.ClearAllCaches()),
+            map(raw => this.ReviveBrickPart(raw)),
+            catchError(error => {
+              return this.handleError(error, () => this.PostBrickPart(brickPart));
+            }));
+    }
+
+  
+    public DeleteBrickPart(id: bigint | number) : Observable<any> {
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.delete<void>(this.baseUrl + 'api/BrickPart/' + id.toString(), { headers: authenticationHeaders } ).pipe(
+            tap(() => this.ClearAllCaches()),
+            catchError(error => {
+                return this.handleError(error, () => this.DeleteBrickPart(id));
+            }));
+    }
+
+    public RollbackBrickPart(id: bigint | number, versionNumber: bigint | number) : Observable<BrickPartData>{
+
+        let queryParams = new HttpParams();
+
+        queryParams = queryParams.append("id", id.toString());
+        queryParams = queryParams.append("versionNumber", versionNumber.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.put<BrickPartData>(this.baseUrl + 'api/BrickPart/Rollback/' + id.toString(), null, { params: queryParams, headers: authenticationHeaders }).pipe(
+            tap(() => this.ClearAllCaches()),
+            map(raw => this.ReviveBrickPart(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.RollbackBrickPart(id, versionNumber));
+        }));
+    }
+
+
+    /**
+     * Gets version metadata for a specific version of a BrickPart.
+     */
+    public GetBrickPartChangeMetadata(id: bigint | number, versionNumber?: number): Observable<VersionInformation<BrickPartData>> {
+
+        let queryParams = new HttpParams();
+
+        if (versionNumber !== undefined && versionNumber !== null) {
+            queryParams = queryParams.append('versionNumber', versionNumber.toString());
+        }
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<BrickPartData>>(this.baseUrl + 'api/BrickPart/' + id.toString() + '/ChangeMetadata', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetBrickPartChangeMetadata(id, versionNumber));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the full audit history of a BrickPart.
+     */
+    public GetBrickPartAuditHistory(id: bigint | number, includeData: boolean = false): Observable<VersionInformation<BrickPartData>[]> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('includeData', includeData.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<BrickPartData>[]>(this.baseUrl + 'api/BrickPart/' + id.toString() + '/AuditHistory', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetBrickPartAuditHistory(id, includeData));
+            })
+        );
+    }
+
+
+    /**
+     * Gets a specific historical version of a BrickPart.
+     */
+    public GetBrickPartVersion(id: bigint | number, version: number): Observable<BrickPartData> {
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<BrickPartData>(this.baseUrl + 'api/BrickPart/' + id.toString() + '/Version/' + version.toString(), {
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveBrickPart(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetBrickPartVersion(id, version));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the state of a BrickPart at a specific point in time.
+     */
+    public GetBrickPartStateAtTime(id: bigint | number, time: string): Observable<BrickPartData> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('time', time);
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<BrickPartData>(this.baseUrl + 'api/BrickPart/' + id.toString() + '/StateAtTime', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveBrickPart(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetBrickPartStateAtTime(id, time));
+            })
+        );
+    }
+
+
+    private getConfigHash(config: BrickPartQueryParameters | any): string {
+
+        if (!config) {
+            return '_';
+        }
+
+        // Normalize the config object, excluding null and undefined properties
+        const normalizedConfig = Object.keys(config)
+            .sort() // Ensure consistent property order
+            .reduce((obj: any, key: string) => {
+                if (config[key] != null) { // Exclude null and undefined
+                    obj[key] = config[key];
+                }
+                return obj;
+            }, {});
+
+        if (Object.keys(normalizedConfig).length > 0) {
+            return this.utilityService.hashCode(JSON.stringify(normalizedConfig));
+        }
+
+        return '_';
+    }
+
+    public userIsBMCBrickPartReader(): boolean {
+
+        //
+        // First get the overall module reading privilege
+        //
+        let userIsBMCBrickPartReader = this.authService.isBMCReader;
+
+        //
+        // Next test to see if the user has a high enough read permission level to read from BMC.BrickParts
+        //
+        if (userIsBMCBrickPartReader == true) {
+            const user = this.authService.currentUser;
+
+            if (user != null) {
+                userIsBMCBrickPartReader = user.readPermission >= 1;
+            } else {
+                userIsBMCBrickPartReader = false;
+            }
+        }
+
+        return userIsBMCBrickPartReader;
+    }
+
+
+    public userIsBMCBrickPartWriter(): boolean {
+
+        //
+        // First get the overall module writing privilege
+        //
+        let userIsBMCBrickPartWriter = this.authService.isBMCReaderWriter;
+
+        //
+        // Next test to see if the user has a high enough write permission level to write to BMC.BrickParts
+        //
+        if (userIsBMCBrickPartWriter == true) {
+          let user = this.authService.currentUser;
+
+          if (user != null) {
+            userIsBMCBrickPartWriter = user.writePermission >= 50;
+          } else {
+            userIsBMCBrickPartWriter = false;
+          }      
+        }
+
+        return userIsBMCBrickPartWriter;
+    }
+
+    public GetBrickPartChangeHistoriesForBrickPart(brickPartId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<BrickPartChangeHistoryData[]> {
+        return this.brickPartChangeHistoryService.GetBrickPartChangeHistoryList({
+            brickPartId: brickPartId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
+    public GetBrickPartConnectorsForBrickPart(brickPartId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<BrickPartConnectorData[]> {
+        return this.brickPartConnectorService.GetBrickPartConnectorList({
+            brickPartId: brickPartId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
+    public GetBrickPartColoursForBrickPart(brickPartId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<BrickPartColourData[]> {
+        return this.brickPartColourService.GetBrickPartColourList({
+            brickPartId: brickPartId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
+    public GetPlacedBricksForBrickPart(brickPartId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<PlacedBrickData[]> {
+        return this.placedBrickService.GetPlacedBrickList({
+            brickPartId: brickPartId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
+ /**
+   *
+   * Revives a plain object from the server into a full BrickPartData instance.
+   *
+   * This is critical for the lazy-loading pattern to work correctly.
+   *
+   * When the server returns JSON, it is a plain object with no prototype methods
+   * or observable properties. This method:
+   * 1. Re-attaches the BrickPartData prototype
+   * 2. Copies all properties from the raw object
+   * 3. Re-initializes all private caches and BehaviorSubjects
+   * 4. Re-creates all public observable properties ($ suffixed) with their
+   *    original tap() triggers that initiate lazy loading on first subscription
+   *
+   * Without this, revived objects would not trigger loads when BrickPartTags$ etc.
+   * are subscribed to in templates.
+   *
+   */
+  public ReviveBrickPart(raw: any): BrickPartData {
+    if (!raw) return raw;
+
+    //
+    // Create a BrickPartData object instance with correct prototype
+    //
+    const revived = Object.create(BrickPartData.prototype) as BrickPartData;
+
+    //
+    // Copy all raw properties
+    //
+    Object.assign(revived, raw);
+
+    //
+    // Explicitly initialize all private caches
+    // This ensures the getters work correctly on revived objects
+    //
+    (revived as any)._brickPartChangeHistories = null;
+    (revived as any)._brickPartChangeHistoriesPromise = null;
+    (revived as any)._brickPartChangeHistoriesSubject = new BehaviorSubject<BrickPartChangeHistoryData[] | null>(null);
+
+    (revived as any)._brickPartConnectors = null;
+    (revived as any)._brickPartConnectorsPromise = null;
+    (revived as any)._brickPartConnectorsSubject = new BehaviorSubject<BrickPartConnectorData[] | null>(null);
+
+    (revived as any)._brickPartColours = null;
+    (revived as any)._brickPartColoursPromise = null;
+    (revived as any)._brickPartColoursSubject = new BehaviorSubject<BrickPartColourData[] | null>(null);
+
+    (revived as any)._placedBricks = null;
+    (revived as any)._placedBricksPromise = null;
+    (revived as any)._placedBricksSubject = new BehaviorSubject<PlacedBrickData[] | null>(null);
+
+
+    //
+    // Re-attach ALL public observables with their lazy-load tap() triggers
+    // This mirrors the original class definition exactly
+    //
+    //
+    // Re-create all public observables with their lazy-load triggers
+    // We use 'as any' because:
+    // 1. The revived object has the correct prototype
+    // 2. But private methods (loadBrickPartXYZ, etc.) are not accessible via the typed variable
+    // 3. This is a controlled revival context — safe and necessary
+    //
+    (revived as any).BrickPartChangeHistories$ = (revived as any)._brickPartChangeHistoriesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._brickPartChangeHistories === null && (revived as any)._brickPartChangeHistoriesPromise === null) {
+                (revived as any).loadBrickPartChangeHistories();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).BrickPartChangeHistoriesCount$ = BrickPartChangeHistoryService.Instance.GetBrickPartChangeHistoriesRowCount({brickPartId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).BrickPartConnectors$ = (revived as any)._brickPartConnectorsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._brickPartConnectors === null && (revived as any)._brickPartConnectorsPromise === null) {
+                (revived as any).loadBrickPartConnectors();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).BrickPartConnectorsCount$ = BrickPartConnectorService.Instance.GetBrickPartConnectorsRowCount({brickPartId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).BrickPartColours$ = (revived as any)._brickPartColoursSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._brickPartColours === null && (revived as any)._brickPartColoursPromise === null) {
+                (revived as any).loadBrickPartColours();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).BrickPartColoursCount$ = BrickPartColourService.Instance.GetBrickPartColoursRowCount({brickPartId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).PlacedBricks$ = (revived as any)._placedBricksSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._placedBricks === null && (revived as any)._placedBricksPromise === null) {
+                (revived as any).loadPlacedBricks();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).PlacedBricksCount$ = PlacedBrickService.Instance.GetPlacedBricksRowCount({brickPartId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+
+    //
+    // Version history metadata cache and observable
+    //
+    (revived as any)._currentVersionInfo = null;
+    (revived as any)._currentVersionInfoPromise = null;
+    (revived as any)._currentVersionInfoSubject = new BehaviorSubject<VersionInformation<BrickPartData> | null>(null);
+
+    (revived as any).CurrentVersionInfo$ = (revived as any)._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if ((revived as any)._currentVersionInfo === null && (revived as any)._currentVersionInfoPromise === null) {
+                (revived as any).loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
+
+
+    return revived;
+  }
+
+  private ReviveBrickPartList(rawList: any[]): BrickPartData[] {
+
+    if (!rawList) {
+        return [];
+    }
+
+    return rawList.map(raw => this.ReviveBrickPart(raw));
+  }
+
+}

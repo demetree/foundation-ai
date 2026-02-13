@@ -5,7 +5,8 @@
  *
  * Client-side scheduling conflict detection.
  *
- * Detects time overlaps between events sharing the same resourceId or crewId.
+ * Detects time overlaps between events sharing the same resourceId or crewId,
+ * and optionally detects events scheduled during resource blackout periods.
  * Operates on the already-loaded calendar events (including server-expanded
  * recurrence instances), so no additional server calls are needed.
  */
@@ -16,21 +17,32 @@ import { ScheduledEventData } from '../scheduler-data-services/scheduled-event.s
 // Public interfaces
 // ────────────────────────────────────────────────────────────────────────────
 
-export type ConflictType = 'resource' | 'crew';
+export type ConflictType = 'resource' | 'crew' | 'availability';
 
 export interface ScheduleConflict {
-    /** First event in the conflicting pair */
+    /** First event in the conflicting pair (for availability: the event in conflict) */
     eventA: ScheduledEventData;
-    /** Second event in the conflicting pair */
+    /** Second event in the conflicting pair (for availability: a synthetic event representing the blackout) */
     eventB: ScheduledEventData;
-    /** Whether conflict is on a shared resource or crew */
+    /** Whether conflict is on a shared resource, crew, or availability blackout */
     type: ConflictType;
-    /** The shared entity's ID */
+    /** The shared entity's ID (resourceId for availability) */
     entityId: number | bigint;
     /** Human-readable entity name (set by caller if available) */
     entityName: string;
     /** Number of minutes the two events overlap */
     overlapMinutes: number;
+    /** Reason for blackout (only set for availability conflicts) */
+    blackoutReason?: string;
+}
+
+/** Represents a resource blackout period for availability conflict detection */
+export interface BlackoutPeriod {
+    resourceId: number;
+    resourceName: string;
+    startDateTime: string;
+    endDateTime: string;
+    reason: string;
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -50,10 +62,13 @@ export class ConflictDetectionService {
      *   2. Their time ranges overlap (startA < endB && startB < endA)
      *   3. They are different events (different id, or different recurrenceInstanceDate)
      *
+     * Optionally checks for availability conflicts (events during blackout periods).
+     *
      * @param events - Array of ScheduledEventData (can include virtual recurrence instances)
+     * @param blackouts - Optional array of resource blackout periods
      * @returns Array of detected conflicts
      */
-    detectConflicts(events: ScheduledEventData[]): ScheduleConflict[] {
+    detectConflicts(events: ScheduledEventData[], blackouts?: BlackoutPeriod[]): ScheduleConflict[] {
         const conflicts: ScheduleConflict[] = [];
         const seen = new Set<string>(); // Dedup key: "typeA-typeB-entityId"
 
@@ -69,6 +84,12 @@ export class ConflictDetectionService {
             this.findOverlaps(group, 'crew', crewId, conflicts, seen);
         }
 
+        // --- Availability conflicts (events during blackout periods) ---
+        if (blackouts && blackouts.length > 0) {
+            const availConflicts = this.detectAvailabilityConflicts(events, blackouts);
+            conflicts.push(...availConflicts);
+        }
+
         return conflicts;
     }
 
@@ -82,6 +103,77 @@ export class ConflictDetectionService {
             ids.add(c.eventB.id as number);
         }
         return ids;
+    }
+
+    /**
+     * Detects events that overlap with resource blackout (unavailability) periods.
+     *
+     * For each event with a resourceId, checks all blackout periods for that resource.
+     * Creates a synthetic ScheduledEventData for each blackout to populate the
+     * conflict pair (eventB) for display in the conflict panel.
+     */
+    detectAvailabilityConflicts(
+        events: ScheduledEventData[],
+        blackouts: BlackoutPeriod[]
+    ): ScheduleConflict[] {
+        const conflicts: ScheduleConflict[] = [];
+        const seen = new Set<string>();
+
+        // Group blackouts by resourceId for efficient lookup
+        const blackoutsByResource = new Map<number, BlackoutPeriod[]>();
+        for (const b of blackouts) {
+            if (!blackoutsByResource.has(b.resourceId)) {
+                blackoutsByResource.set(b.resourceId, []);
+            }
+            blackoutsByResource.get(b.resourceId)!.push(b);
+        }
+
+        for (const event of events) {
+            const resId = Number(event.resourceId);
+            if (!resId) continue;
+
+            const resourceBlackouts = blackoutsByResource.get(resId);
+            if (!resourceBlackouts) continue;
+
+            const eventStart = new Date(event.startDateTime).getTime();
+            const eventEnd = new Date(event.endDateTime).getTime();
+
+            for (const blackout of resourceBlackouts) {
+                const bStart = new Date(blackout.startDateTime).getTime();
+                const bEnd = blackout.endDateTime ? new Date(blackout.endDateTime).getTime() : Infinity;
+
+                // Check overlap
+                if (eventStart >= bEnd || eventEnd <= bStart) continue;
+
+                // Dedup key
+                const key = `availability-${Number(event.id)}-${resId}-${bStart}`;
+                if (seen.has(key)) continue;
+                seen.add(key);
+
+                const overlapStart = Math.max(eventStart, bStart);
+                const overlapEnd = Math.min(eventEnd, bEnd === Infinity ? eventEnd : bEnd);
+                const overlapMinutes = Math.round((overlapEnd - overlapStart) / 60000);
+
+                // Create a synthetic event to represent the blackout in the conflict pair
+                const blackoutEvent = new ScheduledEventData();
+                blackoutEvent.id = -1 as any;
+                blackoutEvent.name = `Blackout: ${blackout.reason || 'Unavailable'}`;
+                blackoutEvent.startDateTime = blackout.startDateTime;
+                blackoutEvent.endDateTime = blackout.endDateTime || event.endDateTime;
+
+                conflicts.push({
+                    eventA: event,
+                    eventB: blackoutEvent,
+                    type: 'availability',
+                    entityId: resId,
+                    entityName: blackout.resourceName || `Resource #${resId}`,
+                    overlapMinutes,
+                    blackoutReason: blackout.reason || 'Unavailable'
+                });
+            }
+        }
+
+        return conflicts;
     }
 
     // ────────────────────────────────────────────────────────────────────────

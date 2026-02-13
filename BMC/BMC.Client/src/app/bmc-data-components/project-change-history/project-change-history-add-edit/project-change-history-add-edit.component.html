@@ -1,0 +1,74 @@
+<div class="add-project-change-history" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-project-change-history me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Project Change History" 
+        *ngIf="userIsBMCProjectChangeHistoryWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #projectChangeHistoryModal let-modal>
+   <div class="modal-header bg-dark text-light project-change-history-modal-header">
+      <h5 class="modal-title mb-0" id="projectChangeHistoryModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Project Change History' : 'Add Project Change History' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body project-change-history-modal-body">
+      <form [formGroup]="projectChangeHistoryForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('projectId')">
+                <label for="ProjectChangeHistory-projectId" id="label-ProjectChangeHistory-projectId"><span class="text-danger">*</span>Project</label>
+                <select id="ProjectChangeHistory-projectId" formControlName="projectId" class="form-select project-change-history-select" [disabled]="!userIsBMCProjectChangeHistoryWriter()">
+                    <option [ngValue]="null">Select Project</option>
+                    <option *ngFor="let project of projects$ | async" [ngValue]="project.id">{{project.name}}</option>
+                </select>
+                <div *ngIf="projectChangeHistoryForm.get('projectId')?.invalid && projectChangeHistoryForm.get('projectId')?.touched" class="text-danger">
+                    Project is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="ProjectChangeHistory-versionNumber" id="label-ProjectChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="ProjectChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control project-change-history-input" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                <label for="ProjectChangeHistory-timeStamp" id="label-ProjectChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                <input type="datetime-local" id="ProjectChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control project-change-history-input" [disabled]="!userIsBMCProjectChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                <div *ngIf="projectChangeHistoryForm.get('timeStamp')?.invalid && projectChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                    Time Stamp is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                <label for="ProjectChangeHistory-userId" id="label-ProjectChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                <input type="number" id="ProjectChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control project-change-history-input" [disabled]="!userIsBMCProjectChangeHistoryWriter()" aria-labelledby="label-userId" />
+                <div *ngIf="projectChangeHistoryForm.get('userId')?.invalid && projectChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                    User Id is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                <label for="ProjectChangeHistory-data" id="label-ProjectChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                <textarea id="ProjectChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control project-change-history-input" [disabled]="!userIsBMCProjectChangeHistoryWriter()"></textarea>
+                <div *ngIf="projectChangeHistoryForm.get('data')?.invalid && projectChangeHistoryForm.get('data')?.touched" class="text-danger">
+                    Data is required
+                </div>
+            </div>
+         <div class="modal-footer project-change-history-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Project Change History changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !projectChangeHistoryForm.valid || projectChangeHistoryForm.pristine  || userIsBMCProjectChangeHistoryWriter() == false " ngbTooltip="Save the Project Change History changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Project Change History' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

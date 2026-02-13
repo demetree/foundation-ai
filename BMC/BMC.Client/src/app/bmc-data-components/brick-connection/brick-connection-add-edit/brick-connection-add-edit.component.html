@@ -1,0 +1,70 @@
+<div class="add-brick-connection" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-brick-connection me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Brick Connection" 
+        *ngIf="userIsBMCBrickConnectionWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #brickConnectionModal let-modal>
+   <div class="modal-header bg-dark text-light brick-connection-modal-header">
+      <h5 class="modal-title mb-0" id="brickConnectionModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Brick Connection' : 'Add Brick Connection' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body brick-connection-modal-body">
+      <form [formGroup]="brickConnectionForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('projectId')">
+                <label for="BrickConnection-projectId" id="label-BrickConnection-projectId">Project</label>
+                <select id="BrickConnection-projectId" formControlName="projectId" class="form-select brick-connection-select" [disabled]="!userIsBMCBrickConnectionWriter()">
+                    <option [ngValue]="null">Select Project</option>
+                    <option *ngFor="let project of projects$ | async" [ngValue]="project.id">{{project.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sourcePlacedBrickId')">
+                <label for="BrickConnection-sourcePlacedBrickId" id="label-BrickConnection-sourcePlacedBrickId">Source Placed Brick Id</label>
+                <input type="number" id="BrickConnection-sourcePlacedBrickId" formControlName="sourcePlacedBrickId" placeholder="Enter Source Placed Brick Id" class="form-control brick-connection-input" [disabled]="!userIsBMCBrickConnectionWriter()" aria-labelledby="label-sourcePlacedBrickId" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sourceConnectorId')">
+                <label for="BrickConnection-sourceConnectorId" id="label-BrickConnection-sourceConnectorId">Source Connector Id</label>
+                <input type="number" id="BrickConnection-sourceConnectorId" formControlName="sourceConnectorId" placeholder="Enter Source Connector Id" class="form-control brick-connection-input" [disabled]="!userIsBMCBrickConnectionWriter()" aria-labelledby="label-sourceConnectorId" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('targetPlacedBrickId')">
+                <label for="BrickConnection-targetPlacedBrickId" id="label-BrickConnection-targetPlacedBrickId">Target Placed Brick Id</label>
+                <input type="number" id="BrickConnection-targetPlacedBrickId" formControlName="targetPlacedBrickId" placeholder="Enter Target Placed Brick Id" class="form-control brick-connection-input" [disabled]="!userIsBMCBrickConnectionWriter()" aria-labelledby="label-targetPlacedBrickId" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('targetConnectorId')">
+                <label for="BrickConnection-targetConnectorId" id="label-BrickConnection-targetConnectorId">Target Connector Id</label>
+                <input type="number" id="BrickConnection-targetConnectorId" formControlName="targetConnectorId" placeholder="Enter Target Connector Id" class="form-control brick-connection-input" [disabled]="!userIsBMCBrickConnectionWriter()" aria-labelledby="label-targetConnectorId" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="BrickConnection-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCBrickConnectionWriter()" />
+                <label for="BrickConnection-active" class="form-check-label" id="label-BrickConnection-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="BrickConnection-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCBrickConnectionWriter()" />
+                <label for="BrickConnection-deleted" class="form-check-label" id="label-BrickConnection-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer brick-connection-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Brick Connection changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !brickConnectionForm.valid || brickConnectionForm.pristine  || userIsBMCBrickConnectionWriter() == false " ngbTooltip="Save the Brick Connection changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Brick Connection' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

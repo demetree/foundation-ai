@@ -61,6 +61,12 @@
           <span *ngIf="selectedCalendarIds.size > 0" class="ms-1">{{ selectedCalendarIds.size }}</span>
         </button>
 
+        <!-- Availability Overlay Toggle -->
+        <button class="btn-glass" (click)="toggleAvailability()" title="Show Resource Availability"
+          [class.active]="showAvailability">
+          <i class="bi bi-calendar-check"></i>
+        </button>
+
         <!-- Conflict Indicator -->
         <button class="btn-glass btn-conflict" *ngIf="conflicts.length > 0" (click)="toggleConflictPanel()"
           [class.active]="conflictPanelVisible">
@@ -113,10 +119,13 @@
         </div>
         <div class="conflict-meta">
           <span class="conflict-entity">
-            <i class="bi" [ngClass]="c.type === 'resource' ? 'bi-person-fill' : 'bi-people-fill'"></i>
-            {{ c.entityName || (c.type === 'resource' ? 'Resource' : 'Crew') + ' #' + c.entityId }}
+            <i class="bi"
+              [ngClass]="c.type === 'availability' ? 'bi-calendar-x' : c.type === 'resource' ? 'bi-person-fill' : 'bi-people-fill'"></i>
+            {{ c.entityName || (c.type === 'resource' ? 'Resource' : c.type === 'crew' ? 'Crew' : 'Availability') + ' #'
+            + c.entityId }}
           </span>
-          <span class="conflict-overlap">{{ formatOverlap(c.overlapMinutes) }}</span>
+          <span class="conflict-overlap">{{ c.type === 'availability' ? (c.blackoutReason || 'Unavailable') + ' · ' : ''
+            }}{{ formatOverlap(c.overlapMinutes) }}</span>
         </div>
       </div>
     </div>

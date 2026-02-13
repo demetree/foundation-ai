@@ -1,0 +1,65 @@
+<div class="add-brick-category" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-brick-category me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Brick Category" 
+        *ngIf="userIsBMCBrickCategoryWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #brickCategoryModal let-modal>
+   <div class="modal-header bg-dark text-light brick-category-modal-header">
+      <h5 class="modal-title mb-0" id="brickCategoryModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Brick Category' : 'Add Brick Category' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body brick-category-modal-body">
+      <form [formGroup]="brickCategoryForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="BrickCategory-name" id="label-BrickCategory-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="BrickCategory-name" formControlName="name" placeholder="Enter Name" class="form-control brick-category-input" [disabled]="!userIsBMCBrickCategoryWriter()" aria-labelledby="label-name" />
+                <div *ngIf="brickCategoryForm.get('name')?.invalid && brickCategoryForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="BrickCategory-description" id="label-BrickCategory-description"><span class="text-danger">*</span>Description</label>
+                <textarea id="BrickCategory-description" formControlName="description" placeholder="Enter Description" class="form-control brick-category-input" [disabled]="!userIsBMCBrickCategoryWriter()"></textarea>
+                <div *ngIf="brickCategoryForm.get('description')?.invalid && brickCategoryForm.get('description')?.touched" class="text-danger">
+                    Description is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                <label for="BrickCategory-sequence" id="label-BrickCategory-sequence">Sequence</label>
+                <input type="number" id="BrickCategory-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control brick-category-input" [disabled]="!userIsBMCBrickCategoryWriter()" aria-labelledby="label-sequence" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="BrickCategory-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCBrickCategoryWriter()" />
+                <label for="BrickCategory-active" class="form-check-label" id="label-BrickCategory-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="BrickCategory-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCBrickCategoryWriter()" />
+                <label for="BrickCategory-deleted" class="form-check-label" id="label-BrickCategory-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer brick-category-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Brick Category changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !brickCategoryForm.valid || brickCategoryForm.pristine  || userIsBMCBrickCategoryWriter() == false " ngbTooltip="Save the Brick Category changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Brick Category' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

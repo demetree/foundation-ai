@@ -1,0 +1,132 @@
+<div class="container-fluid p-1 m-0 placed-brick-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="placed-brick-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Placed Brick</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Placed Brick' : 'Add Placed Brick'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCPlacedBrickReader()">
+                <div class="col m-2 placed-brick-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="placedBrickForm" (ngSubmit)="submitForm()" class="placed-brick-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('projectId')">
+                                <label for="PlacedBrick-projectId" id="label-PlacedBrick-projectId">Project</label>
+                                <select id="PlacedBrick-projectId" formControlName="projectId" class="form-select placed-brick-select" [disabled]="!userIsBMCPlacedBrickWriter()">
+                                    <option [ngValue]="null">Select Project</option>
+                                    <option *ngFor="let project of projects$ | async" [ngValue]="project.id">{{project.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('brickPartId')">
+                                <label for="PlacedBrick-brickPartId" id="label-PlacedBrick-brickPartId">Brick Part</label>
+                                <select id="PlacedBrick-brickPartId" formControlName="brickPartId" class="form-select placed-brick-select" [disabled]="!userIsBMCPlacedBrickWriter()">
+                                    <option [ngValue]="null">Select Brick Part</option>
+                                    <option *ngFor="let brickPart of brickParts$ | async" [ngValue]="brickPart.id">{{brickPart.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('brickColourId')">
+                                <label for="PlacedBrick-brickColourId" id="label-PlacedBrick-brickColourId">Brick Colour</label>
+                                <select id="PlacedBrick-brickColourId" formControlName="brickColourId" class="form-select placed-brick-select" [disabled]="!userIsBMCPlacedBrickWriter()">
+                                    <option [ngValue]="null">Select Brick Colour</option>
+                                    <option *ngFor="let brickColour of brickColours$ | async" [ngValue]="brickColour.id">{{brickColour.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('positionX')">
+                                <label for="PlacedBrick-positionX" id="label-PlacedBrick-positionX">Position X</label>
+                                <input type="number" id="PlacedBrick-positionX" formControlName="positionX" placeholder="Enter Position X" class="form-control placed-brick-input" [disabled]="!userIsBMCPlacedBrickWriter()" aria-labelledby="label-positionX" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('positionY')">
+                                <label for="PlacedBrick-positionY" id="label-PlacedBrick-positionY">Position Y</label>
+                                <input type="number" id="PlacedBrick-positionY" formControlName="positionY" placeholder="Enter Position Y" class="form-control placed-brick-input" [disabled]="!userIsBMCPlacedBrickWriter()" aria-labelledby="label-positionY" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('positionZ')">
+                                <label for="PlacedBrick-positionZ" id="label-PlacedBrick-positionZ">Position Z</label>
+                                <input type="number" id="PlacedBrick-positionZ" formControlName="positionZ" placeholder="Enter Position Z" class="form-control placed-brick-input" [disabled]="!userIsBMCPlacedBrickWriter()" aria-labelledby="label-positionZ" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('rotationX')">
+                                <label for="PlacedBrick-rotationX" id="label-PlacedBrick-rotationX">Rotation X</label>
+                                <input type="number" id="PlacedBrick-rotationX" formControlName="rotationX" placeholder="Enter Rotation X" class="form-control placed-brick-input" [disabled]="!userIsBMCPlacedBrickWriter()" aria-labelledby="label-rotationX" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('rotationY')">
+                                <label for="PlacedBrick-rotationY" id="label-PlacedBrick-rotationY">Rotation Y</label>
+                                <input type="number" id="PlacedBrick-rotationY" formControlName="rotationY" placeholder="Enter Rotation Y" class="form-control placed-brick-input" [disabled]="!userIsBMCPlacedBrickWriter()" aria-labelledby="label-rotationY" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('rotationZ')">
+                                <label for="PlacedBrick-rotationZ" id="label-PlacedBrick-rotationZ">Rotation Z</label>
+                                <input type="number" id="PlacedBrick-rotationZ" formControlName="rotationZ" placeholder="Enter Rotation Z" class="form-control placed-brick-input" [disabled]="!userIsBMCPlacedBrickWriter()" aria-labelledby="label-rotationZ" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('rotationW')">
+                                <label for="PlacedBrick-rotationW" id="label-PlacedBrick-rotationW">Rotation W</label>
+                                <input type="number" id="PlacedBrick-rotationW" formControlName="rotationW" placeholder="Enter Rotation W" class="form-control placed-brick-input" [disabled]="!userIsBMCPlacedBrickWriter()" aria-labelledby="label-rotationW" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('buildStepNumber')">
+                                <label for="PlacedBrick-buildStepNumber" id="label-PlacedBrick-buildStepNumber">Build Step Number</label>
+                                <input type="number" id="PlacedBrick-buildStepNumber" formControlName="buildStepNumber" placeholder="Enter Build Step Number" class="form-control placed-brick-input" [disabled]="!userIsBMCPlacedBrickWriter()" aria-labelledby="label-buildStepNumber" />
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="PlacedBrick-versionNumber" id="label-PlacedBrick-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="PlacedBrick-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control placed-brick-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="PlacedBrick-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCPlacedBrickWriter()" />
+                                <label for="PlacedBrick-active" class="form-check-label" id="label-PlacedBrick-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="PlacedBrick-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCPlacedBrickWriter()" />
+                                <label for="PlacedBrick-deleted" class="form-check-label" id="label-PlacedBrick-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="placed-brick-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="placedBrickForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Placed Brick">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !placedBrickForm.valid || !placedBrickForm.dirty || placedBrickForm.pristine  || userIsBMCPlacedBrickWriter() == false " ngbTooltip="Save the Placed Brick changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Placed Brick' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsBMCPlacedBrickReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 placed-brick-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="placedBrickChangeHistoryService.userIsBMCPlacedBrickChangeHistoryReader()">
+                            <button ngbNavLink>Placed Brick Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (placedBrickData?.PlacedBrickChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-placed-brick-change-history-table [queryParams]="{ placedBrickId: placedBrickData?.id }"></app-placed-brick-change-history-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-placed-brick-change-history-add-edit [preSeededData]="{ placedBrickId: placedBrickData?.id }" [hiddenFields]="['placedBrickId']"></app-placed-brick-change-history-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

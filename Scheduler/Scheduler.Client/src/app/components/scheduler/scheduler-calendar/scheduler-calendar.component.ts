@@ -24,11 +24,13 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { EventAddEditModalComponent } from '../event-add-edit-modal/event-add-edit-modal.component';
 import { format, parseISO } from 'date-fns';
 import { forkJoin } from 'rxjs';
-import { ConflictDetectionService, ScheduleConflict } from '../../../services/conflict-detection.service';
+import { ConflictDetectionService, ScheduleConflict, BlackoutPeriod } from '../../../services/conflict-detection.service';
 import { ResourceService } from '../../../scheduler-data-services/resource.service';
 import { CrewService } from '../../../scheduler-data-services/crew.service';
 import { ScheduledEventDependencyService } from '../../../scheduler-data-services/scheduled-event-dependency.service';
 import { EventResourceAssignmentService, EventResourceAssignmentData } from '../../../scheduler-data-services/event-resource-assignment.service';
+import { ResourceAvailabilityService, ResourceAvailabilityData } from '../../../scheduler-data-services/resource-availability.service';
+import { ResourceShiftService, ResourceShiftData } from '../../../scheduler-data-services/resource-shift.service';
 
 @Component({
   selector: 'app-scheduler-calendar',
@@ -78,6 +80,15 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
 
 
   //
+  // Availability Overlay state
+  //
+  showAvailability: boolean = false;
+  private cachedBlackouts: BlackoutPeriod[] = [];
+  private cachedAvailabilityEvents: any[] = [];
+  private lastLoadedEvents: ScheduledEventData[] = [];
+
+
+  //
   // FullCalendar options
   //
   calendarOptions: CalendarOptions = {
@@ -116,7 +127,9 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
     private resourceService: ResourceService,
     private crewService: CrewService,
     private dependencyService: ScheduledEventDependencyService,
-    private assignmentService: EventResourceAssignmentService
+    private assignmentService: EventResourceAssignmentService,
+    private resourceAvailabilityService: ResourceAvailabilityService,
+    private resourceShiftService: ResourceShiftService
   ) { }
 
 
@@ -327,6 +340,11 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
     }).subscribe(({ events, deps }) => {
 
       //
+      // Store for availability overlay use
+      //
+      this.lastLoadedEvents = events;
+
+      //
       // Build dependency count map
       //
       this.dependencyCountMap = new Map();
@@ -338,13 +356,16 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
       }
 
       //
-      // Run conflict detection on loaded events
+      // Run conflict detection on loaded events (including availability if data is loaded)
       //
-      this.conflicts = this.conflictDetectionService.detectConflicts(events);
+      this.conflicts = this.conflictDetectionService.detectConflicts(
+        events,
+        this.cachedBlackouts.length > 0 ? this.cachedBlackouts : undefined
+      );
       this.conflictEventIds = this.conflictDetectionService.getConflictEventIds(this.conflicts);
       this.enrichConflictNames();
 
-      this.calendarOptions.events = events.map(event => ({
+      const mappedEvents: any[] = events.map(event => ({
         id: event.id.toString(),
         title: event.name,
         start: event.startDateTime,
@@ -363,6 +384,186 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
         // Prevent dragging of recurring virtual instances
         editable: !this.isRecurringInstance(event)
       }));
+
+      //
+      // Merge in availability background events if toggle is active
+      //
+      if (this.showAvailability && this.cachedAvailabilityEvents.length > 0) {
+        this.calendarOptions.events = [...mappedEvents, ...this.cachedAvailabilityEvents];
+      } else {
+        this.calendarOptions.events = mappedEvents;
+      }
+
+      //
+      // Load availability overlay if toggle is active and not yet cached
+      //
+      if (this.showAvailability && this.cachedBlackouts.length === 0) {
+        this.loadAvailabilityOverlay(rangeStart!, rangeEnd!);
+      }
+    });
+  }
+
+
+  // =========================================================================
+  // Availability Overlay
+  // =========================================================================
+
+  /**
+   * Toggle the availability overlay on/off.
+   * When toggled on, loads blackout/shift data and renders as background events.
+   * When toggled off, removes background events from the calendar.
+   */
+  toggleAvailability(): void {
+    this.showAvailability = !this.showAvailability;
+
+    if (this.showAvailability) {
+      // Trigger a full load with overlay
+      const api = this.calendarComponent?.getApi();
+      if (api) {
+        this.loadEvents(api.view.activeStart.toISOString(), api.view.activeEnd.toISOString());
+      }
+    } else {
+      // Remove background events and clear cache
+      this.cachedAvailabilityEvents = [];
+      this.cachedBlackouts = [];
+      const api = this.calendarComponent?.getApi();
+      if (api) {
+        this.loadEvents(api.view.activeStart.toISOString(), api.view.activeEnd.toISOString());
+      }
+    }
+  }
+
+  /**
+   * Load resource availability and shift data, convert to FullCalendar background events.
+   * Called when the availability toggle is active and events are loaded.
+   */
+  private loadAvailabilityOverlay(rangeStart: string, rangeEnd: string): void {
+    // Collect unique resource IDs from loaded events
+    const resourceIds = new Set<number>();
+    for (const event of this.lastLoadedEvents) {
+      const resId = Number(event.resourceId);
+      if (resId) resourceIds.add(resId);
+    }
+
+    if (resourceIds.size === 0 || resourceIds.size > 50) return;
+
+    // Load resource names for enrichment
+    this.resourceService.GetResourceList({ active: true, deleted: false }).subscribe(resources => {
+      const resourceNameMap = new Map(resources.map(r => [Number(r.id), r.name]));
+
+      // Load availability (blackouts) for each resource
+      const availRequests = Array.from(resourceIds).map(resId =>
+        this.resourceAvailabilityService.GetResourceAvailabilityList({
+          resourceId: resId,
+          active: true,
+          deleted: false
+        })
+      );
+
+      // Load shifts for each resource
+      const shiftRequests = Array.from(resourceIds).map(resId =>
+        this.resourceShiftService.GetResourceShiftList({
+          resourceId: resId,
+          active: true,
+          deleted: false
+        })
+      );
+
+      forkJoin([...availRequests, ...shiftRequests]).subscribe(results => {
+        const resIdArray = Array.from(resourceIds);
+        const availResults = results.slice(0, resIdArray.length) as ResourceAvailabilityData[][];
+        const shiftResults = results.slice(resIdArray.length) as ResourceShiftData[][];
+
+        const backgroundEvents: any[] = [];
+        const blackouts: BlackoutPeriod[] = [];
+
+        // Process blackout periods
+        for (let i = 0; i < resIdArray.length; i++) {
+          const resId = resIdArray[i];
+          const resName = resourceNameMap.get(resId) || `Resource #${resId}`;
+
+          for (const avail of availResults[i]) {
+            if (!avail.startDateTime) continue;
+
+            blackouts.push({
+              resourceId: resId,
+              resourceName: resName,
+              startDateTime: avail.startDateTime,
+              endDateTime: avail.endDateTime || rangeEnd,
+              reason: avail.reason || 'Unavailable'
+            });
+
+            backgroundEvents.push({
+              id: `blackout-${resId}-${avail.id}`,
+              title: `🚫 ${resName}: ${avail.reason || 'Unavailable'}`,
+              start: avail.startDateTime,
+              end: avail.endDateTime || rangeEnd,
+              display: 'background',
+              classNames: ['blackout-overlay'],
+              backgroundColor: 'rgba(239, 68, 68, 0.12)',
+              extendedProps: {
+                isOverlay: true,
+                overlayType: 'blackout',
+                resourceName: resName,
+                reason: avail.reason
+              }
+            });
+          }
+
+          // Process shifts — create background events showing shift windows
+          for (const shift of shiftResults[i]) {
+            if (shift.dayOfWeek == null || shift.startTime == null || shift.hours == null) continue;
+
+            // Generate shift background events for each matching day in the visible range
+            const start = new Date(rangeStart);
+            const end = new Date(rangeEnd);
+
+            for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
+              if (d.getDay() !== Number(shift.dayOfWeek)) continue;
+
+              // Parse shift start time (format: "HH:mm" or "HH:mm:ss")
+              const timeParts = String(shift.startTime).split(':');
+              const shiftStart = new Date(d);
+              shiftStart.setHours(Number(timeParts[0]) || 0, Number(timeParts[1]) || 0, 0, 0);
+
+              const shiftEnd = new Date(shiftStart.getTime() + Number(shift.hours) * 3600000);
+
+              backgroundEvents.push({
+                id: `shift-${resId}-${shift.id}-${d.toISOString().slice(0, 10)}`,
+                title: `${resName}: ${shift.label || 'Shift'}`,
+                start: shiftStart.toISOString(),
+                end: shiftEnd.toISOString(),
+                display: 'background',
+                classNames: ['shift-overlay'],
+                backgroundColor: 'rgba(59, 130, 246, 0.06)',
+                extendedProps: {
+                  isOverlay: true,
+                  overlayType: 'shift',
+                  resourceName: resName,
+                  label: shift.label
+                }
+              });
+            }
+          }
+        }
+
+        // Cache results
+        this.cachedBlackouts = blackouts;
+        this.cachedAvailabilityEvents = backgroundEvents;
+
+        // Re-run conflict detection with blackout data
+        this.conflicts = this.conflictDetectionService.detectConflicts(
+          this.lastLoadedEvents,
+          blackouts
+        );
+        this.conflictEventIds = this.conflictDetectionService.getConflictEventIds(this.conflicts);
+        this.enrichConflictNames();
+
+        // Merge background events with regular events
+        const currentEvents = (this.calendarOptions.events as any[]) || [];
+        const regularEvents = currentEvents.filter((e: any) => !e.extendedProps?.isOverlay);
+        this.calendarOptions.events = [...regularEvents, ...backgroundEvents];
+      });
     });
   }
 

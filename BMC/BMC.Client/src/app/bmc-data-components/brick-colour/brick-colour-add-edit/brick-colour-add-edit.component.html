@@ -1,0 +1,81 @@
+<div class="add-brick-colour" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-brick-colour me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Brick Colour" 
+        *ngIf="userIsBMCBrickColourWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #brickColourModal let-modal>
+   <div class="modal-header bg-dark text-light brick-colour-modal-header">
+      <h5 class="modal-title mb-0" id="brickColourModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Brick Colour' : 'Add Brick Colour' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body brick-colour-modal-body">
+      <form [formGroup]="brickColourForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="BrickColour-name" id="label-BrickColour-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="BrickColour-name" formControlName="name" placeholder="Enter Name" class="form-control brick-colour-input" [disabled]="!userIsBMCBrickColourWriter()" aria-labelledby="label-name" />
+                <div *ngIf="brickColourForm.get('name')?.invalid && brickColourForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('ldrawColourCode')">
+                <label for="BrickColour-ldrawColourCode" id="label-BrickColour-ldrawColourCode"><span class="text-danger">*</span>Ldraw Colour Code</label>
+                <input type="number" id="BrickColour-ldrawColourCode" formControlName="ldrawColourCode" placeholder="Enter Ldraw Colour Code" class="form-control brick-colour-input" [disabled]="!userIsBMCBrickColourWriter()" aria-labelledby="label-ldrawColourCode" />
+                <div *ngIf="brickColourForm.get('ldrawColourCode')?.invalid && brickColourForm.get('ldrawColourCode')?.touched" class="text-danger">
+                    Ldraw Colour Code is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('hexRgb')">
+                <label for="BrickColour-hexRgb" id="label-BrickColour-hexRgb">Hex Rgb</label>
+                <input type="text" id="BrickColour-hexRgb" formControlName="hexRgb" placeholder="Enter Hex Rgb" class="form-control brick-colour-input" [disabled]="!userIsBMCBrickColourWriter()" aria-labelledby="label-hexRgb" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('alpha')">
+                <label for="BrickColour-alpha" id="label-BrickColour-alpha">Alpha</label>
+                <input type="number" id="BrickColour-alpha" formControlName="alpha" placeholder="Enter Alpha" class="form-control brick-colour-input" [disabled]="!userIsBMCBrickColourWriter()" aria-labelledby="label-alpha" />
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isTransparent')">
+                <input type="checkbox" id="BrickColour-isTransparent" formControlName="isTransparent" class="form-check-input" [disabled]="!userIsBMCBrickColourWriter()" />
+                <label for="BrickColour-isTransparent" class="form-check-label" id="label-BrickColour-isTransparent"><span class="text-danger">*</span>Is Transparent</label>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isMetallic')">
+                <input type="checkbox" id="BrickColour-isMetallic" formControlName="isMetallic" class="form-check-input" [disabled]="!userIsBMCBrickColourWriter()" />
+                <label for="BrickColour-isMetallic" class="form-check-label" id="label-BrickColour-isMetallic"><span class="text-danger">*</span>Is Metallic</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                <label for="BrickColour-sequence" id="label-BrickColour-sequence">Sequence</label>
+                <input type="number" id="BrickColour-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control brick-colour-input" [disabled]="!userIsBMCBrickColourWriter()" aria-labelledby="label-sequence" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="BrickColour-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCBrickColourWriter()" />
+                <label for="BrickColour-active" class="form-check-label" id="label-BrickColour-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="BrickColour-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCBrickColourWriter()" />
+                <label for="BrickColour-deleted" class="form-check-label" id="label-BrickColour-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer brick-colour-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Brick Colour changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !brickColourForm.valid || brickColourForm.pristine  || userIsBMCBrickColourWriter() == false " ngbTooltip="Save the Brick Colour changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Brick Colour' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

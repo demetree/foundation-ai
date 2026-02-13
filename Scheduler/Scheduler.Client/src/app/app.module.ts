@@ -109,6 +109,8 @@ import { ResourceCrewsTabComponent } from './components/resource-custom/resource
 import { ResourceAddToCrewModalComponent } from './components/resource-custom/resource-add-to-crew-modal/resource-add-to-crew-modal.component';
 import { ResourceAvailabilityTabComponent } from './components/resource-custom/resource-availability-tab/resource-availability-tab.component';
 import { ResourceAvailabilityAddModalComponent } from './components/resource-custom/resource-availability-add-modal/resource-availability-add-modal.component';
+import { ResourceShiftTabComponent } from './components/resource-custom/resource-shift-tab/resource-shift-tab.component';
+import { ResourceShiftAddEditModalComponent } from './components/resource-custom/resource-shift-add-edit-modal/resource-shift-add-edit-modal.component';
 import { ResourceRatesTabComponent } from './components/resource-custom/resource-rates-tab/resource-rates-tab.component';
 import { ResourceRateOverrideAddModalComponent } from './components/resource-custom/resource-rate-sheet-override-add-modal/resource-rate-sheet-override-add-modal.component';
 import { ResourceAssignmentsTabComponent } from './components/resource-custom/resource-assignments-tab/resource-assignments-tab.component';
@@ -995,6 +997,8 @@ import { VolunteerStatusTableComponent } from './scheduler-data-components/volun
     ResourceAddToCrewModalComponent,
     ResourceAvailabilityTabComponent,
     ResourceAvailabilityAddModalComponent,
+    ResourceShiftTabComponent,
+    ResourceShiftAddEditModalComponent,
     ResourceRatesTabComponent,
     ResourceRateOverrideAddModalComponent,
     ResourceAssignmentsTabComponent,
