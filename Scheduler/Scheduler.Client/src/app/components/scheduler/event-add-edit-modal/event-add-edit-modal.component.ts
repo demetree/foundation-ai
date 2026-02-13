@@ -25,6 +25,9 @@ import { AssignmentRoleQualificationRequirementService } from '../../../schedule
 import { SchedulingTargetQualificationRequirementService } from '../../../scheduler-data-services/scheduling-target-qualification-requirement.service';
 import { ResourceQualificationService } from '../../../scheduler-data-services/resource-qualification.service';
 import { RecurrenceRuleService, RecurrenceRuleData } from '../../../scheduler-data-services/recurrence-rule.service';
+import { ResourceAvailabilityService, ResourceAvailabilityData } from '../../../scheduler-data-services/resource-availability.service';
+import { ResourceShiftService, ResourceShiftData } from '../../../scheduler-data-services/resource-shift.service';
+import { ResourceScheduleContextService } from '../../../services/resource-schedule-context.service';
 import { RecurrenceExceptionService, RecurrenceExceptionData, RecurrenceExceptionSubmitData } from '../../../scheduler-data-services/recurrence-exception.service';
 import { TimeZoneService, TimeZoneData } from '../../../scheduler-data-services/time-zone.service';
 import { EventStatusService, EventStatusData } from '../../../scheduler-data-services/event-status.service';
@@ -99,6 +102,7 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
   // Derived data
   selectedTarget: SchedulingTargetData | null = null;
   qualificationWarnings: string[] = [];
+  schedulingWarnings: string[] = [];
 
   // Event-specific qualification requirements
   allQualifications: QualificationData[] = [];
@@ -152,7 +156,10 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
     private conflictDetectionService: ConflictDetectionService,
     private inputDialogService: InputDialogService,
     private calendarService: CalendarService,
-    private eventCalendarService: EventCalendarService
+    private eventCalendarService: EventCalendarService,
+    private resourceAvailabilityService: ResourceAvailabilityService,
+    private resourceShiftService: ResourceShiftService,
+    private resourceScheduleContextService: ResourceScheduleContextService
   ) {
     this.buildForm();
   }
@@ -675,6 +682,35 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
       // Non-blocking — continue saving even if the check fails
     }
 
+    //
+    // Pre-save availability & shift checks: warn if resources are on blackout or out of shift
+    //
+    this.schedulingWarnings = [];
+    try {
+      await this.checkResourceAvailabilityConflicts();
+      await this.checkShiftBoundaryWarnings();
+    } catch {
+      // Non-blocking
+    }
+
+    if (this.schedulingWarnings.length > 0) {
+      const warningList = this.schedulingWarnings.map(w => `• ${w}`).join('\n');
+      const proceed = confirm(
+        `Scheduling Warnings:\n\n${warningList}\n\nDo you want to proceed anyway?`
+      );
+      if (!proceed) {
+        this.saving = false;
+        return;
+      }
+      // Audit: user dismissed warnings and proceeded
+      console.warn('[Scheduling Audit] User dismissed scheduling warnings:', this.schedulingWarnings);
+      try {
+        await this.logSchedulingWarningDismissal(this.schedulingWarnings);
+      } catch {
+        // Non-blocking audit — don't prevent save
+      }
+    }
+
     try {
       let recurrenceRuleId: number | null = null;
 
@@ -829,6 +865,169 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
       const uniqueNames = [...new Set(names)].slice(0, 3);
       const msg = `Potential scheduling conflict with: ${uniqueNames.join(', ')}${names.length > 3 ? ` (+${names.length - 3} more)` : ''}`;
       this.alertService.showMessage('Conflict Warning', msg, MessageSeverity.warn);
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Resource Availability & Shift Warnings
+  // -------------------------------------------------------------------------
+
+  /**
+   * Checks each assigned resource for blackout/unavailability overlaps with the event time range.
+   * Populates schedulingWarnings[] with any found conflicts.
+   */
+  private async checkResourceAvailabilityConflicts(): Promise<void> {
+    const formVal = this.eventForm.value;
+    const start = formVal.startDateTime;
+    const end = formVal.endDateTime;
+    if (!start || !end) return;
+
+    const eventStart = new Date(start).getTime();
+    const eventEnd = new Date(end).getTime();
+
+    for (const control of this.assignments.controls) {
+      const resourceId = control.get('resourceId')?.value;
+      if (!resourceId) continue;
+
+      try {
+        const availabilities = await lastValueFrom(
+          this.resourceAvailabilityService.GetResourceAvailabilityList({
+            resourceId: resourceId,
+            active: true,
+            deleted: false
+          })
+        );
+
+        for (const avail of availabilities) {
+          const blackoutStart = new Date(avail.startDateTime).getTime();
+          const blackoutEnd = avail.endDateTime
+            ? new Date(avail.endDateTime).getTime()
+            : new Date('2999-12-31').getTime(); // Open-ended blackout
+
+          // Check for time overlap: startA < endB && startB < endA
+          if (eventStart < blackoutEnd && blackoutStart < eventEnd) {
+            const resource = this.resources.find(r => Number(r.id) === Number(resourceId));
+            const resourceName = resource?.name || `Resource #${resourceId}`;
+            const reason = avail.reason || 'No reason specified';
+            const startStr = new Date(avail.startDateTime).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+            const endStr = avail.endDateTime
+              ? new Date(avail.endDateTime).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
+              : 'indefinitely';
+
+            this.schedulingWarnings.push(
+              `${resourceName} has a blackout from ${startStr} to ${endStr} — Reason: ${reason}`
+            );
+          }
+        }
+      } catch {
+        // Skip availability check on error for this resource
+      }
+    }
+  }
+
+  /**
+   * Checks if the event falls outside each assigned resource's shift hours for the event's day of week.
+   * Populates schedulingWarnings[] with any found issues.
+   */
+  private async checkShiftBoundaryWarnings(): Promise<void> {
+    const formVal = this.eventForm.value;
+    const start = formVal.startDateTime;
+    const end = formVal.endDateTime;
+    if (!start || !end) return;
+
+    const eventDate = new Date(start);
+    const eventDayOfWeek = eventDate.getDay(); // 0=Sun ... 6=Sat
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+    for (const control of this.assignments.controls) {
+      const resourceId = control.get('resourceId')?.value;
+      if (!resourceId) continue;
+
+      try {
+        const shifts = await lastValueFrom(
+          this.resourceShiftService.GetResourceShiftList({
+            resourceId: resourceId,
+            active: true,
+            deleted: false
+          })
+        );
+
+        // If no shifts are defined at all for this resource, skip (don't warn)
+        if (!shifts || shifts.length === 0) continue;
+
+        // Find shifts for the event's day of week
+        const dayShifts = shifts.filter(s => Number(s.dayOfWeek) === eventDayOfWeek);
+
+        const resource = this.resources.find(r => Number(r.id) === Number(resourceId));
+        const resourceName = resource?.name || `Resource #${resourceId}`;
+
+        if (dayShifts.length === 0) {
+          // Resource has shifts defined but none for this day
+          this.schedulingWarnings.push(
+            `${resourceName} has no shift defined for ${dayNames[eventDayOfWeek]}`
+          );
+          continue;
+        }
+
+        // Check if the event falls within any of the defined shift windows
+        const eventStartMinutes = eventDate.getHours() * 60 + eventDate.getMinutes();
+        const eventEndDate = new Date(end);
+        const eventEndMinutes = eventEndDate.getHours() * 60 + eventEndDate.getMinutes();
+
+        let withinAnyShift = false;
+        let shiftDescriptions: string[] = [];
+
+        for (const shift of dayShifts) {
+          // Parse startTime (TimeOnly format: "HH:mm:ss" or "HH:mm")
+          const timeParts = String(shift.startTime).split(':');
+          const shiftStartMinutes = parseInt(timeParts[0], 10) * 60 + parseInt(timeParts[1] || '0', 10);
+          const shiftEndMinutes = shiftStartMinutes + (Number(shift.hours) * 60);
+
+          const shiftStartStr = `${Math.floor(shiftStartMinutes / 60)}:${String(shiftStartMinutes % 60).padStart(2, '0')}`;
+          const shiftEndStr = `${Math.floor(shiftEndMinutes / 60)}:${String(Math.floor(shiftEndMinutes % 60)).padStart(2, '0')}`;
+          shiftDescriptions.push(`${shiftStartStr}–${shiftEndStr}${shift.label ? ' (' + shift.label + ')' : ''}`);
+
+          // Event is within shift if event start >= shift start AND event end <= shift end
+          if (eventStartMinutes >= shiftStartMinutes && eventEndMinutes <= shiftEndMinutes) {
+            withinAnyShift = true;
+            break;
+          }
+        }
+
+        if (!withinAnyShift) {
+          this.schedulingWarnings.push(
+            `${resourceName}'s shift on ${dayNames[eventDayOfWeek]} is ${shiftDescriptions.join(' / ')}, event may fall outside`
+          );
+        }
+      } catch {
+        // Skip shift check on error for this resource
+      }
+    }
+  }
+
+  /**
+   * Posts dismissed scheduling warnings to the server for audit logging.
+   */
+  private async logSchedulingWarningDismissal(warnings: string[]): Promise<void> {
+    const resourceIds: number[] = [];
+    for (const control of this.assignments.controls) {
+      const resId = control.get('resourceId')?.value;
+      if (resId) resourceIds.push(Number(resId));
+    }
+
+    const payload = {
+      eventId: this.event?.id ? Number(this.event.id) : 0,
+      eventName: this.eventForm.value.name || 'New Event',
+      warnings: warnings,
+      resourceIds: resourceIds
+    };
+
+    try {
+      await lastValueFrom(
+        this.resourceScheduleContextService.LogSchedulingWarningDismissal(payload)
+      );
+    } catch {
+      // Audit logging failure should not block the save
     }
   }
 
