@@ -6,7 +6,7 @@
     <InvariantGlobalization>false</InvariantGlobalization>
     <SpaRoot>..\BMC.Client</SpaRoot>
     <SpaProxyLaunchCommand>npm start</SpaProxyLaunchCommand>
-    <SpaProxyServerUrl>https://localhost:12901</SpaProxyServerUrl>
+    <SpaProxyServerUrl>https://localhost:12200</SpaProxyServerUrl>
     <Version>1.0.0</Version>
     <Company>K2 Research</Company>
     <Authors></Authors>

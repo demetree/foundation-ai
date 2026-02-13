@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>BMC — Brick Machine Construction</title>
+    <base href="/" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description"
+        content="BMC — Brick Machine Construction: Design, simulate, and build with virtual bricks.">
+
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <style>
+        /* ================================================================
+       Pre-Bootstrap Loading Screen - BMC Warm Brick Theme
+       ================================================================ */
+
+        #pre-bootstrap {
+            background: linear-gradient(135deg, #1a1005 0%, #2d1a08 35%, #1a1005 100%);
+            bottom: 0;
+            left: 0;
+            position: fixed;
+            right: 0;
+            top: 0;
+            z-index: 999999;
+        }
+
+        #pre-bootstrap div.pre-load-navbar-simulator {
+            background: linear-gradient(135deg, #1a1005 0%, #2d1a08 100%);
+            border-bottom: 1px solid rgba(255, 167, 38, 0.12);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            font-size: 20px;
+            color: white;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 56px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #pre-bootstrap .navbar-brand {
+            background: linear-gradient(135deg, #ffa726 0%, #ff8f00 50%, #ffb74d 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+            font-size: 1.3rem;
+            letter-spacing: 0.08em;
+        }
+
+        #pre-bootstrap div.messaging {
+            color: rgba(255, 255, 255, 0.8);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            position: absolute;
+            top: 56px;
+            left: 0;
+            width: 100%;
+            height: calc(100% - 56px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .cs-loader-container {
+            background: rgba(255, 167, 38, 0.04);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 167, 38, 0.1);
+            border-radius: 24px;
+            padding: 48px 64px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 28px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4),
+                0 0 40px rgba(255, 167, 38, 0.06);
+        }
+
+        /* Brick icon assembly animation */
+        .cs-loader {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .cs-brick-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            animation: pulse-brick 2s ease-in-out infinite;
+        }
+
+        .cs-brick {
+            width: 56px;
+            height: 18px;
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .cs-brick-1 {
+            background: linear-gradient(135deg, #e65100, #ff6d00);
+            animation: slide-in 0.6s ease-out both;
+            animation-delay: 0.3s;
+        }
+
+        .cs-brick-2 {
+            background: linear-gradient(135deg, #ff8f00, #ffa726);
+            width: 48px;
+            margin-left: 8px;
+            animation: slide-in 0.6s ease-out both;
+            animation-delay: 0.6s;
+        }
+
+        .cs-brick-3 {
+            background: linear-gradient(135deg, #ffb74d, #ffcc02);
+            animation: slide-in 0.6s ease-out both;
+            animation-delay: 0.9s;
+        }
+
+        /* Studs on top brick */
+        .cs-brick-3::before,
+        .cs-brick-3::after {
+            content: '';
+            position: absolute;
+            top: -5px;
+            width: 8px;
+            height: 5px;
+            border-radius: 3px 3px 0 0;
+            background: inherit;
+            filter: brightness(1.1);
+        }
+
+        .cs-brick-3::before {
+            left: 12px;
+        }
+
+        .cs-brick-3::after {
+            right: 12px;
+        }
+
+        /* Spinning ring */
+        .cs-loader::before {
+            content: '';
+            position: absolute;
+            width: 96px;
+            height: 96px;
+            border: 2px solid transparent;
+            border-top-color: #ffa726;
+            border-right-color: rgba(255, 167, 38, 0.3);
+            border-radius: 50%;
+            animation: spin 1.5s linear infinite;
+        }
+
+        .cs-loading-text {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.5);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        .cs-loading-text::after {
+            content: '';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes slide-in {
+            from {
+                opacity: 0;
+                transform: translateY(-12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes dots {
+
+            0%,
+            20% {
+                content: '';
+            }
+
+            40% {
+                content: '.';
+            }
+
+            60% {
+                content: '..';
+            }
+
+            80%,
+            100% {
+                content: '...';
+            }
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes pulse-brick {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.04);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            .cs-brick-stack,
+            .cs-brick-1,
+            .cs-brick-2,
+            .cs-brick-3 {
+                animation: none;
+                opacity: 1;
+                transform: none;
+            }
+
+            .cs-loader::before {
+                animation: none;
+                border-color: rgba(255, 167, 38, 0.3);
+            }
+
+            .cs-loading-text::after {
+                animation: none;
+                content: '...';
+            }
+        }
+    </style>
+</head>
+
+<body class="pre-login-background no-select">
+    <app-root>
+        <div id="pre-bootstrap">
+            <div class="pre-load-navbar-simulator">
+                <span class="navbar-brand">BMC</span>
+            </div>
+            <div class="messaging">
+                <div class="cs-loader-container">
+                    <div class="cs-loader">
+                        <div class="cs-brick-stack">
+                            <div class="cs-brick cs-brick-1"></div>
+                            <div class="cs-brick cs-brick-2"></div>
+                            <div class="cs-brick cs-brick-3"></div>
+                        </div>
+                    </div>
+                    <span class="cs-loading-text">Constructing</span>
+                </div>
+            </div>
+        </div>
+    </app-root>
+</body>
+
+</html>

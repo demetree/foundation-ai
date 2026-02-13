@@ -21,6 +21,7 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using static Foundation.Configuration;
 using static Foundation.StartupBasics;
+using Foundation.Auditor.Database;
 
 
 namespace Foundation.BMC
@@ -170,8 +171,20 @@ namespace Foundation.BMC
 
 
                 //
-                // Code-generated BMC controllers will be added here after code generation
+                // Code-generated BMC data controllers
                 //
+                controllers.Add(typeof(Foundation.BMC.Controllers.WebAPI.BrickCategoriesController));
+                controllers.Add(typeof(Foundation.BMC.Controllers.WebAPI.BrickColoursController));
+                controllers.Add(typeof(Foundation.BMC.Controllers.WebAPI.BrickConnectionsController));
+                controllers.Add(typeof(Foundation.BMC.Controllers.WebAPI.BrickPartChangeHistoriesController));
+                controllers.Add(typeof(Foundation.BMC.Controllers.WebAPI.BrickPartColoursController));
+                controllers.Add(typeof(Foundation.BMC.Controllers.WebAPI.BrickPartConnectorsController));
+                controllers.Add(typeof(Foundation.BMC.Controllers.WebAPI.BrickPartsController));
+                controllers.Add(typeof(Foundation.BMC.Controllers.WebAPI.ConnectorTypesController));
+                controllers.Add(typeof(Foundation.BMC.Controllers.WebAPI.PlacedBrickChangeHistoriesController));
+                controllers.Add(typeof(Foundation.BMC.Controllers.WebAPI.PlacedBricksController));
+                controllers.Add(typeof(Foundation.BMC.Controllers.WebAPI.ProjectChangeHistoriesController));
+                controllers.Add(typeof(Foundation.BMC.Controllers.WebAPI.ProjectsController));
 
 
                 logger.LogInformation("Controllers have been configured.");
@@ -409,10 +422,15 @@ namespace Foundation.BMC
                 //
                 // Log database statistics for startup diagnostics
                 //
-                using (var securityContext = new SecurityContext())
+                using (SecurityContext securityContext = new SecurityContext())
+                using (AuditorContext audtiorContext = new AuditorContext())
+                using (BMCContext bmcContext = new BMCContext())
+
                 {
                     LogDatabaseStatistics(logger,
-                        ("Security", securityContext)
+                        ("Security", securityContext),
+                        ("Auditor", audtiorContext),
+                        ("BMC", bmcContext)
                     );
                 }
 
@@ -435,43 +453,40 @@ namespace Foundation.BMC
         }
 
 
-        private static async Task ValidateBmcSchema(Logger foundationLogger)
+        private static async Task ValidateBmcSchema(Logger logger)
         {
-            foundationLogger.LogInformation("About to validate BMC database schema.");
+            logger.LogInformation("About to validate BMC database schema.");
 
             try
             {
-                await using BMCContext validationContext = new BMCContext(
-                    new DbContextOptionsBuilder<BMCContext>()
-                        .UseSqlServer(Foundation.Configuration.GetStringConfigurationSetting("ConnectionStrings:BMC", ""))
-                        .Options);
+                await using BMCContext validationContext = new BMCContext();
 
-                DatabaseSchemaValidator<BMCContext> schemaValidator = new DatabaseSchemaValidator<BMCContext>(validationContext, foundationLogger);
+                DatabaseSchemaValidator<BMCContext> schemaValidator = new DatabaseSchemaValidator<BMCContext>(validationContext, logger);
 
                 DatabaseSchemaValidator<BMCContext>.DatabaseSchemaValidatorResult schemaValidationResult = await schemaValidator.ValidateSchemaAsync("BMC").ConfigureAwait(false);
 
                 if (schemaValidationResult.IsValid == false)
                 {
-                    foundationLogger.LogCritical("BMC database schema validation failed:");
+                    logger.LogCritical("BMC database schema validation failed:");
                     foreach (var mismatch in schemaValidationResult.Mismatches)
                     {
-                        foundationLogger.LogCritical(mismatch);
+                        logger.LogCritical(mismatch);
                     }
 
                     throw new InvalidOperationException("BMC database schema is out of sync with EF context.");
                 }
                 else
                 {
-                    foundationLogger.LogCritical("BMC database schema validation passed.");
+                    logger.LogCritical("BMC database schema validation passed.");
                 }
             }
             catch (Exception ex)
             {
-                foundationLogger.LogCritical(ex, "An error occurred during BMC database schema validation.");
+                logger.LogCritical(ex, "An error occurred during BMC database schema validation.");
                 throw;
             }
 
-            foundationLogger.LogInformation("Completed validation of BMC database schema.");
+            logger.LogInformation("Completed validation of BMC database schema.");
         }
 
 

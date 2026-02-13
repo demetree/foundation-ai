@@ -38,6 +38,41 @@ GO
 
 
 -- 
+-- Define the custom roles for the Scheduler module
+-- 
+INSERT INTO [Security].[SecurityRole] ( [name], [description], [privilegeId] ) VALUES  ( 'Scheduler Config Writer', 'Scheduler Config Writer Role', ( SELECT TOP 1 id FROM [Security].[Privilege] WHERE [name] = 'Custom' ) )
+GO
+
+INSERT INTO [Security].[SecurityRole] ( [name], [description], [privilegeId] ) VALUES  ( 'Scheduler Contact Writer', 'Scheduler Contact Writer Role', ( SELECT TOP 1 id FROM [Security].[Privilege] WHERE [name] = 'Custom' ) )
+GO
+
+INSERT INTO [Security].[SecurityRole] ( [name], [description], [privilegeId] ) VALUES  ( 'Scheduler Resource Writer', 'Scheduler Resource Writer Role', ( SELECT TOP 1 id FROM [Security].[Privilege] WHERE [name] = 'Custom' ) )
+GO
+
+INSERT INTO [Security].[SecurityRole] ( [name], [description], [privilegeId] ) VALUES  ( 'Scheduler Fundraising Writer', 'Scheduler Fundraising Writer Role', ( SELECT TOP 1 id FROM [Security].[Privilege] WHERE [name] = 'Custom' ) )
+GO
+
+INSERT INTO [Security].[SecurityRole] ( [name], [description], [privilegeId] ) VALUES  ( 'Scheduler Volunteer Writer', 'Scheduler Volunteer Writer Role', ( SELECT TOP 1 id FROM [Security].[Privilege] WHERE [name] = 'Custom' ) )
+GO
+
+
+INSERT INTO [Security].[ModuleSecurityRole] ( [moduleId], [securityRoleId] ) VALUES  ( ( SELECT TOP 1 id FROM [Security].[Module] WHERE [name] = 'Scheduler' ), ( SELECT TOP 1 id FROM [Security].[SecurityRole] WHERE [name] = 'Scheduler Config Writer' ) )
+GO
+
+INSERT INTO [Security].[ModuleSecurityRole] ( [moduleId], [securityRoleId] ) VALUES  ( ( SELECT TOP 1 id FROM [Security].[Module] WHERE [name] = 'Scheduler' ), ( SELECT TOP 1 id FROM [Security].[SecurityRole] WHERE [name] = 'Scheduler Contact Writer' ) )
+GO
+
+INSERT INTO [Security].[ModuleSecurityRole] ( [moduleId], [securityRoleId] ) VALUES  ( ( SELECT TOP 1 id FROM [Security].[Module] WHERE [name] = 'Scheduler' ), ( SELECT TOP 1 id FROM [Security].[SecurityRole] WHERE [name] = 'Scheduler Resource Writer' ) )
+GO
+
+INSERT INTO [Security].[ModuleSecurityRole] ( [moduleId], [securityRoleId] ) VALUES  ( ( SELECT TOP 1 id FROM [Security].[Module] WHERE [name] = 'Scheduler' ), ( SELECT TOP 1 id FROM [Security].[SecurityRole] WHERE [name] = 'Scheduler Fundraising Writer' ) )
+GO
+
+INSERT INTO [Security].[ModuleSecurityRole] ( [moduleId], [securityRoleId] ) VALUES  ( ( SELECT TOP 1 id FROM [Security].[Module] WHERE [name] = 'Scheduler' ), ( SELECT TOP 1 id FROM [Security].[SecurityRole] WHERE [name] = 'Scheduler Volunteer Writer' ) )
+GO
+
+
+-- 
 -- Give the admin user administrative rights to the module
 -- 
 INSERT INTO [Security].[SecurityUserSecurityRole] ( [securityUserId], [securityRoleId], [active], [deleted] ) VALUES  ( ( SELECT TOP 1 id FROM [Security].[SecurityUser] WHERE [accountName] = 'Admin' ), ( SELECT TOP 1 id FROM [Security].[SecurityRole] WHERE [name] = 'Scheduler Administrator' ), '1', '0' )

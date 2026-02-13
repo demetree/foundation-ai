@@ -599,9 +599,9 @@ namespace Foundation.Scheduler
                 //
                 // Log database statistics for startup diagnostics
                 //
-                using (var securityContext = new SecurityContext())
-                using (var auditorContext = new AuditorContext())
-                using (var schedulerContext = new SchedulerContext())
+                using (SecurityContext securityContext = new SecurityContext())
+                using (AuditorContext auditorContext = new AuditorContext())
+                using (SchedulerContext schedulerContext = new SchedulerContext())
                 {
                     LogDatabaseStatistics(logger,
                         ("Security", securityContext),

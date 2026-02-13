@@ -1,0 +1,401 @@
+/* ================================================================
+   BMC - Global Styles
+   Warm amber/orange palette with dark mode
+   ================================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* ----------------------------------------------------------------
+   CSS Custom Properties — BMC Design Tokens
+   ---------------------------------------------------------------- */
+:root {
+    /* Brand Colors */
+    --bmc-primary: #ffa726;
+    --bmc-primary-dark: #ff8f00;
+    --bmc-primary-light: #ffcc80;
+    --bmc-accent: #e65100;
+    --bmc-accent-light: #ff6d00;
+
+    /* Surface Colors */
+    --bmc-bg-deep: #0f0a04;
+    --bmc-bg-dark: #1a1005;
+    --bmc-bg-card: #221608;
+    --bmc-bg-elevated: #2d1a08;
+    --bmc-bg-hover: #3a2210;
+
+    /* Text */
+    --bmc-text-primary: rgba(255, 255, 255, 0.92);
+    --bmc-text-secondary: rgba(255, 255, 255, 0.65);
+    --bmc-text-muted: rgba(255, 255, 255, 0.4);
+
+    /* Borders */
+    --bmc-border: rgba(255, 167, 38, 0.1);
+    --bmc-border-strong: rgba(255, 167, 38, 0.2);
+
+    /* Sidebar */
+    --sidebar-width: 260px;
+    --sidebar-collapsed-width: 68px;
+    --header-height: 56px;
+
+    /* Shadows */
+    --bmc-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --bmc-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
+    --bmc-shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
+    --bmc-glow: 0 0 20px rgba(255, 167, 38, 0.08);
+
+    /* Transitions */
+    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-smooth: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Radius */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+}
+
+
+/* ----------------------------------------------------------------
+   Base
+   ---------------------------------------------------------------- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body {
+    height: 100%;
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    color: var(--bmc-text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+
+/* ----------------------------------------------------------------
+   Login & Post-Login Backgrounds
+   ---------------------------------------------------------------- */
+.pre-login-background {
+    background: linear-gradient(135deg, var(--bmc-bg-deep) 0%, var(--bmc-bg-dark) 50%, var(--bmc-bg-deep) 100%);
+    min-height: 100vh;
+}
+
+.post-login-background {
+    background: var(--bmc-bg-deep);
+    min-height: 100vh;
+}
+
+.no-select {
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+
+/* ----------------------------------------------------------------
+   Scrollbar
+   ---------------------------------------------------------------- */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bmc-bg-dark);
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 167, 38, 0.2);
+    border-radius: 4px;
+
+    &:hover {
+        background: rgba(255, 167, 38, 0.35);
+    }
+}
+
+
+/* ----------------------------------------------------------------
+   BMC Card System
+   ---------------------------------------------------------------- */
+.bmc-card {
+    background: var(--bmc-bg-card);
+    border: 1px solid var(--bmc-border);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    transition: all var(--transition-smooth);
+
+    &:hover {
+        border-color: var(--bmc-border-strong);
+        box-shadow: var(--bmc-glow);
+    }
+}
+
+.bmc-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--bmc-border);
+
+    h2,
+    h3,
+    h4 {
+        background: linear-gradient(135deg, var(--bmc-primary) 0%, var(--bmc-primary-light) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 600;
+        margin: 0;
+    }
+}
+
+
+/* ----------------------------------------------------------------
+   BMC Buttons
+   ---------------------------------------------------------------- */
+.btn-bmc {
+    background: linear-gradient(135deg, var(--bmc-primary-dark) 0%, var(--bmc-primary) 100%);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 8px 20px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    box-shadow: 0 4px 12px rgba(255, 143, 0, 0.2);
+
+    &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(255, 143, 0, 0.35);
+        color: #fff;
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+}
+
+.btn-bmc-outline {
+    background: transparent;
+    color: var(--bmc-primary);
+    border: 1px solid var(--bmc-border-strong);
+    border-radius: var(--radius-sm);
+    padding: 8px 20px;
+    font-weight: 500;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+
+    &:hover {
+        background: rgba(255, 167, 38, 0.08);
+        border-color: var(--bmc-primary);
+        color: var(--bmc-primary);
+    }
+}
+
+.btn-bmc-ghost {
+    background: transparent;
+    color: var(--bmc-text-secondary);
+    border: none;
+    padding: 8px 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    border-radius: var(--radius-sm);
+
+    &:hover {
+        background: var(--bmc-bg-hover);
+        color: var(--bmc-text-primary);
+    }
+}
+
+
+/* ----------------------------------------------------------------
+   BMC Badges
+   ---------------------------------------------------------------- */
+.badge-bmc {
+    background: rgba(255, 167, 38, 0.15);
+    color: var(--bmc-primary);
+    border: 1px solid rgba(255, 167, 38, 0.2);
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+
+/* ----------------------------------------------------------------
+   Form Controls — Dark Theme Override
+   ---------------------------------------------------------------- */
+.form-control,
+.form-select {
+    background: var(--bmc-bg-dark);
+    color: var(--bmc-text-primary);
+    border: 1px solid var(--bmc-border);
+    border-radius: var(--radius-sm);
+
+    &:focus {
+        background: var(--bmc-bg-dark);
+        color: var(--bmc-text-primary);
+        border-color: var(--bmc-primary);
+        box-shadow: 0 0 0 3px rgba(255, 167, 38, 0.12);
+    }
+
+    &::placeholder {
+        color: var(--bmc-text-muted);
+    }
+}
+
+.form-label {
+    color: var(--bmc-text-secondary);
+    font-weight: 500;
+    font-size: 0.8rem;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+
+
+/* ----------------------------------------------------------------
+   Table — Dark Theme Override
+   ---------------------------------------------------------------- */
+.table {
+    color: var(--bmc-text-primary);
+    --bs-table-bg: transparent;
+    --bs-table-hover-bg: var(--bmc-bg-hover);
+    --bs-table-striped-bg: rgba(255, 167, 38, 0.02);
+    border-color: var(--bmc-border);
+
+    thead th {
+        background: var(--bmc-bg-elevated);
+        border-color: var(--bmc-border);
+        color: var(--bmc-text-secondary);
+        font-weight: 600;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        padding: 12px 16px;
+    }
+
+    tbody td {
+        border-color: var(--bmc-border);
+        padding: 12px 16px;
+        vertical-align: middle;
+    }
+}
+
+
+/* ----------------------------------------------------------------
+   Modal — Dark Theme Override
+   ---------------------------------------------------------------- */
+.modal-content {
+    background: var(--bmc-bg-card);
+    border: 1px solid var(--bmc-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--bmc-shadow-lg);
+    color: var(--bmc-text-primary);
+}
+
+.modal-header {
+    border-bottom: 1px solid var(--bmc-border);
+    padding: 20px 24px;
+
+    .modal-title {
+        font-weight: 600;
+    }
+
+    .btn-close {
+        filter: invert(1) brightness(0.8);
+    }
+}
+
+.modal-footer {
+    border-top: 1px solid var(--bmc-border);
+    padding: 16px 24px;
+}
+
+
+/* ----------------------------------------------------------------
+   Animations
+   ---------------------------------------------------------------- */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-16px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.4s ease-out both;
+}
+
+.animate-slide-in {
+    animation: slideInLeft 0.3s ease-out both;
+}
+
+
+/* ----------------------------------------------------------------
+   Utility Classes
+   ---------------------------------------------------------------- */
+.text-bmc {
+    color: var(--bmc-primary) !important;
+}
+
+.text-bmc-light {
+    color: var(--bmc-primary-light) !important;
+}
+
+.text-muted-bmc {
+    color: var(--bmc-text-muted) !important;
+}
+
+.bg-bmc {
+    background: var(--bmc-bg-card) !important;
+}
+
+.border-bmc {
+    border-color: var(--bmc-border) !important;
+}
+
+.glow-amber {
+    box-shadow: 0 0 20px rgba(255, 167, 38, 0.15);
+}
+
+
+/* ----------------------------------------------------------------
+   NGX Toasta / Toastr Override
+   ---------------------------------------------------------------- */
+.toast-container .ngx-toastr {
+    background: var(--bmc-bg-elevated);
+    border: 1px solid var(--bmc-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--bmc-shadow-md);
+}

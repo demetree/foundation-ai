@@ -119,6 +119,17 @@ import { ResourceContactCustomAddEditModalComponent } from './components/resourc
 import { ResourceNotificationsTabComponent } from './components/resource-custom/resource-notifications-tab/resource-notifications-tab.component';
 import { NotificationSubscriptionCustomAddEditModalComponent } from './components/resource-custom/notification-subscription-custom-add-edit-modal/notification-subscription-custom-add-edit-modal.component';
 
+import { ShiftCustomListingComponent } from './components/shift-custom/shift-custom-listing/shift-custom-listing.component';
+import { ShiftCustomDetailComponent } from './components/shift-custom/shift-custom-detail/shift-custom-detail.component';
+import { ShiftCustomTableComponent } from './components/shift-custom/shift-custom-table/shift-custom-table.component';
+import { ShiftCustomAddEditComponent } from './components/shift-custom/shift-custom-add-edit/shift-custom-add-edit.component';
+
+import { ShiftPatternCustomListingComponent } from './components/shift-pattern-custom/shift-pattern-custom-listing/shift-pattern-custom-listing.component';
+import { ShiftPatternCustomDetailComponent } from './components/shift-pattern-custom/shift-pattern-custom-detail/shift-pattern-custom-detail.component';
+import { ShiftPatternCustomTableComponent } from './components/shift-pattern-custom/shift-pattern-custom-table/shift-pattern-custom-table.component';
+import { ShiftPatternCustomAddEditComponent } from './components/shift-pattern-custom/shift-pattern-custom-add-edit/shift-pattern-custom-add-edit.component';
+import { ShiftPatternDayAddEditModalComponent } from './components/shift-pattern-custom/shift-pattern-day-add-edit-modal/shift-pattern-day-add-edit-modal.component';
+
 //
 // Crew custom optimizations
 //
@@ -1006,6 +1017,23 @@ import { VolunteerStatusTableComponent } from './scheduler-data-components/volun
     ResourceContactCustomAddEditModalComponent,
     ResourceNotificationsTabComponent,
     NotificationSubscriptionCustomAddEditModalComponent,
+
+    //
+    // Shift customization
+    //
+    ShiftCustomListingComponent,
+    ShiftCustomDetailComponent,
+    ShiftCustomTableComponent,
+    ShiftCustomAddEditComponent,
+
+    //
+    // Shift Pattern customization
+    //
+    ShiftPatternCustomListingComponent,
+    ShiftPatternCustomDetailComponent,
+    ShiftPatternCustomTableComponent,
+    ShiftPatternCustomAddEditComponent,
+    ShiftPatternDayAddEditModalComponent,
 
 
     //

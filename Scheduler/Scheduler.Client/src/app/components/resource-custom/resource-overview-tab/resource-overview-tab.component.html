@@ -22,19 +22,31 @@
           </dd>
 
           <dt class="col-sm-4 text-muted" *ngIf="officeCount$ != null && ((officeCount$ | async) ?? 0) > 0">Office</dt>
-          <dd class="col-sm-8" *ngIf="officeCount$ != null && ((officeCount$ | async) ?? 0) > 0">{{ resource.office?.name || '—' }}</dd>
+          <dd class="col-sm-8" *ngIf="officeCount$ != null && ((officeCount$ | async) ?? 0) > 0">{{
+            resource.office?.name || '—' }}</dd>
 
           <dt class="col-sm-4 text-muted">Time Zone</dt>
           <dd class="col-sm-8">{{ resource.timeZone?.name || '—' }}</dd>
 
           <dt class="col-sm-4 text-muted">Weekly Target Hours</dt>
-          <dd class="col-sm-8">{{ resource.targetWeeklyWorkHours ? (resource.targetWeeklyWorkHours + ' hours') : '—' }}</dd>
+          <dd class="col-sm-8">{{ resource.targetWeeklyWorkHours ? (resource.targetWeeklyWorkHours + ' hours') : '—' }}
+          </dd>
+
+          <dt class="col-sm-4 text-muted">Shift Pattern</dt>
+          <dd class="col-sm-8">
+            <a *ngIf="resource.shiftPattern" [routerLink]="['/shiftpattern', resource.shiftPatternId]"
+              class="text-decoration-none d-inline-flex align-items-center gap-2">
+              <span class="color-swatch" [style.background-color]="resource.shiftPattern.color || '#6366f1'"></span>
+              {{ resource.shiftPattern.name }}
+            </a>
+            <span *ngIf="!resource.shiftPattern" class="text-muted">—</span>
+          </dd>
 
           <dt class="col-sm-4 text-muted">Color</dt>
-          <dd class="col-sm-8"><span class="color-swatch"
-                                     [style.background-color]="resource.color || '#cccccc'"></span></dd>
+          <dd class="col-sm-8"><span class="color-swatch" [style.background-color]="resource.color || '#cccccc'"></span>
+          </dd>
 
-          
+
 
 
           <dt class="col-sm-4 text-muted">External ID</dt>
@@ -45,7 +57,8 @@
             <span class="badge me-2" [ngClass]="resource.active ? 'bg-success' : 'bg-secondary'">
               {{ resource.active ? 'Active' : 'Inactive' }}
             </span>
-            <span *ngIf="resource.deleted == true" class="badge me-2" [ngClass]="resource.deleted ? 'bg-danger' : 'bg-secondary'">
+            <span *ngIf="resource.deleted == true" class="badge me-2"
+              [ngClass]="resource.deleted ? 'bg-danger' : 'bg-secondary'">
               {{ resource.deleted ? 'Deleted' : 'Not Deleted' }}
             </span>
             <span class="badge me-2 bg-secondary">

@@ -76,6 +76,18 @@ import { ClientCustomListingComponent } from './components/client-custom/client-
 import { SchedulingTargetCustomListingComponent } from './components/scheduling-target-custom/scheduling-target-custom-listing/scheduling-target-custom-listing.component';
 import { SchedulingTargetCustomDetailComponent } from './components/scheduling-target-custom/scheduling-target-custom-detail/scheduling-target-custom-detail.component';
 
+//
+// Shift custom optimizations
+//
+import { ShiftCustomListingComponent } from './components/shift-custom/shift-custom-listing/shift-custom-listing.component';
+import { ShiftCustomDetailComponent } from './components/shift-custom/shift-custom-detail/shift-custom-detail.component';
+
+//
+// Shift Pattern custom optimizations
+//
+import { ShiftPatternCustomListingComponent } from './components/shift-pattern-custom/shift-pattern-custom-listing/shift-pattern-custom-listing.component';
+import { ShiftPatternCustomDetailComponent } from './components/shift-pattern-custom/shift-pattern-custom-detail/shift-pattern-custom-detail.component';
+
 
 
 
@@ -451,6 +463,14 @@ const routes: Routes = [
   { path: 'schedulingtargets/new', component: SchedulingTargetCustomDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Scheduling Target' },
   { path: 'schedulingtargets/:schedulingTargetId', component: SchedulingTargetCustomDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Scheduling Target' },
   { path: 'schedulingtarget/:schedulingTargetId', component: SchedulingTargetCustomDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Scheduling Target' },
+
+  { path: 'resourceshifts', component: ShiftCustomListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Shifts' },
+  { path: 'resourceshifts/:resourceShiftId', component: ShiftCustomDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Shift Details' },
+  { path: 'resourceshift/:resourceShiftId', component: ShiftCustomDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Shift Details' },
+
+  { path: 'shiftpatterns', component: ShiftPatternCustomListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Shift Patterns' },
+  { path: 'shiftpatterns/:shiftPatternId', component: ShiftPatternCustomDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Shift Pattern Details' },
+  { path: 'shiftpattern/:shiftPatternId', component: ShiftPatternCustomDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Shift Pattern Details' },
 
 
 

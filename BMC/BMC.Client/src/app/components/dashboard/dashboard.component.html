@@ -1,0 +1,87 @@
+<div class="dashboard animate-fade-in">
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-th-large me-2"></i>Dashboard
+        </h1>
+        <p class="page-subtitle">Brick Machine Construction — Overview</p>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div *ngFor="let stat of stats; let i = index" class="stat-card bmc-card"
+            [style.animation-delay]="(i * 100) + 'ms'" [routerLink]="stat.route || null" [class.clickable]="stat.route">
+
+            <div class="stat-icon" [style.color]="stat.color">
+                <i [class]="stat.icon"></i>
+            </div>
+            <div class="stat-info">
+                <span class="stat-value">{{ stat.value }}</span>
+                <span class="stat-label">{{ stat.label }}</span>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Quick Actions -->
+    <div class="section">
+        <div class="bmc-card-header">
+            <h3><i class="fas fa-bolt me-2"></i>Quick Actions</h3>
+        </div>
+
+        <div class="actions-grid">
+            <a class="action-card" routerLink="/parts">
+                <div class="action-icon">
+                    <i class="fas fa-cubes"></i>
+                </div>
+                <div class="action-info">
+                    <span class="action-title">Browse Parts</span>
+                    <span class="action-desc">Explore the brick parts catalog</span>
+                </div>
+                <i class="fas fa-chevron-right action-arrow"></i>
+            </a>
+
+            <a class="action-card" routerLink="/projects">
+                <div class="action-icon">
+                    <i class="fas fa-plus-circle"></i>
+                </div>
+                <div class="action-info">
+                    <span class="action-title">My Projects</span>
+                    <span class="action-desc">View and manage your builds</span>
+                </div>
+                <i class="fas fa-chevron-right action-arrow"></i>
+            </a>
+
+            <a class="action-card" routerLink="/colours">
+                <div class="action-icon">
+                    <i class="fas fa-palette"></i>
+                </div>
+                <div class="action-info">
+                    <span class="action-title">Colour Library</span>
+                    <span class="action-desc">Browse available brick colours</span>
+                </div>
+                <i class="fas fa-chevron-right action-arrow"></i>
+            </a>
+        </div>
+    </div>
+
+
+    <!-- Welcome Banner -->
+    <div class="welcome-banner bmc-card">
+        <div class="welcome-content">
+            <h3>Welcome to BMC</h3>
+            <p>Design, simulate, and construct with virtual bricks. Start by browsing the parts catalog or creating a
+                new project.</p>
+        </div>
+        <div class="welcome-graphic">
+            <div class="floating-bricks">
+                <div class="float-brick fb-1"></div>
+                <div class="float-brick fb-2"></div>
+                <div class="float-brick fb-3"></div>
+                <div class="float-brick fb-4"></div>
+            </div>
+        </div>
+    </div>
+
+</div>

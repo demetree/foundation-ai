@@ -1,0 +1,50 @@
+<div class="login-page">
+    <div class="login-container animate-fade-in">
+
+        <!-- Brand Header -->
+        <div class="login-brand">
+            <div class="brand-brick-stack">
+                <div class="brick brick-1"></div>
+                <div class="brick brick-2"></div>
+                <div class="brick brick-3"></div>
+            </div>
+            <h1 class="brand-title">BMC</h1>
+            <p class="brand-subtitle">Brick Machine Construction</p>
+        </div>
+
+        <!-- Login Form -->
+        <form class="login-form" (ngSubmit)="login()" #loginForm="ngForm">
+            <div class="form-group">
+                <label class="form-label" for="login-username">Username</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-user input-icon"></i>
+                    <input type="text" id="login-username" class="form-control" placeholder="Enter your username"
+                        [(ngModel)]="userName" name="userName" autocomplete="username" [disabled]="isLoading">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="login-password">Password</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-lock input-icon"></i>
+                    <input type="password" id="login-password" class="form-control" placeholder="Enter your password"
+                        [(ngModel)]="password" name="password" autocomplete="current-password" [disabled]="isLoading">
+                </div>
+            </div>
+
+            <button type="submit" class="btn-bmc login-btn" [disabled]="isLoading">
+                <span *ngIf="!isLoading">
+                    <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                </span>
+                <span *ngIf="isLoading">
+                    <i class="fas fa-spinner fa-spin me-2"></i>{{ loginStatusMessage }}
+                </span>
+            </button>
+        </form>
+
+        <!-- Footer -->
+        <div class="login-footer">
+            <span>Powered by Foundation Platform</span>
+        </div>
+    </div>
+</div>

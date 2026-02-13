@@ -1,0 +1,100 @@
+<app-shift-pattern-custom-add-edit #addEditComponent [showAddButton]="false"
+    (patternChanged)="onPatternChanged()"></app-shift-pattern-custom-add-edit>
+
+<div class="pattern-table-wrap">
+
+    <!-- Desktop Table -->
+    <div class="table-responsive" *ngIf="!isMobile">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th class="sortable" (click)="sort('name')">
+                        Name <i class="fas {{sortIcon('name')}} ms-1 sort-icon"></i>
+                    </th>
+                    <th class="sortable" (click)="sort('description')">
+                        Description <i class="fas {{sortIcon('description')}} ms-1 sort-icon"></i>
+                    </th>
+                    <th>Color</th>
+                    <th>Time Zone</th>
+                    <th class="sortable text-center" (click)="sort('active')">
+                        Status <i class="fas {{sortIcon('active')}} ms-1 sort-icon"></i>
+                    </th>
+                    <th class="text-end" *ngIf="userIsWriter()">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngIf="isLoading">
+                    <td colspan="6" class="text-center py-4">
+                        <div class="spinner-border spinner-border-sm text-primary"></div>
+                        <span class="ms-2 text-muted">Loading patterns…</span>
+                    </td>
+                </tr>
+                <tr *ngIf="!isLoading && filteredPatterns.length === 0">
+                    <td colspan="6" class="text-center py-4 text-muted">
+                        <i class="fas fa-layer-group me-2"></i>No shift patterns found
+                    </td>
+                </tr>
+                <tr *ngFor="let p of filteredPatterns" class="pattern-row" (click)="navigateToDetail(p)">
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="color-swatch" [style.background]="p.color || '#6366f1'"></span>
+                            <span class="fw-semibold">{{p.name}}</span>
+                        </div>
+                    </td>
+                    <td class="text-muted text-truncate" style="max-width: 250px;">{{p.description || '—'}}</td>
+                    <td>
+                        <code class="color-code">{{p.color || '—'}}</code>
+                    </td>
+                    <td class="text-muted small">{{p.timeZone?.name || '—'}}</td>
+                    <td class="text-center">
+                        <span class="badge" [class.bg-success]="p.active" [class.bg-secondary]="!p.active">
+                            {{p.active ? 'Active' : 'Inactive'}}
+                        </span>
+                    </td>
+                    <td class="text-end" *ngIf="userIsWriter()" (click)="$event.stopPropagation()">
+                        <button class="btn btn-sm btn-outline-primary me-1" ngbTooltip="Edit" (click)="handleEdit(p)">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" ngbTooltip="Delete" (click)="handleDelete(p)">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Mobile Cards -->
+    <div *ngIf="isMobile" class="pattern-cards">
+        <div *ngIf="isLoading" class="text-center py-4">
+            <div class="spinner-border spinner-border-sm text-primary"></div>
+        </div>
+        <div *ngIf="!isLoading && filteredPatterns.length === 0" class="text-center py-4 text-muted">
+            <i class="fas fa-layer-group me-2"></i>No shift patterns found
+        </div>
+        <div *ngFor="let p of filteredPatterns" class="pattern-card" (click)="navigateToDetail(p)">
+            <div class="d-flex justify-content-between align-items-start">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="color-swatch color-swatch-lg" [style.background]="p.color || '#6366f1'"></span>
+                    <div>
+                        <div class="fw-semibold">{{p.name}}</div>
+                        <div class="text-muted small">{{p.description || 'No description'}}</div>
+                    </div>
+                </div>
+                <span class="badge" [class.bg-success]="p.active" [class.bg-secondary]="!p.active">
+                    {{p.active ? 'Active' : 'Inactive'}}
+                </span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mt-2" *ngIf="userIsWriter()"
+                (click)="$event.stopPropagation()">
+                <span class="text-muted small">{{p.timeZone?.name || '—'}}</span>
+                <div>
+                    <button class="btn btn-sm btn-outline-primary me-1" (click)="handleEdit(p)"><i
+                            class="fas fa-edit"></i></button>
+                    <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(p)"><i
+                            class="fas fa-trash-alt"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

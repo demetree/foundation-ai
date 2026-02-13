@@ -1050,7 +1050,7 @@ CREATE INDEX `I_ChargeTypeChangeHistory_tenantGuid_userId` ON `ChargeTypeChangeH
 CREATE INDEX `I_ChargeTypeChangeHistory_tenantGuid_chargeTypeId` ON `ChargeTypeChangeHistory` (`tenantGuid`, `chargeTypeId`, `versionNumber`, `timeStamp`, `userId`);
 
 
--- Tenant specific master list of tags.
+-- List of tags
 CREATE TABLE `Tag`(
 	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
 	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
@@ -1367,7 +1367,7 @@ INSERT INTO `VolunteerStatus` ( `name`, `description`, `sequence`, `color`, `isA
 INSERT INTO `VolunteerStatus` ( `name`, `description`, `sequence`, `color`, `isActive`, `preventsScheduling`, `objectGuid` ) VALUES  ( 'Not Re-invited', 'Previous issues; do not contact or schedule', 50, '#F44336', 0, 1, 'a1111111-2222-3333-4444-555555555005' );
 
 
--- Master list of office types.  Used for categorizing offices.  Not tenant specific
+-- the contact types
 CREATE TABLE `ContactType`(
 	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
 	`name` VARCHAR(100) NOT NULL UNIQUE,
@@ -1580,7 +1580,7 @@ CREATE INDEX `I_ContactTagChangeHistory_tenantGuid_userId` ON `ContactTagChangeH
 CREATE INDEX `I_ContactTagChangeHistory_tenantGuid_contactTagId` ON `ContactTagChangeHistory` (`tenantGuid`, `contactTagId`, `versionNumber`, `timeStamp`, `userId`);
 
 
--- Master list of office types.  Used for categorizing offices.  Not tenant specific
+-- Master list of relationship types
 CREATE TABLE `RelationshipType`(
 	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
 	`name` VARCHAR(100) NOT NULL UNIQUE,
@@ -1696,7 +1696,7 @@ CREATE INDEX `I_ContactContactChangeHistory_tenantGuid_userId` ON `ContactContac
 CREATE INDEX `I_ContactContactChangeHistory_tenantGuid_contactContactId` ON `ContactContactChangeHistory` (`tenantGuid`, `contactContactId`, `versionNumber`, `timeStamp`, `userId`);
 
 
--- Master list of office types.  Used for categorizing offices.  Not tenant specific
+-- Master list of office types
 CREATE TABLE `OfficeType`(
 	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
 	`name` VARCHAR(100) NOT NULL UNIQUE,
@@ -3778,7 +3778,7 @@ CREATE INDEX `I_ScheduledEventTemplateQualificationRequirementChangeHistory_te` 
 
 
 /*
-Core scheduling entity – any planned activity with a defined time range.  This managest recurrences with the 'Detachment Model'
+Core scheduling entity – any planned activity with a defined time range.  This manages recurrences with the 'Detachment Model'
 
 How it works:
 The Master: You create the Series (Event A). It has the RecurrenceRule.

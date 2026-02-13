@@ -5,6 +5,10 @@
             Shifts / Work Schedule
         </h6>
         <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-primary" (click)="openApplyPatternModal()"
+                ngbTooltip="Apply Shift Pattern">
+                <i class="fas fa-layer-group me-1"></i> Apply Pattern
+            </button>
             <button class="btn btn-sm btn-primary" (click)="openAddShiftModal()">
                 <i class="fa fa-plus me-1"></i> Add Shift
             </button>
@@ -141,3 +145,66 @@
         </ng-container>
     </div>
 </div>
+
+<!-- Apply Shift Pattern Modal -->
+<ng-template #applyPatternModal let-modal>
+    <div class="modal-header" style="background: linear-gradient(135deg, #4338ca, #6366f1); color: #fff;">
+        <h5 class="modal-title mb-0">
+            <i class="fas fa-layer-group me-2"></i>Apply Shift Pattern
+        </h5>
+        <button type="button" class="btn btn-sm btn-close btn-close-white" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body">
+        <div *ngIf="isPatternsLoading" class="text-center py-3">
+            <div class="spinner-border spinner-border-sm text-primary"></div>
+        </div>
+
+        <div *ngIf="!isPatternsLoading && shiftPatterns.length === 0" class="text-center py-3 text-muted">
+            <i class="fas fa-info-circle me-1"></i>No active shift patterns found.
+            <a routerLink="/shiftpatterns" class="ms-1">Create one</a>
+        </div>
+
+        <div *ngIf="!isPatternsLoading && shiftPatterns.length > 0">
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Select Pattern</label>
+                <select class="form-select" [(ngModel)]="selectedPatternId">
+                    <option [ngValue]="null">— Choose a pattern —</option>
+                    <option *ngFor="let p of shiftPatterns" [ngValue]="p.id">
+                        {{p.name}} {{p.description ? '(' + p.description + ')' : ''}}
+                    </option>
+                </select>
+            </div>
+
+            <div class="mb-3" *ngIf="shifts && shifts.length > 0">
+                <label class="form-label fw-semibold">Mode</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" id="modeReplace" name="applyMode"
+                        [(ngModel)]="applyMode" value="replace" />
+                    <label class="form-check-label" for="modeReplace">
+                        <strong>Replace</strong> — Remove existing shifts &amp; apply pattern
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" id="modeMerge" name="applyMode" [(ngModel)]="applyMode"
+                        value="merge" />
+                    <label class="form-check-label" for="modeMerge">
+                        <strong>Merge</strong> — Keep existing shifts &amp; add pattern on top
+                    </label>
+                </div>
+            </div>
+
+            <div class="alert alert-warning small" *ngIf="applyMode === 'replace' && shifts && shifts.length > 0">
+                <i class="fas fa-exclamation-triangle me-1"></i>
+                This will remove {{shifts.length}} existing shift(s) and replace them with the pattern's schedule.
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" (click)="modal.dismiss()">Cancel</button>
+        <button type="button" class="btn btn-primary" [disabled]="!selectedPatternId || isApplyingPattern"
+            (click)="applyPattern(modal)">
+            <span *ngIf="isApplyingPattern" class="spinner-border spinner-border-sm me-1"></span>
+            Apply Pattern
+        </button>
+    </div>
+</ng-template>

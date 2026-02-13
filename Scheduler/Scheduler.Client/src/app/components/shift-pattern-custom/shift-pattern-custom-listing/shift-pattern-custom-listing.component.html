@@ -1,0 +1,39 @@
+<div class="pattern-listing-container">
+
+    <!-- Premium Header -->
+    <div class="pattern-header">
+        <div class="header-content">
+            <div class="header-title-row">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="header-icon">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                    <div>
+                        <h2 class="mb-0">Shift Patterns</h2>
+                        <p class="text-white-50 mb-0 small">Manage reusable shift templates</p>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge count-badge">{{totalCount}} Total</span>
+                    <span class="badge count-badge count-badge-active">{{activeCount}} Active</span>
+                    <app-shift-pattern-custom-add-edit [showAddButton]="true" [navigateToDetailsAfterAdd]="true"
+                        (patternChanged)="onPatternChanged()"></app-shift-pattern-custom-add-edit>
+                </div>
+            </div>
+
+            <!-- Search -->
+            <div class="search-row mt-3">
+                <div class="search-wrapper">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="form-control search-input" placeholder="Search patterns…"
+                        [(ngModel)]="searchText" (ngModelChange)="onSearchChange()" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="pattern-body">
+        <app-shift-pattern-custom-table #tableComponent></app-shift-pattern-custom-table>
+    </div>
+</div>

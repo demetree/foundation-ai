@@ -1,7 +1,11 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using System;
+using System.Configuration;
 using System.IO;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using static Foundation.DatabaseUtility.DBContextExtensions;
 
 namespace Foundation.BMC.Database
@@ -39,6 +43,7 @@ namespace Foundation.BMC.Database
         public BMCContext(int commandTimeoutSeconds)
         {
             this.commandTimeoutSeconds = commandTimeoutSeconds;
+            this.ChangeTracker.LazyLoadingEnabled = false;
         }
 
 
@@ -47,7 +52,7 @@ namespace Foundation.BMC.Database
         {
             if (!optionsBuilder.IsConfigured)
             {
-                var builder = new ConfigurationBuilder()
+                IConfigurationBuilder builder = new ConfigurationBuilder()
                .SetBasePath(Directory.GetCurrentDirectory())
                .AddJsonFile("appsettings.json");
 
@@ -59,7 +64,7 @@ namespace Foundation.BMC.Database
                 }
 
                 IConfigurationRoot configuration = builder.Build();
-                var connectionString = configuration.GetConnectionString("BMC");
+                string connectionString = configuration.GetConnectionString("BMC");
                 optionsBuilder.UseSqlServer(connectionString)
                               .UseLazyLoadingProxies(false);
 
@@ -75,6 +80,42 @@ namespace Foundation.BMC.Database
             }
 
             return;
+        }
+
+
+
+        // Custom constructor for SQL logging with custom ILogger to write to
+        public BMCContext(ILogger logger, LogLevel level)
+            : base(CreateOptionsWithDebugLogging(logger, level))
+        {
+        }
+
+
+
+        private static DbContextOptions<BMCContext> CreateOptionsWithDebugLogging(ILogger logger, LogLevel level)
+        {
+            var optionsBuilder = new DbContextOptionsBuilder<BMCContext>();
+
+            var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
+                                                    .AddJsonFile("appsettings.json");
+
+            // Check for a custom or standard environment variable
+            if (Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") == "Development" ||
+                Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+            {
+                builder.AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: true);
+            }
+
+            builder.Build();
+
+            IConfigurationRoot configuration = builder.Build();
+            var connectionString = configuration.GetConnectionString("BMC");
+
+            optionsBuilder.UseSqlServer(connectionString)
+                          .EnableSensitiveDataLogging()
+                          .LogTo((message) => logger.LogInformation(message), level);       // all messages logged to our logger at the info level
+
+            return optionsBuilder.Options;
         }
 
 

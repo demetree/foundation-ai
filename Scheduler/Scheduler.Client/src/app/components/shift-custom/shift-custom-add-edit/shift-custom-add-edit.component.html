@@ -1,0 +1,4 @@
+<div class="add-shift" *ngIf="showAddButton == true">
+    <button type="button" class="btn btn-sm btn-add-shift me-2" (click)="openModal()" ngbTooltip="Add Shift"
+        *ngIf="userIsSchedulerResourceShiftWriter() == true" placement="top" style="min-width: 75px;">Add</button>
+</div>

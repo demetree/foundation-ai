@@ -1,0 +1,128 @@
+// Variables
+$gradient-shift: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+$glass-bg: rgba(255, 255, 255, 0.15);
+$glass-border: rgba(255, 255, 255, 0.2);
+$glass-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+/* Page Container */
+.shift-details-container {
+    background-color: #f4f6f9;
+    min-height: 100%;
+}
+
+/* Premium Header */
+.premium-header {
+    background: $gradient-shift;
+    border-radius: 16px;
+    overflow: hidden;
+    color: white;
+
+    .card-body {
+        padding: 2rem;
+    }
+
+    h3 {
+        font-weight: 700;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .text-white-50 {
+        color: rgba(255, 255, 255, 0.7) !important;
+    }
+
+    a.text-white {
+        color: white;
+        text-decoration: underline;
+
+        &:hover {
+            color: rgba(255, 255, 255, 0.9);
+        }
+    }
+
+    .btn-glass {
+        background: $glass-bg;
+        border: 1px solid $glass-border;
+        color: white;
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        box-shadow: $glass-shadow;
+        backdrop-filter: blur(10px);
+        transition: all 0.2s ease;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+    }
+}
+
+// Day Badges
+.day-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 6px;
+    color: white;
+    font-weight: 600;
+    font-size: 0.75rem;
+}
+
+.day-badge-xl {
+    width: 3.5rem;
+    height: 3.5rem;
+    font-size: 1.1rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Nav Tabs */
+.nav-tabs {
+    border-bottom: 2px solid #e9ecef;
+    margin-bottom: 1.5rem;
+
+    .nav-link {
+        color: #495057;
+        border: none;
+        border-bottom: 2px solid transparent;
+        padding: 1rem 1.5rem;
+        font-weight: 500;
+        transition: all 0.2s;
+
+        &:hover {
+            border-color: transparent;
+            color: #343a40;
+            background: rgba(0, 0, 0, 0.02);
+        }
+
+        &.active {
+            color: #343a40;
+            background: transparent;
+            border-bottom: 3px solid #6366f1;
+            font-weight: 700;
+        }
+    }
+}
+
+/* Detail labels */
+.detail-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+}
+
+.detail-value {
+    font-size: 0.95rem;
+}
+
+.clickable {
+    cursor: pointer;
+    transition: opacity 0.2s;
+
+    &:hover {
+        opacity: 0.8;
+    }
+}

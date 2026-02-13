@@ -1,0 +1,24 @@
+.btn-add-pattern {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+
+    &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+        color: #fff;
+    }
+}
+
+.pattern-modal-header {
+    background: linear-gradient(135deg, #4338ca, #6366f1);
+    color: #fff;
+    border-radius: 0;
+}
+
+.pattern-modal-body {
+    padding: 1.5rem;
+}

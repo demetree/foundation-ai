@@ -93,6 +93,24 @@
       </a>
     </li>
 
+    <li class="nav-item">
+      <a routerLink="/resourceshifts" routerLinkActive="active" class="nav-link text-white"
+        [ngbTooltip]="!isExpanded ? 'Resource Shifts' : null" triggers="hover" #tShifts="ngbTooltip"
+        (click)="tShifts.close()" placement="right" tooltipClass="sidebar-tip">
+        <i class="fa-solid fa-clock"></i>
+        <span class="label px-2">Shifts</span>
+      </a>
+    </li>
+
+    <li class="nav-item">
+      <a routerLink="/shiftpatterns" routerLinkActive="active" class="nav-link text-white"
+        [ngbTooltip]="!isExpanded ? 'Shift Patterns' : null" triggers="hover" #tShiftPatterns="ngbTooltip"
+        (click)="tShiftPatterns.close()" placement="right" tooltipClass="sidebar-tip">
+        <i class="fa-solid fa-layer-group"></i>
+        <span class="label px-2">Shift Patterns</span>
+      </a>
+    </li>
+
     <!-- Only show offices in the side bar if there is at least one configured -->
     <li class="nav-item" *ngIf="officeCount$ != null && ((officeCount$ | async) ?? 0) > 0">
       <a routerLink="/offices" routerLinkActive="active" class="nav-link text-white"

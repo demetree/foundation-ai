@@ -1284,7 +1284,7 @@ CREATE INDEX [I_ChargeTypeChangeHistory_tenantGuid_chargeTypeId] ON [Scheduler].
 GO
 
 
--- Tenant specific master list of tags.
+-- List of tags
 CREATE TABLE [Scheduler].[Tag]
 (
 	[id] INT IDENTITY PRIMARY KEY NOT NULL,
@@ -1723,7 +1723,7 @@ INSERT INTO [Scheduler].[VolunteerStatus] ( [name], [description], [sequence], [
 GO
 
 
--- Master list of office types.  Used for categorizing offices.  Not tenant specific
+-- the contact types
 CREATE TABLE [Scheduler].[ContactType]
 (
 	[id] INT IDENTITY PRIMARY KEY NOT NULL,
@@ -2000,7 +2000,7 @@ CREATE INDEX [I_ContactTagChangeHistory_tenantGuid_contactTagId] ON [Scheduler].
 GO
 
 
--- Master list of office types.  Used for categorizing offices.  Not tenant specific
+-- Master list of relationship types
 CREATE TABLE [Scheduler].[RelationshipType]
 (
 	[id] INT IDENTITY PRIMARY KEY NOT NULL,
@@ -2156,7 +2156,7 @@ CREATE INDEX [I_ContactContactChangeHistory_tenantGuid_contactContactId] ON [Sch
 GO
 
 
--- Master list of office types.  Used for categorizing offices.  Not tenant specific
+-- Master list of office types
 CREATE TABLE [Scheduler].[OfficeType]
 (
 	[id] INT IDENTITY PRIMARY KEY NOT NULL,
@@ -4842,7 +4842,7 @@ GO
 
 
 /*
-Core scheduling entity – any planned activity with a defined time range.  This managest recurrences with the 'Detachment Model'
+Core scheduling entity – any planned activity with a defined time range.  This manages recurrences with the 'Detachment Model'
 
 How it works:
 The Master: You create the Series (Event A). It has the RecurrenceRule.

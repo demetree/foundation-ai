@@ -1,0 +1,66 @@
+<div class="add-pattern" *ngIf="showAddButton == true">
+    <button type="button" class="btn btn-sm btn-add-pattern me-2" (click)="openModal()" ngbTooltip="Add Shift Pattern"
+        *ngIf="userIsWriter()" placement="top" style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #patternModal let-modal>
+    <div class="modal-header pattern-modal-header">
+        <h5 class="modal-title mb-0" ngbTooltip="{{objectGuid}}">
+            {{ isEditMode ? 'Edit Shift Pattern' : 'Add Shift Pattern' }}
+        </h5>
+        <button type="button" class="btn btn-sm btn-close btn-close-white" (click)="closeModal()"></button>
+    </div>
+    <div class="modal-body pattern-modal-body">
+        <form [formGroup]="patternForm" (ngSubmit)="submitForm()">
+
+            <div class="form-group mb-3">
+                <label for="patternName" class="form-label"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="patternName" formControlName="name" placeholder="e.g. Day Shift, Night Rotation"
+                    class="form-control"
+                    [class.is-invalid]="patternForm.get('name')?.invalid && patternForm.get('name')?.touched" />
+                <div class="invalid-feedback">Name is required</div>
+            </div>
+
+            <div class="form-group mb-3">
+                <label for="patternDescription" class="form-label">Description</label>
+                <textarea id="patternDescription" formControlName="description" placeholder="Optional description"
+                    class="form-control" rows="2"></textarea>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-8">
+                    <label for="patternTimeZone" class="form-label"><span class="text-danger">*</span>Time Zone</label>
+                    <select id="patternTimeZone" formControlName="timeZoneId" class="form-select">
+                        <option [ngValue]="null">Select Time Zone</option>
+                        <option *ngFor="let tz of timeZones$ | async" [ngValue]="tz.id">{{tz.name}}</option>
+                    </select>
+                    <div *ngIf="patternForm.get('timeZoneId')?.invalid && patternForm.get('timeZoneId')?.touched"
+                        class="text-danger small mt-1">Time Zone is required</div>
+                </div>
+                <div class="col-md-4">
+                    <label for="patternColor" class="form-label">Color</label>
+                    <div class="d-flex align-items-center gap-2">
+                        <input type="color" id="patternColor" formControlName="color"
+                            class="form-control form-control-color" style="width: 48px; height: 38px;" />
+                        <input type="text" formControlName="color" class="form-control form-control-sm"
+                            style="max-width: 100px;" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-check form-switch mb-3">
+                <input class="form-check-input" type="checkbox" id="patternActive" formControlName="active" />
+                <label class="form-check-label" for="patternActive">Active</label>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 mt-4">
+                <button type="button" class="btn btn-outline-secondary" (click)="closeModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary" [disabled]="isSaving || patternForm.invalid">
+                    <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-1"></span>
+                    {{ isEditMode ? 'Update' : 'Create' }}
+                </button>
+            </div>
+        </form>
+    </div>
+</ng-template>

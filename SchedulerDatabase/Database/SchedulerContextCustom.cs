@@ -1,11 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Configuration;
+using System.IO;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Configuration;
-using System.IO;
 using static Foundation.DatabaseUtility.DBContextExtensions;
 
 namespace Foundation.Scheduler.Database;
@@ -47,7 +47,7 @@ public partial class SchedulerContext : DbContext
         {
             optionsBuilder.AddInterceptors(UtcDateTimeInterceptor.Instance);
 
-            var builder = new ConfigurationBuilder()
+            IConfigurationBuilder builder = new ConfigurationBuilder()
                .SetBasePath(Directory.GetCurrentDirectory())
                .AddJsonFile("appsettings.json");
 
@@ -59,7 +59,7 @@ public partial class SchedulerContext : DbContext
             }
            
             IConfigurationRoot configuration = builder.Build();
-            var connectionString = configuration.GetConnectionString("Scheduler");
+            string connectionString = configuration.GetConnectionString("Scheduler");
             optionsBuilder.UseSqlServer(connectionString)
                           .UseLazyLoadingProxies(false)
                           .AddInterceptors(UtcDateTimeInterceptor.Instance);

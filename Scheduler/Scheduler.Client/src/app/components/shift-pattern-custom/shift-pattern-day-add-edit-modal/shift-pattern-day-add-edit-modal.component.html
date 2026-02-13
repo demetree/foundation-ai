@@ -1,0 +1,49 @@
+<div class="modal-header day-modal-header">
+    <h5 class="modal-title mb-0">
+        <i class="fas fa-calendar-day me-2"></i>
+        {{ isEditMode ? 'Edit Day' : 'Add Day' }}
+    </h5>
+    <button type="button" class="btn btn-sm btn-close btn-close-white" (click)="cancel()"></button>
+</div>
+
+<div class="modal-body">
+    <form [formGroup]="dayForm" (ngSubmit)="submitForm()">
+
+        <div class="form-group mb-3">
+            <label for="dayOfWeek" class="form-label"><span class="text-danger">*</span>Day of Week</label>
+            <select id="dayOfWeek" formControlName="dayOfWeek" class="form-select">
+                <option *ngFor="let d of daysOfWeek" [ngValue]="d.value">{{d.label}}</option>
+            </select>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-6">
+                <label for="startTime" class="form-label"><span class="text-danger">*</span>Start Time</label>
+                <input type="time" id="startTime" formControlName="startTime" class="form-control" />
+            </div>
+            <div class="col-6">
+                <label for="hours" class="form-label"><span class="text-danger">*</span>Hours</label>
+                <input type="number" id="hours" formControlName="hours" class="form-control" min="0.25" max="24"
+                    step="0.25" />
+                <div *ngIf="dayForm.get('hours')?.invalid && dayForm.get('hours')?.touched"
+                    class="text-danger small mt-1">
+                    Hours must be between 0.25 and 24
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group mb-3">
+            <label for="dayLabel" class="form-label">Label</label>
+            <input type="text" id="dayLabel" formControlName="label" placeholder="e.g. Morning Shift"
+                class="form-control" />
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 mt-4">
+            <button type="button" class="btn btn-outline-secondary" (click)="cancel()">Cancel</button>
+            <button type="submit" class="btn btn-primary" [disabled]="isSaving || dayForm.invalid">
+                <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-1"></span>
+                {{ isEditMode ? 'Update' : 'Add' }}
+            </button>
+        </div>
+    </form>
+</div>

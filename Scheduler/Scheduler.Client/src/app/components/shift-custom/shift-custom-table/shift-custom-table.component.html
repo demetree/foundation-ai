@@ -1,0 +1,162 @@
+<app-shift-custom-add-edit [showAddButton]="false"></app-shift-custom-add-edit>
+<div class="row" *ngIf="userIsSchedulerResourceShiftReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+        <!-- Virtual Scrolling Table for Desktop -->
+        <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+            <!-- Fixed Header -->
+            <div class="table-header-fixed">
+                <table class="custom-table mb-0">
+                    <thead>
+                        <tr>
+                            <th class="header-action-button" style="width: 1rem;"
+                                *ngIf="userIsSchedulerResourceShiftWriter()"></th>
+                            <th class="header-action-button" style="width: 1rem;"
+                                *ngIf="userIsSchedulerResourceShiftWriter()"></th>
+
+                            <th *ngFor="let col of columns" class="sortable" scope="col" (click)="sortBy(col.key)"
+                                [style.width]="col.width || 'auto'">
+                                {{ col.label }}
+                                <span *ngIf="sortColumn === col.key"
+                                    [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                                </span>
+                            </th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+
+            <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+                <table class="custom-table mb-0">
+                    <tbody>
+                        <tr *cdkVirtualFor="let shift of filteredShifts; trackBy: getShiftId" [ngClass]="{
+                                'row-inactive': shift.active == false,
+                                'row-deleted': shift.deleted == true
+                            }">
+
+                            <!-- Edit -->
+                            <td class="header-action-button" *ngIf="userIsSchedulerResourceShiftWriter()">
+                                <button class="btn btn-sm" (click)="handleEdit(shift)" ngbTooltip="Edit"
+                                    placement="top">
+                                    <i class="fa fa-pen"></i>
+                                </button>
+                            </td>
+                            <!-- Delete / Undelete -->
+                            <td class="header-action-button" *ngIf="userIsSchedulerResourceShiftWriter()">
+                                <button class="btn btn-sm" (click)="handleDelete(shift)" ngbTooltip="Delete"
+                                    placement="top" *ngIf="shift.deleted == false">
+                                    <i class="fa fa-trash"></i>
+                                </button>
+                                <button class="btn btn-sm" (click)="handleUndelete(shift)" ngbTooltip="Undelete"
+                                    placement="top" *ngIf="shift.deleted == true">
+                                    <i class="fa fa-trash-arrow-up"></i>
+                                </button>
+                            </td>
+
+                            <!-- Data cells -->
+                            <td *ngFor="let col of columns" class="text-truncate" [style.width]="col.width || 'auto'">
+                                <ng-container [ngSwitch]="col.template">
+
+                                    <!-- Resource link -->
+                                    <a *ngSwitchCase="'link'" [routerLink]="['/resource', shift.resourceId]"
+                                        class="btn btn-link text-left p-0" ngbTooltip="Open Resource details">
+                                        {{ getNestedValue(shift, col.key) }}
+                                    </a>
+
+                                    <!-- Day badge -->
+                                    <ng-container *ngSwitchCase="'badge'">
+                                        <span class="day-badge" [style.background-color]="dayColors[getDayNum(shift)]">
+                                            {{ dayAbbrevs[getDayNum(shift)] }}
+                                        </span>
+                                        <span class="ms-1 d-none d-lg-inline">{{ dayNames[getDayNum(shift)] }}</span>
+                                    </ng-container>
+
+                                    <!-- Time -->
+                                    <span *ngSwitchCase="'time'">
+                                        {{ formatTime(getNestedValue(shift, col.key)) }}
+                                    </span>
+
+                                    <!-- Duration -->
+                                    <span *ngSwitchCase="'duration'">
+                                        {{ formatDuration(getNestedValue(shift, col.key)) }}
+                                    </span>
+
+                                    <!-- Default text -->
+                                    <span *ngSwitchDefault>
+                                        {{ getNestedValue(shift, col.key) }}
+                                    </span>
+
+                                </ng-container>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </cdk-virtual-scroll-viewport>
+        </div>
+
+        <!-- Cards for Mobile -->
+        <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="200" class="mobile-viewport" minBufferPx="600"
+            maxBufferPx="1200">
+            <div *cdkVirtualFor="let shift of filteredShifts; trackBy: getShiftId" class="card my-2 shadow-sm"
+                [ngClass]="{
+                    'row-inactive': shift.active == false,
+                    'row-deleted': shift.deleted == true
+                }">
+
+                <!-- Card Header -->
+                <div class="card-header py-3 d-flex align-items-center gap-2">
+                    <span class="day-badge day-badge-lg" [style.background-color]="dayColors[getDayNum(shift)]">
+                        {{ dayAbbrevs[getDayNum(shift)] }}
+                    </span>
+                    <div>
+                        <strong class="d-block">{{ dayNames[getDayNum(shift)] }}</strong>
+                        <small class="text-muted">
+                            <a [routerLink]="['/resource', shift.resourceId]" class="text-primary">
+                                {{ shift.resource?.name }}
+                            </a>
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Card Body -->
+                <div class="card-body small">
+                    <div class="row g-2">
+                        <div class="col-5 text-muted">Start Time:</div>
+                        <div class="col-7 text-end fw-medium">{{ formatTime(shift.startTime) }}</div>
+
+                        <div class="col-5 text-muted">Duration:</div>
+                        <div class="col-7 text-end fw-medium">{{ formatDuration(shift.hours) }}</div>
+
+                        <div class="col-5 text-muted" *ngIf="shift.label">Label:</div>
+                        <div class="col-7 text-end fw-medium" *ngIf="shift.label">{{ shift.label }}</div>
+
+                        <div class="col-5 text-muted" *ngIf="shift.timeZone?.name">Time Zone:</div>
+                        <div class="col-7 text-end fw-medium" *ngIf="shift.timeZone?.name">{{ shift.timeZone?.name }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="card-footer bg-transparent border-0 pt-0">
+                    <div class="btn-group w-100" role="group">
+                        <button class="btn btn-sm btn-outline-primary flex-fill"
+                            [routerLink]="['/resourceshift', shift.id]" ngbTooltip="View">
+                            <i class="fa fa-magnifying-glass"></i> View
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(shift)"
+                            *ngIf="userIsSchedulerResourceShiftWriter()" ngbTooltip="Edit">
+                            <i class="fa fa-pen"></i> Edit
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(shift)"
+                            *ngIf="userIsSchedulerResourceShiftWriter() && shift.deleted == false" ngbTooltip="Delete">
+                            <i class="fa fa-trash"></i> Delete
+                        </button>
+                        <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(shift)"
+                            *ngIf="userIsSchedulerResourceShiftWriter() && shift.deleted == true" ngbTooltip="Undelete">
+                            <i class="fa fa-trash-arrow-up"></i> Restore
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </cdk-virtual-scroll-viewport>
+    </div>
+</div>

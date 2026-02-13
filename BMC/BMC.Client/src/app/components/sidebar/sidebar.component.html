@@ -1,0 +1,30 @@
+<aside class="bmc-sidebar" [class.collapsed]="isCollapsed">
+
+    <!-- Toggle Button -->
+    <button class="sidebar-toggle" (click)="toggle()" [title]="isCollapsed ? 'Expand' : 'Collapse'">
+        <i class="fas" [class.fa-chevron-left]="!isCollapsed" [class.fa-chevron-right]="isCollapsed"></i>
+    </button>
+
+    <!-- Navigation -->
+    <nav class="sidebar-nav">
+        <a *ngFor="let item of navItems; let i = index" class="nav-item" [routerLink]="item.route"
+            [class.active]="isActive(item.route)" [title]="item.label" [style.animation-delay]="(i * 50) + 'ms'">
+
+            <span class="nav-icon">
+                <i [class]="item.icon"></i>
+            </span>
+
+            <span class="nav-label" *ngIf="!isCollapsed">{{ item.label }}</span>
+
+            <span class="nav-badge" *ngIf="item.badge && !isCollapsed">{{ item.badge }}</span>
+        </a>
+    </nav>
+
+    <!-- Bottom Section -->
+    <div class="sidebar-footer" *ngIf="!isCollapsed">
+        <div class="version-info">
+            <span class="version-label">BMC</span>
+            <span class="version-number">v1.0.0</span>
+        </div>
+    </div>
+</aside>

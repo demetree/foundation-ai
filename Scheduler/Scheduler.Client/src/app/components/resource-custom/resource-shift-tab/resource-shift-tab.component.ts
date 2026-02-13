@@ -10,12 +10,15 @@
  *
  * Data loaded imperatively when tab becomes active via resource.ResourceShifts.
  */
-import { Component, Input, Output, OnChanges, SimpleChanges } from '@angular/core';
-import { Subject } from 'rxjs';
-import { ResourceData } from '../../../scheduler-data-services/resource.service';
+import { Component, Input, Output, OnChanges, SimpleChanges, ViewChild, TemplateRef } from '@angular/core';
+import { Subject, forkJoin } from 'rxjs';
+import { ResourceData, ResourceService, ResourceSubmitData } from '../../../scheduler-data-services/resource.service';
 import { ResourceShiftService, ResourceShiftData, ResourceShiftSubmitData } from '../../../scheduler-data-services/resource-shift.service';
+import { ShiftPatternService, ShiftPatternData } from '../../../scheduler-data-services/shift-pattern.service';
+import { ShiftPatternDayService, ShiftPatternDayData } from '../../../scheduler-data-services/shift-pattern-day.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ResourceShiftAddEditModalComponent } from '../resource-shift-add-edit-modal/resource-shift-add-edit-modal.component';
+import { ConfirmationService } from '../../../services/confirmation-service';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 
 @Component({
@@ -25,6 +28,8 @@ import { AlertService, MessageSeverity } from '../../../services/alert.service';
 })
 export class ResourceShiftTabComponent implements OnChanges {
 
+    @ViewChild('applyPatternModal') applyPatternModal!: TemplateRef<any>;
+
     @Input() resource!: ResourceData | null;
 
     @Output() resourceShiftChanged = new Subject<ResourceShiftData>();
@@ -32,6 +37,13 @@ export class ResourceShiftTabComponent implements OnChanges {
     public shifts: ResourceShiftData[] | null = null;
     public isLoading = true;
     public error: string | null = null;
+
+    // Apply Pattern state
+    public shiftPatterns: ShiftPatternData[] = [];
+    public selectedPatternId: number | null = null;
+    public applyMode: 'replace' | 'merge' = 'replace';
+    public isApplyingPattern = false;
+    public isPatternsLoading = false;
 
     // Days ordered Monday-first for the timetable
     public readonly dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -62,6 +74,10 @@ export class ResourceShiftTabComponent implements OnChanges {
     constructor(
         private modalService: NgbModal,
         private shiftService: ResourceShiftService,
+        private patternService: ShiftPatternService,
+        private patternDayService: ShiftPatternDayService,
+        private resourceService: ResourceService,
+        private confirmationService: ConfirmationService,
         private alertService: AlertService
     ) { }
 
@@ -293,6 +309,166 @@ export class ResourceShiftTabComponent implements OnChanges {
             },
             error: (err) => {
                 this.alertService.showMessage('Failed to delete shift', err.message || 'Unknown error', MessageSeverity.error);
+            }
+        });
+    }
+
+
+    // =========================================================================
+    // Apply Shift Pattern
+    // =========================================================================
+
+    /**
+     * Opens the Apply Shift Pattern modal.
+     */
+    public openApplyPatternModal(): void {
+        if (!this.resource) return;
+
+        this.selectedPatternId = null;
+        this.applyMode = 'replace';
+        this.isPatternsLoading = true;
+
+        this.patternService.GetShiftPatternList({ active: true })
+            .subscribe({
+                next: (patterns) => {
+                    this.shiftPatterns = patterns;
+                    this.isPatternsLoading = false;
+                },
+                error: () => { this.isPatternsLoading = false; }
+            });
+
+        this.modalService.open(this.applyPatternModal, {
+            size: 'md',
+            backdrop: 'static'
+        });
+    }
+
+    /**
+     * Get the currently selected pattern.
+     */
+    public get selectedPattern(): ShiftPatternData | null {
+        if (!this.selectedPatternId) return null;
+        return this.shiftPatterns.find(p => Number(p.id) === this.selectedPatternId) || null;
+    }
+
+    /**
+     * Apply the selected shift pattern to this resource.
+     * - In 'replace' mode: deletes existing shifts first, then creates new ones.
+     * - In 'merge' mode: creates new shifts without deleting existing ones.
+     */
+    public applyPattern(modal: any): void {
+        if (!this.resource || !this.selectedPatternId || this.isApplyingPattern) return;
+
+        this.isApplyingPattern = true;
+        const patternId = this.selectedPatternId;
+
+        // 1. Fetch the pattern days
+        this.patternService.GetShiftPatternDaysForShiftPattern(patternId)
+            .subscribe({
+                next: (patternDays) => {
+                    if (patternDays.length === 0) {
+                        this.alertService.showMessage('Pattern has no days defined', '', MessageSeverity.warn);
+                        this.isApplyingPattern = false;
+                        return;
+                    }
+
+                    if (this.applyMode === 'replace' && this.shifts && this.shifts.length > 0) {
+                        // Soft-delete existing shifts first
+                        const deleteOps = this.shifts.map(s => {
+                            const submitData: ResourceShiftSubmitData = {
+                                id: s.id,
+                                resourceId: s.resourceId,
+                                dayOfWeek: s.dayOfWeek,
+                                timeZoneId: s.timeZoneId,
+                                startTime: s.startTime,
+                                hours: Number(s.hours),
+                                label: s.label,
+                                versionNumber: s.versionNumber,
+                                active: false,
+                                deleted: true
+                            };
+                            return this.shiftService.PutResourceShift(Number(s.id), submitData);
+                        });
+
+                        forkJoin(deleteOps).subscribe({
+                            next: () => this.createShiftsFromPattern(patternDays, patternId, modal),
+                            error: (err) => {
+                                this.alertService.showMessage('Error removing existing shifts', err?.message || '', MessageSeverity.error);
+                                this.isApplyingPattern = false;
+                            }
+                        });
+                    } else {
+                        // Merge mode or no existing shifts
+                        this.createShiftsFromPattern(patternDays, patternId, modal);
+                    }
+                },
+                error: (err) => {
+                    this.alertService.showMessage('Error loading pattern days', err?.message || '', MessageSeverity.error);
+                    this.isApplyingPattern = false;
+                }
+            });
+    }
+
+    /**
+     * Bulk-create ResourceShift records from pattern days and update the resource's shiftPatternId.
+     */
+    private createShiftsFromPattern(days: ShiftPatternDayData[], patternId: number, modal: any): void {
+        if (!this.resource) return;
+
+        const createOps = days.map(d => {
+            const submitData: ResourceShiftSubmitData = {
+                id: 0,
+                resourceId: this.resource!.id,
+                dayOfWeek: d.dayOfWeek,
+                timeZoneId: this.resource!.timeZoneId,
+                startTime: d.startTime,
+                hours: Number(d.hours),
+                label: d.label,
+                versionNumber: 0,
+                active: true,
+                deleted: false
+            };
+            return this.shiftService.PostResourceShift(submitData);
+        });
+
+        forkJoin(createOps).subscribe({
+            next: () => {
+                // Update the resource's shiftPatternId
+                this.updateResourceShiftPatternId(patternId, modal);
+            },
+            error: (err) => {
+                this.alertService.showMessage('Error creating shifts', err?.message || '', MessageSeverity.error);
+                this.isApplyingPattern = false;
+            }
+        });
+    }
+
+    /**
+     * Update the resource record to set the shiftPatternId FK.
+     */
+    private updateResourceShiftPatternId(patternId: number, modal: any): void {
+        if (!this.resource) return;
+
+        const submitData: ResourceSubmitData = this.resourceService.ConvertToResourceSubmitData(this.resource);
+        submitData.shiftPatternId = patternId;
+
+        this.resourceService.PutResource(Number(this.resource.id), submitData).subscribe({
+            next: () => {
+                this.resourceService.ClearAllCaches();
+                this.shiftService.ClearAllCaches();
+                this.resource?.ClearResourceShiftsCache();
+                this.alertService.showMessage(
+                    `Shift pattern applied successfully (${this.applyMode === 'replace' ? 'replaced' : 'merged'})`,
+                    '', MessageSeverity.success);
+                this.isApplyingPattern = false;
+                modal.close();
+                this.loadShifts();
+            },
+            error: (err) => {
+                this.alertService.showMessage('Shifts created but failed to update resource', err?.message || '', MessageSeverity.warn);
+                this.isApplyingPattern = false;
+                modal.close();
+                this.loadShifts();
             }
         });
     }

@@ -1,0 +1,30 @@
+<div id="pre-bootstrap" *ngIf="!isAppLoaded" class="prebootStep prebootShow">
+    <div class="pre-load-navbar-simulator"></div>
+    <div class="messaging"></div>
+</div>
+
+<ngx-toasta></ngx-toasta>
+
+<!-- Desktop Layout -->
+<div *ngIf="!isMobile && isAppLoaded" class="app-layout">
+    <app-header [isUserLoggedIn]="isUserLoggedIn" (invokeLogout)="logout()"></app-header>
+
+    <div class="app-body">
+        <app-sidebar *ngIf="isUserLoggedIn" [isCollapsed]="isSidebarCollapsed"
+            (toggleCollapse)="onSidebarToggle($event)">
+        </app-sidebar>
+
+        <main class="app-main" [class.sidebar-expanded]="isUserLoggedIn && !isSidebarCollapsed"
+            [class.sidebar-collapsed]="isUserLoggedIn && isSidebarCollapsed" [class.no-sidebar]="!isUserLoggedIn">
+            <router-outlet></router-outlet>
+        </main>
+    </div>
+</div>
+
+<!-- Mobile Layout -->
+<div *ngIf="isMobile && isAppLoaded" class="app-layout">
+    <app-header [isUserLoggedIn]="isUserLoggedIn" (invokeLogout)="logout()"></app-header>
+    <main class="app-main-mobile">
+        <router-outlet></router-outlet>
+    </main>
+</div>

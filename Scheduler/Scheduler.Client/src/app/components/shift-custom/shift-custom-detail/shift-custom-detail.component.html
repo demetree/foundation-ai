@@ -1,0 +1,207 @@
+<app-shift-custom-add-edit [showAddButton]="false"
+    (resourceShiftChanged)="onShiftChanged()"></app-shift-custom-add-edit>
+
+<div class="shift-details-container p-3" *ngIf="!isLoading && !error">
+
+    <!-- ===== Premium Header ===== -->
+    <div class="card mb-3 premium-header shadow-lg border-0">
+        <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Back Button -->
+                    <button class="btn btn-sm btn-glass" (click)="goBack()" ngbTooltip="Go Back" *ngIf="canGoBack()">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+
+                    <!-- Day Badge -->
+                    <span class="day-badge day-badge-xl" [style.background-color]="dayColors[getDayNum()]">
+                        {{ dayAbbrevs[getDayNum()] }}
+                    </span>
+
+                    <!-- Title area -->
+                    <div>
+                        <h3 class="mb-0 fw-bold text-white">{{ dayNames[getDayNum()] }} Shift</h3>
+                        <div class="text-white-50 mt-1">
+                            <a class="text-white clickable" (click)="navigateToResource()">
+                                <i class="fa fa-user me-1"></i>{{ shift?.resource?.name || 'Resource #' +
+                                shift?.resourceId }}
+                            </a>
+                            <span class="mx-2">•</span>
+                            <span>
+                                <i class="fa fa-clock me-1"></i>
+                                {{ formatTime(shift?.startTime) }} → {{ formatEndTime() }}
+                                <span class="badge bg-white bg-opacity-25 ms-1">{{ formatDuration(shift?.hours)
+                                    }}</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="d-flex gap-2" *ngIf="userIsSchedulerResourceShiftWriter()">
+                    <button class="btn btn-sm btn-glass" (click)="openEditModal()" ngbTooltip="Edit Shift">
+                        <i class="fa fa-pen me-1"></i> Edit
+                    </button>
+                    <button class="btn btn-sm btn-glass" (click)="loadData()" ngbTooltip="Refresh">
+                        <i class="fa fa-sync"></i>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ===== Tabs ===== -->
+    <ul ngbNav #nav="ngbNav" [activeId]="activeTab" (navChange)="onTabChange($event)" class="nav-tabs">
+
+        <!-- Overview Tab -->
+        <li ngbNavItem="overview">
+            <a ngbNavLink>
+                <i class="fa-solid fa-info-circle me-1"></i> Overview
+            </a>
+            <ng-template ngbNavContent>
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="row g-4">
+
+                            <!-- Resource -->
+                            <div class="col-md-6">
+                                <div class="detail-label text-muted small">Resource</div>
+                                <div class="detail-value fw-medium">
+                                    <a [routerLink]="['/resource', shift?.resourceId]" class="text-primary">
+                                        {{ shift?.resource?.name || '—' }}
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Day -->
+                            <div class="col-md-6">
+                                <div class="detail-label text-muted small">Day of Week</div>
+                                <div class="detail-value fw-medium d-flex align-items-center gap-2">
+                                    <span class="day-badge" [style.background-color]="dayColors[getDayNum()]">
+                                        {{ dayAbbrevs[getDayNum()] }}
+                                    </span>
+                                    {{ dayNames[getDayNum()] }}
+                                </div>
+                            </div>
+
+                            <!-- Start Time -->
+                            <div class="col-md-6">
+                                <div class="detail-label text-muted small">Start Time</div>
+                                <div class="detail-value fw-medium">
+                                    <i class="fa fa-clock me-1 text-muted"></i>
+                                    {{ formatTime(shift?.startTime) }}
+                                </div>
+                            </div>
+
+                            <!-- Duration / End Time -->
+                            <div class="col-md-6">
+                                <div class="detail-label text-muted small">Duration / End Time</div>
+                                <div class="detail-value fw-medium">
+                                    {{ formatDuration(shift?.hours) }}
+                                    <span class="text-muted ms-1">→ {{ formatEndTime() }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Label -->
+                            <div class="col-md-6" *ngIf="shift?.label">
+                                <div class="detail-label text-muted small">Label</div>
+                                <div class="detail-value fw-medium">{{ shift?.label }}</div>
+                            </div>
+
+                            <!-- Time Zone -->
+                            <div class="col-md-6" *ngIf="shift?.timeZone?.name">
+                                <div class="detail-label text-muted small">Time Zone</div>
+                                <div class="detail-value fw-medium">{{ shift?.timeZone?.name }}</div>
+                            </div>
+
+                            <!-- Status -->
+                            <div class="col-md-6">
+                                <div class="detail-label text-muted small">Status</div>
+                                <div class="detail-value">
+                                    <span class="badge" [ngClass]="shift?.active ? 'bg-success' : 'bg-secondary'">
+                                        {{ shift?.active ? 'Active' : 'Inactive' }}
+                                    </span>
+                                    <span class="badge bg-danger ms-1" *ngIf="shift?.deleted">Deleted</span>
+                                </div>
+                            </div>
+
+                            <!-- Version -->
+                            <div class="col-md-6">
+                                <div class="detail-label text-muted small">Version</div>
+                                <div class="detail-value fw-medium text-muted">{{ shift?.versionNumber }}</div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </ng-template>
+        </li>
+
+        <!-- Change History Tab -->
+        <li ngbNavItem="history">
+            <a ngbNavLink>
+                <i class="fa-solid fa-clock-rotate-left me-1"></i> Change History
+            </a>
+            <ng-template ngbNavContent>
+                <div class="card shadow-sm">
+                    <div class="card-body">
+
+                        <!-- Loading -->
+                        <div class="text-center py-4" *ngIf="isLoadingHistory">
+                            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                        </div>
+
+                        <!-- Empty -->
+                        <div class="text-center py-5 text-muted"
+                            *ngIf="!isLoadingHistory && (!changeHistory || changeHistory.length === 0)">
+                            <i class="fa-solid fa-clock-rotate-left fa-3x mb-3 opacity-50"></i>
+                            <div>No change history available</div>
+                        </div>
+
+                        <!-- History list -->
+                        <div class="list-group list-group-flush" *ngIf="changeHistory && changeHistory.length > 0">
+                            <div class="list-group-item px-0 py-3" *ngFor="let entry of changeHistory">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <div class="fw-semibold">
+                                            {{ entry.timeStamp | date:'yyyy-MM-dd HH:mm:ss' }}
+                                        </div>
+                                        <div class="small text-muted mt-1" *ngIf="entry.userName">
+                                            <i class="fa fa-user me-1"></i> {{ entry.userName }}
+                                        </div>
+                                    </div>
+                                    <span class="badge bg-light text-dark border">v{{ entry.versionNumber }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </ng-template>
+        </li>
+
+    </ul>
+    <div [ngbNavOutlet]="nav"></div>
+
+</div>
+
+<!-- Loading State -->
+<div class="text-center py-5" *ngIf="isLoading">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
+
+<!-- Error State -->
+<div class="p-3" *ngIf="error">
+    <div class="alert alert-danger">
+        <i class="fa-solid fa-exclamation-triangle me-2"></i>
+        {{ error }}
+        <button class="btn btn-sm btn-outline-danger ms-3" [routerLink]="['/resourceshifts']">
+            Back to Shifts
+        </button>
+    </div>
+</div>
