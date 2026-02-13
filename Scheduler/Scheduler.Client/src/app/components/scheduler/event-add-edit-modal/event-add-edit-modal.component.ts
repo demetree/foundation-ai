@@ -4,6 +4,8 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { forkJoin, Subscription, lastValueFrom } from 'rxjs';
 import { ScheduledEventService, ScheduledEventData, ScheduledEventSubmitData } from '../../../scheduler-data-services/scheduled-event.service';
 import { EventResourceAssignmentService, EventResourceAssignmentData, EventResourceAssignmentSubmitData } from '../../../scheduler-data-services/event-resource-assignment.service';
+import { CalendarService, CalendarData } from '../../../scheduler-data-services/calendar.service';
+import { EventCalendarService, EventCalendarData, EventCalendarSubmitData } from '../../../scheduler-data-services/event-calendar.service';
 import { SchedulingTargetService, SchedulingTargetData } from '../../../scheduler-data-services/scheduling-target.service';
 import { ScheduledEventTemplateService, ScheduledEventTemplateData, ScheduledEventTemplateSubmitData } from '../../../scheduler-data-services/scheduled-event-template.service';
 import { CrewService, CrewData } from '../../../scheduler-data-services/crew.service';
@@ -82,6 +84,11 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
   clients: ClientData[] = [];
   bookingSourceTypes: BookingSourceTypeData[] = [];
 
+  // Calendar assignment
+  calendars: CalendarData[] = [];
+  selectedCalendarIds: Set<number> = new Set();
+  existingEventCalendars: EventCalendarData[] = [];
+
   // Recurrence Exceptions
   recurrenceExceptions: RecurrenceExceptionData[] = [];
   newException = { exceptionDateTime: '', movedToDateTime: '', reason: '' };
@@ -143,7 +150,9 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
     private eventQualReqService: ScheduledEventQualificationRequirementService,
     private templateQualReqService: ScheduledEventTemplateQualificationRequirementService,
     private conflictDetectionService: ConflictDetectionService,
-    private inputDialogService: InputDialogService
+    private inputDialogService: InputDialogService,
+    private calendarService: CalendarService,
+    private eventCalendarService: EventCalendarService
   ) {
     this.buildForm();
   }
@@ -230,7 +239,8 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
       offices: this.officeService.GetOfficeList({ active: true }),
       clients: this.clientService.GetClientList({ active: true }),
       bookingSourceTypes: this.bookingSourceTypeService.GetBookingSourceTypeList({ active: true }),
-      qualifications: this.qualificationService.GetQualificationList({ active: true })
+      qualifications: this.qualificationService.GetQualificationList({ active: true }),
+      calendars: this.calendarService.GetCalendarList({ active: true, deleted: false })
     }).subscribe({
       next: (data) => {
         this.templates = data.templates;
@@ -245,11 +255,13 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
         this.clients = data.clients;
         this.bookingSourceTypes = data.bookingSourceTypes;
         this.allQualifications = data.qualifications;
+        this.calendars = data.calendars;
 
         if (this.isEditMode) {
           this.loadExistingAssignments();
           this.loadExistingExceptions();
           this.loadExistingEventQualReqs();
+          this.loadExistingCalendarAssignments();
         }
       },
       error: () => {
@@ -730,6 +742,9 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
       // 7. Handle Event-Specific Qualification Requirements
       await this.handleQualificationReqsSave(Number(savedEvent.id));
 
+      // 8. Handle Calendar Assignments
+      await this.handleCalendarAssignmentsSave(Number(savedEvent.id));
+
       this.saving = false;
       this.saved.emit(true);
       this.activeModal.close(true);
@@ -908,6 +923,94 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
     this.deletedExceptionIds = [];
     this.pendingNewExceptions = [];
   }
+
+
+  // -------------------------------------------------------------------------
+  // Calendar Assignment
+  // -------------------------------------------------------------------------
+
+  /**
+   * Load existing EventCalendar associations for this event (edit mode).
+   */
+  private loadExistingCalendarAssignments(): void {
+    if (!this.event) return;
+
+    this.eventCalendarService.GetEventCalendarList({
+      scheduledEventId: Number(this.event.id),
+      active: true,
+      deleted: false
+    }).subscribe(eventCalendars => {
+      this.existingEventCalendars = eventCalendars;
+      this.selectedCalendarIds = new Set(
+        eventCalendars.map(ec => Number(ec.calendarId))
+      );
+    });
+  }
+
+
+  /**
+   * Toggle a calendar assignment on/off.
+   */
+  toggleCalendarAssignment(calendarId: bigint | number): void {
+    const id = Number(calendarId);
+
+    if (this.selectedCalendarIds.has(id)) {
+      this.selectedCalendarIds.delete(id);
+    } else {
+      this.selectedCalendarIds.add(id);
+    }
+  }
+
+
+  /**
+   * Check if a calendar is currently assigned.
+   */
+  isCalendarAssigned(calendarId: bigint | number): boolean {
+    return this.selectedCalendarIds.has(Number(calendarId));
+  }
+
+
+  /**
+   * Diff-based save: delete removed associations, create new ones.
+   */
+  private async handleCalendarAssignmentsSave(eventId: number): Promise<void> {
+    const desiredIds = this.selectedCalendarIds;
+    const existingIds = new Set(this.existingEventCalendars.map(ec => Number(ec.calendarId)));
+
+    //
+    // Delete removed associations
+    //
+    for (const ec of this.existingEventCalendars) {
+      if (!desiredIds.has(Number(ec.calendarId))) {
+        try {
+          await lastValueFrom(this.eventCalendarService.DeleteEventCalendar(ec.id));
+        } catch (err: any) {
+          console.error(`Failed to delete EventCalendar ${ec.id}`, err);
+        }
+      }
+    }
+
+    //
+    // Create new associations
+    //
+    for (const calId of desiredIds) {
+      if (!existingIds.has(calId)) {
+        const submitData = new EventCalendarSubmitData();
+        submitData.id = 0 as any;
+        submitData.scheduledEventId = eventId;
+        submitData.calendarId = calId;
+        submitData.active = true;
+        submitData.deleted = false;
+
+        try {
+          await lastValueFrom(this.eventCalendarService.PostEventCalendar(submitData));
+        } catch (err: any) {
+          console.error('Failed to create EventCalendar', err);
+        }
+      }
+    }
+  }
+
 
   // -------------------------------------------------------------------------
   // Modal Control

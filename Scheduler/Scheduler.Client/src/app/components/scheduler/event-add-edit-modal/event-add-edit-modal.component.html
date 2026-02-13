@@ -187,6 +187,24 @@
           <label class="form-label fw-semibold">Notes</label>
           <textarea class="form-control" rows="3" formControlName="notes" placeholder="Internal notes..."></textarea>
         </div>
+
+        <!-- Calendar Assignment -->
+        <div class="col-12" *ngIf="calendars.length > 0">
+          <label class="form-label fw-semibold">
+            <i class="bi bi-collection me-1 text-primary"></i>Calendars
+          </label>
+          <div class="calendar-chips">
+            <label *ngFor="let cal of calendars" class="calendar-chip" [class.selected]="isCalendarAssigned(cal.id)"
+              (click)="toggleCalendarAssignment(cal.id); $event.preventDefault()">
+              <span class="chip-swatch" [style.background-color]="cal.color || '#4285f4'"></span>
+              <span class="chip-label">{{ cal.name }}</span>
+              <i class="bi bi-check-lg chip-check" *ngIf="isCalendarAssigned(cal.id)"></i>
+            </label>
+          </div>
+          <small class="text-muted" *ngIf="selectedCalendarIds.size === 0">
+            No calendars selected — event will appear in all views.
+          </small>
+        </div>
       </div>
     </div>
 

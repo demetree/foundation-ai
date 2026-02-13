@@ -19,6 +19,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { ScheduledEventService, ScheduledEventData } from '../../../scheduler-data-services/scheduled-event.service';
+import { CalendarService, CalendarData } from '../../../scheduler-data-services/calendar.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { EventAddEditModalComponent } from '../event-add-edit-modal/event-add-edit-modal.component';
 import { format, parseISO } from 'date-fns';
@@ -68,6 +69,15 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
 
 
   //
+  // Calendar Sidebar state
+  //
+  calendarSidebarVisible: boolean = false;
+  availableCalendars: CalendarData[] = [];
+  selectedCalendarIds: Set<number> = new Set();
+  private readonly CALENDAR_SELECTION_KEY = 'scheduler-selected-calendars';
+
+
+  //
   // FullCalendar options
   //
   calendarOptions: CalendarOptions = {
@@ -100,6 +110,7 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
 
   constructor(
     private scheduledEventService: ScheduledEventService,
+    private calendarService: CalendarService,
     private modalService: NgbModal,
     private conflictDetectionService: ConflictDetectionService,
     private resourceService: ResourceService,
@@ -111,7 +122,12 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     //
-    // Initial load is triggered by FullCalendar's datesSet callback when the view renders.
+    // Load available calendars for the sidebar filter
+    //
+    this.loadCalendars();
+
+    //
+    // Initial event load is triggered by FullCalendar's datesSet callback when the view renders.
     //
   }
 
@@ -177,6 +193,100 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
 
 
   // =========================================================================
+  // Calendar Sidebar
+  // =========================================================================
+
+  /**
+   * Load available calendars for the sidebar filter and restore selection from localStorage.
+   */
+  private loadCalendars(): void {
+    this.calendarService.GetCalendarList({ active: true, deleted: false }).subscribe(calendars => {
+      this.availableCalendars = calendars;
+
+      //
+      // Restore persisted selection from localStorage
+      //
+      const saved = localStorage.getItem(this.CALENDAR_SELECTION_KEY);
+
+      if (saved) {
+        try {
+          const ids: number[] = JSON.parse(saved);
+          // Only keep IDs that still exist in the available list
+          const validIds = ids.filter(id => calendars.some(c => Number(c.id) === id));
+          this.selectedCalendarIds = new Set(validIds);
+        } catch {
+          this.selectedCalendarIds = new Set();
+        }
+      }
+    });
+  }
+
+
+  /**
+   * Toggle the calendar sidebar panel visibility.
+   */
+  toggleCalendarSidebar(): void {
+    this.calendarSidebarVisible = !this.calendarSidebarVisible;
+  }
+
+
+  /**
+   * Toggle a calendar on/off and reload events.
+   */
+  toggleCalendar(calendarId: bigint | number): void {
+    const id = Number(calendarId);
+
+    if (this.selectedCalendarIds.has(id)) {
+      this.selectedCalendarIds.delete(id);
+    } else {
+      this.selectedCalendarIds.add(id);
+    }
+
+    this.saveCalendarSelection();
+    this.loadEvents();
+  }
+
+
+  /**
+   * Check if a calendar is currently selected (for template binding).
+   */
+  isCalendarSelected(calendarId: bigint | number): boolean {
+    return this.selectedCalendarIds.has(Number(calendarId));
+  }
+
+
+  /**
+   * Persist the selected calendar IDs to localStorage.
+   */
+  private saveCalendarSelection(): void {
+    localStorage.setItem(
+      this.CALENDAR_SELECTION_KEY,
+      JSON.stringify(Array.from(this.selectedCalendarIds))
+    );
+  }
+
+
+  /**
+   * Select all calendars (show everything).
+   */
+  selectAllCalendars(): void {
+    this.selectedCalendarIds = new Set(this.availableCalendars.map(c => Number(c.id)));
+    this.saveCalendarSelection();
+    this.loadEvents();
+  }
+
+
+  /**
+   * Clear all calendar selections (show unfiltered — no calendarIds sent).
+   */
+  clearCalendarSelection(): void {
+    this.selectedCalendarIds.clear();
+    this.saveCalendarSelection();
+    this.loadEvents();
+  }
+
+
+  // =========================================================================
   // Data Loading
   // =========================================================================
 
@@ -204,8 +314,15 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
       rangeEnd = defaultEnd.toISOString();
     }
 
+    //
+    // Build calendarIds filter from sidebar selection
+    //
+    const calendarIds = this.selectedCalendarIds.size > 0
+      ? Array.from(this.selectedCalendarIds)
+      : undefined;
+
     forkJoin({
-      events: this.scheduledEventService.GetCalendarEvents(rangeStart, rangeEnd),
+      events: this.scheduledEventService.GetCalendarEvents(rangeStart, rangeEnd, calendarIds),
       deps: this.dependencyService.GetScheduledEventDependencyList({ active: true, deleted: false })
     }).subscribe(({ events, deps }) => {
 

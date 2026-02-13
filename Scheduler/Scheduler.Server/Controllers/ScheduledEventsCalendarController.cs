@@ -60,6 +60,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         public async Task<IActionResult> GetCalendarEvents(
             DateTime rangeStart,
             DateTime rangeEnd,
+            string? calendarIds,
             [FromServices] RecurrenceExpansionService expansionService,
             CancellationToken cancellationToken = default)
         {
@@ -100,6 +101,37 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 
             //
+            // Parse optional calendar filter
+            //
+            // When calendarIds are provided, only events assigned to those calendars (via the EventCalendar
+            // join table) will be returned.  When omitted, all events are returned (backwards compatible).
+            //
+            HashSet<int>? allowedEventIds = null;
+
+            if (!string.IsNullOrWhiteSpace(calendarIds))
+            {
+                List<int> calIdList = calendarIds.Split(',')
+                    .Select(s => int.TryParse(s.Trim(), out int v) ? v : (int?)null)
+                    .Where(v => v.HasValue)
+                    .Select(v => v!.Value)
+                    .ToList();
+
+                if (calIdList.Count > 0)
+                {
+                    allowedEventIds = (await _context.EventCalendars
+                        .Where(ec => calIdList.Contains(ec.calendarId))
+                        .Where(ec => ec.tenantGuid == userTenantGuid)
+                        .Where(ec => ec.active == true && ec.deleted == false)
+                        .Select(ec => ec.scheduledEventId)
+                        .Distinct()
+                        .ToListAsync(cancellationToken)
+                        .ConfigureAwait(false))
+                        .ToHashSet();
+                }
+            }
+
+
+            //
             // Step 1: Fetch all standalone (non-recurring) events that overlap with the date range.
             //
             // An event overlaps if its start is before the range end AND its end is after the range start.
@@ -111,6 +143,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 .Where(se => se.active == true)
                 .Where(se => se.deleted == false)
                 .Where(se => se.startDateTime <= rangeEnd && se.endDateTime >= rangeStart)
+                .Where(se => allowedEventIds == null || allowedEventIds.Contains(se.id))
                 .Include(se => se.bookingSourceType)
                 .Include(se => se.client)
                 .Include(se => se.crew)
@@ -139,6 +172,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 .Where(se => se.parentScheduledEventId == null)
                 .Where(se => se.active == true)
                 .Where(se => se.deleted == false)
+                .Where(se => allowedEventIds == null || allowedEventIds.Contains(se.id))
                 .Include(se => se.recurrenceRule)
                     .ThenInclude(rr => rr.recurrenceFrequency)
                 .Include(se => se.bookingSourceType)
@@ -189,6 +223,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                     .Where(se => se.active == true)
                     .Where(se => se.deleted == false)
                     .Where(se => se.startDateTime <= rangeEnd && se.endDateTime >= rangeStart)
+                    .Where(se => allowedEventIds == null || allowedEventIds.Contains(se.id))
                     .Include(se => se.bookingSourceType)
                     .Include(se => se.client)
                     .Include(se => se.crew)

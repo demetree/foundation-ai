@@ -54,6 +54,13 @@
           <i class="bi bi-bookmark"></i>
         </button>
 
+        <!-- Calendar Filter -->
+        <button class="btn-glass" (click)="toggleCalendarSidebar()" title="Filter Calendars"
+          [class.active]="calendarSidebarVisible">
+          <i class="bi bi-collection"></i>
+          <span *ngIf="selectedCalendarIds.size > 0" class="ms-1">{{ selectedCalendarIds.size }}</span>
+        </button>
+
         <!-- Conflict Indicator -->
         <button class="btn-glass btn-conflict" *ngIf="conflicts.length > 0" (click)="toggleConflictPanel()"
           [class.active]="conflictPanelVisible">
@@ -62,6 +69,28 @@
         </button>
 
       </div>
+    </div>
+  </div>
+
+
+  <!-- Calendar Sidebar (collapsible, Google Calendar-style) -->
+  <div class="calendar-sidebar" *ngIf="calendarSidebarVisible && availableCalendars.length > 0">
+    <div class="sidebar-header">
+      <i class="bi bi-collection"></i>
+      <span>Calendars</span>
+      <div class="sidebar-actions">
+        <button class="btn-sidebar-action" (click)="clearCalendarSelection()" title="Show All (No Filter)">
+          All
+        </button>
+      </div>
+    </div>
+    <div class="calendar-toggle-list">
+      <label *ngFor="let cal of availableCalendars" class="calendar-toggle-item"
+        [class.selected]="isCalendarSelected(cal.id)">
+        <input type="checkbox" [checked]="isCalendarSelected(cal.id)" (change)="toggleCalendar(cal.id)">
+        <span class="calendar-color-swatch" [style.background-color]="cal.color || '#4285f4'"></span>
+        <span class="calendar-name">{{ cal.name }}</span>
+      </label>
     </div>
   </div>
 

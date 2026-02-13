@@ -1409,11 +1409,15 @@ export class ScheduledEventService extends SecureEndpointBase {
      * @returns Observable of ScheduledEventData array
      *
      */
-    public GetCalendarEvents(rangeStart: string, rangeEnd: string): Observable<Array<ScheduledEventData>> {
+    public GetCalendarEvents(rangeStart: string, rangeEnd: string, calendarIds?: number[]): Observable<Array<ScheduledEventData>> {
 
         let queryParams = new HttpParams();
         queryParams = queryParams.append('rangeStart', rangeStart);
         queryParams = queryParams.append('rangeEnd', rangeEnd);
+
+        if (calendarIds && calendarIds.length > 0) {
+            queryParams = queryParams.append('calendarIds', calendarIds.join(','));
+        }
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
@@ -1423,7 +1427,7 @@ export class ScheduledEventService extends SecureEndpointBase {
         }).pipe(
             map(rawList => this.ReviveScheduledEventList(rawList)),
             catchError(error => {
-                return this.handleError(error, () => this.GetCalendarEvents(rangeStart, rangeEnd));
+                return this.handleError(error, () => this.GetCalendarEvents(rangeStart, rangeEnd, calendarIds));
             }));
     }
 

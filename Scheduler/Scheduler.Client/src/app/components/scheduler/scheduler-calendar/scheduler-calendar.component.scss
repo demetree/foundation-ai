@@ -805,6 +805,138 @@ $accent-secondary: #764ba2;
 
 
 // ---------------------------------------------------------------------------
+// Calendar Sidebar
+// ---------------------------------------------------------------------------
+.calendar-sidebar {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(16px);
+    border-radius: $card-radius;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.06);
+    margin-bottom: 1rem;
+    overflow: hidden;
+    animation: slideDown 0.2s ease;
+}
+
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid #f1f3f7;
+    background: #fafbfd;
+
+    > i {
+        color: $accent-primary;
+        font-size: 0.9rem;
+    }
+
+    > span {
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: #1e293b;
+        flex: 1;
+    }
+}
+
+.sidebar-actions {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.btn-sidebar-action {
+    background: none;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    transition: $transition-base;
+
+    &:hover {
+        background: rgba($accent-primary, 0.06);
+        color: $accent-primary;
+        border-color: rgba($accent-primary, 0.3);
+    }
+}
+
+.calendar-toggle-list {
+    padding: 0.35rem 0;
+    max-height: 240px;
+    overflow-y: auto;
+}
+
+.calendar-toggle-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 1rem;
+    cursor: pointer;
+    transition: background 0.15s;
+    margin: 0;
+    font-size: 0.82rem;
+    color: #334155;
+
+    &:hover {
+        background: rgba($accent-primary, 0.04);
+    }
+
+    &.selected {
+        font-weight: 600;
+    }
+
+    input[type="checkbox"] {
+        display: none;
+    }
+}
+
+.calendar-color-swatch {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    position: relative;
+    transition: $transition-base;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+
+    .calendar-toggle-item:not(.selected) & {
+        opacity: 0.35;
+        box-shadow: none;
+
+        &::after {
+            content: none;
+        }
+    }
+
+    .calendar-toggle-item.selected &::after {
+        content: '\2713';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 0.6rem;
+        font-weight: 700;
+        color: white;
+        text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+    }
+}
+
+.calendar-name {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    .calendar-toggle-item:not(.selected) & {
+        opacity: 0.5;
+    }
+}
+
+
+// ---------------------------------------------------------------------------
 // Responsive
 // ---------------------------------------------------------------------------
 @media (max-width: 768px) {
