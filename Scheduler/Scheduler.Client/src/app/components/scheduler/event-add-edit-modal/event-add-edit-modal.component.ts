@@ -9,7 +9,16 @@ import { ScheduledEventTemplateService, ScheduledEventTemplateData, ScheduledEve
 import { CrewService, CrewData } from '../../../scheduler-data-services/crew.service';
 import { ResourceService, ResourceData } from '../../../scheduler-data-services/resource.service';
 import { AssignmentRoleService, AssignmentRoleData } from '../../../scheduler-data-services/assignment-role.service';
-import { QualificationService } from '../../../scheduler-data-services/qualification.service';
+import { QualificationService, QualificationData } from '../../../scheduler-data-services/qualification.service';
+import {
+  ScheduledEventQualificationRequirementService,
+  ScheduledEventQualificationRequirementData,
+  ScheduledEventQualificationRequirementSubmitData
+} from '../../../scheduler-data-services/scheduled-event-qualification-requirement.service';
+import {
+  ScheduledEventTemplateQualificationRequirementService,
+  ScheduledEventTemplateQualificationRequirementSubmitData
+} from '../../../scheduler-data-services/scheduled-event-template-qualification-requirement.service';
 import { AssignmentRoleQualificationRequirementService } from '../../../scheduler-data-services/assignment-role-qualification-requirement.service';
 import { SchedulingTargetQualificationRequirementService } from '../../../scheduler-data-services/scheduling-target-qualification-requirement.service';
 import { ResourceQualificationService } from '../../../scheduler-data-services/resource-qualification.service';
@@ -23,6 +32,7 @@ import { ClientService, ClientData } from '../../../scheduler-data-services/clie
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { ScheduledEventDependencyService, ScheduledEventDependencyData, ScheduledEventDependencySubmitData } from '../../../scheduler-data-services/scheduled-event-dependency.service';
 import { DependencyTypeService, DependencyTypeData } from '../../../scheduler-data-services/dependency-type.service';
+import { BookingSourceTypeService, BookingSourceTypeData } from '../../../scheduler-data-services/booking-source-type.service';
 import { ScheduledEventBasicListData } from '../../../scheduler-data-services/scheduled-event.service';
 import { ConflictDetectionService } from '../../../services/conflict-detection.service';
 import { InputDialogService } from '../../../services/input-dialog.service';
@@ -70,6 +80,7 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
   priorities: PriorityData[] = [];
   offices: OfficeData[] = [];
   clients: ClientData[] = [];
+  bookingSourceTypes: BookingSourceTypeData[] = [];
 
   // Recurrence Exceptions
   recurrenceExceptions: RecurrenceExceptionData[] = [];
@@ -81,6 +92,13 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
   // Derived data
   selectedTarget: SchedulingTargetData | null = null;
   qualificationWarnings: string[] = [];
+
+  // Event-specific qualification requirements
+  allQualifications: QualificationData[] = [];
+  existingEventQualReqs: ScheduledEventQualificationRequirementData[] = [];
+  pendingNewQualReqs: number[] = [];  // qualificationIds to add
+  deletedQualReqIds: number[] = [];   // existing requirement IDs to delete
+  selectedNewQualId: number | null = null;
 
   // Track which existing assignments to keep (for diff-based save)
   private existingAssignmentIds: Set<number> = new Set();
@@ -121,6 +139,9 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
     private alertService: AlertService,
     private dependencyService: ScheduledEventDependencyService,
     private dependencyTypeService: DependencyTypeService,
+    private bookingSourceTypeService: BookingSourceTypeService,
+    private eventQualReqService: ScheduledEventQualificationRequirementService,
+    private templateQualReqService: ScheduledEventTemplateQualificationRequirementService,
     private conflictDetectionService: ConflictDetectionService,
     private inputDialogService: InputDialogService
   ) {
@@ -168,6 +189,7 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
       priorityId: [null],
       officeId: [null],
       clientId: [null],
+      bookingSourceTypeId: [null],
       color: [null],
       isAllDay: [false]
     });
@@ -175,6 +197,21 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
     // Assignments array (managed separately for easier sub-table integration)
     this.assignmentsFormArray = this.fb.array([]);
     this.eventForm.addControl('assignments', this.assignmentsFormArray);
+
+    // Auto-populate Office and Client when Target changes
+    this.eventForm.get('schedulingTargetId')?.valueChanges.subscribe(targetId => {
+      if (targetId) {
+        const target = this.targets.find(t => Number(t.id) === Number(targetId));
+        if (target) {
+          // Auto-set Office and Client from the selected Target
+          // We overwrite existing values to ensure data consistency with the selected Target
+          this.eventForm.patchValue({
+            officeId: target.officeId,
+            clientId: target.clientId
+          });
+        }
+      }
+    });
   }
 
   // -------------------------------------------------------------------------
@@ -191,7 +228,9 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
       eventStatuses: this.eventStatusService.GetEventStatusList({ active: true }),
       priorities: this.priorityService.GetPriorityList({ active: true }),
       offices: this.officeService.GetOfficeList({ active: true }),
-      clients: this.clientService.GetClientList({ active: true })
+      clients: this.clientService.GetClientList({ active: true }),
+      bookingSourceTypes: this.bookingSourceTypeService.GetBookingSourceTypeList({ active: true }),
+      qualifications: this.qualificationService.GetQualificationList({ active: true })
     }).subscribe({
       next: (data) => {
         this.templates = data.templates;
@@ -204,10 +243,13 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
         this.priorities = data.priorities;
         this.offices = data.offices;
         this.clients = data.clients;
+        this.bookingSourceTypes = data.bookingSourceTypes;
+        this.allQualifications = data.qualifications;
 
         if (this.isEditMode) {
           this.loadExistingAssignments();
           this.loadExistingExceptions();
+          this.loadExistingEventQualReqs();
         }
       },
       error: () => {
@@ -293,7 +335,32 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
     }
 
     this.alertService.showMessage('Template Applied', `"${template.name}" applied`, MessageSeverity.success);
-    this.validateQualifications();
+
+    // Load template qualification requirements and apply as event-level quals
+    this.templateQualReqService.GetScheduledEventTemplateQualificationRequirementList({
+      scheduledEventTemplateId: template.id,
+      active: true
+    }).subscribe({
+      next: (templateQuals) => {
+        // Clear any pending quals and add template's
+        this.pendingNewQualReqs = [];
+        for (const tq of templateQuals) {
+          const qualId = Number(tq.qualificationId);
+          // Avoid duplicates with existing event quals
+          const alreadyExists = this.existingEventQualReqs.some(
+            r => Number(r.qualificationId) === qualId && !this.deletedQualReqIds.includes(Number(r.id))
+          );
+          if (!alreadyExists && !this.pendingNewQualReqs.includes(qualId)) {
+            this.pendingNewQualReqs.push(qualId);
+          }
+        }
+        this.validateQualifications();
+      },
+      error: () => {
+        // Silently skip if template quals can't be loaded
+        this.validateQualifications();
+      }
+    });
   }
 
   // -------------------------------------------------------------------------
@@ -488,6 +555,16 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
       }
     }
 
+    // From event-specific qualification requirements
+    for (const req of this.existingEventQualReqs) {
+      if (!this.deletedQualReqIds.includes(Number(req.id))) {
+        requiredQualIds.add(Number(req.qualificationId));
+      }
+    }
+    for (const qualId of this.pendingNewQualReqs) {
+      requiredQualIds.add(qualId);
+    }
+
     if (requiredQualIds.size === 0) return;
 
     // Check each assigned resource against required qualifications
@@ -537,6 +614,7 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
       priorityId: eventData.priorityId,
       officeId: eventData.officeId,
       clientId: eventData.clientId,
+      bookingSourceTypeId: eventData.bookingSourceTypeId,
       color: eventData.color,
       isAllDay: eventData.isAllDay || false
     });
@@ -627,7 +705,7 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
         isAllDay: formVal.isAllDay || false,
         priorityId: formVal.priorityId || null,
         eventStatusId: formVal.eventStatusId || 1,
-        bookingSourceTypeId: null,
+        bookingSourceTypeId: formVal.bookingSourceTypeId || null,
         officeId: formVal.officeId || null,
         partySize: null,
         color: formVal.color || null,
@@ -648,6 +726,9 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
 
       // 6. Handle Dependencies
       await this.handleDependenciesSave(Number(savedEvent.id));
+
+      // 7. Handle Event-Specific Qualification Requirements
+      await this.handleQualificationReqsSave(Number(savedEvent.id));
 
       this.saving = false;
       this.saved.emit(true);
@@ -1021,8 +1102,38 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
     submitData.deleted = false;
 
     try {
-      await lastValueFrom(this.templateService.PostScheduledEventTemplate(submitData));
+      const savedTemplate = await lastValueFrom(this.templateService.PostScheduledEventTemplate(submitData));
       this.alertService.showMessage('Template Saved', `"${templateName}" saved as template`, MessageSeverity.success);
+
+      // Copy event qualification requirements to the new template
+      const qualIdsToSave: number[] = [];
+      // From existing event quals (non-deleted)
+      for (const req of this.existingEventQualReqs) {
+        if (!this.deletedQualReqIds.includes(Number(req.id))) {
+          qualIdsToSave.push(Number(req.qualificationId));
+        }
+      }
+      // From pending new event quals
+      for (const qualId of this.pendingNewQualReqs) {
+        if (!qualIdsToSave.includes(qualId)) {
+          qualIdsToSave.push(qualId);
+        }
+      }
+      // Save each as a template qual requirement
+      for (const qualId of qualIdsToSave) {
+        const tqSubmit: ScheduledEventTemplateQualificationRequirementSubmitData = {
+          id: 0 as any,
+          scheduledEventTemplateId: savedTemplate.id as any,
+          qualificationId: qualId,
+          isRequired: true,
+          versionNumber: 0 as any,
+          active: true,
+          deleted: false
+        };
+        await lastValueFrom(
+          this.templateQualReqService.PostScheduledEventTemplateQualificationRequirement(tqSubmit)
+        );
+      }
 
       // Refresh templates list
       this.templateService.GetScheduledEventTemplateList({ active: true }).subscribe(templates => {
@@ -1031,5 +1142,74 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
     } catch (err: any) {
       this.alertService.showMessage('Error', 'Failed to save template', MessageSeverity.error);
     }
+  }
+
+  // -------------------------------------------------------------------------
+  // Event-Specific Qualification Requirements
+  // -------------------------------------------------------------------------
+  private loadExistingEventQualReqs(): void {
+    if (!this.event?.id) return;
+    this.eventQualReqService.GetScheduledEventQualificationRequirementList({
+      scheduledEventId: this.event.id,
+      active: true
+    }).subscribe({
+      next: (reqs) => {
+        this.existingEventQualReqs = reqs;
+      },
+      error: () => {
+        this.existingEventQualReqs = [];
+      }
+    });
+  }
+
+  addEventQualReq(): void {
+    if (!this.selectedNewQualId) return;
+    const qualId = Number(this.selectedNewQualId);
+    // Avoid duplicates
+    const alreadyExists = this.existingEventQualReqs.some(
+      r => Number(r.qualificationId) === qualId && !this.deletedQualReqIds.includes(Number(r.id))
+    );
+    const alreadyPending = this.pendingNewQualReqs.includes(qualId);
+    if (alreadyExists || alreadyPending) return;
+
+    this.pendingNewQualReqs.push(qualId);
+    this.selectedNewQualId = null;
+  }
+
+  removeExistingQualReq(reqId: number): void {
+    this.deletedQualReqIds.push(reqId);
+    this.existingEventQualReqs = this.existingEventQualReqs.filter(r => Number(r.id) !== reqId);
+  }
+
+  removePendingQualReq(index: number): void {
+    this.pendingNewQualReqs.splice(index, 1);
+  }
+
+  getQualificationName(qualId: number): string {
+    const qual = this.allQualifications.find(q => Number(q.id) === qualId);
+    return qual?.name || `Qualification #${qualId}`;
+  }
+
+  private async handleQualificationReqsSave(eventId: number): Promise<void> {
+    // Delete removed requirements
+    for (const reqId of this.deletedQualReqIds) {
+      await lastValueFrom(this.eventQualReqService.DeleteScheduledEventQualificationRequirement(reqId));
+    }
+
+    // Create new requirements
+    for (const qualId of this.pendingNewQualReqs) {
+      const submitData: ScheduledEventQualificationRequirementSubmitData = {
+        id: 0 as any,
+        scheduledEventId: eventId,
+        qualificationId: qualId,
+        versionNumber: 0 as any,
+        active: true,
+        deleted: false
+      };
+      await lastValueFrom(this.eventQualReqService.PostScheduledEventQualificationRequirement(submitData));
+    }
+
+    this.deletedQualReqIds = [];
+    this.pendingNewQualReqs = [];
   }
 }

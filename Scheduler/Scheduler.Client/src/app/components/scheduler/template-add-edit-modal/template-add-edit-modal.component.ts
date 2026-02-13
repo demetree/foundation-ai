@@ -5,7 +5,7 @@
  * AI-Developed — This file was significantly developed with AI assistance.
  *
  * NgbModal form for creating and editing event templates.
- * Supports all ScheduledEventTemplateData fields.
+ * Supports all ScheduledEventTemplateData fields including qualification requirements.
  *
  */
 
@@ -19,6 +19,12 @@ import {
 } from '../../../scheduler-data-services/scheduled-event-template.service';
 import { PriorityService, PriorityData } from '../../../scheduler-data-services/priority.service';
 import { SchedulingTargetTypeService, SchedulingTargetTypeData } from '../../../scheduler-data-services/scheduling-target-type.service';
+import { QualificationService, QualificationData } from '../../../scheduler-data-services/qualification.service';
+import {
+    ScheduledEventTemplateQualificationRequirementService,
+    ScheduledEventTemplateQualificationRequirementData,
+    ScheduledEventTemplateQualificationRequirementSubmitData
+} from '../../../scheduler-data-services/scheduled-event-template-qualification-requirement.service';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { lastValueFrom } from 'rxjs';
 
@@ -38,6 +44,13 @@ export class TemplateAddEditModalComponent implements OnInit {
     priorities: PriorityData[] = [];
     targetTypes: SchedulingTargetTypeData[] = [];
 
+    // Qualification requirements
+    allQualifications: QualificationData[] = [];
+    existingQualReqs: ScheduledEventTemplateQualificationRequirementData[] = [];
+    pendingNewQualReqs: number[] = [];    // qualificationIds to add
+    deletedQualReqIds: number[] = [];     // existing requirement IDs to remove
+    selectedNewQualId: number | null = null;
+
 
     constructor(
         public activeModal: NgbActiveModal,
@@ -45,6 +58,8 @@ export class TemplateAddEditModalComponent implements OnInit {
         private templateService: ScheduledEventTemplateService,
         private priorityService: PriorityService,
         private targetTypeService: SchedulingTargetTypeService,
+        private qualificationService: QualificationService,
+        private templateQualReqService: ScheduledEventTemplateQualificationRequirementService,
         private alertService: AlertService
     ) { }
 
@@ -56,6 +71,7 @@ export class TemplateAddEditModalComponent implements OnInit {
 
         if (this.template) {
             this.populateForm(this.template);
+            this.loadExistingQualReqs();
         }
     }
 
@@ -100,6 +116,9 @@ export class TemplateAddEditModalComponent implements OnInit {
         this.targetTypeService.GetSchedulingTargetTypeList({ active: true }).subscribe(t => {
             this.targetTypes = t;
         });
+        this.qualificationService.GetQualificationList({ active: true }).subscribe(q => {
+            this.allQualifications = q;
+        });
     }
 
 
@@ -127,6 +146,83 @@ export class TemplateAddEditModalComponent implements OnInit {
 
 
     // -------------------------------------------------------------------------
+    // Qualification Requirements
+    // -------------------------------------------------------------------------
+
+    private loadExistingQualReqs(): void {
+        if (!this.template?.id) return;
+        this.templateQualReqService.GetScheduledEventTemplateQualificationRequirementList({
+            scheduledEventTemplateId: this.template.id,
+            active: true
+        }).subscribe({
+            next: (reqs) => {
+                this.existingQualReqs = reqs;
+            },
+            error: () => {
+                this.existingQualReqs = [];
+            }
+        });
+    }
+
+    addQualReq(): void {
+        if (!this.selectedNewQualId) return;
+        const qualId = Number(this.selectedNewQualId);
+
+        // Avoid duplicates
+        const alreadyExists = this.existingQualReqs.some(
+            r => Number(r.qualificationId) === qualId && !this.deletedQualReqIds.includes(Number(r.id))
+        );
+        const alreadyPending = this.pendingNewQualReqs.includes(qualId);
+        if (alreadyExists || alreadyPending) return;
+
+        this.pendingNewQualReqs.push(qualId);
+        this.selectedNewQualId = null;
+    }
+
+    removeExistingQualReq(reqId: number): void {
+        this.deletedQualReqIds.push(reqId);
+        this.existingQualReqs = this.existingQualReqs.filter(r => Number(r.id) !== reqId);
+    }
+
+    removePendingQualReq(index: number): void {
+        this.pendingNewQualReqs.splice(index, 1);
+    }
+
+    getQualificationName(qualId: number): string {
+        const qual = this.allQualifications.find(q => Number(q.id) === qualId);
+        return qual?.name || `Qualification #${qualId}`;
+    }
+
+    private async handleQualReqsSave(templateId: number | bigint): Promise<void> {
+        // Delete removed requirements
+        for (const reqId of this.deletedQualReqIds) {
+            await lastValueFrom(
+                this.templateQualReqService.DeleteScheduledEventTemplateQualificationRequirement(reqId)
+            );
+        }
+
+        // Create new requirements
+        for (const qualId of this.pendingNewQualReqs) {
+            const submitData: ScheduledEventTemplateQualificationRequirementSubmitData = {
+                id: 0 as any,
+                scheduledEventTemplateId: templateId as any,
+                qualificationId: qualId,
+                isRequired: true,
+                versionNumber: 0 as any,
+                active: true,
+                deleted: false
+            };
+            await lastValueFrom(
+                this.templateQualReqService.PostScheduledEventTemplateQualificationRequirement(submitData)
+            );
+        }
+
+        this.deletedQualReqIds = [];
+        this.pendingNewQualReqs = [];
+    }
+
+
+    // -------------------------------------------------------------------------
     // Save
     // -------------------------------------------------------------------------
 
@@ -148,15 +244,20 @@ export class TemplateAddEditModalComponent implements OnInit {
             submitData.active = true;
             submitData.deleted = false;
 
+            let savedTemplate: ScheduledEventTemplateData;
+
             if (this.isEditMode && this.template) {
                 submitData.id = this.template.id;
                 submitData.versionNumber = this.template.versionNumber;
-                await lastValueFrom(this.templateService.PutScheduledEventTemplate(submitData.id, submitData));
+                savedTemplate = await lastValueFrom(this.templateService.PutScheduledEventTemplate(submitData.id, submitData));
             } else {
                 submitData.id = 0 as any;
                 submitData.versionNumber = 0 as any;
-                await lastValueFrom(this.templateService.PostScheduledEventTemplate(submitData));
+                savedTemplate = await lastValueFrom(this.templateService.PostScheduledEventTemplate(submitData));
             }
+
+            // Persist qualification requirements
+            await this.handleQualReqsSave(savedTemplate.id);
 
             this.saving = false;
             this.alertService.showMessage(

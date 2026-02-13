@@ -166,6 +166,15 @@
           </select>
         </div>
 
+        <!-- Booking Source -->
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Booking Source</label>
+          <select class="form-select" formControlName="bookingSourceTypeId">
+            <option [ngValue]="null">Select Source</option>
+            <option *ngFor="let source of bookingSourceTypes" [ngValue]="source.id">{{ source.name }}</option>
+          </select>
+        </div>
+
         <!-- Description -->
         <div class="col-12">
           <label class="form-label fw-semibold">Description</label>
@@ -250,6 +259,63 @@
       <div class="empty-state" *ngIf="assignments.length === 0">
         <i class="bi bi-person-plus display-6 text-muted mb-2"></i>
         <p class="text-muted small mb-0">No assignments yet. Use the buttons above to add resources or crews.</p>
+      </div>
+      <!-- Event-Specific Qualification Requirements -->
+      <div class="qualification-requirements mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h6 class="fw-semibold mb-0">
+            <i class="bi bi-award me-2 text-info"></i>Required Qualifications
+          </h6>
+        </div>
+
+        <!-- Add Qualification -->
+        <div class="row g-2 align-items-end mb-3">
+          <div class="col">
+            <select class="form-select form-select-sm" [(ngModel)]="selectedNewQualId"
+              [ngModelOptions]="{standalone: true}">
+              <option [ngValue]="null" disabled>Select a qualification...</option>
+              <option *ngFor="let qual of allQualifications" [ngValue]="qual.id">{{ qual.name }}</option>
+            </select>
+          </div>
+          <div class="col-auto">
+            <button class="btn btn-sm btn-outline-info" (click)="addEventQualReq()" [disabled]="!selectedNewQualId">
+              <i class="bi bi-plus-lg me-1"></i>Add
+            </button>
+          </div>
+        </div>
+
+        <!-- Current Requirements List -->
+        <div *ngIf="existingEventQualReqs.length > 0 || pendingNewQualReqs.length > 0">
+          <!-- Existing requirements -->
+          <div class="d-flex align-items-center justify-content-between py-1 px-2 mb-1 bg-light rounded"
+            *ngFor="let req of existingEventQualReqs">
+            <span>
+              <i class="bi bi-award-fill text-info me-1"></i>
+              {{ getQualificationName($any(req.qualificationId)) }}
+            </span>
+            <button class="btn btn-sm btn-outline-danger btn-icon" (click)="removeExistingQualReq($any(req.id))"
+              title="Remove">
+              <i class="bi bi-x-lg"></i>
+            </button>
+          </div>
+          <!-- Pending new requirements -->
+          <div class="d-flex align-items-center justify-content-between py-1 px-2 mb-1 rounded"
+            style="background-color: rgba(13,202,240,0.1);" *ngFor="let qualId of pendingNewQualReqs; let i = index">
+            <span>
+              <i class="bi bi-award text-info me-1"></i>
+              {{ getQualificationName(qualId) }}
+              <span class="badge bg-info ms-1">New</span>
+            </span>
+            <button class="btn btn-sm btn-outline-danger btn-icon" (click)="removePendingQualReq(i)" title="Remove">
+              <i class="bi bi-x-lg"></i>
+            </button>
+          </div>
+        </div>
+
+        <p class="text-muted small mb-0" *ngIf="existingEventQualReqs.length === 0 && pendingNewQualReqs.length === 0">
+          No event-specific qualifications required. Assigned resources will still be checked against role and target
+          requirements.
+        </p>
       </div>
 
       <div class="alert alert-warning mt-3" *ngIf="qualificationWarnings.length > 0">

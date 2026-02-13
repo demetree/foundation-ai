@@ -81,6 +81,65 @@
                 </div>
             </div>
 
+            <!-- Qualification Requirements -->
+            <div class="col-12 mt-3">
+                <label class="form-label fw-semibold">
+                    <i class="bi bi-award me-1 text-info"></i>Required Qualifications
+                </label>
+
+                <!-- Add Qualification -->
+                <div class="row g-2 align-items-end mb-2">
+                    <div class="col">
+                        <select class="form-select form-select-sm" [(ngModel)]="selectedNewQualId"
+                            [ngModelOptions]="{standalone: true}">
+                            <option [ngValue]="null" disabled>Select a qualification...</option>
+                            <option *ngFor="let qual of allQualifications" [ngValue]="qual.id">{{ qual.name }}</option>
+                        </select>
+                    </div>
+                    <div class="col-auto">
+                        <button class="btn btn-sm btn-outline-info" (click)="addQualReq()"
+                            [disabled]="!selectedNewQualId" type="button">
+                            <i class="bi bi-plus-lg me-1"></i>Add
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Current Requirements List -->
+                <div *ngIf="existingQualReqs.length > 0 || pendingNewQualReqs.length > 0">
+                    <!-- Existing requirements -->
+                    <div class="d-flex align-items-center justify-content-between py-1 px-2 mb-1 bg-light rounded"
+                        *ngFor="let req of existingQualReqs">
+                        <span>
+                            <i class="bi bi-award-fill text-info me-1"></i>
+                            {{ getQualificationName($any(req.qualificationId)) }}
+                        </span>
+                        <button class="btn btn-sm btn-outline-danger btn-icon" type="button"
+                            (click)="removeExistingQualReq($any(req.id))" title="Remove">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                    <!-- Pending new requirements -->
+                    <div class="d-flex align-items-center justify-content-between py-1 px-2 mb-1 rounded"
+                        style="background-color: rgba(13,202,240,0.1);"
+                        *ngFor="let qualId of pendingNewQualReqs; let i = index">
+                        <span>
+                            <i class="bi bi-award text-info me-1"></i>
+                            {{ getQualificationName(qualId) }}
+                            <span class="badge bg-info ms-1">New</span>
+                        </span>
+                        <button class="btn btn-sm btn-outline-danger btn-icon" type="button"
+                            (click)="removePendingQualReq(i)" title="Remove">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <p class="text-muted small mb-0"
+                    *ngIf="existingQualReqs.length === 0 && pendingNewQualReqs.length === 0">
+                    No qualification requirements. Assigned resources won't need specific qualifications.
+                </p>
+            </div>
+
         </div>
     </form>
 </div>
