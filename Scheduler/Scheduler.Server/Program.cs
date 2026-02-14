@@ -119,6 +119,9 @@ namespace Foundation.Scheduler
                 // Register Recurrence Expansion Service (for server-side expansion of recurring events)
                 builder.Services.AddScoped<global::Scheduler.Server.Services.RecurrenceExpansionService>();
 
+                // Register Geocoding Service (for address-to-coordinate resolution via Nominatim)
+                builder.Services.AddScoped<global::Scheduler.Server.Services.GeocodingService>();
+
                 //
                 // Add the Scheduler Database context
                 //
@@ -188,6 +191,7 @@ namespace Foundation.Scheduler
                 //
                 controllers.Add(typeof(DataController));                    // For Excel export
                 controllers.Add(typeof(TenantProfileController));           // For profile access with auto creation
+                controllers.Add(typeof(GeocodingController));                // For address-to-coordinate resolution
                 //
                 // End of Scheduler custom controllers
                 //

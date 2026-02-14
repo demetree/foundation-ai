@@ -24,7 +24,9 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
     allParts: BrickPartData[] = [];
     filteredParts: BrickPartData[] = [];
     displayedParts: BrickPartData[] = [];
-    categories: BrickCategoryData[] = [];
+    categories: BrickCategoryData[] = [];       // Filtered & sorted for sidebar display
+    private allCategories: BrickCategoryData[] = [];  // Unfiltered from server
+    categoryCounts = new Map<number | bigint, number>();
     partTypes: PartTypeData[] = [];
 
     loading = true;
@@ -94,8 +96,8 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
         ).pipe(
             takeUntil(this.destroy$)
         ).subscribe({
-            next: (cats) => this.categories = cats.sort((a, b) => (a.name || '').localeCompare(b.name || '')),
-            error: () => this.categories = []
+            next: (cats) => this.allCategories = cats,
+            error: () => this.allCategories = []
         });
 
         // Load part types (cached 7 days)
@@ -123,6 +125,7 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
             next: (parts) => {
                 this.allParts = parts;
                 this.totalCount = parts.length;
+                this.buildCategorySidebar();
                 this.applyFilters();
                 this.loading = false;
             },
@@ -470,7 +473,36 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
     }
 
     getCategoryCount(catId: number | bigint): number {
-        return this.allParts.filter(p => p.brickCategoryId == catId).length;
+        return this.categoryCounts.get(catId) ?? 0;
+    }
+
+
+    /**
+     * Build the sidebar category list: compute counts, hide empties, sort by count.
+     * Called after both categories and parts have loaded.
+     */
+    private buildCategorySidebar(): void {
+        //
+        // Build counts map from loaded parts
+        //
+        this.categoryCounts.clear();
+        for (const part of this.allParts) {
+            if (part.brickCategoryId != null) {
+                const current = this.categoryCounts.get(part.brickCategoryId) ?? 0;
+                this.categoryCounts.set(part.brickCategoryId, current + 1);
+            }
+        }
+
+        //
+        // Filter out empty categories, then sort by count descending
+        //
+        this.categories = this.allCategories
+            .filter(cat => (this.categoryCounts.get(cat.id) ?? 0) > 0)
+            .sort((a, b) => {
+                const countDiff = (this.categoryCounts.get(b.id) ?? 0) - (this.categoryCounts.get(a.id) ?? 0);
+                if (countDiff !== 0) return countDiff;
+                return (a.name || '').localeCompare(b.name || '');  // tie-break alphabetically
+            });
     }
 
     getVisiblePages(): number[] {

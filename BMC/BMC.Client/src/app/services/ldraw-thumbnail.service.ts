@@ -1,5 +1,6 @@
 import { Injectable, Inject } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
+import Dexie, { Table } from 'dexie';
 
 import * as THREE from 'three';
 import { LDrawLoader } from 'three/examples/jsm/loaders/LDrawLoader.js';
@@ -17,8 +18,35 @@ export interface ThumbnailResult {
 }
 
 /**
+ * Persisted thumbnail entry in IndexedDB.
+ */
+interface ThumbnailCacheEntry {
+    geometryFilePath: string;
+    dataUrl: string;
+    cachedAt: number;
+}
+
+/**
+ * Dexie database for persistent thumbnail storage.
+ */
+class ThumbnailCacheDatabase extends Dexie {
+    thumbnails!: Table<ThumbnailCacheEntry, string>;
+
+    constructor() {
+        super('bmc-thumbnails');
+        this.version(1).stores({
+            thumbnails: 'geometryFilePath'
+        });
+    }
+}
+
+/**
  * Renders 3D LDraw previews offscreen using a single shared WebGL context,
  * then exports them as data:image/png URLs for use in <img> elements.
+ *
+ * Thumbnails are persisted in IndexedDB so subsequent visits load instantly
+ * without re-rendering. The in-memory Map is pre-loaded from IndexedDB on
+ * first use.
  *
  * This approach avoids the browser's WebGL context limit (~8-16) which would
  * be exceeded by putting a separate <canvas> on each catalog card.
@@ -47,17 +75,28 @@ export class LDrawThumbnailService {
     public thumbnail$: Observable<ThumbnailResult> = this.thumbnailSubject.asObservable();
 
     //
+    // Persistent IndexedDB cache
+    //
+    private db: ThumbnailCacheDatabase;
+    private dbLoaded = false;
+    private dbLoadPromise: Promise<void> | null = null;
+
+    //
     // Internal state
     //
     private initialized = false;
     private materialsPreloaded = false;
     private rendering = false;
     private queue: BrickPartData[] = [];
+    private queueGeneration = 0;  // incremented on each renderBatch to abort stale loops
     private baseUrl: string;
 
     // Thumbnail dimensions (px)
     private readonly WIDTH = 200;
     private readonly HEIGHT = 200;
+
+    // Delay between consecutive renders (ms) — prevents 429s from sub-file requests
+    private readonly RENDER_DELAY_MS = 100;
 
 
     constructor(
@@ -65,6 +104,7 @@ export class LDrawThumbnailService {
         @Inject('BASE_URL') baseUrl: string
     ) {
         this.baseUrl = baseUrl;
+        this.db = new ThumbnailCacheDatabase();
     }
 
 
@@ -74,6 +114,17 @@ export class LDrawThumbnailService {
      * Automatically deduplicates (skips already-cached parts).
      */
     renderBatch(parts: BrickPartData[]): void {
+
+        //
+        // Ensure IndexedDB thumbnails are loaded into memory first
+        //
+        if (!this.dbLoaded) {
+            if (!this.dbLoadPromise) {
+                this.dbLoadPromise = this.loadFromIndexedDB();
+            }
+            this.dbLoadPromise.then(() => this.renderBatch(parts));
+            return;
+        }
 
         //
         // Filter to parts that have a geometry file and aren't already cached
@@ -102,9 +153,10 @@ export class LDrawThumbnailService {
         // Replace the queue (new page navigation cancels previous batch)
         //
         this.queue = [...needed];
+        this.queueGeneration++;
 
         if (!this.rendering) {
-            this.processQueue();
+            this.processQueue(this.queueGeneration);
         }
     }
 
@@ -209,14 +261,23 @@ export class LDrawThumbnailService {
 
     /**
      * Process the render queue sequentially — one model at a time.
+     * Checks queueGeneration to abort if a new batch was started.
      */
-    private async processQueue(): Promise<void> {
+    private async processQueue(generation: number): Promise<void> {
         this.rendering = true;
 
         this.ensureInitialized();
         await this.preloadMaterials();
 
         while (this.queue.length > 0) {
+
+            //
+            // Abort if a new renderBatch() started a new generation
+            //
+            if (generation !== this.queueGeneration) {
+                break;
+            }
+
             const part = this.queue.shift()!;
 
             if (!part.geometryFilePath || this.cache.has(part.geometryFilePath)) {
@@ -231,9 +292,22 @@ export class LDrawThumbnailService {
                         geometryFilePath: part.geometryFilePath,
                         dataUrl
                     });
+
+                    //
+                    // Persist to IndexedDB (fire-and-forget)
+                    //
+                    this.persistToIndexedDB(part.geometryFilePath, dataUrl);
                 }
             } catch (err) {
                 console.warn(`[LDrawThumbnail] Failed to render ${part.geometryFilePath}:`, err);
+            }
+
+            //
+            // Throttle: wait between renders to avoid hammering the server
+            // with sub-file requests (fixes 429 Too Many Requests)
+            //
+            if (this.queue.length > 0 && generation === this.queueGeneration) {
+                await this.delay(this.RENDER_DELAY_MS);
             }
         }
 
@@ -369,5 +443,46 @@ export class LDrawThumbnailService {
 
         this.camera.lookAt(center);
         this.camera.updateProjectionMatrix();
+    }
+
+
+    /**
+     * Load all persisted thumbnails from IndexedDB into the in-memory cache.
+     * Called once, lazily on first renderBatch().
+     */
+    private async loadFromIndexedDB(): Promise<void> {
+        try {
+            const entries = await this.db.thumbnails.toArray();
+            for (const entry of entries) {
+                this.cache.set(entry.geometryFilePath, entry.dataUrl);
+            }
+        } catch (err) {
+            console.warn('[LDrawThumbnail] Failed to load from IndexedDB:', err);
+        }
+        this.dbLoaded = true;
+    }
+
+
+    /**
+     * Persist a single rendered thumbnail to IndexedDB (fire-and-forget).
+     */
+    private async persistToIndexedDB(geometryFilePath: string, dataUrl: string): Promise<void> {
+        try {
+            await this.db.thumbnails.put({
+                geometryFilePath,
+                dataUrl,
+                cachedAt: Date.now()
+            });
+        } catch (err) {
+            console.warn('[LDrawThumbnail] Failed to persist thumbnail:', err);
+        }
+    }
+
+
+    /**
+     * Simple promise-based delay for throttling.
+     */
+    private delay(ms: number): Promise<void> {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
 }

@@ -156,7 +156,10 @@
                     <i class="fa-solid fa-map me-1"></i> Location
                 </label>
                 <app-location-map [latitude]="mapLatitude" [longitude]="mapLongitude" [editable]="true"
-                    [height]="'220px'" (coordinatesChanged)="onCoordinatesChanged($event)">
+                    [height]="'220px'" [showResolveButton]="true" [addressLine1]="clientForm.get('addressLine1')?.value"
+                    [city]="clientForm.get('city')?.value" [stateProvinceId]="clientForm.get('stateProvinceId')?.value"
+                    [postalCode]="clientForm.get('postalCode')?.value" [countryId]="clientForm.get('countryId')?.value"
+                    (coordinatesChanged)="onCoordinatesChanged($event)">
                 </app-location-map>
                 <div class="d-flex gap-3 mt-1">
                     <small class="text-muted">Lat: {{ mapLatitude ?? 'Not set' }}</small>

@@ -183,6 +183,9 @@
           <div class="mb-3">
             <app-location-map [latitude]="tenantProfileSubmitData.latitude"
               [longitude]="tenantProfileSubmitData.longitude" [editable]="true" [height]="'220px'"
+              [showResolveButton]="true" [addressLine1]="tenantProfileSubmitData.addressLine1"
+              [city]="tenantProfileSubmitData.city" [stateProvinceId]="tenantProfileSubmitData.stateProvinceId"
+              [postalCode]="tenantProfileSubmitData.postalCode" [countryId]="tenantProfileSubmitData.countryId"
               (coordinatesChanged)="onCoordinatesChanged($event)">
             </app-location-map>
             <div class="d-flex gap-3 mt-1">

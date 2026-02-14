@@ -231,10 +231,17 @@ export class IndexedDBCacheService {
      */
     private async putEntry(key: string, storeName: string, data: any, ttlMinutes: number): Promise<void> {
         try {
+            //
+            // Serialize to plain JSON first — revived objects contain BehaviorSubjects,
+            // Observables, and prototype methods that IndexedDB's structured clone
+            // algorithm cannot handle. JSON round-trip strips all non-serializable props.
+            //
+            const plainData = JSON.parse(JSON.stringify(data));
+
             await this.db.cacheEntries.put({
                 key,
                 storeName,
-                data,
+                data: plainData,
                 cachedAt: Date.now(),
                 ttlMinutes
             });

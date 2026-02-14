@@ -4,6 +4,18 @@
     <div #mapContainer [id]="mapId" class="map-container" [class.editable]="editable">
     </div>
 
+    <!-- Resolve from Address button (editable mode only, when enabled) -->
+    <div *ngIf="showResolveButton && editable" class="resolve-bar d-flex align-items-center gap-2 mt-1 mb-1">
+        <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="isResolving"
+            (click)="resolveFromAddress()">
+            <i class="fa-solid" [ngClass]="isResolving ? 'fa-spinner fa-spin' : 'fa-map-location-dot'"></i>
+            {{ isResolving ? 'Resolving...' : 'Resolve from Address' }}
+        </button>
+        <small *ngIf="resolveMessage" [class.text-success]="resolveSuccess" [class.text-danger]="!resolveSuccess">
+            {{ resolveMessage }}
+        </small>
+    </div>
+
     <!-- Overlay prompt when no coordinates are set (editable mode only) -->
     <div *ngIf="!hasCoordinates && editable" class="no-coordinates-overlay">
         <div class="overlay-content">

@@ -11,6 +11,7 @@ import {
     ViewChild
 } from '@angular/core';
 import * as L from 'leaflet';
+import { GeocodingService, GeocodeResult } from '../../../services/geocoding.service';
 
 
 /**
@@ -24,6 +25,12 @@ import * as L from 'leaflet';
  *     [longitude]="entity.longitude"
  *     [editable]="true"
  *     [height]="'300px'"
+ *     [showResolveButton]="true"
+ *     [addressLine1]="form.get('addressLine1')?.value"
+ *     [city]="form.get('city')?.value"
+ *     [stateProvinceId]="form.get('stateProvinceId')?.value"
+ *     [postalCode]="form.get('postalCode')?.value"
+ *     [countryId]="form.get('countryId')?.value"
  *     (coordinatesChanged)="onCoordsChanged($event)">
  *   </app-location-map>
  *
@@ -49,6 +56,16 @@ export class LocationMapComponent implements AfterViewInit, OnChanges, OnDestroy
     /** CSS height for the map container. */
     @Input() height: string = '300px';
 
+    /** Whether to show the "Resolve from Address" button. */
+    @Input() showResolveButton: boolean = false;
+
+    /** Address fields for geocoding resolution (optional). */
+    @Input() addressLine1: string | null | undefined = null;
+    @Input() city: string | null | undefined = null;
+    @Input() stateProvinceId: number | null | undefined = null;
+    @Input() postalCode: string | null | undefined = null;
+    @Input() countryId: number | null | undefined = null;
+
     /** Emits when the user changes coordinates (click or drag). */
     @Output() coordinatesChanged = new EventEmitter<{ latitude: number; longitude: number }>();
 
@@ -56,6 +73,15 @@ export class LocationMapComponent implements AfterViewInit, OnChanges, OnDestroy
 
     /** Whether valid coordinates are provided. */
     public hasCoordinates: boolean = false;
+
+    /** Whether the geocoding resolve is in progress. */
+    public isResolving: boolean = false;
+
+    /** Message to display after a resolve attempt. */
+    public resolveMessage: string | null = null;
+
+    /** Whether the last resolve attempt was successful. */
+    public resolveSuccess: boolean = false;
 
     /** The Leaflet map instance. */
     private map: L.Map | null = null;
@@ -83,7 +109,7 @@ export class LocationMapComponent implements AfterViewInit, OnChanges, OnDestroy
     });
 
 
-    constructor() {
+    constructor(private geocodingService: GeocodingService) {
         LocationMapComponent.instanceCounter++;
         this.mapId = 'location-map-' + LocationMapComponent.instanceCounter;
     }
@@ -224,6 +250,93 @@ export class LocationMapComponent implements AfterViewInit, OnChanges, OnDestroy
             this.map.removeLayer(this.marker);
             this.marker = null;
         }
+    }
+
+
+    /**
+     * Resolves the current address inputs into coordinates via the geocoding API.
+     * Updates the marker and emits coordinatesChanged on success.
+     */
+    public resolveFromAddress(): void {
+        if (this.isResolving) {
+            return;
+        }
+
+        //
+        // Check that at least one address field has a value
+        //
+        const hasAnyAddress = this.addressLine1 || this.city || this.postalCode
+            || this.stateProvinceId || this.countryId;
+
+        if (!hasAnyAddress) {
+            this.resolveMessage = 'Please fill in at least one address field first.';
+            this.resolveSuccess = false;
+            this.clearResolveMessage();
+            return;
+        }
+
+        this.isResolving = true;
+        this.resolveMessage = null;
+
+        this.geocodingService.resolveAddress({
+            addressLine1: this.addressLine1 || undefined,
+            city: this.city || undefined,
+            stateProvinceId: this.stateProvinceId ?? null,
+            postalCode: this.postalCode || undefined,
+            countryId: this.countryId ?? null
+        }).subscribe({
+            next: (result: GeocodeResult) => {
+                this.isResolving = false;
+
+                //
+                // Update the map with the resolved coordinates
+                //
+                if (this.map) {
+                    this.map.setView([result.latitude, result.longitude], 15);
+                    this.setMarker(result.latitude, result.longitude);
+                }
+
+                //
+                // Emit the new coordinates so the parent form can update
+                //
+                this.coordinatesChanged.emit({
+                    latitude: result.latitude,
+                    longitude: result.longitude
+                });
+
+                //
+                // Show a brief success message with confidence indicator
+                //
+                const confidencePercent = Math.round(result.confidence * 100);
+                this.resolveMessage = `Resolved (${confidencePercent}% confidence)`;
+                this.resolveSuccess = true;
+                this.clearResolveMessage();
+            },
+            error: (error: any) => {
+                this.isResolving = false;
+
+                if (error?.status === 404) {
+                    this.resolveMessage = 'Address could not be resolved. Try providing more details.';
+                } else if (error?.status === 429) {
+                    this.resolveMessage = 'Geocoding is busy, please try again in a moment.';
+                } else {
+                    this.resolveMessage = 'An error occurred while resolving the address.';
+                }
+
+                this.resolveSuccess = false;
+                this.clearResolveMessage(8000);
+            }
+        });
+    }
+
+
+    /**
+     * Clears the resolve message after a delay.
+     */
+    private clearResolveMessage(delayMs: number = 5000): void {
+        setTimeout(() => {
+            this.resolveMessage = null;
+        }, delayMs);
     }
 
 

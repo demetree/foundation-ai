@@ -68,7 +68,7 @@ namespace Foundation.BMC.Controllers.WebAPI
         /// Example: GET /api/ldraw/file?path=parts/3001.dat
         /// </summary>
         [HttpGet]
-        [RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
+        [RateLimit(RateLimitOption.OneHundredPerSecond, Scope = RateLimitScope.PerUser)]
         [Route("api/ldraw/file")]
         public async Task<IActionResult> GetLDrawFile(string path, CancellationToken cancellationToken = default)
         {
@@ -82,7 +82,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 
 
         /// <summary>
-        /// Returns the raw LDraw file content via path segments (unauthenticated).
+        /// Returns the raw LDraw file content via path segments.
         /// Used by the Three.js LDrawLoader which resolves sub-files by trial and error,
         /// generating many concurrent HTTP requests per part.
         ///
@@ -94,7 +94,7 @@ namespace Foundation.BMC.Controllers.WebAPI
         /// Example: GET /api/ldraw/file/LDConfig.ldr
         /// </summary>
         [HttpGet]
-        [RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
+        [RateLimit(RateLimitOption.OneHundredPerSecond, Scope = RateLimitScope.PerUser)]
         [Route("api/ldraw/file/{**filePath}")]
         public async Task<IActionResult> GetLDrawFileByPath(string filePath, CancellationToken cancellationToken = default)
         {

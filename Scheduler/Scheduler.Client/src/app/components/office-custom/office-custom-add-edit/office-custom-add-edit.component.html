@@ -118,6 +118,9 @@
           Location
         </h6>
         <app-location-map [latitude]="mapLatitude" [longitude]="mapLongitude" [editable]="true" [height]="'250px'"
+          [showResolveButton]="true" [addressLine1]="officeForm.get('addressLine1')?.value"
+          [city]="officeForm.get('city')?.value" [stateProvinceId]="officeForm.get('stateProvinceId')?.value"
+          [postalCode]="officeForm.get('postalCode')?.value" [countryId]="officeForm.get('countryId')?.value"
           (coordinatesChanged)="onCoordinatesChanged($event)">
         </app-location-map>
         <div class="row g-2 mt-2">
