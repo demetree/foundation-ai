@@ -42,6 +42,13 @@ export class ResourceCustomAddEditComponent {
   public isAvatarPanelOpen = false;
   public isDragOver = false;
 
+  public attributesParsed: any = {};
+
+  onDynamicAttributeChange(data: any) {
+    this.attributesParsed = data;
+    this.resourceForm.markAsDirty();
+  }
+
   resourceForm: FormGroup = this.fb.group({
     name: ['', Validators.required],
     description: [''],
@@ -305,7 +312,7 @@ export class ResourceCustomAddEditComponent {
       notes: formValue.notes?.trim() || null,
       externalId: formValue.externalId?.trim() || null,
       color: formValue.color?.trim() || null,
-      attributes: formValue.attributes?.trim() || null,
+      attributes: Object.keys(this.attributesParsed).length > 0 ? JSON.stringify(this.attributesParsed) : null,
       avatarFileName: formValue.avatarFileName?.trim() || null,
       avatarSize: formValue.avatarSize ? Number(formValue.avatarSize) : null,
       avatarData: formValue.avatarData?.trim() || null,
@@ -429,6 +436,7 @@ export class ResourceCustomAddEditComponent {
 
     if (resourceData == null) {
 
+      this.attributesParsed = {};
       this.currentAvatarUrl = null;
       //
       // Reset the form group to null state, but don't change the form instance.
@@ -456,6 +464,12 @@ export class ResourceCustomAddEditComponent {
 
     }
     else {
+
+      try {
+        this.attributesParsed = resourceData.attributes ? JSON.parse(resourceData.attributes) : {};
+      } catch (e) {
+        this.attributesParsed = {};
+      }
 
       // Reconstruct full data URL for preview if we have base64 data
       if (resourceData.avatarData && resourceData.avatarMimeType) {

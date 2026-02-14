@@ -25,35 +25,42 @@ export class ClientCustomAddEditComponent {
   @Input() navigateToDetailsAfterAdd: boolean = true;
   @Input() showAddButton: boolean = true;
 
+  public attributesParsed: any = {};
+
+  onDynamicAttributeChange(data: any) {
+    this.attributesParsed = data;
+    this.clientForm.markAsDirty();
+  }
+
   clientForm: FormGroup = this.fb.group({
-        name: ['', Validators.required],
-        description: [''],
-        clientTypeId: [null, Validators.required],
-        currencyId: [null, Validators.required],
-        timeZoneId: [null, Validators.required],
-        calendarId: [null],
-        addressLine1: ['', Validators.required],
-        addressLine2: [''],
-        city: ['', Validators.required],
-        postalCode: [''],
-        stateProvinceId: [null, Validators.required],
-        countryId: [null, Validators.required],
-        phone: [''],
-        email: [''],
-        latitude: [''],
-        longitude: [''],
-        notes: [''],
-        externalId: [''],
-        color: [''],
-        attributes: [''],
-        avatarFileName: [''],
-        avatarSize: [''],
-        avatarData: [''],
-        avatarMimeType: [''],
-        versionNumber: [''],
-        active: [true],
-        deleted: [false],
-      });
+    name: ['', Validators.required],
+    description: [''],
+    clientTypeId: [null, Validators.required],
+    currencyId: [null, Validators.required],
+    timeZoneId: [null, Validators.required],
+    calendarId: [null],
+    addressLine1: ['', Validators.required],
+    addressLine2: [''],
+    city: ['', Validators.required],
+    postalCode: [''],
+    stateProvinceId: [null, Validators.required],
+    countryId: [null, Validators.required],
+    phone: [''],
+    email: [''],
+    latitude: [''],
+    longitude: [''],
+    notes: [''],
+    externalId: [''],
+    color: [''],
+    attributes: [''],
+    avatarFileName: [''],
+    avatarSize: [''],
+    avatarData: [''],
+    avatarMimeType: [''],
+    versionNumber: [''],
+    active: [true],
+    deleted: [false],
+  });
 
   private modalRef: NgbModalRef | undefined;
   public isEditMode = false;
@@ -171,41 +178,41 @@ export class ClientCustomAddEditComponent {
     // Build clean submit object from form + fallback to current data if needed
     //
     const clientSubmitData: ClientSubmitData = {
-        id: this.clientSubmitData?.id || 0,
-        name: formValue.name!.trim(),
-        description: formValue.description?.trim() || null,
-        clientTypeId: Number(formValue.clientTypeId),
-        currencyId: Number(formValue.currencyId),
-        timeZoneId: Number(formValue.timeZoneId),
-        calendarId: formValue.calendarId ? Number(formValue.calendarId) : null,
-        addressLine1: formValue.addressLine1!.trim(),
-        addressLine2: formValue.addressLine2?.trim() || null,
-        city: formValue.city!.trim(),
-        postalCode: formValue.postalCode?.trim() || null,
-        stateProvinceId: Number(formValue.stateProvinceId),
-        countryId: Number(formValue.countryId),
-        phone: formValue.phone?.trim() || null,
-        email: formValue.email?.trim() || null,
-        latitude: formValue.latitude ? Number(formValue.latitude) : null,
-        longitude: formValue.longitude ? Number(formValue.longitude) : null,
-        notes: formValue.notes?.trim() || null,
-        externalId: formValue.externalId?.trim() || null,
-        color: formValue.color?.trim() || null,
-        attributes: formValue.attributes?.trim() || null,
-        avatarFileName: formValue.avatarFileName?.trim() || null,
-        avatarSize: formValue.avatarSize ? Number(formValue.avatarSize) : null,
-        avatarData: formValue.avatarData?.trim() || null,
-        avatarMimeType: formValue.avatarMimeType?.trim() || null,
-        versionNumber: this.clientSubmitData?.versionNumber ?? 0,
-        active: !!formValue.active,
-        deleted: !!formValue.deleted,
-   };
+      id: this.clientSubmitData?.id || 0,
+      name: formValue.name!.trim(),
+      description: formValue.description?.trim() || null,
+      clientTypeId: Number(formValue.clientTypeId),
+      currencyId: Number(formValue.currencyId),
+      timeZoneId: Number(formValue.timeZoneId),
+      calendarId: formValue.calendarId ? Number(formValue.calendarId) : null,
+      addressLine1: formValue.addressLine1!.trim(),
+      addressLine2: formValue.addressLine2?.trim() || null,
+      city: formValue.city!.trim(),
+      postalCode: formValue.postalCode?.trim() || null,
+      stateProvinceId: Number(formValue.stateProvinceId),
+      countryId: Number(formValue.countryId),
+      phone: formValue.phone?.trim() || null,
+      email: formValue.email?.trim() || null,
+      latitude: formValue.latitude ? Number(formValue.latitude) : null,
+      longitude: formValue.longitude ? Number(formValue.longitude) : null,
+      notes: formValue.notes?.trim() || null,
+      externalId: formValue.externalId?.trim() || null,
+      color: formValue.color?.trim() || null,
+      attributes: Object.keys(this.attributesParsed).length > 0 ? JSON.stringify(this.attributesParsed) : null,
+      avatarFileName: formValue.avatarFileName?.trim() || null,
+      avatarSize: formValue.avatarSize ? Number(formValue.avatarSize) : null,
+      avatarData: formValue.avatarData?.trim() || null,
+      avatarMimeType: formValue.avatarMimeType?.trim() || null,
+      versionNumber: this.clientSubmitData?.versionNumber ?? 0,
+      active: !!formValue.active,
+      deleted: !!formValue.deleted,
+    };
 
-      if (this.isEditMode) {
-        this.updateClient(clientSubmitData);
-      } else {
-        this.addClient(clientSubmitData);
-      }
+    if (this.isEditMode) {
+      this.updateClient(clientSubmitData);
+    } else {
+      this.addClient(clientSubmitData);
+    }
   }
 
   private addClient(clientData: ClientSubmitData) {
@@ -231,36 +238,33 @@ export class ClientCustomAddEditComponent {
         }
       },
       error: (err) => {
-            let errorMessage: string;
+        let errorMessage: string;
 
-            // Check if err is an Error object (e.g., new Error('message'))
-            if (err instanceof Error) {
-                errorMessage = err.message || 'An unexpected error occurred.';
-            }
-            // Check if err is a ServerError object with status and error properties
-            else if (err.status && err.error)
-            {
-                if (err.status === 403)
-                {
-                    errorMessage = err.error?.message ||
-                                   'You do not have permission to save this Client.';
-                }
-                else
-                {
-                    errorMessage = err.error?.message ||
-                                   err.error?.error_description ||
-                                   err.error?.detail ||
-                                   'An error occurred while saving the Client.';
-                }
-            }
-            // Fallback for unexpected error formats
-            else {
-                errorMessage = 'An unexpected error occurred.';
-            }
+        // Check if err is an Error object (e.g., new Error('message'))
+        if (err instanceof Error) {
+          errorMessage = err.message || 'An unexpected error occurred.';
+        }
+        // Check if err is a ServerError object with status and error properties
+        else if (err.status && err.error) {
+          if (err.status === 403) {
+            errorMessage = err.error?.message ||
+              'You do not have permission to save this Client.';
+          }
+          else {
+            errorMessage = err.error?.message ||
+              err.error?.error_description ||
+              err.error?.detail ||
+              'An error occurred while saving the Client.';
+          }
+        }
+        // Fallback for unexpected error formats
+        else {
+          errorMessage = 'An unexpected error occurred.';
+        }
 
-            this.alertService.showMessage('Client could not be saved',
-                                          errorMessage,
-                                          MessageSeverity.error);
+        this.alertService.showMessage('Client could not be saved',
+          errorMessage,
+          MessageSeverity.error);
       }
     });
   }
@@ -281,36 +285,33 @@ export class ClientCustomAddEditComponent {
         this.closeModal();
       },
       error: (err) => {
-            let errorMessage: string;
+        let errorMessage: string;
 
-            // Check if err is an Error object (e.g., new Error('message'))
-            if (err instanceof Error) {
-                errorMessage = err.message || 'An unexpected error occurred.';
-            }
-            // Check if err is a ServerError object with status and error properties
-            else if (err.status && err.error)
-            {
-                if (err.status === 403)
-                {
-                    errorMessage = err.error?.message ||
-                                   'You do not have permission to save this Client.';
-                }
-                else
-                {
-                    errorMessage = err.error?.message ||
-                                   err.error?.error_description ||
-                                   err.error?.detail ||
-                                   'An error occurred while saving the Client.';
-                }
-            }
-            // Fallback for unexpected error formats
-            else {
-                errorMessage = 'An unexpected error occurred.';
-            }
+        // Check if err is an Error object (e.g., new Error('message'))
+        if (err instanceof Error) {
+          errorMessage = err.message || 'An unexpected error occurred.';
+        }
+        // Check if err is a ServerError object with status and error properties
+        else if (err.status && err.error) {
+          if (err.status === 403) {
+            errorMessage = err.error?.message ||
+              'You do not have permission to save this Client.';
+          }
+          else {
+            errorMessage = err.error?.message ||
+              err.error?.error_description ||
+              err.error?.detail ||
+              'An error occurred while saving the Client.';
+          }
+        }
+        // Fallback for unexpected error formats
+        else {
+          errorMessage = 'An unexpected error occurred.';
+        }
 
-            this.alertService.showMessage('Client could not be saved',
-                                          errorMessage,
-                                          MessageSeverity.error);
+        this.alertService.showMessage('Client could not be saved',
+          errorMessage,
+          MessageSeverity.error);
       }
     });
   }
@@ -320,7 +321,9 @@ export class ClientCustomAddEditComponent {
   private buildFormValues(clientData: ClientData | null) {
 
     if (clientData == null) {
-      
+
+      this.attributesParsed = {};
+
       //
       // Reset the form group to null state, but don't change the form instance.
       //
@@ -352,15 +355,21 @@ export class ClientCustomAddEditComponent {
         versionNumber: '',
         active: true,
         deleted: false,
-   }, { emitEvent: false});
+      }, { emitEvent: false });
 
     }
     else {
 
-        //
-        // Reset the form with properly formatted values that support dates in datetime-local inputs
-        //
-        this.clientForm.reset({
+      try {
+        this.attributesParsed = clientData.attributes ? JSON.parse(clientData.attributes) : {};
+      } catch (e) {
+        this.attributesParsed = {};
+      }
+
+      //
+      // Reset the form with properly formatted values that support dates in datetime-local inputs
+      //
+      this.clientForm.reset({
         name: clientData.name ?? '',
         description: clientData.description ?? '',
         clientTypeId: clientData.clientTypeId,
@@ -388,7 +397,7 @@ export class ClientCustomAddEditComponent {
         versionNumber: clientData.versionNumber?.toString() ?? '',
         active: clientData.active ?? true,
         deleted: clientData.deleted ?? false,
-      }, { emitEvent: false});
+      }, { emitEvent: false });
     }
 
     this.clientForm.markAsPristine();

@@ -1,4 +1,5 @@
 import { NgModule } from '@angular/core';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientModule } from '@angular/common/http';
@@ -36,6 +37,14 @@ import { InputDialogService } from './services/input-dialog.service';
 import { InputDialogComponent } from './services/input-dialog/input-dialog.component';
 
 import { NavigationService } from './utility-services/navigation.service';
+
+//
+// Shared directives, components, and pipes used by auto-generated Foundation components
+//
+import { SpinnerDirective } from './directives/spinner.directive';
+import { SpinnerComponent } from './directives/spinner.component';
+import { BooleanIconComponent } from './components/controls/boolean-icon.component';
+import { BigNumberFormatPipe } from './pipes/big-number-format.pipe';
 
 
 //
@@ -137,6 +146,11 @@ import { ProjectChangeHistoryTableComponent } from './bmc-data-components/projec
         ConfirmationDialogComponent,
         InputDialogComponent,
 
+        SpinnerDirective,
+        SpinnerComponent,
+        BooleanIconComponent,
+        BigNumberFormatPipe,
+
 
         //
         // Beginning of declarations for BMC Data Components
@@ -211,9 +225,11 @@ import { ProjectChangeHistoryTableComponent } from './bmc-data-components/projec
         ReactiveFormsModule,
         RouterModule,
         NgbModule,
+        ScrollingModule,
         ToastaModule.forRoot(),
         AppRoutingModule,
     ],
+    exports: [SpinnerDirective],
     providers: [
         AuthService,
         AlertService,

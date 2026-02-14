@@ -68,6 +68,14 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
   recurrenceRule: RecurrenceRuleData | null = null;
   activeTab = 'basic';
 
+  // Dynamic attributes
+  attributesParsed: any = {};
+
+  onDynamicAttributeChange(data: any) {
+    this.attributesParsed = data;
+    this.eventForm.markAsDirty();
+  }
+
   // Template picker
   selectedTemplateId: number | null = null;
   templates: ScheduledEventTemplateData[] = [];
@@ -625,6 +633,12 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
   // Form Population (Edit Mode)
   // -------------------------------------------------------------------------
   private populateForm(eventData: ScheduledEventData): void {
+    try {
+      this.attributesParsed = eventData.attributes ? JSON.parse(eventData.attributes) : {};
+    } catch (e) {
+      this.attributesParsed = {};
+    }
+
     this.eventForm.patchValue({
       name: eventData.name,
       description: eventData.description,
@@ -755,7 +769,7 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
         crewId: null,
         parentScheduledEventId: null,
         recurrenceInstanceDate: null,
-        attributes: null,
+        attributes: Object.keys(this.attributesParsed).length > 0 ? JSON.stringify(this.attributesParsed) : null,
         isAllDay: formVal.isAllDay || false,
         priorityId: formVal.priorityId || null,
         eventStatusId: formVal.eventStatusId || 1,

@@ -188,6 +188,13 @@
           <textarea class="form-control" rows="3" formControlName="notes" placeholder="Internal notes..."></textarea>
         </div>
 
+        <!-- Dynamic Attributes -->
+        <div class="col-12">
+          <app-dynamic-field-renderer [entityName]="'ScheduledEvent'" [data]="attributesParsed"
+            (dataChange)="onDynamicAttributeChange($event)">
+          </app-dynamic-field-renderer>
+        </div>
+
         <!-- Calendar Assignment -->
         <div class="col-12" *ngIf="calendars.length > 0">
           <label class="form-label fw-semibold">

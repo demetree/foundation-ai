@@ -41,6 +41,13 @@ export class OfficeCustomAddEditComponent {
   public isAvatarPanelOpen = false;
   public isDragOver = false;
 
+  public attributesParsed: any = {};
+
+  onDynamicAttributeChange(data: any) {
+    this.attributesParsed = data;
+    this.officeForm.markAsDirty();
+  }
+
   officeForm: FormGroup = this.fb.group({
     name: ['', Validators.required],
     description: [''],
@@ -305,7 +312,7 @@ export class OfficeCustomAddEditComponent {
       color: formValue.color?.trim() || null,
       latitude: null,
       longitude: null,
-      attributes: formValue.attributes?.trim() || null,
+      attributes: Object.keys(this.attributesParsed).length > 0 ? JSON.stringify(this.attributesParsed) : null,
       avatarFileName: formValue.avatarFileName?.trim() || null,
       avatarSize: formValue.avatarSize ? Number(formValue.avatarSize) : null,
       avatarData: formValue.avatarData?.trim() || null,
@@ -435,6 +442,7 @@ export class OfficeCustomAddEditComponent {
 
     if (officeData == null) {
 
+      this.attributesParsed = {};
       this.currentAvatarUrl = null;
 
       //
@@ -469,6 +477,12 @@ export class OfficeCustomAddEditComponent {
 
     }
     else {
+
+      try {
+        this.attributesParsed = officeData.attributes ? JSON.parse(officeData.attributes) : {};
+      } catch (e) {
+        this.attributesParsed = {};
+      }
 
       // Reconstruct full data URL for preview if we have base64 data
       if (officeData.avatarData && officeData.avatarMimeType) {

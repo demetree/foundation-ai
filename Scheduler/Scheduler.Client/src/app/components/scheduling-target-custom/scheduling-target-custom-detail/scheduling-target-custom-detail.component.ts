@@ -83,6 +83,13 @@ export class SchedulingTargetCustomDetailComponent implements OnInit, OnDestroy,
     public isSaving = false;
     public isEditMode = true;
 
+    public attributesParsed: any = {};
+
+    onDynamicAttributeChange(data: any) {
+        this.attributesParsed = data;
+        this.schedulingTargetForm.markAsDirty();
+    }
+
     public offices$ = this.officeService.GetOfficeList();
     public clients$ = this.clientService.GetClientList();
     public schedulingTargetTypes$ = this.schedulingTargetTypeService.GetSchedulingTargetTypeList();
@@ -201,6 +208,7 @@ export class SchedulingTargetCustomDetailComponent implements OnInit, OnDestroy,
 
     private buildFormValues(data: SchedulingTargetData | null) {
         if (!data) {
+            this.attributesParsed = {};
             this.schedulingTargetForm.reset({
                 name: '', description: '', officeId: null, clientId: null, schedulingTargetTypeId: null,
                 timeZoneId: null, calendarId: null, notes: '', externalId: '', color: '', attributes: '',
@@ -208,6 +216,11 @@ export class SchedulingTargetCustomDetailComponent implements OnInit, OnDestroy,
                 active: true, deleted: false
             }, { emitEvent: false });
         } else {
+            try {
+                this.attributesParsed = data.attributes ? JSON.parse(data.attributes) : {};
+            } catch (e) {
+                this.attributesParsed = {};
+            }
             this.schedulingTargetForm.reset({
                 name: data.name ?? '',
                 description: data.description ?? '',
@@ -255,7 +268,7 @@ export class SchedulingTargetCustomDetailComponent implements OnInit, OnDestroy,
             notes: formValue.notes?.trim() || null,
             externalId: formValue.externalId?.trim() || null,
             color: formValue.color?.trim() || null,
-            attributes: formValue.attributes?.trim() || null,
+            attributes: Object.keys(this.attributesParsed).length > 0 ? JSON.stringify(this.attributesParsed) : null,
             avatarFileName: formValue.avatarFileName?.trim() || null,
             avatarSize: formValue.avatarSize ? Number(formValue.avatarSize) : null,
             avatarData: formValue.avatarData?.trim() || null,

@@ -218,6 +218,11 @@
 
       </div>
 
+      <!-- Dynamic Attributes -->
+      <app-dynamic-field-renderer [entityName]="'Office'" [data]="attributesParsed"
+        (dataChange)="onDynamicAttributeChange($event)">
+      </app-dynamic-field-renderer>
+
       <!-- Advanced (Edit Only) -->
       <fieldset class="mb-4" *ngIf="isEditMode">
         <!--<legend class="fs-6 fw-semibold text-primary">Advanced</legend>-->
