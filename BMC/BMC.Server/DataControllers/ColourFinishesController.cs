@@ -105,7 +105,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			    pageSize = null;
 			}
 
-			IQueryable<Database.ColourFinish> query = (from cf in _context.ColourFinishs select cf);
+			IQueryable<Database.ColourFinish> query = (from cf in _context.ColourFinishes select cf);
 			if (string.IsNullOrEmpty(name) == false)
 			{
 				query = query.Where(cf => cf.name == name);
@@ -250,7 +250,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 255, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 
-			IQueryable<Database.ColourFinish> query = (from cf in _context.ColourFinishs select cf);
+			IQueryable<Database.ColourFinish> query = (from cf in _context.ColourFinishes select cf);
 			if (name != null)
 			{
 				query = query.Where(cf => cf.name == name);
@@ -354,7 +354,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 
 			try
 			{
-				IQueryable<Database.ColourFinish> query = (from cf in _context.ColourFinishs where
+				IQueryable<Database.ColourFinish> query = (from cf in _context.ColourFinishes where
 							(cf.id == id) &&
 							(userIsAdmin == true || cf.deleted == false) &&
 							(userIsWriter == true || cf.active == true)
@@ -441,7 +441,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 255, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
-			IQueryable<Database.ColourFinish> query = (from x in _context.ColourFinishs
+			IQueryable<Database.ColourFinish> query = (from x in _context.ColourFinishes
 				where
 				(x.id == id)
 				select x);
@@ -580,7 +580,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 				}
 
 				colourFinish.objectGuid = Guid.NewGuid();
-				_context.ColourFinishs.Add(colourFinish);
+				_context.ColourFinishes.Add(colourFinish);
 				await _context.SaveChangesAsync(cancellationToken);
 
 				await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
@@ -633,7 +633,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
-			IQueryable<Database.ColourFinish> query = (from x in _context.ColourFinishs
+			IQueryable<Database.ColourFinish> query = (from x in _context.ColourFinishes
 				where
 				(x.id == id)
 				select x);
@@ -733,7 +733,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			    pageSize = null;
 			}
 
-			IQueryable<Database.ColourFinish> query = (from cf in _context.ColourFinishs select cf);
+			IQueryable<Database.ColourFinish> query = (from cf in _context.ColourFinishes select cf);
 			if (string.IsNullOrEmpty(name) == false)
 			{
 				query = query.Where(cf => cf.name == name);

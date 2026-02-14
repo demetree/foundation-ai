@@ -276,6 +276,127 @@ export class AuthService {
 
 
     ///
+    /// Returns true if the current user is a BMC Administrator
+    ///
+    get isBMCAdministrator(): boolean {
+
+        var user = this.currentUser;
+
+        if (user == null) {
+            return false;
+        }
+
+        if (user.roles == null || user.roles.length == 0) {
+            return false;
+        }
+
+        //
+        // Deny any access if the user as the 'BMC No Access' role
+        //
+        for (var i = 0; i < user.roles.length; i++) {
+            if (user.roles[i] == "BMC No Access") {
+                return false;
+            }
+        }
+
+        //
+        // Return true if the user is a 'An Administrator'
+        //
+        for (var i = 0; i < user.roles.length; i++) {
+            if (user.roles[i] == "BMC Administrator") {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
+
+    ///
+    /// Returns true if the current user is a BMC Reader and Writer
+    ///
+    get isBMCReaderWriter(): boolean {
+
+        var user = this.currentUser;
+
+        if (user == null) {
+            return false;
+        }
+
+
+        if (user.roles == null || user.roles.length == 0) {
+            return false;
+        }
+
+        //
+        // Deny any access if the user as the 'BMC No Access' role
+        //
+        for (var i = 0; i < user.roles.length; i++) {
+            if (user.roles[i] == "BMC No Access") {
+                return false;
+            }
+        }
+
+
+        //
+        // Return true if the user is a 'BMC Reader and Writer' or 'BMC Administrator'
+        //
+        for (var i = 0; i < user.roles.length; i++) {
+            if (user.roles[i] == "BMC Administrator" ||
+                user.roles[i] == "BMC Reader and Writer") {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
+
+    ///
+    /// Returns true if the current user is a BMC Reader
+    ///
+    get isBMCReader(): boolean {
+
+        var user = this.currentUser;
+
+        if (user == null) {
+            return false;
+        }
+
+
+        if (user.roles == null || user.roles.length == 0) {
+            return false;
+        }
+
+        //
+        // Deny any access if the user as the 'BMC No Access' role
+        //
+        for (var i = 0; i < user.roles.length; i++) {
+            if (user.roles[i] == "BMC No Access") {
+                return false;
+            }
+        }
+
+
+        //
+        // Return true if the user is a 'BMC Reader' or 'BMC Reader and Writer' or 'BMC Administrator'
+        //
+        for (var i = 0; i < user.roles.length; i++) {
+            if (user.roles[i] == "BMC Administrator" ||
+                user.roles[i] == "BMC Reader and Writer" ||
+                user.roles[i] == "BMC Reader") {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
+
+    ///
     /// Returns the headers needed to authenticate requests to the server.
     ///
     public GetAuthenticationHeaders(): HttpHeaders {

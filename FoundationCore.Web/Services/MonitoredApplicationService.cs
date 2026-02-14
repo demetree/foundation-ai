@@ -38,9 +38,9 @@ namespace Foundation.Services
         public bool IsSelf { get; set; } = false;
         public bool IsAvailable { get; set; } = false;
         public string Status { get; set; } = "Unknown";
-        public string? Error { get; set; }
+        public string Error { get; set; }
         public DateTime CheckedAt { get; set; } = DateTime.UtcNow;
-        public object? HealthData { get; set; }
+        public object HealthData { get; set; }
     }
 
 
