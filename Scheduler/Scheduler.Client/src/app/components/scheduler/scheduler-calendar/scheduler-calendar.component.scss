@@ -605,6 +605,11 @@ $accent-secondary: #764ba2;
     font-weight: 600;
 }
 
+// Shift conflict row — amber accent to differentiate from red (resource/availability) and green (crew)
+.conflict-entity .bi-clock-history {
+    color: #f59e0b !important;
+}
+
 
 // ---------------------------------------------------------------------------
 // Availability Overlay — Background Events

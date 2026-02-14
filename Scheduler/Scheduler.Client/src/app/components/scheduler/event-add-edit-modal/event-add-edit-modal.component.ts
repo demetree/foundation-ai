@@ -9,6 +9,7 @@ import { EventCalendarService, EventCalendarData, EventCalendarSubmitData } from
 import { SchedulingTargetService, SchedulingTargetData } from '../../../scheduler-data-services/scheduling-target.service';
 import { ScheduledEventTemplateService, ScheduledEventTemplateData, ScheduledEventTemplateSubmitData } from '../../../scheduler-data-services/scheduled-event-template.service';
 import { CrewService, CrewData } from '../../../scheduler-data-services/crew.service';
+import { CrewMemberService, CrewMemberData } from '../../../scheduler-data-services/crew-member.service';
 import { ResourceService, ResourceData } from '../../../scheduler-data-services/resource.service';
 import { AssignmentRoleService, AssignmentRoleData } from '../../../scheduler-data-services/assignment-role.service';
 import { QualificationService, QualificationData } from '../../../scheduler-data-services/qualification.service';
@@ -104,6 +105,10 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
   qualificationWarnings: string[] = [];
   schedulingWarnings: string[] = [];
 
+  // Shift preview state (Feature 4)
+  shiftPreviews: Map<number, string> = new Map();
+  loadingShiftPreviews: Set<number> = new Set();
+
   // Event-specific qualification requirements
   allQualifications: QualificationData[] = [];
   existingEventQualReqs: ScheduledEventQualificationRequirementData[] = [];
@@ -134,6 +139,7 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
     private targetService: SchedulingTargetService,
     private templateService: ScheduledEventTemplateService,
     private crewService: CrewService,
+    private crewMemberService: CrewMemberService,
     private resourceService: ResourceService,
     private roleService: AssignmentRoleService,
     private qualificationService: QualificationService,
@@ -872,8 +878,145 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
   // Resource Availability & Shift Warnings
   // -------------------------------------------------------------------------
 
+  // -------------------------------------------------------------------------
+  // Timezone & Shift Helpers
+  // -------------------------------------------------------------------------
+
+  /**
+   * Converts a UTC datetime to a resource's timezone, returning day-of-week and minutes-since-midnight.
+   * Uses the resource's ianaTimeZone if available, falls back to standardUTCOffsetHours.
+   */
+  private getEventTimeInResourceTZ(eventDateTimeLocal: string, resource: ResourceData): { dayOfWeek: number; minutes: number } {
+    const date = new Date(eventDateTimeLocal);
+    const tz = (resource as any).timeZone;
+
+    if (tz?.ianaTimeZone) {
+      try {
+        // Use Intl API for accurate TZ conversion (handles DST)
+        const parts = new Intl.DateTimeFormat('en-US', {
+          timeZone: tz.ianaTimeZone,
+          hour12: false,
+          weekday: 'short',
+          hour: '2-digit',
+          minute: '2-digit'
+        }).formatToParts(date);
+
+        const hourPart = parts.find(p => p.type === 'hour');
+        const minutePart = parts.find(p => p.type === 'minute');
+        const weekdayPart = parts.find(p => p.type === 'weekday');
+
+        const hours = parseInt(hourPart?.value || '0', 10);
+        const mins = parseInt(minutePart?.value || '0', 10);
+
+        const dayMap: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+        const dayOfWeek = dayMap[weekdayPart?.value || ''] ?? date.getDay();
+
+        return { dayOfWeek, minutes: hours * 60 + mins };
+      } catch {
+        // Intl failed — fall through to offset-based approach
+      }
+    }
+
+    if (tz?.standardUTCOffsetHours != null) {
+      // Offset-based fallback (doesn't handle DST)
+      const utcMs = date.getTime();
+      const offsetMs = Number(tz.standardUTCOffsetHours) * 3600000;
+      const resourceDate = new Date(utcMs + offsetMs);
+      return {
+        dayOfWeek: resourceDate.getUTCDay(),
+        minutes: resourceDate.getUTCHours() * 60 + resourceDate.getUTCMinutes()
+      };
+    }
+
+    // No timezone info — use local browser time
+    return { dayOfWeek: date.getDay(), minutes: date.getHours() * 60 + date.getMinutes() };
+  }
+
+  /**
+   * Resolves a crew's member resources by fetching crew members and returning their resource IDs.
+   */
+  private async resolveCrewMemberResourceIds(crewId: number): Promise<number[]> {
+    const members = await lastValueFrom(
+      this.crewMemberService.GetCrewMemberList({ crewId, active: true, deleted: false })
+    );
+    return members.map(m => Number(m.resourceId)).filter(id => id > 0);
+  }
+
+  /**
+   * Loads shift preview text for a specific assignment row.
+   * Shows the resource's shift window for the event's day-of-week.
+   */
+  async loadShiftPreview(rowIndex: number, resourceId: number): Promise<void> {
+    if (!resourceId) {
+      this.shiftPreviews.delete(rowIndex);
+      return;
+    }
+
+    this.loadingShiftPreviews.add(rowIndex);
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+    try {
+      const resource = this.resources.find(r => Number(r.id) === Number(resourceId));
+      const startDT = this.eventForm.value.startDateTime;
+      if (!startDT || !resource) {
+        this.shiftPreviews.delete(rowIndex);
+        this.loadingShiftPreviews.delete(rowIndex);
+        return;
+      }
+
+      const { dayOfWeek } = this.getEventTimeInResourceTZ(startDT, resource);
+
+      const shifts = await lastValueFrom(
+        this.resourceShiftService.GetResourceShiftList({ resourceId, active: true, deleted: false })
+      );
+
+      if (!shifts || shifts.length === 0) {
+        this.shiftPreviews.set(rowIndex, 'No shifts defined');
+        this.loadingShiftPreviews.delete(rowIndex);
+        return;
+      }
+
+      const dayShifts = shifts.filter(s => Number(s.dayOfWeek) === dayOfWeek);
+      if (dayShifts.length === 0) {
+        this.shiftPreviews.set(rowIndex, `No shift on ${dayNames[dayOfWeek]}`);
+      } else {
+        const descriptions = dayShifts.map(s => {
+          const tp = String(s.startTime).split(':');
+          const startMin = parseInt(tp[0], 10) * 60 + parseInt(tp[1] || '0', 10);
+          const endMin = startMin + Number(s.hours) * 60;
+          const startStr = `${Math.floor(startMin / 60)}:${String(startMin % 60).padStart(2, '0')}`;
+          const endStr = `${Math.floor(endMin / 60)}:${String(Math.floor(endMin % 60)).padStart(2, '0')}`;
+          return `${startStr}–${endStr}${s.label ? ' (' + s.label + ')' : ''}`;
+        });
+        this.shiftPreviews.set(rowIndex, `${dayNames[dayOfWeek]}: ${descriptions.join(', ')}`);
+      }
+    } catch {
+      this.shiftPreviews.set(rowIndex, 'Unable to load shift');
+    }
+    this.loadingShiftPreviews.delete(rowIndex);
+  }
+
+  /**
+   * Called when the resource selection changes in an assignment row.
+   */
+  onResourceChanged(rowIndex: number): void {
+    const control = this.assignments.at(rowIndex);
+    const resourceId = control?.get('resourceId')?.value;
+    if (resourceId) {
+      this.loadShiftPreview(rowIndex, Number(resourceId));
+    } else {
+      this.shiftPreviews.delete(rowIndex);
+    }
+    this.validateQualifications();
+  }
+
+  // -------------------------------------------------------------------------
+  // Resource Availability & Shift Warnings
+  // -------------------------------------------------------------------------
+
   /**
    * Checks each assigned resource for blackout/unavailability overlaps with the event time range.
+   * Handles both individual resource assignments and crew member resources.
    * Populates schedulingWarnings[] with any found conflicts.
    */
   private async checkResourceAvailabilityConflicts(): Promise<void> {
@@ -885,10 +1028,31 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
     const eventStart = new Date(start).getTime();
     const eventEnd = new Date(end).getTime();
 
+    // Collect all resource IDs to check (individual + crew members)
+    const resourceChecks: { resourceId: number; source: string }[] = [];
+
     for (const control of this.assignments.controls) {
       const resourceId = control.get('resourceId')?.value;
-      if (!resourceId) continue;
+      if (resourceId) {
+        resourceChecks.push({ resourceId: Number(resourceId), source: 'direct' });
+      }
 
+      const crewId = control.get('crewId')?.value;
+      if (crewId) {
+        try {
+          const memberResourceIds = await this.resolveCrewMemberResourceIds(Number(crewId));
+          const crew = this.crews.find(c => Number(c.id) === Number(crewId));
+          const crewName = crew?.name || `Crew #${crewId}`;
+          for (const mResId of memberResourceIds) {
+            resourceChecks.push({ resourceId: mResId, source: `crew ${crewName}` });
+          }
+        } catch {
+          // Skip crew member resolution on error
+        }
+      }
+    }
+
+    for (const { resourceId, source } of resourceChecks) {
       try {
         const availabilities = await lastValueFrom(
           this.resourceAvailabilityService.GetResourceAvailabilityList({
@@ -902,12 +1066,12 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
           const blackoutStart = new Date(avail.startDateTime).getTime();
           const blackoutEnd = avail.endDateTime
             ? new Date(avail.endDateTime).getTime()
-            : new Date('2999-12-31').getTime(); // Open-ended blackout
+            : new Date('2999-12-31').getTime();
 
-          // Check for time overlap: startA < endB && startB < endA
           if (eventStart < blackoutEnd && blackoutStart < eventEnd) {
             const resource = this.resources.find(r => Number(r.id) === Number(resourceId));
             const resourceName = resource?.name || `Resource #${resourceId}`;
+            const displayName = source === 'direct' ? resourceName : `${resourceName} (via ${source})`;
             const reason = avail.reason || 'No reason specified';
             const startStr = new Date(avail.startDateTime).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
             const endStr = avail.endDateTime
@@ -915,7 +1079,7 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
               : 'indefinitely';
 
             this.schedulingWarnings.push(
-              `${resourceName} has a blackout from ${startStr} to ${endStr} — Reason: ${reason}`
+              `${displayName} has a blackout from ${startStr} to ${endStr} — Reason: ${reason}`
             );
           }
         }
@@ -927,6 +1091,8 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
 
   /**
    * Checks if the event falls outside each assigned resource's shift hours for the event's day of week.
+   * Handles both individual resource assignments and crew member resources.
+   * Uses timezone-aware time conversion when resource timezone data is available.
    * Populates schedulingWarnings[] with any found issues.
    */
   private async checkShiftBoundaryWarnings(): Promise<void> {
@@ -935,14 +1101,34 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
     const end = formVal.endDateTime;
     if (!start || !end) return;
 
-    const eventDate = new Date(start);
-    const eventDayOfWeek = eventDate.getDay(); // 0=Sun ... 6=Sat
     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+    // Collect all resource IDs to check (individual + crew members)
+    const resourceChecks: { resourceId: number; source: string }[] = [];
 
     for (const control of this.assignments.controls) {
       const resourceId = control.get('resourceId')?.value;
-      if (!resourceId) continue;
+      if (resourceId) {
+        resourceChecks.push({ resourceId: Number(resourceId), source: 'direct' });
+      }
 
+      // Resolve crew member resources
+      const crewId = control.get('crewId')?.value;
+      if (crewId) {
+        try {
+          const memberResourceIds = await this.resolveCrewMemberResourceIds(Number(crewId));
+          const crew = this.crews.find(c => Number(c.id) === Number(crewId));
+          const crewName = crew?.name || `Crew #${crewId}`;
+          for (const mResId of memberResourceIds) {
+            resourceChecks.push({ resourceId: mResId, source: `crew ${crewName}` });
+          }
+        } catch {
+          // Skip crew member resolution on error
+        }
+      }
+    }
+
+    for (const { resourceId, source } of resourceChecks) {
       try {
         const shifts = await lastValueFrom(
           this.resourceShiftService.GetResourceShiftList({
@@ -955,30 +1141,33 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
         // If no shifts are defined at all for this resource, skip (don't warn)
         if (!shifts || shifts.length === 0) continue;
 
-        // Find shifts for the event's day of week
-        const dayShifts = shifts.filter(s => Number(s.dayOfWeek) === eventDayOfWeek);
-
         const resource = this.resources.find(r => Number(r.id) === Number(resourceId));
         const resourceName = resource?.name || `Resource #${resourceId}`;
+        const displayName = source === 'direct' ? resourceName : `${resourceName} (via ${source})`;
+
+        // Use timezone-aware time computation
+        const startTZ = resource
+          ? this.getEventTimeInResourceTZ(start, resource)
+          : { dayOfWeek: new Date(start).getDay(), minutes: new Date(start).getHours() * 60 + new Date(start).getMinutes() };
+        const endTZ = resource
+          ? this.getEventTimeInResourceTZ(end, resource)
+          : { dayOfWeek: new Date(end).getDay(), minutes: new Date(end).getHours() * 60 + new Date(end).getMinutes() };
+
+        const eventDayOfWeek = startTZ.dayOfWeek;
+        const dayShifts = shifts.filter(s => Number(s.dayOfWeek) === eventDayOfWeek);
 
         if (dayShifts.length === 0) {
-          // Resource has shifts defined but none for this day
           this.schedulingWarnings.push(
-            `${resourceName} has no shift defined for ${dayNames[eventDayOfWeek]}`
+            `${displayName} has no shift defined for ${dayNames[eventDayOfWeek]}`
           );
           continue;
         }
 
         // Check if the event falls within any of the defined shift windows
-        const eventStartMinutes = eventDate.getHours() * 60 + eventDate.getMinutes();
-        const eventEndDate = new Date(end);
-        const eventEndMinutes = eventEndDate.getHours() * 60 + eventEndDate.getMinutes();
-
         let withinAnyShift = false;
         let shiftDescriptions: string[] = [];
 
         for (const shift of dayShifts) {
-          // Parse startTime (TimeOnly format: "HH:mm:ss" or "HH:mm")
           const timeParts = String(shift.startTime).split(':');
           const shiftStartMinutes = parseInt(timeParts[0], 10) * 60 + parseInt(timeParts[1] || '0', 10);
           const shiftEndMinutes = shiftStartMinutes + (Number(shift.hours) * 60);
@@ -987,8 +1176,7 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
           const shiftEndStr = `${Math.floor(shiftEndMinutes / 60)}:${String(Math.floor(shiftEndMinutes % 60)).padStart(2, '0')}`;
           shiftDescriptions.push(`${shiftStartStr}–${shiftEndStr}${shift.label ? ' (' + shift.label + ')' : ''}`);
 
-          // Event is within shift if event start >= shift start AND event end <= shift end
-          if (eventStartMinutes >= shiftStartMinutes && eventEndMinutes <= shiftEndMinutes) {
+          if (startTZ.minutes >= shiftStartMinutes && endTZ.minutes <= shiftEndMinutes) {
             withinAnyShift = true;
             break;
           }
@@ -996,7 +1184,7 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
 
         if (!withinAnyShift) {
           this.schedulingWarnings.push(
-            `${resourceName}'s shift on ${dayNames[eventDayOfWeek]} is ${shiftDescriptions.join(' / ')}, event may fall outside`
+            `${displayName}'s shift on ${dayNames[eventDayOfWeek]} is ${shiftDescriptions.join(' / ')}, event may fall outside`
           );
         }
       } catch {

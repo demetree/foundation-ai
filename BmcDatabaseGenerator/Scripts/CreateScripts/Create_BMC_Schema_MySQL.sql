@@ -221,6 +221,8 @@ INSERT INTO `ColourFinish` ( `name`, `description`, `requiresEnvironmentMap`, `i
 
 INSERT INTO `ColourFinish` ( `name`, `description`, `requiresEnvironmentMap`, `isMatte`, `defaultAlpha`, `sequence`, `objectGuid` ) VALUES  ( 'Milky', 'Semi-translucent milky or glow-in-the-dark finish', false, false, 240, 9, 'cf100001-0001-4000-8000-000000000009' );
 
+INSERT INTO `ColourFinish` ( `name`, `description`, `requiresEnvironmentMap`, `isMatte`, `sequence`, `objectGuid` ) VALUES  ( 'Fabric', 'Fabric or cloth material finish for flags, capes, and similar elements', false, true, 10, 'cf100001-0001-4000-8000-000000000010' );
+
 
 -- Colour definitions for brick parts. Compatible with the LDraw colour standard.
 CREATE TABLE `BrickColour`(

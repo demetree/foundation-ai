@@ -24,7 +24,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { EventAddEditModalComponent } from '../event-add-edit-modal/event-add-edit-modal.component';
 import { format, parseISO } from 'date-fns';
 import { forkJoin } from 'rxjs';
-import { ConflictDetectionService, ScheduleConflict, BlackoutPeriod } from '../../../services/conflict-detection.service';
+import { ConflictDetectionService, ScheduleConflict, BlackoutPeriod, ShiftViolation } from '../../../services/conflict-detection.service';
 import { ResourceService } from '../../../scheduler-data-services/resource.service';
 import { CrewService } from '../../../scheduler-data-services/crew.service';
 import { ScheduledEventDependencyService } from '../../../scheduler-data-services/scheduled-event-dependency.service';
@@ -556,6 +556,80 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
           this.lastLoadedEvents,
           blackouts
         );
+
+        // Detect shift boundary violations for the conflict panel
+        const shiftViolations: ShiftViolation[] = [];
+        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+        for (const event of this.lastLoadedEvents) {
+          const resId = Number(event.resourceId);
+          if (!resId) continue;
+
+          const resIndex = resIdArray.indexOf(resId);
+          if (resIndex === -1) continue;
+
+          const eventShifts = shiftResults[resIndex];
+          if (!eventShifts || eventShifts.length === 0) continue;
+
+          const resName = resourceNameMap.get(resId) || `Resource #${resId}`;
+          const eventStart = new Date(event.startDateTime);
+          const eventEnd = new Date(event.endDateTime);
+          const eventDayOfWeek = eventStart.getDay();
+          const eventStartMinutes = eventStart.getHours() * 60 + eventStart.getMinutes();
+          const eventEndMinutes = eventEnd.getHours() * 60 + eventEnd.getMinutes();
+
+          const dayShifts = eventShifts.filter(s => Number(s.dayOfWeek) === eventDayOfWeek);
+
+          if (dayShifts.length === 0) {
+            // No shift defined for this day
+            shiftViolations.push({
+              event,
+              resourceId: resId,
+              resourceName: resName,
+              dayOfWeek: eventDayOfWeek,
+              shiftWindows: [],
+              description: `${resName} has no shift on ${dayNames[eventDayOfWeek]}`
+            });
+            continue;
+          }
+
+          // Check if event falls within any shift window
+          let withinAnyShift = false;
+          const shiftWindowDescs: string[] = [];
+
+          for (const shift of dayShifts) {
+            const tp = String(shift.startTime).split(':');
+            const shiftStartMin = parseInt(tp[0], 10) * 60 + parseInt(tp[1] || '0', 10);
+            const shiftEndMin = shiftStartMin + Number(shift.hours) * 60;
+
+            const startStr = `${Math.floor(shiftStartMin / 60)}:${String(shiftStartMin % 60).padStart(2, '0')}`;
+            const endStr = `${Math.floor(shiftEndMin / 60)}:${String(Math.floor(shiftEndMin % 60)).padStart(2, '0')}`;
+            shiftWindowDescs.push(`${startStr}–${endStr}${shift.label ? ' (' + shift.label + ')' : ''}`);
+
+            if (eventStartMinutes >= shiftStartMin && eventEndMinutes <= shiftEndMin) {
+              withinAnyShift = true;
+              break;
+            }
+          }
+
+          if (!withinAnyShift) {
+            shiftViolations.push({
+              event,
+              resourceId: resId,
+              resourceName: resName,
+              dayOfWeek: eventDayOfWeek,
+              shiftWindows: shiftWindowDescs,
+              description: `Outside shift: ${shiftWindowDescs.join(' / ')}`
+            });
+          }
+        }
+
+        // Merge shift conflicts into the conflict list
+        if (shiftViolations.length > 0) {
+          const shiftConflicts = this.conflictDetectionService.detectShiftConflicts(shiftViolations);
+          this.conflicts.push(...shiftConflicts);
+        }
+
         this.conflictEventIds = this.conflictDetectionService.getConflictEventIds(this.conflicts);
         this.enrichConflictNames();
 

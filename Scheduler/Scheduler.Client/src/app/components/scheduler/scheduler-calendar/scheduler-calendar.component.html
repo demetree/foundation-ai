@@ -120,12 +120,13 @@
         <div class="conflict-meta">
           <span class="conflict-entity">
             <i class="bi"
-              [ngClass]="c.type === 'availability' ? 'bi-calendar-x' : c.type === 'resource' ? 'bi-person-fill' : 'bi-people-fill'"></i>
+              [ngClass]="c.type === 'shift' ? 'bi-clock-history' : c.type === 'availability' ? 'bi-calendar-x' : c.type === 'resource' ? 'bi-person-fill' : 'bi-people-fill'"></i>
             {{ c.entityName || (c.type === 'resource' ? 'Resource' : c.type === 'crew' ? 'Crew' : 'Availability') + ' #'
             + c.entityId }}
           </span>
-          <span class="conflict-overlap">{{ c.type === 'availability' ? (c.blackoutReason || 'Unavailable') + ' · ' : ''
-            }}{{ formatOverlap(c.overlapMinutes) }}</span>
+          <span class="conflict-overlap">{{ c.type === 'shift' ? (c.shiftDescription || 'Shift violation') :
+            c.type === 'availability' ? (c.blackoutReason || 'Unavailable') + ' · ' + formatOverlap(c.overlapMinutes) :
+            formatOverlap(c.overlapMinutes) }}</span>
         </div>
       </div>
     </div>

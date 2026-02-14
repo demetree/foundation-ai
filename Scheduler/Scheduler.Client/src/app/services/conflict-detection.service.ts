@@ -17,7 +17,7 @@ import { ScheduledEventData } from '../scheduler-data-services/scheduled-event.s
 // Public interfaces
 // ────────────────────────────────────────────────────────────────────────────
 
-export type ConflictType = 'resource' | 'crew' | 'availability';
+export type ConflictType = 'resource' | 'crew' | 'availability' | 'shift';
 
 export interface ScheduleConflict {
     /** First event in the conflicting pair (for availability: the event in conflict) */
@@ -34,6 +34,8 @@ export interface ScheduleConflict {
     overlapMinutes: number;
     /** Reason for blackout (only set for availability conflicts) */
     blackoutReason?: string;
+    /** Human-readable shift window description (only set for shift conflicts) */
+    shiftDescription?: string;
 }
 
 /** Represents a resource blackout period for availability conflict detection */
@@ -43,6 +45,22 @@ export interface BlackoutPeriod {
     startDateTime: string;
     endDateTime: string;
     reason: string;
+}
+
+/** Represents an event that violates a resource's shift boundaries */
+export interface ShiftViolation {
+    /** The event that falls outside the shift window */
+    event: ScheduledEventData;
+    /** The resource whose shift is violated */
+    resourceId: number;
+    /** Human-readable resource name */
+    resourceName: string;
+    /** Day of week the violation is on (0=Sun..6=Sat) */
+    dayOfWeek: number;
+    /** Formatted shift window descriptions, e.g. ["08:00–16:00 (Day Shift)"] */
+    shiftWindows: string[];
+    /** Description of the violation for display */
+    description: string;
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -171,6 +189,43 @@ export class ConflictDetectionService {
                     blackoutReason: blackout.reason || 'Unavailable'
                 });
             }
+        }
+
+        return conflicts;
+    }
+
+    /**
+     * Creates conflict entries for events that fall outside their assigned resource's shift hours.
+     * Called by the calendar component after shift boundary analysis.
+     */
+    detectShiftConflicts(violations: ShiftViolation[]): ScheduleConflict[] {
+        const conflicts: ScheduleConflict[] = [];
+        const seen = new Set<string>();
+        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+        for (const v of violations) {
+            const key = `shift-${Number(v.event.id)}-${v.resourceId}-${v.dayOfWeek}`;
+            if (seen.has(key)) continue;
+            seen.add(key);
+
+            // Create a synthetic event representing the shift window
+            const shiftEvent = new ScheduledEventData();
+            shiftEvent.id = -2 as any;
+            shiftEvent.name = v.shiftWindows.length > 0
+                ? `Shift: ${v.shiftWindows.join(' / ')}`
+                : `No shift on ${dayNames[v.dayOfWeek]}`;
+            shiftEvent.startDateTime = v.event.startDateTime;
+            shiftEvent.endDateTime = v.event.endDateTime;
+
+            conflicts.push({
+                eventA: v.event,
+                eventB: shiftEvent,
+                type: 'shift',
+                entityId: v.resourceId,
+                entityName: v.resourceName,
+                overlapMinutes: 0,
+                shiftDescription: v.description
+            });
         }
 
         return conflicts;

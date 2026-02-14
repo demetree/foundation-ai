@@ -110,6 +110,14 @@
             <div class="small text-muted">Availablity Blackouts</div>
           </div>
 
+          <!-- Shifts -->
+          <div class="col-6">
+            <div class="fs-3 fw-bold" style="color: #6366f1;">
+              {{ shiftCount$ | async }}
+            </div>
+            <div class="small text-muted">Shifts</div>
+          </div>
+
           <!-- Qualifications -->
           <div class="col-6">
             <div class="fs-3 fw-bold text-danger">
@@ -132,6 +140,14 @@
               {{ rateSheetCount$ | async }}
             </div>
             <div class="small text-muted">Rate Overrides</div>
+          </div>
+
+          <!-- Notifications -->
+          <div class="col-6">
+            <div class="fs-3 fw-bold text-secondary">
+              {{ notificationCount$ | async }}
+            </div>
+            <div class="small text-muted">Notifications</div>
           </div>
 
         </div>

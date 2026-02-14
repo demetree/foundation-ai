@@ -161,6 +161,7 @@ All operational tables include multi-tenant support, versioning where appropriat
             colourFinishTable.AddData(new Dictionary<string, string> { { "name", "Glitter" }, { "description", "Transparent plastic with embedded glitter particles" }, { "requiresEnvironmentMap", "false" }, { "isMatte", "false" }, { "defaultAlpha", "128" }, { "sequence", "7" }, { "objectGuid", "cf100001-0001-4000-8000-000000000007" } });
             colourFinishTable.AddData(new Dictionary<string, string> { { "name", "Speckle" }, { "description", "Solid plastic with embedded speckle particles" }, { "requiresEnvironmentMap", "false" }, { "isMatte", "false" }, { "sequence", "8" }, { "objectGuid", "cf100001-0001-4000-8000-000000000008" } });
             colourFinishTable.AddData(new Dictionary<string, string> { { "name", "Milky" }, { "description", "Semi-translucent milky or glow-in-the-dark finish" }, { "requiresEnvironmentMap", "false" }, { "isMatte", "false" }, { "defaultAlpha", "240" }, { "sequence", "9" }, { "objectGuid", "cf100001-0001-4000-8000-000000000009" } });
+            colourFinishTable.AddData(new Dictionary<string, string> { { "name", "Fabric" }, { "description", "Fabric or cloth material finish for flags, capes, and similar elements" }, { "requiresEnvironmentMap", "false" }, { "isMatte", "true" }, { "sequence", "10" }, { "objectGuid", "cf100001-0001-4000-8000-000000000010" } });
 
 
             // -------------------------------------------------

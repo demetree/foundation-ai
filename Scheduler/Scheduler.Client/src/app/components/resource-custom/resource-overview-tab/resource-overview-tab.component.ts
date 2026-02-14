@@ -10,6 +10,8 @@ import { EventResourceAssignmentService } from '../../../scheduler-data-services
 import { ScheduledEventService } from '../../../scheduler-data-services/scheduled-event.service';
 import { ResourceContactService } from '../../../scheduler-data-services/resource-contact.service';
 import { RateSheetService } from '../../../scheduler-data-services/rate-sheet.service';
+import { ResourceShiftService } from '../../../scheduler-data-services/resource-shift.service';
+import { NotificationSubscriptionService } from '../../../scheduler-data-services/notification-subscription.service';
 import { SchedulerHelperService } from '../../../services/scheduler-helper.service';
 
 /**
@@ -36,6 +38,8 @@ export class ResourceOverviewTabComponent implements OnChanges, OnDestroy {
   public blackoutCount$: Observable<number> = of(0);
   public contactCount$: Observable<number> = of(0);
   public rateSheetCount$: Observable<number> = of(0);
+  public shiftCount$: Observable<number> = of(0);
+  public notificationCount$: Observable<number> = of(0);
 
   // To get the count of offices to allow the offices button to be invisible if there are no offices (It can always be found under Administration)
   public officeCount$ = this.schedulerHelperService.ActiveOfficeCount$;
@@ -50,6 +54,8 @@ export class ResourceOverviewTabComponent implements OnChanges, OnDestroy {
     private eventResourceAssignmentService: EventResourceAssignmentService,
     private resourceContactService: ResourceContactService,
     private rateSheetService: RateSheetService,
+    private resourceShiftService: ResourceShiftService,
+    private notificationSubscriptionService: NotificationSubscriptionService,
     private schedulerHelperService: SchedulerHelperService,
     private scheduledEventService: ScheduledEventService
   ) { }
@@ -132,6 +138,24 @@ export class ResourceOverviewTabComponent implements OnChanges, OnDestroy {
       startWith(0)
     );
 
+    const shiftCount$ = this.resourceShiftService.GetResourceShiftsRowCount({
+      resourceId: resourceId,
+      active: true,
+      deleted: false
+    }).pipe(
+      map(count => Number(count ?? 0)),
+      startWith(0)
+    );
+
+    const notificationCount$ = this.notificationSubscriptionService.GetNotificationSubscriptionsRowCount({
+      resourceId: resourceId,
+      active: true,
+      deleted: false
+    }).pipe(
+      map(count => Number(count ?? 0)),
+      startWith(0)
+    );
+
 
     // Combined assignment count: direct assignments + events where this resource is lead
     const directAssignments$ = this.eventResourceAssignmentService.GetEventResourceAssignmentsRowCount({
@@ -164,6 +188,8 @@ export class ResourceOverviewTabComponent implements OnChanges, OnDestroy {
     this.assignmentCount$ = assignmentCount$;
     this.contactCount$ = contactCount$;
     this.rateSheetCount$ = rateSheetCount$;
+    this.shiftCount$ = shiftCount$;
+    this.notificationCount$ = notificationCount$;
   }
 
   /**
@@ -176,5 +202,7 @@ export class ResourceOverviewTabComponent implements OnChanges, OnDestroy {
     this.blackoutCount$ = of(0);
     this.contactCount$ = of(0);
     this.rateSheetCount$ = of(0);
+    this.shiftCount$ = of(0);
+    this.notificationCount$ = of(0);
   }
 }

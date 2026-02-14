@@ -243,10 +243,17 @@
               <td>
                 <!-- Resource dropdown (for individual assignments) -->
                 <ng-container *ngIf="assignment.get('resourceId')?.validator">
-                  <select class="form-select form-select-sm" formControlName="resourceId">
+                  <select class="form-select form-select-sm" formControlName="resourceId"
+                    (change)="onResourceChanged(i)">
                     <option [ngValue]="null" disabled>Select resource...</option>
                     <option *ngFor="let r of resources" [ngValue]="r.id">{{ r.name }}</option>
                   </select>
+                  <small class="shift-preview text-muted d-block mt-1" *ngIf="shiftPreviews.has(i)">
+                    <i class="bi bi-clock me-1"></i>{{ shiftPreviews.get(i) }}
+                  </small>
+                  <small class="shift-preview-loading text-muted d-block mt-1" *ngIf="loadingShiftPreviews.has(i)">
+                    <span class="spinner-border spinner-border-sm me-1"></span>Loading shift…
+                  </small>
                 </ng-container>
                 <!-- Crew dropdown (for crew assignments) -->
                 <ng-container *ngIf="assignment.get('crewId')?.validator">
