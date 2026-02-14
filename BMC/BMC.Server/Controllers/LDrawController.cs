@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -20,7 +19,7 @@ namespace Foundation.BMC.Controllers.WebAPI
     ///
     /// Two route patterns are supported:
     ///   1.  GET /api/ldraw/file?path=parts/3001.dat         (query-param, authenticated)
-    ///   2.  GET /api/ldraw/file/parts/3001.dat               (path-based,  unauthenticated — used by Three.js LDrawLoader)
+    ///   2.  GET /api/ldraw/file/parts/3001.dat               (path-based,  authenticated — used by Three.js LDrawLoader)
     ///
     /// The path-based route includes smart file resolution: when the exact path isn't found,
     /// the server searches standard LDraw subdirectories (parts/, p/, p/48/, p/8/, parts/s/, models/).
@@ -94,11 +93,16 @@ namespace Foundation.BMC.Controllers.WebAPI
         /// Example: GET /api/ldraw/file/p/48/4-4cyli.dat
         /// Example: GET /api/ldraw/file/LDConfig.ldr
         /// </summary>
-        [AllowAnonymous]
         [HttpGet]
+        [RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
         [Route("api/ldraw/file/{**filePath}")]
         public async Task<IActionResult> GetLDrawFileByPath(string filePath, CancellationToken cancellationToken = default)
         {
+            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
             return await ServeFile(filePath, cancellationToken);
         }
 

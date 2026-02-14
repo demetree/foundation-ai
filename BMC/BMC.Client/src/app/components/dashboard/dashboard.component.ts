@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { AuthService } from '../../services/auth.service';
 
 interface DashboardStat {
     icon: string;
@@ -20,7 +21,7 @@ export class DashboardComponent implements OnInit {
     recentProjects: any[] = [];
     isLoading = true;
 
-    constructor(private http: HttpClient) { }
+    constructor(private http: HttpClient, private authService: AuthService) { }
 
     ngOnInit() {
         this.loadDashboardData();
@@ -29,8 +30,10 @@ export class DashboardComponent implements OnInit {
     loadDashboardData() {
         this.isLoading = true;
 
+        const headers = this.authService.GetAuthenticationHeaders();
+
         // Load parts count
-        this.http.get<any>('/api/BrickParts/RowCount').subscribe({
+        this.http.get<any>('/api/BrickParts/RowCount', { headers }).subscribe({
             next: (count) => {
                 this.stats.push({
                     icon: 'fas fa-puzzle-piece',
@@ -46,7 +49,7 @@ export class DashboardComponent implements OnInit {
         });
 
         // Load categories count
-        this.http.get<any>('/api/BrickCategories/RowCount').subscribe({
+        this.http.get<any>('/api/BrickCategories/RowCount', { headers }).subscribe({
             next: (count) => {
                 this.stats.push({
                     icon: 'fas fa-layer-group',
@@ -61,7 +64,7 @@ export class DashboardComponent implements OnInit {
         });
 
         // Load colours count
-        this.http.get<any>('/api/BrickColours/RowCount').subscribe({
+        this.http.get<any>('/api/BrickColours/RowCount', { headers }).subscribe({
             next: (count) => {
                 this.stats.push({
                     icon: 'fas fa-palette',
@@ -77,7 +80,7 @@ export class DashboardComponent implements OnInit {
         });
 
         // Load projects count
-        this.http.get<any>('/api/Projects/RowCount').subscribe({
+        this.http.get<any>('/api/Projects/RowCount', { headers }).subscribe({
             next: (count) => {
                 this.stats.push({
                     icon: 'fas fa-project-diagram',

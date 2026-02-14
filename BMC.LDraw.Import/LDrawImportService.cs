@@ -255,20 +255,14 @@ namespace BMC.LDraw.Import
                 _log("  Copied LDConfig.ldr");
             }
 
-            // Copy parts directory
+            // Copy parts directory (recursively — includes parts/s/ sub-parts, etc.)
             string sourcePartsDir = Path.Combine(sourcePath, "parts");
             string destPartsDir = Path.Combine(destPath, "parts");
             if (Directory.Exists(sourcePartsDir))
             {
-                Directory.CreateDirectory(destPartsDir);
-                string[] files = Directory.GetFiles(sourcePartsDir, "*.dat", SearchOption.TopDirectoryOnly);
-                int copied = 0;
-                foreach (string file in files)
-                {
-                    File.Copy(file, Path.Combine(destPartsDir, Path.GetFileName(file)), true);
-                    copied++;
-                }
-                _log($"  Copied {copied} part files to {destPartsDir}");
+                CopyDirectoryRecursive(sourcePartsDir, destPartsDir);
+                int copied = Directory.GetFiles(destPartsDir, "*.*", SearchOption.AllDirectories).Length;
+                _log($"  Copied {copied} part files to {destPartsDir} (including sub-parts)");
             }
 
             // Copy p (primitives) directory — needed for geometry resolution

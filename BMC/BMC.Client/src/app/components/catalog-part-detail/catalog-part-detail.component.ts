@@ -290,7 +290,14 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
         loader.setConditionalLineMaterial(LDrawConditionalLineMaterial);
 
         //
-        // Point the parts library at our catch-all file endpoint (anonymous).
+        // Set Bearer token so the loader can fetch files from our authenticated API
+        //
+        loader.setRequestHeader({
+            'Authorization': `Bearer ${this.authService.accessToken}`
+        });
+
+        //
+        // Point the parts library at our catch-all file endpoint.
         // The server has smart file resolution so the first request always succeeds.
         //
         loader.setPartsLibraryPath(this.baseUrl + 'api/ldraw/file/');
