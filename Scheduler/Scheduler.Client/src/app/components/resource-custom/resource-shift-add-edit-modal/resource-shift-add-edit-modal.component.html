@@ -11,7 +11,17 @@
 <div class="modal-body">
     <form [formGroup]="shiftForm">
 
-        <!-- Day of Week -->
+        <!-- Resource selector (shown only in standalone mode — opened from listing, not from a resource detail) -->
+        <div class="mb-3" *ngIf="standaloneMode">
+            <label for="resourceId" class="form-label">
+                <span class="text-danger">*</span> Resource
+            </label>
+            <select id="resourceId" formControlName="resourceId" class="form-select" (change)="onResourceSelected()">
+                <option [ngValue]="null" disabled>Select resource...</option>
+                <option *ngFor="let r of resources" [ngValue]="r.id">{{ r.name }}</option>
+            </select>
+        </div>
+
         <div class="mb-3">
             <label for="dayOfWeek" class="form-label">
                 <span class="text-danger">*</span> Day of Week

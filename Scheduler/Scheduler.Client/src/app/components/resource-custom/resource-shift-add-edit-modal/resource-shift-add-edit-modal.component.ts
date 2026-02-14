@@ -12,6 +12,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ResourceShiftService, ResourceShiftSubmitData, ResourceShiftData } from '../../../scheduler-data-services/resource-shift.service';
+import { ResourceService, ResourceData } from '../../../scheduler-data-services/resource.service';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 
 @Component({
@@ -33,6 +34,10 @@ export class ResourceShiftAddEditModalComponent implements OnInit {
     public shiftForm: FormGroup;
     public isSaving = false;
 
+    /** True when opened from the shift listing without a pre-set resource context */
+    public standaloneMode = false;
+    public resources: ResourceData[] = [];
+
     public readonly dayOptions = [
         { value: 1, label: 'Monday' },
         { value: 2, label: 'Tuesday' },
@@ -51,9 +56,11 @@ export class ResourceShiftAddEditModalComponent implements OnInit {
         public activeModal: NgbActiveModal,
         private fb: FormBuilder,
         private shiftService: ResourceShiftService,
+        private resourceService: ResourceService,
         private alertService: AlertService
     ) {
         this.shiftForm = this.fb.group({
+            resourceId: [null],
             dayOfWeek: [1, Validators.required],
             startTime: ['09:00', Validators.required],
             hours: [8, [Validators.required, Validators.min(0.5), Validators.max(24)]],
@@ -62,6 +69,19 @@ export class ResourceShiftAddEditModalComponent implements OnInit {
     }
 
     ngOnInit(): void {
+        // Determine if we're in standalone mode (no resource pre-set)
+        if (!this.resourceId) {
+            this.standaloneMode = true;
+            this.shiftForm.get('resourceId')?.setValidators(Validators.required);
+            this.shiftForm.get('resourceId')?.updateValueAndValidity();
+
+            // Load resources for the dropdown
+            this.resourceService.GetResourceList({ active: true, deleted: false, includeRelations: true }).subscribe({
+                next: (resources) => this.resources = resources,
+                error: () => this.alertService.showMessage('Failed to load resources', '', MessageSeverity.error)
+            });
+        }
+
         if (this.existingShift) {
             // Pre-fill form for editing
             const timeStr = this.existingShift.startTime
@@ -74,6 +94,22 @@ export class ResourceShiftAddEditModalComponent implements OnInit {
                 hours: Number(this.existingShift.hours),
                 label: this.existingShift.label || ''
             });
+        }
+    }
+
+    /**
+     * Called when the resource selection changes in standalone mode.
+     * Updates resourceId and timeZoneId from the selected resource.
+     */
+    onResourceSelected(): void {
+        const selectedId = this.shiftForm.get('resourceId')?.value;
+        if (selectedId) {
+            const resource = this.resources.find(r => Number(r.id) === Number(selectedId));
+            if (resource) {
+                this.resourceId = Number(resource.id);
+                this.resourceName = resource.name;
+                this.timeZoneId = Number(resource.timeZoneId) || 0;
+            }
         }
     }
 
