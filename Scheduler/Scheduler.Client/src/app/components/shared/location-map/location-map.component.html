@@ -1,10 +1,31 @@
-<div class="location-map-wrapper" [style.height]="height">
+<div class="location-map-container">
 
-    <!-- Map container -->
-    <div #mapContainer [id]="mapId" class="map-container" [class.editable]="editable">
+    <div class="location-map-wrapper" [style.height]="height">
+
+        <!-- Map container -->
+        <div #mapContainer [id]="mapId" class="map-container" [class.editable]="editable">
+        </div>
+
+        <!-- Overlay prompt when no coordinates are set (editable mode only) -->
+        <div *ngIf="!hasCoordinates && editable" class="no-coordinates-overlay">
+            <div class="overlay-content">
+                <i class="fa-solid fa-map-marker-alt fa-2x mb-2"></i>
+                <div class="fw-semibold">No location set</div>
+                <small class="text-muted">Click the map to place a marker</small>
+            </div>
+        </div>
+
+        <!-- Overlay prompt when no coordinates (read-only mode) -->
+        <div *ngIf="!hasCoordinates && !editable" class="no-coordinates-overlay read-only">
+            <div class="overlay-content">
+                <i class="fa-solid fa-map fa-2x mb-2 text-muted"></i>
+                <div class="text-muted">No coordinates available</div>
+            </div>
+        </div>
+
     </div>
 
-    <!-- Resolve from Address button (editable mode only, when enabled) -->
+    <!-- Resolve from Address button (outside the clipped wrapper) -->
     <div *ngIf="showResolveButton && editable" class="resolve-bar d-flex align-items-center gap-2 mt-1 mb-1">
         <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="isResolving"
             (click)="resolveFromAddress()">
@@ -14,23 +35,6 @@
         <small *ngIf="resolveMessage" [class.text-success]="resolveSuccess" [class.text-danger]="!resolveSuccess">
             {{ resolveMessage }}
         </small>
-    </div>
-
-    <!-- Overlay prompt when no coordinates are set (editable mode only) -->
-    <div *ngIf="!hasCoordinates && editable" class="no-coordinates-overlay">
-        <div class="overlay-content">
-            <i class="fa-solid fa-map-marker-alt fa-2x mb-2"></i>
-            <div class="fw-semibold">No location set</div>
-            <small class="text-muted">Click the map to place a marker</small>
-        </div>
-    </div>
-
-    <!-- Overlay prompt when no coordinates (read-only mode) -->
-    <div *ngIf="!hasCoordinates && !editable" class="no-coordinates-overlay read-only">
-        <div class="overlay-content">
-            <i class="fa-solid fa-map fa-2x mb-2 text-muted"></i>
-            <div class="text-muted">No coordinates available</div>
-        </div>
     </div>
 
 </div>

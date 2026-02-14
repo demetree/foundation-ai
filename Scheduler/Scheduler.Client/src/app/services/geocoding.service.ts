@@ -18,9 +18,9 @@ import { SecureEndpointBase } from './secure-endpoint-base.service';
 export interface GeocodeRequest {
     addressLine1?: string;
     city?: string;
-    stateProvinceId?: number | null;
+    stateProvinceId?: number | bigint | null;
     postalCode?: string;
-    countryId?: number | null;
+    countryId?: number | bigint | null;
 }
 
 export interface GeocodeResult {

@@ -62,9 +62,9 @@ export class LocationMapComponent implements AfterViewInit, OnChanges, OnDestroy
     /** Address fields for geocoding resolution (optional). */
     @Input() addressLine1: string | null | undefined = null;
     @Input() city: string | null | undefined = null;
-    @Input() stateProvinceId: number | null | undefined = null;
+    @Input() stateProvinceId: number | bigint | null | undefined = null;
     @Input() postalCode: string | null | undefined = null;
-    @Input() countryId: number | null | undefined = null;
+    @Input() countryId: number | bigint | null | undefined = null;
 
     /** Emits when the user changes coordinates (click or drag). */
     @Output() coordinatesChanged = new EventEmitter<{ latitude: number; longitude: number }>();
@@ -160,7 +160,7 @@ export class LocationMapComponent implements AfterViewInit, OnChanges, OnDestroy
 
         // Add OpenStreetMap tile layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            attribution: 'OpenStreetMap',
             maxZoom: 19
         }).addTo(this.map);
 

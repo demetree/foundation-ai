@@ -41,3 +41,24 @@
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 }
+
+// Leaflet attribution overrides — smaller and less prominent
+:host ::ng-deep {
+    .leaflet-control-attribution {
+        font-size: 9px;
+        padding: 1px 5px;
+        background: rgba(255, 255, 255, 0.5) !important;
+        color: #999;
+
+        a {
+            color: #999 !important;
+            text-decoration: none;
+        }
+    }
+
+    // Hide the default Leaflet prefix (the "Leaflet" link)
+    .leaflet-control-attribution .leaflet-attribution-flag,
+    .leaflet-control-attribution span[aria-hidden] {
+        display: none !important;
+    }
+}

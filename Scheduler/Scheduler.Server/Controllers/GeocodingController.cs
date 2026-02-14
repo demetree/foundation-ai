@@ -52,7 +52,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         ///
         /// </summary>
         [Route("api/Geocoding/Resolve")]
-        [RateLimit(RateLimitOption.TenPerMinute, Scope = RateLimitScope.PerUser)]
+        [RateLimit(RateLimitOption.OnePerSecond, Scope = RateLimitScope.PerUser)]
         [HttpPost]
         public async Task<IActionResult> Resolve([FromBody] GeocodeRequest request)
         {

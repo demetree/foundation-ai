@@ -33,8 +33,16 @@ INSERT INTO "Security"."ModuleSecurityRole" ( "moduleId", "securityRoleId" ) VAL
 -- 
 INSERT INTO "Security"."SecurityRole" ( "name", "description", "privilegeId" ) VALUES  ( 'BMC Catalog Writer', 'BMC Catalog Writer Role', ( SELECT id FROM "Privilege" WHERE "name" = 'Custom' LIMIT 1) );
 
+INSERT INTO "Security"."SecurityRole" ( "name", "description", "privilegeId" ) VALUES  ( 'BMC Collection Writer', 'BMC Collection Writer Role', ( SELECT id FROM "Privilege" WHERE "name" = 'Custom' LIMIT 1) );
+
+INSERT INTO "Security"."SecurityRole" ( "name", "description", "privilegeId" ) VALUES  ( 'BMC Instruction Writer', 'BMC Instruction Writer Role', ( SELECT id FROM "Privilege" WHERE "name" = 'Custom' LIMIT 1) );
+
 
 INSERT INTO "Security"."ModuleSecurityRole" ( "moduleId", "securityRoleId" ) VALUES  ( ( SELECT id FROM "Module" WHERE "name" = 'BMC' LIMIT 1), ( SELECT id FROM "SecurityRole" WHERE "name" = 'BMC Catalog Writer' LIMIT 1) );
+
+INSERT INTO "Security"."ModuleSecurityRole" ( "moduleId", "securityRoleId" ) VALUES  ( ( SELECT id FROM "Module" WHERE "name" = 'BMC' LIMIT 1), ( SELECT id FROM "SecurityRole" WHERE "name" = 'BMC Collection Writer' LIMIT 1) );
+
+INSERT INTO "Security"."ModuleSecurityRole" ( "moduleId", "securityRoleId" ) VALUES  ( ( SELECT id FROM "Module" WHERE "name" = 'BMC' LIMIT 1), ( SELECT id FROM "SecurityRole" WHERE "name" = 'BMC Instruction Writer' LIMIT 1) );
 
 
 -- 
