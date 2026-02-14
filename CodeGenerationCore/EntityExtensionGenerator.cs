@@ -657,7 +657,7 @@ namespace Foundation.CodeGeneration
                     sb.AppendLine();
                     sb.AppendLine($"                if (includeData == true)");
                     sb.AppendLine($"                {{");
-                    sb.AppendLine($"                    version.data = await chts.GetVersionAsync(this, 1).ConfigureAwait(false);");
+                    sb.AppendLine($"                    version.data = await chts.GetVersionAsync(this, versionAudit.versionNumber).ConfigureAwait(false);");
                     sb.AppendLine($"                }}");
                     sb.AppendLine();
                     sb.AppendLine($"                versions.Add(version);");
