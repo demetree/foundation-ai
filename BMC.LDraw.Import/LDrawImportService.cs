@@ -175,7 +175,7 @@ namespace BMC.LDraw.Import
                 if (existing.TryGetValue(partId, out BrickPart entity))
                 {
                     // Update existing
-                    entity.name = header.Title;
+                    entity.name = partId;
                     entity.ldrawTitle = header.Title;
                     entity.ldrawCategory = header.Category;
                     entity.partTypeId = partTypeId;
@@ -190,7 +190,7 @@ namespace BMC.LDraw.Import
                     // Create new
                     BrickPart newPart = new BrickPart
                     {
-                        name = header.Title,
+                        name = partId,
                         ldrawPartId = partId,
                         ldrawTitle = header.Title,
                         ldrawCategory = header.Category,
@@ -203,7 +203,7 @@ namespace BMC.LDraw.Import
                         depthLdu = 0,
                         massGrams = 0,
                         geometryFilePath = "parts/" + Path.GetFileName(datFile),
-                        versionNumber = 1,
+                        versionNumber = 0,          // Using 0 here to indicate that there is no change history because this is a batch data load. We can implement versioning in the future if needed.
                         objectGuid = Guid.NewGuid(),
                         active = true,
                         deleted = false
