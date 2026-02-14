@@ -146,6 +146,7 @@ export class ShiftPatternCustomDetailComponent implements OnInit, OnDestroy {
 
     onPatternChanged(): void {
         // Reload the pattern after edit
+        this.auditHistory = []; // Invalidate history cache
         if (this.pattern) {
             this.patternService.GetShiftPattern(this.pattern.id as number, true)
                 .pipe(takeUntil(this.destroy$))

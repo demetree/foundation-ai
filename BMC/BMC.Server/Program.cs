@@ -169,6 +169,7 @@ namespace Foundation.BMC
                 //
                 // Custom BMC controllers will be added here as they are created
                 //
+                controllers.Add(typeof(LDrawController));
 
 
                 //

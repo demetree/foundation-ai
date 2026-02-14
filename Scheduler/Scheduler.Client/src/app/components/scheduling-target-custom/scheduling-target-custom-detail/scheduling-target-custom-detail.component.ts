@@ -180,6 +180,9 @@ export class SchedulingTargetCustomDetailComponent implements OnInit, OnDestroy,
     }
 
     public loadData(forceReload: boolean | null = null): void {
+        // Invalidate history cache so it re-fetches after edits
+        this.auditHistory = null;
+
         this.isLoadingSubject.next(true);
 
         if (!this.schedulingTargetService.userIsSchedulerSchedulingTargetReader()) {
@@ -216,6 +219,9 @@ export class SchedulingTargetCustomDetailComponent implements OnInit, OnDestroy,
                         this.alertService.showMessage('Scheduling Target not found', 'Not Found', MessageSeverity.warn);
                     }
                     this.isLoadingSubject.next(false);
+
+                    // If navigated directly to the history tab, trigger load
+                    if (this.activeTab === 'history') this.loadHistory();
                 },
                 error: (err) => {
                     this.alertService.showMessage('Failed to load Scheduling Target', '', MessageSeverity.error);

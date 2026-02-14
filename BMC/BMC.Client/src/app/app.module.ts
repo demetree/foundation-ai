@@ -134,6 +134,7 @@ import { ProjectChangeHistoryTableComponent } from './bmc-data-components/projec
 
 // Premium custom UI components
 import { PartsCatalogComponent } from './components/parts-catalog/parts-catalog.component';
+import { CatalogPartDetailComponent } from './components/catalog-part-detail/catalog-part-detail.component';
 import { ColourLibraryComponent } from './components/colour-library/colour-library.component';
 import { SystemHealthComponent } from './components/system-health/system-health.component';
 
@@ -158,6 +159,7 @@ import { SystemHealthComponent } from './components/system-health/system-health.
 
         // Premium custom UI components
         PartsCatalogComponent,
+        CatalogPartDetailComponent,
         ColourLibraryComponent,
         SystemHealthComponent,
 

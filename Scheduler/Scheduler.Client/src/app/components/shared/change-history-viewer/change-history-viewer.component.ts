@@ -7,7 +7,9 @@
  * for any entity that uses Foundation version control.
  *
  * Accepts pre-fetched VersionInformation<T>[] data and renders a polished
- * timeline with expandable per-version field diffs.
+ * timeline with expandable per-version field diffs.  Clicking "View Details"
+ * on any version opens a modal with full untruncated diffs and a snapshot
+ * of all field values.
  *
  * Usage:
  *   <app-change-history-viewer
@@ -17,7 +19,8 @@
  *       [excludeFields]="['objectGuid', 'avatarData']">
  *   </app-change-history-viewer>
  */
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, TemplateRef, ViewChild } from '@angular/core';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 export interface FieldDiff {
     field: string;
@@ -27,6 +30,12 @@ export interface FieldDiff {
     isLongText: boolean;
 }
 
+export interface SnapshotField {
+    label: string;
+    value: any;
+    formattedValue: string;
+}
+
 export interface ProcessedHistoryEntry {
     versionNumber: number;
     timeStamp: string;
@@ -34,6 +43,8 @@ export interface ProcessedHistoryEntry {
     diffs: FieldDiff[];
     isExpanded: boolean;
     isInitialCreation: boolean;
+    rawData: any;
+    previousData: any;
 }
 
 @Component({
@@ -49,13 +60,20 @@ export class ChangeHistoryViewerComponent implements OnChanges {
     @Input() excludeFields: string[] = [];
     @Input() fieldLabels: { [key: string]: string } = {};
 
+    @ViewChild('detailModal') detailModal!: TemplateRef<any>;
+
     public processedEntries: ProcessedHistoryEntry[] = [];
+    public selectedEntry: ProcessedHistoryEntry | null = null;
+    public selectedSnapshot: SnapshotField[] = [];
+    public detailActiveTab: string = 'changes';
 
     // Fields always excluded from diffs (internal/noise)
     private readonly alwaysExclude = [
         'id', 'objectGuid', 'versionNumber', 'active', 'deleted',
         // Navigation properties & lazy-loading internals (start with _)
     ];
+
+    constructor(private modalService: NgbModal) { }
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes['auditHistory'] && this.auditHistory) {
@@ -88,7 +106,9 @@ export class ChangeHistoryViewerComponent implements OnChanges {
                 userName: this.resolveUserName(entry),
                 diffs: isInitial ? [] : this.computeDiffs(olderEntry?.data, entry.data),
                 isExpanded: false,
-                isInitialCreation: isInitial
+                isInitialCreation: isInitial,
+                rawData: entry.data || null,
+                previousData: olderEntry?.data || null
             };
         });
     }
@@ -207,5 +227,46 @@ export class ChangeHistoryViewerComponent implements OnChanges {
 
     public trackByVersion(index: number, entry: ProcessedHistoryEntry): number {
         return entry.versionNumber;
+    }
+
+    // =========================================================================
+    // Detail Modal
+    // =========================================================================
+
+    public openDetailModal(entry: ProcessedHistoryEntry, event: MouseEvent): void {
+        event.stopPropagation(); // Don't toggle the inline expand
+
+        this.selectedEntry = entry;
+        this.selectedSnapshot = this.buildSnapshot(entry.rawData);
+        this.detailActiveTab = entry.isInitialCreation || entry.diffs.length === 0 ? 'snapshot' : 'changes';
+
+        this.modalService.open(this.detailModal, {
+            size: 'lg',
+            centered: true,
+            scrollable: true
+        });
+    }
+
+    private buildSnapshot(data: any): SnapshotField[] {
+        if (!data) return [];
+
+        const excluded = new Set([...this.alwaysExclude, ...this.excludeFields]);
+        const fields: SnapshotField[] = [];
+
+        for (const key of Object.keys(data)) {
+            if (excluded.has(key)) continue;
+            if (key.startsWith('_')) continue;
+            if (typeof data[key] === 'function') continue;
+            if (this.isNavProperty(data[key])) continue;
+
+            const label = this.fieldLabels[key] || this.humanizeFieldName(key);
+            fields.push({
+                label,
+                value: data[key],
+                formattedValue: this.formatValue(data[key])
+            });
+        }
+
+        return fields.sort((a, b) => a.label.localeCompare(b.label));
     }
 }

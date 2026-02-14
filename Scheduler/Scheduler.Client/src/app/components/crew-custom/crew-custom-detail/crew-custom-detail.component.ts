@@ -179,6 +179,9 @@ export class CrewCustomDetailComponent implements OnInit {
     */
   public loadData(forceLoadAndDisplaySuccessAlert: boolean | null = null): void {
 
+    // Invalidate history cache so it re-fetches after edits
+    this.auditHistory = null;
+
     //
     // Start loading indicator immediately
     //
@@ -272,6 +275,9 @@ export class CrewCustomDetailComponent implements OnInit {
         }
 
         this.isLoadingSubject.next(false);
+
+        // If navigated directly to the history tab, trigger load
+        if (this.activeTab === 'history') this.loadHistory();
       },
 
       error: (error: any) => {

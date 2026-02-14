@@ -52,6 +52,11 @@
                         <span class="badge bg-success bg-opacity-10 text-success ms-2" *ngIf="entry.isInitialCreation">
                             created
                         </span>
+                        <!-- View Details button -->
+                        <button class="btn btn-sm btn-outline-secondary detail-btn ms-2" *ngIf="entry.rawData"
+                            (click)="openDetailModal(entry, $event)" title="View full details">
+                            <i class="fa-solid fa-expand"></i>
+                        </button>
                         <!-- Expand indicator -->
                         <i class="fa-solid fa-chevron-down expand-icon ms-2"
                             *ngIf="!entry.isInitialCreation && entry.diffs.length > 0"
@@ -59,7 +64,7 @@
                     </div>
                 </div>
 
-                <!-- Expanded diff details -->
+                <!-- Expanded diff details (inline) -->
                 <div class="entry-diffs" *ngIf="entry.isExpanded && entry.diffs.length > 0">
                     <table class="diff-table">
                         <thead>
@@ -104,3 +109,99 @@
 
     </div>
 </div>
+
+
+<!-- ======================================================================= -->
+<!-- Detail Modal                                                            -->
+<!-- ======================================================================= -->
+
+<ng-template #detailModal let-modal>
+    <div class="modal-header detail-modal-header">
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-light text-dark border version-badge">
+                v{{ selectedEntry?.versionNumber }}
+            </span>
+            <span class="fw-medium">{{ entityName || 'Record' }} Version</span>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <span class="text-muted small">
+                <i class="fa-solid fa-user me-1"></i>{{ selectedEntry?.userName }}
+            </span>
+            <span class="text-muted small" [title]="selectedEntry?.timeStamp | date:'yyyy-MM-dd HH:mm:ss'">
+                <i class="fa-regular fa-clock me-1"></i>{{ selectedEntry?.timeStamp | date:'MMM d, yyyy h:mm a' }}
+            </span>
+            <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+        </div>
+    </div>
+
+    <div class="modal-body p-0">
+
+        <!-- Tabs -->
+        <ul ngbNav #detailNav="ngbNav" [(activeId)]="detailActiveTab" class="nav-tabs detail-nav-tabs">
+
+            <!-- Changes Tab -->
+            <li [ngbNavItem]="'changes'"
+                *ngIf="selectedEntry && !selectedEntry.isInitialCreation && selectedEntry.diffs.length > 0">
+                <a ngbNavLink>
+                    <i class="fa-solid fa-code-compare me-1"></i>Changes
+                    <span class="badge bg-primary bg-opacity-10 text-primary ms-1">{{ selectedEntry.diffs.length
+                        }}</span>
+                </a>
+                <ng-template ngbNavContent>
+                    <div class="detail-tab-content">
+                        <table class="diff-table detail-diff-table">
+                            <thead>
+                                <tr>
+                                    <th>Field</th>
+                                    <th>Previous Value</th>
+                                    <th class="diff-arrow-col"></th>
+                                    <th>Updated Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let diff of selectedEntry.diffs">
+                                    <td class="diff-field">{{ diff.label }}</td>
+                                    <td class="diff-old">
+                                        <span class="diff-value removed">{{ formatValue(diff.oldValue) }}</span>
+                                    </td>
+                                    <td class="diff-arrow">
+                                        <i class="fa-solid fa-arrow-right text-muted small"></i>
+                                    </td>
+                                    <td class="diff-new">
+                                        <span class="diff-value added">{{ formatValue(diff.newValue) }}</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </ng-template>
+            </li>
+
+            <!-- Snapshot Tab -->
+            <li [ngbNavItem]="'snapshot'" *ngIf="selectedEntry?.rawData">
+                <a ngbNavLink>
+                    <i class="fa-solid fa-camera me-1"></i>Snapshot
+                </a>
+                <ng-template ngbNavContent>
+                    <div class="detail-tab-content">
+                        <div class="snapshot-empty text-center text-muted py-4" *ngIf="selectedSnapshot.length === 0">
+                            No field data available for this version.
+                        </div>
+                        <table class="snapshot-table" *ngIf="selectedSnapshot.length > 0">
+                            <tbody>
+                                <tr *ngFor="let field of selectedSnapshot">
+                                    <td class="snapshot-label">{{ field.label }}</td>
+                                    <td class="snapshot-value">{{ field.formattedValue }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </ng-template>
+            </li>
+
+        </ul>
+
+        <div [ngbNavOutlet]="detailNav"></div>
+
+    </div>
+</ng-template>

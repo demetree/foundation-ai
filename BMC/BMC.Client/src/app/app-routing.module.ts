@@ -7,6 +7,7 @@ import { NotFoundComponent } from './components/not-found/not-found.component';
 import { PartsCatalogComponent } from './components/parts-catalog/parts-catalog.component';
 import { ColourLibraryComponent } from './components/colour-library/colour-library.component';
 import { SystemHealthComponent } from './components/system-health/system-health.component';
+import { CatalogPartDetailComponent } from './components/catalog-part-detail/catalog-part-detail.component';
 
 import { AuthGuard } from './services/auth-guard';
 
@@ -59,6 +60,7 @@ const routes: Routes = [
     { path: 'parts', component: PartsCatalogComponent, canActivate: [AuthGuard], title: 'Parts Catalog' },
     { path: 'colours', component: ColourLibraryComponent, canActivate: [AuthGuard], title: 'Colour Library' },
     { path: 'system-health', component: SystemHealthComponent, canActivate: [AuthGuard], title: 'System Health' },
+    { path: 'parts/:partId', component: CatalogPartDetailComponent, canActivate: [AuthGuard], title: 'Part Detail' },
 
 
     //

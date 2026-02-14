@@ -154,7 +154,7 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
     }
 
     navigateToDetail(part: BrickPartData): void {
-        this.router.navigate(['/brickparts', part.id]);
+        this.router.navigate(['/parts', part.id]);
     }
 
     nextPage(): void {

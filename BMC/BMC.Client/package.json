@@ -37,6 +37,7 @@
         "@ngx-translate/core": "^15.0.0",
         "@popperjs/core": "^2.11.8",
         "@swimlane/ngx-datatable": "^20.1.0",
+        "@types/three": "^0.182.0",
         "angular-oauth2-oidc": "^17.0.1",
         "bootstrap": "^5.3.2",
         "bootstrap-icons": "^1.11.3",
@@ -51,6 +52,7 @@
         "ngx-toastr": "^19.0.0",
         "run-script-os": "*",
         "rxjs": "~7.8.0",
+        "three": "^0.182.0",
         "tslib": "^2.3.0",
         "zone.js": "~0.14.3"
     },

@@ -1,0 +1,225 @@
+<!-- ================================================================
+   Catalog Part Detail — 3D LDraw Viewer + Part Information
+   ================================================================ -->
+<div class="part-detail" *ngIf="!isLoading">
+
+    <!-- Header -->
+    <div class="detail-header">
+        <button class="back-btn" (click)="goBack()">
+            <i class="bi bi-arrow-left"></i>
+            Back to Catalog
+        </button>
+
+        <div class="header-info">
+            <h1 class="part-title">
+                {{ part?.ldrawTitle || part?.name || 'Part Detail' }}
+            </h1>
+            <div class="part-subtitle">
+                <span class="ldraw-id" *ngIf="part?.ldrawPartId">
+                    <i class="bi bi-hash"></i>{{ part?.ldrawPartId }}
+                </span>
+                <span class="category-badge">
+                    <i class="bi bi-tag"></i>{{ getCategoryName() }}
+                </span>
+                <span class="type-badge">
+                    <i class="bi bi-box"></i>{{ getPartTypeName() }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Main Content -->
+    <div class="detail-body">
+
+        <!-- 3D Viewer Panel -->
+        <div class="viewer-panel">
+            <div class="viewer-card">
+                <div class="viewer-header">
+                    <span class="viewer-title">
+                        <i class="bi bi-badge-3d"></i>
+                        3D Preview
+                    </span>
+                    <div class="viewer-controls-hint" *ngIf="hasGeometry">
+                        <span><i class="bi bi-mouse"></i> Drag to rotate</span>
+                        <span><i class="bi bi-zoom-in"></i> Scroll to zoom</span>
+                    </div>
+                </div>
+
+                <div class="viewer-container" [class.has-geometry]="hasGeometry">
+                    <!-- Three.js Canvas -->
+                    <canvas #rendererCanvas class="renderer-canvas" *ngIf="hasGeometry">
+                    </canvas>
+
+                    <!-- Loading Overlay -->
+                    <div class="viewer-loading" *ngIf="isLoadingModel">
+                        <div class="loading-spinner"></div>
+                        <span>Loading 3D model&hellip;</span>
+                    </div>
+
+                    <!-- Error Message -->
+                    <div class="viewer-error" *ngIf="modelLoadError">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <span>{{ modelLoadError }}</span>
+                    </div>
+
+                    <!-- Fallback SVG Isometric View -->
+                    <div class="fallback-viewer" *ngIf="!hasGeometry">
+                        <svg viewBox="0 0 200 200" class="fallback-svg">
+                            <polygon [attr.points]="getIsometricPoints().top" [attr.fill]="getPartColour().top"
+                                [attr.stroke]="getPartColour().stroke" stroke-width="0.8" />
+                            <polygon [attr.points]="getIsometricPoints().front" [attr.fill]="getPartColour().front"
+                                [attr.stroke]="getPartColour().stroke" stroke-width="0.8" />
+                            <polygon [attr.points]="getIsometricPoints().side" [attr.fill]="getPartColour().side"
+                                [attr.stroke]="getPartColour().stroke" stroke-width="0.8" />
+                        </svg>
+                        <div class="fallback-label">
+                            <i class="bi bi-info-circle"></i>
+                            No geometry file — showing dimension preview
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Panels -->
+        <div class="info-panels">
+
+            <!-- Metadata Card -->
+            <div class="info-card">
+                <div class="info-card-header">
+                    <i class="bi bi-info-circle"></i>
+                    Part Information
+                </div>
+                <div class="info-card-body">
+                    <div class="info-row" *ngIf="part?.name">
+                        <span class="info-label">Name</span>
+                        <span class="info-value">{{ part?.name }}</span>
+                    </div>
+                    <div class="info-row" *ngIf="part?.ldrawTitle">
+                        <span class="info-label">LDraw Title</span>
+                        <span class="info-value">{{ part?.ldrawTitle }}</span>
+                    </div>
+                    <div class="info-row" *ngIf="part?.ldrawPartId">
+                        <span class="info-label">LDraw Part ID</span>
+                        <span class="info-value mono">{{ part?.ldrawPartId }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Category</span>
+                        <span class="info-value highlight">{{ getCategoryName() }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Part Type</span>
+                        <span class="info-value">{{ getPartTypeName() }}</span>
+                    </div>
+                    <div class="info-row" *ngIf="part?.author">
+                        <span class="info-label">Author</span>
+                        <span class="info-value">{{ part?.author }}</span>
+                    </div>
+                    <div class="info-row" *ngIf="part?.keywords">
+                        <span class="info-label">Keywords</span>
+                        <span class="info-value keywords">{{ part?.keywords }}</span>
+                    </div>
+                    <div class="info-row" *ngIf="part?.description">
+                        <span class="info-label">Description</span>
+                        <span class="info-value">{{ part?.description }}</span>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Dimensions Card -->
+            <div class="info-card">
+                <div class="info-card-header">
+                    <i class="bi bi-rulers"></i>
+                    Dimensions & Properties
+                </div>
+                <div class="info-card-body">
+                    <div class="info-row">
+                        <span class="info-label">Dimensions</span>
+                        <span class="info-value mono">{{ getDimensionsText() }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Mass</span>
+                        <span class="info-value mono">{{ getMassText() }}</span>
+                    </div>
+                    <div class="info-row" *ngIf="part?.toothCount && part?.toothCount > 0">
+                        <span class="info-label">Tooth Count</span>
+                        <span class="info-value mono">{{ part?.toothCount }}</span>
+                    </div>
+                    <div class="info-row" *ngIf="part?.gearRatio && part?.gearRatio > 0">
+                        <span class="info-label">Gear Ratio</span>
+                        <span class="info-value mono">{{ part?.gearRatio }}</span>
+                    </div>
+                    <div class="info-row" *ngIf="part?.geometryFilePath">
+                        <span class="info-label">Geometry File</span>
+                        <span class="info-value mono file-path">{{ part?.geometryFilePath }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Version</span>
+                        <span class="info-value mono">v{{ part?.versionNumber }}</span>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Connectors Card -->
+            <div class="info-card" *ngIf="!isLoadingConnectors">
+                <div class="info-card-header">
+                    <i class="bi bi-plug"></i>
+                    Connectors
+                    <span class="count-badge" *ngIf="connectors.length > 0">{{ connectors.length }}</span>
+                </div>
+                <div class="info-card-body">
+                    <div class="empty-section" *ngIf="connectors.length === 0">
+                        <i class="bi bi-dash-circle"></i>
+                        No connectors defined
+                    </div>
+                    <div class="connector-list" *ngIf="connectors.length > 0">
+                        <div class="connector-item" *ngFor="let c of connectors">
+                            <span class="connector-name">{{ c.name || 'Connector' }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Colours Card -->
+            <div class="info-card" *ngIf="!isLoadingColours">
+                <div class="info-card-header">
+                    <i class="bi bi-palette"></i>
+                    Available Colours
+                    <span class="count-badge" *ngIf="colours.length > 0">{{ colours.length }}</span>
+                </div>
+                <div class="info-card-body">
+                    <div class="empty-section" *ngIf="colours.length === 0">
+                        <i class="bi bi-dash-circle"></i>
+                        No colour variants defined
+                    </div>
+                    <div class="colour-list" *ngIf="colours.length > 0">
+                        <div class="colour-item" *ngFor="let c of colours">
+                            <span class="colour-name">{{ c.name || 'Colour' }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<!-- Full-page loading skeleton -->
+<div class="detail-skeleton" *ngIf="isLoading">
+    <div class="skeleton-header">
+        <div class="skeleton-text" style="width: 120px; height: 32px;"></div>
+        <div class="skeleton-text" style="width: 300px; height: 24px;"></div>
+    </div>
+    <div class="skeleton-body">
+        <div class="skeleton-viewer"></div>
+        <div class="skeleton-panels">
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+        </div>
+    </div>
+</div>
