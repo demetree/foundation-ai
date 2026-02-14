@@ -87,7 +87,7 @@
             <!-- Swatch Info -->
             <div class="swatch-info">
                 <span class="swatch-name">{{ colour.name }}</span>
-                <span class="swatch-hex">#{{ colour.hexRgb || '------' }}</span>
+                <span class="swatch-hex">#{{ getHexDisplay(colour.hexRgb) }}</span>
             </div>
 
             <!-- LDraw Code -->
@@ -129,14 +129,14 @@
                 <span class="detail-label">RGB Hex</span>
                 <div class="detail-value colour-value">
                     <span class="hex-dot" [style.background-color]="getSwatchBg(selectedColour)"></span>
-                    #{{ selectedColour.hexRgb || '------' }}
+                    #{{ getHexDisplay(selectedColour.hexRgb) }}
                 </div>
             </div>
             <div class="detail-item">
                 <span class="detail-label">Edge Colour</span>
                 <div class="detail-value colour-value">
                     <span class="hex-dot" [style.background-color]="getSwatchBorder(selectedColour)"></span>
-                    #{{ selectedColour.hexEdgeColour || '------' }}
+                    #{{ getHexDisplay(selectedColour.hexEdgeColour) }}
                 </div>
             </div>
             <div class="detail-item">

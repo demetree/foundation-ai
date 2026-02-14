@@ -147,19 +147,30 @@ export class ColourLibraryComponent implements OnInit, OnDestroy {
         this.router.navigate(['/brickcolours', colour.id]);
     }
 
+    /** Normalize a hex value — the DB may store with or without '#' prefix */
+    private normalizeHex(hex: string | null | undefined): string | null {
+        if (!hex) return null;
+        return hex.startsWith('#') ? hex : '#' + hex;
+    }
+
+    /** Strip leading '#' for display purposes */
+    getHexDisplay(hex: string | null | undefined): string {
+        if (!hex) return '------';
+        return hex.startsWith('#') ? hex.substring(1) : hex;
+    }
+
     getSwatchBg(colour: BrickColourData): string {
-        if (!colour.hexRgb) return '#888888';
-        return '#' + colour.hexRgb;
+        return this.normalizeHex(colour.hexRgb) || '#888888';
     }
 
     getSwatchBorder(colour: BrickColourData): string {
-        if (!colour.hexEdgeColour) return 'rgba(255,255,255,0.1)';
-        return '#' + colour.hexEdgeColour;
+        return this.normalizeHex(colour.hexEdgeColour) || 'rgba(255,255,255,0.1)';
     }
 
     getSwatchGlow(colour: BrickColourData): string {
-        if (!colour.hexRgb) return 'none';
-        return `0 0 20px #${colour.hexRgb}40, 0 0 40px #${colour.hexRgb}20`;
+        const hex = this.normalizeHex(colour.hexRgb);
+        if (!hex) return 'none';
+        return `0 0 20px ${hex}40, 0 0 40px ${hex}20`;
     }
 
     getAlphaPercent(colour: BrickColourData): number {
