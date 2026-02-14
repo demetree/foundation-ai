@@ -214,33 +214,9 @@
 
         <!-- History Tab -->
         <div *ngIf="activeTab === 'history'" class="tab-pane-content">
-            <h6 class="mb-3 fw-semibold">Change History</h6>
-
-            <div *ngIf="isHistoryLoading" class="text-center py-4">
-                <div class="spinner-border spinner-border-sm text-primary"></div>
-            </div>
-
-            <div *ngIf="!isHistoryLoading && auditHistory.length === 0" class="text-center py-4 text-muted">
-                <i class="fas fa-clock me-2"></i>No change history available
-            </div>
-
-            <div class="timeline" *ngIf="!isHistoryLoading && auditHistory.length > 0">
-                <div *ngFor="let entry of auditHistory" class="timeline-item">
-                    <div class="timeline-marker"></div>
-                    <div class="timeline-content">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <span class="fw-semibold">Version {{entry.versionNumber}}</span>
-                                <span class="text-muted ms-2 small" *ngIf="entry.user">
-                                    by {{entry.user.firstName || ''}} {{entry.user.lastName || entry.user.userName ||
-                                    ''}}
-                                </span>
-                            </div>
-                            <small class="text-muted">{{entry.timeStamp | date:'medium'}}</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <app-change-history-viewer [auditHistory]="auditHistory" [isLoading]="isHistoryLoading"
+                [entityName]="'Shift Pattern'" [excludeFields]="['objectGuid']">
+            </app-change-history-viewer>
         </div>
     </div>
 </div>

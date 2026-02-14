@@ -36,6 +36,10 @@ export class CalendarCustomDetailComponent implements OnInit {
 
   public isEditMode = true;   // Defaults to true (edit).  Gets set to false in ngOnInit if route is 'new'
 
+  // Change history
+  public auditHistory: any[] | null = null;
+  public isLoadingHistory = false;
+
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -46,9 +50,9 @@ export class CalendarCustomDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private alertService: AlertService,
-    private navigationService: NavigationService) { 
+    private navigationService: NavigationService) {
 
-    }
+  }
 
   ngOnInit(): void {
 
@@ -56,7 +60,7 @@ export class CalendarCustomDetailComponent implements OnInit {
     this.calendarId = this.route.snapshot.paramMap.get('calendarId');
 
     if (this.calendarId === 'new' ||
-        this.calendarId == null) {
+      this.calendarId == null) {
       //
       // Add mode
       //
@@ -111,8 +115,22 @@ export class CalendarCustomDetailComponent implements OnInit {
     this.destroy$.complete();
   }
 
+  public onTabChange(event: any): void {
+    this.activeTab = event.nextId;
+    if (this.activeTab === 'history') this.loadHistory();
+  }
 
- public GetQueryParameters(): any {
+  public loadHistory(): void {
+    if (this.auditHistory != null || !this.calendar) return;
+    this.isLoadingHistory = true;
+    this.calendarService.GetCalendarAuditHistory(this.calendar.id as number, true).subscribe({
+      next: (data) => { this.auditHistory = data || []; this.isLoadingHistory = false; },
+      error: () => { this.auditHistory = []; this.isLoadingHistory = false; }
+    });
+  }
+
+
+  public GetQueryParameters(): any {
 
     if (this.calendarId != null && this.calendarId !== 'new') {
 
@@ -127,15 +145,15 @@ export class CalendarCustomDetailComponent implements OnInit {
   }
 
 
-/*
-  * Loads the Calendar data for the current calendarId.
-  *
-  * Fully respects the CalendarService caching strategy and error handling strategy.
-  *
-  * @param forceLoadAndDisplaySuccessAlert
-  *   - true  will bypass cache entirely and show success alert message
-  *   - false/null will use cache if available, no alert message
-  */
+  /*
+    * Loads the Calendar data for the current calendarId.
+    *
+    * Fully respects the CalendarService caching strategy and error handling strategy.
+    *
+    * @param forceLoadAndDisplaySuccessAlert
+    *   - true  will bypass cache entirely and show success alert message
+    *   - false/null will use cache if available, no alert message
+    */
   public loadData(forceLoadAndDisplaySuccessAlert: boolean | null = null): void {
 
     //
@@ -151,8 +169,8 @@ export class CalendarCustomDetailComponent implements OnInit {
 
       const userName = this.authService.currentUser?.userName || 'Current user';
       this.alertService.showMessage(`${userName} does not have permission to read Calendars.`,
-                                    'Access Denied',
-                                     MessageSeverity.warn
+        'Access Denied',
+        MessageSeverity.warn
       );
 
       this.error = `${userName} does not have permission to read Calendars.`;
@@ -181,8 +199,8 @@ export class CalendarCustomDetailComponent implements OnInit {
     if (isNaN(calendarId) || calendarId <= 0) {
 
       this.alertService.showMessage(`Invalid Calendar ID: "${this.calendarId}"`,
-                                    'Invalid ID',
-                                    MessageSeverity.error
+        'Invalid ID',
+        MessageSeverity.error
       );
 
       this.error = `Invalid Calendar ID: "${this.calendarId}"`;

@@ -143,43 +143,12 @@
         <!-- Change History Tab -->
         <li ngbNavItem="history">
             <a ngbNavLink>
-                <i class="fa-solid fa-clock-rotate-left me-1"></i> Change History
+                <i class="fa-solid fa-clock-rotate-left me-1"></i> History
             </a>
             <ng-template ngbNavContent>
-                <div class="card shadow-sm">
-                    <div class="card-body">
-
-                        <!-- Loading -->
-                        <div class="text-center py-4" *ngIf="isLoadingHistory">
-                            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
-                        </div>
-
-                        <!-- Empty -->
-                        <div class="text-center py-5 text-muted"
-                            *ngIf="!isLoadingHistory && (!changeHistory || changeHistory.length === 0)">
-                            <i class="fa-solid fa-clock-rotate-left fa-3x mb-3 opacity-50"></i>
-                            <div>No change history available</div>
-                        </div>
-
-                        <!-- History list -->
-                        <div class="list-group list-group-flush" *ngIf="changeHistory && changeHistory.length > 0">
-                            <div class="list-group-item px-0 py-3" *ngFor="let entry of changeHistory">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <div class="fw-semibold">
-                                            {{ entry.timeStamp | date:'yyyy-MM-dd HH:mm:ss' }}
-                                        </div>
-                                        <div class="small text-muted mt-1" *ngIf="entry.userName">
-                                            <i class="fa fa-user me-1"></i> {{ entry.userName }}
-                                        </div>
-                                    </div>
-                                    <span class="badge bg-light text-dark border">v{{ entry.versionNumber }}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
+                <app-change-history-viewer [auditHistory]="changeHistory" [isLoading]="isLoadingHistory"
+                    [entityName]="'Shift'" [excludeFields]="['objectGuid']">
+                </app-change-history-viewer>
             </ng-template>
         </li>
 

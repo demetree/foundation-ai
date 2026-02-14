@@ -83,6 +83,10 @@ export class SchedulingTargetCustomDetailComponent implements OnInit, OnDestroy,
     public isSaving = false;
     public isEditMode = true;
 
+    // Change history
+    public auditHistory: any[] | null = null;
+    public isLoadingHistory = false;
+
     public attributesParsed: any = {};
 
     onDynamicAttributeChange(data: any) {
@@ -152,6 +156,20 @@ export class SchedulingTargetCustomDetailComponent implements OnInit, OnDestroy,
     ngOnDestroy(): void {
         this.destroy$.next();
         this.destroy$.complete();
+    }
+
+    public onTabChange(event: any): void {
+        this.activeTab = event.nextId;
+        if (this.activeTab === 'history') this.loadHistory();
+    }
+
+    public loadHistory(): void {
+        if (this.auditHistory != null || !this.schedulingTargetData) return;
+        this.isLoadingHistory = true;
+        this.schedulingTargetService.GetSchedulingTargetAuditHistory(this.schedulingTargetData.id as number, true).subscribe({
+            next: (data) => { this.auditHistory = data || []; this.isLoadingHistory = false; },
+            error: () => { this.auditHistory = []; this.isLoadingHistory = false; }
+        });
     }
 
     public canDeactivate(): boolean {

@@ -45,6 +45,10 @@ export class ContactCustomDetailComponent implements OnInit {
   public constituent$: Observable<ConstituentData | null> = new BehaviorSubject<ConstituentData | null>(null);
   public currentVersionInfo$: Observable<VersionInformation<ContactData> | null> = of(null);
 
+  // Change history
+  public auditHistory: any[] | null = null;
+  public isLoadingHistory = false;
+
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -134,6 +138,16 @@ export class ContactCustomDetailComponent implements OnInit {
       queryParams: { tab: this.activeTab },
       queryParamsHandling: 'merge',
       replaceUrl: true
+    });
+    if (this.activeTab === 'history') this.loadHistory();
+  }
+
+  public loadHistory(): void {
+    if (this.auditHistory != null || !this.contact) return;
+    this.isLoadingHistory = true;
+    this.contactService.GetContactAuditHistory(this.contact.id as number, true).subscribe({
+      next: (data) => { this.auditHistory = data || []; this.isLoadingHistory = false; },
+      error: () => { this.auditHistory = []; this.isLoadingHistory = false; }
     });
   }
 
@@ -436,18 +450,12 @@ export class ContactCustomDetailComponent implements OnInit {
 
 
   /**
-   * Opens the version history modal to show full audit history and rollback options
+   * Opens the version history by navigating to the history tab
    */
   public openVersionHistoryModal(): void {
     if (!this.contact) return;
-
-    // TODO: Open the version history modal component
-    // For now, show an alert that functionality is coming
-    this.alertService.showMessage(
-      'Version History coming soon! This will show the full audit trail and rollback options.',
-      'v' + this.contact.versionNumber,
-      MessageSeverity.info
-    );
+    this.activeTab = 'history';
+    this.loadHistory();
   }
 
 

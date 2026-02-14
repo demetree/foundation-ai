@@ -42,6 +42,10 @@ export class ClientCustomDetailComponent implements OnInit {
 
   public isEditMode = true;   // Defaults to true (edit).  Gets set to false in ngOnInit if route is 'new'
 
+  // Change history
+  public auditHistory: any[] | null = null;
+  public isLoadingHistory = false;
+
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -130,6 +134,16 @@ export class ClientCustomDetailComponent implements OnInit {
       queryParams: { tab: this.activeTab },
       queryParamsHandling: 'merge',
       replaceUrl: true
+    });
+    if (this.activeTab === 'history') this.loadHistory();
+  }
+
+  public loadHistory(): void {
+    if (this.auditHistory != null || !this.client) return;
+    this.isLoadingHistory = true;
+    this.clientService.GetClientAuditHistory(this.client.id as number, true).subscribe({
+      next: (data) => { this.auditHistory = data || []; this.isLoadingHistory = false; },
+      error: () => { this.auditHistory = []; this.isLoadingHistory = false; }
     });
   }
 

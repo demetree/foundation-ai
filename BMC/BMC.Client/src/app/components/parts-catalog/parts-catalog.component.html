@@ -109,20 +109,39 @@
                 <div *ngFor="let part of displayedParts; let i = index" class="part-card"
                     (click)="navigateToDetail(part)" [style.animation-delay]="(i % 12) * 30 + 'ms'">
 
-                    <div class="card-icon">
-                        <i [class]="getPartTypeIcon(part)"></i>
+                    <div class="card-visual">
+                        <svg viewBox="0 0 110 110" class="brick-svg" xmlns="http://www.w3.org/2000/svg">
+                            <ellipse cx="55" cy="90" rx="26" ry="8" fill="rgba(0,0,0,0.25)" />
+                            <polygon [attr.points]="getIsometricPoints(part).side"
+                                [attr.fill]="getPartColour(part).side" [attr.stroke]="getPartColour(part).outline"
+                                stroke-width="0.8" />
+                            <polygon [attr.points]="getIsometricPoints(part).front"
+                                [attr.fill]="getPartColour(part).front" [attr.stroke]="getPartColour(part).outline"
+                                stroke-width="0.8" />
+                            <polygon [attr.points]="getIsometricPoints(part).top" [attr.fill]="getPartColour(part).top"
+                                [attr.stroke]="getPartColour(part).outline" stroke-width="0.8" />
+                            <ng-container *ngIf="shouldShowStuds(part)">
+                                <ellipse *ngFor="let stud of getStudPositions(part)" [attr.cx]="stud.cx"
+                                    [attr.cy]="stud.cy" [attr.rx]="getStudRadius(part).rx"
+                                    [attr.ry]="getStudRadius(part).ry" [attr.fill]="getPartColour(part).stud"
+                                    [attr.stroke]="getPartColour(part).outline" stroke-width="0.5" opacity="0.85" />
+                            </ng-container>
+                        </svg>
                     </div>
 
                     <div class="card-body">
-                        <h3 class="part-name">{{ part.name }}</h3>
+                        <h3 class="part-name">{{ part.ldrawTitle || part.name }}</h3>
                         <span class="part-ldraw">{{ part.ldrawPartId }}</span>
 
                         <div class="part-meta">
-                            <span class="meta-item" *ngIf="part.brickCategory" title="Category">
+                            <span class="meta-item category-badge" *ngIf="part.brickCategory" title="Category">
                                 <i class="fas fa-tag me-1"></i>{{ part.brickCategory.name }}
                             </span>
-                            <span class="meta-item" *ngIf="part.partType" title="Part Type">
-                                <i class="fas fa-shapes me-1"></i>{{ part.partType.name }}
+                            <span class="meta-item" *ngIf="part.author" title="Author">
+                                <i class="fas fa-user me-1"></i>{{ part.author }}
+                            </span>
+                            <span class="meta-item keywords-text" *ngIf="part.keywords" title="Keywords">
+                                <i class="fas fa-key me-1"></i>{{ part.keywords }}
                             </span>
                         </div>
                     </div>
@@ -130,6 +149,9 @@
                     <div class="card-footer">
                         <span class="dim-badge" title="Dimensions (LDU)">
                             <i class="fas fa-ruler-combined me-1"></i>{{ formatDimensions(part) }}
+                        </span>
+                        <span class="mass-badge" *ngIf="part.massGrams > 0" title="Mass">
+                            {{ part.massGrams }}g
                         </span>
                         <span class="version-badge" *ngIf="part.versionNumber">
                             v{{ part.versionNumber }}
@@ -151,7 +173,7 @@
                     (click)="navigateToDetail(part)" [style.animation-delay]="(i % 20) * 15 + 'ms'">
                     <span class="lr-name">
                         <i [class]="getPartTypeIcon(part)" class="row-icon me-2"></i>
-                        {{ part.name }}
+                        {{ part.ldrawTitle || part.name }}
                     </span>
                     <span class="lr-ldraw">{{ part.ldrawPartId }}</span>
                     <span class="lr-category">{{ part.brickCategory?.name || '—' }}</span>

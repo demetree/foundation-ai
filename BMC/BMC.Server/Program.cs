@@ -1,6 +1,8 @@
+using Foundation.Auditor.Database;
+using Foundation.BMC.Controllers.WebAPI;
+using Foundation.BMC.Database;
 using Foundation.Extensions;
 using Foundation.Security.Configuration;
-using Foundation.BMC.Database;
 using Foundation.Security.Database;
 using Foundation.Security.OIDC;
 using Microsoft.AspNetCore.Builder;
@@ -21,7 +23,6 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using static Foundation.Configuration;
 using static Foundation.StartupBasics;
-using Foundation.Auditor.Database;
 
 
 namespace Foundation.BMC
@@ -171,20 +172,25 @@ namespace Foundation.BMC
 
 
                 //
-                // Code-generated BMC data controllers
+                // Start of code generated controller list for BMC module
                 //
-                controllers.Add(typeof(Foundation.BMC.Controllers.WebAPI.BrickCategoriesController));
-                controllers.Add(typeof(Foundation.BMC.Controllers.WebAPI.BrickColoursController));
-                controllers.Add(typeof(Foundation.BMC.Controllers.WebAPI.BrickConnectionsController));
-                controllers.Add(typeof(Foundation.BMC.Controllers.WebAPI.BrickPartChangeHistoriesController));
-                controllers.Add(typeof(Foundation.BMC.Controllers.WebAPI.BrickPartColoursController));
-                controllers.Add(typeof(Foundation.BMC.Controllers.WebAPI.BrickPartConnectorsController));
-                controllers.Add(typeof(Foundation.BMC.Controllers.WebAPI.BrickPartsController));
-                controllers.Add(typeof(Foundation.BMC.Controllers.WebAPI.ConnectorTypesController));
-                controllers.Add(typeof(Foundation.BMC.Controllers.WebAPI.PlacedBrickChangeHistoriesController));
-                controllers.Add(typeof(Foundation.BMC.Controllers.WebAPI.PlacedBricksController));
-                controllers.Add(typeof(Foundation.BMC.Controllers.WebAPI.ProjectChangeHistoriesController));
-                controllers.Add(typeof(Foundation.BMC.Controllers.WebAPI.ProjectsController));
+                controllers.Add(typeof(BrickCategoriesController));
+                controllers.Add(typeof(BrickColoursController));
+                controllers.Add(typeof(BrickConnectionsController));
+                controllers.Add(typeof(BrickPartsController));
+                controllers.Add(typeof(BrickPartChangeHistoriesController));
+                controllers.Add(typeof(BrickPartColoursController));
+                controllers.Add(typeof(BrickPartConnectorsController));
+                controllers.Add(typeof(ColourFinishsController));
+                controllers.Add(typeof(ConnectorTypesController));
+                controllers.Add(typeof(PartTypesController));
+                controllers.Add(typeof(PlacedBricksController));
+                controllers.Add(typeof(PlacedBrickChangeHistoriesController));
+                controllers.Add(typeof(ProjectsController));
+                controllers.Add(typeof(ProjectChangeHistoriesController));
+                //
+                // End of code generated controller list for BMC module
+                //
 
 
                 logger.LogInformation("Controllers have been configured.");

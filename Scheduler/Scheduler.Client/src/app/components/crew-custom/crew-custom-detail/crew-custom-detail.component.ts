@@ -42,6 +42,10 @@ export class CrewCustomDetailComponent implements OnInit {
 
   public isEditMode = true;   // Defaults to true (edit).  Gets set to false in ngOnInit if route is 'new'
 
+  // Change history
+  public auditHistory: any[] | null = null;
+  public isLoadingHistory = false;
+
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -129,6 +133,16 @@ export class CrewCustomDetailComponent implements OnInit {
       queryParams: { tab: this.activeTab },
       queryParamsHandling: 'merge',
       replaceUrl: true
+    });
+    if (this.activeTab === 'history') this.loadHistory();
+  }
+
+  public loadHistory(): void {
+    if (this.auditHistory != null || !this.crew) return;
+    this.isLoadingHistory = true;
+    this.crewService.GetCrewAuditHistory(this.crew.id as number, true).subscribe({
+      next: (data) => { this.auditHistory = data || []; this.isLoadingHistory = false; },
+      error: () => { this.auditHistory = []; this.isLoadingHistory = false; }
     });
   }
 

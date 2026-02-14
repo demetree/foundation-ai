@@ -21,6 +21,7 @@ import { IntelligenceService } from './services/intelligence.service';
 import { RagProviderResolver } from './services/resolvers/rag-provider.resolver';
 import { GeminiGroundingProvider } from './services/providers/gemini-grounding.provider';
 import { IntelligenceModalComponent } from './components/shared/intelligence-modal/intelligence-modal.component';
+import { ChangeHistoryViewerComponent } from './components/shared/change-history-viewer/change-history-viewer.component';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppErrorHandler } from './app-error.handler';
@@ -960,6 +961,8 @@ import { VolunteerStatusTableComponent } from './scheduler-data-components/volun
     SearchBoxComponent,
     BooleanIconComponent,
     DynamicFieldRendererComponent,
+    IntelligenceModalComponent,
+    ChangeHistoryViewerComponent,
 
     EqualValidator,
     AutofocusDirective,
@@ -1687,6 +1690,7 @@ import { VolunteerStatusTableComponent } from './scheduler-data-components/volun
     OverviewDispatcherTabComponent,
     OverviewSchedulerTabComponent,
     IntelligenceModalComponent,
+    ChangeHistoryViewerComponent,
     ConfirmationDialogComponent,
     InputDialogComponent,
 

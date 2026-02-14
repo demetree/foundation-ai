@@ -381,10 +381,28 @@
         transform: translateY(-3px);
         box-shadow: var(--bmc-shadow-md);
 
+        .card-visual .brick-svg {
+            transform: scale(1.1) translateY(-2px);
+        }
+
         .card-icon i {
             color: var(--bmc-primary);
             transform: scale(1.15);
         }
+    }
+}
+
+.card-visual {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+
+    .brick-svg {
+        width: 100%;
+        max-width: 110px;
+        height: auto;
+        transition: transform var(--transition-smooth);
     }
 }
 
@@ -461,6 +479,29 @@
     border-radius: var(--radius-sm);
     background: var(--bmc-bg-elevated);
     color: var(--bmc-text-muted);
+}
+
+.mass-badge {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    background: var(--bmc-bg-elevated);
+    color: var(--bmc-text-muted);
+    font-family: 'Fira Code', 'Consolas', monospace;
+}
+
+.keywords-text {
+    font-style: italic;
+    opacity: 0.75;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.category-badge {
+    color: var(--bmc-primary) !important;
+    font-weight: 500;
 }
 
 
