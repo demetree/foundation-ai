@@ -24,4 +24,8 @@
     <ProjectReference Include="..\FoundationCore\Foundation.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="EntityExtensions\" />
+  </ItemGroup>
+
 </Project>

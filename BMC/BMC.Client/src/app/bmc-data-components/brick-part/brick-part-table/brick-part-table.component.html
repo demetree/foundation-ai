@@ -39,9 +39,9 @@
                 Ldraw  Category
                 <span *ngIf="sortColumn === 'ldrawCategory'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
-            <th class="sortable" scope="col" (click)="sortBy('partType')">
+            <th class="sortable" scope="col" (click)="sortBy('partType.name')">
                 Part  Type
-                <span *ngIf="sortColumn === 'partType'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+                <span *ngIf="sortColumn === 'partType.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
             <th class="sortable" scope="col" (click)="sortBy('keywords')">
                 Keywords
@@ -169,7 +169,7 @@ End of commented block for alternate definition option -->
             <td class="text-truncate">{{brickPart.ldrawPartId}}</td>
             <td class="text-truncate">{{brickPart.ldrawTitle}}</td>
             <td class="text-truncate">{{brickPart.ldrawCategory}}</td>
-            <td class="text-truncate">{{brickPart.partType}}</td>
+            <td class="text-truncate"><a [routerLink]="['/parttype', brickPart.partTypeId]" class="btn btn-link text-left" ngbTooltip="Open Part Type details">{{brickPart.partType?.name}}</a></td>
             <td class="text-truncate">{{brickPart.keywords}}</td>
             <td class="text-truncate">{{brickPart.author}}</td>
             <td class="text-truncate"><a [routerLink]="['/brickcategory', brickPart.brickCategoryId]" class="btn btn-link text-left" ngbTooltip="Open Brick Category details">{{brickPart.brickCategory?.name}}</a></td>
@@ -297,7 +297,7 @@ End of commented block for alternate definition option -->
            <div class="card-header d-flex justify-content-between align-items-center">
              <div>
                <strong>{{brickPart.name}}</strong>
-               <small class="text-muted d-block">{{brickPart.brickCategory?.name}}</small>
+               <small class="text-muted d-block">{{brickPart.partType?.name}}</small>
              </div>
              <div>
                 <button class="btn btn-sm"
@@ -343,9 +343,9 @@ End of commented block for alternate definition option -->
               <strong>Ldraw Category: </strong>
               {{brickPart.ldrawCategory}}
             </p>
-            <p class="brick-part-info" *ngIf="brickPart.partType != null">
+            <p class="brick-part-info" *ngIf="brickPart.partTypeId != null">
               <strong>Part Type: </strong>
-              {{brickPart.partType}}
+              <a [routerLink]="['/parttype', brickPart.partTypeId]" class="text-left p-0 m-0" ngbTooltip="Open Part Type details">{{brickPart.partType?.name}}</a>
             </p>
             <p class="brick-part-info" *ngIf="brickPart.keywords != null">
               <strong>Keywords: </strong>

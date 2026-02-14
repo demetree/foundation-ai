@@ -24,6 +24,7 @@ import { Subject, finalize } from 'rxjs';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { BrickColourService, BrickColourData, BrickColourSubmitData } from '../../../bmc-data-services/brick-colour.service';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
+import { ColourFinishService } from '../../../bmc-data-services/colour-finish.service';
 import { AuthService } from '../../../services/auth.service';
 
 //
@@ -41,7 +42,7 @@ interface BrickColourFormValues {
   alpha: string | null,     // Stored as string for form input, converted to number on submit.
   isTransparent: boolean,
   isMetallic: boolean,
-  finishType: string | null,
+  colourFinishId: number | bigint | null,       // For FK link number
   luminance: string | null,     // Stored as string for form input, converted to number on submit.
   legoColourId: string | null,     // Stored as string for form input, converted to number on submit.
   sequence: string | null,     // Stored as string for form input, converted to number on submit.
@@ -84,7 +85,7 @@ export class BrickColourAddEditComponent {
         alpha: [''],
         isTransparent: [false],
         isMetallic: [false],
-        finishType: [''],
+        colourFinishId: [null],
         luminance: [''],
         legoColourId: [''],
         sequence: [''],
@@ -100,10 +101,12 @@ export class BrickColourAddEditComponent {
   public isSaving: boolean = false;
 
   brickColours$ = this.brickColourService.GetBrickColourList();
+  colourFinishs$ = this.colourFinishService.GetColourFinishList();
 
   constructor(
     private modalService: NgbModal,
     private brickColourService: BrickColourService,
+    private colourFinishService: ColourFinishService,
     private authService: AuthService,
     private alertService: AlertService,
     private router: Router,
@@ -230,7 +233,7 @@ export class BrickColourAddEditComponent {
         alpha: formValue.alpha ? Number(formValue.alpha) : null,
         isTransparent: !!formValue.isTransparent,
         isMetallic: !!formValue.isMetallic,
-        finishType: formValue.finishType?.trim() || null,
+        colourFinishId: formValue.colourFinishId ? Number(formValue.colourFinishId) : null,
         luminance: formValue.luminance ? Number(formValue.luminance) : null,
         legoColourId: formValue.legoColourId ? Number(formValue.legoColourId) : null,
         sequence: formValue.sequence ? Number(formValue.sequence) : null,
@@ -368,7 +371,7 @@ export class BrickColourAddEditComponent {
         alpha: '',
         isTransparent: false,
         isMetallic: false,
-        finishType: '',
+        colourFinishId: null,
         luminance: '',
         legoColourId: '',
         sequence: '',
@@ -390,7 +393,7 @@ export class BrickColourAddEditComponent {
         alpha: brickColourData.alpha?.toString() ?? '',
         isTransparent: brickColourData.isTransparent ?? false,
         isMetallic: brickColourData.isMetallic ?? false,
-        finishType: brickColourData.finishType ?? '',
+        colourFinishId: brickColourData.colourFinishId,
         luminance: brickColourData.luminance?.toString() ?? '',
         legoColourId: brickColourData.legoColourId?.toString() ?? '',
         sequence: brickColourData.sequence?.toString() ?? '',

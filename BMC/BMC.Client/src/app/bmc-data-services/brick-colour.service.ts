@@ -16,6 +16,7 @@ import { UtilityService } from '../utility-services/utility.service'
 import { AlertService } from '../services/alert.service';
 import { AuthService } from '../services/auth.service';
 import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
+import { ColourFinishData } from './colour-finish.service';
 import { BrickPartColourService, BrickPartColourData } from './brick-part-colour.service';
 import { PlacedBrickService, PlacedBrickData } from './placed-brick.service';
 
@@ -36,7 +37,7 @@ export class BrickColourQueryParameters {
     alpha: bigint | number | null | undefined = null;
     isTransparent: boolean | null | undefined = null;
     isMetallic: boolean | null | undefined = null;
-    finishType: string | null | undefined = null;
+    colourFinishId: bigint | number | null | undefined = null;
     luminance: bigint | number | null | undefined = null;
     legoColourId: bigint | number | null | undefined = null;
     sequence: bigint | number | null | undefined = null;
@@ -62,7 +63,7 @@ export class BrickColourSubmitData {
     alpha: bigint | number | null = null;
     isTransparent!: boolean;
     isMetallic!: boolean;
-    finishType: string | null = null;
+    colourFinishId: bigint | number | null = null;
     luminance: bigint | number | null = null;
     legoColourId: bigint | number | null = null;
     sequence: bigint | number | null = null;
@@ -122,13 +123,14 @@ export class BrickColourData {
     alpha!: bigint | number;
     isTransparent!: boolean;
     isMetallic!: boolean;
-    finishType!: string | null;
+    colourFinishId!: bigint | number;
     luminance!: bigint | number;
     legoColourId!: bigint | number;
     sequence!: bigint | number;
     objectGuid!: string;
     active!: boolean;
     deleted!: boolean;
+    colourFinish: ColourFinishData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
 
     //
     // Private lazy-loading caches for related collections
@@ -471,7 +473,7 @@ export class BrickColourService extends SecureEndpointBase {
         output.alpha = data.alpha;
         output.isTransparent = data.isTransparent;
         output.isMetallic = data.isMetallic;
-        output.finishType = data.finishType;
+        output.colourFinishId = data.colourFinishId;
         output.luminance = data.luminance;
         output.legoColourId = data.legoColourId;
         output.sequence = data.sequence;

@@ -1,0 +1,77 @@
+<div class="add-colour-finish" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-colour-finish me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Colour Finish" 
+        *ngIf="userIsBMCColourFinishWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #colourFinishModal let-modal>
+   <div class="modal-header bg-dark text-light colour-finish-modal-header">
+      <h5 class="modal-title mb-0" id="colourFinishModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Colour Finish' : 'Add Colour Finish' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body colour-finish-modal-body">
+      <form [formGroup]="colourFinishForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="ColourFinish-name" id="label-ColourFinish-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="ColourFinish-name" formControlName="name" placeholder="Enter Name" class="form-control colour-finish-input" [disabled]="!userIsBMCColourFinishWriter()" aria-labelledby="label-name" />
+                <div *ngIf="colourFinishForm.get('name')?.invalid && colourFinishForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="ColourFinish-description" id="label-ColourFinish-description"><span class="text-danger">*</span>Description</label>
+                <textarea id="ColourFinish-description" formControlName="description" placeholder="Enter Description" class="form-control colour-finish-input" [disabled]="!userIsBMCColourFinishWriter()"></textarea>
+                <div *ngIf="colourFinishForm.get('description')?.invalid && colourFinishForm.get('description')?.touched" class="text-danger">
+                    Description is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('requiresEnvironmentMap')">
+                <input type="checkbox" id="ColourFinish-requiresEnvironmentMap" formControlName="requiresEnvironmentMap" class="form-check-input" [disabled]="!userIsBMCColourFinishWriter()" />
+                <label for="ColourFinish-requiresEnvironmentMap" class="form-check-label" id="label-ColourFinish-requiresEnvironmentMap"><span class="text-danger">*</span>Requires Environment Map</label>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isMatte')">
+                <input type="checkbox" id="ColourFinish-isMatte" formControlName="isMatte" class="form-check-input" [disabled]="!userIsBMCColourFinishWriter()" />
+                <label for="ColourFinish-isMatte" class="form-check-label" id="label-ColourFinish-isMatte"><span class="text-danger">*</span>Is Matte</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('defaultAlpha')">
+                <label for="ColourFinish-defaultAlpha" id="label-ColourFinish-defaultAlpha">Default Alpha</label>
+                <input type="number" id="ColourFinish-defaultAlpha" formControlName="defaultAlpha" placeholder="Enter Default Alpha" class="form-control colour-finish-input" [disabled]="!userIsBMCColourFinishWriter()" aria-labelledby="label-defaultAlpha" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                <label for="ColourFinish-sequence" id="label-ColourFinish-sequence">Sequence</label>
+                <input type="number" id="ColourFinish-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control colour-finish-input" [disabled]="!userIsBMCColourFinishWriter()" aria-labelledby="label-sequence" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ColourFinish-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCColourFinishWriter()" />
+                <label for="ColourFinish-active" class="form-check-label" id="label-ColourFinish-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ColourFinish-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCColourFinishWriter()" />
+                <label for="ColourFinish-deleted" class="form-check-label" id="label-ColourFinish-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer colour-finish-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Colour Finish changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !colourFinishForm.valid || colourFinishForm.pristine  || userIsBMCColourFinishWriter() == false " ngbTooltip="Save the Colour Finish changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Colour Finish' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

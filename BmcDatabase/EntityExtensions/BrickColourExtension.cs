@@ -32,7 +32,7 @@ namespace Foundation.BMC.Database
 			public Boolean isTransparent { get; set; }
 			[Required]
 			public Boolean isMetallic { get; set; }
-			public String finishType { get; set; }
+			public Int32? colourFinishId { get; set; }
 			public Int32? luminance { get; set; }
 			public Int32? legoColourId { get; set; }
 			public Int32? sequence { get; set; }
@@ -50,6 +50,7 @@ namespace Foundation.BMC.Database
 		/// </summary>
 		public class BrickColourOutputDTO : BrickColourDTO
 		{
+			public ColourFinish.ColourFinishDTO colourFinish { get; set; }
 		}
 
 
@@ -72,7 +73,7 @@ namespace Foundation.BMC.Database
 				alpha = this.alpha,
 				isTransparent = this.isTransparent,
 				isMetallic = this.isMetallic,
-				finishType = this.finishType,
+				colourFinishId = this.colourFinishId,
 				luminance = this.luminance,
 				legoColourId = this.legoColourId,
 				sequence = this.sequence,
@@ -125,13 +126,14 @@ namespace Foundation.BMC.Database
 				alpha = this.alpha,
 				isTransparent = this.isTransparent,
 				isMetallic = this.isMetallic,
-				finishType = this.finishType,
+				colourFinishId = this.colourFinishId,
 				luminance = this.luminance,
 				legoColourId = this.legoColourId,
 				sequence = this.sequence,
 				objectGuid = this.objectGuid,
 				active = this.active,
-				deleted = this.deleted
+				deleted = this.deleted,
+				colourFinish = this.colourFinish?.ToDTO()
 			};
 		}
 
@@ -178,7 +180,7 @@ namespace Foundation.BMC.Database
 				alpha = dto.alpha,
 				isTransparent = dto.isTransparent,
 				isMetallic = dto.isMetallic,
-				finishType = dto.finishType,
+				colourFinishId = dto.colourFinishId,
 				luminance = dto.luminance,
 				legoColourId = dto.legoColourId,
 				sequence = dto.sequence,
@@ -208,7 +210,7 @@ namespace Foundation.BMC.Database
 			this.alpha = dto.alpha;
 			this.isTransparent = dto.isTransparent;
 			this.isMetallic = dto.isMetallic;
-			this.finishType = dto.finishType;
+			this.colourFinishId = dto.colourFinishId;
 			this.luminance = dto.luminance;
 			this.legoColourId = dto.legoColourId;
 			this.sequence = dto.sequence;
@@ -243,7 +245,7 @@ namespace Foundation.BMC.Database
 				alpha = this.alpha,
 				isTransparent = this.isTransparent,
 				isMetallic = this.isMetallic,
-				finishType = this.finishType,
+				colourFinishId = this.colourFinishId,
 				luminance = this.luminance,
 				legoColourId = this.legoColourId,
 				sequence = this.sequence,
@@ -310,7 +312,7 @@ namespace Foundation.BMC.Database
 				alpha = brickColour.alpha,
 				isTransparent = brickColour.isTransparent,
 				isMetallic = brickColour.isMetallic,
-				finishType = brickColour.finishType,
+				colourFinishId = brickColour.colourFinishId,
 				luminance = brickColour.luminance,
 				legoColourId = brickColour.legoColourId,
 				sequence = brickColour.sequence,
@@ -344,13 +346,14 @@ namespace Foundation.BMC.Database
 				alpha = brickColour.alpha,
 				isTransparent = brickColour.isTransparent,
 				isMetallic = brickColour.isMetallic,
-				finishType = brickColour.finishType,
+				colourFinishId = brickColour.colourFinishId,
 				luminance = brickColour.luminance,
 				legoColourId = brickColour.legoColourId,
 				sequence = brickColour.sequence,
 				objectGuid = brickColour.objectGuid,
 				active = brickColour.active,
 				deleted = brickColour.deleted,
+				colourFinish = ColourFinish.CreateMinimalAnonymous(brickColour.colourFinish)
 			 };
 		}
 

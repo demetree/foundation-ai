@@ -70,7 +70,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			string ldrawPartId = null,
 			string ldrawTitle = null,
 			string ldrawCategory = null,
-			string partType = null,
+			int? partTypeId = null,
 			string keywords = null,
 			string author = null,
 			int? brickCategoryId = null,
@@ -136,9 +136,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(bp => bp.ldrawCategory == ldrawCategory);
 			}
-			if (string.IsNullOrEmpty(partType) == false)
+			if (partTypeId.HasValue == true)
 			{
-				query = query.Where(bp => bp.partType == partType);
+				query = query.Where(bp => bp.partTypeId == partTypeId.Value);
 			}
 			if (string.IsNullOrEmpty(keywords) == false)
 			{
@@ -224,6 +224,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (includeRelations == true)
 			{
 				query = query.Include(x => x.brickCategory);
+				query = query.Include(x => x.partType);
 				query = query.AsSplitQuery();
 			}
 
@@ -240,12 +241,13 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       || x.ldrawPartId.Contains(anyStringContains)
 			       || x.ldrawTitle.Contains(anyStringContains)
 			       || x.ldrawCategory.Contains(anyStringContains)
-			       || x.partType.Contains(anyStringContains)
 			       || x.keywords.Contains(anyStringContains)
 			       || x.author.Contains(anyStringContains)
 			       || x.geometryFilePath.Contains(anyStringContains)
 			       || (includeRelations == true && x.brickCategory.name.Contains(anyStringContains))
 			       || (includeRelations == true && x.brickCategory.description.Contains(anyStringContains))
+			       || (includeRelations == true && x.partType.name.Contains(anyStringContains))
+			       || (includeRelations == true && x.partType.description.Contains(anyStringContains))
 			   );
 			}
 
@@ -292,7 +294,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			string ldrawPartId = null,
 			string ldrawTitle = null,
 			string ldrawCategory = null,
-			string partType = null,
+			int? partTypeId = null,
 			string keywords = null,
 			string author = null,
 			int? brickCategoryId = null,
@@ -340,9 +342,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(bp => bp.ldrawCategory == ldrawCategory);
 			}
-			if (partType != null)
+			if (partTypeId.HasValue == true)
 			{
-				query = query.Where(bp => bp.partType == partType);
+				query = query.Where(bp => bp.partTypeId == partTypeId.Value);
 			}
 			if (keywords != null)
 			{
@@ -429,12 +431,13 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       || x.ldrawPartId.Contains(anyStringContains)
 			       || x.ldrawTitle.Contains(anyStringContains)
 			       || x.ldrawCategory.Contains(anyStringContains)
-			       || x.partType.Contains(anyStringContains)
 			       || x.keywords.Contains(anyStringContains)
 			       || x.author.Contains(anyStringContains)
 			       || x.geometryFilePath.Contains(anyStringContains)
 			       || x.brickCategory.name.Contains(anyStringContains)
 			       || x.brickCategory.description.Contains(anyStringContains)
+			       || x.partType.name.Contains(anyStringContains)
+			       || x.partType.description.Contains(anyStringContains)
 			   );
 			}
 
@@ -484,6 +487,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 				if (includeRelations == true)
 				{
 					query = query.Include(x => x.brickCategory);
+					query = query.Include(x => x.partType);
 					query = query.AsSplitQuery();
 				}
 
@@ -647,11 +651,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 					brickPart.ldrawCategory = brickPart.ldrawCategory.Substring(0, 100);
 				}
 
-				if (brickPart.partType != null && brickPart.partType.Length > 50)
-				{
-					brickPart.partType = brickPart.partType.Substring(0, 50);
-				}
-
 				if (brickPart.author != null && brickPart.author.Length > 100)
 				{
 					brickPart.author = brickPart.author.Substring(0, 100);
@@ -771,11 +770,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 					brickPart.ldrawCategory = brickPart.ldrawCategory.Substring(0, 100);
 				}
 
-				if (brickPart.partType != null && brickPart.partType.Length > 50)
-				{
-					brickPart.partType = brickPart.partType.Substring(0, 50);
-				}
-
 				if (brickPart.author != null && brickPart.author.Length > 100)
 				{
 					brickPart.author = brickPart.author.Substring(0, 100);
@@ -812,6 +806,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 					brickPart.BrickPartConnectors = null;
 					brickPart.PlacedBricks = null;
 					brickPart.brickCategory = null;
+					brickPart.partType = null;
 
 
 				    BrickPartChangeHistory brickPartChangeHistory = new BrickPartChangeHistory();
@@ -916,6 +911,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 				cloneOfExisting.BrickPartConnectors = null;
 				cloneOfExisting.PlacedBricks = null;
 				cloneOfExisting.brickCategory = null;
+				cloneOfExisting.partType = null;
 
 				if (versionNumber >= brickPart.versionNumber)
 				{
@@ -947,7 +943,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 				    brickPart.ldrawPartId = oldBrickPart.ldrawPartId;
 				    brickPart.ldrawTitle = oldBrickPart.ldrawTitle;
 				    brickPart.ldrawCategory = oldBrickPart.ldrawCategory;
-				    brickPart.partType = oldBrickPart.partType;
+				    brickPart.partTypeId = oldBrickPart.partTypeId;
 				    brickPart.keywords = oldBrickPart.keywords;
 				    brickPart.author = oldBrickPart.author;
 				    brickPart.brickCategoryId = oldBrickPart.brickCategoryId;
@@ -1331,7 +1327,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			string ldrawPartId = null,
 			string ldrawTitle = null,
 			string ldrawCategory = null,
-			string partType = null,
+			int? partTypeId = null,
 			string keywords = null,
 			string author = null,
 			int? brickCategoryId = null,
@@ -1395,9 +1391,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(bp => bp.ldrawCategory == ldrawCategory);
 			}
-			if (string.IsNullOrEmpty(partType) == false)
+			if (partTypeId.HasValue == true)
 			{
-				query = query.Where(bp => bp.partType == partType);
+				query = query.Where(bp => bp.partTypeId == partTypeId.Value);
 			}
 			if (string.IsNullOrEmpty(keywords) == false)
 			{
@@ -1485,12 +1481,13 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       || x.ldrawPartId.Contains(anyStringContains)
 			       || x.ldrawTitle.Contains(anyStringContains)
 			       || x.ldrawCategory.Contains(anyStringContains)
-			       || x.partType.Contains(anyStringContains)
 			       || x.keywords.Contains(anyStringContains)
 			       || x.author.Contains(anyStringContains)
 			       || x.geometryFilePath.Contains(anyStringContains)
 			       || x.brickCategory.name.Contains(anyStringContains)
 			       || x.brickCategory.description.Contains(anyStringContains)
+			       || x.partType.name.Contains(anyStringContains)
+			       || x.partType.description.Contains(anyStringContains)
 			   );
 			}
 

@@ -24,6 +24,7 @@ import { Subject, finalize } from 'rxjs';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { BrickPartService, BrickPartData, BrickPartSubmitData } from '../../../bmc-data-services/brick-part.service';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
+import { PartTypeService } from '../../../bmc-data-services/part-type.service';
 import { BrickCategoryService } from '../../../bmc-data-services/brick-category.service';
 import { AuthService } from '../../../services/auth.service';
 
@@ -39,7 +40,7 @@ interface BrickPartFormValues {
   ldrawPartId: string,
   ldrawTitle: string | null,
   ldrawCategory: string | null,
-  partType: string | null,
+  partTypeId: number | bigint | null,       // For FK link number
   keywords: string | null,
   author: string | null,
   brickCategoryId: number | bigint | null,       // For FK link number
@@ -87,7 +88,7 @@ export class BrickPartAddEditComponent {
         ldrawPartId: ['', Validators.required],
         ldrawTitle: [''],
         ldrawCategory: [''],
-        partType: [''],
+        partTypeId: [null],
         keywords: [''],
         author: [''],
         brickCategoryId: [null],
@@ -111,11 +112,13 @@ export class BrickPartAddEditComponent {
   public isSaving: boolean = false;
 
   brickParts$ = this.brickPartService.GetBrickPartList();
+  partTypes$ = this.partTypeService.GetPartTypeList();
   brickCategories$ = this.brickCategoryService.GetBrickCategoryList();
 
   constructor(
     private modalService: NgbModal,
     private brickPartService: BrickPartService,
+    private partTypeService: PartTypeService,
     private brickCategoryService: BrickCategoryService,
     private authService: AuthService,
     private alertService: AlertService,
@@ -240,7 +243,7 @@ export class BrickPartAddEditComponent {
         ldrawPartId: formValue.ldrawPartId!.trim(),
         ldrawTitle: formValue.ldrawTitle?.trim() || null,
         ldrawCategory: formValue.ldrawCategory?.trim() || null,
-        partType: formValue.partType?.trim() || null,
+        partTypeId: formValue.partTypeId ? Number(formValue.partTypeId) : null,
         keywords: formValue.keywords?.trim() || null,
         author: formValue.author?.trim() || null,
         brickCategoryId: formValue.brickCategoryId ? Number(formValue.brickCategoryId) : null,
@@ -384,7 +387,7 @@ export class BrickPartAddEditComponent {
         ldrawPartId: '',
         ldrawTitle: '',
         ldrawCategory: '',
-        partType: '',
+        partTypeId: null,
         keywords: '',
         author: '',
         brickCategoryId: null,
@@ -411,7 +414,7 @@ export class BrickPartAddEditComponent {
         ldrawPartId: brickPartData.ldrawPartId ?? '',
         ldrawTitle: brickPartData.ldrawTitle ?? '',
         ldrawCategory: brickPartData.ldrawCategory ?? '',
-        partType: brickPartData.partType ?? '',
+        partTypeId: brickPartData.partTypeId,
         keywords: brickPartData.keywords ?? '',
         author: brickPartData.author ?? '',
         brickCategoryId: brickPartData.brickCategoryId,

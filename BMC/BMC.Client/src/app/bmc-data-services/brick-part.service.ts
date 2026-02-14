@@ -16,6 +16,7 @@ import { UtilityService } from '../utility-services/utility.service'
 import { AlertService } from '../services/alert.service';
 import { AuthService } from '../services/auth.service';
 import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
+import { PartTypeData } from './part-type.service';
 import { BrickCategoryData } from './brick-category.service';
 import { BrickPartChangeHistoryService, BrickPartChangeHistoryData } from './brick-part-change-history.service';
 import { BrickPartConnectorService, BrickPartConnectorData } from './brick-part-connector.service';
@@ -36,7 +37,7 @@ export class BrickPartQueryParameters {
     ldrawPartId: string | null | undefined = null;
     ldrawTitle: string | null | undefined = null;
     ldrawCategory: string | null | undefined = null;
-    partType: string | null | undefined = null;
+    partTypeId: bigint | number | null | undefined = null;
     keywords: string | null | undefined = null;
     author: string | null | undefined = null;
     brickCategoryId: bigint | number | null | undefined = null;
@@ -67,7 +68,7 @@ export class BrickPartSubmitData {
     ldrawPartId!: string;
     ldrawTitle: string | null = null;
     ldrawCategory: string | null = null;
-    partType: string | null = null;
+    partTypeId: bigint | number | null = null;
     keywords: string | null = null;
     author: string | null = null;
     brickCategoryId: bigint | number | null = null;
@@ -152,7 +153,7 @@ export class BrickPartData {
     ldrawPartId!: string;
     ldrawTitle!: string | null;
     ldrawCategory!: string | null;
-    partType!: string | null;
+    partTypeId!: bigint | number;
     keywords!: string | null;
     author!: string | null;
     brickCategoryId!: bigint | number;
@@ -168,6 +169,7 @@ export class BrickPartData {
     active!: boolean;
     deleted!: boolean;
     brickCategory: BrickCategoryData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
+    partType: PartTypeData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
 
     //
     // Private lazy-loading caches for related collections
@@ -750,7 +752,7 @@ export class BrickPartService extends SecureEndpointBase {
         output.ldrawPartId = data.ldrawPartId;
         output.ldrawTitle = data.ldrawTitle;
         output.ldrawCategory = data.ldrawCategory;
-        output.partType = data.partType;
+        output.partTypeId = data.partTypeId;
         output.keywords = data.keywords;
         output.author = data.author;
         output.brickCategoryId = data.brickCategoryId;

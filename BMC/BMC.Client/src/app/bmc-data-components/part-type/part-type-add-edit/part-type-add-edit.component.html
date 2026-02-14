@@ -1,0 +1,69 @@
+<div class="add-part-type" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-part-type me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Part Type" 
+        *ngIf="userIsBMCPartTypeWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #partTypeModal let-modal>
+   <div class="modal-header bg-dark text-light part-type-modal-header">
+      <h5 class="modal-title mb-0" id="partTypeModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Part Type' : 'Add Part Type' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body part-type-modal-body">
+      <form [formGroup]="partTypeForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="PartType-name" id="label-PartType-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="PartType-name" formControlName="name" placeholder="Enter Name" class="form-control part-type-input" [disabled]="!userIsBMCPartTypeWriter()" aria-labelledby="label-name" />
+                <div *ngIf="partTypeForm.get('name')?.invalid && partTypeForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="PartType-description" id="label-PartType-description"><span class="text-danger">*</span>Description</label>
+                <textarea id="PartType-description" formControlName="description" placeholder="Enter Description" class="form-control part-type-input" [disabled]="!userIsBMCPartTypeWriter()"></textarea>
+                <div *ngIf="partTypeForm.get('description')?.invalid && partTypeForm.get('description')?.touched" class="text-danger">
+                    Description is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isUserVisible')">
+                <input type="checkbox" id="PartType-isUserVisible" formControlName="isUserVisible" class="form-check-input" [disabled]="!userIsBMCPartTypeWriter()" />
+                <label for="PartType-isUserVisible" class="form-check-label" id="label-PartType-isUserVisible"><span class="text-danger">*</span>Is User Visible</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                <label for="PartType-sequence" id="label-PartType-sequence">Sequence</label>
+                <input type="number" id="PartType-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control part-type-input" [disabled]="!userIsBMCPartTypeWriter()" aria-labelledby="label-sequence" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="PartType-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCPartTypeWriter()" />
+                <label for="PartType-active" class="form-check-label" id="label-PartType-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="PartType-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCPartTypeWriter()" />
+                <label for="PartType-deleted" class="form-check-label" id="label-PartType-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer part-type-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Part Type changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !partTypeForm.valid || partTypeForm.pristine  || userIsBMCPartTypeWriter() == false " ngbTooltip="Save the Part Type changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Part Type' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

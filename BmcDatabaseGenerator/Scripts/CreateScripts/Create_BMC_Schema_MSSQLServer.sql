@@ -27,7 +27,9 @@ GO
 -- DROP TABLE [BMC].[BrickPartConnector]
 -- DROP TABLE [BMC].[BrickPartChangeHistory]
 -- DROP TABLE [BMC].[BrickPart]
+-- DROP TABLE [BMC].[PartType]
 -- DROP TABLE [BMC].[BrickColour]
+-- DROP TABLE [BMC].[ColourFinish]
 -- DROP TABLE [BMC].[ConnectorType]
 -- DROP TABLE [BMC].[BrickCategory]
 
@@ -41,7 +43,9 @@ GO
 -- ALTER INDEX ALL ON [BMC].[BrickPartConnector] DISABLE
 -- ALTER INDEX ALL ON [BMC].[BrickPartChangeHistory] DISABLE
 -- ALTER INDEX ALL ON [BMC].[BrickPart] DISABLE
+-- ALTER INDEX ALL ON [BMC].[PartType] DISABLE
 -- ALTER INDEX ALL ON [BMC].[BrickColour] DISABLE
+-- ALTER INDEX ALL ON [BMC].[ColourFinish] DISABLE
 -- ALTER INDEX ALL ON [BMC].[ConnectorType] DISABLE
 -- ALTER INDEX ALL ON [BMC].[BrickCategory] DISABLE
 
@@ -55,7 +59,9 @@ GO
 -- ALTER INDEX ALL ON [BMC].[BrickPartConnector] REBUILD
 -- ALTER INDEX ALL ON [BMC].[BrickPartChangeHistory] REBUILD
 -- ALTER INDEX ALL ON [BMC].[BrickPart] REBUILD
+-- ALTER INDEX ALL ON [BMC].[PartType] REBUILD
 -- ALTER INDEX ALL ON [BMC].[BrickColour] REBUILD
+-- ALTER INDEX ALL ON [BMC].[ColourFinish] REBUILD
 -- ALTER INDEX ALL ON [BMC].[ConnectorType] REBUILD
 -- ALTER INDEX ALL ON [BMC].[BrickCategory] REBUILD
 
@@ -233,6 +239,63 @@ INSERT INTO [BMC].[ConnectorType] ( [name], [description], [degreesOfFreedom], [
 GO
 
 
+-- Lookup table of material finish types that define how a colour is rendered (e.g. Solid, Chrome, Rubber).
+CREATE TABLE [BMC].[ColourFinish]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[name] NVARCHAR(100) NOT NULL UNIQUE,
+	[description] NVARCHAR(500) NOT NULL,
+	[requiresEnvironmentMap] BIT NOT NULL DEFAULT 0,		-- Whether this finish needs environment mapping for reflections (Chrome, Metal)
+	[isMatte] BIT NOT NULL DEFAULT 0,		-- Whether this finish has a matte/non-glossy appearance (Rubber)
+	[defaultAlpha] INT NULL,		-- Default alpha for this finish type, null = use colour-specific alpha
+	[sequence] INT NULL,		-- Sequence to use for sorting.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+)
+GO
+
+-- Index on the ColourFinish table's name field.
+CREATE INDEX [I_ColourFinish_name] ON [BMC].[ColourFinish] ([name])
+GO
+
+-- Index on the ColourFinish table's active field.
+CREATE INDEX [I_ColourFinish_active] ON [BMC].[ColourFinish] ([active])
+GO
+
+-- Index on the ColourFinish table's deleted field.
+CREATE INDEX [I_ColourFinish_deleted] ON [BMC].[ColourFinish] ([deleted])
+GO
+
+INSERT INTO [BMC].[ColourFinish] ( [name], [description], [requiresEnvironmentMap], [isMatte], [sequence], [objectGuid] ) VALUES  ( 'Solid', 'Standard opaque plastic finish', 0, 0, 1, 'cf100001-0001-4000-8000-000000000001' )
+GO
+
+INSERT INTO [BMC].[ColourFinish] ( [name], [description], [requiresEnvironmentMap], [isMatte], [defaultAlpha], [sequence], [objectGuid] ) VALUES  ( 'Transparent', 'See-through plastic finish', 0, 0, 128, 2, 'cf100001-0001-4000-8000-000000000002' )
+GO
+
+INSERT INTO [BMC].[ColourFinish] ( [name], [description], [requiresEnvironmentMap], [isMatte], [sequence], [objectGuid] ) VALUES  ( 'Chrome', 'Highly reflective chrome-plated metal finish', 1, 0, 3, 'cf100001-0001-4000-8000-000000000003' )
+GO
+
+INSERT INTO [BMC].[ColourFinish] ( [name], [description], [requiresEnvironmentMap], [isMatte], [sequence], [objectGuid] ) VALUES  ( 'Pearlescent', 'Iridescent pearl-like plastic finish', 1, 0, 4, 'cf100001-0001-4000-8000-000000000004' )
+GO
+
+INSERT INTO [BMC].[ColourFinish] ( [name], [description], [requiresEnvironmentMap], [isMatte], [sequence], [objectGuid] ) VALUES  ( 'Metal', 'Metallic paint or lacquer finish', 1, 0, 5, 'cf100001-0001-4000-8000-000000000005' )
+GO
+
+INSERT INTO [BMC].[ColourFinish] ( [name], [description], [requiresEnvironmentMap], [isMatte], [sequence], [objectGuid] ) VALUES  ( 'Rubber', 'Matte rubber or soft-touch finish', 0, 1, 6, 'cf100001-0001-4000-8000-000000000006' )
+GO
+
+INSERT INTO [BMC].[ColourFinish] ( [name], [description], [requiresEnvironmentMap], [isMatte], [defaultAlpha], [sequence], [objectGuid] ) VALUES  ( 'Glitter', 'Transparent plastic with embedded glitter particles', 0, 0, 128, 7, 'cf100001-0001-4000-8000-000000000007' )
+GO
+
+INSERT INTO [BMC].[ColourFinish] ( [name], [description], [requiresEnvironmentMap], [isMatte], [sequence], [objectGuid] ) VALUES  ( 'Speckle', 'Solid plastic with embedded speckle particles', 0, 0, 8, 'cf100001-0001-4000-8000-000000000008' )
+GO
+
+INSERT INTO [BMC].[ColourFinish] ( [name], [description], [requiresEnvironmentMap], [isMatte], [defaultAlpha], [sequence], [objectGuid] ) VALUES  ( 'Milky', 'Semi-translucent milky or glow-in-the-dark finish', 0, 0, 240, 9, 'cf100001-0001-4000-8000-000000000009' )
+GO
+
+
 -- Colour definitions for brick parts. Compatible with the LDraw colour standard.
 CREATE TABLE [BMC].[BrickColour]
 (
@@ -243,8 +306,8 @@ CREATE TABLE [BMC].[BrickColour]
 	[hexEdgeColour] NVARCHAR(10) NULL,		-- LDraw edge/contrast colour hex value for wireframe and outline rendering
 	[alpha] INT NULL,		-- Alpha transparency value (0-255, 255 = fully opaque)
 	[isTransparent] BIT NOT NULL DEFAULT 0,		-- Whether this colour is transparent (convenience flag derived from alpha)
-	[isMetallic] BIT NOT NULL DEFAULT 0,		-- Whether this colour has a metallic finish (convenience flag derived from finishType)
-	[finishType] NVARCHAR(50) NULL,		-- Material finish type: Solid, Chrome, Pearlescent, Metal, Rubber, Glitter, Speckle, Fabric, Milky
+	[isMetallic] BIT NOT NULL DEFAULT 0,		-- Whether this colour has a metallic finish (convenience flag)
+	[colourFinishId] INT NULL,		-- Material finish type — FK to ColourFinish lookup table
 	[luminance] INT NULL,		-- Glow brightness (0-255) for glow-in-the-dark colours. Null for non-glowing.
 	[legoColourId] INT NULL,		-- Official LEGO colour number for cross-referencing with LEGO catalogues
 	[sequence] INT NULL,		-- Sequence to use for sorting.
@@ -252,12 +315,17 @@ CREATE TABLE [BMC].[BrickColour]
 	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
 
+	CONSTRAINT [FK_BrickColour_ColourFinish_colourFinishId] FOREIGN KEY ([colourFinishId]) REFERENCES [BMC].[ColourFinish] ([id]),		-- Foreign key to the ColourFinish table.
 	CONSTRAINT [UC_BrickColour_ldrawColourCode] UNIQUE ( [ldrawColourCode]) 		-- Uniqueness enforced on the BrickColour table's ldrawColourCode field.
 )
 GO
 
 -- Index on the BrickColour table's name field.
 CREATE INDEX [I_BrickColour_name] ON [BMC].[BrickColour] ([name])
+GO
+
+-- Index on the BrickColour table's colourFinishId field.
+CREATE INDEX [I_BrickColour_colourFinishId] ON [BMC].[BrickColour] ([colourFinishId])
 GO
 
 -- Index on the BrickColour table's active field.
@@ -268,28 +336,71 @@ GO
 CREATE INDEX [I_BrickColour_deleted] ON [BMC].[BrickColour] ([deleted])
 GO
 
-INSERT INTO [BMC].[BrickColour] ( [name], [ldrawColourCode], [hexRgb], [hexEdgeColour], [alpha], [isTransparent], [isMetallic], [finishType], [legoColourId], [sequence], [objectGuid] ) VALUES  ( 'Black', 0, '#1B2A34', '#808080', 255, 0, 0, 'Solid', 26, 1, 'c0100001-0001-4000-8000-000000000001' )
+INSERT INTO [BMC].[BrickColour] ( [name], [ldrawColourCode], [hexRgb], [hexEdgeColour], [alpha], [isTransparent], [isMetallic], [legoColourId], [sequence], [objectGuid] ) VALUES  ( 'Black', 0, '#1B2A34', '#808080', 255, 0, 0, 26, 1, 'c0100001-0001-4000-8000-000000000001' )
 GO
 
-INSERT INTO [BMC].[BrickColour] ( [name], [ldrawColourCode], [hexRgb], [hexEdgeColour], [alpha], [isTransparent], [isMetallic], [finishType], [legoColourId], [sequence], [objectGuid] ) VALUES  ( 'Blue', 1, '#1E5AA8', '#333333', 255, 0, 0, 'Solid', 23, 2, 'c0100001-0001-4000-8000-000000000002' )
+INSERT INTO [BMC].[BrickColour] ( [name], [ldrawColourCode], [hexRgb], [hexEdgeColour], [alpha], [isTransparent], [isMetallic], [legoColourId], [sequence], [objectGuid] ) VALUES  ( 'Blue', 1, '#1E5AA8', '#333333', 255, 0, 0, 23, 2, 'c0100001-0001-4000-8000-000000000002' )
 GO
 
-INSERT INTO [BMC].[BrickColour] ( [name], [ldrawColourCode], [hexRgb], [hexEdgeColour], [alpha], [isTransparent], [isMetallic], [finishType], [legoColourId], [sequence], [objectGuid] ) VALUES  ( 'Green', 2, '#00852B', '#333333', 255, 0, 0, 'Solid', 28, 3, 'c0100001-0001-4000-8000-000000000003' )
+INSERT INTO [BMC].[BrickColour] ( [name], [ldrawColourCode], [hexRgb], [hexEdgeColour], [alpha], [isTransparent], [isMetallic], [legoColourId], [sequence], [objectGuid] ) VALUES  ( 'Green', 2, '#00852B', '#333333', 255, 0, 0, 28, 3, 'c0100001-0001-4000-8000-000000000003' )
 GO
 
-INSERT INTO [BMC].[BrickColour] ( [name], [ldrawColourCode], [hexRgb], [hexEdgeColour], [alpha], [isTransparent], [isMetallic], [finishType], [legoColourId], [sequence], [objectGuid] ) VALUES  ( 'Red', 4, '#B40000', '#333333', 255, 0, 0, 'Solid', 21, 4, 'c0100001-0001-4000-8000-000000000004' )
+INSERT INTO [BMC].[BrickColour] ( [name], [ldrawColourCode], [hexRgb], [hexEdgeColour], [alpha], [isTransparent], [isMetallic], [legoColourId], [sequence], [objectGuid] ) VALUES  ( 'Red', 4, '#B40000', '#333333', 255, 0, 0, 21, 4, 'c0100001-0001-4000-8000-000000000004' )
 GO
 
-INSERT INTO [BMC].[BrickColour] ( [name], [ldrawColourCode], [hexRgb], [hexEdgeColour], [alpha], [isTransparent], [isMetallic], [finishType], [legoColourId], [sequence], [objectGuid] ) VALUES  ( 'Yellow', 14, '#FAC80A', '#333333', 255, 0, 0, 'Solid', 24, 5, 'c0100001-0001-4000-8000-000000000005' )
+INSERT INTO [BMC].[BrickColour] ( [name], [ldrawColourCode], [hexRgb], [hexEdgeColour], [alpha], [isTransparent], [isMetallic], [legoColourId], [sequence], [objectGuid] ) VALUES  ( 'Yellow', 14, '#FAC80A', '#333333', 255, 0, 0, 24, 5, 'c0100001-0001-4000-8000-000000000005' )
 GO
 
-INSERT INTO [BMC].[BrickColour] ( [name], [ldrawColourCode], [hexRgb], [hexEdgeColour], [alpha], [isTransparent], [isMetallic], [finishType], [legoColourId], [sequence], [objectGuid] ) VALUES  ( 'White', 15, '#F4F4F4', '#333333', 255, 0, 0, 'Solid', 1, 6, 'c0100001-0001-4000-8000-000000000006' )
+INSERT INTO [BMC].[BrickColour] ( [name], [ldrawColourCode], [hexRgb], [hexEdgeColour], [alpha], [isTransparent], [isMetallic], [legoColourId], [sequence], [objectGuid] ) VALUES  ( 'White', 15, '#F4F4F4', '#333333', 255, 0, 0, 1, 6, 'c0100001-0001-4000-8000-000000000006' )
 GO
 
-INSERT INTO [BMC].[BrickColour] ( [name], [ldrawColourCode], [hexRgb], [hexEdgeColour], [alpha], [isTransparent], [isMetallic], [finishType], [legoColourId], [sequence], [objectGuid] ) VALUES  ( 'Light Bluish Grey', 71, '#969696', '#333333', 255, 0, 0, 'Solid', 194, 7, 'c0100001-0001-4000-8000-000000000007' )
+INSERT INTO [BMC].[BrickColour] ( [name], [ldrawColourCode], [hexRgb], [hexEdgeColour], [alpha], [isTransparent], [isMetallic], [legoColourId], [sequence], [objectGuid] ) VALUES  ( 'Light Bluish Grey', 71, '#969696', '#333333', 255, 0, 0, 194, 7, 'c0100001-0001-4000-8000-000000000007' )
 GO
 
-INSERT INTO [BMC].[BrickColour] ( [name], [ldrawColourCode], [hexRgb], [hexEdgeColour], [alpha], [isTransparent], [isMetallic], [finishType], [legoColourId], [sequence], [objectGuid] ) VALUES  ( 'Dark Bluish Grey', 72, '#646464', '#333333', 255, 0, 0, 'Solid', 199, 8, 'c0100001-0001-4000-8000-000000000008' )
+INSERT INTO [BMC].[BrickColour] ( [name], [ldrawColourCode], [hexRgb], [hexEdgeColour], [alpha], [isTransparent], [isMetallic], [legoColourId], [sequence], [objectGuid] ) VALUES  ( 'Dark Bluish Grey', 72, '#646464', '#333333', 255, 0, 0, 199, 8, 'c0100001-0001-4000-8000-000000000008' )
+GO
+
+
+-- Lookup table of LDraw part classification types (Part, Subpart, Primitive, etc.).
+CREATE TABLE [BMC].[PartType]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[name] NVARCHAR(100) NOT NULL UNIQUE,
+	[description] NVARCHAR(500) NOT NULL,
+	[isUserVisible] BIT NOT NULL DEFAULT 1,		-- Whether parts of this type should appear in the user-facing part picker
+	[sequence] INT NULL,		-- Sequence to use for sorting.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+)
+GO
+
+-- Index on the PartType table's name field.
+CREATE INDEX [I_PartType_name] ON [BMC].[PartType] ([name])
+GO
+
+-- Index on the PartType table's active field.
+CREATE INDEX [I_PartType_active] ON [BMC].[PartType] ([active])
+GO
+
+-- Index on the PartType table's deleted field.
+CREATE INDEX [I_PartType_deleted] ON [BMC].[PartType] ([deleted])
+GO
+
+INSERT INTO [BMC].[PartType] ( [name], [description], [isUserVisible], [sequence], [objectGuid] ) VALUES  ( 'Part', 'A complete, standalone part (e.g. Brick 2x4)', 1, 1, 'df6fb298-9f61-41ce-aad2-37c00bc14efd' )
+GO
+
+INSERT INTO [BMC].[PartType] ( [name], [description], [isUserVisible], [sequence], [objectGuid] ) VALUES  ( 'Subpart', 'A reusable component used internally by other parts', 0, 2, '71ed658f-8695-44df-9448-669348bcfab4' )
+GO
+
+INSERT INTO [BMC].[PartType] ( [name], [description], [isUserVisible], [sequence], [objectGuid] ) VALUES  ( 'Primitive', 'A low-level geometric primitive (cylinder, stud shape)', 0, 3, 'cae03dfa-930b-47e3-acd0-83241eaae69d' )
+GO
+
+INSERT INTO [BMC].[PartType] ( [name], [description], [isUserVisible], [sequence], [objectGuid] ) VALUES  ( 'Shortcut', 'A convenience combination of multiple parts (e.g. hinge assembly)', 1, 4, 'a800b3c0-e7d1-46f3-830d-f2c93f7f8e4d' )
+GO
+
+INSERT INTO [BMC].[PartType] ( [name], [description], [isUserVisible], [sequence], [objectGuid] ) VALUES  ( 'Alias', 'An alternate ID that maps to another part', 0, 5, '9c5c8f5c-6397-4233-b360-0292adc30304' )
 GO
 
 
@@ -301,7 +412,7 @@ CREATE TABLE [BMC].[BrickPart]
 	[ldrawPartId] NVARCHAR(100) NOT NULL,		-- LDraw part ID (e.g. 3001, 32523) — the canonical identifier in the LDraw parts library
 	[ldrawTitle] NVARCHAR(250) NULL,		-- Raw title from the LDraw .dat file (e.g. 'Brick  2 x  4', 'Technic Beam  3')
 	[ldrawCategory] NVARCHAR(100) NULL,		-- Part category from LDraw !CATEGORY meta or inferred from title first word
-	[partType] NVARCHAR(50) NULL,		-- LDraw part type: Part, Subpart, Primitive, Shortcut, Alias, etc.
+	[partTypeId] INT NULL,		-- LDraw part classification — FK to PartType lookup table
 	[keywords] NVARCHAR(MAX) NULL,		-- Comma-separated keywords from LDraw !KEYWORDS meta lines for search
 	[author] NVARCHAR(100) NULL,		-- Part author from the LDraw Author: header line
 	[brickCategoryId] INT NULL,		-- The category this part belongs to
@@ -317,6 +428,7 @@ CREATE TABLE [BMC].[BrickPart]
 	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
 
+	CONSTRAINT [FK_BrickPart_PartType_partTypeId] FOREIGN KEY ([partTypeId]) REFERENCES [BMC].[PartType] ([id]),		-- Foreign key to the PartType table.
 	CONSTRAINT [FK_BrickPart_BrickCategory_brickCategoryId] FOREIGN KEY ([brickCategoryId]) REFERENCES [BMC].[BrickCategory] ([id]),		-- Foreign key to the BrickCategory table.
 	CONSTRAINT [UC_BrickPart_ldrawPartId] UNIQUE ( [ldrawPartId]) 		-- Uniqueness enforced on the BrickPart table's ldrawPartId field.
 )
@@ -324,6 +436,10 @@ GO
 
 -- Index on the BrickPart table's name field.
 CREATE INDEX [I_BrickPart_name] ON [BMC].[BrickPart] ([name])
+GO
+
+-- Index on the BrickPart table's partTypeId field.
+CREATE INDEX [I_BrickPart_partTypeId] ON [BMC].[BrickPart] ([partTypeId])
 GO
 
 -- Index on the BrickPart table's brickCategoryId field.

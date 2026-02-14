@@ -47,7 +47,15 @@
          "ObjectType": 0
       },
       {
+         "Name": "[BMC].[ColourFinish]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[BMC].[ConnectorType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[PartType]",
          "ObjectType": 0
       },
       {

@@ -37,11 +37,47 @@
             </div>
             <div class="form-group" *ngIf="!isFieldHidden('hexRgb')">
                 <label for="BrickColour-hexRgb" id="label-BrickColour-hexRgb">Hex Rgb</label>
-                <input type="text" id="BrickColour-hexRgb" formControlName="hexRgb" placeholder="Enter Hex Rgb" class="form-control brick-colour-input" [disabled]="!userIsBMCBrickColourWriter()" aria-labelledby="label-hexRgb" />
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="BrickColour-hexRgb" 
+                        formControlName="hexRgb" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsBMCBrickColourWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="brickColourForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
             </div>
             <div class="form-group" *ngIf="!isFieldHidden('hexEdgeColour')">
                 <label for="BrickColour-hexEdgeColour" id="label-BrickColour-hexEdgeColour">Hex Edge Colour</label>
-                <input type="text" id="BrickColour-hexEdgeColour" formControlName="hexEdgeColour" placeholder="Enter Hex Edge Colour" class="form-control brick-colour-input" [disabled]="!userIsBMCBrickColourWriter()" aria-labelledby="label-hexEdgeColour" />
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="BrickColour-hexEdgeColour" 
+                        formControlName="hexEdgeColour" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsBMCBrickColourWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="brickColourForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
             </div>
             <div class="form-group" *ngIf="!isFieldHidden('alpha')">
                 <label for="BrickColour-alpha" id="label-BrickColour-alpha">Alpha</label>
@@ -55,9 +91,12 @@
                 <input type="checkbox" id="BrickColour-isMetallic" formControlName="isMetallic" class="form-check-input" [disabled]="!userIsBMCBrickColourWriter()" />
                 <label for="BrickColour-isMetallic" class="form-check-label" id="label-BrickColour-isMetallic"><span class="text-danger">*</span>Is Metallic</label>
             </div>
-            <div class="form-group" *ngIf="!isFieldHidden('finishType')">
-                <label for="BrickColour-finishType" id="label-BrickColour-finishType">Finish Type</label>
-                <input type="text" id="BrickColour-finishType" formControlName="finishType" placeholder="Enter Finish Type" class="form-control brick-colour-input" [disabled]="!userIsBMCBrickColourWriter()" aria-labelledby="label-finishType" />
+            <div class="form-group" *ngIf="!isFieldHidden('colourFinishId')">
+                <label for="BrickColour-colourFinishId" id="label-BrickColour-colourFinishId">Colour Finish</label>
+                <select id="BrickColour-colourFinishId" formControlName="colourFinishId" class="form-select brick-colour-select" [disabled]="!userIsBMCBrickColourWriter()">
+                    <option [ngValue]="null">Select Colour Finish</option>
+                    <option *ngFor="let colourFinish of colourFinishs$ | async" [ngValue]="colourFinish.id">{{colourFinish.name}}</option>
+                </select>
             </div>
             <div class="form-group" *ngIf="!isFieldHidden('luminance')">
                 <label for="BrickColour-luminance" id="label-BrickColour-luminance">Luminance</label>

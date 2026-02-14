@@ -17,7 +17,7 @@ public partial class BrickPart
 
     public string ldrawCategory { get; set; }
 
-    public string partType { get; set; }
+    public int? partTypeId { get; set; }
 
     public string keywords { get; set; }
 
@@ -56,4 +56,6 @@ public partial class BrickPart
     public virtual ICollection<PlacedBrick> PlacedBricks { get; set; } = new List<PlacedBrick>();
 
     public virtual BrickCategory brickCategory { get; set; }
+
+    public virtual PartType partType { get; set; }
 }

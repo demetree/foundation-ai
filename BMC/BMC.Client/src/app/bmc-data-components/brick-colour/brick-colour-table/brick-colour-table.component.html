@@ -51,9 +51,9 @@
                 Is  Metallic
                 <span *ngIf="sortColumn === 'isMetallic'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
-            <th class="sortable" scope="col" (click)="sortBy('finishType')">
-                Finish  Type
-                <span *ngIf="sortColumn === 'finishType'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            <th class="sortable" scope="col" (click)="sortBy('colourFinish.name')">
+                Colour  Finish
+                <span *ngIf="sortColumn === 'colourFinish.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
             <th class="sortable" scope="col" (click)="sortBy('luminance')">
                 Luminance
@@ -156,7 +156,7 @@ End of commented block for alternate definition option -->
             <td class="text-truncate">{{brickColour.alpha | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate"><boolean-icon [value]="brickColour.isTransparent"/></td>
             <td class="text-truncate"><boolean-icon [value]="brickColour.isMetallic"/></td>
-            <td class="text-truncate">{{brickColour.finishType}}</td>
+            <td class="text-truncate"><a [routerLink]="['/colourfinish', brickColour.colourFinishId]" class="btn btn-link text-left" ngbTooltip="Open Colour Finish details">{{brickColour.colourFinish?.name}}</a></td>
             <td class="text-truncate">{{brickColour.luminance | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{brickColour.legoColourId | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{brickColour.sequence | bigNumberFormat : '1.0-2'}}</td>
@@ -277,6 +277,7 @@ End of commented block for alternate definition option -->
            <div class="card-header d-flex justify-content-between align-items-center">
              <div>
                <strong>{{brickColour.name}}</strong>
+               <small class="text-muted d-block">{{brickColour.colourFinish?.name}}</small>
              </div>
              <div>
                 <button class="btn btn-sm"
@@ -334,9 +335,9 @@ End of commented block for alternate definition option -->
               <strong>Is Metallic: </strong>
               <boolean-icon [value]="brickColour.isMetallic"/>
             </p>
-            <p class="brick-colour-info" *ngIf="brickColour.finishType != null">
-              <strong>Finish Type: </strong>
-              {{brickColour.finishType}}
+            <p class="brick-colour-info" *ngIf="brickColour.colourFinishId != null">
+              <strong>Colour Finish: </strong>
+              <a [routerLink]="['/colourfinish', brickColour.colourFinishId]" class="text-left p-0 m-0" ngbTooltip="Open Colour Finish details">{{brickColour.colourFinish?.name}}</a>
             </p>
             <p class="brick-colour-info" *ngIf="brickColour.luminance != null">
               <strong>Luminance: </strong>

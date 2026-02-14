@@ -23,7 +23,7 @@ public partial class BrickColour
 
     public bool isMetallic { get; set; }
 
-    public string finishType { get; set; }
+    public int? colourFinishId { get; set; }
 
     public int? luminance { get; set; }
 
@@ -40,4 +40,6 @@ public partial class BrickColour
     public virtual ICollection<BrickPartColour> BrickPartColours { get; set; } = new List<BrickPartColour>();
 
     public virtual ICollection<PlacedBrick> PlacedBricks { get; set; } = new List<PlacedBrick>();
+
+    public virtual ColourFinish colourFinish { get; set; }
 }

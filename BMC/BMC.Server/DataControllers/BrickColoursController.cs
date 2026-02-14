@@ -69,7 +69,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			int? alpha = null,
 			bool? isTransparent = null,
 			bool? isMetallic = null,
-			string finishType = null,
+			int? colourFinishId = null,
 			int? luminance = null,
 			int? legoColourId = null,
 			int? sequence = null,
@@ -139,9 +139,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(bc => bc.isMetallic == isMetallic.Value);
 			}
-			if (string.IsNullOrEmpty(finishType) == false)
+			if (colourFinishId.HasValue == true)
 			{
-				query = query.Where(bc => bc.finishType == finishType);
+				query = query.Where(bc => bc.colourFinishId == colourFinishId.Value);
 			}
 			if (luminance.HasValue == true)
 			{
@@ -194,6 +194,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			
 			if (includeRelations == true)
 			{
+				query = query.Include(x => x.colourFinish);
 				query = query.AsSplitQuery();
 			}
 
@@ -209,7 +210,8 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       x.name.Contains(anyStringContains)
 			       || x.hexRgb.Contains(anyStringContains)
 			       || x.hexEdgeColour.Contains(anyStringContains)
-			       || x.finishType.Contains(anyStringContains)
+			       || (includeRelations == true && x.colourFinish.name.Contains(anyStringContains))
+			       || (includeRelations == true && x.colourFinish.description.Contains(anyStringContains))
 			   );
 			}
 
@@ -259,7 +261,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			int? alpha = null,
 			bool? isTransparent = null,
 			bool? isMetallic = null,
-			string finishType = null,
+			int? colourFinishId = null,
 			int? luminance = null,
 			int? legoColourId = null,
 			int? sequence = null,
@@ -311,9 +313,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(bc => bc.isMetallic == isMetallic.Value);
 			}
-			if (finishType != null)
+			if (colourFinishId.HasValue == true)
 			{
-				query = query.Where(bc => bc.finishType == finishType);
+				query = query.Where(bc => bc.colourFinishId == colourFinishId.Value);
 			}
 			if (luminance.HasValue == true)
 			{
@@ -367,7 +369,8 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       x.name.Contains(anyStringContains)
 			       || x.hexRgb.Contains(anyStringContains)
 			       || x.hexEdgeColour.Contains(anyStringContains)
-			       || x.finishType.Contains(anyStringContains)
+			       || x.colourFinish.name.Contains(anyStringContains)
+			       || x.colourFinish.description.Contains(anyStringContains)
 			   );
 			}
 
@@ -416,6 +419,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 
 				if (includeRelations == true)
 				{
+					query = query.Include(x => x.colourFinish);
 					query = query.AsSplitQuery();
 				}
 
@@ -557,11 +561,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 				brickColour.hexEdgeColour = brickColour.hexEdgeColour.Substring(0, 10);
 			}
 
-			if (brickColour.finishType != null && brickColour.finishType.Length > 50)
-			{
-				brickColour.finishType = brickColour.finishType.Substring(0, 50);
-			}
-
 			EntityEntry<Database.BrickColour> attached = _context.Entry(existing);
 			attached.CurrentValues.SetValues(brickColour);
 
@@ -646,11 +645,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 				if (brickColour.hexEdgeColour != null && brickColour.hexEdgeColour.Length > 10)
 				{
 					brickColour.hexEdgeColour = brickColour.hexEdgeColour.Substring(0, 10);
-				}
-
-				if (brickColour.finishType != null && brickColour.finishType.Length > 50)
-				{
-					brickColour.finishType = brickColour.finishType.Substring(0, 50);
 				}
 
 				brickColour.objectGuid = Guid.NewGuid();
@@ -773,7 +767,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			int? alpha = null,
 			bool? isTransparent = null,
 			bool? isMetallic = null,
-			string finishType = null,
+			int? colourFinishId = null,
 			int? luminance = null,
 			int? legoColourId = null,
 			int? sequence = null,
@@ -841,9 +835,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(bc => bc.isMetallic == isMetallic.Value);
 			}
-			if (string.IsNullOrEmpty(finishType) == false)
+			if (colourFinishId.HasValue == true)
 			{
-				query = query.Where(bc => bc.finishType == finishType);
+				query = query.Where(bc => bc.colourFinishId == colourFinishId.Value);
 			}
 			if (luminance.HasValue == true)
 			{
@@ -898,7 +892,8 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       x.name.Contains(anyStringContains)
 			       || x.hexRgb.Contains(anyStringContains)
 			       || x.hexEdgeColour.Contains(anyStringContains)
-			       || x.finishType.Contains(anyStringContains)
+			       || x.colourFinish.name.Contains(anyStringContains)
+			       || x.colourFinish.description.Contains(anyStringContains)
 			   );
 			}
 

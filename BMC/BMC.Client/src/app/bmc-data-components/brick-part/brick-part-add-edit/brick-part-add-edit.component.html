@@ -43,9 +43,12 @@
                 <label for="BrickPart-ldrawCategory" id="label-BrickPart-ldrawCategory">Ldraw Category</label>
                 <input type="text" id="BrickPart-ldrawCategory" formControlName="ldrawCategory" placeholder="Enter Ldraw Category" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-ldrawCategory" />
             </div>
-            <div class="form-group" *ngIf="!isFieldHidden('partType')">
-                <label for="BrickPart-partType" id="label-BrickPart-partType">Part Type</label>
-                <input type="text" id="BrickPart-partType" formControlName="partType" placeholder="Enter Part Type" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-partType" />
+            <div class="form-group" *ngIf="!isFieldHidden('partTypeId')">
+                <label for="BrickPart-partTypeId" id="label-BrickPart-partTypeId">Part Type</label>
+                <select id="BrickPart-partTypeId" formControlName="partTypeId" class="form-select brick-part-select" [disabled]="!userIsBMCBrickPartWriter()">
+                    <option [ngValue]="null">Select Part Type</option>
+                    <option *ngFor="let partType of partTypes$ | async" [ngValue]="partType.id">{{partType.name}}</option>
+                </select>
             </div>
             <div class="form-group" *ngIf="!isFieldHidden('keywords')">
                 <label for="BrickPart-keywords" id="label-BrickPart-keywords">Keywords</label>

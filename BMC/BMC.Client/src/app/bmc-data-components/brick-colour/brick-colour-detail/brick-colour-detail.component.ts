@@ -23,6 +23,7 @@ import { NavigationService } from '../../../utility-services/navigation.service'
 import { CanComponentDeactivate } from '../../../guards/unsaved-changes.guard';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { BrickColourService, BrickColourData, BrickColourSubmitData } from '../../../bmc-data-services/brick-colour.service';
+import { ColourFinishService } from '../../../bmc-data-services/colour-finish.service';
 import { BrickPartColourService } from '../../../bmc-data-services/brick-part-colour.service';
 import { PlacedBrickService } from '../../../bmc-data-services/placed-brick.service';
 import { AuthService } from '../../../services/auth.service';
@@ -43,7 +44,7 @@ interface BrickColourFormValues {
   alpha: string | null,     // Stored as string for form input, converted to number on submit.
   isTransparent: boolean,
   isMetallic: boolean,
-  finishType: string | null,
+  colourFinishId: number | bigint | null,       // For FK link number
   luminance: string | null,     // Stored as string for form input, converted to number on submit.
   legoColourId: string | null,     // Stored as string for form input, converted to number on submit.
   sequence: string | null,     // Stored as string for form input, converted to number on submit.
@@ -83,7 +84,7 @@ export class BrickColourDetailComponent implements OnInit, CanComponentDeactivat
         alpha: [''],
         isTransparent: [false],
         isMetallic: [false],
-        finishType: [''],
+        colourFinishId: [null],
         luminance: [''],
         legoColourId: [''],
         sequence: [''],
@@ -103,6 +104,7 @@ export class BrickColourDetailComponent implements OnInit, CanComponentDeactivat
   public isEditMode = true;   // Defaults to true (edit).  Gets set to false in ngOnInit if route is 'new'
 
   brickColours$ = this.brickColourService.GetBrickColourList();
+  public colourFinishs$ = this.colourFinishService.GetColourFinishList();
   public brickPartColours$ = this.brickPartColourService.GetBrickPartColourList();
   public placedBricks$ = this.placedBrickService.GetPlacedBrickList();
 
@@ -110,6 +112,7 @@ export class BrickColourDetailComponent implements OnInit, CanComponentDeactivat
 
   constructor(
     public brickColourService: BrickColourService,
+    public colourFinishService: ColourFinishService,
     public brickPartColourService: BrickPartColourService,
     public placedBrickService: PlacedBrickService,
     private authService: AuthService,
@@ -400,7 +403,7 @@ export class BrickColourDetailComponent implements OnInit, CanComponentDeactivat
         alpha: '',
         isTransparent: false,
         isMetallic: false,
-        finishType: '',
+        colourFinishId: null,
         luminance: '',
         legoColourId: '',
         sequence: '',
@@ -422,7 +425,7 @@ export class BrickColourDetailComponent implements OnInit, CanComponentDeactivat
         alpha: brickColourData.alpha?.toString() ?? '',
         isTransparent: brickColourData.isTransparent ?? false,
         isMetallic: brickColourData.isMetallic ?? false,
-        finishType: brickColourData.finishType ?? '',
+        colourFinishId: brickColourData.colourFinishId,
         luminance: brickColourData.luminance?.toString() ?? '',
         legoColourId: brickColourData.legoColourId?.toString() ?? '',
         sequence: brickColourData.sequence?.toString() ?? '',
@@ -494,7 +497,7 @@ export class BrickColourDetailComponent implements OnInit, CanComponentDeactivat
         alpha: formValue.alpha ? Number(formValue.alpha) : null,
         isTransparent: !!formValue.isTransparent,
         isMetallic: !!formValue.isMetallic,
-        finishType: formValue.finishType?.trim() || null,
+        colourFinishId: formValue.colourFinishId ? Number(formValue.colourFinishId) : null,
         luminance: formValue.luminance ? Number(formValue.luminance) : null,
         legoColourId: formValue.legoColourId ? Number(formValue.legoColourId) : null,
         sequence: formValue.sequence ? Number(formValue.sequence) : null,

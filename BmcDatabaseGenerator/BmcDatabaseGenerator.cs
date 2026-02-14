@@ -136,6 +136,34 @@ All operational tables include multi-tenant support, versioning where appropriat
 
 
             // -------------------------------------------------
+            // ColourFinish — Material finish types for colour rendering
+            // -------------------------------------------------
+            Database.Table colourFinishTable = database.AddTable("ColourFinish");
+            colourFinishTable.comment = "Lookup table of material finish types that define how a colour is rendered (e.g. Solid, Chrome, Rubber).";
+            colourFinishTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            colourFinishTable.AddIdField();
+            colourFinishTable.AddNameAndDescriptionFields(true, true, false);
+
+            colourFinishTable.AddBoolField("requiresEnvironmentMap", false, false).AddScriptComments("Whether this finish needs environment mapping for reflections (Chrome, Metal)");
+            colourFinishTable.AddBoolField("isMatte", false, false).AddScriptComments("Whether this finish has a matte/non-glossy appearance (Rubber)");
+            colourFinishTable.AddIntField("defaultAlpha", true).AddScriptComments("Default alpha for this finish type, null = use colour-specific alpha");
+
+            colourFinishTable.AddSequenceField();
+            colourFinishTable.AddControlFields();
+
+            // Seed data — the 9 LDraw finish categories
+            colourFinishTable.AddData(new Dictionary<string, string> { { "name", "Solid" }, { "description", "Standard opaque plastic finish" }, { "requiresEnvironmentMap", "false" }, { "isMatte", "false" }, { "sequence", "1" }, { "objectGuid", "cf100001-0001-4000-8000-000000000001" } });
+            colourFinishTable.AddData(new Dictionary<string, string> { { "name", "Transparent" }, { "description", "See-through plastic finish" }, { "requiresEnvironmentMap", "false" }, { "isMatte", "false" }, { "defaultAlpha", "128" }, { "sequence", "2" }, { "objectGuid", "cf100001-0001-4000-8000-000000000002" } });
+            colourFinishTable.AddData(new Dictionary<string, string> { { "name", "Chrome" }, { "description", "Highly reflective chrome-plated metal finish" }, { "requiresEnvironmentMap", "true" }, { "isMatte", "false" }, { "sequence", "3" }, { "objectGuid", "cf100001-0001-4000-8000-000000000003" } });
+            colourFinishTable.AddData(new Dictionary<string, string> { { "name", "Pearlescent" }, { "description", "Iridescent pearl-like plastic finish" }, { "requiresEnvironmentMap", "true" }, { "isMatte", "false" }, { "sequence", "4" }, { "objectGuid", "cf100001-0001-4000-8000-000000000004" } });
+            colourFinishTable.AddData(new Dictionary<string, string> { { "name", "Metal" }, { "description", "Metallic paint or lacquer finish" }, { "requiresEnvironmentMap", "true" }, { "isMatte", "false" }, { "sequence", "5" }, { "objectGuid", "cf100001-0001-4000-8000-000000000005" } });
+            colourFinishTable.AddData(new Dictionary<string, string> { { "name", "Rubber" }, { "description", "Matte rubber or soft-touch finish" }, { "requiresEnvironmentMap", "false" }, { "isMatte", "true" }, { "sequence", "6" }, { "objectGuid", "cf100001-0001-4000-8000-000000000006" } });
+            colourFinishTable.AddData(new Dictionary<string, string> { { "name", "Glitter" }, { "description", "Transparent plastic with embedded glitter particles" }, { "requiresEnvironmentMap", "false" }, { "isMatte", "false" }, { "defaultAlpha", "128" }, { "sequence", "7" }, { "objectGuid", "cf100001-0001-4000-8000-000000000007" } });
+            colourFinishTable.AddData(new Dictionary<string, string> { { "name", "Speckle" }, { "description", "Solid plastic with embedded speckle particles" }, { "requiresEnvironmentMap", "false" }, { "isMatte", "false" }, { "sequence", "8" }, { "objectGuid", "cf100001-0001-4000-8000-000000000008" } });
+            colourFinishTable.AddData(new Dictionary<string, string> { { "name", "Milky" }, { "description", "Semi-translucent milky or glow-in-the-dark finish" }, { "requiresEnvironmentMap", "false" }, { "isMatte", "false" }, { "defaultAlpha", "240" }, { "sequence", "9" }, { "objectGuid", "cf100001-0001-4000-8000-000000000009" } });
+
+
+            // -------------------------------------------------
             // BrickColour — Colour definitions compatible with LDraw standard
             // -------------------------------------------------
             Database.Table brickColourTable = database.AddTable("BrickColour");
@@ -145,12 +173,12 @@ All operational tables include multi-tenant support, versioning where appropriat
             brickColourTable.AddNameField(true, true);
 
             brickColourTable.AddIntField("ldrawColourCode", false).AddScriptComments("LDraw standard colour code number");
-            brickColourTable.AddString10Field("hexRgb").AddScriptComments("Hex RGB colour value (e.g. #FF0000)");
-            brickColourTable.AddString10Field("hexEdgeColour").AddScriptComments("LDraw edge/contrast colour hex value for wireframe and outline rendering");
+            brickColourTable.AddHTMLColorField("hexRgb").AddScriptComments("Hex RGB colour value (e.g. #FF0000)");
+            brickColourTable.AddHTMLColorField("hexEdgeColour").AddScriptComments("LDraw edge/contrast colour hex value for wireframe and outline rendering");
             brickColourTable.AddIntField("alpha").AddScriptComments("Alpha transparency value (0-255, 255 = fully opaque)");
             brickColourTable.AddBoolField("isTransparent", false, false).AddScriptComments("Whether this colour is transparent (convenience flag derived from alpha)");
-            brickColourTable.AddBoolField("isMetallic", false, false).AddScriptComments("Whether this colour has a metallic finish (convenience flag derived from finishType)");
-            brickColourTable.AddString50Field("finishType").AddScriptComments("Material finish type: Solid, Chrome, Pearlescent, Metal, Rubber, Glitter, Speckle, Fabric, Milky");
+            brickColourTable.AddBoolField("isMetallic", false, false).AddScriptComments("Whether this colour has a metallic finish (convenience flag)");
+            brickColourTable.AddForeignKeyField(colourFinishTable, true).AddScriptComments("Material finish type — FK to ColourFinish lookup table");
             brickColourTable.AddIntField("luminance", true).AddScriptComments("Glow brightness (0-255) for glow-in-the-dark colours. Null for non-glowing.");
             brickColourTable.AddIntField("legoColourId", true).AddScriptComments("Official LEGO colour number for cross-referencing with LEGO catalogues");
 
@@ -159,20 +187,42 @@ All operational tables include multi-tenant support, versioning where appropriat
 
             brickColourTable.AddUniqueConstraint(new List<string>() { "ldrawColourCode" }, false);
 
-            // Seed common solid colours (edge colours, finish type, and LEGO IDs from LDConfig.ldr)
-            brickColourTable.AddData(new Dictionary<string, string> { { "name", "Black" }, { "ldrawColourCode", "0" }, { "hexRgb", "#1B2A34" }, { "hexEdgeColour", "#808080" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "finishType", "Solid" }, { "legoColourId", "26" }, { "sequence", "1" }, { "objectGuid", "c0100001-0001-4000-8000-000000000001" } });
-            brickColourTable.AddData(new Dictionary<string, string> { { "name", "Blue" }, { "ldrawColourCode", "1" }, { "hexRgb", "#1E5AA8" }, { "hexEdgeColour", "#333333" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "finishType", "Solid" }, { "legoColourId", "23" }, { "sequence", "2" }, { "objectGuid", "c0100001-0001-4000-8000-000000000002" } });
-            brickColourTable.AddData(new Dictionary<string, string> { { "name", "Green" }, { "ldrawColourCode", "2" }, { "hexRgb", "#00852B" }, { "hexEdgeColour", "#333333" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "finishType", "Solid" }, { "legoColourId", "28" }, { "sequence", "3" }, { "objectGuid", "c0100001-0001-4000-8000-000000000003" } });
-            brickColourTable.AddData(new Dictionary<string, string> { { "name", "Red" }, { "ldrawColourCode", "4" }, { "hexRgb", "#B40000" }, { "hexEdgeColour", "#333333" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "finishType", "Solid" }, { "legoColourId", "21" }, { "sequence", "4" }, { "objectGuid", "c0100001-0001-4000-8000-000000000004" } });
-            brickColourTable.AddData(new Dictionary<string, string> { { "name", "Yellow" }, { "ldrawColourCode", "14" }, { "hexRgb", "#FAC80A" }, { "hexEdgeColour", "#333333" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "finishType", "Solid" }, { "legoColourId", "24" }, { "sequence", "5" }, { "objectGuid", "c0100001-0001-4000-8000-000000000005" } });
-            brickColourTable.AddData(new Dictionary<string, string> { { "name", "White" }, { "ldrawColourCode", "15" }, { "hexRgb", "#F4F4F4" }, { "hexEdgeColour", "#333333" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "finishType", "Solid" }, { "legoColourId", "1" }, { "sequence", "6" }, { "objectGuid", "c0100001-0001-4000-8000-000000000006" } });
-            brickColourTable.AddData(new Dictionary<string, string> { { "name", "Light Bluish Grey" }, { "ldrawColourCode", "71" }, { "hexRgb", "#969696" }, { "hexEdgeColour", "#333333" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "finishType", "Solid" }, { "legoColourId", "194" }, { "sequence", "7" }, { "objectGuid", "c0100001-0001-4000-8000-000000000007" } });
-            brickColourTable.AddData(new Dictionary<string, string> { { "name", "Dark Bluish Grey" }, { "ldrawColourCode", "72" }, { "hexRgb", "#646464" }, { "hexEdgeColour", "#333333" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "finishType", "Solid" }, { "legoColourId", "199" }, { "sequence", "8" }, { "objectGuid", "c0100001-0001-4000-8000-000000000008" } });
+            // Seed common solid colours (edge colours, finish FK, and LEGO IDs from LDConfig.ldr)
+            brickColourTable.AddData(new Dictionary<string, string> { { "name", "Black" }, { "ldrawColourCode", "0" }, { "hexRgb", "#1B2A34" }, { "hexEdgeColour", "#808080" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "legoColourId", "26" }, { "sequence", "1" }, { "objectGuid", "c0100001-0001-4000-8000-000000000001" } });
+            brickColourTable.AddData(new Dictionary<string, string> { { "name", "Blue" }, { "ldrawColourCode", "1" }, { "hexRgb", "#1E5AA8" }, { "hexEdgeColour", "#333333" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "legoColourId", "23" }, { "sequence", "2" }, { "objectGuid", "c0100001-0001-4000-8000-000000000002" } });
+            brickColourTable.AddData(new Dictionary<string, string> { { "name", "Green" }, { "ldrawColourCode", "2" }, { "hexRgb", "#00852B" }, { "hexEdgeColour", "#333333" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "legoColourId", "28" }, { "sequence", "3" }, { "objectGuid", "c0100001-0001-4000-8000-000000000003" } });
+            brickColourTable.AddData(new Dictionary<string, string> { { "name", "Red" }, { "ldrawColourCode", "4" }, { "hexRgb", "#B40000" }, { "hexEdgeColour", "#333333" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "legoColourId", "21" }, { "sequence", "4" }, { "objectGuid", "c0100001-0001-4000-8000-000000000004" } });
+            brickColourTable.AddData(new Dictionary<string, string> { { "name", "Yellow" }, { "ldrawColourCode", "14" }, { "hexRgb", "#FAC80A" }, { "hexEdgeColour", "#333333" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "legoColourId", "24" }, { "sequence", "5" }, { "objectGuid", "c0100001-0001-4000-8000-000000000005" } });
+            brickColourTable.AddData(new Dictionary<string, string> { { "name", "White" }, { "ldrawColourCode", "15" }, { "hexRgb", "#F4F4F4" }, { "hexEdgeColour", "#333333" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "legoColourId", "1" }, { "sequence", "6" }, { "objectGuid", "c0100001-0001-4000-8000-000000000006" } });
+            brickColourTable.AddData(new Dictionary<string, string> { { "name", "Light Bluish Grey" }, { "ldrawColourCode", "71" }, { "hexRgb", "#969696" }, { "hexEdgeColour", "#333333" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "legoColourId", "194" }, { "sequence", "7" }, { "objectGuid", "c0100001-0001-4000-8000-000000000007" } });
+            brickColourTable.AddData(new Dictionary<string, string> { { "name", "Dark Bluish Grey" }, { "ldrawColourCode", "72" }, { "hexRgb", "#646464" }, { "hexEdgeColour", "#333333" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "legoColourId", "199" }, { "sequence", "8" }, { "objectGuid", "c0100001-0001-4000-8000-000000000008" } });
 
             #endregion
 
 
             #region Parts Catalog
+
+            // -------------------------------------------------
+            // PartType — LDraw part classification types
+            // -------------------------------------------------
+            Database.Table partTypeTable = database.AddTable("PartType");
+            partTypeTable.comment = "Lookup table of LDraw part classification types (Part, Subpart, Primitive, etc.).";
+            partTypeTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            partTypeTable.AddIdField();
+            partTypeTable.AddNameAndDescriptionFields(true, true, false);
+
+            partTypeTable.AddBoolField("isUserVisible", false, true).AddScriptComments("Whether parts of this type should appear in the user-facing part picker");
+
+            partTypeTable.AddSequenceField();
+            partTypeTable.AddControlFields();
+
+            // Seed data — LDraw part classifications
+            partTypeTable.AddData(new Dictionary<string, string> { { "name", "Part" }, { "description", "A complete, standalone part (e.g. Brick 2x4)" }, { "isUserVisible", "true" }, { "sequence", "1" }, { "objectGuid", "df6fb298-9f61-41ce-aad2-37c00bc14efd" } });
+            partTypeTable.AddData(new Dictionary<string, string> { { "name", "Subpart" }, { "description", "A reusable component used internally by other parts" }, { "isUserVisible", "false" }, { "sequence", "2" }, { "objectGuid", "71ed658f-8695-44df-9448-669348bcfab4" } });
+            partTypeTable.AddData(new Dictionary<string, string> { { "name", "Primitive" }, { "description", "A low-level geometric primitive (cylinder, stud shape)" }, { "isUserVisible", "false" }, { "sequence", "3" }, { "objectGuid", "cae03dfa-930b-47e3-acd0-83241eaae69d" } });
+            partTypeTable.AddData(new Dictionary<string, string> { { "name", "Shortcut" }, { "description", "A convenience combination of multiple parts (e.g. hinge assembly)" }, { "isUserVisible", "true" }, { "sequence", "4" }, { "objectGuid", "a800b3c0-e7d1-46f3-830d-f2c93f7f8e4d" } });
+            partTypeTable.AddData(new Dictionary<string, string> { { "name", "Alias" }, { "description", "An alternate ID that maps to another part" }, { "isUserVisible", "false" }, { "sequence", "5" }, { "objectGuid", "9c5c8f5c-6397-4233-b360-0292adc30304" } });
+
 
             // -------------------------------------------------
             // BrickPart — Individual part definitions
@@ -187,7 +237,7 @@ All operational tables include multi-tenant support, versioning where appropriat
             brickPartTable.AddString100Field("ldrawPartId", false).AddScriptComments("LDraw part ID (e.g. 3001, 32523) — the canonical identifier in the LDraw parts library");
             brickPartTable.AddString250Field("ldrawTitle").AddScriptComments("Raw title from the LDraw .dat file (e.g. 'Brick  2 x  4', 'Technic Beam  3')");
             brickPartTable.AddString100Field("ldrawCategory").AddScriptComments("Part category from LDraw !CATEGORY meta or inferred from title first word");
-            brickPartTable.AddString50Field("partType").AddScriptComments("LDraw part type: Part, Subpart, Primitive, Shortcut, Alias, etc.");
+            brickPartTable.AddForeignKeyField(partTypeTable, true).AddScriptComments("LDraw part classification — FK to PartType lookup table");
             brickPartTable.AddTextField("keywords").AddScriptComments("Comma-separated keywords from LDraw !KEYWORDS meta lines for search");
             brickPartTable.AddString100Field("author").AddScriptComments("Part author from the LDraw Author: header line");
 

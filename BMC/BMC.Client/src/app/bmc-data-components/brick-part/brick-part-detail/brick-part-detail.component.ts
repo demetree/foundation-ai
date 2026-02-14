@@ -23,6 +23,7 @@ import { NavigationService } from '../../../utility-services/navigation.service'
 import { CanComponentDeactivate } from '../../../guards/unsaved-changes.guard';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { BrickPartService, BrickPartData, BrickPartSubmitData } from '../../../bmc-data-services/brick-part.service';
+import { PartTypeService } from '../../../bmc-data-services/part-type.service';
 import { BrickCategoryService } from '../../../bmc-data-services/brick-category.service';
 import { BrickPartChangeHistoryService } from '../../../bmc-data-services/brick-part-change-history.service';
 import { BrickPartConnectorService } from '../../../bmc-data-services/brick-part-connector.service';
@@ -43,7 +44,7 @@ interface BrickPartFormValues {
   ldrawPartId: string,
   ldrawTitle: string | null,
   ldrawCategory: string | null,
-  partType: string | null,
+  partTypeId: number | bigint | null,       // For FK link number
   keywords: string | null,
   author: string | null,
   brickCategoryId: number | bigint | null,       // For FK link number
@@ -88,7 +89,7 @@ export class BrickPartDetailComponent implements OnInit, CanComponentDeactivate 
         ldrawPartId: ['', Validators.required],
         ldrawTitle: [''],
         ldrawCategory: [''],
-        partType: [''],
+        partTypeId: [null],
         keywords: [''],
         author: [''],
         brickCategoryId: [null],
@@ -116,6 +117,7 @@ export class BrickPartDetailComponent implements OnInit, CanComponentDeactivate 
   public isEditMode = true;   // Defaults to true (edit).  Gets set to false in ngOnInit if route is 'new'
 
   brickParts$ = this.brickPartService.GetBrickPartList();
+  public partTypes$ = this.partTypeService.GetPartTypeList();
   public brickCategories$ = this.brickCategoryService.GetBrickCategoryList();
   public brickPartChangeHistories$ = this.brickPartChangeHistoryService.GetBrickPartChangeHistoryList();
   public brickPartConnectors$ = this.brickPartConnectorService.GetBrickPartConnectorList();
@@ -126,6 +128,7 @@ export class BrickPartDetailComponent implements OnInit, CanComponentDeactivate 
 
   constructor(
     public brickPartService: BrickPartService,
+    public partTypeService: PartTypeService,
     public brickCategoryService: BrickCategoryService,
     public brickPartChangeHistoryService: BrickPartChangeHistoryService,
     public brickPartConnectorService: BrickPartConnectorService,
@@ -416,7 +419,7 @@ export class BrickPartDetailComponent implements OnInit, CanComponentDeactivate 
         ldrawPartId: '',
         ldrawTitle: '',
         ldrawCategory: '',
-        partType: '',
+        partTypeId: null,
         keywords: '',
         author: '',
         brickCategoryId: null,
@@ -443,7 +446,7 @@ export class BrickPartDetailComponent implements OnInit, CanComponentDeactivate 
         ldrawPartId: brickPartData.ldrawPartId ?? '',
         ldrawTitle: brickPartData.ldrawTitle ?? '',
         ldrawCategory: brickPartData.ldrawCategory ?? '',
-        partType: brickPartData.partType ?? '',
+        partTypeId: brickPartData.partTypeId,
         keywords: brickPartData.keywords ?? '',
         author: brickPartData.author ?? '',
         brickCategoryId: brickPartData.brickCategoryId,
@@ -520,7 +523,7 @@ export class BrickPartDetailComponent implements OnInit, CanComponentDeactivate 
         ldrawPartId: formValue.ldrawPartId!.trim(),
         ldrawTitle: formValue.ldrawTitle?.trim() || null,
         ldrawCategory: formValue.ldrawCategory?.trim() || null,
-        partType: formValue.partType?.trim() || null,
+        partTypeId: formValue.partTypeId ? Number(formValue.partTypeId) : null,
         keywords: formValue.keywords?.trim() || null,
         author: formValue.author?.trim() || null,
         brickCategoryId: formValue.brickCategoryId ? Number(formValue.brickCategoryId) : null,

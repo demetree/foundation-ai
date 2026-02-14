@@ -287,7 +287,7 @@ namespace Foundation.BMC.Database
 			public String ldrawPartId { get; set; }
 			public String ldrawTitle { get; set; }
 			public String ldrawCategory { get; set; }
-			public String partType { get; set; }
+			public Int32? partTypeId { get; set; }
 			public String keywords { get; set; }
 			public String author { get; set; }
 			public Int32? brickCategoryId { get; set; }
@@ -318,6 +318,7 @@ namespace Foundation.BMC.Database
 		public class BrickPartOutputDTO : BrickPartDTO
 		{
 			public BrickCategory.BrickCategoryDTO brickCategory { get; set; }
+			public PartType.PartTypeDTO partType { get; set; }
 		}
 
 
@@ -337,7 +338,7 @@ namespace Foundation.BMC.Database
 				ldrawPartId = this.ldrawPartId,
 				ldrawTitle = this.ldrawTitle,
 				ldrawCategory = this.ldrawCategory,
-				partType = this.partType,
+				partTypeId = this.partTypeId,
 				keywords = this.keywords,
 				author = this.author,
 				brickCategoryId = this.brickCategoryId,
@@ -395,7 +396,7 @@ namespace Foundation.BMC.Database
 				ldrawPartId = this.ldrawPartId,
 				ldrawTitle = this.ldrawTitle,
 				ldrawCategory = this.ldrawCategory,
-				partType = this.partType,
+				partTypeId = this.partTypeId,
 				keywords = this.keywords,
 				author = this.author,
 				brickCategoryId = this.brickCategoryId,
@@ -410,7 +411,8 @@ namespace Foundation.BMC.Database
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted,
-				brickCategory = this.brickCategory?.ToDTO()
+				brickCategory = this.brickCategory?.ToDTO(),
+				partType = this.partType?.ToDTO()
 			};
 		}
 
@@ -454,7 +456,7 @@ namespace Foundation.BMC.Database
 				ldrawPartId = dto.ldrawPartId,
 				ldrawTitle = dto.ldrawTitle,
 				ldrawCategory = dto.ldrawCategory,
-				partType = dto.partType,
+				partTypeId = dto.partTypeId,
 				keywords = dto.keywords,
 				author = dto.author,
 				brickCategoryId = dto.brickCategoryId,
@@ -489,7 +491,7 @@ namespace Foundation.BMC.Database
 			this.ldrawPartId = dto.ldrawPartId;
 			this.ldrawTitle = dto.ldrawTitle;
 			this.ldrawCategory = dto.ldrawCategory;
-			this.partType = dto.partType;
+			this.partTypeId = dto.partTypeId;
 			this.keywords = dto.keywords;
 			this.author = dto.author;
 			this.brickCategoryId = dto.brickCategoryId;
@@ -529,7 +531,7 @@ namespace Foundation.BMC.Database
 				ldrawPartId = this.ldrawPartId,
 				ldrawTitle = this.ldrawTitle,
 				ldrawCategory = this.ldrawCategory,
-				partType = this.partType,
+				partTypeId = this.partTypeId,
 				keywords = this.keywords,
 				author = this.author,
 				brickCategoryId = this.brickCategoryId,
@@ -601,7 +603,7 @@ namespace Foundation.BMC.Database
 				ldrawPartId = brickPart.ldrawPartId,
 				ldrawTitle = brickPart.ldrawTitle,
 				ldrawCategory = brickPart.ldrawCategory,
-				partType = brickPart.partType,
+				partTypeId = brickPart.partTypeId,
 				keywords = brickPart.keywords,
 				author = brickPart.author,
 				brickCategoryId = brickPart.brickCategoryId,
@@ -640,7 +642,7 @@ namespace Foundation.BMC.Database
 				ldrawPartId = brickPart.ldrawPartId,
 				ldrawTitle = brickPart.ldrawTitle,
 				ldrawCategory = brickPart.ldrawCategory,
-				partType = brickPart.partType,
+				partTypeId = brickPart.partTypeId,
 				keywords = brickPart.keywords,
 				author = brickPart.author,
 				brickCategoryId = brickPart.brickCategoryId,
@@ -655,7 +657,8 @@ namespace Foundation.BMC.Database
 				objectGuid = brickPart.objectGuid,
 				active = brickPart.active,
 				deleted = brickPart.deleted,
-				brickCategory = BrickCategory.CreateMinimalAnonymous(brickPart.brickCategory)
+				brickCategory = BrickCategory.CreateMinimalAnonymous(brickPart.brickCategory),
+				partType = PartType.CreateMinimalAnonymous(brickPart.partType)
 			 };
 		}
 

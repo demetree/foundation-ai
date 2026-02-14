@@ -16,7 +16,9 @@ import {BrickPartService} from  './brick-part.service';
 import {BrickPartChangeHistoryService} from  './brick-part-change-history.service';
 import {BrickPartColourService} from  './brick-part-colour.service';
 import {BrickPartConnectorService} from  './brick-part-connector.service';
+import {ColourFinishService} from  './colour-finish.service';
 import {ConnectorTypeService} from  './connector-type.service';
+import {PartTypeService} from  './part-type.service';
 import {PlacedBrickService} from  './placed-brick.service';
 import {PlacedBrickChangeHistoryService} from  './placed-brick-change-history.service';
 import {ProjectService} from  './project.service';
@@ -35,7 +37,9 @@ export class BMCDataServiceManagerService  {
               , public brickPartChangeHistoryService: BrickPartChangeHistoryService
               , public brickPartColourService: BrickPartColourService
               , public brickPartConnectorService: BrickPartConnectorService
+              , public colourFinishService: ColourFinishService
               , public connectorTypeService: ConnectorTypeService
+              , public partTypeService: PartTypeService
               , public placedBrickService: PlacedBrickService
               , public placedBrickChangeHistoryService: PlacedBrickChangeHistoryService
               , public projectService: ProjectService
@@ -52,7 +56,9 @@ export class BMCDataServiceManagerService  {
         this.brickPartChangeHistoryService.ClearAllCaches();
         this.brickPartColourService.ClearAllCaches();
         this.brickPartConnectorService.ClearAllCaches();
+        this.colourFinishService.ClearAllCaches();
         this.connectorTypeService.ClearAllCaches();
+        this.partTypeService.ClearAllCaches();
         this.placedBrickService.ClearAllCaches();
         this.placedBrickChangeHistoryService.ClearAllCaches();
         this.projectService.ClearAllCaches();
