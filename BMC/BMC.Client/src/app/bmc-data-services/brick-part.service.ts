@@ -34,6 +34,11 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 export class BrickPartQueryParameters {
     name: string | null | undefined = null;
     ldrawPartId: string | null | undefined = null;
+    ldrawTitle: string | null | undefined = null;
+    ldrawCategory: string | null | undefined = null;
+    partType: string | null | undefined = null;
+    keywords: string | null | undefined = null;
+    author: string | null | undefined = null;
     brickCategoryId: bigint | number | null | undefined = null;
     widthLdu: number | null | undefined = null;
     heightLdu: number | null | undefined = null;
@@ -60,6 +65,11 @@ export class BrickPartSubmitData {
     id!: bigint | number;
     name!: string;
     ldrawPartId!: string;
+    ldrawTitle: string | null = null;
+    ldrawCategory: string | null = null;
+    partType: string | null = null;
+    keywords: string | null = null;
+    author: string | null = null;
     brickCategoryId: bigint | number | null = null;
     widthLdu!: number;
     heightLdu!: number;
@@ -140,6 +150,11 @@ export class BrickPartData {
     id!: bigint | number;
     name!: string;
     ldrawPartId!: string;
+    ldrawTitle!: string | null;
+    ldrawCategory!: string | null;
+    partType!: string | null;
+    keywords!: string | null;
+    author!: string | null;
     brickCategoryId!: bigint | number;
     widthLdu!: number;
     heightLdu!: number;
@@ -733,6 +748,11 @@ export class BrickPartService extends SecureEndpointBase {
         output.id = data.id;
         output.name = data.name;
         output.ldrawPartId = data.ldrawPartId;
+        output.ldrawTitle = data.ldrawTitle;
+        output.ldrawCategory = data.ldrawCategory;
+        output.partType = data.partType;
+        output.keywords = data.keywords;
+        output.author = data.author;
         output.brickCategoryId = data.brickCategoryId;
         output.widthLdu = data.widthLdu;
         output.heightLdu = data.heightLdu;

@@ -75,6 +75,20 @@ INSERT INTO `BrickCategory` ( `name`, `description`, `sequence`, `objectGuid` ) 
 
 INSERT INTO `BrickCategory` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'Brick', 'Standard bricks of various sizes', 2, 'b1c10001-0001-4000-8000-000000000002' );
 
+INSERT INTO `BrickCategory` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'Tile', 'Smooth-top tiles without studs', 3, 'b1c10001-0001-4000-8000-000000000003' );
+
+INSERT INTO `BrickCategory` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'Slope', 'Angled slope bricks and roof pieces', 4, 'b1c10001-0001-4000-8000-000000000004' );
+
+INSERT INTO `BrickCategory` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'Wedge', 'Wedge-shaped plates and bricks', 5, 'b1c10001-0001-4000-8000-000000000005' );
+
+INSERT INTO `BrickCategory` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'Arch', 'Arched bricks and curved elements', 6, 'b1c10001-0001-4000-8000-000000000006' );
+
+INSERT INTO `BrickCategory` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'Cylinder', 'Round bricks, cylinders, and cones', 7, 'b1c10001-0001-4000-8000-000000000007' );
+
+INSERT INTO `BrickCategory` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'Cone', 'Cone-shaped parts', 8, 'b1c10001-0001-4000-8000-000000000008' );
+
+INSERT INTO `BrickCategory` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'Bracket', 'Angle brackets for sideways building', 9, 'b1c10001-0001-4000-8000-000000000009' );
+
 INSERT INTO `BrickCategory` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'Beam', 'Technic beams and liftarms', 10, 'b1c10001-0001-4000-8000-000000000010' );
 
 INSERT INTO `BrickCategory` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'Pin', 'Technic pins and connectors', 11, 'b1c10001-0001-4000-8000-000000000011' );
@@ -89,11 +103,35 @@ INSERT INTO `BrickCategory` ( `name`, `description`, `sequence`, `objectGuid` ) 
 
 INSERT INTO `BrickCategory` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'Differential', 'Differential gear assemblies', 16, 'b1c10001-0001-4000-8000-000000000016' );
 
+INSERT INTO `BrickCategory` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'Hinge', 'Hinge bricks, plates, and click hinges', 17, 'b1c10001-0001-4000-8000-000000000017' );
+
 INSERT INTO `BrickCategory` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'Panel', 'Panels, fairings, and body pieces', 20, 'b1c10001-0001-4000-8000-000000000020' );
 
 INSERT INTO `BrickCategory` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'Wheel', 'Wheels, tyres, and rims', 21, 'b1c10001-0001-4000-8000-000000000021' );
 
+INSERT INTO `BrickCategory` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'Window', 'Windows, glass, and frames', 22, 'b1c10001-0001-4000-8000-000000000022' );
+
+INSERT INTO `BrickCategory` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'Door', 'Doors and door frames', 23, 'b1c10001-0001-4000-8000-000000000023' );
+
+INSERT INTO `BrickCategory` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'Fence', 'Fences, railings, and barriers', 24, 'b1c10001-0001-4000-8000-000000000024' );
+
+INSERT INTO `BrickCategory` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'Baseplate', 'Baseplates and road plates', 25, 'b1c10001-0001-4000-8000-000000000025' );
+
+INSERT INTO `BrickCategory` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'Bar', 'Bars, antennas, and clips', 26, 'b1c10001-0001-4000-8000-000000000026' );
+
+INSERT INTO `BrickCategory` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'Support', 'Support structures, columns, and pillars', 27, 'b1c10001-0001-4000-8000-000000000027' );
+
+INSERT INTO `BrickCategory` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'Container', 'Boxes, crates, and storage containers', 28, 'b1c10001-0001-4000-8000-000000000028' );
+
 INSERT INTO `BrickCategory` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'Decorative', 'Decorative, printed, and sticker parts', 30, 'b1c10001-0001-4000-8000-000000000030' );
+
+INSERT INTO `BrickCategory` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'Electric', 'Electrical components, lights, and sensors', 31, 'b1c10001-0001-4000-8000-000000000031' );
+
+INSERT INTO `BrickCategory` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'Propeller', 'Propellers, rotors, and blades', 32, 'b1c10001-0001-4000-8000-000000000032' );
+
+INSERT INTO `BrickCategory` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'Wing', 'Wings and aircraft body parts', 33, 'b1c10001-0001-4000-8000-000000000033' );
+
+INSERT INTO `BrickCategory` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'Train', 'Train track, wheels, and specialized train parts', 34, 'b1c10001-0001-4000-8000-000000000034' );
 
 
 -- Master list of physical connection types that define how parts can join together.
@@ -142,9 +180,13 @@ CREATE TABLE `BrickColour`(
 	`name` VARCHAR(100) NOT NULL UNIQUE,
 	`ldrawColourCode` INT NOT NULL,		-- LDraw standard colour code number
 	`hexRgb` VARCHAR(10) NULL,		-- Hex RGB colour value (e.g. #FF0000)
+	`hexEdgeColour` VARCHAR(10) NULL,		-- LDraw edge/contrast colour hex value for wireframe and outline rendering
 	`alpha` INT NULL,		-- Alpha transparency value (0-255, 255 = fully opaque)
-	`isTransparent` BIT NOT NULL DEFAULT 0,		-- Whether this colour is transparent
-	`isMetallic` BIT NOT NULL DEFAULT 0,		-- Whether this colour has a metallic finish
+	`isTransparent` BIT NOT NULL DEFAULT 0,		-- Whether this colour is transparent (convenience flag derived from alpha)
+	`isMetallic` BIT NOT NULL DEFAULT 0,		-- Whether this colour has a metallic finish (convenience flag derived from finishType)
+	`finishType` VARCHAR(50) NULL,		-- Material finish type: Solid, Chrome, Pearlescent, Metal, Rubber, Glitter, Speckle, Fabric, Milky
+	`luminance` INT NULL,		-- Glow brightness (0-255) for glow-in-the-dark colours. Null for non-glowing.
+	`legoColourId` INT NULL,		-- Official LEGO colour number for cross-referencing with LEGO catalogues
 	`sequence` INT NULL,		-- Sequence to use for sorting.
 	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
 	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
@@ -160,21 +202,21 @@ CREATE INDEX `I_BrickColour_active` ON `BrickColour` (`active`);
 -- Index on the BrickColour table's deleted field.
 CREATE INDEX `I_BrickColour_deleted` ON `BrickColour` (`deleted`);
 
-INSERT INTO `BrickColour` ( `name`, `ldrawColourCode`, `hexRgb`, `alpha`, `isTransparent`, `isMetallic`, `sequence`, `objectGuid` ) VALUES  ( 'Black', 0, '#1B2A34', 255, false, false, 1, 'c0100001-0001-4000-8000-000000000001' );
+INSERT INTO `BrickColour` ( `name`, `ldrawColourCode`, `hexRgb`, `hexEdgeColour`, `alpha`, `isTransparent`, `isMetallic`, `finishType`, `legoColourId`, `sequence`, `objectGuid` ) VALUES  ( 'Black', 0, '#1B2A34', '#808080', 255, false, false, 'Solid', 26, 1, 'c0100001-0001-4000-8000-000000000001' );
 
-INSERT INTO `BrickColour` ( `name`, `ldrawColourCode`, `hexRgb`, `alpha`, `isTransparent`, `isMetallic`, `sequence`, `objectGuid` ) VALUES  ( 'Blue', 1, '#1E5AA8', 255, false, false, 2, 'c0100001-0001-4000-8000-000000000002' );
+INSERT INTO `BrickColour` ( `name`, `ldrawColourCode`, `hexRgb`, `hexEdgeColour`, `alpha`, `isTransparent`, `isMetallic`, `finishType`, `legoColourId`, `sequence`, `objectGuid` ) VALUES  ( 'Blue', 1, '#1E5AA8', '#333333', 255, false, false, 'Solid', 23, 2, 'c0100001-0001-4000-8000-000000000002' );
 
-INSERT INTO `BrickColour` ( `name`, `ldrawColourCode`, `hexRgb`, `alpha`, `isTransparent`, `isMetallic`, `sequence`, `objectGuid` ) VALUES  ( 'Green', 2, '#00852B', 255, false, false, 3, 'c0100001-0001-4000-8000-000000000003' );
+INSERT INTO `BrickColour` ( `name`, `ldrawColourCode`, `hexRgb`, `hexEdgeColour`, `alpha`, `isTransparent`, `isMetallic`, `finishType`, `legoColourId`, `sequence`, `objectGuid` ) VALUES  ( 'Green', 2, '#00852B', '#333333', 255, false, false, 'Solid', 28, 3, 'c0100001-0001-4000-8000-000000000003' );
 
-INSERT INTO `BrickColour` ( `name`, `ldrawColourCode`, `hexRgb`, `alpha`, `isTransparent`, `isMetallic`, `sequence`, `objectGuid` ) VALUES  ( 'Red', 4, '#B40000', 255, false, false, 4, 'c0100001-0001-4000-8000-000000000004' );
+INSERT INTO `BrickColour` ( `name`, `ldrawColourCode`, `hexRgb`, `hexEdgeColour`, `alpha`, `isTransparent`, `isMetallic`, `finishType`, `legoColourId`, `sequence`, `objectGuid` ) VALUES  ( 'Red', 4, '#B40000', '#333333', 255, false, false, 'Solid', 21, 4, 'c0100001-0001-4000-8000-000000000004' );
 
-INSERT INTO `BrickColour` ( `name`, `ldrawColourCode`, `hexRgb`, `alpha`, `isTransparent`, `isMetallic`, `sequence`, `objectGuid` ) VALUES  ( 'Yellow', 14, '#FFD67F', 255, false, false, 5, 'c0100001-0001-4000-8000-000000000005' );
+INSERT INTO `BrickColour` ( `name`, `ldrawColourCode`, `hexRgb`, `hexEdgeColour`, `alpha`, `isTransparent`, `isMetallic`, `finishType`, `legoColourId`, `sequence`, `objectGuid` ) VALUES  ( 'Yellow', 14, '#FAC80A', '#333333', 255, false, false, 'Solid', 24, 5, 'c0100001-0001-4000-8000-000000000005' );
 
-INSERT INTO `BrickColour` ( `name`, `ldrawColourCode`, `hexRgb`, `alpha`, `isTransparent`, `isMetallic`, `sequence`, `objectGuid` ) VALUES  ( 'White', 15, '#F4F4F4', 255, false, false, 6, 'c0100001-0001-4000-8000-000000000006' );
+INSERT INTO `BrickColour` ( `name`, `ldrawColourCode`, `hexRgb`, `hexEdgeColour`, `alpha`, `isTransparent`, `isMetallic`, `finishType`, `legoColourId`, `sequence`, `objectGuid` ) VALUES  ( 'White', 15, '#F4F4F4', '#333333', 255, false, false, 'Solid', 1, 6, 'c0100001-0001-4000-8000-000000000006' );
 
-INSERT INTO `BrickColour` ( `name`, `ldrawColourCode`, `hexRgb`, `alpha`, `isTransparent`, `isMetallic`, `sequence`, `objectGuid` ) VALUES  ( 'Light Bluish Grey', 71, '#A0A5A9', 255, false, false, 7, 'c0100001-0001-4000-8000-000000000007' );
+INSERT INTO `BrickColour` ( `name`, `ldrawColourCode`, `hexRgb`, `hexEdgeColour`, `alpha`, `isTransparent`, `isMetallic`, `finishType`, `legoColourId`, `sequence`, `objectGuid` ) VALUES  ( 'Light Bluish Grey', 71, '#969696', '#333333', 255, false, false, 'Solid', 194, 7, 'c0100001-0001-4000-8000-000000000007' );
 
-INSERT INTO `BrickColour` ( `name`, `ldrawColourCode`, `hexRgb`, `alpha`, `isTransparent`, `isMetallic`, `sequence`, `objectGuid` ) VALUES  ( 'Dark Bluish Grey', 72, '#6C6E68', 255, false, false, 8, 'c0100001-0001-4000-8000-000000000008' );
+INSERT INTO `BrickColour` ( `name`, `ldrawColourCode`, `hexRgb`, `hexEdgeColour`, `alpha`, `isTransparent`, `isMetallic`, `finishType`, `legoColourId`, `sequence`, `objectGuid` ) VALUES  ( 'Dark Bluish Grey', 72, '#646464', '#333333', 255, false, false, 'Solid', 199, 8, 'c0100001-0001-4000-8000-000000000008' );
 
 
 -- Individual brick part definitions. Each row represents a unique part shape (independent of colour).
@@ -182,6 +224,11 @@ CREATE TABLE `BrickPart`(
 	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
 	`name` VARCHAR(100) NOT NULL UNIQUE,
 	`ldrawPartId` VARCHAR(100) NOT NULL,		-- LDraw part ID (e.g. 3001, 32523) — the canonical identifier in the LDraw parts library
+	`ldrawTitle` VARCHAR(250) NULL,		-- Raw title from the LDraw .dat file (e.g. 'Brick  2 x  4', 'Technic Beam  3')
+	`ldrawCategory` VARCHAR(100) NULL,		-- Part category from LDraw !CATEGORY meta or inferred from title first word
+	`partType` VARCHAR(50) NULL,		-- LDraw part type: Part, Subpart, Primitive, Shortcut, Alias, etc.
+	`keywords` TEXT NULL,		-- Comma-separated keywords from LDraw !KEYWORDS meta lines for search
+	`author` VARCHAR(100) NULL,		-- Part author from the LDraw Author: header line
 	`brickCategoryId` INT NULL,		-- The category this part belongs to
 	`widthLdu` FLOAT NOT NULL,		-- Part width in LDraw units
 	`heightLdu` FLOAT NOT NULL,		-- Part height in LDraw units

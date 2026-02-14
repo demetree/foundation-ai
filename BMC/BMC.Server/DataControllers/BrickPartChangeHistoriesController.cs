@@ -157,6 +157,11 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       x.data.Contains(anyStringContains)
 			       || (includeRelations == true && x.brickPart.name.Contains(anyStringContains))
 			       || (includeRelations == true && x.brickPart.ldrawPartId.Contains(anyStringContains))
+			       || (includeRelations == true && x.brickPart.ldrawTitle.Contains(anyStringContains))
+			       || (includeRelations == true && x.brickPart.ldrawCategory.Contains(anyStringContains))
+			       || (includeRelations == true && x.brickPart.partType.Contains(anyStringContains))
+			       || (includeRelations == true && x.brickPart.keywords.Contains(anyStringContains))
+			       || (includeRelations == true && x.brickPart.author.Contains(anyStringContains))
 			       || (includeRelations == true && x.brickPart.geometryFilePath.Contains(anyStringContains))
 			   );
 			}
@@ -262,6 +267,11 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       x.data.Contains(anyStringContains)
 			       || x.brickPart.name.Contains(anyStringContains)
 			       || x.brickPart.ldrawPartId.Contains(anyStringContains)
+			       || x.brickPart.ldrawTitle.Contains(anyStringContains)
+			       || x.brickPart.ldrawCategory.Contains(anyStringContains)
+			       || x.brickPart.partType.Contains(anyStringContains)
+			       || x.brickPart.keywords.Contains(anyStringContains)
+			       || x.brickPart.author.Contains(anyStringContains)
 			       || x.brickPart.geometryFilePath.Contains(anyStringContains)
 			   );
 			}
@@ -686,6 +696,11 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       x.data.Contains(anyStringContains)
 			       || x.brickPart.name.Contains(anyStringContains)
 			       || x.brickPart.ldrawPartId.Contains(anyStringContains)
+			       || x.brickPart.ldrawTitle.Contains(anyStringContains)
+			       || x.brickPart.ldrawCategory.Contains(anyStringContains)
+			       || x.brickPart.partType.Contains(anyStringContains)
+			       || x.brickPart.keywords.Contains(anyStringContains)
+			       || x.brickPart.author.Contains(anyStringContains)
 			       || x.brickPart.geometryFilePath.Contains(anyStringContains)
 			   );
 			}

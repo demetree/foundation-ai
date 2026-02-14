@@ -10,6 +10,7 @@ import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Subject, takeUntil } from 'rxjs';
 import { ShiftPatternService } from '../../../scheduler-data-services/shift-pattern.service';
 import { ShiftPatternCustomTableComponent } from '../shift-pattern-custom-table/shift-pattern-custom-table.component';
+import { NavigationService } from '../../../utility-services/navigation.service';
 
 @Component({
     selector: 'app-shift-pattern-custom-listing',
@@ -26,7 +27,8 @@ export class ShiftPatternCustomListingComponent implements OnInit, OnDestroy {
 
     private destroy$ = new Subject<void>();
 
-    constructor(private patternService: ShiftPatternService) { }
+    constructor(private patternService: ShiftPatternService,
+        private navigationService: NavigationService) { }
 
     ngOnInit(): void {
         this.loadCounts();
@@ -58,5 +60,13 @@ export class ShiftPatternCustomListingComponent implements OnInit, OnDestroy {
         if (this.tableComponent) {
             this.tableComponent.loadPatterns();
         }
+    }
+
+    goBack(): void {
+        this.navigationService.goBack();
+    }
+
+    canGoBack(): boolean {
+        return this.navigationService.canGoBack();
     }
 }

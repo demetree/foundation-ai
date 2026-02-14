@@ -35,6 +35,10 @@
                 Hex  Rgb
                 <span *ngIf="sortColumn === 'hexRgb'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('hexEdgeColour')">
+                Hex  Edge  Colour
+                <span *ngIf="sortColumn === 'hexEdgeColour'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
             <th class="sortable" scope="col" (click)="sortBy('alpha')">
                 Alpha
                 <span *ngIf="sortColumn === 'alpha'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
@@ -46,6 +50,18 @@
             <th class="sortable" scope="col" (click)="sortBy('isMetallic')">
                 Is  Metallic
                 <span *ngIf="sortColumn === 'isMetallic'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('finishType')">
+                Finish  Type
+                <span *ngIf="sortColumn === 'finishType'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('luminance')">
+                Luminance
+                <span *ngIf="sortColumn === 'luminance'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('legoColourId')">
+                Lego  Colour  Id
+                <span *ngIf="sortColumn === 'legoColourId'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
             <th class="sortable" scope="col" (click)="sortBy('sequence')">
                 Sequence
@@ -136,9 +152,13 @@ End of commented block for alternate definition option -->
             <td class="text-truncate"><a [routerLink]="['/brickcolour', brickColour.id]" class="btn btn-link text-left" ngbTooltip="Open Brick Colour details">{{brickColour.name}}</a></td>
             <td class="text-truncate">{{brickColour.ldrawColourCode | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{brickColour.hexRgb}}</td>
+            <td class="text-truncate">{{brickColour.hexEdgeColour}}</td>
             <td class="text-truncate">{{brickColour.alpha | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate"><boolean-icon [value]="brickColour.isTransparent"/></td>
             <td class="text-truncate"><boolean-icon [value]="brickColour.isMetallic"/></td>
+            <td class="text-truncate">{{brickColour.finishType}}</td>
+            <td class="text-truncate">{{brickColour.luminance | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{brickColour.legoColourId | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{brickColour.sequence | bigNumberFormat : '1.0-2'}}</td>
 End of commented block for alternate definition option -->
                  </tr>
@@ -298,6 +318,10 @@ End of commented block for alternate definition option -->
               <strong>Hex Rgb: </strong>
               {{brickColour.hexRgb}}
             </p>
+            <p class="brick-colour-info" *ngIf="brickColour.hexEdgeColour != null">
+              <strong>Hex Edge Colour: </strong>
+              {{brickColour.hexEdgeColour}}
+            </p>
             <p class="brick-colour-info" *ngIf="brickColour.alpha != null">
               <strong>Alpha: </strong>
               {{brickColour.alpha | bigNumberFormat : '1.0-2'}}
@@ -309,6 +333,18 @@ End of commented block for alternate definition option -->
             <p class="brick-colour-info" *ngIf="brickColour.isMetallic != null">
               <strong>Is Metallic: </strong>
               <boolean-icon [value]="brickColour.isMetallic"/>
+            </p>
+            <p class="brick-colour-info" *ngIf="brickColour.finishType != null">
+              <strong>Finish Type: </strong>
+              {{brickColour.finishType}}
+            </p>
+            <p class="brick-colour-info" *ngIf="brickColour.luminance != null">
+              <strong>Luminance: </strong>
+              {{brickColour.luminance | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="brick-colour-info" *ngIf="brickColour.legoColourId != null">
+              <strong>Lego Colour Id: </strong>
+              {{brickColour.legoColourId | bigNumberFormat : '1.0-2'}}
             </p>
             <p class="brick-colour-info" *ngIf="brickColour.sequence != null">
               <strong>Sequence: </strong>

@@ -31,6 +31,26 @@
                 Ldraw  Part  Id
                 <span *ngIf="sortColumn === 'ldrawPartId'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('ldrawTitle')">
+                Ldraw  Title
+                <span *ngIf="sortColumn === 'ldrawTitle'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('ldrawCategory')">
+                Ldraw  Category
+                <span *ngIf="sortColumn === 'ldrawCategory'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('partType')">
+                Part  Type
+                <span *ngIf="sortColumn === 'partType'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('keywords')">
+                Keywords
+                <span *ngIf="sortColumn === 'keywords'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('author')">
+                Author
+                <span *ngIf="sortColumn === 'author'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
             <th class="sortable" scope="col" (click)="sortBy('brickCategory.name')">
                 Brick  Category
                 <span *ngIf="sortColumn === 'brickCategory.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
@@ -147,6 +167,11 @@ End of commented block for alternate definition option -->
 <!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
             <td class="text-truncate"><a [routerLink]="['/brickpart', brickPart.id]" class="btn btn-link text-left" ngbTooltip="Open Brick Part details">{{brickPart.name}}</a></td>
             <td class="text-truncate">{{brickPart.ldrawPartId}}</td>
+            <td class="text-truncate">{{brickPart.ldrawTitle}}</td>
+            <td class="text-truncate">{{brickPart.ldrawCategory}}</td>
+            <td class="text-truncate">{{brickPart.partType}}</td>
+            <td class="text-truncate">{{brickPart.keywords}}</td>
+            <td class="text-truncate">{{brickPart.author}}</td>
             <td class="text-truncate"><a [routerLink]="['/brickcategory', brickPart.brickCategoryId]" class="btn btn-link text-left" ngbTooltip="Open Brick Category details">{{brickPart.brickCategory?.name}}</a></td>
             <td class="text-truncate">{{brickPart.widthLdu | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{brickPart.heightLdu | bigNumberFormat : '1.0-2'}}</td>
@@ -309,6 +334,26 @@ End of commented block for alternate definition option -->
             <p class="brick-part-info" *ngIf="brickPart.ldrawPartId != null">
               <strong>Ldraw Part Id: </strong>
               {{brickPart.ldrawPartId}}
+            </p>
+            <p class="brick-part-info" *ngIf="brickPart.ldrawTitle != null">
+              <strong>Ldraw Title: </strong>
+              {{brickPart.ldrawTitle}}
+            </p>
+            <p class="brick-part-info" *ngIf="brickPart.ldrawCategory != null">
+              <strong>Ldraw Category: </strong>
+              {{brickPart.ldrawCategory}}
+            </p>
+            <p class="brick-part-info" *ngIf="brickPart.partType != null">
+              <strong>Part Type: </strong>
+              {{brickPart.partType}}
+            </p>
+            <p class="brick-part-info" *ngIf="brickPart.keywords != null">
+              <strong>Keywords: </strong>
+              {{brickPart.keywords}}
+            </p>
+            <p class="brick-part-info" *ngIf="brickPart.author != null">
+              <strong>Author: </strong>
+              {{brickPart.author}}
             </p>
             <p class="brick-part-info" *ngIf="brickPart.brickCategoryId != null">
               <strong>Brick Category: </strong>

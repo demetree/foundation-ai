@@ -169,9 +169,13 @@ export class BrickColourTableComponent implements OnInit, OnChanges, AfterViewIn
     { key: 'name', label: 'Name', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/brickcolour', 'id']  },
     { key: 'ldrawColourCode', label: 'Ldraw Colour Code', width: undefined },
     { key: 'hexRgb', label: 'Hex Rgb', width: undefined },
+    { key: 'hexEdgeColour', label: 'Hex Edge Colour', width: undefined },
     { key: 'alpha', label: 'Alpha', width: undefined },
     { key: 'isTransparent', label: 'Is Transparent', width: '120px', template: 'boolean' },
     { key: 'isMetallic', label: 'Is Metallic', width: '120px', template: 'boolean' },
+    { key: 'finishType', label: 'Finish Type', width: undefined },
+    { key: 'luminance', label: 'Luminance', width: undefined },
+    { key: 'legoColourId', label: 'Lego Colour Id', width: undefined },
     { key: 'sequence', label: 'Sequence', width: undefined },
 
     ];
@@ -319,9 +323,13 @@ export class BrickColourTableComponent implements OnInit, OnChanges, AfterViewIn
                       'name',
                       'ldrawColourCode',
                       'hexRgb',
+                      'hexEdgeColour',
                       'alpha',
                       'isTransparent',
                       'isMetallic',
+                      'finishType',
+                      'luminance',
+                      'legoColourId',
                       'sequence',
         ];
 

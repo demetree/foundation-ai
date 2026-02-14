@@ -15,11 +15,19 @@ public partial class BrickColour
 
     public string hexRgb { get; set; }
 
+    public string hexEdgeColour { get; set; }
+
     public int? alpha { get; set; }
 
     public bool isTransparent { get; set; }
 
     public bool isMetallic { get; set; }
+
+    public string finishType { get; set; }
+
+    public int? luminance { get; set; }
+
+    public int? legoColourId { get; set; }
 
     public int? sequence { get; set; }
 

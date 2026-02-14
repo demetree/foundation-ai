@@ -68,6 +68,11 @@ namespace Foundation.BMC.Controllers.WebAPI
 		public async Task<IActionResult> GetBrickParts(
 			string name = null,
 			string ldrawPartId = null,
+			string ldrawTitle = null,
+			string ldrawCategory = null,
+			string partType = null,
+			string keywords = null,
+			string author = null,
 			int? brickCategoryId = null,
 			float? widthLdu = null,
 			float? heightLdu = null,
@@ -122,6 +127,26 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (string.IsNullOrEmpty(ldrawPartId) == false)
 			{
 				query = query.Where(bp => bp.ldrawPartId == ldrawPartId);
+			}
+			if (string.IsNullOrEmpty(ldrawTitle) == false)
+			{
+				query = query.Where(bp => bp.ldrawTitle == ldrawTitle);
+			}
+			if (string.IsNullOrEmpty(ldrawCategory) == false)
+			{
+				query = query.Where(bp => bp.ldrawCategory == ldrawCategory);
+			}
+			if (string.IsNullOrEmpty(partType) == false)
+			{
+				query = query.Where(bp => bp.partType == partType);
+			}
+			if (string.IsNullOrEmpty(keywords) == false)
+			{
+				query = query.Where(bp => bp.keywords == keywords);
+			}
+			if (string.IsNullOrEmpty(author) == false)
+			{
+				query = query.Where(bp => bp.author == author);
 			}
 			if (brickCategoryId.HasValue == true)
 			{
@@ -188,7 +213,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 				query = query.Where(bp => bp.deleted == false);
 			}
 
-			query = query.OrderBy(bp => bp.name).ThenBy(bp => bp.ldrawPartId).ThenBy(bp => bp.geometryFilePath);
+			query = query.OrderBy(bp => bp.name).ThenBy(bp => bp.ldrawPartId).ThenBy(bp => bp.ldrawTitle);
 
 			if (pageNumber.HasValue == true &&
 			    pageSize.HasValue == true)
@@ -213,6 +238,11 @@ namespace Foundation.BMC.Controllers.WebAPI
 			   query = query.Where(x =>
 			       x.name.Contains(anyStringContains)
 			       || x.ldrawPartId.Contains(anyStringContains)
+			       || x.ldrawTitle.Contains(anyStringContains)
+			       || x.ldrawCategory.Contains(anyStringContains)
+			       || x.partType.Contains(anyStringContains)
+			       || x.keywords.Contains(anyStringContains)
+			       || x.author.Contains(anyStringContains)
 			       || x.geometryFilePath.Contains(anyStringContains)
 			       || (includeRelations == true && x.brickCategory.name.Contains(anyStringContains))
 			       || (includeRelations == true && x.brickCategory.description.Contains(anyStringContains))
@@ -260,6 +290,11 @@ namespace Foundation.BMC.Controllers.WebAPI
 		public async Task<IActionResult> GetRowCount(
 			string name = null,
 			string ldrawPartId = null,
+			string ldrawTitle = null,
+			string ldrawCategory = null,
+			string partType = null,
+			string keywords = null,
+			string author = null,
 			int? brickCategoryId = null,
 			float? widthLdu = null,
 			float? heightLdu = null,
@@ -296,6 +331,26 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (ldrawPartId != null)
 			{
 				query = query.Where(bp => bp.ldrawPartId == ldrawPartId);
+			}
+			if (ldrawTitle != null)
+			{
+				query = query.Where(bp => bp.ldrawTitle == ldrawTitle);
+			}
+			if (ldrawCategory != null)
+			{
+				query = query.Where(bp => bp.ldrawCategory == ldrawCategory);
+			}
+			if (partType != null)
+			{
+				query = query.Where(bp => bp.partType == partType);
+			}
+			if (keywords != null)
+			{
+				query = query.Where(bp => bp.keywords == keywords);
+			}
+			if (author != null)
+			{
+				query = query.Where(bp => bp.author == author);
 			}
 			if (brickCategoryId.HasValue == true)
 			{
@@ -372,6 +427,11 @@ namespace Foundation.BMC.Controllers.WebAPI
 			   query = query.Where(x =>
 			       x.name.Contains(anyStringContains)
 			       || x.ldrawPartId.Contains(anyStringContains)
+			       || x.ldrawTitle.Contains(anyStringContains)
+			       || x.ldrawCategory.Contains(anyStringContains)
+			       || x.partType.Contains(anyStringContains)
+			       || x.keywords.Contains(anyStringContains)
+			       || x.author.Contains(anyStringContains)
 			       || x.geometryFilePath.Contains(anyStringContains)
 			       || x.brickCategory.name.Contains(anyStringContains)
 			       || x.brickCategory.description.Contains(anyStringContains)
@@ -577,6 +637,26 @@ namespace Foundation.BMC.Controllers.WebAPI
 					brickPart.ldrawPartId = brickPart.ldrawPartId.Substring(0, 100);
 				}
 
+				if (brickPart.ldrawTitle != null && brickPart.ldrawTitle.Length > 250)
+				{
+					brickPart.ldrawTitle = brickPart.ldrawTitle.Substring(0, 250);
+				}
+
+				if (brickPart.ldrawCategory != null && brickPart.ldrawCategory.Length > 100)
+				{
+					brickPart.ldrawCategory = brickPart.ldrawCategory.Substring(0, 100);
+				}
+
+				if (brickPart.partType != null && brickPart.partType.Length > 50)
+				{
+					brickPart.partType = brickPart.partType.Substring(0, 50);
+				}
+
+				if (brickPart.author != null && brickPart.author.Length > 100)
+				{
+					brickPart.author = brickPart.author.Substring(0, 100);
+				}
+
 				if (brickPart.geometryFilePath != null && brickPart.geometryFilePath.Length > 250)
 				{
 					brickPart.geometryFilePath = brickPart.geometryFilePath.Substring(0, 250);
@@ -679,6 +759,26 @@ namespace Foundation.BMC.Controllers.WebAPI
 				if (brickPart.ldrawPartId != null && brickPart.ldrawPartId.Length > 100)
 				{
 					brickPart.ldrawPartId = brickPart.ldrawPartId.Substring(0, 100);
+				}
+
+				if (brickPart.ldrawTitle != null && brickPart.ldrawTitle.Length > 250)
+				{
+					brickPart.ldrawTitle = brickPart.ldrawTitle.Substring(0, 250);
+				}
+
+				if (brickPart.ldrawCategory != null && brickPart.ldrawCategory.Length > 100)
+				{
+					brickPart.ldrawCategory = brickPart.ldrawCategory.Substring(0, 100);
+				}
+
+				if (brickPart.partType != null && brickPart.partType.Length > 50)
+				{
+					brickPart.partType = brickPart.partType.Substring(0, 50);
+				}
+
+				if (brickPart.author != null && brickPart.author.Length > 100)
+				{
+					brickPart.author = brickPart.author.Substring(0, 100);
 				}
 
 				if (brickPart.geometryFilePath != null && brickPart.geometryFilePath.Length > 250)
@@ -845,6 +945,11 @@ namespace Foundation.BMC.Controllers.WebAPI
 				    //
 				    brickPart.name = oldBrickPart.name;
 				    brickPart.ldrawPartId = oldBrickPart.ldrawPartId;
+				    brickPart.ldrawTitle = oldBrickPart.ldrawTitle;
+				    brickPart.ldrawCategory = oldBrickPart.ldrawCategory;
+				    brickPart.partType = oldBrickPart.partType;
+				    brickPart.keywords = oldBrickPart.keywords;
+				    brickPart.author = oldBrickPart.author;
 				    brickPart.brickCategoryId = oldBrickPart.brickCategoryId;
 				    brickPart.widthLdu = oldBrickPart.widthLdu;
 				    brickPart.heightLdu = oldBrickPart.heightLdu;
@@ -1224,6 +1329,11 @@ namespace Foundation.BMC.Controllers.WebAPI
 		public async Task<IActionResult> GetListData(
 			string name = null,
 			string ldrawPartId = null,
+			string ldrawTitle = null,
+			string ldrawCategory = null,
+			string partType = null,
+			string keywords = null,
+			string author = null,
 			int? brickCategoryId = null,
 			float? widthLdu = null,
 			float? heightLdu = null,
@@ -1276,6 +1386,26 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (string.IsNullOrEmpty(ldrawPartId) == false)
 			{
 				query = query.Where(bp => bp.ldrawPartId == ldrawPartId);
+			}
+			if (string.IsNullOrEmpty(ldrawTitle) == false)
+			{
+				query = query.Where(bp => bp.ldrawTitle == ldrawTitle);
+			}
+			if (string.IsNullOrEmpty(ldrawCategory) == false)
+			{
+				query = query.Where(bp => bp.ldrawCategory == ldrawCategory);
+			}
+			if (string.IsNullOrEmpty(partType) == false)
+			{
+				query = query.Where(bp => bp.partType == partType);
+			}
+			if (string.IsNullOrEmpty(keywords) == false)
+			{
+				query = query.Where(bp => bp.keywords == keywords);
+			}
+			if (string.IsNullOrEmpty(author) == false)
+			{
+				query = query.Where(bp => bp.author == author);
 			}
 			if (brickCategoryId.HasValue == true)
 			{
@@ -1353,6 +1483,11 @@ namespace Foundation.BMC.Controllers.WebAPI
 			   query = query.Where(x =>
 			       x.name.Contains(anyStringContains)
 			       || x.ldrawPartId.Contains(anyStringContains)
+			       || x.ldrawTitle.Contains(anyStringContains)
+			       || x.ldrawCategory.Contains(anyStringContains)
+			       || x.partType.Contains(anyStringContains)
+			       || x.keywords.Contains(anyStringContains)
+			       || x.author.Contains(anyStringContains)
 			       || x.geometryFilePath.Contains(anyStringContains)
 			       || x.brickCategory.name.Contains(anyStringContains)
 			       || x.brickCategory.description.Contains(anyStringContains)
@@ -1360,7 +1495,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			}
 
 
-			query = query.OrderBy(x => x.name).ThenBy(x => x.ldrawPartId).ThenBy(x => x.geometryFilePath);
+			query = query.OrderBy(x => x.name).ThenBy(x => x.ldrawPartId).ThenBy(x => x.ldrawTitle);
 			if (pageNumber.HasValue == true &&
 			    pageSize.HasValue == true)
 			{

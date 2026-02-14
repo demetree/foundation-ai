@@ -168,6 +168,11 @@ export class BrickPartTableComponent implements OnInit, OnChanges, AfterViewInit
     const defaultColumns: TableColumn[] = [
     { key: 'name', label: 'Name', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/brickpart', 'id']  },
     { key: 'ldrawPartId', label: 'Ldraw Part Id', width: undefined },
+    { key: 'ldrawTitle', label: 'Ldraw Title', width: undefined },
+    { key: 'ldrawCategory', label: 'Ldraw Category', width: undefined },
+    { key: 'partType', label: 'Part Type', width: undefined },
+    { key: 'keywords', label: 'Keywords', width: undefined },
+    { key: 'author', label: 'Author', width: undefined },
     { key: 'brickCategory.name', label: 'Brick Category', width: undefined, template: 'link', linkPath: ['/brickcategory', 'brickCategoryId'] },
     { key: 'widthLdu', label: 'Width Ldu', width: undefined },
     { key: 'heightLdu', label: 'Height Ldu', width: undefined },
@@ -323,6 +328,11 @@ export class BrickPartTableComponent implements OnInit, OnChanges, AfterViewInit
         const filterFields = [
                       'name',
                       'ldrawPartId',
+                      'ldrawTitle',
+                      'ldrawCategory',
+                      'partType',
+                      'keywords',
+                      'author',
                       'brickCategory.name',
                       'widthLdu',
                       'heightLdu',

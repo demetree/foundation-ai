@@ -66,9 +66,19 @@ All operational tables include multi-tenant support, versioning where appropriat
             brickCategoryTable.AddSequenceField();
             brickCategoryTable.AddControlFields();
 
-            // Seed data - core part categories
+            // Seed data - core part categories (aligned with LDraw AVATAR categories + Technic specializations)
+            // Standard System categories
             brickCategoryTable.AddData(new Dictionary<string, string> { { "name", "Plate" }, { "description", "Standard plates of various sizes" }, { "sequence", "1" }, { "objectGuid", "b1c10001-0001-4000-8000-000000000001" } });
             brickCategoryTable.AddData(new Dictionary<string, string> { { "name", "Brick" }, { "description", "Standard bricks of various sizes" }, { "sequence", "2" }, { "objectGuid", "b1c10001-0001-4000-8000-000000000002" } });
+            brickCategoryTable.AddData(new Dictionary<string, string> { { "name", "Tile" }, { "description", "Smooth-top tiles without studs" }, { "sequence", "3" }, { "objectGuid", "b1c10001-0001-4000-8000-000000000003" } });
+            brickCategoryTable.AddData(new Dictionary<string, string> { { "name", "Slope" }, { "description", "Angled slope bricks and roof pieces" }, { "sequence", "4" }, { "objectGuid", "b1c10001-0001-4000-8000-000000000004" } });
+            brickCategoryTable.AddData(new Dictionary<string, string> { { "name", "Wedge" }, { "description", "Wedge-shaped plates and bricks" }, { "sequence", "5" }, { "objectGuid", "b1c10001-0001-4000-8000-000000000005" } });
+            brickCategoryTable.AddData(new Dictionary<string, string> { { "name", "Arch" }, { "description", "Arched bricks and curved elements" }, { "sequence", "6" }, { "objectGuid", "b1c10001-0001-4000-8000-000000000006" } });
+            brickCategoryTable.AddData(new Dictionary<string, string> { { "name", "Cylinder" }, { "description", "Round bricks, cylinders, and cones" }, { "sequence", "7" }, { "objectGuid", "b1c10001-0001-4000-8000-000000000007" } });
+            brickCategoryTable.AddData(new Dictionary<string, string> { { "name", "Cone" }, { "description", "Cone-shaped parts" }, { "sequence", "8" }, { "objectGuid", "b1c10001-0001-4000-8000-000000000008" } });
+            brickCategoryTable.AddData(new Dictionary<string, string> { { "name", "Bracket" }, { "description", "Angle brackets for sideways building" }, { "sequence", "9" }, { "objectGuid", "b1c10001-0001-4000-8000-000000000009" } });
+
+            // Technic categories
             brickCategoryTable.AddData(new Dictionary<string, string> { { "name", "Beam" }, { "description", "Technic beams and liftarms" }, { "sequence", "10" }, { "objectGuid", "b1c10001-0001-4000-8000-000000000010" } });
             brickCategoryTable.AddData(new Dictionary<string, string> { { "name", "Pin" }, { "description", "Technic pins and connectors" }, { "sequence", "11" }, { "objectGuid", "b1c10001-0001-4000-8000-000000000011" } });
             brickCategoryTable.AddData(new Dictionary<string, string> { { "name", "Axle" }, { "description", "Technic axles of various lengths" }, { "sequence", "12" }, { "objectGuid", "b1c10001-0001-4000-8000-000000000012" } });
@@ -76,9 +86,25 @@ All operational tables include multi-tenant support, versioning where appropriat
             brickCategoryTable.AddData(new Dictionary<string, string> { { "name", "Motor" }, { "description", "Powered motors (Power Functions, Powered Up)" }, { "sequence", "14" }, { "objectGuid", "b1c10001-0001-4000-8000-000000000014" } });
             brickCategoryTable.AddData(new Dictionary<string, string> { { "name", "Pneumatic" }, { "description", "Pneumatic cylinders, pumps, and tubing" }, { "sequence", "15" }, { "objectGuid", "b1c10001-0001-4000-8000-000000000015" } });
             brickCategoryTable.AddData(new Dictionary<string, string> { { "name", "Differential" }, { "description", "Differential gear assemblies" }, { "sequence", "16" }, { "objectGuid", "b1c10001-0001-4000-8000-000000000016" } });
+            brickCategoryTable.AddData(new Dictionary<string, string> { { "name", "Hinge" }, { "description", "Hinge bricks, plates, and click hinges" }, { "sequence", "17" }, { "objectGuid", "b1c10001-0001-4000-8000-000000000017" } });
+
+            // Structural and building categories
             brickCategoryTable.AddData(new Dictionary<string, string> { { "name", "Panel" }, { "description", "Panels, fairings, and body pieces" }, { "sequence", "20" }, { "objectGuid", "b1c10001-0001-4000-8000-000000000020" } });
             brickCategoryTable.AddData(new Dictionary<string, string> { { "name", "Wheel" }, { "description", "Wheels, tyres, and rims" }, { "sequence", "21" }, { "objectGuid", "b1c10001-0001-4000-8000-000000000021" } });
+            brickCategoryTable.AddData(new Dictionary<string, string> { { "name", "Window" }, { "description", "Windows, glass, and frames" }, { "sequence", "22" }, { "objectGuid", "b1c10001-0001-4000-8000-000000000022" } });
+            brickCategoryTable.AddData(new Dictionary<string, string> { { "name", "Door" }, { "description", "Doors and door frames" }, { "sequence", "23" }, { "objectGuid", "b1c10001-0001-4000-8000-000000000023" } });
+            brickCategoryTable.AddData(new Dictionary<string, string> { { "name", "Fence" }, { "description", "Fences, railings, and barriers" }, { "sequence", "24" }, { "objectGuid", "b1c10001-0001-4000-8000-000000000024" } });
+            brickCategoryTable.AddData(new Dictionary<string, string> { { "name", "Baseplate" }, { "description", "Baseplates and road plates" }, { "sequence", "25" }, { "objectGuid", "b1c10001-0001-4000-8000-000000000025" } });
+            brickCategoryTable.AddData(new Dictionary<string, string> { { "name", "Bar" }, { "description", "Bars, antennas, and clips" }, { "sequence", "26" }, { "objectGuid", "b1c10001-0001-4000-8000-000000000026" } });
+            brickCategoryTable.AddData(new Dictionary<string, string> { { "name", "Support" }, { "description", "Support structures, columns, and pillars" }, { "sequence", "27" }, { "objectGuid", "b1c10001-0001-4000-8000-000000000027" } });
+            brickCategoryTable.AddData(new Dictionary<string, string> { { "name", "Container" }, { "description", "Boxes, crates, and storage containers" }, { "sequence", "28" }, { "objectGuid", "b1c10001-0001-4000-8000-000000000028" } });
+
+            // Specialty categories
             brickCategoryTable.AddData(new Dictionary<string, string> { { "name", "Decorative" }, { "description", "Decorative, printed, and sticker parts" }, { "sequence", "30" }, { "objectGuid", "b1c10001-0001-4000-8000-000000000030" } });
+            brickCategoryTable.AddData(new Dictionary<string, string> { { "name", "Electric" }, { "description", "Electrical components, lights, and sensors" }, { "sequence", "31" }, { "objectGuid", "b1c10001-0001-4000-8000-000000000031" } });
+            brickCategoryTable.AddData(new Dictionary<string, string> { { "name", "Propeller" }, { "description", "Propellers, rotors, and blades" }, { "sequence", "32" }, { "objectGuid", "b1c10001-0001-4000-8000-000000000032" } });
+            brickCategoryTable.AddData(new Dictionary<string, string> { { "name", "Wing" }, { "description", "Wings and aircraft body parts" }, { "sequence", "33" }, { "objectGuid", "b1c10001-0001-4000-8000-000000000033" } });
+            brickCategoryTable.AddData(new Dictionary<string, string> { { "name", "Train" }, { "description", "Train track, wheels, and specialized train parts" }, { "sequence", "34" }, { "objectGuid", "b1c10001-0001-4000-8000-000000000034" } });
 
 
             // -------------------------------------------------
@@ -120,24 +146,28 @@ All operational tables include multi-tenant support, versioning where appropriat
 
             brickColourTable.AddIntField("ldrawColourCode", false).AddScriptComments("LDraw standard colour code number");
             brickColourTable.AddString10Field("hexRgb").AddScriptComments("Hex RGB colour value (e.g. #FF0000)");
+            brickColourTable.AddString10Field("hexEdgeColour").AddScriptComments("LDraw edge/contrast colour hex value for wireframe and outline rendering");
             brickColourTable.AddIntField("alpha").AddScriptComments("Alpha transparency value (0-255, 255 = fully opaque)");
-            brickColourTable.AddBoolField("isTransparent", false, false).AddScriptComments("Whether this colour is transparent");
-            brickColourTable.AddBoolField("isMetallic", false, false).AddScriptComments("Whether this colour has a metallic finish");
+            brickColourTable.AddBoolField("isTransparent", false, false).AddScriptComments("Whether this colour is transparent (convenience flag derived from alpha)");
+            brickColourTable.AddBoolField("isMetallic", false, false).AddScriptComments("Whether this colour has a metallic finish (convenience flag derived from finishType)");
+            brickColourTable.AddString50Field("finishType").AddScriptComments("Material finish type: Solid, Chrome, Pearlescent, Metal, Rubber, Glitter, Speckle, Fabric, Milky");
+            brickColourTable.AddIntField("luminance", true).AddScriptComments("Glow brightness (0-255) for glow-in-the-dark colours. Null for non-glowing.");
+            brickColourTable.AddIntField("legoColourId", true).AddScriptComments("Official LEGO colour number for cross-referencing with LEGO catalogues");
 
             brickColourTable.AddSequenceField();
             brickColourTable.AddControlFields();
 
             brickColourTable.AddUniqueConstraint(new List<string>() { "ldrawColourCode" }, false);
 
-            // Seed a handful of common colours
-            brickColourTable.AddData(new Dictionary<string, string> { { "name", "Black" }, { "ldrawColourCode", "0" }, { "hexRgb", "#1B2A34" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "sequence", "1" }, { "objectGuid", "c0100001-0001-4000-8000-000000000001" } });
-            brickColourTable.AddData(new Dictionary<string, string> { { "name", "Blue" }, { "ldrawColourCode", "1" }, { "hexRgb", "#1E5AA8" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "sequence", "2" }, { "objectGuid", "c0100001-0001-4000-8000-000000000002" } });
-            brickColourTable.AddData(new Dictionary<string, string> { { "name", "Green" }, { "ldrawColourCode", "2" }, { "hexRgb", "#00852B" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "sequence", "3" }, { "objectGuid", "c0100001-0001-4000-8000-000000000003" } });
-            brickColourTable.AddData(new Dictionary<string, string> { { "name", "Red" }, { "ldrawColourCode", "4" }, { "hexRgb", "#B40000" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "sequence", "4" }, { "objectGuid", "c0100001-0001-4000-8000-000000000004" } });
-            brickColourTable.AddData(new Dictionary<string, string> { { "name", "Yellow" }, { "ldrawColourCode", "14" }, { "hexRgb", "#FFD67F" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "sequence", "5" }, { "objectGuid", "c0100001-0001-4000-8000-000000000005" } });
-            brickColourTable.AddData(new Dictionary<string, string> { { "name", "White" }, { "ldrawColourCode", "15" }, { "hexRgb", "#F4F4F4" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "sequence", "6" }, { "objectGuid", "c0100001-0001-4000-8000-000000000006" } });
-            brickColourTable.AddData(new Dictionary<string, string> { { "name", "Light Bluish Grey" }, { "ldrawColourCode", "71" }, { "hexRgb", "#A0A5A9" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "sequence", "7" }, { "objectGuid", "c0100001-0001-4000-8000-000000000007" } });
-            brickColourTable.AddData(new Dictionary<string, string> { { "name", "Dark Bluish Grey" }, { "ldrawColourCode", "72" }, { "hexRgb", "#6C6E68" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "sequence", "8" }, { "objectGuid", "c0100001-0001-4000-8000-000000000008" } });
+            // Seed common solid colours (edge colours, finish type, and LEGO IDs from LDConfig.ldr)
+            brickColourTable.AddData(new Dictionary<string, string> { { "name", "Black" }, { "ldrawColourCode", "0" }, { "hexRgb", "#1B2A34" }, { "hexEdgeColour", "#808080" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "finishType", "Solid" }, { "legoColourId", "26" }, { "sequence", "1" }, { "objectGuid", "c0100001-0001-4000-8000-000000000001" } });
+            brickColourTable.AddData(new Dictionary<string, string> { { "name", "Blue" }, { "ldrawColourCode", "1" }, { "hexRgb", "#1E5AA8" }, { "hexEdgeColour", "#333333" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "finishType", "Solid" }, { "legoColourId", "23" }, { "sequence", "2" }, { "objectGuid", "c0100001-0001-4000-8000-000000000002" } });
+            brickColourTable.AddData(new Dictionary<string, string> { { "name", "Green" }, { "ldrawColourCode", "2" }, { "hexRgb", "#00852B" }, { "hexEdgeColour", "#333333" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "finishType", "Solid" }, { "legoColourId", "28" }, { "sequence", "3" }, { "objectGuid", "c0100001-0001-4000-8000-000000000003" } });
+            brickColourTable.AddData(new Dictionary<string, string> { { "name", "Red" }, { "ldrawColourCode", "4" }, { "hexRgb", "#B40000" }, { "hexEdgeColour", "#333333" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "finishType", "Solid" }, { "legoColourId", "21" }, { "sequence", "4" }, { "objectGuid", "c0100001-0001-4000-8000-000000000004" } });
+            brickColourTable.AddData(new Dictionary<string, string> { { "name", "Yellow" }, { "ldrawColourCode", "14" }, { "hexRgb", "#FAC80A" }, { "hexEdgeColour", "#333333" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "finishType", "Solid" }, { "legoColourId", "24" }, { "sequence", "5" }, { "objectGuid", "c0100001-0001-4000-8000-000000000005" } });
+            brickColourTable.AddData(new Dictionary<string, string> { { "name", "White" }, { "ldrawColourCode", "15" }, { "hexRgb", "#F4F4F4" }, { "hexEdgeColour", "#333333" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "finishType", "Solid" }, { "legoColourId", "1" }, { "sequence", "6" }, { "objectGuid", "c0100001-0001-4000-8000-000000000006" } });
+            brickColourTable.AddData(new Dictionary<string, string> { { "name", "Light Bluish Grey" }, { "ldrawColourCode", "71" }, { "hexRgb", "#969696" }, { "hexEdgeColour", "#333333" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "finishType", "Solid" }, { "legoColourId", "194" }, { "sequence", "7" }, { "objectGuid", "c0100001-0001-4000-8000-000000000007" } });
+            brickColourTable.AddData(new Dictionary<string, string> { { "name", "Dark Bluish Grey" }, { "ldrawColourCode", "72" }, { "hexRgb", "#646464" }, { "hexEdgeColour", "#333333" }, { "alpha", "255" }, { "isTransparent", "false" }, { "isMetallic", "false" }, { "finishType", "Solid" }, { "legoColourId", "199" }, { "sequence", "8" }, { "objectGuid", "c0100001-0001-4000-8000-000000000008" } });
 
             #endregion
 
@@ -155,6 +185,12 @@ All operational tables include multi-tenant support, versioning where appropriat
             brickPartTable.AddNameField(true, true);
 
             brickPartTable.AddString100Field("ldrawPartId", false).AddScriptComments("LDraw part ID (e.g. 3001, 32523) — the canonical identifier in the LDraw parts library");
+            brickPartTable.AddString250Field("ldrawTitle").AddScriptComments("Raw title from the LDraw .dat file (e.g. 'Brick  2 x  4', 'Technic Beam  3')");
+            brickPartTable.AddString100Field("ldrawCategory").AddScriptComments("Part category from LDraw !CATEGORY meta or inferred from title first word");
+            brickPartTable.AddString50Field("partType").AddScriptComments("LDraw part type: Part, Subpart, Primitive, Shortcut, Alias, etc.");
+            brickPartTable.AddTextField("keywords").AddScriptComments("Comma-separated keywords from LDraw !KEYWORDS meta lines for search");
+            brickPartTable.AddString100Field("author").AddScriptComments("Part author from the LDraw Author: header line");
+
             brickPartTable.AddForeignKeyField(brickCategoryTable, true).AddScriptComments("The category this part belongs to");
 
             // Physical dimensions in LDraw units (1 LDU = 0.4mm)

@@ -35,6 +35,10 @@
                                 <label for="BrickColour-hexRgb" id="label-BrickColour-hexRgb">Hex Rgb</label>
                                 <input type="text" id="BrickColour-hexRgb" formControlName="hexRgb" placeholder="Enter Hex Rgb" class="form-control brick-colour-input" [disabled]="!userIsBMCBrickColourWriter()" aria-labelledby="label-hexRgb" />
                             </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('hexEdgeColour')">
+                                <label for="BrickColour-hexEdgeColour" id="label-BrickColour-hexEdgeColour">Hex Edge Colour</label>
+                                <input type="text" id="BrickColour-hexEdgeColour" formControlName="hexEdgeColour" placeholder="Enter Hex Edge Colour" class="form-control brick-colour-input" [disabled]="!userIsBMCBrickColourWriter()" aria-labelledby="label-hexEdgeColour" />
+                            </div>
                             <div class="form-group" *ngIf="!isFieldHidden('alpha')">
                                 <label for="BrickColour-alpha" id="label-BrickColour-alpha">Alpha</label>
                                 <input type="number" id="BrickColour-alpha" formControlName="alpha" placeholder="Enter Alpha" class="form-control brick-colour-input" [disabled]="!userIsBMCBrickColourWriter()" aria-labelledby="label-alpha" />
@@ -46,6 +50,18 @@
                             <div class="form-check my-2" *ngIf="!isFieldHidden('isMetallic')">
                                 <input type="checkbox" id="BrickColour-isMetallic" formControlName="isMetallic" class="form-check-input" [disabled]="!userIsBMCBrickColourWriter()" />
                                 <label for="BrickColour-isMetallic" class="form-check-label" id="label-BrickColour-isMetallic"><span class="text-danger">*</span>Is Metallic</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('finishType')">
+                                <label for="BrickColour-finishType" id="label-BrickColour-finishType">Finish Type</label>
+                                <input type="text" id="BrickColour-finishType" formControlName="finishType" placeholder="Enter Finish Type" class="form-control brick-colour-input" [disabled]="!userIsBMCBrickColourWriter()" aria-labelledby="label-finishType" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('luminance')">
+                                <label for="BrickColour-luminance" id="label-BrickColour-luminance">Luminance</label>
+                                <input type="number" id="BrickColour-luminance" formControlName="luminance" placeholder="Enter Luminance" class="form-control brick-colour-input" [disabled]="!userIsBMCBrickColourWriter()" aria-labelledby="label-luminance" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('legoColourId')">
+                                <label for="BrickColour-legoColourId" id="label-BrickColour-legoColourId">Lego Colour Id</label>
+                                <input type="number" id="BrickColour-legoColourId" formControlName="legoColourId" placeholder="Enter Lego Colour Id" class="form-control brick-colour-input" [disabled]="!userIsBMCBrickColourWriter()" aria-labelledby="label-legoColourId" />
                             </div>
                             <div class="form-group" *ngIf="!isFieldHidden('sequence')">
                                 <label for="BrickColour-sequence" id="label-BrickColour-sequence">Sequence</label>

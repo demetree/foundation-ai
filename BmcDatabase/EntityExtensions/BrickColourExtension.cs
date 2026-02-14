@@ -26,11 +26,15 @@ namespace Foundation.BMC.Database
 			[Required]
 			public Int32 ldrawColourCode { get; set; }
 			public String hexRgb { get; set; }
+			public String hexEdgeColour { get; set; }
 			public Int32? alpha { get; set; }
 			[Required]
 			public Boolean isTransparent { get; set; }
 			[Required]
 			public Boolean isMetallic { get; set; }
+			public String finishType { get; set; }
+			public Int32? luminance { get; set; }
+			public Int32? legoColourId { get; set; }
 			public Int32? sequence { get; set; }
 			[Required]
 			public Guid objectGuid { get; set; }
@@ -64,9 +68,13 @@ namespace Foundation.BMC.Database
 				name = this.name,
 				ldrawColourCode = this.ldrawColourCode,
 				hexRgb = this.hexRgb,
+				hexEdgeColour = this.hexEdgeColour,
 				alpha = this.alpha,
 				isTransparent = this.isTransparent,
 				isMetallic = this.isMetallic,
+				finishType = this.finishType,
+				luminance = this.luminance,
+				legoColourId = this.legoColourId,
 				sequence = this.sequence,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -113,9 +121,13 @@ namespace Foundation.BMC.Database
 				name = this.name,
 				ldrawColourCode = this.ldrawColourCode,
 				hexRgb = this.hexRgb,
+				hexEdgeColour = this.hexEdgeColour,
 				alpha = this.alpha,
 				isTransparent = this.isTransparent,
 				isMetallic = this.isMetallic,
+				finishType = this.finishType,
+				luminance = this.luminance,
+				legoColourId = this.legoColourId,
 				sequence = this.sequence,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -162,9 +174,13 @@ namespace Foundation.BMC.Database
 				name = dto.name,
 				ldrawColourCode = dto.ldrawColourCode,
 				hexRgb = dto.hexRgb,
+				hexEdgeColour = dto.hexEdgeColour,
 				alpha = dto.alpha,
 				isTransparent = dto.isTransparent,
 				isMetallic = dto.isMetallic,
+				finishType = dto.finishType,
+				luminance = dto.luminance,
+				legoColourId = dto.legoColourId,
 				sequence = dto.sequence,
 				objectGuid = dto.objectGuid,
 				active = dto.active ?? true,
@@ -188,9 +204,13 @@ namespace Foundation.BMC.Database
 			this.name = dto.name;
 			this.ldrawColourCode = dto.ldrawColourCode;
 			this.hexRgb = dto.hexRgb;
+			this.hexEdgeColour = dto.hexEdgeColour;
 			this.alpha = dto.alpha;
 			this.isTransparent = dto.isTransparent;
 			this.isMetallic = dto.isMetallic;
+			this.finishType = dto.finishType;
+			this.luminance = dto.luminance;
+			this.legoColourId = dto.legoColourId;
 			this.sequence = dto.sequence;
 			this.objectGuid = dto.objectGuid;
 			if (dto.active.HasValue == true)
@@ -219,9 +239,13 @@ namespace Foundation.BMC.Database
 				name = this.name,
 				ldrawColourCode = this.ldrawColourCode,
 				hexRgb = this.hexRgb,
+				hexEdgeColour = this.hexEdgeColour,
 				alpha = this.alpha,
 				isTransparent = this.isTransparent,
 				isMetallic = this.isMetallic,
+				finishType = this.finishType,
+				luminance = this.luminance,
+				legoColourId = this.legoColourId,
 				sequence = this.sequence,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -282,9 +306,13 @@ namespace Foundation.BMC.Database
 				name = brickColour.name,
 				ldrawColourCode = brickColour.ldrawColourCode,
 				hexRgb = brickColour.hexRgb,
+				hexEdgeColour = brickColour.hexEdgeColour,
 				alpha = brickColour.alpha,
 				isTransparent = brickColour.isTransparent,
 				isMetallic = brickColour.isMetallic,
+				finishType = brickColour.finishType,
+				luminance = brickColour.luminance,
+				legoColourId = brickColour.legoColourId,
 				sequence = brickColour.sequence,
 				objectGuid = brickColour.objectGuid,
 				active = brickColour.active,
@@ -312,9 +340,13 @@ namespace Foundation.BMC.Database
 				name = brickColour.name,
 				ldrawColourCode = brickColour.ldrawColourCode,
 				hexRgb = brickColour.hexRgb,
+				hexEdgeColour = brickColour.hexEdgeColour,
 				alpha = brickColour.alpha,
 				isTransparent = brickColour.isTransparent,
 				isMetallic = brickColour.isMetallic,
+				finishType = brickColour.finishType,
+				luminance = brickColour.luminance,
+				legoColourId = brickColour.legoColourId,
 				sequence = brickColour.sequence,
 				objectGuid = brickColour.objectGuid,
 				active = brickColour.active,
@@ -340,7 +372,7 @@ namespace Foundation.BMC.Database
 			return new {
 				id = brickColour.id,
 				name = brickColour.name,
-				description = string.Join(", ", new[] { brickColour.name, brickColour.hexRgb}.Where(s => !string.IsNullOrWhiteSpace(s)))
+				description = string.Join(", ", new[] { brickColour.name, brickColour.hexRgb, brickColour.hexEdgeColour}.Where(s => !string.IsNullOrWhiteSpace(s)))
 			 };
 		}
 	}

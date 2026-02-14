@@ -5,6 +5,10 @@
         <div class="header-content">
             <div class="header-title-row">
                 <div class="d-flex align-items-center gap-3">
+                    <button class="btn btn-sm btn-back me-1" (click)="goBack()" ngbTooltip="Go Back"
+                        *ngIf="canGoBack()">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
                     <div class="header-icon">
                         <i class="fas fa-layer-group"></i>
                     </div>

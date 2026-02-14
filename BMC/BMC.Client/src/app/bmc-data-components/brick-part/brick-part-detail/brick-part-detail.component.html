@@ -31,6 +31,26 @@
                                     Ldraw Part Id is required
                                 </div>
                             </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('ldrawTitle')">
+                                <label for="BrickPart-ldrawTitle" id="label-BrickPart-ldrawTitle">Ldraw Title</label>
+                                <input type="text" id="BrickPart-ldrawTitle" formControlName="ldrawTitle" placeholder="Enter Ldraw Title" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-ldrawTitle" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('ldrawCategory')">
+                                <label for="BrickPart-ldrawCategory" id="label-BrickPart-ldrawCategory">Ldraw Category</label>
+                                <input type="text" id="BrickPart-ldrawCategory" formControlName="ldrawCategory" placeholder="Enter Ldraw Category" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-ldrawCategory" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('partType')">
+                                <label for="BrickPart-partType" id="label-BrickPart-partType">Part Type</label>
+                                <input type="text" id="BrickPart-partType" formControlName="partType" placeholder="Enter Part Type" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-partType" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('keywords')">
+                                <label for="BrickPart-keywords" id="label-BrickPart-keywords">Keywords</label>
+                                <textarea id="BrickPart-keywords" formControlName="keywords" placeholder="Enter Keywords" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('author')">
+                                <label for="BrickPart-author" id="label-BrickPart-author">Author</label>
+                                <input type="text" id="BrickPart-author" formControlName="author" placeholder="Enter Author" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-author" />
+                            </div>
                             <div class="form-group" *ngIf="!isFieldHidden('brickCategoryId')">
                                 <label for="BrickPart-brickCategoryId" id="label-BrickPart-brickCategoryId">Brick Category</label>
                                 <select id="BrickPart-brickCategoryId" formControlName="brickCategoryId" class="form-select brick-part-select" [disabled]="!userIsBMCBrickPartWriter()">

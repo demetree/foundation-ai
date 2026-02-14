@@ -65,9 +65,13 @@ namespace Foundation.BMC.Controllers.WebAPI
 			string name = null,
 			int? ldrawColourCode = null,
 			string hexRgb = null,
+			string hexEdgeColour = null,
 			int? alpha = null,
 			bool? isTransparent = null,
 			bool? isMetallic = null,
+			string finishType = null,
+			int? luminance = null,
+			int? legoColourId = null,
 			int? sequence = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -119,6 +123,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(bc => bc.hexRgb == hexRgb);
 			}
+			if (string.IsNullOrEmpty(hexEdgeColour) == false)
+			{
+				query = query.Where(bc => bc.hexEdgeColour == hexEdgeColour);
+			}
 			if (alpha.HasValue == true)
 			{
 				query = query.Where(bc => bc.alpha == alpha.Value);
@@ -130,6 +138,18 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (isMetallic.HasValue == true)
 			{
 				query = query.Where(bc => bc.isMetallic == isMetallic.Value);
+			}
+			if (string.IsNullOrEmpty(finishType) == false)
+			{
+				query = query.Where(bc => bc.finishType == finishType);
+			}
+			if (luminance.HasValue == true)
+			{
+				query = query.Where(bc => bc.luminance == luminance.Value);
+			}
+			if (legoColourId.HasValue == true)
+			{
+				query = query.Where(bc => bc.legoColourId == legoColourId.Value);
 			}
 			if (sequence.HasValue == true)
 			{
@@ -164,7 +184,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 				query = query.Where(bc => bc.deleted == false);
 			}
 
-			query = query.OrderBy(bc => bc.sequence).ThenBy(bc => bc.name).ThenBy(bc => bc.hexRgb);
+			query = query.OrderBy(bc => bc.sequence).ThenBy(bc => bc.name).ThenBy(bc => bc.hexRgb).ThenBy(bc => bc.hexEdgeColour);
 
 			if (pageNumber.HasValue == true &&
 			    pageSize.HasValue == true)
@@ -188,6 +208,8 @@ namespace Foundation.BMC.Controllers.WebAPI
 			   query = query.Where(x =>
 			       x.name.Contains(anyStringContains)
 			       || x.hexRgb.Contains(anyStringContains)
+			       || x.hexEdgeColour.Contains(anyStringContains)
+			       || x.finishType.Contains(anyStringContains)
 			   );
 			}
 
@@ -233,9 +255,13 @@ namespace Foundation.BMC.Controllers.WebAPI
 			string name = null,
 			int? ldrawColourCode = null,
 			string hexRgb = null,
+			string hexEdgeColour = null,
 			int? alpha = null,
 			bool? isTransparent = null,
 			bool? isMetallic = null,
+			string finishType = null,
+			int? luminance = null,
+			int? legoColourId = null,
 			int? sequence = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -269,6 +295,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(bc => bc.hexRgb == hexRgb);
 			}
+			if (hexEdgeColour != null)
+			{
+				query = query.Where(bc => bc.hexEdgeColour == hexEdgeColour);
+			}
 			if (alpha.HasValue == true)
 			{
 				query = query.Where(bc => bc.alpha == alpha.Value);
@@ -280,6 +310,18 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (isMetallic.HasValue == true)
 			{
 				query = query.Where(bc => bc.isMetallic == isMetallic.Value);
+			}
+			if (finishType != null)
+			{
+				query = query.Where(bc => bc.finishType == finishType);
+			}
+			if (luminance.HasValue == true)
+			{
+				query = query.Where(bc => bc.luminance == luminance.Value);
+			}
+			if (legoColourId.HasValue == true)
+			{
+				query = query.Where(bc => bc.legoColourId == legoColourId.Value);
 			}
 			if (sequence.HasValue == true)
 			{
@@ -324,6 +366,8 @@ namespace Foundation.BMC.Controllers.WebAPI
 			   query = query.Where(x =>
 			       x.name.Contains(anyStringContains)
 			       || x.hexRgb.Contains(anyStringContains)
+			       || x.hexEdgeColour.Contains(anyStringContains)
+			       || x.finishType.Contains(anyStringContains)
 			   );
 			}
 
@@ -508,6 +552,16 @@ namespace Foundation.BMC.Controllers.WebAPI
 				brickColour.hexRgb = brickColour.hexRgb.Substring(0, 10);
 			}
 
+			if (brickColour.hexEdgeColour != null && brickColour.hexEdgeColour.Length > 10)
+			{
+				brickColour.hexEdgeColour = brickColour.hexEdgeColour.Substring(0, 10);
+			}
+
+			if (brickColour.finishType != null && brickColour.finishType.Length > 50)
+			{
+				brickColour.finishType = brickColour.finishType.Substring(0, 50);
+			}
+
 			EntityEntry<Database.BrickColour> attached = _context.Entry(existing);
 			attached.CurrentValues.SetValues(brickColour);
 
@@ -587,6 +641,16 @@ namespace Foundation.BMC.Controllers.WebAPI
 				if (brickColour.hexRgb != null && brickColour.hexRgb.Length > 10)
 				{
 					brickColour.hexRgb = brickColour.hexRgb.Substring(0, 10);
+				}
+
+				if (brickColour.hexEdgeColour != null && brickColour.hexEdgeColour.Length > 10)
+				{
+					brickColour.hexEdgeColour = brickColour.hexEdgeColour.Substring(0, 10);
+				}
+
+				if (brickColour.finishType != null && brickColour.finishType.Length > 50)
+				{
+					brickColour.finishType = brickColour.finishType.Substring(0, 50);
 				}
 
 				brickColour.objectGuid = Guid.NewGuid();
@@ -705,9 +769,13 @@ namespace Foundation.BMC.Controllers.WebAPI
 			string name = null,
 			int? ldrawColourCode = null,
 			string hexRgb = null,
+			string hexEdgeColour = null,
 			int? alpha = null,
 			bool? isTransparent = null,
 			bool? isMetallic = null,
+			string finishType = null,
+			int? luminance = null,
+			int? legoColourId = null,
 			int? sequence = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -757,6 +825,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(bc => bc.hexRgb == hexRgb);
 			}
+			if (string.IsNullOrEmpty(hexEdgeColour) == false)
+			{
+				query = query.Where(bc => bc.hexEdgeColour == hexEdgeColour);
+			}
 			if (alpha.HasValue == true)
 			{
 				query = query.Where(bc => bc.alpha == alpha.Value);
@@ -768,6 +840,18 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (isMetallic.HasValue == true)
 			{
 				query = query.Where(bc => bc.isMetallic == isMetallic.Value);
+			}
+			if (string.IsNullOrEmpty(finishType) == false)
+			{
+				query = query.Where(bc => bc.finishType == finishType);
+			}
+			if (luminance.HasValue == true)
+			{
+				query = query.Where(bc => bc.luminance == luminance.Value);
+			}
+			if (legoColourId.HasValue == true)
+			{
+				query = query.Where(bc => bc.legoColourId == legoColourId.Value);
 			}
 			if (sequence.HasValue == true)
 			{
@@ -813,11 +897,13 @@ namespace Foundation.BMC.Controllers.WebAPI
 			   query = query.Where(x =>
 			       x.name.Contains(anyStringContains)
 			       || x.hexRgb.Contains(anyStringContains)
+			       || x.hexEdgeColour.Contains(anyStringContains)
+			       || x.finishType.Contains(anyStringContains)
 			   );
 			}
 
 
-			query = query.OrderBy(x => x.sequence).ThenBy(x => x.name).ThenBy(x => x.hexRgb);
+			query = query.OrderBy(x => x.sequence).ThenBy(x => x.name).ThenBy(x => x.hexRgb).ThenBy(x => x.hexEdgeColour);
 			if (pageNumber.HasValue == true &&
 			    pageSize.HasValue == true)
 			{

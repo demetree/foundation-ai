@@ -1,7 +1,21 @@
 .pattern-listing-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 1rem;
+    background-color: #f4f6f9;
+    min-height: 100%;
+    padding: 1rem;
+}
+
+.btn-back {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #fff;
+    backdrop-filter: blur(5px);
+    transition: all 0.2s ease;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.25);
+        color: #fff;
+        transform: translateX(-2px);
+    }
 }
 
 .pattern-header {

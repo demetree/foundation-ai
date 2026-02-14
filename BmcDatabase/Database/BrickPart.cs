@@ -13,6 +13,16 @@ public partial class BrickPart
 
     public string ldrawPartId { get; set; }
 
+    public string ldrawTitle { get; set; }
+
+    public string ldrawCategory { get; set; }
+
+    public string partType { get; set; }
+
+    public string keywords { get; set; }
+
+    public string author { get; set; }
+
     public int? brickCategoryId { get; set; }
 
     public float widthLdu { get; set; }

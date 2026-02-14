@@ -165,8 +165,15 @@ namespace Foundation.BMC.Controllers.WebAPI
 			   query = query.Where(x =>
 			       (includeRelations == true && x.brickColour.name.Contains(anyStringContains))
 			       || (includeRelations == true && x.brickColour.hexRgb.Contains(anyStringContains))
+			       || (includeRelations == true && x.brickColour.hexEdgeColour.Contains(anyStringContains))
+			       || (includeRelations == true && x.brickColour.finishType.Contains(anyStringContains))
 			       || (includeRelations == true && x.brickPart.name.Contains(anyStringContains))
 			       || (includeRelations == true && x.brickPart.ldrawPartId.Contains(anyStringContains))
+			       || (includeRelations == true && x.brickPart.ldrawTitle.Contains(anyStringContains))
+			       || (includeRelations == true && x.brickPart.ldrawCategory.Contains(anyStringContains))
+			       || (includeRelations == true && x.brickPart.partType.Contains(anyStringContains))
+			       || (includeRelations == true && x.brickPart.keywords.Contains(anyStringContains))
+			       || (includeRelations == true && x.brickPart.author.Contains(anyStringContains))
 			       || (includeRelations == true && x.brickPart.geometryFilePath.Contains(anyStringContains))
 			   );
 			}
@@ -279,8 +286,15 @@ namespace Foundation.BMC.Controllers.WebAPI
 			   query = query.Where(x =>
 			       x.brickColour.name.Contains(anyStringContains)
 			       || x.brickColour.hexRgb.Contains(anyStringContains)
+			       || x.brickColour.hexEdgeColour.Contains(anyStringContains)
+			       || x.brickColour.finishType.Contains(anyStringContains)
 			       || x.brickPart.name.Contains(anyStringContains)
 			       || x.brickPart.ldrawPartId.Contains(anyStringContains)
+			       || x.brickPart.ldrawTitle.Contains(anyStringContains)
+			       || x.brickPart.ldrawCategory.Contains(anyStringContains)
+			       || x.brickPart.partType.Contains(anyStringContains)
+			       || x.brickPart.keywords.Contains(anyStringContains)
+			       || x.brickPart.author.Contains(anyStringContains)
 			       || x.brickPart.geometryFilePath.Contains(anyStringContains)
 			   );
 			}
@@ -728,8 +742,15 @@ namespace Foundation.BMC.Controllers.WebAPI
 			   query = query.Where(x =>
 			       x.brickColour.name.Contains(anyStringContains)
 			       || x.brickColour.hexRgb.Contains(anyStringContains)
+			       || x.brickColour.hexEdgeColour.Contains(anyStringContains)
+			       || x.brickColour.finishType.Contains(anyStringContains)
 			       || x.brickPart.name.Contains(anyStringContains)
 			       || x.brickPart.ldrawPartId.Contains(anyStringContains)
+			       || x.brickPart.ldrawTitle.Contains(anyStringContains)
+			       || x.brickPart.ldrawCategory.Contains(anyStringContains)
+			       || x.brickPart.partType.Contains(anyStringContains)
+			       || x.brickPart.keywords.Contains(anyStringContains)
+			       || x.brickPart.author.Contains(anyStringContains)
 			       || x.brickPart.geometryFilePath.Contains(anyStringContains)
 			   );
 			}

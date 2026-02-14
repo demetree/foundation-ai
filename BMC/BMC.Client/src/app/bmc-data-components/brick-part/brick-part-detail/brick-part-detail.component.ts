@@ -41,6 +41,11 @@ import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../uti
 interface BrickPartFormValues {
   name: string,
   ldrawPartId: string,
+  ldrawTitle: string | null,
+  ldrawCategory: string | null,
+  partType: string | null,
+  keywords: string | null,
+  author: string | null,
   brickCategoryId: number | bigint | null,       // For FK link number
   widthLdu: string,     // Stored as string for form input, converted to number on submit.
   heightLdu: string,     // Stored as string for form input, converted to number on submit.
@@ -81,6 +86,11 @@ export class BrickPartDetailComponent implements OnInit, CanComponentDeactivate 
   public brickPartForm: FormGroup = this.fb.group({
         name: ['', Validators.required],
         ldrawPartId: ['', Validators.required],
+        ldrawTitle: [''],
+        ldrawCategory: [''],
+        partType: [''],
+        keywords: [''],
+        author: [''],
         brickCategoryId: [null],
         widthLdu: ['', Validators.required],
         heightLdu: ['', Validators.required],
@@ -404,6 +414,11 @@ export class BrickPartDetailComponent implements OnInit, CanComponentDeactivate 
       this.brickPartForm.reset({
         name: '',
         ldrawPartId: '',
+        ldrawTitle: '',
+        ldrawCategory: '',
+        partType: '',
+        keywords: '',
+        author: '',
         brickCategoryId: null,
         widthLdu: '',
         heightLdu: '',
@@ -426,6 +441,11 @@ export class BrickPartDetailComponent implements OnInit, CanComponentDeactivate 
         this.brickPartForm.reset({
         name: brickPartData.name ?? '',
         ldrawPartId: brickPartData.ldrawPartId ?? '',
+        ldrawTitle: brickPartData.ldrawTitle ?? '',
+        ldrawCategory: brickPartData.ldrawCategory ?? '',
+        partType: brickPartData.partType ?? '',
+        keywords: brickPartData.keywords ?? '',
+        author: brickPartData.author ?? '',
         brickCategoryId: brickPartData.brickCategoryId,
         widthLdu: brickPartData.widthLdu?.toString() ?? '',
         heightLdu: brickPartData.heightLdu?.toString() ?? '',
@@ -498,6 +518,11 @@ export class BrickPartDetailComponent implements OnInit, CanComponentDeactivate 
         id: this.brickPartData?.id || 0,
         name: formValue.name!.trim(),
         ldrawPartId: formValue.ldrawPartId!.trim(),
+        ldrawTitle: formValue.ldrawTitle?.trim() || null,
+        ldrawCategory: formValue.ldrawCategory?.trim() || null,
+        partType: formValue.partType?.trim() || null,
+        keywords: formValue.keywords?.trim() || null,
+        author: formValue.author?.trim() || null,
         brickCategoryId: formValue.brickCategoryId ? Number(formValue.brickCategoryId) : null,
         widthLdu: Number(formValue.widthLdu),
         heightLdu: Number(formValue.heightLdu),
