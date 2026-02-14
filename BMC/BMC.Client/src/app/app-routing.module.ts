@@ -4,6 +4,9 @@ import { RouterModule, Routes } from '@angular/router';
 import { LoginComponent } from './components/login/login.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { NotFoundComponent } from './components/not-found/not-found.component';
+import { PartsCatalogComponent } from './components/parts-catalog/parts-catalog.component';
+import { ColourLibraryComponent } from './components/colour-library/colour-library.component';
+import { SystemHealthComponent } from './components/system-health/system-health.component';
 
 import { AuthGuard } from './services/auth-guard';
 
@@ -51,6 +54,11 @@ const routes: Routes = [
     { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     { path: 'login', component: LoginComponent, data: { title: 'Login' } },
     { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard], data: { title: 'Dashboard' } },
+
+    // Premium custom UI routes
+    { path: 'parts', component: PartsCatalogComponent, canActivate: [AuthGuard], title: 'Parts Catalog' },
+    { path: 'colours', component: ColourLibraryComponent, canActivate: [AuthGuard], title: 'Colour Library' },
+    { path: 'system-health', component: SystemHealthComponent, canActivate: [AuthGuard], title: 'System Health' },
 
 
     //

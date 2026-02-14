@@ -1,0 +1,188 @@
+<div class="parts-catalog animate-fade-in">
+
+    <!-- Premium Header -->
+    <div class="catalog-header">
+        <div class="header-top">
+            <div class="header-title">
+                <h1><i class="fas fa-cubes me-2"></i>Parts Catalog</h1>
+                <p class="header-subtitle">Browse and explore the brick parts library</p>
+            </div>
+            <div class="header-actions">
+                <div class="view-toggle">
+                    <button class="toggle-btn" [class.active]="viewMode === 'grid'" (click)="viewMode = 'grid'"
+                        title="Grid view">
+                        <i class="fas fa-th"></i>
+                    </button>
+                    <button class="toggle-btn" [class.active]="viewMode === 'list'" (click)="viewMode = 'list'"
+                        title="List view">
+                        <i class="fas fa-list"></i>
+                    </button>
+                </div>
+                <div class="total-badge" *ngIf="!loading">
+                    <span class="badge-number">{{ totalCount }}</span>
+                    <span class="badge-label">parts</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search & Filter Bar -->
+        <div class="search-bar">
+            <div class="search-wrapper">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-input" placeholder="Search parts by name, LDraw ID, keywords..."
+                    [value]="searchTerm" (input)="onSearch($event)" id="parts-search">
+            </div>
+            <button class="sidebar-toggle-btn" (click)="toggleSidebar()"
+                [title]="sidebarCollapsed ? 'Show filters' : 'Hide filters'">
+                <i class="fas" [class.fa-filter]="sidebarCollapsed" [class.fa-times]="!sidebarCollapsed"></i>
+                <span *ngIf="sidebarCollapsed">Filters</span>
+            </button>
+            <button *ngIf="hasActiveFilters()" class="clear-btn" (click)="clearFilters()">
+                <i class="fas fa-undo me-1"></i>Clear
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="catalog-body" [class.sidebar-hidden]="sidebarCollapsed">
+
+        <!-- Category Sidebar -->
+        <aside class="filter-sidebar" [class.collapsed]="sidebarCollapsed">
+            <div class="sidebar-section">
+                <h4 class="sidebar-title">
+                    <i class="fas fa-layer-group me-2"></i>Categories
+                </h4>
+
+                <div class="category-list">
+                    <button class="category-item" [class.active]="selectedCategoryId === null"
+                        (click)="selectCategory(null)">
+                        <span class="cat-name">All Categories</span>
+                        <span class="cat-count">{{ totalCount }}</span>
+                    </button>
+                    <button *ngFor="let cat of categories" class="category-item"
+                        [class.active]="selectedCategoryId === cat.id" (click)="selectCategory(cat.id)">
+                        <span class="cat-name">{{ cat.name }}</span>
+                        <span class="cat-count">{{ getCategoryCount(cat.id) }}</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="sidebar-section" *ngIf="partTypes.length > 0">
+                <h4 class="sidebar-title">
+                    <i class="fas fa-shapes me-2"></i>Part Types
+                </h4>
+                <div class="type-chips">
+                    <button *ngFor="let type of partTypes" class="type-chip"
+                        [class.active]="selectedPartTypeId === type.id" (click)="selectPartType(type.id)">
+                        {{ type.name }}
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Parts Grid/List -->
+        <main class="parts-content">
+
+            <!-- Results Info -->
+            <div class="results-info" *ngIf="!loading">
+                <span class="results-text">
+                    {{ filteredParts.length }} part{{ filteredParts.length !== 1 ? 's' : '' }}
+                    <span *ngIf="hasActiveFilters()"> matching filters</span>
+                </span>
+                <span class="page-info" *ngIf="totalPages > 1">
+                    Page {{ currentPage }} of {{ totalPages }}
+                </span>
+            </div>
+
+            <!-- Loading Skeleton -->
+            <div *ngIf="loading" class="parts-grid">
+                <div *ngFor="let i of [1,2,3,4,5,6,7,8,9,10,11,12]" class="skeleton-card">
+                    <div class="skeleton-icon"></div>
+                    <div class="skeleton-text"></div>
+                    <div class="skeleton-text short"></div>
+                    <div class="skeleton-dims"></div>
+                </div>
+            </div>
+
+            <!-- Grid View -->
+            <div *ngIf="!loading && viewMode === 'grid'" class="parts-grid">
+                <div *ngFor="let part of displayedParts; let i = index" class="part-card"
+                    (click)="navigateToDetail(part)" [style.animation-delay]="(i % 12) * 30 + 'ms'">
+
+                    <div class="card-icon">
+                        <i [class]="getPartTypeIcon(part)"></i>
+                    </div>
+
+                    <div class="card-body">
+                        <h3 class="part-name">{{ part.name }}</h3>
+                        <span class="part-ldraw">{{ part.ldrawPartId }}</span>
+
+                        <div class="part-meta">
+                            <span class="meta-item" *ngIf="part.brickCategory" title="Category">
+                                <i class="fas fa-tag me-1"></i>{{ part.brickCategory.name }}
+                            </span>
+                            <span class="meta-item" *ngIf="part.partType" title="Part Type">
+                                <i class="fas fa-shapes me-1"></i>{{ part.partType.name }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="card-footer">
+                        <span class="dim-badge" title="Dimensions (LDU)">
+                            <i class="fas fa-ruler-combined me-1"></i>{{ formatDimensions(part) }}
+                        </span>
+                        <span class="version-badge" *ngIf="part.versionNumber">
+                            v{{ part.versionNumber }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- List View -->
+            <div *ngIf="!loading && viewMode === 'list'" class="parts-list">
+                <div class="list-header">
+                    <span class="lh-name">Name</span>
+                    <span class="lh-ldraw">LDraw ID</span>
+                    <span class="lh-category">Category</span>
+                    <span class="lh-type">Type</span>
+                    <span class="lh-dims">Dimensions</span>
+                </div>
+                <div *ngFor="let part of displayedParts; let i = index" class="list-row"
+                    (click)="navigateToDetail(part)" [style.animation-delay]="(i % 20) * 15 + 'ms'">
+                    <span class="lr-name">
+                        <i [class]="getPartTypeIcon(part)" class="row-icon me-2"></i>
+                        {{ part.name }}
+                    </span>
+                    <span class="lr-ldraw">{{ part.ldrawPartId }}</span>
+                    <span class="lr-category">{{ part.brickCategory?.name || '—' }}</span>
+                    <span class="lr-type">{{ part.partType?.name || '—' }}</span>
+                    <span class="lr-dims">{{ formatDimensions(part) }}</span>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div *ngIf="!loading && filteredParts.length === 0" class="empty-state">
+                <i class="fas fa-cubes empty-icon"></i>
+                <h3>No parts found</h3>
+                <p>Try adjusting your search or category filters</p>
+                <button class="reset-btn" (click)="clearFilters()">
+                    <i class="fas fa-undo me-2"></i>Reset Filters
+                </button>
+            </div>
+
+            <!-- Pagination -->
+            <div *ngIf="!loading && totalPages > 1" class="pagination-bar">
+                <button class="page-btn" (click)="prevPage()" [disabled]="currentPage === 1">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button *ngFor="let page of getVisiblePages()" class="page-btn" [class.active]="page === currentPage"
+                    (click)="goToPage(page)">
+                    {{ page }}
+                </button>
+                <button class="page-btn" (click)="nextPage()" [disabled]="currentPage === totalPages">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </main>
+    </div>
+</div>

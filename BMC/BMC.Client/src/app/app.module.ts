@@ -132,6 +132,11 @@ import { ProjectChangeHistoryTableComponent } from './bmc-data-components/projec
 // End of imports for BMC Data Components
 //
 
+// Premium custom UI components
+import { PartsCatalogComponent } from './components/parts-catalog/parts-catalog.component';
+import { ColourLibraryComponent } from './components/colour-library/colour-library.component';
+import { SystemHealthComponent } from './components/system-health/system-health.component';
+
 
 @NgModule({
     declarations: [
@@ -150,6 +155,11 @@ import { ProjectChangeHistoryTableComponent } from './bmc-data-components/projec
         SpinnerComponent,
         BooleanIconComponent,
         BigNumberFormatPipe,
+
+        // Premium custom UI components
+        PartsCatalogComponent,
+        ColourLibraryComponent,
+        SystemHealthComponent,
 
 
         //

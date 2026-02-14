@@ -1,0 +1,180 @@
+<div class="colour-library animate-fade-in">
+
+    <!-- Premium Header -->
+    <div class="lib-header">
+        <div class="header-top">
+            <div class="header-title">
+                <h1><i class="fas fa-palette me-2"></i>Colour Library</h1>
+                <p class="header-subtitle">Visual brick colour reference</p>
+            </div>
+            <div class="header-stats" *ngIf="!loading">
+                <div class="stat-pill">
+                    <span class="stat-number">{{ totalCount }}</span>
+                    <span class="stat-label">Total</span>
+                </div>
+                <div class="stat-pill transparent-pill" [class.active]="showTransparentOnly"
+                    (click)="toggleTransparent()">
+                    <i class="fas fa-eye me-1"></i>
+                    <span class="stat-number">{{ transparentCount }}</span>
+                    <span class="stat-label">Transparent</span>
+                </div>
+                <div class="stat-pill metallic-pill" [class.active]="showMetallicOnly" (click)="toggleMetallic()">
+                    <i class="fas fa-gem me-1"></i>
+                    <span class="stat-number">{{ metallicCount }}</span>
+                    <span class="stat-label">Metallic</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <div class="search-wrapper">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-input" placeholder="Search by name, hex code, or LDraw code..."
+                    [value]="searchTerm" (input)="onSearch($event)" id="colour-search">
+            </div>
+
+            <div class="finish-chips">
+                <button class="finish-chip" [class.active]="selectedFinishId === null" (click)="selectFinish(null)">
+                    All Finishes
+                </button>
+                <button *ngFor="let finish of finishes" class="finish-chip"
+                    [class.active]="selectedFinishId === finish.id" (click)="selectFinish(finish.id)">
+                    {{ finish.name }}
+                </button>
+            </div>
+
+            <button *ngIf="hasActiveFilters()" class="clear-btn" (click)="clearFilters()">
+                <i class="fas fa-times me-1"></i>Clear Filters
+            </button>
+        </div>
+    </div>
+
+    <!-- Results Count -->
+    <div class="results-bar" *ngIf="!loading">
+        <span class="results-count">
+            {{ filteredColours.length }} colour{{ filteredColours.length !== 1 ? 's' : '' }}
+            <span *ngIf="hasActiveFilters()"> matching filters</span>
+        </span>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="loading-grid">
+        <div *ngFor="let i of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]" class="skeleton-swatch">
+            <div class="skeleton-colour"></div>
+            <div class="skeleton-text"></div>
+            <div class="skeleton-text short"></div>
+        </div>
+    </div>
+
+    <!-- Swatch Grid -->
+    <div *ngIf="!loading" class="swatch-grid">
+        <div *ngFor="let colour of filteredColours; let i = index" class="swatch-card"
+            [class.selected]="selectedColour?.id === colour.id" (click)="selectColour(colour)"
+            [style.animation-delay]="(i % 20) * 20 + 'ms'">
+
+            <!-- Colour Swatch -->
+            <div class="swatch-preview" [style.background-color]="getSwatchBg(colour)"
+                [style.border-color]="getSwatchBorder(colour)" [style.opacity]="colour.isTransparent ? 0.7 : 1">
+                <span *ngIf="colour.isTransparent" class="swatch-badge transparent-badge">
+                    <i class="fas fa-eye"></i>
+                </span>
+                <span *ngIf="colour.isMetallic" class="swatch-badge metallic-badge">
+                    <i class="fas fa-gem"></i>
+                </span>
+            </div>
+
+            <!-- Swatch Info -->
+            <div class="swatch-info">
+                <span class="swatch-name">{{ colour.name }}</span>
+                <span class="swatch-hex">#{{ colour.hexRgb || '------' }}</span>
+            </div>
+
+            <!-- LDraw Code -->
+            <div class="swatch-meta">
+                <span class="ldraw-code">LDraw {{ colour.ldrawColourCode }}</span>
+                <span *ngIf="colour.colourFinish" class="finish-tag">{{ colour.colourFinish.name }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!loading && filteredColours.length === 0" class="empty-state">
+        <i class="fas fa-palette empty-icon"></i>
+        <h3>No colours found</h3>
+        <p>Try adjusting your search or filters</p>
+        <button class="clear-filters-btn" (click)="clearFilters()">
+            <i class="fas fa-undo me-2"></i>Reset Filters
+        </button>
+    </div>
+
+    <!-- Colour Detail Panel -->
+    <div class="detail-panel" *ngIf="selectedColour" (click)="$event.stopPropagation()">
+        <div class="detail-header">
+            <div class="detail-swatch-large" [style.background-color]="getSwatchBg(selectedColour)"
+                [style.border-color]="getSwatchBorder(selectedColour)"
+                [style.box-shadow]="getSwatchGlow(selectedColour)">
+            </div>
+            <div class="detail-title">
+                <h2>{{ selectedColour.name }}</h2>
+                <span class="detail-ldraw">LDraw Code {{ selectedColour.ldrawColourCode }}</span>
+            </div>
+            <button class="detail-close" (click)="selectedColour = null">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="detail-grid">
+            <div class="detail-item">
+                <span class="detail-label">RGB Hex</span>
+                <div class="detail-value colour-value">
+                    <span class="hex-dot" [style.background-color]="getSwatchBg(selectedColour)"></span>
+                    #{{ selectedColour.hexRgb || '------' }}
+                </div>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Edge Colour</span>
+                <div class="detail-value colour-value">
+                    <span class="hex-dot" [style.background-color]="getSwatchBorder(selectedColour)"></span>
+                    #{{ selectedColour.hexEdgeColour || '------' }}
+                </div>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Alpha</span>
+                <div class="detail-value">
+                    {{ getAlphaPercent(selectedColour) }}%
+                    <div class="alpha-bar">
+                        <div class="alpha-fill" [style.width.%]="getAlphaPercent(selectedColour)"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Finish</span>
+                <span class="detail-value">{{ getFinishName(selectedColour) }}</span>
+            </div>
+            <div class="detail-item" *ngIf="selectedColour.luminance">
+                <span class="detail-label">Luminance</span>
+                <span class="detail-value">{{ selectedColour.luminance }}</span>
+            </div>
+            <div class="detail-item" *ngIf="selectedColour.legoColourId">
+                <span class="detail-label">LEGO Colour ID</span>
+                <span class="detail-value">{{ selectedColour.legoColourId }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Properties</span>
+                <div class="detail-value property-tags">
+                    <span class="prop-tag" [class.active]="selectedColour.isTransparent">
+                        <i class="fas fa-eye me-1"></i>Transparent
+                    </span>
+                    <span class="prop-tag" [class.active]="selectedColour.isMetallic">
+                        <i class="fas fa-gem me-1"></i>Metallic
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <button class="detail-edit-btn" (click)="navigateToDetail(selectedColour)">
+            <i class="fas fa-edit me-2"></i>Open Full Detail
+        </button>
+    </div>
+</div>
