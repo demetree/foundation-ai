@@ -6,6 +6,7 @@ import { BrickPartService, BrickPartData } from '../../bmc-data-services/brick-p
 import { BrickCategoryService, BrickCategoryData } from '../../bmc-data-services/brick-category.service';
 import { PartTypeService, PartTypeData } from '../../bmc-data-services/part-type.service';
 import { LDrawThumbnailService } from '../../services/ldraw-thumbnail.service';
+import { IndexedDBCacheService } from '../../services/indexeddb-cache.service';
 
 @Component({
     selector: 'app-parts-catalog',
@@ -46,7 +47,8 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
         private categoryService: BrickCategoryService,
         private partTypeService: PartTypeService,
         private router: Router,
-        private thumbnailService: LDrawThumbnailService
+        private thumbnailService: LDrawThumbnailService,
+        private cacheService: IndexedDBCacheService
     ) { }
 
     ngOnInit(): void {
@@ -79,24 +81,43 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
     loadData(): void {
         this.loading = true;
 
-        // Load categories
-        this.categoryService.GetBrickCategoryList({ active: true, deleted: false }).pipe(
+        const categoryParams = { active: true, deleted: false };
+        const partTypeParams = { active: true, deleted: false };
+        const partParams = { active: true, deleted: false, includeRelations: true };
+
+        // Load categories (cached 7 days)
+        this.cacheService.getOrFetch<BrickCategoryData[]>(
+            'brick-categories',
+            categoryParams,
+            (p) => this.categoryService.GetBrickCategoryList(p),
+            10080  // 7 days
+        ).pipe(
             takeUntil(this.destroy$)
         ).subscribe({
             next: (cats) => this.categories = cats.sort((a, b) => (a.name || '').localeCompare(b.name || '')),
             error: () => this.categories = []
         });
 
-        // Load part types
-        this.partTypeService.GetPartTypeList({ active: true, deleted: false }).pipe(
+        // Load part types (cached 7 days)
+        this.cacheService.getOrFetch<PartTypeData[]>(
+            'part-types',
+            partTypeParams,
+            (p) => this.partTypeService.GetPartTypeList(p),
+            10080  // 7 days
+        ).pipe(
             takeUntil(this.destroy$)
         ).subscribe({
             next: (types) => this.partTypes = types,
             error: () => this.partTypes = []
         });
 
-        // Load parts
-        this.partService.GetBrickPartList({ active: true, deleted: false, includeRelations: true }).pipe(
+        // Load parts (cached 24 hours)
+        this.cacheService.getOrFetch<BrickPartData[]>(
+            'brick-parts',
+            partParams,
+            (p) => this.partService.GetBrickPartList(p),
+            1440  // 24 hours
+        ).pipe(
             takeUntil(this.destroy$)
         ).subscribe({
             next: (parts) => {
