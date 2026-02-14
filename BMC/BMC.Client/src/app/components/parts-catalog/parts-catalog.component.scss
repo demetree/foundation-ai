@@ -381,7 +381,8 @@
         transform: translateY(-3px);
         box-shadow: var(--bmc-shadow-md);
 
-        .card-visual .brick-svg {
+        .card-visual .brick-svg,
+        .card-visual .thumbnail-3d {
             transform: scale(1.1) translateY(-2px);
         }
 
@@ -403,6 +404,15 @@
         max-width: 110px;
         height: auto;
         transition: transform var(--transition-smooth);
+    }
+
+    .thumbnail-3d {
+        width: 100%;
+        max-width: 140px;
+        height: auto;
+        object-fit: contain;
+        transition: transform var(--transition-smooth);
+        // Transparent PNG — no background needed
     }
 }
 

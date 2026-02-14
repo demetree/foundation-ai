@@ -40,6 +40,12 @@ export class AddTenantProfileComponent {
     private router: Router
   ) { }
 
+  /** Handler for the map component's coordinatesChanged event. */
+  onCoordinatesChanged(coords: { latitude: number; longitude: number }) {
+    this.tenantProfileSubmitData.latitude = coords.latitude;
+    this.tenantProfileSubmitData.longitude = coords.longitude;
+  }
+
 
   openModal(tenantProfileData?: TenantProfileData) {
 

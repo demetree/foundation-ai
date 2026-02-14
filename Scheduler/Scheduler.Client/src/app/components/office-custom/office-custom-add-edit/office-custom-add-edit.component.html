@@ -111,7 +111,24 @@
         </div>
       </div>
 
-      <!-- Settings -->
+      <!-- Location Map -->
+      <div class="mt-4 p-4 border rounded bg-light">
+        <h6 class="fw-semibold mb-3">
+          <i class="fa-solid fa-map me-2"></i>
+          Location
+        </h6>
+        <app-location-map [latitude]="mapLatitude" [longitude]="mapLongitude" [editable]="true" [height]="'250px'"
+          (coordinatesChanged)="onCoordinatesChanged($event)">
+        </app-location-map>
+        <div class="row g-2 mt-2">
+          <div class="col-md-6">
+            <small class="text-muted">Latitude: {{ mapLatitude ?? 'Not set' }}</small>
+          </div>
+          <div class="col-md-6">
+            <small class="text-muted">Longitude: {{ mapLongitude ?? 'Not set' }}</small>
+          </div>
+        </div>
+      </div>
       <div class="row g-3 mt-4">
         <div class="col-md-6">
           <label for="timeZoneId"><span class="text-danger">*</span> Time Zone</label>

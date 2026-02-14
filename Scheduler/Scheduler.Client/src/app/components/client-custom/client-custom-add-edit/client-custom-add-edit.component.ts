@@ -27,6 +27,19 @@ export class ClientCustomAddEditComponent {
 
   public attributesParsed: any = {};
 
+  /** Tracked latitude from the map component. */
+  public mapLatitude: number | null = null;
+
+  /** Tracked longitude from the map component. */
+  public mapLongitude: number | null = null;
+
+  /** Handler for the map component's coordinatesChanged event. */
+  onCoordinatesChanged(coords: { latitude: number; longitude: number }) {
+    this.mapLatitude = coords.latitude;
+    this.mapLongitude = coords.longitude;
+    this.clientForm.markAsDirty();
+  }
+
   onDynamicAttributeChange(data: any) {
     this.attributesParsed = data;
     this.clientForm.markAsDirty();
@@ -193,8 +206,8 @@ export class ClientCustomAddEditComponent {
       countryId: Number(formValue.countryId),
       phone: formValue.phone?.trim() || null,
       email: formValue.email?.trim() || null,
-      latitude: formValue.latitude ? Number(formValue.latitude) : null,
-      longitude: formValue.longitude ? Number(formValue.longitude) : null,
+      latitude: this.mapLatitude,
+      longitude: this.mapLongitude,
       notes: formValue.notes?.trim() || null,
       externalId: formValue.externalId?.trim() || null,
       color: formValue.color?.trim() || null,
@@ -323,6 +336,8 @@ export class ClientCustomAddEditComponent {
     if (clientData == null) {
 
       this.attributesParsed = {};
+      this.mapLatitude = null;
+      this.mapLongitude = null;
 
       //
       // Reset the form group to null state, but don't change the form instance.
@@ -365,6 +380,9 @@ export class ClientCustomAddEditComponent {
       } catch (e) {
         this.attributesParsed = {};
       }
+
+      this.mapLatitude = clientData.latitude ?? null;
+      this.mapLongitude = clientData.longitude ?? null;
 
       //
       // Reset the form with properly formatted values that support dates in datetime-local inputs

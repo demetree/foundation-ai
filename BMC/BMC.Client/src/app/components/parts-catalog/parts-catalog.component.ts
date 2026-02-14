@@ -5,6 +5,7 @@ import { debounceTime, takeUntil } from 'rxjs/operators';
 import { BrickPartService, BrickPartData } from '../../bmc-data-services/brick-part.service';
 import { BrickCategoryService, BrickCategoryData } from '../../bmc-data-services/brick-category.service';
 import { PartTypeService, PartTypeData } from '../../bmc-data-services/part-type.service';
+import { LDrawThumbnailService } from '../../services/ldraw-thumbnail.service';
 
 @Component({
     selector: 'app-parts-catalog',
@@ -15,6 +16,9 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
 
     private destroy$ = new Subject<void>();
     private searchSubject = new Subject<string>();
+
+    // 3D thumbnail cache: geometryFilePath → data:URL
+    thumbnails = new Map<string, string>();
 
     allParts: BrickPartData[] = [];
     filteredParts: BrickPartData[] = [];
@@ -41,7 +45,8 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
         private partService: BrickPartService,
         private categoryService: BrickCategoryService,
         private partTypeService: PartTypeService,
-        private router: Router
+        private router: Router,
+        private thumbnailService: LDrawThumbnailService
     ) { }
 
     ngOnInit(): void {
@@ -52,6 +57,15 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
             this.searchTerm = term;
             this.currentPage = 1;
             this.applyFilters();
+        });
+
+        //
+        // Subscribe to 3D thumbnail render results — updates cards progressively
+        //
+        this.thumbnailService.thumbnail$.pipe(
+            takeUntil(this.destroy$)
+        ).subscribe(result => {
+            this.thumbnails.set(result.geometryFilePath, result.dataUrl);
         });
 
         this.loadData();
@@ -139,6 +153,11 @@ export class PartsCatalogComponent implements OnInit, OnDestroy {
     updateDisplayedParts(): void {
         const start = (this.currentPage - 1) * this.pageSize;
         this.displayedParts = this.filteredParts.slice(start, start + this.pageSize);
+
+        //
+        // Kick off 3D thumbnail rendering for the new batch of visible parts
+        //
+        this.thumbnailService.renderBatch(this.displayedParts);
     }
 
     selectCategory(catId: number | bigint | null): void {

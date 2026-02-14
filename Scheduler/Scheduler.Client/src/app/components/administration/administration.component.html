@@ -131,6 +131,14 @@
               </div>
             </div>
 
+            <!-- Location Map (shown when coordinates exist) -->
+            <div class="mb-4" *ngIf="tenantProfileData.latitude != null && tenantProfileData.longitude != null">
+              <h5 class="border-bottom pb-2 mb-4">Location</h5>
+              <app-location-map [latitude]="tenantProfileData.latitude" [longitude]="tenantProfileData.longitude"
+                [editable]="false" [height]="'250px'">
+              </app-location-map>
+            </div>
+
           </div>
         </div>
       </ng-template>

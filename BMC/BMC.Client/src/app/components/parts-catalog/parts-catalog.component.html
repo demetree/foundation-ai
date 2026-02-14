@@ -110,7 +110,13 @@
                     (click)="navigateToDetail(part)" [style.animation-delay]="(i % 12) * 30 + 'ms'">
 
                     <div class="card-visual">
-                        <svg viewBox="0 0 110 110" class="brick-svg" xmlns="http://www.w3.org/2000/svg">
+                        <!-- 3D thumbnail (rendered offscreen by LDrawThumbnailService) -->
+                        <img *ngIf="thumbnails.get(part.geometryFilePath)" [src]="thumbnails.get(part.geometryFilePath)"
+                            class="thumbnail-3d" alt="3D preview" />
+
+                        <!-- SVG fallback (shown while 3D loads, or if no geometry file) -->
+                        <svg *ngIf="!thumbnails.get(part.geometryFilePath)" viewBox="0 0 110 110" class="brick-svg"
+                            xmlns="http://www.w3.org/2000/svg">
                             <ellipse cx="55" cy="90" rx="26" ry="8" fill="rgba(0,0,0,0.25)" />
                             <polygon [attr.points]="getIsometricPoints(part).side"
                                 [attr.fill]="getPartColour(part).side" [attr.stroke]="getPartColour(part).outline"

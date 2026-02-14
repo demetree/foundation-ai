@@ -150,17 +150,18 @@
                     class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()"
                     aria-labelledby="label-email" />
             </div>
+            <!-- Location Map -->
             <div class="form-group">
-                <label for="latitude" id="label-latitude">Latitude</label>
-                <input type="number" id="latitude" formControlName="latitude" placeholder="Enter Latitude"
-                    class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()"
-                    aria-labelledby="label-latitude" />
-            </div>
-            <div class="form-group">
-                <label for="longitude" id="label-longitude">Longitude</label>
-                <input type="number" id="longitude" formControlName="longitude" placeholder="Enter Longitude"
-                    class="form-control client-input" [disabled]="!userIsSchedulerClientWriter()"
-                    aria-labelledby="label-longitude" />
+                <label class="fw-semibold mb-2">
+                    <i class="fa-solid fa-map me-1"></i> Location
+                </label>
+                <app-location-map [latitude]="mapLatitude" [longitude]="mapLongitude" [editable]="true"
+                    [height]="'220px'" (coordinatesChanged)="onCoordinatesChanged($event)">
+                </app-location-map>
+                <div class="d-flex gap-3 mt-1">
+                    <small class="text-muted">Lat: {{ mapLatitude ?? 'Not set' }}</small>
+                    <small class="text-muted">Lng: {{ mapLongitude ?? 'Not set' }}</small>
+                </div>
             </div>
             <div class="form-group">
                 <label for="notes" id="label-notes">Notes</label>

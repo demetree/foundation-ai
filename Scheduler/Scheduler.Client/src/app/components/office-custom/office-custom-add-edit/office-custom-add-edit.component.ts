@@ -43,6 +43,19 @@ export class OfficeCustomAddEditComponent {
 
   public attributesParsed: any = {};
 
+  /** Tracked latitude from the map component. */
+  public mapLatitude: number | null = null;
+
+  /** Tracked longitude from the map component. */
+  public mapLongitude: number | null = null;
+
+  /** Handler for the map component's coordinatesChanged event. */
+  onCoordinatesChanged(coords: { latitude: number; longitude: number }) {
+    this.mapLatitude = coords.latitude;
+    this.mapLongitude = coords.longitude;
+    this.officeForm.markAsDirty();
+  }
+
   onDynamicAttributeChange(data: any) {
     this.attributesParsed = data;
     this.officeForm.markAsDirty();
@@ -310,8 +323,8 @@ export class OfficeCustomAddEditComponent {
       notes: formValue.notes?.trim() || null,
       externalId: formValue.externalId?.trim() || null,
       color: formValue.color?.trim() || null,
-      latitude: null,
-      longitude: null,
+      latitude: this.mapLatitude,
+      longitude: this.mapLongitude,
       attributes: Object.keys(this.attributesParsed).length > 0 ? JSON.stringify(this.attributesParsed) : null,
       avatarFileName: formValue.avatarFileName?.trim() || null,
       avatarSize: formValue.avatarSize ? Number(formValue.avatarSize) : null,
@@ -444,6 +457,8 @@ export class OfficeCustomAddEditComponent {
 
       this.attributesParsed = {};
       this.currentAvatarUrl = null;
+      this.mapLatitude = null;
+      this.mapLongitude = null;
 
       //
       // Reset the form group to null state, but don't change the form instance.
@@ -490,6 +505,9 @@ export class OfficeCustomAddEditComponent {
       } else {
         this.currentAvatarUrl = null;
       }
+
+      this.mapLatitude = officeData.latitude ?? null;
+      this.mapLongitude = officeData.longitude ?? null;
       //
       // Reset the form with properly formatted values that support dates in datetime-local inputs
       //

@@ -25,6 +25,7 @@ import { OidcHelperService } from './services/oidc-helper.service';
 import { AppTitleService } from './services/app-title.service';
 import { DBkeys } from './services/db-keys';
 import { JwtHelper } from './services/jwt-helper';
+import { LDrawThumbnailService } from './services/ldraw-thumbnail.service';
 
 
 //
@@ -255,6 +256,7 @@ import { SystemHealthComponent } from './components/system-health/system-health.
         ConfirmationService,
         InputDialogService,
         NavigationService,
+        LDrawThumbnailService,
 
         //
         // Beginning of provider declarations for BMC Data Services 
