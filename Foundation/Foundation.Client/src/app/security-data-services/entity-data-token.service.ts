@@ -36,7 +36,7 @@ export class EntityDataTokenQueryParameters {
     sessionId: string | null | undefined = null;
     authenticationToken: string | null | undefined = null;
     token: string | null | undefined = null;
-    timeStamp: string | null | undefined = null;        // ISO 8601
+    timeStamp: string | null | undefined = null;        // ISO 8601 (full datetime)
     comments: string | null | undefined = null;
     active: boolean | null | undefined = null;
     deleted: boolean | null | undefined = null;
@@ -58,7 +58,7 @@ export class EntityDataTokenSubmitData {
     sessionId!: string;
     authenticationToken!: string;
     token!: string;
-    timeStamp!: string;      // ISO 8601
+    timeStamp!: string;      // ISO 8601 (full datetime)
     comments: string | null = null;
     active!: boolean;
     deleted!: boolean;
@@ -115,7 +115,7 @@ export class EntityDataTokenData {
     sessionId!: string;
     authenticationToken!: string;
     token!: string;
-    timeStamp!: string;      // ISO 8601
+    timeStamp!: string;      // ISO 8601 (full datetime)
     comments!: string | null;
     active!: boolean;
     deleted!: boolean;

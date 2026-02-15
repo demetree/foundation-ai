@@ -6886,6 +6886,7 @@ CREATE TABLE [Scheduler].[VolunteerProfile]
 	[iconId] INT NULL,		-- Optional override icon for volunteer-specific UI
 	[color] NVARCHAR(10) NULL,		-- Optional override color
 	[attributes] NVARCHAR(MAX) NULL,		-- Arbitrary JSON for future extension
+	[linkedUserGuid] UNIQUEIDENTIFIER NULL,		-- Security user GUID for self-service Hub access
 	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
 	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
 	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.

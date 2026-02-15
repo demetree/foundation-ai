@@ -1,0 +1,109 @@
+.shell {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+
+// ─────── Header ───────
+
+.shell-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1.25rem;
+    background: var(--hub-bg-glass);
+    backdrop-filter: var(--hub-glass-blur);
+    -webkit-backdrop-filter: var(--hub-glass-blur);
+    border-bottom: 1px solid var(--hub-border);
+}
+
+.shell-header-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-weight: 700;
+    font-size: 1.1rem;
+
+    i {
+        color: var(--hub-primary-light);
+        font-size: 1.2rem;
+    }
+}
+
+.shell-logout {
+    background: none;
+    border: none;
+    color: var(--hub-text-muted);
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 8px;
+    transition: all 0.2s;
+
+    &:hover {
+        color: var(--hub-danger);
+        background: rgba(239, 68, 68, 0.1);
+    }
+}
+
+
+// ─────── Content ───────
+
+.shell-content {
+    flex: 1;
+}
+
+
+// ─────── Bottom Nav ───────
+
+.shell-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    height: var(--hub-nav-height);
+    background: var(--hub-bg-glass);
+    backdrop-filter: var(--hub-glass-blur);
+    -webkit-backdrop-filter: var(--hub-glass-blur);
+    border-top: 1px solid var(--hub-border);
+    padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.shell-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    text-decoration: none;
+    color: var(--hub-text-muted);
+    font-size: 0.7rem;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 12px;
+    transition: all 0.2s;
+
+    i {
+        font-size: 1.15rem;
+        transition: transform 0.2s;
+    }
+
+    &.active {
+        color: var(--hub-primary-light);
+
+        i {
+            transform: scale(1.15);
+        }
+    }
+
+    &:hover:not(.active) {
+        color: var(--hub-text);
+    }
+}

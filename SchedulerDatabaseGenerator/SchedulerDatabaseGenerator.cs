@@ -3460,6 +3460,7 @@ while carrying volunteer-specific metadata, hours tracking, preferences, etc.";
             volunteerProfileTable.AddForeignKeyField(iconTable, true).AddScriptComments("Optional override icon for volunteer-specific UI");
             volunteerProfileTable.AddHTMLColorField("color", true).AddScriptComments("Optional override color");
             volunteerProfileTable.AddTextField("attributes", true).AddScriptComments("Arbitrary JSON for future extension");
+            volunteerProfileTable.AddGuidField("linkedUserGuid", true).AddScriptComments("Security user GUID for self-service Hub access");
             volunteerProfileTable.AddVersionControl();
             volunteerProfileTable.AddControlFields();
 

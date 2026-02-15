@@ -63,6 +63,9 @@ namespace Foundation.Security.Controllers.WebAPI
 		public async Task<IActionResult> GetSecurityTenantUsers(
 			int? securityTenantId = null,
 			int? securityUserId = null,
+			bool? isOwner = null,
+			bool? canRead = null,
+			bool? canWrite = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -108,6 +111,18 @@ namespace Foundation.Security.Controllers.WebAPI
 			if (securityUserId.HasValue == true)
 			{
 				query = query.Where(stu => stu.securityUserId == securityUserId.Value);
+			}
+			if (isOwner.HasValue == true)
+			{
+				query = query.Where(stu => stu.isOwner == isOwner.Value);
+			}
+			if (canRead.HasValue == true)
+			{
+				query = query.Where(stu => stu.canRead == canRead.Value);
+			}
+			if (canWrite.HasValue == true)
+			{
+				query = query.Where(stu => stu.canWrite == canWrite.Value);
 			}
 			if (objectGuid.HasValue == true)
 			{
@@ -224,6 +239,9 @@ namespace Foundation.Security.Controllers.WebAPI
 		public async Task<IActionResult> GetRowCount(
 			int? securityTenantId = null,
 			int? securityUserId = null,
+			bool? isOwner = null,
+			bool? canRead = null,
+			bool? canWrite = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -251,6 +269,18 @@ namespace Foundation.Security.Controllers.WebAPI
 			if (securityUserId.HasValue == true)
 			{
 				query = query.Where(stu => stu.securityUserId == securityUserId.Value);
+			}
+			if (isOwner.HasValue == true)
+			{
+				query = query.Where(stu => stu.isOwner == isOwner.Value);
+			}
+			if (canRead.HasValue == true)
+			{
+				query = query.Where(stu => stu.canRead == canRead.Value);
+			}
+			if (canWrite.HasValue == true)
+			{
+				query = query.Where(stu => stu.canWrite == canWrite.Value);
 			}
 			if (objectGuid.HasValue == true)
 			{
@@ -669,6 +699,9 @@ namespace Foundation.Security.Controllers.WebAPI
 		public async Task<IActionResult> GetListData(
 			int? securityTenantId = null,
 			int? securityUserId = null,
+			bool? isOwner = null,
+			bool? canRead = null,
+			bool? canWrite = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -712,6 +745,18 @@ namespace Foundation.Security.Controllers.WebAPI
 			if (securityUserId.HasValue == true)
 			{
 				query = query.Where(stu => stu.securityUserId == securityUserId.Value);
+			}
+			if (isOwner.HasValue == true)
+			{
+				query = query.Where(stu => stu.isOwner == isOwner.Value);
+			}
+			if (canRead.HasValue == true)
+			{
+				query = query.Where(stu => stu.canRead == canRead.Value);
+			}
+			if (canWrite.HasValue == true)
+			{
+				query = query.Where(stu => stu.canWrite == canWrite.Value);
 			}
 			if (objectGuid.HasValue == true)
 			{

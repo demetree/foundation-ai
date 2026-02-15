@@ -50,7 +50,7 @@ export class SecurityUserQueryParameters {
     firstName: string | null | undefined = null;
     middleName: string | null | undefined = null;
     lastName: string | null | undefined = null;
-    dateOfBirth: string | null | undefined = null;        // ISO 8601
+    dateOfBirth: string | null | undefined = null;        // ISO 8601 (full datetime)
     emailAddress: string | null | undefined = null;
     cellPhoneNumber: string | null | undefined = null;
     phoneNumber: string | null | undefined = null;
@@ -60,8 +60,8 @@ export class SecurityUserQueryParameters {
     reportsToSecurityUserId: bigint | number | null | undefined = null;
     authenticationDomain: string | null | undefined = null;
     failedLoginCount: bigint | number | null | undefined = null;
-    lastLoginAttempt: string | null | undefined = null;        // ISO 8601
-    mostRecentActivity: string | null | undefined = null;        // ISO 8601
+    lastLoginAttempt: string | null | undefined = null;        // ISO 8601 (full datetime)
+    mostRecentActivity: string | null | undefined = null;        // ISO 8601 (full datetime)
     alternateIdentifier: string | null | undefined = null;
     settings: string | null | undefined = null;
     securityTenantId: bigint | number | null | undefined = null;
@@ -71,9 +71,9 @@ export class SecurityUserQueryParameters {
     securityDepartmentId: bigint | number | null | undefined = null;
     securityTeamId: bigint | number | null | undefined = null;
     authenticationToken: string | null | undefined = null;
-    authenticationTokenExpiry: string | null | undefined = null;        // ISO 8601
+    authenticationTokenExpiry: string | null | undefined = null;        // ISO 8601 (full datetime)
     twoFactorToken: string | null | undefined = null;
-    twoFactorTokenExpiry: string | null | undefined = null;        // ISO 8601
+    twoFactorTokenExpiry: string | null | undefined = null;        // ISO 8601 (full datetime)
     twoFactorSendByEmail: boolean | null | undefined = null;
     twoFactorSendBySMS: boolean | null | undefined = null;
     objectGuid: string | null | undefined = null;
@@ -98,7 +98,7 @@ export class SecurityUserSubmitData {
     firstName: string | null = null;
     middleName: string | null = null;
     lastName: string | null = null;
-    dateOfBirth: string | null = null;     // ISO 8601
+    dateOfBirth: string | null = null;     // ISO 8601 (full datetime)
     emailAddress: string | null = null;
     cellPhoneNumber: string | null = null;
     phoneNumber: string | null = null;
@@ -108,8 +108,8 @@ export class SecurityUserSubmitData {
     reportsToSecurityUserId: bigint | number | null = null;
     authenticationDomain: string | null = null;
     failedLoginCount: bigint | number | null = null;
-    lastLoginAttempt: string | null = null;     // ISO 8601
-    mostRecentActivity: string | null = null;     // ISO 8601
+    lastLoginAttempt: string | null = null;     // ISO 8601 (full datetime)
+    mostRecentActivity: string | null = null;     // ISO 8601 (full datetime)
     alternateIdentifier: string | null = null;
     image: string | null = null;
     settings: string | null = null;
@@ -120,9 +120,9 @@ export class SecurityUserSubmitData {
     securityDepartmentId: bigint | number | null = null;
     securityTeamId: bigint | number | null = null;
     authenticationToken: string | null = null;
-    authenticationTokenExpiry: string | null = null;     // ISO 8601
+    authenticationTokenExpiry: string | null = null;     // ISO 8601 (full datetime)
     twoFactorToken: string | null = null;
-    twoFactorTokenExpiry: string | null = null;     // ISO 8601
+    twoFactorTokenExpiry: string | null = null;     // ISO 8601 (full datetime)
     twoFactorSendByEmail: boolean | null = null;
     twoFactorSendBySMS: boolean | null = null;
     active!: boolean;
@@ -182,7 +182,7 @@ export class SecurityUserData {
     firstName!: string | null;
     middleName!: string | null;
     lastName!: string | null;
-    dateOfBirth!: string | null;   // ISO 8601
+    dateOfBirth!: string | null;   // ISO 8601 (full datetime)
     emailAddress!: string | null;
     cellPhoneNumber!: string | null;
     phoneNumber!: string | null;
@@ -192,8 +192,8 @@ export class SecurityUserData {
     reportsToSecurityUserId!: bigint | number;
     authenticationDomain!: string | null;
     failedLoginCount!: bigint | number;
-    lastLoginAttempt!: string | null;   // ISO 8601
-    mostRecentActivity!: string | null;   // ISO 8601
+    lastLoginAttempt!: string | null;   // ISO 8601 (full datetime)
+    mostRecentActivity!: string | null;   // ISO 8601 (full datetime)
     alternateIdentifier!: string | null;
     image!: string | null;
     settings!: string | null;
@@ -204,9 +204,9 @@ export class SecurityUserData {
     securityDepartmentId!: bigint | number;
     securityTeamId!: bigint | number;
     authenticationToken!: string | null;
-    authenticationTokenExpiry!: string | null;   // ISO 8601
+    authenticationTokenExpiry!: string | null;   // ISO 8601 (full datetime)
     twoFactorToken!: string | null;
-    twoFactorTokenExpiry!: string | null;   // ISO 8601
+    twoFactorTokenExpiry!: string | null;   // ISO 8601 (full datetime)
     twoFactorSendByEmail!: boolean | null;
     twoFactorSendBySMS!: boolean | null;
     objectGuid!: string;

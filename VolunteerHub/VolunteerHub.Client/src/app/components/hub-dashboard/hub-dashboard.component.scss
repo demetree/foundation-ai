@@ -1,0 +1,120 @@
+.dashboard-welcome {
+    margin-bottom: 1.5rem;
+}
+
+.welcome-greeting {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    .welcome-wave {
+        font-size: 2.2rem;
+    }
+
+    h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        margin: 0;
+    }
+
+    p {
+        color: var(--hub-text-muted);
+        font-size: 0.9rem;
+        margin: 0.15rem 0 0;
+    }
+}
+
+
+// ─────── Stats ───────
+
+.dashboard-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-bottom: 1.75rem;
+}
+
+.stat-card {
+    text-align: center;
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--hub-primary-light), var(--hub-accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        line-height: 1.1;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--hub-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-top: 0.3rem;
+    }
+}
+
+
+// ─────── Assignment List ───────
+
+.assignment-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+}
+
+.assignment-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    .assignment-date {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 40px;
+
+        .assignment-day {
+            font-size: 1.3rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .assignment-month {
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--hub-primary-light);
+            letter-spacing: 0.08em;
+        }
+    }
+
+    .assignment-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+
+        strong {
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .assignment-time {
+            font-size: 0.8rem;
+            color: var(--hub-text-muted);
+        }
+    }
+
+    .assignment-status {
+        flex-shrink: 0;
+    }
+}
+
+.hub-text-muted {
+    color: var(--hub-text-muted);
+}

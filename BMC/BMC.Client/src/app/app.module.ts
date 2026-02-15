@@ -96,6 +96,7 @@ import { MocFavouriteService } from './bmc-data-services/moc-favourite.service';
 import { MocLikeService } from './bmc-data-services/moc-like.service';
 import { ModerationActionService } from './bmc-data-services/moderation-action.service';
 import { PartTypeService } from './bmc-data-services/part-type.service';
+import { PendingRegistrationService } from './bmc-data-services/pending-registration.service';
 import { PlacedBrickService } from './bmc-data-services/placed-brick.service';
 import { PlacedBrickChangeHistoryService } from './bmc-data-services/placed-brick-change-history.service';
 import { PlatformAnnouncementService } from './bmc-data-services/platform-announcement.service';
@@ -302,6 +303,10 @@ import { PartTypeListingComponent } from './bmc-data-components/part-type/part-t
 import { PartTypeAddEditComponent } from './bmc-data-components/part-type/part-type-add-edit/part-type-add-edit.component';
 import { PartTypeDetailComponent } from './bmc-data-components/part-type/part-type-detail/part-type-detail.component';
 import { PartTypeTableComponent } from './bmc-data-components/part-type/part-type-table/part-type-table.component';
+import { PendingRegistrationListingComponent } from './bmc-data-components/pending-registration/pending-registration-listing/pending-registration-listing.component';
+import { PendingRegistrationAddEditComponent } from './bmc-data-components/pending-registration/pending-registration-add-edit/pending-registration-add-edit.component';
+import { PendingRegistrationDetailComponent } from './bmc-data-components/pending-registration/pending-registration-detail/pending-registration-detail.component';
+import { PendingRegistrationTableComponent } from './bmc-data-components/pending-registration/pending-registration-table/pending-registration-table.component';
 import { PlacedBrickListingComponent } from './bmc-data-components/placed-brick/placed-brick-listing/placed-brick-listing.component';
 import { PlacedBrickAddEditComponent } from './bmc-data-components/placed-brick/placed-brick-add-edit/placed-brick-add-edit.component';
 import { PlacedBrickDetailComponent } from './bmc-data-components/placed-brick/placed-brick-detail/placed-brick-detail.component';
@@ -653,6 +658,10 @@ PartTypeListingComponent,
 PartTypeAddEditComponent,
 PartTypeDetailComponent,
 PartTypeTableComponent,
+PendingRegistrationListingComponent,
+PendingRegistrationAddEditComponent,
+PendingRegistrationDetailComponent,
+PendingRegistrationTableComponent,
 PlacedBrickListingComponent,
 PlacedBrickAddEditComponent,
 PlacedBrickDetailComponent,
@@ -874,6 +883,7 @@ MocFavouriteService,
 MocLikeService,
 ModerationActionService,
 PartTypeService,
+PendingRegistrationService,
 PlacedBrickService,
 PlacedBrickChangeHistoryService,
 PlatformAnnouncementService,

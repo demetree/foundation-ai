@@ -38,6 +38,9 @@ import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../uti
 interface SecurityTenantUserFormValues {
   securityTenantId: number | bigint,       // For FK link number
   securityUserId: number | bigint,       // For FK link number
+  isOwner: boolean,
+  canRead: boolean,
+  canWrite: boolean,
   active: boolean,
   deleted: boolean,
 };
@@ -69,6 +72,9 @@ export class SecurityTenantUserDetailComponent implements OnInit, CanComponentDe
   public securityTenantUserForm: FormGroup = this.fb.group({
         securityTenantId: [null, Validators.required],
         securityUserId: [null, Validators.required],
+        isOwner: [false],
+        canRead: [false],
+        canWrite: [false],
         active: [true],
         deleted: [false],
       });
@@ -377,6 +383,9 @@ export class SecurityTenantUserDetailComponent implements OnInit, CanComponentDe
       this.securityTenantUserForm.reset({
         securityTenantId: null,
         securityUserId: null,
+        isOwner: false,
+        canRead: false,
+        canWrite: false,
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -390,6 +399,9 @@ export class SecurityTenantUserDetailComponent implements OnInit, CanComponentDe
         this.securityTenantUserForm.reset({
         securityTenantId: securityTenantUserData.securityTenantId,
         securityUserId: securityTenantUserData.securityUserId,
+        isOwner: securityTenantUserData.isOwner ?? false,
+        canRead: securityTenantUserData.canRead ?? false,
+        canWrite: securityTenantUserData.canWrite ?? false,
         active: securityTenantUserData.active ?? true,
         deleted: securityTenantUserData.deleted ?? false,
       }, { emitEvent: false});
@@ -453,6 +465,9 @@ export class SecurityTenantUserDetailComponent implements OnInit, CanComponentDe
         id: this.securityTenantUserData?.id || 0,
         securityTenantId: Number(formValue.securityTenantId),
         securityUserId: Number(formValue.securityUserId),
+        isOwner: !!formValue.isOwner,
+        canRead: !!formValue.canRead,
+        canWrite: !!formValue.canWrite,
         active: !!formValue.active,
         deleted: !!formValue.deleted,
    };

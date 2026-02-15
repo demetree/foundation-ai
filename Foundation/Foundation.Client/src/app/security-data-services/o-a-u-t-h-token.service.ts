@@ -28,7 +28,7 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
 export class OAUTHTokenQueryParameters {
     token: string | null | undefined = null;
-    expiryDateTime: string | null | undefined = null;        // ISO 8601
+    expiryDateTime: string | null | undefined = null;        // ISO 8601 (full datetime)
     userData: string | null | undefined = null;
     active: boolean | null | undefined = null;
     deleted: boolean | null | undefined = null;
@@ -45,7 +45,7 @@ export class OAUTHTokenQueryParameters {
 export class OAUTHTokenSubmitData {
     id!: bigint | number;
     token!: string;
-    expiryDateTime!: string;      // ISO 8601
+    expiryDateTime!: string;      // ISO 8601 (full datetime)
     userData: string | null = null;
     active!: boolean;
     deleted!: boolean;
@@ -97,7 +97,7 @@ export class OAUTHTokenBasicListData {
 export class OAUTHTokenData {
     id!: bigint | number;
     token!: string;
-    expiryDateTime!: string;      // ISO 8601
+    expiryDateTime!: string;      // ISO 8601 (full datetime)
     userData!: string | null;
     active!: boolean;
     deleted!: boolean;

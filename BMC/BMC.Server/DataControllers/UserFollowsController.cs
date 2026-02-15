@@ -292,7 +292,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			// Add the any string contains parameter to span all the string fields on the User Follow, or on an any of the string fields on its immediate relations
 			//
 			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
-			//
+			////
 			//if (!string.IsNullOrEmpty(anyStringContains))
 			//{
 			//   query = query.Where(x =>

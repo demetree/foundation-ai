@@ -1595,6 +1595,44 @@ All operational tables include multi-tenant support, versioning where appropriat
             apiRequestLogTable.AddControlFields();
 
             #endregion
+
+
+            #region Registration
+
+            // -------------------------------------------------
+            // PendingRegistration — Tracks the two-step registration process
+            // -------------------------------------------------
+            Database.Table pendingRegistrationTable = database.AddTable("PendingRegistration");
+            pendingRegistrationTable.comment = "Tracks self-service user registrations through the two-step email verification process. Stores pending registrations until email verification is completed, then provisions the SecurityUser, SecurityTenant, and UserProfile. Designed for auditing and reporting on the registration funnel.";
+            pendingRegistrationTable.SetMinimumPermissionLevels(BMC_MODERATOR_PERMISSION_LEVEL, BMC_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            pendingRegistrationTable.AddIdField();
+
+            pendingRegistrationTable.AddString250Field("accountName", false).AddScriptComments("The requested username for the new account").CreateIndex();
+            pendingRegistrationTable.AddString100Field("emailAddress", false).AddScriptComments("The email address to verify").CreateIndex();
+            pendingRegistrationTable.AddString250Field("displayName", true).AddScriptComments("Optional display name for the profile (defaults to accountName if not provided)");
+            pendingRegistrationTable.AddString250Field("passwordHash", false).AddScriptComments("Pre-hashed password stored during the pending period");
+
+            pendingRegistrationTable.AddString50Field("verificationCode", false).AddScriptComments("The code or token sent to the user for verification (email, SMS, OTP)").CreateIndex();
+            pendingRegistrationTable.AddDateTimeField("codeExpiresAt", false).AddScriptComments("When the verification code expires (default 15 minutes from creation)").CreateIndex();
+            pendingRegistrationTable.AddIntField("verificationAttempts", false, 0).AddScriptComments("Number of times the user has attempted to enter the verification code");
+
+            pendingRegistrationTable.AddString50Field("status", false).AddScriptComments("Registration status: Pending, Verified, Provisioned, Expired, Failed").CreateIndex();
+            pendingRegistrationTable.AddDateTimeField("createdAt", false).AddScriptComments("When the registration was initiated").CreateIndex();
+            pendingRegistrationTable.AddDateTimeField("verifiedAt", true).AddScriptComments("When the verification code was successfully validated");
+            pendingRegistrationTable.AddDateTimeField("provisionedAt", true).AddScriptComments("When the SecurityUser and SecurityTenant were created");
+
+            pendingRegistrationTable.AddString100Field("ipAddress", true).AddScriptComments("Client IP address for security auditing");
+            pendingRegistrationTable.AddString500Field("userAgent", true).AddScriptComments("Client user agent for security auditing");
+            pendingRegistrationTable.AddString50Field("verificationChannel", true).AddScriptComments("Channel used for verification: Email, SMS, OTP (default Email)");
+            pendingRegistrationTable.AddString1000Field("failureReason", true).AddScriptComments("Reason for failure if status is Failed");
+            pendingRegistrationTable.AddIntField("provisionedSecurityUserId", true).AddScriptComments("The SecurityUser.id created on successful provisioning, for cross-referencing");
+
+            pendingRegistrationTable.AddControlFields();
+
+            // Index for the common lookup: find pending registrations that haven't expired
+            pendingRegistrationTable.CreateIndexForFields(new List<string>() { "status", "codeExpiresAt", "active", "deleted" });
+
+            #endregion
         }
     }
 }

@@ -10,6 +10,7 @@ CREATE DATABASE `BMC`;
 USE `BMC`;
 
 /* These drop table commands are here in a commented state as a convenience for situations where you may want to modify the tables in a schema.  They are ordered correctly to be able to delete all tables if executed as a batch, or at least in this order.  Be very careful with these. */
+-- DROP TABLE `PendingRegistration`
 -- DROP TABLE `ApiRequestLog`
 -- DROP TABLE `ApiKey`
 -- DROP TABLE `PlatformAnnouncement`
@@ -88,6 +89,7 @@ USE `BMC`;
 -- DROP TABLE `BrickCategory`
 
 /* These disable table index commands are here in a commented state as a convenience for situations where you want to remove the indexes on a table for things like mass data loads, where indexes just slow things down.  The corresponding rebuild index commands are listed after the disable commands */
+-- ALTER INDEX ALL ON `PendingRegistration` DISABLE
 -- ALTER INDEX ALL ON `ApiRequestLog` DISABLE
 -- ALTER INDEX ALL ON `ApiKey` DISABLE
 -- ALTER INDEX ALL ON `PlatformAnnouncement` DISABLE
@@ -166,6 +168,7 @@ USE `BMC`;
 -- ALTER INDEX ALL ON `BrickCategory` DISABLE
 
 /* These rebuild table index commands are here in a commented state as a convenience for situations where you want to rebuild the indexes on a table after having removed them, or if you want to refresh them. */
+-- ALTER INDEX ALL ON `PendingRegistration` REBUILD
 -- ALTER INDEX ALL ON `ApiRequestLog` REBUILD
 -- ALTER INDEX ALL ON `ApiKey` REBUILD
 -- ALTER INDEX ALL ON `PlatformAnnouncement` REBUILD
@@ -2634,5 +2637,57 @@ CREATE INDEX `I_ApiRequestLog_active` ON `ApiRequestLog` (`active`);
 
 -- Index on the ApiRequestLog table's deleted field.
 CREATE INDEX `I_ApiRequestLog_deleted` ON `ApiRequestLog` (`deleted`);
+
+
+-- Tracks self-service user registrations through the two-step email verification process. Stores pending registrations until email verification is completed, then provisions the SecurityUser, SecurityTenant, and UserProfile. Designed for auditing and reporting on the registration funnel.
+CREATE TABLE `PendingRegistration`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`accountName` VARCHAR(250) NOT NULL,		-- The requested username for the new account
+	`emailAddress` VARCHAR(100) NOT NULL,		-- The email address to verify
+	`displayName` VARCHAR(250) NULL,		-- Optional display name for the profile (defaults to accountName if not provided)
+	`passwordHash` VARCHAR(250) NOT NULL,		-- Pre-hashed password stored during the pending period
+	`verificationCode` VARCHAR(50) NOT NULL,		-- The code or token sent to the user for verification (email, SMS, OTP)
+	`codeExpiresAt` DATETIME NOT NULL,		-- When the verification code expires (default 15 minutes from creation)
+	`verificationAttempts` INT NOT NULL DEFAULT 0,		-- Number of times the user has attempted to enter the verification code
+	`status` VARCHAR(50) NOT NULL,		-- Registration status: Pending, Verified, Provisioned, Expired, Failed
+	`createdAt` DATETIME NOT NULL,		-- When the registration was initiated
+	`verifiedAt` DATETIME NULL,		-- When the verification code was successfully validated
+	`provisionedAt` DATETIME NULL,		-- When the SecurityUser and SecurityTenant were created
+	`ipAddress` VARCHAR(100) NULL,		-- Client IP address for security auditing
+	`userAgent` VARCHAR(500) NULL,		-- Client user agent for security auditing
+	`verificationChannel` VARCHAR(50) NULL,		-- Channel used for verification: Email, SMS, OTP (default Email)
+	`failureReason` VARCHAR(1000) NULL,		-- Reason for failure if status is Failed
+	`provisionedSecurityUserId` INT NULL,		-- The SecurityUser.id created on successful provisioning, for cross-referencing
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+);
+-- Index on the PendingRegistration table's accountName field.
+CREATE INDEX `I_PendingRegistration_accountName` ON `PendingRegistration` (`accountName`);
+
+-- Index on the PendingRegistration table's emailAddress field.
+CREATE INDEX `I_PendingRegistration_emailAddress` ON `PendingRegistration` (`emailAddress`);
+
+-- Index on the PendingRegistration table's verificationCode field.
+CREATE INDEX `I_PendingRegistration_verificationCode` ON `PendingRegistration` (`verificationCode`);
+
+-- Index on the PendingRegistration table's codeExpiresAt field.
+CREATE INDEX `I_PendingRegistration_codeExpiresAt` ON `PendingRegistration` (`codeExpiresAt`);
+
+-- Index on the PendingRegistration table's status field.
+CREATE INDEX `I_PendingRegistration_status` ON `PendingRegistration` (`status`);
+
+-- Index on the PendingRegistration table's createdAt field.
+CREATE INDEX `I_PendingRegistration_createdAt` ON `PendingRegistration` (`createdAt`);
+
+-- Index on the PendingRegistration table's active field.
+CREATE INDEX `I_PendingRegistration_active` ON `PendingRegistration` (`active`);
+
+-- Index on the PendingRegistration table's deleted field.
+CREATE INDEX `I_PendingRegistration_deleted` ON `PendingRegistration` (`deleted`);
+
+-- Index on the PendingRegistration table's status,codeExpiresAt,active,deleted fields.
+CREATE INDEX `I_PendingRegistration_status_codeExpiresAt_active_deleted` ON `PendingRegistration` (`status`, `codeExpiresAt`, `active`, `deleted`);
 
 

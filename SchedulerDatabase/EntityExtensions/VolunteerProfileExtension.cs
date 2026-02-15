@@ -303,6 +303,7 @@ namespace Foundation.Scheduler.Database
 			public Int32? iconId { get; set; }
 			public String color { get; set; }
 			public String attributes { get; set; }
+			public Guid? linkedUserGuid { get; set; }
 			public Int32 versionNumber { get; set; }
 			[Required]
 			public Guid objectGuid { get; set; }
@@ -355,6 +356,7 @@ namespace Foundation.Scheduler.Database
 				iconId = this.iconId,
 				color = this.color,
 				attributes = this.attributes,
+				linkedUserGuid = this.linkedUserGuid,
 				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -416,6 +418,7 @@ namespace Foundation.Scheduler.Database
 				iconId = this.iconId,
 				color = this.color,
 				attributes = this.attributes,
+				linkedUserGuid = this.linkedUserGuid,
 				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -481,6 +484,7 @@ namespace Foundation.Scheduler.Database
 				iconId = dto.iconId,
 				color = dto.color,
 				attributes = dto.attributes,
+				linkedUserGuid = dto.linkedUserGuid,
 				versionNumber = dto.versionNumber,
 				objectGuid = dto.objectGuid,
 				active = dto.active ?? true,
@@ -519,6 +523,7 @@ namespace Foundation.Scheduler.Database
 			this.iconId = dto.iconId;
 			this.color = dto.color;
 			this.attributes = dto.attributes;
+			this.linkedUserGuid = dto.linkedUserGuid;
 			this.versionNumber = dto.versionNumber;
 			this.objectGuid = dto.objectGuid;
 			if (dto.active.HasValue == true)
@@ -557,6 +562,7 @@ namespace Foundation.Scheduler.Database
 				iconId = this.iconId,
 				color = this.color,
 				attributes = this.attributes,
+				linkedUserGuid = this.linkedUserGuid,
 				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -626,6 +632,7 @@ namespace Foundation.Scheduler.Database
 				iconId = volunteerProfile.iconId,
 				color = volunteerProfile.color,
 				attributes = volunteerProfile.attributes,
+				linkedUserGuid = volunteerProfile.linkedUserGuid,
 				versionNumber = volunteerProfile.versionNumber,
 				objectGuid = volunteerProfile.objectGuid,
 				active = volunteerProfile.active,
@@ -668,6 +675,7 @@ namespace Foundation.Scheduler.Database
 				iconId = volunteerProfile.iconId,
 				color = volunteerProfile.color,
 				attributes = volunteerProfile.attributes,
+				linkedUserGuid = volunteerProfile.linkedUserGuid,
 				versionNumber = volunteerProfile.versionNumber,
 				objectGuid = volunteerProfile.objectGuid,
 				active = volunteerProfile.active,

@@ -1,0 +1,136 @@
+<div class="container-fluid p-1 m-0 pending-registration-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="pending-registration-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Pending Registration</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Pending Registration' : 'Add Pending Registration'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCPendingRegistrationReader()">
+                <div class="col m-2 pending-registration-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="pendingRegistrationForm" (ngSubmit)="submitForm()" class="pending-registration-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('accountName')">
+                                <label for="PendingRegistration-accountName" id="label-PendingRegistration-accountName"><span class="text-danger">*</span>Account Name</label>
+                                <input type="text" id="PendingRegistration-accountName" formControlName="accountName" placeholder="Enter Account Name" class="form-control pending-registration-input" [disabled]="!userIsBMCPendingRegistrationWriter()" aria-labelledby="label-accountName" />
+                                <div *ngIf="pendingRegistrationForm.get('accountName')?.invalid && pendingRegistrationForm.get('accountName')?.touched" class="text-danger">
+                                    Account Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('emailAddress')">
+<label for="PendingRegistration-emailAddress" id="label-PendingRegistration-emailAddress"><a href="mailto:{{pendingRegistrationData?.emailAddress}}" ngbTooltip="Send Email to {{pendingRegistrationData?.emailAddress}}"><span class="text-danger">*</span>Email Address</a></label>
+                                <input type="text" id="PendingRegistration-emailAddress" formControlName="emailAddress" placeholder="Enter Email Address" class="form-control pending-registration-input" [disabled]="!userIsBMCPendingRegistrationWriter()" aria-labelledby="label-emailAddress" />
+                                <div *ngIf="pendingRegistrationForm.get('emailAddress')?.invalid && pendingRegistrationForm.get('emailAddress')?.touched" class="text-danger">
+                                    Email Address is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('displayName')">
+                                <label for="PendingRegistration-displayName" id="label-PendingRegistration-displayName">Display Name</label>
+                                <input type="text" id="PendingRegistration-displayName" formControlName="displayName" placeholder="Enter Display Name" class="form-control pending-registration-input" [disabled]="!userIsBMCPendingRegistrationWriter()" aria-labelledby="label-displayName" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('passwordHash')">
+                                <label for="PendingRegistration-passwordHash" id="label-PendingRegistration-passwordHash"><span class="text-danger">*</span>Password Hash</label>
+                                <input type="text" id="PendingRegistration-passwordHash" formControlName="passwordHash" placeholder="Enter Password Hash" class="form-control pending-registration-input" [disabled]="!userIsBMCPendingRegistrationWriter()" aria-labelledby="label-passwordHash" />
+                                <div *ngIf="pendingRegistrationForm.get('passwordHash')?.invalid && pendingRegistrationForm.get('passwordHash')?.touched" class="text-danger">
+                                    Password Hash is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('verificationCode')">
+                                <label for="PendingRegistration-verificationCode" id="label-PendingRegistration-verificationCode"><span class="text-danger">*</span>Verification Code</label>
+                                <input type="text" id="PendingRegistration-verificationCode" formControlName="verificationCode" placeholder="Enter Verification Code" class="form-control pending-registration-input" [disabled]="!userIsBMCPendingRegistrationWriter()" aria-labelledby="label-verificationCode" />
+                                <div *ngIf="pendingRegistrationForm.get('verificationCode')?.invalid && pendingRegistrationForm.get('verificationCode')?.touched" class="text-danger">
+                                    Verification Code is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('codeExpiresAt')">
+                                <label for="PendingRegistration-codeExpiresAt" id="label-PendingRegistration-codeExpiresAt"><span class="text-danger">*</span>Code Expires At</label>
+                                <input type="datetime-local" id="PendingRegistration-codeExpiresAt" formControlName="codeExpiresAt" placeholder="Enter Code Expires At" class="form-control pending-registration-input" [disabled]="!userIsBMCPendingRegistrationWriter()" aria-labelledby="label-codeExpiresAt" />
+                                <div *ngIf="pendingRegistrationForm.get('codeExpiresAt')?.invalid && pendingRegistrationForm.get('codeExpiresAt')?.touched" class="text-danger">
+                                    Code Expires At is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('verificationAttempts')">
+                                <label for="PendingRegistration-verificationAttempts" id="label-PendingRegistration-verificationAttempts"><span class="text-danger">*</span>Verification Attempts</label>
+                                <input type="number" id="PendingRegistration-verificationAttempts" formControlName="verificationAttempts" placeholder="Enter Verification Attempts" class="form-control pending-registration-input" [disabled]="!userIsBMCPendingRegistrationWriter()" aria-labelledby="label-verificationAttempts" />
+                                <div *ngIf="pendingRegistrationForm.get('verificationAttempts')?.invalid && pendingRegistrationForm.get('verificationAttempts')?.touched" class="text-danger">
+                                    Verification Attempts is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('status')">
+                                <label for="PendingRegistration-status" id="label-PendingRegistration-status"><span class="text-danger">*</span>Status</label>
+                                <input type="text" id="PendingRegistration-status" formControlName="status" placeholder="Enter Status" class="form-control pending-registration-input" [disabled]="!userIsBMCPendingRegistrationWriter()" aria-labelledby="label-status" />
+                                <div *ngIf="pendingRegistrationForm.get('status')?.invalid && pendingRegistrationForm.get('status')?.touched" class="text-danger">
+                                    Status is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('createdAt')">
+                                <label for="PendingRegistration-createdAt" id="label-PendingRegistration-createdAt"><span class="text-danger">*</span>Created At</label>
+                                <input type="datetime-local" id="PendingRegistration-createdAt" formControlName="createdAt" placeholder="Enter Created At" class="form-control pending-registration-input" [disabled]="!userIsBMCPendingRegistrationWriter()" aria-labelledby="label-createdAt" />
+                                <div *ngIf="pendingRegistrationForm.get('createdAt')?.invalid && pendingRegistrationForm.get('createdAt')?.touched" class="text-danger">
+                                    Created At is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('verifiedAt')">
+                                <label for="PendingRegistration-verifiedAt" id="label-PendingRegistration-verifiedAt">Verified At</label>
+                                <input type="datetime-local" id="PendingRegistration-verifiedAt" formControlName="verifiedAt" placeholder="Enter Verified At" class="form-control pending-registration-input" [disabled]="!userIsBMCPendingRegistrationWriter()" aria-labelledby="label-verifiedAt" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('provisionedAt')">
+                                <label for="PendingRegistration-provisionedAt" id="label-PendingRegistration-provisionedAt">Provisioned At</label>
+                                <input type="datetime-local" id="PendingRegistration-provisionedAt" formControlName="provisionedAt" placeholder="Enter Provisioned At" class="form-control pending-registration-input" [disabled]="!userIsBMCPendingRegistrationWriter()" aria-labelledby="label-provisionedAt" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('ipAddress')">
+                                <label for="PendingRegistration-ipAddress" id="label-PendingRegistration-ipAddress">Ip Address</label>
+                                <input type="text" id="PendingRegistration-ipAddress" formControlName="ipAddress" placeholder="Enter Ip Address" class="form-control pending-registration-input" [disabled]="!userIsBMCPendingRegistrationWriter()" aria-labelledby="label-ipAddress" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userAgent')">
+                                <label for="PendingRegistration-userAgent" id="label-PendingRegistration-userAgent">User Agent</label>
+                                <textarea id="PendingRegistration-userAgent" formControlName="userAgent" placeholder="Enter User Agent" class="form-control pending-registration-input" [disabled]="!userIsBMCPendingRegistrationWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('verificationChannel')">
+                                <label for="PendingRegistration-verificationChannel" id="label-PendingRegistration-verificationChannel">Verification Channel</label>
+                                <input type="text" id="PendingRegistration-verificationChannel" formControlName="verificationChannel" placeholder="Enter Verification Channel" class="form-control pending-registration-input" [disabled]="!userIsBMCPendingRegistrationWriter()" aria-labelledby="label-verificationChannel" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('failureReason')">
+                                <label for="PendingRegistration-failureReason" id="label-PendingRegistration-failureReason">Failure Reason</label>
+                                <textarea id="PendingRegistration-failureReason" formControlName="failureReason" placeholder="Enter Failure Reason" class="form-control pending-registration-input" [disabled]="!userIsBMCPendingRegistrationWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('provisionedSecurityUserId')">
+                                <label for="PendingRegistration-provisionedSecurityUserId" id="label-PendingRegistration-provisionedSecurityUserId">Provisioned Security User Id</label>
+                                <input type="number" id="PendingRegistration-provisionedSecurityUserId" formControlName="provisionedSecurityUserId" placeholder="Enter Provisioned Security User Id" class="form-control pending-registration-input" [disabled]="!userIsBMCPendingRegistrationWriter()" aria-labelledby="label-provisionedSecurityUserId" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="PendingRegistration-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCPendingRegistrationWriter()" />
+                                <label for="PendingRegistration-active" class="form-check-label" id="label-PendingRegistration-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="PendingRegistration-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCPendingRegistrationWriter()" />
+                                <label for="PendingRegistration-deleted" class="form-check-label" id="label-PendingRegistration-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="pending-registration-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="pendingRegistrationForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Pending Registration">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !pendingRegistrationForm.valid || !pendingRegistrationForm.dirty || pendingRegistrationForm.pristine  || userIsBMCPendingRegistrationWriter() == false " ngbTooltip="Save the Pending Registration changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Pending Registration' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

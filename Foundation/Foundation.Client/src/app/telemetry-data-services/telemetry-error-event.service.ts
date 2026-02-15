@@ -32,7 +32,7 @@ export class TelemetryErrorEventQueryParameters {
     telemetryApplicationId: bigint | number | null | undefined = null;
     telemetrySnapshotId: bigint | number | null | undefined = null;
     originalAuditEventId: bigint | number | null | undefined = null;
-    occurredAt: string | null | undefined = null;        // ISO 8601
+    occurredAt: string | null | undefined = null;        // ISO 8601 (full datetime)
     auditTypeName: string | null | undefined = null;
     moduleName: string | null | undefined = null;
     entityName: string | null | undefined = null;
@@ -54,7 +54,7 @@ export class TelemetryErrorEventSubmitData {
     telemetryApplicationId!: bigint | number;
     telemetrySnapshotId: bigint | number | null = null;
     originalAuditEventId: bigint | number | null = null;
-    occurredAt!: string;      // ISO 8601
+    occurredAt!: string;      // ISO 8601 (full datetime)
     auditTypeName: string | null = null;
     moduleName: string | null = null;
     entityName: string | null = null;
@@ -111,7 +111,7 @@ export class TelemetryErrorEventData {
     telemetryApplicationId!: bigint | number;
     telemetrySnapshotId!: bigint | number;
     originalAuditEventId!: bigint | number;
-    occurredAt!: string;      // ISO 8601
+    occurredAt!: string;      // ISO 8601 (full datetime)
     auditTypeName!: string | null;
     moduleName!: string | null;
     entityName!: string | null;

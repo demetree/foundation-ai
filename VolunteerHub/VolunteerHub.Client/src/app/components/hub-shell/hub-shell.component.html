@@ -1,0 +1,27 @@
+<div class="shell">
+
+    <!-- Top bar -->
+    <header class="shell-header">
+        <div class="shell-header-brand">
+            <i class="fas fa-hand-holding-heart"></i>
+            <span>Volunteer Hub</span>
+        </div>
+        <button class="shell-logout" (click)="logout()" title="Sign out">
+            <i class="fas fa-right-from-bracket"></i>
+        </button>
+    </header>
+
+    <!-- Page content -->
+    <main class="shell-content">
+        <router-outlet></router-outlet>
+    </main>
+
+    <!-- Bottom navigation (mobile) -->
+    <nav class="shell-nav">
+        <a *ngFor="let item of navItems" [routerLink]="item.path" routerLinkActive="active" class="shell-nav-item">
+            <i [class]="item.icon"></i>
+            <span>{{ item.label }}</span>
+        </a>
+    </nav>
+
+</div>

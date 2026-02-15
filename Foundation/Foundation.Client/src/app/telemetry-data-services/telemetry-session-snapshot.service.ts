@@ -31,8 +31,8 @@ export class TelemetrySessionSnapshotQueryParameters {
     telemetrySnapshotId: bigint | number | null | undefined = null;
     activeSessionCount: bigint | number | null | undefined = null;
     expiredSessionCount: bigint | number | null | undefined = null;
-    oldestSessionStart: string | null | undefined = null;        // ISO 8601
-    newestSessionStart: string | null | undefined = null;        // ISO 8601
+    oldestSessionStart: string | null | undefined = null;        // ISO 8601 (full datetime)
+    newestSessionStart: string | null | undefined = null;        // ISO 8601 (full datetime)
     pageSize: bigint | number | null | undefined = null;
     pageNumber: bigint | number | null | undefined = null;
     includeRelations: boolean | null | undefined = null;
@@ -48,8 +48,8 @@ export class TelemetrySessionSnapshotSubmitData {
     telemetrySnapshotId!: bigint | number;
     activeSessionCount!: bigint | number;
     expiredSessionCount: bigint | number | null = null;
-    oldestSessionStart: string | null = null;     // ISO 8601
-    newestSessionStart: string | null = null;     // ISO 8601
+    oldestSessionStart: string | null = null;     // ISO 8601 (full datetime)
+    newestSessionStart: string | null = null;     // ISO 8601 (full datetime)
 }
 
 
@@ -100,8 +100,8 @@ export class TelemetrySessionSnapshotData {
     telemetrySnapshotId!: bigint | number;
     activeSessionCount!: bigint | number;
     expiredSessionCount!: bigint | number;
-    oldestSessionStart!: string | null;   // ISO 8601
-    newestSessionStart!: string | null;   // ISO 8601
+    oldestSessionStart!: string | null;   // ISO 8601 (full datetime)
+    newestSessionStart!: string | null;   // ISO 8601 (full datetime)
     telemetrySnapshot: TelemetrySnapshotData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
 
     //

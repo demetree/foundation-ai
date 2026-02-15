@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
@@ -23,7 +23,7 @@ interface ProfileLink {
     templateUrl: './profile-settings.component.html',
     styleUrl: './profile-settings.component.scss'
 })
-export class ProfileSettingsComponent implements OnInit {
+export class ProfileSettingsComponent implements OnInit, OnDestroy {
     // Form fields
     displayName = '';
     bio = '';
@@ -60,6 +60,12 @@ export class ProfileSettingsComponent implements OnInit {
         this.loadData();
     }
 
+    ngOnDestroy(): void {
+        // Revoke any blob URLs to free memory
+        if (this.avatarPreviewUrl) { URL.revokeObjectURL(this.avatarPreviewUrl); }
+        if (this.bannerPreviewUrl) { URL.revokeObjectURL(this.bannerPreviewUrl); }
+    }
+
     loadData(): void {
         this.isLoading = true;
         const headers = this.authService.GetAuthenticationHeaders();
@@ -75,11 +81,11 @@ export class ProfileSettingsComponent implements OnInit {
                 this.hasAvatar = profile.hasAvatar;
                 this.hasBanner = profile.hasBanner;
 
-                if (profile.hasAvatar && profile.avatarUrl) {
-                    this.avatarPreviewUrl = profile.avatarUrl + '?v=' + Date.now();
+                if (profile.hasAvatar) {
+                    this.fetchImageAsBlob('/api/profile/mine/avatar', 'avatar');
                 }
-                if (profile.hasBanner && profile.bannerUrl) {
-                    this.bannerPreviewUrl = profile.bannerUrl + '?v=' + Date.now();
+                if (profile.hasBanner) {
+                    this.fetchImageAsBlob('/api/profile/mine/banner', 'banner');
                 }
 
                 // Map links
@@ -152,15 +158,14 @@ export class ProfileSettingsComponent implements OnInit {
         });
         this.http.post<any>(`/api/profile/mine/${type}`, formData, { headers: uploadHeaders }).subscribe({
             next: () => {
-                const ts = Date.now();
                 if (type === 'avatar') {
                     this.hasAvatar = true;
-                    this.avatarPreviewUrl = '/api/profile/mine/avatar?v=' + ts;
                     this.isUploadingAvatar = false;
+                    this.fetchImageAsBlob('/api/profile/mine/avatar', 'avatar');
                 } else {
                     this.hasBanner = true;
-                    this.bannerPreviewUrl = '/api/profile/mine/banner?v=' + ts;
                     this.isUploadingBanner = false;
+                    this.fetchImageAsBlob('/api/profile/mine/banner', 'banner');
                 }
                 this.successMessage = `${type === 'avatar' ? 'Avatar' : 'Banner'} uploaded!`;
                 setTimeout(() => this.successMessage = '', 3000);
@@ -198,6 +203,30 @@ export class ProfileSettingsComponent implements OnInit {
             error: (err) => {
                 this.error = 'Failed to remove banner.';
                 console.error(err);
+            }
+        });
+    }
+
+
+    /**
+     * Fetches an image from an authenticated endpoint as a blob,
+     * then creates a local object URL for the <img> binding.
+     */
+    private fetchImageAsBlob(url: string, type: 'avatar' | 'banner'): void {
+        const headers = this.authService.GetAuthenticationHeaders().delete('Content-Type');
+        this.http.get(url, { headers, responseType: 'blob' }).subscribe({
+            next: (blob) => {
+                const objectUrl = URL.createObjectURL(blob);
+                if (type === 'avatar') {
+                    if (this.avatarPreviewUrl) { URL.revokeObjectURL(this.avatarPreviewUrl); }
+                    this.avatarPreviewUrl = objectUrl;
+                } else {
+                    if (this.bannerPreviewUrl) { URL.revokeObjectURL(this.bannerPreviewUrl); }
+                    this.bannerPreviewUrl = objectUrl;
+                }
+            },
+            error: (err) => {
+                console.warn(`Failed to load ${type} preview:`, err);
             }
         });
     }

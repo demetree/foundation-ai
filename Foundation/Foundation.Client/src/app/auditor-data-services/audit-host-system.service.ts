@@ -30,7 +30,7 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 export class AuditHostSystemQueryParameters {
     name: string | null | undefined = null;
     comments: string | null | undefined = null;
-    firstAccess: string | null | undefined = null;        // ISO 8601
+    firstAccess: string | null | undefined = null;        // ISO 8601 (full datetime)
     pageSize: bigint | number | null | undefined = null;
     pageNumber: bigint | number | null | undefined = null;
     includeRelations: boolean | null | undefined = null;
@@ -45,7 +45,7 @@ export class AuditHostSystemSubmitData {
     id!: bigint | number;
     name!: string;
     comments: string | null = null;
-    firstAccess: string | null = null;     // ISO 8601
+    firstAccess: string | null = null;     // ISO 8601 (full datetime)
 }
 
 
@@ -95,7 +95,7 @@ export class AuditHostSystemData {
     id!: bigint | number;
     name!: string;
     comments!: string | null;
-    firstAccess!: string | null;   // ISO 8601
+    firstAccess!: string | null;   // ISO 8601 (full datetime)
 
     //
     // Private lazy-loading caches for related collections

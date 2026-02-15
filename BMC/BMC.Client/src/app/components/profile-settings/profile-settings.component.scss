@@ -524,6 +524,14 @@
 
     select {
         width: 100%;
+        color: var(--bmc-text-primary);
+        background: var(--bmc-bg-main);
+        cursor: pointer;
+
+        option {
+            color: var(--bmc-text-primary);
+            background: var(--bmc-bg-card, #1e1e1e);
+        }
     }
 }
 

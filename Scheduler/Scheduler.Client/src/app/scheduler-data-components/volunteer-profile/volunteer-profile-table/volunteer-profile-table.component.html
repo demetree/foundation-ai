@@ -95,6 +95,10 @@
                 Attributes
                 <span *ngIf="sortColumn === 'attributes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('linkedUserGuid')">
+                Linked  User  Guid
+                <span *ngIf="sortColumn === 'linkedUserGuid'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
 End of commented block for alternate definition option -->
           </tr>
         </thead>
@@ -195,6 +199,7 @@ End of commented block for alternate definition option -->
             <td class="text-truncate"><a [routerLink]="['/icon', volunteerProfile.iconId]" class="btn btn-link text-left" ngbTooltip="Open Icon details">{{volunteerProfile.icon?.name}}</a></td>
             <td class="text-truncate">{{volunteerProfile.color}}</td>
             <td class="text-truncate">{{volunteerProfile.attributes}}</td>
+            <td class="text-truncate">{{volunteerProfile.linkedUserGuid}}</td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -413,6 +418,10 @@ End of commented block for alternate definition option -->
             <p class="volunteer-profile-info" *ngIf="volunteerProfile.attributes != null">
               <strong>Attributes: </strong>
               {{volunteerProfile.attributes}}
+            </p>
+            <p class="volunteer-profile-info" *ngIf="volunteerProfile.linkedUserGuid != null">
+              <strong>Linked User Guid: </strong>
+              {{volunteerProfile.linkedUserGuid}}
             </p>
             </div>
          </div>

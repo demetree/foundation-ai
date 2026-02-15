@@ -250,6 +250,9 @@ namespace Foundation.Security.Database
             securityTenantUserTable.AddIdField();
             securityTenantUserTable.AddForeignKeyField("securityTenantId", securityTenantTable, false);
             securityTenantUserTable.AddForeignKeyField("securityUserId", securityUserTable, false);
+            securityTenantUserTable.AddBoolField("isOwner", false, false).AddScriptComments("Whether this user is the owner/creator of the tenant. Only owners can invite/remove members and manage tenant settings.").CreateIndex();
+            securityTenantUserTable.AddBoolField("canRead", false, false).AddScriptComments("Whether this user has read access to the tenant's data.").CreateIndex();
+            securityTenantUserTable.AddBoolField("canWrite", false, false).AddScriptComments("Whether this user has write access to the tenant's data.").CreateIndex();
             securityTenantUserTable.AddControlFields(true);
             securityTenantUserTable.AddUniqueConstraint("securityTenantId", "securityUserId");
 

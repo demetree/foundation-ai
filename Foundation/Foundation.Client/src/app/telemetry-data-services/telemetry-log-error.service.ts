@@ -31,9 +31,9 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 export class TelemetryLogErrorQueryParameters {
     telemetryApplicationId: bigint | number | null | undefined = null;
     telemetrySnapshotId: bigint | number | null | undefined = null;
-    capturedAt: string | null | undefined = null;        // ISO 8601
+    capturedAt: string | null | undefined = null;        // ISO 8601 (full datetime)
     logFileName: string | null | undefined = null;
-    logTimestamp: string | null | undefined = null;        // ISO 8601
+    logTimestamp: string | null | undefined = null;        // ISO 8601 (full datetime)
     level: string | null | undefined = null;
     message: string | null | undefined = null;
     exception: string | null | undefined = null;
@@ -52,9 +52,9 @@ export class TelemetryLogErrorSubmitData {
     id!: bigint | number;
     telemetryApplicationId!: bigint | number;
     telemetrySnapshotId: bigint | number | null = null;
-    capturedAt!: string;      // ISO 8601
+    capturedAt!: string;      // ISO 8601 (full datetime)
     logFileName: string | null = null;
-    logTimestamp: string | null = null;     // ISO 8601
+    logTimestamp: string | null = null;     // ISO 8601 (full datetime)
     level: string | null = null;
     message: string | null = null;
     exception: string | null = null;
@@ -108,9 +108,9 @@ export class TelemetryLogErrorData {
     id!: bigint | number;
     telemetryApplicationId!: bigint | number;
     telemetrySnapshotId!: bigint | number;
-    capturedAt!: string;      // ISO 8601
+    capturedAt!: string;      // ISO 8601 (full datetime)
     logFileName!: string | null;
-    logTimestamp!: string | null;   // ISO 8601
+    logTimestamp!: string | null;   // ISO 8601 (full datetime)
     level!: string | null;
     message!: string | null;
     exception!: string | null;

@@ -31,14 +31,14 @@ export class UserSessionQueryParameters {
     securityUserId: bigint | number | null | undefined = null;
     objectGuid: string | null | undefined = null;
     tokenId: string | null | undefined = null;
-    sessionStart: string | null | undefined = null;        // ISO 8601
-    expiresAt: string | null | undefined = null;        // ISO 8601
+    sessionStart: string | null | undefined = null;        // ISO 8601 (full datetime)
+    expiresAt: string | null | undefined = null;        // ISO 8601 (full datetime)
     ipAddress: string | null | undefined = null;
     userAgent: string | null | undefined = null;
     loginMethod: string | null | undefined = null;
     clientApplication: string | null | undefined = null;
     isRevoked: boolean | null | undefined = null;
-    revokedAt: string | null | undefined = null;        // ISO 8601
+    revokedAt: string | null | undefined = null;        // ISO 8601 (full datetime)
     revokedBy: string | null | undefined = null;
     revokedReason: string | null | undefined = null;
     active: boolean | null | undefined = null;
@@ -57,14 +57,14 @@ export class UserSessionSubmitData {
     id!: bigint | number;
     securityUserId!: bigint | number;
     tokenId: string | null = null;
-    sessionStart!: string;      // ISO 8601
-    expiresAt!: string;      // ISO 8601
+    sessionStart!: string;      // ISO 8601 (full datetime)
+    expiresAt!: string;      // ISO 8601 (full datetime)
     ipAddress: string | null = null;
     userAgent: string | null = null;
     loginMethod: string | null = null;
     clientApplication: string | null = null;
     isRevoked!: boolean;
-    revokedAt: string | null = null;     // ISO 8601
+    revokedAt: string | null = null;     // ISO 8601 (full datetime)
     revokedBy: string | null = null;
     revokedReason: string | null = null;
     active!: boolean;
@@ -119,14 +119,14 @@ export class UserSessionData {
     securityUserId!: bigint | number;
     objectGuid!: string;
     tokenId!: string | null;
-    sessionStart!: string;      // ISO 8601
-    expiresAt!: string;      // ISO 8601
+    sessionStart!: string;      // ISO 8601 (full datetime)
+    expiresAt!: string;      // ISO 8601 (full datetime)
     ipAddress!: string | null;
     userAgent!: string | null;
     loginMethod!: string | null;
     clientApplication!: string | null;
     isRevoked!: boolean;
-    revokedAt!: string | null;   // ISO 8601
+    revokedAt!: string | null;   // ISO 8601 (full datetime)
     revokedBy!: string | null;
     revokedReason!: string | null;
     active!: boolean;

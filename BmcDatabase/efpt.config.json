@@ -183,6 +183,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[BMC].[PendingRegistration]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[BMC].[PlacedBrick]",
          "ObjectType": 0
       },

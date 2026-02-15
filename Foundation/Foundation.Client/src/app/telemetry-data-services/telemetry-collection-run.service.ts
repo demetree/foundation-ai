@@ -28,8 +28,8 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 // - Dates are typed as strings because the server requires ISO UTC dates.  The Javascript date object does not naturally construct with that input.  The string format used in 'Date' fields is to be ISO 8601, including millisconds.  For example, 2025-12-09T01:09:27.093Z
 //
 export class TelemetryCollectionRunQueryParameters {
-    startTime: string | null | undefined = null;        // ISO 8601
-    endTime: string | null | undefined = null;        // ISO 8601
+    startTime: string | null | undefined = null;        // ISO 8601 (full datetime)
+    endTime: string | null | undefined = null;        // ISO 8601 (full datetime)
     applicationsPolled: bigint | number | null | undefined = null;
     applicationsSucceeded: bigint | number | null | undefined = null;
     errorMessage: string | null | undefined = null;
@@ -45,8 +45,8 @@ export class TelemetryCollectionRunQueryParameters {
 //
 export class TelemetryCollectionRunSubmitData {
     id!: bigint | number;
-    startTime!: string;      // ISO 8601
-    endTime: string | null = null;     // ISO 8601
+    startTime!: string;      // ISO 8601 (full datetime)
+    endTime: string | null = null;     // ISO 8601 (full datetime)
     applicationsPolled: bigint | number | null = null;
     applicationsSucceeded: bigint | number | null = null;
     errorMessage: string | null = null;
@@ -97,8 +97,8 @@ export class TelemetryCollectionRunBasicListData {
 //
 export class TelemetryCollectionRunData {
     id!: bigint | number;
-    startTime!: string;      // ISO 8601
-    endTime!: string | null;   // ISO 8601
+    startTime!: string;      // ISO 8601 (full datetime)
+    endTime!: string | null;   // ISO 8601 (full datetime)
     applicationsPolled!: bigint | number;
     applicationsSucceeded!: bigint | number;
     errorMessage!: string | null;

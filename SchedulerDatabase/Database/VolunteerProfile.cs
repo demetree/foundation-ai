@@ -47,6 +47,8 @@ public partial class VolunteerProfile
 
     public string attributes { get; set; }
 
+    public Guid? linkedUserGuid { get; set; }
+
     public int versionNumber { get; set; }
 
     public Guid objectGuid { get; set; }

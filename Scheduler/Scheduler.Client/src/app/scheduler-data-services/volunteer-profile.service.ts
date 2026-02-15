@@ -50,6 +50,7 @@ export class VolunteerProfileQueryParameters {
     iconId: bigint | number | null | undefined = null;
     color: string | null | undefined = null;
     attributes: string | null | undefined = null;
+    linkedUserGuid: string | null | undefined = null;
     versionNumber: bigint | number | null | undefined = null;
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
@@ -84,6 +85,7 @@ export class VolunteerProfileSubmitData {
     iconId: bigint | number | null = null;
     color: string | null = null;
     attributes: string | null = null;
+    linkedUserGuid: string | null = null;
     versionNumber!: bigint | number;
     active!: boolean;
     deleted!: boolean;
@@ -172,6 +174,7 @@ export class VolunteerProfileData {
     iconId!: bigint | number;
     color!: string | null;
     attributes!: string | null;
+    linkedUserGuid!: string | null;
     versionNumber!: bigint | number;
     objectGuid!: string;
     active!: boolean;
@@ -494,6 +497,7 @@ export class VolunteerProfileService extends SecureEndpointBase {
         output.iconId = data.iconId;
         output.color = data.color;
         output.attributes = data.attributes;
+        output.linkedUserGuid = data.linkedUserGuid;
         output.versionNumber = data.versionNumber;
         output.active = data.active;
         output.deleted = data.deleted;

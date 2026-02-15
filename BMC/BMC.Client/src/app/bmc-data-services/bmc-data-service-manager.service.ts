@@ -50,6 +50,7 @@ import {MocFavouriteService} from  './moc-favourite.service';
 import {MocLikeService} from  './moc-like.service';
 import {ModerationActionService} from  './moderation-action.service';
 import {PartTypeService} from  './part-type.service';
+import {PendingRegistrationService} from  './pending-registration.service';
 import {PlacedBrickService} from  './placed-brick.service';
 import {PlacedBrickChangeHistoryService} from  './placed-brick-change-history.service';
 import {PlatformAnnouncementService} from  './platform-announcement.service';
@@ -133,6 +134,7 @@ export class BMCDataServiceManagerService  {
               , public mocLikeService: MocLikeService
               , public moderationActionService: ModerationActionService
               , public partTypeService: PartTypeService
+              , public pendingRegistrationService: PendingRegistrationService
               , public placedBrickService: PlacedBrickService
               , public placedBrickChangeHistoryService: PlacedBrickChangeHistoryService
               , public platformAnnouncementService: PlatformAnnouncementService
@@ -214,6 +216,7 @@ export class BMCDataServiceManagerService  {
         this.mocLikeService.ClearAllCaches();
         this.moderationActionService.ClearAllCaches();
         this.partTypeService.ClearAllCaches();
+        this.pendingRegistrationService.ClearAllCaches();
         this.placedBrickService.ClearAllCaches();
         this.placedBrickChangeHistoryService.ClearAllCaches();
         this.platformAnnouncementService.ClearAllCaches();

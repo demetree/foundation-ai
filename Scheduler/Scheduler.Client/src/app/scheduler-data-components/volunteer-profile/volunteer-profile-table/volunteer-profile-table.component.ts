@@ -184,6 +184,7 @@ export class VolunteerProfileTableComponent implements OnInit, OnChanges, AfterV
     { key: 'icon.name', label: 'Icon', width: undefined, template: 'link', linkPath: ['/icon', 'iconId'] },
     { key: 'color', label: 'Color', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/volunteerprofile', 'id']  },
     { key: 'attributes', label: 'Attributes', width: undefined },
+    { key: 'linkedUserGuid', label: 'Linked User Guid', width: undefined },
 
     ];
 
@@ -347,6 +348,7 @@ export class VolunteerProfileTableComponent implements OnInit, OnChanges, AfterV
                       'icon.name',
                       'color',
                       'attributes',
+                      'linkedUserGuid',
         ];
 
         result = result.filter((volunteerProfile) =>

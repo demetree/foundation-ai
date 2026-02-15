@@ -27,8 +27,8 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 // - Dates are typed as strings because the server requires ISO UTC dates.  The Javascript date object does not naturally construct with that input.  The string format used in 'Date' fields is to be ISO 8601, including millisconds.  For example, 2025-12-09T01:09:27.093Z
 //
 export class AuditPlanBQueryParameters {
-    startTime: string | null | undefined = null;        // ISO 8601
-    stopTime: string | null | undefined = null;        // ISO 8601
+    startTime: string | null | undefined = null;        // ISO 8601 (full datetime)
+    stopTime: string | null | undefined = null;        // ISO 8601 (full datetime)
     completedSuccessfully: boolean | null | undefined = null;
     user: string | null | undefined = null;
     session: string | null | undefined = null;
@@ -59,8 +59,8 @@ export class AuditPlanBQueryParameters {
 //
 export class AuditPlanBSubmitData {
     id!: bigint | number;
-    startTime!: string;      // ISO 8601
-    stopTime!: string;      // ISO 8601
+    startTime!: string;      // ISO 8601 (full datetime)
+    stopTime!: string;      // ISO 8601 (full datetime)
     completedSuccessfully!: boolean;
     user: string | null = null;
     session: string | null = null;
@@ -126,8 +126,8 @@ export class AuditPlanBBasicListData {
 //
 export class AuditPlanBData {
     id!: bigint | number;
-    startTime!: string;      // ISO 8601
-    stopTime!: string;      // ISO 8601
+    startTime!: string;      // ISO 8601 (full datetime)
+    stopTime!: string;      // ISO 8601 (full datetime)
     completedSuccessfully!: boolean;
     user!: string | null;
     session!: string | null;

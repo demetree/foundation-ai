@@ -78,6 +78,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			int? iconId = null,
 			string color = null,
 			string attributes = null,
+			Guid? linkedUserGuid = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -179,6 +180,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (string.IsNullOrEmpty(attributes) == false)
 			{
 				query = query.Where(vp => vp.attributes == attributes);
+			}
+			if (linkedUserGuid.HasValue == true)
+			{
+				query = query.Where(vp => vp.linkedUserGuid == linkedUserGuid);
 			}
 			if (versionNumber.HasValue == true)
 			{
@@ -318,6 +323,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			int? iconId = null,
 			string color = null,
 			string attributes = null,
+			Guid? linkedUserGuid = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -399,6 +405,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (attributes != null)
 			{
 				query = query.Where(vp => vp.attributes == attributes);
+			}
+			if (linkedUserGuid.HasValue == true)
+			{
+				query = query.Where(vp => vp.linkedUserGuid == linkedUserGuid);
 			}
 			if (versionNumber.HasValue == true)
 			{
@@ -1013,6 +1023,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    volunteerProfile.iconId = oldVolunteerProfile.iconId;
 				    volunteerProfile.color = oldVolunteerProfile.color;
 				    volunteerProfile.attributes = oldVolunteerProfile.attributes;
+				    volunteerProfile.linkedUserGuid = oldVolunteerProfile.linkedUserGuid;
 				    volunteerProfile.objectGuid = oldVolunteerProfile.objectGuid;
 				    volunteerProfile.active = oldVolunteerProfile.active;
 				    volunteerProfile.deleted = oldVolunteerProfile.deleted;
@@ -1467,6 +1478,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			int? iconId = null,
 			string color = null,
 			string attributes = null,
+			Guid? linkedUserGuid = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -1567,6 +1579,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (string.IsNullOrEmpty(attributes) == false)
 			{
 				query = query.Where(vp => vp.attributes == attributes);
+			}
+			if (linkedUserGuid.HasValue == true)
+			{
+				query = query.Where(vp => vp.linkedUserGuid == linkedUserGuid);
 			}
 			if (versionNumber.HasValue == true)
 			{

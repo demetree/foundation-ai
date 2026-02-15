@@ -168,6 +168,9 @@ export class SecurityTenantUserTableComponent implements OnInit, OnChanges, Afte
     const defaultColumns: TableColumn[] = [
     { key: 'securityTenant.name', label: 'Security Tenant', width: undefined, template: 'link', linkPath: ['/securitytenant', 'securityTenantId'] },
     { key: 'securityUser.name', label: 'Security User', width: undefined, template: 'link', linkPath: ['/securityuser', 'securityUserId'] },
+    { key: 'isOwner', label: 'Is Owner', width: '120px', template: 'boolean' },
+    { key: 'canRead', label: 'Can Read', width: '120px', template: 'boolean' },
+    { key: 'canWrite', label: 'Can Write', width: '120px', template: 'boolean' },
 
     ];
 
@@ -313,6 +316,9 @@ export class SecurityTenantUserTableComponent implements OnInit, OnChanges, Afte
         const filterFields = [
                       'securityTenant.name',
                       'securityUser.name',
+                      'isOwner',
+                      'canRead',
+                      'canWrite',
         ];
 
         result = result.filter((securityTenantUser) =>

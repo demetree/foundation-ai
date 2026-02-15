@@ -31,7 +31,7 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 export class EntityDataTokenEventQueryParameters {
     entityDataTokenId: bigint | number | null | undefined = null;
     entityDataTokenEventTypeId: bigint | number | null | undefined = null;
-    timeStamp: string | null | undefined = null;        // ISO 8601
+    timeStamp: string | null | undefined = null;        // ISO 8601 (full datetime)
     comments: string | null | undefined = null;
     active: boolean | null | undefined = null;
     deleted: boolean | null | undefined = null;
@@ -49,7 +49,7 @@ export class EntityDataTokenEventSubmitData {
     id!: bigint | number;
     entityDataTokenId!: bigint | number;
     entityDataTokenEventTypeId!: bigint | number;
-    timeStamp!: string;      // ISO 8601
+    timeStamp!: string;      // ISO 8601 (full datetime)
     comments: string | null = null;
     active!: boolean;
     deleted!: boolean;
@@ -102,7 +102,7 @@ export class EntityDataTokenEventData {
     id!: bigint | number;
     entityDataTokenId!: bigint | number;
     entityDataTokenEventTypeId!: bigint | number;
-    timeStamp!: string;      // ISO 8601
+    timeStamp!: string;      // ISO 8601 (full datetime)
     comments!: string | null;
     active!: boolean;
     deleted!: boolean;

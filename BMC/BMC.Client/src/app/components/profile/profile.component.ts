@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { DomSanitizer, SafeStyle } from '@angular/platform-browser';
 import { AuthService } from '../../services/auth.service';
 
 interface ProfileData {
@@ -41,24 +42,32 @@ interface ProfileLink {
     templateUrl: './profile.component.html',
     styleUrl: './profile.component.scss'
 })
-export class ProfileComponent implements OnInit {
+export class ProfileComponent implements OnInit, OnDestroy {
     profile: ProfileData | null = null;
     isLoading = true;
     error = '';
 
-    // Cache-bust suffix to force image reload after upload
-    imageVersion = Date.now();
+    // Blob URLs for authenticated image loading
+    avatarBlobUrl: string | null = null;
+    bannerBlobUrl: string | null = null;
+    bannerSafeStyle: SafeStyle | null = null;
 
     stats: { icon: string; label: string; value: number; color: string }[] = [];
 
     constructor(
         private http: HttpClient,
         private authService: AuthService,
-        private router: Router
+        private router: Router,
+        private sanitizer: DomSanitizer
     ) { }
 
     ngOnInit(): void {
         this.loadProfile();
+    }
+
+    ngOnDestroy(): void {
+        if (this.avatarBlobUrl) { URL.revokeObjectURL(this.avatarBlobUrl); }
+        if (this.bannerBlobUrl) { URL.revokeObjectURL(this.bannerBlobUrl); }
     }
 
     loadProfile(): void {
@@ -70,8 +79,15 @@ export class ProfileComponent implements OnInit {
             next: (data) => {
                 this.profile = data;
                 this.buildStats(data);
-                this.imageVersion = Date.now();
                 this.isLoading = false;
+
+                // Fetch images as blobs (browser <img src> can't carry Bearer tokens)
+                if (data.hasAvatar) {
+                    this.fetchImageBlob('/api/profile/mine/avatar', 'avatar');
+                }
+                if (data.hasBanner) {
+                    this.fetchImageBlob('/api/profile/mine/banner', 'banner');
+                }
             },
             error: (err) => {
                 this.error = 'Failed to load profile.';
@@ -92,18 +108,22 @@ export class ProfileComponent implements OnInit {
         ];
     }
 
-    getAvatarSrc(): string {
-        if (this.profile?.hasAvatar && this.profile.avatarUrl) {
-            return this.profile.avatarUrl + '?v=' + this.imageVersion;
-        }
-        return '';
-    }
-
-    getBannerStyle(): string {
-        if (this.profile?.hasBanner && this.profile.bannerUrl) {
-            return 'url(' + this.profile.bannerUrl + '?v=' + this.imageVersion + ')';
-        }
-        return '';
+    private fetchImageBlob(url: string, type: 'avatar' | 'banner'): void {
+        const headers = this.authService.GetAuthenticationHeaders().delete('Content-Type');
+        this.http.get(url, { headers, responseType: 'blob' }).subscribe({
+            next: (blob) => {
+                const objectUrl = URL.createObjectURL(blob);
+                if (type === 'avatar') {
+                    if (this.avatarBlobUrl) { URL.revokeObjectURL(this.avatarBlobUrl); }
+                    this.avatarBlobUrl = objectUrl;
+                } else {
+                    if (this.bannerBlobUrl) { URL.revokeObjectURL(this.bannerBlobUrl); }
+                    this.bannerBlobUrl = objectUrl;
+                    this.bannerSafeStyle = this.sanitizer.bypassSecurityTrustStyle('url(' + objectUrl + ')');
+                }
+            },
+            error: (err) => console.warn(`Failed to load ${type}:`, err)
+        });
     }
 
     goToSettings(): void {

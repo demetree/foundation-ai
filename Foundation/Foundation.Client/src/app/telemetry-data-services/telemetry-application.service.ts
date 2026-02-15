@@ -33,8 +33,8 @@ export class TelemetryApplicationQueryParameters {
     name: string | null | undefined = null;
     url: string | null | undefined = null;
     isSelf: boolean | null | undefined = null;
-    firstSeen: string | null | undefined = null;        // ISO 8601
-    lastSeen: string | null | undefined = null;        // ISO 8601
+    firstSeen: string | null | undefined = null;        // ISO 8601 (full datetime)
+    lastSeen: string | null | undefined = null;        // ISO 8601 (full datetime)
     pageSize: bigint | number | null | undefined = null;
     pageNumber: bigint | number | null | undefined = null;
     includeRelations: boolean | null | undefined = null;
@@ -50,8 +50,8 @@ export class TelemetryApplicationSubmitData {
     name!: string;
     url: string | null = null;
     isSelf!: boolean;
-    firstSeen!: string;      // ISO 8601
-    lastSeen: string | null = null;     // ISO 8601
+    firstSeen!: string;      // ISO 8601 (full datetime)
+    lastSeen: string | null = null;     // ISO 8601 (full datetime)
 }
 
 
@@ -102,8 +102,8 @@ export class TelemetryApplicationData {
     name!: string;
     url!: string | null;
     isSelf!: boolean;
-    firstSeen!: string;      // ISO 8601
-    lastSeen!: string | null;   // ISO 8601
+    firstSeen!: string;      // ISO 8601 (full datetime)
+    lastSeen!: string | null;   // ISO 8601 (full datetime)
 
     //
     // Private lazy-loading caches for related collections

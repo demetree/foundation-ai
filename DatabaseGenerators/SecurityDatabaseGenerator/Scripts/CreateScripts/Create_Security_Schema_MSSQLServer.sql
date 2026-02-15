@@ -389,6 +389,9 @@ CREATE TABLE [Security].[SecurityTenantUser]
 	[id] INT IDENTITY PRIMARY KEY NOT NULL,
 	[securityTenantId] INT NOT NULL,		-- Link to the SecurityTenant table.
 	[securityUserId] INT NOT NULL,		-- Link to the SecurityUser table.
+	[isOwner] BIT NOT NULL DEFAULT 0,		-- Whether this user is the owner/creator of the tenant. Only owners can invite/remove members and manage tenant settings.
+	[canRead] BIT NOT NULL DEFAULT 0,		-- Whether this user has read access to the tenant's data.
+	[canWrite] BIT NOT NULL DEFAULT 0,		-- Whether this user has write access to the tenant's data.
 	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
 	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
@@ -405,6 +408,18 @@ GO
 
 -- Index on the SecurityTenantUser table's securityUserId field.
 CREATE INDEX [I_SecurityTenantUser_securityUserId] ON [Security].[SecurityTenantUser] ([securityUserId])
+GO
+
+-- Index on the SecurityTenantUser table's isOwner field.
+CREATE INDEX [I_SecurityTenantUser_isOwner] ON [Security].[SecurityTenantUser] ([isOwner])
+GO
+
+-- Index on the SecurityTenantUser table's canRead field.
+CREATE INDEX [I_SecurityTenantUser_canRead] ON [Security].[SecurityTenantUser] ([canRead])
+GO
+
+-- Index on the SecurityTenantUser table's canWrite field.
+CREATE INDEX [I_SecurityTenantUser_canWrite] ON [Security].[SecurityTenantUser] ([canWrite])
 GO
 
 -- Index on the SecurityTenantUser table's active field.

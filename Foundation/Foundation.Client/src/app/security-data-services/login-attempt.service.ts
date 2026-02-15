@@ -28,7 +28,7 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 // - Dates are typed as strings because the server requires ISO UTC dates.  The Javascript date object does not naturally construct with that input.  The string format used in 'Date' fields is to be ISO 8601, including millisconds.  For example, 2025-12-09T01:09:27.093Z
 //
 export class LoginAttemptQueryParameters {
-    timeStamp: string | null | undefined = null;        // ISO 8601
+    timeStamp: string | null | undefined = null;        // ISO 8601 (full datetime)
     userName: string | null | undefined = null;
     passwordHash: bigint | number | null | undefined = null;
     resource: string | null | undefined = null;
@@ -52,7 +52,7 @@ export class LoginAttemptQueryParameters {
 //
 export class LoginAttemptSubmitData {
     id!: bigint | number;
-    timeStamp!: string;      // ISO 8601
+    timeStamp!: string;      // ISO 8601 (full datetime)
     userName: string | null = null;
     passwordHash: bigint | number | null = null;
     resource: string | null = null;
@@ -111,7 +111,7 @@ export class LoginAttemptBasicListData {
 //
 export class LoginAttemptData {
     id!: bigint | number;
-    timeStamp!: string;      // ISO 8601
+    timeStamp!: string;      // ISO 8601 (full datetime)
     userName!: string | null;
     passwordHash!: bigint | number;
     resource!: string | null;

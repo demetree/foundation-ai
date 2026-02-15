@@ -31,6 +31,9 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 export class SecurityTenantUserQueryParameters {
     securityTenantId: bigint | number | null | undefined = null;
     securityUserId: bigint | number | null | undefined = null;
+    isOwner: boolean | null | undefined = null;
+    canRead: boolean | null | undefined = null;
+    canWrite: boolean | null | undefined = null;
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
     deleted: boolean | null | undefined = null;
@@ -48,6 +51,9 @@ export class SecurityTenantUserSubmitData {
     id!: bigint | number;
     securityTenantId!: bigint | number;
     securityUserId!: bigint | number;
+    isOwner!: boolean;
+    canRead!: boolean;
+    canWrite!: boolean;
     active!: boolean;
     deleted!: boolean;
 }
@@ -99,6 +105,9 @@ export class SecurityTenantUserData {
     id!: bigint | number;
     securityTenantId!: bigint | number;
     securityUserId!: bigint | number;
+    isOwner!: boolean;
+    canRead!: boolean;
+    canWrite!: boolean;
     objectGuid!: string;
     active!: boolean;
     deleted!: boolean;
@@ -253,6 +262,9 @@ export class SecurityTenantUserService extends SecureEndpointBase {
         output.id = data.id;
         output.securityTenantId = data.securityTenantId;
         output.securityUserId = data.securityUserId;
+        output.isOwner = data.isOwner;
+        output.canRead = data.canRead;
+        output.canWrite = data.canWrite;
         output.active = data.active;
         output.deleted = data.deleted;
 

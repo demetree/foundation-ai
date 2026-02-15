@@ -30,8 +30,8 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 export class SecurityUserPasswordResetTokenQueryParameters {
     securityUserId: bigint | number | null | undefined = null;
     token: string | null | undefined = null;
-    timeStamp: string | null | undefined = null;        // ISO 8601
-    expiry: string | null | undefined = null;        // ISO 8601
+    timeStamp: string | null | undefined = null;        // ISO 8601 (full datetime)
+    expiry: string | null | undefined = null;        // ISO 8601 (full datetime)
     systemInitiated: boolean | null | undefined = null;
     completed: boolean | null | undefined = null;
     comments: string | null | undefined = null;
@@ -51,8 +51,8 @@ export class SecurityUserPasswordResetTokenSubmitData {
     id!: bigint | number;
     securityUserId!: bigint | number;
     token!: string;
-    timeStamp!: string;      // ISO 8601
-    expiry!: string;      // ISO 8601
+    timeStamp!: string;      // ISO 8601 (full datetime)
+    expiry!: string;      // ISO 8601 (full datetime)
     systemInitiated!: boolean;
     completed!: boolean;
     comments: string | null = null;
@@ -107,8 +107,8 @@ export class SecurityUserPasswordResetTokenData {
     id!: bigint | number;
     securityUserId!: bigint | number;
     token!: string;
-    timeStamp!: string;      // ISO 8601
-    expiry!: string;      // ISO 8601
+    timeStamp!: string;      // ISO 8601 (full datetime)
+    expiry!: string;      // ISO 8601 (full datetime)
     systemInitiated!: boolean;
     completed!: boolean;
     comments!: string | null;

@@ -129,6 +129,10 @@
                 <label for="VolunteerProfile-attributes" id="label-VolunteerProfile-attributes">Attributes</label>
                 <textarea id="VolunteerProfile-attributes" formControlName="attributes" placeholder="Enter Attributes" class="form-control volunteer-profile-input" [disabled]="!userIsSchedulerVolunteerProfileWriter()"></textarea>
             </div>
+            <div class="form-group" *ngIf="!isFieldHidden('linkedUserGuid')">
+                <label for="VolunteerProfile-linkedUserGuid" id="label-VolunteerProfile-linkedUserGuid">Linked User Guid</label>
+                <input type="text" id="VolunteerProfile-linkedUserGuid" formControlName="linkedUserGuid" placeholder="Enter Linked User Guid" class="form-control volunteer-profile-input" [disabled]="!userIsSchedulerVolunteerProfileWriter()" aria-labelledby="label-linkedUserGuid" />
+            </div>
             <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
                 <label for="VolunteerProfile-versionNumber" id="label-VolunteerProfile-versionNumber"><span class="text-danger">*</span>Version Number</label>
                 <input type="number" id="VolunteerProfile-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control volunteer-profile-input" />

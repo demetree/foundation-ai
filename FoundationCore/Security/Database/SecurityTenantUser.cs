@@ -13,6 +13,12 @@ public partial class SecurityTenantUser
 
     public int securityUserId { get; set; }
 
+    public bool isOwner { get; set; }
+
+    public bool canRead { get; set; }
+
+    public bool canWrite { get; set; }
+
     public Guid objectGuid { get; set; }
 
     public bool active { get; set; }

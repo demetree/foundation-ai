@@ -223,6 +223,7 @@ namespace Foundation.BMC
                 controllers.Add(typeof(MocLikesController));
                 controllers.Add(typeof(ModerationActionsController));
                 controllers.Add(typeof(PartTypesController));
+                controllers.Add(typeof(PendingRegistrationsController));
                 controllers.Add(typeof(PlacedBricksController));
                 controllers.Add(typeof(PlacedBrickChangeHistoriesController));
                 controllers.Add(typeof(PlatformAnnouncementsController));

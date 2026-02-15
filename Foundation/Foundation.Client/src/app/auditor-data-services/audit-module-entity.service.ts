@@ -32,7 +32,7 @@ export class AuditModuleEntityQueryParameters {
     auditModuleId: bigint | number | null | undefined = null;
     name: string | null | undefined = null;
     comments: string | null | undefined = null;
-    firstAccess: string | null | undefined = null;        // ISO 8601
+    firstAccess: string | null | undefined = null;        // ISO 8601 (full datetime)
     pageSize: bigint | number | null | undefined = null;
     pageNumber: bigint | number | null | undefined = null;
     includeRelations: boolean | null | undefined = null;
@@ -48,7 +48,7 @@ export class AuditModuleEntitySubmitData {
     auditModuleId!: bigint | number;
     name!: string;
     comments: string | null = null;
-    firstAccess: string | null = null;     // ISO 8601
+    firstAccess: string | null = null;     // ISO 8601 (full datetime)
 }
 
 
@@ -99,7 +99,7 @@ export class AuditModuleEntityData {
     auditModuleId!: bigint | number;
     name!: string;
     comments!: string | null;
-    firstAccess!: string | null;   // ISO 8601
+    firstAccess!: string | null;   // ISO 8601 (full datetime)
     auditModule: AuditModuleData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
 
     //

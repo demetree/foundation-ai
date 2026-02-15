@@ -99,6 +99,8 @@ import { ModerationActionListingComponent } from './bmc-data-components/moderati
 import { ModerationActionDetailComponent } from './bmc-data-components/moderation-action/moderation-action-detail/moderation-action-detail.component';
 import { PartTypeListingComponent } from './bmc-data-components/part-type/part-type-listing/part-type-listing.component';
 import { PartTypeDetailComponent } from './bmc-data-components/part-type/part-type-detail/part-type-detail.component';
+import { PendingRegistrationListingComponent } from './bmc-data-components/pending-registration/pending-registration-listing/pending-registration-listing.component';
+import { PendingRegistrationDetailComponent } from './bmc-data-components/pending-registration/pending-registration-detail/pending-registration-detail.component';
 import { PlacedBrickListingComponent } from './bmc-data-components/placed-brick/placed-brick-listing/placed-brick-listing.component';
 import { PlacedBrickDetailComponent } from './bmc-data-components/placed-brick/placed-brick-detail/placed-brick-detail.component';
 import { PlacedBrickChangeHistoryListingComponent } from './bmc-data-components/placed-brick-change-history/placed-brick-change-history-listing/placed-brick-change-history-listing.component';
@@ -401,6 +403,11 @@ const routes: Routes = [
   {path: 'parttypes/:partTypeId', component: PartTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Part Type' },
   {path: 'parttype/:partTypeId', component: PartTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Part Type' },
   {path: 'parttype',  redirectTo: 'parttypes'},
+  {path: 'pendingregistrations', component: PendingRegistrationListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Pending Registrations' },
+  {path: 'pendingregistrations/new', component: PendingRegistrationDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Pending Registration' },
+  {path: 'pendingregistrations/:pendingRegistrationId', component: PendingRegistrationDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Pending Registration' },
+  {path: 'pendingregistration/:pendingRegistrationId', component: PendingRegistrationDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Pending Registration' },
+  {path: 'pendingregistration',  redirectTo: 'pendingregistrations'},
   {path: 'placedbricks', component: PlacedBrickListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Placed Bricks' },
   {path: 'placedbricks/new', component: PlacedBrickDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Placed Brick' },
   {path: 'placedbricks/:placedBrickId', component: PlacedBrickDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Placed Brick' },

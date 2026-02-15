@@ -38,7 +38,7 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 export class TelemetrySnapshotQueryParameters {
     telemetryApplicationId: bigint | number | null | undefined = null;
     telemetryCollectionRunId: bigint | number | null | undefined = null;
-    collectedAt: string | null | undefined = null;        // ISO 8601
+    collectedAt: string | null | undefined = null;        // ISO 8601 (full datetime)
     isOnline: boolean | null | undefined = null;
     uptimeSeconds: bigint | number | null | undefined = null;
     memoryWorkingSetMB: number | null | undefined = null;
@@ -67,7 +67,7 @@ export class TelemetrySnapshotSubmitData {
     id!: bigint | number;
     telemetryApplicationId!: bigint | number;
     telemetryCollectionRunId!: bigint | number;
-    collectedAt!: string;      // ISO 8601
+    collectedAt!: string;      // ISO 8601 (full datetime)
     isOnline!: boolean;
     uptimeSeconds: bigint | number | null = null;
     memoryWorkingSetMB: number | null = null;
@@ -131,7 +131,7 @@ export class TelemetrySnapshotData {
     id!: bigint | number;
     telemetryApplicationId!: bigint | number;
     telemetryCollectionRunId!: bigint | number;
-    collectedAt!: string;      // ISO 8601
+    collectedAt!: string;      // ISO 8601 (full datetime)
     isOnline!: boolean;
     uptimeSeconds!: bigint | number;
     memoryWorkingSetMB!: number | null;

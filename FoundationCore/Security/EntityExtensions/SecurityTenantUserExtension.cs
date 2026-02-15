@@ -26,6 +26,12 @@ namespace Foundation.Security.Database
 			[Required]
 			public Int32 securityUserId { get; set; }
 			[Required]
+			public Boolean isOwner { get; set; }
+			[Required]
+			public Boolean canRead { get; set; }
+			[Required]
+			public Boolean canWrite { get; set; }
+			[Required]
 			public Guid objectGuid { get; set; }
 			public Boolean? active { get; set; }
 			public Boolean? deleted { get; set; }
@@ -58,6 +64,9 @@ namespace Foundation.Security.Database
 				id = this.id,
 				securityTenantId = this.securityTenantId,
 				securityUserId = this.securityUserId,
+				isOwner = this.isOwner,
+				canRead = this.canRead,
+				canWrite = this.canWrite,
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted
@@ -102,6 +111,9 @@ namespace Foundation.Security.Database
 				id = this.id,
 				securityTenantId = this.securityTenantId,
 				securityUserId = this.securityUserId,
+				isOwner = this.isOwner,
+				canRead = this.canRead,
+				canWrite = this.canWrite,
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted,
@@ -148,6 +160,9 @@ namespace Foundation.Security.Database
 				id = dto.id,
 				securityTenantId = dto.securityTenantId,
 				securityUserId = dto.securityUserId,
+				isOwner = dto.isOwner,
+				canRead = dto.canRead,
+				canWrite = dto.canWrite,
 				objectGuid = dto.objectGuid,
 				active = dto.active ?? true,
 				deleted = dto.deleted ?? false
@@ -169,6 +184,9 @@ namespace Foundation.Security.Database
 
 			this.securityTenantId = dto.securityTenantId;
 			this.securityUserId = dto.securityUserId;
+			this.isOwner = dto.isOwner;
+			this.canRead = dto.canRead;
+			this.canWrite = dto.canWrite;
 			this.objectGuid = dto.objectGuid;
 			if (dto.active.HasValue == true)
 			{
@@ -195,6 +213,9 @@ namespace Foundation.Security.Database
 				id = this.id,
 				securityTenantId = this.securityTenantId,
 				securityUserId = this.securityUserId,
+				isOwner = this.isOwner,
+				canRead = this.canRead,
+				canWrite = this.canWrite,
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted,
@@ -253,6 +274,9 @@ namespace Foundation.Security.Database
 				id = securityTenantUser.id,
 				securityTenantId = securityTenantUser.securityTenantId,
 				securityUserId = securityTenantUser.securityUserId,
+				isOwner = securityTenantUser.isOwner,
+				canRead = securityTenantUser.canRead,
+				canWrite = securityTenantUser.canWrite,
 				objectGuid = securityTenantUser.objectGuid,
 				active = securityTenantUser.active,
 				deleted = securityTenantUser.deleted,
@@ -278,6 +302,9 @@ namespace Foundation.Security.Database
 				id = securityTenantUser.id,
 				securityTenantId = securityTenantUser.securityTenantId,
 				securityUserId = securityTenantUser.securityUserId,
+				isOwner = securityTenantUser.isOwner,
+				canRead = securityTenantUser.canRead,
+				canWrite = securityTenantUser.canWrite,
 				objectGuid = securityTenantUser.objectGuid,
 				active = securityTenantUser.active,
 				deleted = securityTenantUser.deleted,

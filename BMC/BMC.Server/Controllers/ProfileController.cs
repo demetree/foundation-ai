@@ -786,5 +786,157 @@ namespace Foundation.BMC.Controllers.WebAPI
         }
 
         #endregion
+
+
+        #region Public Profile (Unauthenticated)
+
+        /// <summary>
+        /// GET /api/profile/{id}
+        ///
+        /// Returns a public profile by its ID.
+        /// No authentication required — returns 404 if profile is not public.
+        /// </summary>
+        [HttpGet]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerIP)]
+        [Route("api/profile/{id:int}")]
+        public async Task<IActionResult> GetPublicProfile(int id, CancellationToken cancellationToken = default)
+        {
+            //
+            // Look for active, non-deleted, public profile
+            //
+            UserProfile profile = await _context.UserProfiles
+                .FirstOrDefaultAsync(p => p.id == id && p.isPublic == true && p.active == true && p.deleted == false, cancellationToken);
+
+            if (profile == null)
+            {
+                return NotFound();
+            }
+
+            //
+            // Load stats
+            //
+            UserProfileStat profileStat = await _context.UserProfileStats
+                .FirstOrDefaultAsync(s => s.userProfileId == profile.id && s.active == true && s.deleted == false, cancellationToken);
+
+            //
+            // Load links with type info
+            //
+            List<ProfileLinkDto> links = await _context.UserProfileLinks
+                .Where(l => l.userProfileId == profile.id && l.active == true && l.deleted == false)
+                .OrderBy(l => l.sequence)
+                .Select(l => new ProfileLinkDto
+                {
+                    id = l.id,
+                    userProfileLinkTypeId = l.userProfileLinkTypeId,
+                    linkTypeName = l.userProfileLinkType.name,
+                    iconCssClass = l.userProfileLinkType.iconCssClass,
+                    url = l.url,
+                    displayLabel = l.displayLabel,
+                    sequence = l.sequence
+                })
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+
+            //
+            // Build public profile DTO — same shape as ProfileDto but with public image URLs
+            //
+            var dto = new ProfileDto
+            {
+                id = profile.id,
+                displayName = profile.displayName,
+                bio = profile.bio,
+                location = profile.location,
+                hasAvatar = profile.avatarData != null && profile.avatarData.Length > 0,
+                avatarUrl = (profile.avatarData != null && profile.avatarData.Length > 0) ? $"/api/profile/{profile.id}/avatar" : null,
+                hasBanner = profile.bannerData != null && profile.bannerData.Length > 0,
+                bannerUrl = (profile.bannerData != null && profile.bannerData.Length > 0) ? $"/api/profile/{profile.id}/banner" : null,
+                websiteUrl = profile.websiteUrl,
+                isPublic = true,
+                memberSinceDate = profile.memberSinceDate,
+                totalPartsOwned = profileStat?.totalPartsOwned ?? 0,
+                totalUniquePartsOwned = profileStat?.totalUniquePartsOwned ?? 0,
+                totalSetsOwned = profileStat?.totalSetsOwned ?? 0,
+                totalMocsPublished = profileStat?.totalMocsPublished ?? 0,
+                totalFollowers = profileStat?.totalFollowers ?? 0,
+                totalFollowing = profileStat?.totalFollowing ?? 0,
+                totalLikesReceived = profileStat?.totalLikesReceived ?? 0,
+                totalAchievementPoints = profileStat?.totalAchievementPoints ?? 0,
+                links = links
+            };
+
+            return Ok(dto);
+        }
+
+
+        /// <summary>
+        /// GET /api/profile/{id}/avatar
+        ///
+        /// Serves a public profile's avatar image.
+        /// No authentication required — returns 404 if profile is not public or has no avatar.
+        /// </summary>
+        [HttpGet]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerIP)]
+        [Route("api/profile/{id:int}/avatar")]
+        public async Task<IActionResult> GetPublicAvatar(int id, CancellationToken cancellationToken = default)
+        {
+            return await ServePublicImage(id, "avatar", cancellationToken);
+        }
+
+
+        /// <summary>
+        /// GET /api/profile/{id}/banner
+        ///
+        /// Serves a public profile's banner image.
+        /// No authentication required — returns 404 if profile is not public or has no banner.
+        /// </summary>
+        [HttpGet]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerIP)]
+        [Route("api/profile/{id:int}/banner")]
+        public async Task<IActionResult> GetPublicBanner(int id, CancellationToken cancellationToken = default)
+        {
+            return await ServePublicImage(id, "banner", cancellationToken);
+        }
+
+
+        /// <summary>
+        /// Shared serve logic for public avatar and banner.
+        /// Checks isPublic — returns 404 for private profiles.
+        /// </summary>
+        private async Task<IActionResult> ServePublicImage(int profileId, string imageType, CancellationToken cancellationToken)
+        {
+            UserProfile profile = await _context.UserProfiles
+                .FirstOrDefaultAsync(p => p.id == profileId && p.isPublic == true && p.active == true && p.deleted == false, cancellationToken);
+
+            if (profile == null)
+            {
+                return NotFound();
+            }
+
+            byte[] data;
+            string mimeType;
+            string fileName;
+
+            if (imageType == "avatar")
+            {
+                data = profile.avatarData;
+                mimeType = profile.avatarMimeType;
+                fileName = profile.avatarFileName;
+            }
+            else
+            {
+                data = profile.bannerData;
+                mimeType = profile.bannerMimeType;
+                fileName = profile.bannerFileName;
+            }
+
+            if (data == null || data.Length == 0)
+            {
+                return NotFound();
+            }
+
+            return File(data, mimeType ?? "image/png", fileName);
+        }
+
+        #endregion
     }
 }

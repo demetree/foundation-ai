@@ -1,0 +1,46 @@
+{
+    "name": "volunteerhub.client",
+    "version": "1.0.0",
+    "description": "Volunteer Self-Service Hub",
+    "author": {
+        "name": "Scheduler",
+        "email": "info@k2research.ca",
+        "url": "https://www.k2research.ca"
+    },
+    "homepage": "https://www.k2research.ca",
+    "scripts": {
+        "ng": "ng",
+        "start": "run-script-os",
+        "build": "ng build",
+        "watch": "ng build --watch --configuration development",
+        "test": "ng test",
+        "prestart": "node aspnetcore-https --force",
+        "start:windows": "ng serve --port 12300 --ssl --ssl-cert \"%APPDATA%\\ASP.NET\\https\\%npm_package_name%.pem\" --ssl-key \"%APPDATA%\\ASP.NET\\https\\%npm_package_name%.key\" --host=0.0.0.0",
+        "start:default": "ng serve --port 12300 --ssl --ssl-cert \"$HOME/.aspnet/https/${npm_package_name}.pem\" --ssl-key \"$HOME/.aspnet/https/${npm_package_name}.key\" --host=127.0.0.1"
+    },
+    "private": true,
+    "dependencies": {
+        "@angular/animations": "^17.2.0",
+        "@angular/common": "^17.2.0",
+        "@angular/compiler": "^17.2.0",
+        "@angular/core": "^17.2.0",
+        "@angular/forms": "^17.2.0",
+        "@angular/platform-browser": "^17.2.0",
+        "@angular/platform-browser-dynamic": "^17.2.0",
+        "@angular/router": "^17.2.0",
+        "@fortawesome/fontawesome-free": "^6.7.1",
+        "bootstrap": "^5.3.2",
+        "bootstrap-icons": "^1.11.3",
+        "run-script-os": "*",
+        "rxjs": "~7.8.0",
+        "tslib": "^2.3.0",
+        "zone.js": "~0.14.3"
+    },
+    "devDependencies": {
+        "@angular-devkit/build-angular": "^17.2.0",
+        "@angular/cli": "^17.2.0",
+        "@angular/compiler-cli": "^17.2.0",
+        "@types/node": "^20.11.19",
+        "typescript": "~5.3.2"
+    }
+}

@@ -115,7 +115,7 @@ CREATE INDEX "I_SecurityTenant_deleted" ON "SecurityTenant" ("deleted")
 CREATE INDEX "I_SecurityTenant_id_active_deleted" ON "SecurityTenant" ("id", "active", "deleted")
 ;
 
-INSERT INTO "SecurityTenant" ( "name", "description", "active", "deleted", "objectGuid" ) VALUES  ( 'System Service', 'System Service Tenant - For Administrative purposes not real use.', 1, 0, 'c017cf97-ccbb-4686-98b3-c59efc1a3f45' );
+INSERT INTO "SecurityTenant" ( "name", "description", "active", "deleted", "objectGuid" ) VALUES  ( 'System Service', 'System Service Tenant - For Administrative purposes or single tenant use.', 1, 0, 'c017cf97-ccbb-4686-98b3-c59efc1a3f45' );
 
 
 CREATE TABLE "SecurityOrganization"
@@ -358,6 +358,9 @@ CREATE TABLE "SecurityTenantUser"
 	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
 	"securityTenantId" INTEGER NOT NULL,		-- Link to the SecurityTenant table.
 	"securityUserId" INTEGER NOT NULL,		-- Link to the SecurityUser table.
+	"isOwner" BIT NOT NULL DEFAULT 0,		-- Whether this user is the owner/creator of the tenant. Only owners can invite/remove members and manage tenant settings.
+	"canRead" BIT NOT NULL DEFAULT 0,		-- Whether this user has read access to the tenant's data.
+	"canWrite" BIT NOT NULL DEFAULT 0,		-- Whether this user has write access to the tenant's data.
 	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
 	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
@@ -371,6 +374,18 @@ CREATE INDEX "I_SecurityTenantUser_securityTenantId" ON "SecurityTenantUser" ("s
 
 -- Index on the SecurityTenantUser table's securityUserId field.
 CREATE INDEX "I_SecurityTenantUser_securityUserId" ON "SecurityTenantUser" ("securityUserId")
+;
+
+-- Index on the SecurityTenantUser table's isOwner field.
+CREATE INDEX "I_SecurityTenantUser_isOwner" ON "SecurityTenantUser" ("isOwner")
+;
+
+-- Index on the SecurityTenantUser table's canRead field.
+CREATE INDEX "I_SecurityTenantUser_canRead" ON "SecurityTenantUser" ("canRead")
+;
+
+-- Index on the SecurityTenantUser table's canWrite field.
+CREATE INDEX "I_SecurityTenantUser_canWrite" ON "SecurityTenantUser" ("canWrite")
 ;
 
 -- Index on the SecurityTenantUser table's active field.

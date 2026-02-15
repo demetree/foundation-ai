@@ -1,0 +1,64 @@
+<div class="hub-page">
+
+    <!-- Welcome -->
+    <div class="dashboard-welcome animate-in">
+        <div class="welcome-greeting">
+            <span class="welcome-wave">👋</span>
+            <div>
+                <h1>Hello, {{ userName }}</h1>
+                <p class="hub-text-muted">Here's what's coming up.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="dashboard-stats animate-in animate-delay-2" *ngIf="profile">
+        <div class="stat-card hub-card-sm">
+            <div class="stat-value">{{ profile.totalHoursServed || 0 | number:'1.0-0' }}</div>
+            <div class="stat-label">Hours Served</div>
+        </div>
+        <div class="stat-card hub-card-sm">
+            <div class="stat-value">{{ upcomingAssignments.length }}</div>
+            <div class="stat-label">Upcoming</div>
+        </div>
+    </div>
+
+    <!-- Upcoming Assignments -->
+    <section class="animate-in animate-delay-3">
+        <h2 class="hub-section-label">Upcoming Assignments</h2>
+
+        <div *ngIf="isLoading" class="hub-card-sm" style="text-align: center; padding: 2rem;">
+            <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; color: var(--hub-primary-light);"></i>
+        </div>
+
+        <div *ngIf="!isLoading && upcomingAssignments.length === 0" class="hub-empty-state hub-card-sm">
+            <i class="fas fa-calendar-check"></i>
+            <h3>All clear!</h3>
+            <p>No upcoming assignments in the next 30 days.</p>
+        </div>
+
+        <div class="assignment-list" *ngIf="!isLoading && upcomingAssignments.length > 0">
+            <div class="assignment-card hub-card-sm" *ngFor="let a of upcomingAssignments">
+                <div class="assignment-date">
+                    <span class="assignment-day">{{ a.startDateTime | date:'d' }}</span>
+                    <span class="assignment-month">{{ a.startDateTime | date:'MMM' }}</span>
+                </div>
+                <div class="assignment-info">
+                    <strong>{{ a.eventName || 'Event' }}</strong>
+                    <span class="assignment-time">
+                        {{ a.startDateTime | date:'h:mm a' }} – {{ a.endDateTime | date:'h:mm a' }}
+                    </span>
+                    <span class="hub-badge badge-info" *ngIf="a.role">{{ a.role }}</span>
+                </div>
+                <div class="assignment-status">
+                    <span class="hub-badge" [ngClass]="{
+            'badge-success': a.status === 'Confirmed',
+            'badge-warning': a.status === 'Planned',
+            'badge-info': a.status !== 'Confirmed' && a.status !== 'Planned'
+          }">{{ a.status || 'Planned' }}</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</div>
