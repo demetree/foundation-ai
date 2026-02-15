@@ -195,6 +195,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       (includeRelations == true && x.project.name.Contains(anyStringContains))
 			       || (includeRelations == true && x.project.description.Contains(anyStringContains))
 			       || (includeRelations == true && x.project.notes.Contains(anyStringContains))
+			       || (includeRelations == true && x.project.thumbnailImagePath.Contains(anyStringContains))
 			   );
 			}
 
@@ -335,6 +336,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       x.project.name.Contains(anyStringContains)
 			       || x.project.description.Contains(anyStringContains)
 			       || x.project.notes.Contains(anyStringContains)
+			       || x.project.thumbnailImagePath.Contains(anyStringContains)
 			   );
 			}
 
@@ -888,6 +890,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       x.project.name.Contains(anyStringContains)
 			       || x.project.description.Contains(anyStringContains)
 			       || x.project.notes.Contains(anyStringContains)
+			       || x.project.thumbnailImagePath.Contains(anyStringContains)
 			   );
 			}
 

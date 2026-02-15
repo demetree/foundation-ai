@@ -1,0 +1,75 @@
+<div class="add-user-collection-set-import" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-user-collection-set-import me-2"
+        (click)="openModal()"
+        ngbTooltip="Add User Collection Set Import" 
+        *ngIf="userIsBMCUserCollectionSetImportWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #userCollectionSetImportModal let-modal>
+   <div class="modal-header bg-dark text-light user-collection-set-import-modal-header">
+      <h5 class="modal-title mb-0" id="userCollectionSetImportModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit User Collection Set Import' : 'Add User Collection Set Import' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body user-collection-set-import-modal-body">
+      <form [formGroup]="userCollectionSetImportForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('userCollectionId')">
+                <label for="UserCollectionSetImport-userCollectionId" id="label-UserCollectionSetImport-userCollectionId"><span class="text-danger">*</span>User Collection</label>
+                <select id="UserCollectionSetImport-userCollectionId" formControlName="userCollectionId" class="form-select user-collection-set-import-select" [disabled]="!userIsBMCUserCollectionSetImportWriter()">
+                    <option [ngValue]="null">Select User Collection</option>
+                    <option *ngFor="let userCollection of userCollections$ | async" [ngValue]="userCollection.id">{{userCollection.name}}</option>
+                </select>
+                <div *ngIf="userCollectionSetImportForm.get('userCollectionId')?.invalid && userCollectionSetImportForm.get('userCollectionId')?.touched" class="text-danger">
+                    User Collection is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('legoSetId')">
+                <label for="UserCollectionSetImport-legoSetId" id="label-UserCollectionSetImport-legoSetId"><span class="text-danger">*</span>Lego Set</label>
+                <select id="UserCollectionSetImport-legoSetId" formControlName="legoSetId" class="form-select user-collection-set-import-select" [disabled]="!userIsBMCUserCollectionSetImportWriter()">
+                    <option [ngValue]="null">Select Lego Set</option>
+                    <option *ngFor="let legoSet of legoSets$ | async" [ngValue]="legoSet.id">{{legoSet.name}}</option>
+                </select>
+                <div *ngIf="userCollectionSetImportForm.get('legoSetId')?.invalid && userCollectionSetImportForm.get('legoSetId')?.touched" class="text-danger">
+                    Lego Set is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('quantity')">
+                <label for="UserCollectionSetImport-quantity" id="label-UserCollectionSetImport-quantity">Quantity</label>
+                <input type="number" id="UserCollectionSetImport-quantity" formControlName="quantity" placeholder="Enter Quantity" class="form-control user-collection-set-import-input" [disabled]="!userIsBMCUserCollectionSetImportWriter()" aria-labelledby="label-quantity" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('importedDate')">
+                <label for="UserCollectionSetImport-importedDate" id="label-UserCollectionSetImport-importedDate">Imported Date</label>
+                <input type="datetime-local" id="UserCollectionSetImport-importedDate" formControlName="importedDate" placeholder="Enter Imported Date" class="form-control user-collection-set-import-input" [disabled]="!userIsBMCUserCollectionSetImportWriter()" aria-labelledby="label-importedDate" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="UserCollectionSetImport-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCUserCollectionSetImportWriter()" />
+                <label for="UserCollectionSetImport-active" class="form-check-label" id="label-UserCollectionSetImport-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="UserCollectionSetImport-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCUserCollectionSetImportWriter()" />
+                <label for="UserCollectionSetImport-deleted" class="form-check-label" id="label-UserCollectionSetImport-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer user-collection-set-import-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the User Collection Set Import changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !userCollectionSetImportForm.valid || userCollectionSetImportForm.pristine  || userIsBMCUserCollectionSetImportWriter() == false " ngbTooltip="Save the User Collection Set Import changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add User Collection Set Import' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

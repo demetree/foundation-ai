@@ -27,6 +27,9 @@ import { ProjectService } from '../../../bmc-data-services/project.service';
 import { BrickPartService } from '../../../bmc-data-services/brick-part.service';
 import { BrickColourService } from '../../../bmc-data-services/brick-colour.service';
 import { PlacedBrickChangeHistoryService } from '../../../bmc-data-services/placed-brick-change-history.service';
+import { SubmodelPlacedBrickService } from '../../../bmc-data-services/submodel-placed-brick.service';
+import { BuildStepPartService } from '../../../bmc-data-services/build-step-part.service';
+import { BuildStepAnnotationService } from '../../../bmc-data-services/build-step-annotation.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -38,9 +41,9 @@ import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../uti
 // - Does not include navigation properties or methods from domain models.
 //
 interface PlacedBrickFormValues {
-  projectId: number | bigint | null,       // For FK link number
-  brickPartId: number | bigint | null,       // For FK link number
-  brickColourId: number | bigint | null,       // For FK link number
+  projectId: number | bigint,       // For FK link number
+  brickPartId: number | bigint,       // For FK link number
+  brickColourId: number | bigint,       // For FK link number
   positionX: string | null,     // Stored as string for form input, converted to number on submit.
   positionY: string | null,     // Stored as string for form input, converted to number on submit.
   positionZ: string | null,     // Stored as string for form input, converted to number on submit.
@@ -49,6 +52,7 @@ interface PlacedBrickFormValues {
   rotationZ: string | null,     // Stored as string for form input, converted to number on submit.
   rotationW: string | null,     // Stored as string for form input, converted to number on submit.
   buildStepNumber: string | null,     // Stored as string for form input, converted to number on submit.
+  isHidden: boolean,
   versionNumber: string,     // Stored as string for form input, converted to number on submit.
   active: boolean,
   deleted: boolean,
@@ -79,9 +83,9 @@ export class PlacedBrickDetailComponent implements OnInit, CanComponentDeactivat
 
 
   public placedBrickForm: FormGroup = this.fb.group({
-        projectId: [null],
-        brickPartId: [null],
-        brickColourId: [null],
+        projectId: [null, Validators.required],
+        brickPartId: [null, Validators.required],
+        brickColourId: [null, Validators.required],
         positionX: [''],
         positionY: [''],
         positionZ: [''],
@@ -90,6 +94,7 @@ export class PlacedBrickDetailComponent implements OnInit, CanComponentDeactivat
         rotationZ: [''],
         rotationW: [''],
         buildStepNumber: [''],
+        isHidden: [false],
         versionNumber: [''],
         active: [true],
         deleted: [false],
@@ -111,6 +116,9 @@ export class PlacedBrickDetailComponent implements OnInit, CanComponentDeactivat
   public brickParts$ = this.brickPartService.GetBrickPartList();
   public brickColours$ = this.brickColourService.GetBrickColourList();
   public placedBrickChangeHistories$ = this.placedBrickChangeHistoryService.GetPlacedBrickChangeHistoryList();
+  public submodelPlacedBricks$ = this.submodelPlacedBrickService.GetSubmodelPlacedBrickList();
+  public buildStepParts$ = this.buildStepPartService.GetBuildStepPartList();
+  public buildStepAnnotations$ = this.buildStepAnnotationService.GetBuildStepAnnotationList();
 
   private destroy$ = new Subject<void>();
 
@@ -120,6 +128,9 @@ export class PlacedBrickDetailComponent implements OnInit, CanComponentDeactivat
     public brickPartService: BrickPartService,
     public brickColourService: BrickColourService,
     public placedBrickChangeHistoryService: PlacedBrickChangeHistoryService,
+    public submodelPlacedBrickService: SubmodelPlacedBrickService,
+    public buildStepPartService: BuildStepPartService,
+    public buildStepAnnotationService: BuildStepAnnotationService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,
@@ -412,6 +423,7 @@ export class PlacedBrickDetailComponent implements OnInit, CanComponentDeactivat
         rotationZ: '',
         rotationW: '',
         buildStepNumber: '',
+        isHidden: false,
         versionNumber: '',
         active: true,
         deleted: false,
@@ -435,6 +447,7 @@ export class PlacedBrickDetailComponent implements OnInit, CanComponentDeactivat
         rotationZ: placedBrickData.rotationZ?.toString() ?? '',
         rotationW: placedBrickData.rotationW?.toString() ?? '',
         buildStepNumber: placedBrickData.buildStepNumber?.toString() ?? '',
+        isHidden: placedBrickData.isHidden ?? false,
         versionNumber: placedBrickData.versionNumber?.toString() ?? '',
         active: placedBrickData.active ?? true,
         deleted: placedBrickData.deleted ?? false,
@@ -497,9 +510,9 @@ export class PlacedBrickDetailComponent implements OnInit, CanComponentDeactivat
     //
     const placedBrickSubmitData: PlacedBrickSubmitData = {
         id: this.placedBrickData?.id || 0,
-        projectId: formValue.projectId ? Number(formValue.projectId) : null,
-        brickPartId: formValue.brickPartId ? Number(formValue.brickPartId) : null,
-        brickColourId: formValue.brickColourId ? Number(formValue.brickColourId) : null,
+        projectId: Number(formValue.projectId),
+        brickPartId: Number(formValue.brickPartId),
+        brickColourId: Number(formValue.brickColourId),
         positionX: formValue.positionX ? Number(formValue.positionX) : null,
         positionY: formValue.positionY ? Number(formValue.positionY) : null,
         positionZ: formValue.positionZ ? Number(formValue.positionZ) : null,
@@ -508,6 +521,7 @@ export class PlacedBrickDetailComponent implements OnInit, CanComponentDeactivat
         rotationZ: formValue.rotationZ ? Number(formValue.rotationZ) : null,
         rotationW: formValue.rotationW ? Number(formValue.rotationW) : null,
         buildStepNumber: formValue.buildStepNumber ? Number(formValue.buildStepNumber) : null,
+        isHidden: !!formValue.isHidden,
         versionNumber: this.placedBrickData?.versionNumber ?? 0,
         active: !!formValue.active,
         deleted: !!formValue.deleted,

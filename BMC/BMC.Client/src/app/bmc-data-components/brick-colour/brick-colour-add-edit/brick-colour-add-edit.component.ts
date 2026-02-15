@@ -42,7 +42,7 @@ interface BrickColourFormValues {
   alpha: string | null,     // Stored as string for form input, converted to number on submit.
   isTransparent: boolean,
   isMetallic: boolean,
-  colourFinishId: number | bigint | null,       // For FK link number
+  colourFinishId: number | bigint,       // For FK link number
   luminance: string | null,     // Stored as string for form input, converted to number on submit.
   legoColourId: string | null,     // Stored as string for form input, converted to number on submit.
   sequence: string | null,     // Stored as string for form input, converted to number on submit.
@@ -85,7 +85,7 @@ export class BrickColourAddEditComponent {
         alpha: [''],
         isTransparent: [false],
         isMetallic: [false],
-        colourFinishId: [null],
+        colourFinishId: [null, Validators.required],
         luminance: [''],
         legoColourId: [''],
         sequence: [''],
@@ -101,7 +101,7 @@ export class BrickColourAddEditComponent {
   public isSaving: boolean = false;
 
   brickColours$ = this.brickColourService.GetBrickColourList();
-  colourFinishs$ = this.colourFinishService.GetColourFinishList();
+  colourFinishes$ = this.colourFinishService.GetColourFinishList();
 
   constructor(
     private modalService: NgbModal,
@@ -233,7 +233,7 @@ export class BrickColourAddEditComponent {
         alpha: formValue.alpha ? Number(formValue.alpha) : null,
         isTransparent: !!formValue.isTransparent,
         isMetallic: !!formValue.isMetallic,
-        colourFinishId: formValue.colourFinishId ? Number(formValue.colourFinishId) : null,
+        colourFinishId: Number(formValue.colourFinishId),
         luminance: formValue.luminance ? Number(formValue.luminance) : null,
         legoColourId: formValue.legoColourId ? Number(formValue.legoColourId) : null,
         sequence: formValue.sequence ? Number(formValue.sequence) : null,

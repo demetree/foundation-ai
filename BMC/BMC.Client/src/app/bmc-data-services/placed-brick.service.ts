@@ -20,6 +20,9 @@ import { ProjectData } from './project.service';
 import { BrickPartData } from './brick-part.service';
 import { BrickColourData } from './brick-colour.service';
 import { PlacedBrickChangeHistoryService, PlacedBrickChangeHistoryData } from './placed-brick-change-history.service';
+import { SubmodelPlacedBrickService, SubmodelPlacedBrickData } from './submodel-placed-brick.service';
+import { BuildStepPartService, BuildStepPartData } from './build-step-part.service';
+import { BuildStepAnnotationService, BuildStepAnnotationData } from './build-step-annotation.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -42,6 +45,7 @@ export class PlacedBrickQueryParameters {
     rotationZ: number | null | undefined = null;
     rotationW: number | null | undefined = null;
     buildStepNumber: bigint | number | null | undefined = null;
+    isHidden: boolean | null | undefined = null;
     versionNumber: bigint | number | null | undefined = null;
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
@@ -58,9 +62,9 @@ export class PlacedBrickQueryParameters {
 //
 export class PlacedBrickSubmitData {
     id!: bigint | number;
-    projectId: bigint | number | null = null;
-    brickPartId: bigint | number | null = null;
-    brickColourId: bigint | number | null = null;
+    projectId!: bigint | number;
+    brickPartId!: bigint | number;
+    brickColourId!: bigint | number;
     positionX: number | null = null;
     positionY: number | null = null;
     positionZ: number | null = null;
@@ -69,6 +73,7 @@ export class PlacedBrickSubmitData {
     rotationZ: number | null = null;
     rotationW: number | null = null;
     buildStepNumber: bigint | number | null = null;
+    isHidden!: boolean;
     versionNumber!: bigint | number;
     active!: boolean;
     deleted!: boolean;
@@ -150,6 +155,7 @@ export class PlacedBrickData {
     rotationZ!: number | null;
     rotationW!: number | null;
     buildStepNumber!: bigint | number;
+    isHidden!: boolean;
     versionNumber!: bigint | number;
     objectGuid!: string;
     active!: boolean;
@@ -164,6 +170,21 @@ export class PlacedBrickData {
     private _placedBrickChangeHistories: PlacedBrickChangeHistoryData[] | null = null;
     private _placedBrickChangeHistoriesPromise: Promise<PlacedBrickChangeHistoryData[]> | null  = null;
     private _placedBrickChangeHistoriesSubject = new BehaviorSubject<PlacedBrickChangeHistoryData[] | null>(null);
+
+                
+    private _submodelPlacedBricks: SubmodelPlacedBrickData[] | null = null;
+    private _submodelPlacedBricksPromise: Promise<SubmodelPlacedBrickData[]> | null  = null;
+    private _submodelPlacedBricksSubject = new BehaviorSubject<SubmodelPlacedBrickData[] | null>(null);
+
+                
+    private _buildStepParts: BuildStepPartData[] | null = null;
+    private _buildStepPartsPromise: Promise<BuildStepPartData[]> | null  = null;
+    private _buildStepPartsSubject = new BehaviorSubject<BuildStepPartData[] | null>(null);
+
+                
+    private _buildStepAnnotations: BuildStepAnnotationData[] | null = null;
+    private _buildStepAnnotationsPromise: Promise<BuildStepAnnotationData[]> | null  = null;
+    private _buildStepAnnotationsSubject = new BehaviorSubject<BuildStepAnnotationData[] | null>(null);
 
                 
 
@@ -195,6 +216,63 @@ export class PlacedBrickData {
 
   
     public PlacedBrickChangeHistoriesCount$ = PlacedBrickChangeHistoryService.Instance.GetPlacedBrickChangeHistoriesRowCount({placedBrickId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    public SubmodelPlacedBricks$ = this._submodelPlacedBricksSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._submodelPlacedBricks === null && this._submodelPlacedBricksPromise === null) {
+            this.loadSubmodelPlacedBricks(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public SubmodelPlacedBricksCount$ = SubmodelPlacedBrickService.Instance.GetSubmodelPlacedBricksRowCount({placedBrickId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    public BuildStepParts$ = this._buildStepPartsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._buildStepParts === null && this._buildStepPartsPromise === null) {
+            this.loadBuildStepParts(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public BuildStepPartsCount$ = BuildStepPartService.Instance.GetBuildStepPartsRowCount({placedBrickId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    public BuildStepAnnotations$ = this._buildStepAnnotationsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._buildStepAnnotations === null && this._buildStepAnnotationsPromise === null) {
+            this.loadBuildStepAnnotations(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public BuildStepAnnotationsCount$ = BuildStepAnnotationService.Instance.GetBuildStepAnnotationsRowCount({placedBrickId: this.id,
       active: true,
       deleted: false
     });
@@ -242,6 +320,18 @@ export class PlacedBrickData {
      this._placedBrickChangeHistories = null;
      this._placedBrickChangeHistoriesPromise = null;
      this._placedBrickChangeHistoriesSubject.next(null);
+
+     this._submodelPlacedBricks = null;
+     this._submodelPlacedBricksPromise = null;
+     this._submodelPlacedBricksSubject.next(null);
+
+     this._buildStepParts = null;
+     this._buildStepPartsPromise = null;
+     this._buildStepPartsSubject.next(null);
+
+     this._buildStepAnnotations = null;
+     this._buildStepAnnotationsPromise = null;
+     this._buildStepAnnotationsSubject.next(null);
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -314,6 +404,201 @@ export class PlacedBrickData {
 
     public get HasPlacedBrickChangeHistories(): Promise<boolean> {
         return this.PlacedBrickChangeHistories.then(placedBrickChangeHistories => placedBrickChangeHistories.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the SubmodelPlacedBricks for this PlacedBrick.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.placedBrick.SubmodelPlacedBricks.then(placedBricks => { ... })
+     *   or
+     *   await this.placedBrick.placedBricks
+     *
+    */
+    public get SubmodelPlacedBricks(): Promise<SubmodelPlacedBrickData[]> {
+        if (this._submodelPlacedBricks !== null) {
+            return Promise.resolve(this._submodelPlacedBricks);
+        }
+
+        if (this._submodelPlacedBricksPromise !== null) {
+            return this._submodelPlacedBricksPromise;
+        }
+
+        // Start the load
+        this.loadSubmodelPlacedBricks();
+
+        return this._submodelPlacedBricksPromise!;
+    }
+
+
+
+    private loadSubmodelPlacedBricks(): void {
+
+        this._submodelPlacedBricksPromise = lastValueFrom(
+            PlacedBrickService.Instance.GetSubmodelPlacedBricksForPlacedBrick(this.id)
+        )
+        .then(SubmodelPlacedBricks => {
+            this._submodelPlacedBricks = SubmodelPlacedBricks ?? [];
+            this._submodelPlacedBricksSubject.next(this._submodelPlacedBricks);
+            return this._submodelPlacedBricks;
+         })
+        .catch(err => {
+            this._submodelPlacedBricks = [];
+            this._submodelPlacedBricksSubject.next(this._submodelPlacedBricks);
+            throw err;
+        })
+        .finally(() => {
+            this._submodelPlacedBricksPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached SubmodelPlacedBrick. Call after mutations to force refresh.
+     */
+    public ClearSubmodelPlacedBricksCache(): void {
+        this._submodelPlacedBricks = null;
+        this._submodelPlacedBricksPromise = null;
+        this._submodelPlacedBricksSubject.next(this._submodelPlacedBricks);      // Emit to observable
+    }
+
+    public get HasSubmodelPlacedBricks(): Promise<boolean> {
+        return this.SubmodelPlacedBricks.then(submodelPlacedBricks => submodelPlacedBricks.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the BuildStepParts for this PlacedBrick.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.placedBrick.BuildStepParts.then(placedBricks => { ... })
+     *   or
+     *   await this.placedBrick.placedBricks
+     *
+    */
+    public get BuildStepParts(): Promise<BuildStepPartData[]> {
+        if (this._buildStepParts !== null) {
+            return Promise.resolve(this._buildStepParts);
+        }
+
+        if (this._buildStepPartsPromise !== null) {
+            return this._buildStepPartsPromise;
+        }
+
+        // Start the load
+        this.loadBuildStepParts();
+
+        return this._buildStepPartsPromise!;
+    }
+
+
+
+    private loadBuildStepParts(): void {
+
+        this._buildStepPartsPromise = lastValueFrom(
+            PlacedBrickService.Instance.GetBuildStepPartsForPlacedBrick(this.id)
+        )
+        .then(BuildStepParts => {
+            this._buildStepParts = BuildStepParts ?? [];
+            this._buildStepPartsSubject.next(this._buildStepParts);
+            return this._buildStepParts;
+         })
+        .catch(err => {
+            this._buildStepParts = [];
+            this._buildStepPartsSubject.next(this._buildStepParts);
+            throw err;
+        })
+        .finally(() => {
+            this._buildStepPartsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached BuildStepPart. Call after mutations to force refresh.
+     */
+    public ClearBuildStepPartsCache(): void {
+        this._buildStepParts = null;
+        this._buildStepPartsPromise = null;
+        this._buildStepPartsSubject.next(this._buildStepParts);      // Emit to observable
+    }
+
+    public get HasBuildStepParts(): Promise<boolean> {
+        return this.BuildStepParts.then(buildStepParts => buildStepParts.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the BuildStepAnnotations for this PlacedBrick.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.placedBrick.BuildStepAnnotations.then(placedBricks => { ... })
+     *   or
+     *   await this.placedBrick.placedBricks
+     *
+    */
+    public get BuildStepAnnotations(): Promise<BuildStepAnnotationData[]> {
+        if (this._buildStepAnnotations !== null) {
+            return Promise.resolve(this._buildStepAnnotations);
+        }
+
+        if (this._buildStepAnnotationsPromise !== null) {
+            return this._buildStepAnnotationsPromise;
+        }
+
+        // Start the load
+        this.loadBuildStepAnnotations();
+
+        return this._buildStepAnnotationsPromise!;
+    }
+
+
+
+    private loadBuildStepAnnotations(): void {
+
+        this._buildStepAnnotationsPromise = lastValueFrom(
+            PlacedBrickService.Instance.GetBuildStepAnnotationsForPlacedBrick(this.id)
+        )
+        .then(BuildStepAnnotations => {
+            this._buildStepAnnotations = BuildStepAnnotations ?? [];
+            this._buildStepAnnotationsSubject.next(this._buildStepAnnotations);
+            return this._buildStepAnnotations;
+         })
+        .catch(err => {
+            this._buildStepAnnotations = [];
+            this._buildStepAnnotationsSubject.next(this._buildStepAnnotations);
+            throw err;
+        })
+        .finally(() => {
+            this._buildStepAnnotationsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached BuildStepAnnotation. Call after mutations to force refresh.
+     */
+    public ClearBuildStepAnnotationsCache(): void {
+        this._buildStepAnnotations = null;
+        this._buildStepAnnotationsPromise = null;
+        this._buildStepAnnotationsSubject.next(this._buildStepAnnotations);      // Emit to observable
+    }
+
+    public get HasBuildStepAnnotations(): Promise<boolean> {
+        return this.BuildStepAnnotations.then(buildStepAnnotations => buildStepAnnotations.length > 0);
     }
 
 
@@ -396,6 +681,9 @@ export class PlacedBrickService extends SecureEndpointBase {
         alertService: AlertService,
         private utilityService: UtilityService,
         private placedBrickChangeHistoryService: PlacedBrickChangeHistoryService,
+        private submodelPlacedBrickService: SubmodelPlacedBrickService,
+        private buildStepPartService: BuildStepPartService,
+        private buildStepAnnotationService: BuildStepAnnotationService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
 
@@ -464,6 +752,7 @@ export class PlacedBrickService extends SecureEndpointBase {
         output.rotationZ = data.rotationZ;
         output.rotationW = data.rotationW;
         output.buildStepNumber = data.buildStepNumber;
+        output.isHidden = data.isHidden;
         output.versionNumber = data.versionNumber;
         output.active = data.active;
         output.deleted = data.deleted;
@@ -875,6 +1164,36 @@ export class PlacedBrickService extends SecureEndpointBase {
     }
 
 
+    public GetSubmodelPlacedBricksForPlacedBrick(placedBrickId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<SubmodelPlacedBrickData[]> {
+        return this.submodelPlacedBrickService.GetSubmodelPlacedBrickList({
+            placedBrickId: placedBrickId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
+    public GetBuildStepPartsForPlacedBrick(placedBrickId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<BuildStepPartData[]> {
+        return this.buildStepPartService.GetBuildStepPartList({
+            placedBrickId: placedBrickId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
+    public GetBuildStepAnnotationsForPlacedBrick(placedBrickId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<BuildStepAnnotationData[]> {
+        return this.buildStepAnnotationService.GetBuildStepAnnotationList({
+            placedBrickId: placedBrickId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
  /**
    *
    * Revives a plain object from the server into a full PlacedBrickData instance.
@@ -914,6 +1233,18 @@ export class PlacedBrickService extends SecureEndpointBase {
     (revived as any)._placedBrickChangeHistoriesPromise = null;
     (revived as any)._placedBrickChangeHistoriesSubject = new BehaviorSubject<PlacedBrickChangeHistoryData[] | null>(null);
 
+    (revived as any)._submodelPlacedBricks = null;
+    (revived as any)._submodelPlacedBricksPromise = null;
+    (revived as any)._submodelPlacedBricksSubject = new BehaviorSubject<SubmodelPlacedBrickData[] | null>(null);
+
+    (revived as any)._buildStepParts = null;
+    (revived as any)._buildStepPartsPromise = null;
+    (revived as any)._buildStepPartsSubject = new BehaviorSubject<BuildStepPartData[] | null>(null);
+
+    (revived as any)._buildStepAnnotations = null;
+    (revived as any)._buildStepAnnotationsPromise = null;
+    (revived as any)._buildStepAnnotationsSubject = new BehaviorSubject<BuildStepAnnotationData[] | null>(null);
+
 
     //
     // Re-attach ALL public observables with their lazy-load tap() triggers
@@ -936,6 +1267,54 @@ export class PlacedBrickService extends SecureEndpointBase {
       );
 
     (revived as any).PlacedBrickChangeHistoriesCount$ = PlacedBrickChangeHistoryService.Instance.GetPlacedBrickChangeHistoriesRowCount({placedBrickId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).SubmodelPlacedBricks$ = (revived as any)._submodelPlacedBricksSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._submodelPlacedBricks === null && (revived as any)._submodelPlacedBricksPromise === null) {
+                (revived as any).loadSubmodelPlacedBricks();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).SubmodelPlacedBricksCount$ = SubmodelPlacedBrickService.Instance.GetSubmodelPlacedBricksRowCount({placedBrickId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).BuildStepParts$ = (revived as any)._buildStepPartsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._buildStepParts === null && (revived as any)._buildStepPartsPromise === null) {
+                (revived as any).loadBuildStepParts();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).BuildStepPartsCount$ = BuildStepPartService.Instance.GetBuildStepPartsRowCount({placedBrickId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).BuildStepAnnotations$ = (revived as any)._buildStepAnnotationsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._buildStepAnnotations === null && (revived as any)._buildStepAnnotationsPromise === null) {
+                (revived as any).loadBuildStepAnnotations();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).BuildStepAnnotationsCount$ = BuildStepAnnotationService.Instance.GetBuildStepAnnotationsRowCount({placedBrickId: (revived as any).id,
       active: true,
       deleted: false
     });

@@ -88,11 +88,14 @@
                                 <label for="BrickColour-isMetallic" class="form-check-label" id="label-BrickColour-isMetallic"><span class="text-danger">*</span>Is Metallic</label>
                             </div>
                             <div class="form-group" *ngIf="!isFieldHidden('colourFinishId')">
-                                <label for="BrickColour-colourFinishId" id="label-BrickColour-colourFinishId">Colour Finish</label>
+                                <label for="BrickColour-colourFinishId" id="label-BrickColour-colourFinishId"><span class="text-danger">*</span>Colour Finish</label>
                                 <select id="BrickColour-colourFinishId" formControlName="colourFinishId" class="form-select brick-colour-select" [disabled]="!userIsBMCBrickColourWriter()">
                                     <option [ngValue]="null">Select Colour Finish</option>
-                                    <option *ngFor="let colourFinish of colourFinishs$ | async" [ngValue]="colourFinish.id">{{colourFinish.name}}</option>
+                                    <option *ngFor="let colourFinish of colourFinishes$ | async" [ngValue]="colourFinish.id">{{colourFinish.name}}</option>
                                 </select>
+                                <div *ngIf="brickColourForm.get('colourFinishId')?.invalid && brickColourForm.get('colourFinishId')?.touched" class="text-danger">
+                                    Colour Finish is required
+                                </div>
                             </div>
                             <div class="form-group" *ngIf="!isFieldHidden('luminance')">
                                 <label for="BrickColour-luminance" id="label-BrickColour-luminance">Luminance</label>
@@ -167,6 +170,57 @@
                                 </div>
                                 <div class="d-flex justify-content-end">
                                     <app-placed-brick-add-edit [preSeededData]="{ brickColourId: brickColourData?.id }" [hiddenFields]="['brickColourId']"></app-placed-brick-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="legoSetPartService.userIsBMCLegoSetPartReader()">
+                            <button ngbNavLink>Lego Set Parts
+                                <span class="badge bg-primary ms-2">
+                                    {{ (brickColourData?.LegoSetPartsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-lego-set-part-table [queryParams]="{ brickColourId: brickColourData?.id }"></app-lego-set-part-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-lego-set-part-add-edit [preSeededData]="{ brickColourId: brickColourData?.id }" [hiddenFields]="['brickColourId']"></app-lego-set-part-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="userCollectionPartService.userIsBMCUserCollectionPartReader()">
+                            <button ngbNavLink>User Collection Parts
+                                <span class="badge bg-primary ms-2">
+                                    {{ (brickColourData?.UserCollectionPartsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-user-collection-part-table [queryParams]="{ brickColourId: brickColourData?.id }"></app-user-collection-part-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-user-collection-part-add-edit [preSeededData]="{ brickColourId: brickColourData?.id }" [hiddenFields]="['brickColourId']"></app-user-collection-part-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="userWishlistItemService.userIsBMCUserWishlistItemReader()">
+                            <button ngbNavLink>User Wishlist Items
+                                <span class="badge bg-primary ms-2">
+                                    {{ (brickColourData?.UserWishlistItemsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-user-wishlist-item-table [queryParams]="{ brickColourId: brickColourData?.id }"></app-user-wishlist-item-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-user-wishlist-item-add-edit [preSeededData]="{ brickColourId: brickColourData?.id }" [hiddenFields]="['brickColourId']"></app-user-wishlist-item-add-edit>
                                 </div>
                             </div>
                             </ng-template>

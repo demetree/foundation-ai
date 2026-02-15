@@ -77,6 +77,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			float? rotationZ = null,
 			float? rotationW = null,
 			int? buildStepNumber = null,
+			bool? isHidden = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -175,6 +176,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(pb => pb.buildStepNumber == buildStepNumber.Value);
 			}
+			if (isHidden.HasValue == true)
+			{
+				query = query.Where(pb => pb.isHidden == isHidden.Value);
+			}
 			if (versionNumber.HasValue == true)
 			{
 				query = query.Where(pb => pb.versionNumber == versionNumber.Value);
@@ -246,6 +251,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       || (includeRelations == true && x.project.name.Contains(anyStringContains))
 			       || (includeRelations == true && x.project.description.Contains(anyStringContains))
 			       || (includeRelations == true && x.project.notes.Contains(anyStringContains))
+			       || (includeRelations == true && x.project.thumbnailImagePath.Contains(anyStringContains))
 			   );
 			}
 
@@ -299,6 +305,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			float? rotationZ = null,
 			float? rotationW = null,
 			int? buildStepNumber = null,
+			bool? isHidden = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -377,6 +384,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(pb => pb.buildStepNumber == buildStepNumber.Value);
 			}
+			if (isHidden.HasValue == true)
+			{
+				query = query.Where(pb => pb.isHidden == isHidden.Value);
+			}
 			if (versionNumber.HasValue == true)
 			{
 				query = query.Where(pb => pb.versionNumber == versionNumber.Value);
@@ -431,6 +442,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       || x.project.name.Contains(anyStringContains)
 			       || x.project.description.Contains(anyStringContains)
 			       || x.project.notes.Contains(anyStringContains)
+			       || x.project.thumbnailImagePath.Contains(anyStringContains)
 			   );
 			}
 
@@ -797,7 +809,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 				    //
 				    // Nullify all object properties before serializing.
 				    //
+					placedBrick.BuildStepAnnotations = null;
+					placedBrick.BuildStepParts = null;
 					placedBrick.PlacedBrickChangeHistories = null;
+					placedBrick.SubmodelPlacedBricks = null;
 					placedBrick.brickColour = null;
 					placedBrick.brickPart = null;
 					placedBrick.project = null;
@@ -915,7 +930,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 				//
 				// Remove any object fields from the clone object so that it can serialize effectively
 				//
+				cloneOfExisting.BuildStepAnnotations = null;
+				cloneOfExisting.BuildStepParts = null;
 				cloneOfExisting.PlacedBrickChangeHistories = null;
+				cloneOfExisting.SubmodelPlacedBricks = null;
 				cloneOfExisting.brickColour = null;
 				cloneOfExisting.brickPart = null;
 				cloneOfExisting.project = null;
@@ -958,6 +976,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 				    placedBrick.rotationZ = oldPlacedBrick.rotationZ;
 				    placedBrick.rotationW = oldPlacedBrick.rotationW;
 				    placedBrick.buildStepNumber = oldPlacedBrick.buildStepNumber;
+				    placedBrick.isHidden = oldPlacedBrick.isHidden;
 				    placedBrick.objectGuid = oldPlacedBrick.objectGuid;
 				    placedBrick.active = oldPlacedBrick.active;
 				    placedBrick.deleted = oldPlacedBrick.deleted;
@@ -1411,6 +1430,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			float? rotationZ = null,
 			float? rotationW = null,
 			int? buildStepNumber = null,
+			bool? isHidden = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -1508,6 +1528,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(pb => pb.buildStepNumber == buildStepNumber.Value);
 			}
+			if (isHidden.HasValue == true)
+			{
+				query = query.Where(pb => pb.isHidden == isHidden.Value);
+			}
 			if (versionNumber.HasValue == true)
 			{
 				query = query.Where(pb => pb.versionNumber == versionNumber.Value);
@@ -1563,6 +1587,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       || x.project.name.Contains(anyStringContains)
 			       || x.project.description.Contains(anyStringContains)
 			       || x.project.notes.Contains(anyStringContains)
+			       || x.project.thumbnailImagePath.Contains(anyStringContains)
 			   );
 			}
 

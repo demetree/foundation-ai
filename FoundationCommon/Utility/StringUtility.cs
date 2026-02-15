@@ -976,6 +976,10 @@ namespace Foundation
             {
                 return str + "es";      // Address -> Addresses for example
             }
+            else if (str.EndsWith("sh") == true)
+            {
+                return str + "es";      // Finish -> Finishes for example
+            }
             else
             {
                 return str + "s";

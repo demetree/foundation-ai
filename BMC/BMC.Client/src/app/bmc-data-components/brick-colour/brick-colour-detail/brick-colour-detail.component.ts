@@ -26,6 +26,9 @@ import { BrickColourService, BrickColourData, BrickColourSubmitData } from '../.
 import { ColourFinishService } from '../../../bmc-data-services/colour-finish.service';
 import { BrickPartColourService } from '../../../bmc-data-services/brick-part-colour.service';
 import { PlacedBrickService } from '../../../bmc-data-services/placed-brick.service';
+import { LegoSetPartService } from '../../../bmc-data-services/lego-set-part.service';
+import { UserCollectionPartService } from '../../../bmc-data-services/user-collection-part.service';
+import { UserWishlistItemService } from '../../../bmc-data-services/user-wishlist-item.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -44,7 +47,7 @@ interface BrickColourFormValues {
   alpha: string | null,     // Stored as string for form input, converted to number on submit.
   isTransparent: boolean,
   isMetallic: boolean,
-  colourFinishId: number | bigint | null,       // For FK link number
+  colourFinishId: number | bigint,       // For FK link number
   luminance: string | null,     // Stored as string for form input, converted to number on submit.
   legoColourId: string | null,     // Stored as string for form input, converted to number on submit.
   sequence: string | null,     // Stored as string for form input, converted to number on submit.
@@ -84,7 +87,7 @@ export class BrickColourDetailComponent implements OnInit, CanComponentDeactivat
         alpha: [''],
         isTransparent: [false],
         isMetallic: [false],
-        colourFinishId: [null],
+        colourFinishId: [null, Validators.required],
         luminance: [''],
         legoColourId: [''],
         sequence: [''],
@@ -104,9 +107,12 @@ export class BrickColourDetailComponent implements OnInit, CanComponentDeactivat
   public isEditMode = true;   // Defaults to true (edit).  Gets set to false in ngOnInit if route is 'new'
 
   brickColours$ = this.brickColourService.GetBrickColourList();
-  public colourFinishs$ = this.colourFinishService.GetColourFinishList();
+  public colourFinishes$ = this.colourFinishService.GetColourFinishList();
   public brickPartColours$ = this.brickPartColourService.GetBrickPartColourList();
   public placedBricks$ = this.placedBrickService.GetPlacedBrickList();
+  public legoSetParts$ = this.legoSetPartService.GetLegoSetPartList();
+  public userCollectionParts$ = this.userCollectionPartService.GetUserCollectionPartList();
+  public userWishlistItems$ = this.userWishlistItemService.GetUserWishlistItemList();
 
   private destroy$ = new Subject<void>();
 
@@ -115,6 +121,9 @@ export class BrickColourDetailComponent implements OnInit, CanComponentDeactivat
     public colourFinishService: ColourFinishService,
     public brickPartColourService: BrickPartColourService,
     public placedBrickService: PlacedBrickService,
+    public legoSetPartService: LegoSetPartService,
+    public userCollectionPartService: UserCollectionPartService,
+    public userWishlistItemService: UserWishlistItemService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,
@@ -497,7 +506,7 @@ export class BrickColourDetailComponent implements OnInit, CanComponentDeactivat
         alpha: formValue.alpha ? Number(formValue.alpha) : null,
         isTransparent: !!formValue.isTransparent,
         isMetallic: !!formValue.isMetallic,
-        colourFinishId: formValue.colourFinishId ? Number(formValue.colourFinishId) : null,
+        colourFinishId: Number(formValue.colourFinishId),
         luminance: formValue.luminance ? Number(formValue.luminance) : null,
         legoColourId: formValue.legoColourId ? Number(formValue.legoColourId) : null,
         sequence: formValue.sequence ? Number(formValue.sequence) : null,

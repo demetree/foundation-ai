@@ -67,6 +67,10 @@
                 Build  Step  Number
                 <span *ngIf="sortColumn === 'buildStepNumber'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('isHidden')">
+                Is  Hidden
+                <span *ngIf="sortColumn === 'isHidden'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
 End of commented block for alternate definition option -->
           </tr>
         </thead>
@@ -160,6 +164,7 @@ End of commented block for alternate definition option -->
             <td class="text-truncate">{{placedBrick.rotationZ | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{placedBrick.rotationW | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{placedBrick.buildStepNumber | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate"><boolean-icon [value]="placedBrick.isHidden"/></td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -350,6 +355,10 @@ End of commented block for alternate definition option -->
             <p class="placed-brick-info" *ngIf="placedBrick.buildStepNumber != null">
               <strong>Build Step Number: </strong>
               {{placedBrick.buildStepNumber | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="placed-brick-info" *ngIf="placedBrick.isHidden != null">
+              <strong>Is Hidden: </strong>
+              <boolean-icon [value]="placedBrick.isHidden"/>
             </p>
             </div>
          </div>

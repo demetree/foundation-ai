@@ -9,9 +9,9 @@ public partial class BrickPartConnector
 {
     public int id { get; set; }
 
-    public int? brickPartId { get; set; }
+    public int brickPartId { get; set; }
 
-    public int? connectorTypeId { get; set; }
+    public int connectorTypeId { get; set; }
 
     public float? positionX { get; set; }
 

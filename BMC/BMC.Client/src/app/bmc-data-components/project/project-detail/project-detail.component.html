@@ -35,6 +35,18 @@
                                 <label for="Project-notes" id="label-Project-notes">Notes</label>
                                 <textarea id="Project-notes" formControlName="notes" placeholder="Enter Notes" class="form-control project-input" [disabled]="!userIsBMCProjectWriter()"></textarea>
                             </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('thumbnailImagePath')">
+                                <label for="Project-thumbnailImagePath" id="label-Project-thumbnailImagePath">Thumbnail Image Path</label>
+                                <input type="text" id="Project-thumbnailImagePath" formControlName="thumbnailImagePath" placeholder="Enter Thumbnail Image Path" class="form-control project-input" [disabled]="!userIsBMCProjectWriter()" aria-labelledby="label-thumbnailImagePath" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('partCount')">
+                                <label for="Project-partCount" id="label-Project-partCount">Part Count</label>
+                                <input type="number" id="Project-partCount" formControlName="partCount" placeholder="Enter Part Count" class="form-control project-input" [disabled]="!userIsBMCProjectWriter()" aria-labelledby="label-partCount" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('lastBuildDate')">
+                                <label for="Project-lastBuildDate" id="label-Project-lastBuildDate">Last Build Date</label>
+                                <input type="datetime-local" id="Project-lastBuildDate" formControlName="lastBuildDate" placeholder="Enter Last Build Date" class="form-control project-input" [disabled]="!userIsBMCProjectWriter()" aria-labelledby="label-lastBuildDate" />
+                            </div>
                             <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
                                 <label for="Project-versionNumber" id="label-Project-versionNumber"><span class="text-danger">*</span>Version Number</label>
                                 <input type="number" id="Project-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control project-input" />
@@ -117,6 +129,125 @@
                                 </div>
                                 <div class="d-flex justify-content-end">
                                     <app-brick-connection-add-edit [preSeededData]="{ projectId: projectData?.id }" [hiddenFields]="['projectId']"></app-brick-connection-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="submodelService.userIsBMCSubmodelReader()">
+                            <button ngbNavLink>Submodels
+                                <span class="badge bg-primary ms-2">
+                                    {{ (projectData?.SubmodelsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-submodel-table [queryParams]="{ projectId: projectData?.id }"></app-submodel-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-submodel-add-edit [preSeededData]="{ projectId: projectData?.id }" [hiddenFields]="['projectId']"></app-submodel-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="projectTagAssignmentService.userIsBMCProjectTagAssignmentReader()">
+                            <button ngbNavLink>Project Tag Assignments
+                                <span class="badge bg-primary ms-2">
+                                    {{ (projectData?.ProjectTagAssignmentsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-project-tag-assignment-table [queryParams]="{ projectId: projectData?.id }"></app-project-tag-assignment-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-project-tag-assignment-add-edit [preSeededData]="{ projectId: projectData?.id }" [hiddenFields]="['projectId']"></app-project-tag-assignment-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="projectCameraPresetService.userIsBMCProjectCameraPresetReader()">
+                            <button ngbNavLink>Project Camera Presets
+                                <span class="badge bg-primary ms-2">
+                                    {{ (projectData?.ProjectCameraPresetsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-project-camera-preset-table [queryParams]="{ projectId: projectData?.id }"></app-project-camera-preset-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-project-camera-preset-add-edit [preSeededData]="{ projectId: projectData?.id }" [hiddenFields]="['projectId']"></app-project-camera-preset-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="projectReferenceImageService.userIsBMCProjectReferenceImageReader()">
+                            <button ngbNavLink>Project Reference Images
+                                <span class="badge bg-primary ms-2">
+                                    {{ (projectData?.ProjectReferenceImagesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-project-reference-image-table [queryParams]="{ projectId: projectData?.id }"></app-project-reference-image-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-project-reference-image-add-edit [preSeededData]="{ projectId: projectData?.id }" [hiddenFields]="['projectId']"></app-project-reference-image-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="buildManualService.userIsBMCBuildManualReader()">
+                            <button ngbNavLink>Build Manuals
+                                <span class="badge bg-primary ms-2">
+                                    {{ (projectData?.BuildManualsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-build-manual-table [queryParams]="{ projectId: projectData?.id }"></app-build-manual-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-build-manual-add-edit [preSeededData]="{ projectId: projectData?.id }" [hiddenFields]="['projectId']"></app-build-manual-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="projectRenderService.userIsBMCProjectRenderReader()">
+                            <button ngbNavLink>Project Renders
+                                <span class="badge bg-primary ms-2">
+                                    {{ (projectData?.ProjectRendersCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-project-render-table [queryParams]="{ projectId: projectData?.id }"></app-project-render-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-project-render-add-edit [preSeededData]="{ projectId: projectData?.id }" [hiddenFields]="['projectId']"></app-project-render-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="projectExportService.userIsBMCProjectExportReader()">
+                            <button ngbNavLink>Project Exports
+                                <span class="badge bg-primary ms-2">
+                                    {{ (projectData?.ProjectExportsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-project-export-table [queryParams]="{ projectId: projectData?.id }"></app-project-export-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-project-export-add-edit [preSeededData]="{ projectId: projectData?.id }" [hiddenFields]="['projectId']"></app-project-export-add-edit>
                                 </div>
                             </div>
                             </ng-template>

@@ -35,6 +35,18 @@
                 Notes
                 <span *ngIf="sortColumn === 'notes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('thumbnailImagePath')">
+                Thumbnail  Image  Path
+                <span *ngIf="sortColumn === 'thumbnailImagePath'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('partCount')">
+                Part  Count
+                <span *ngIf="sortColumn === 'partCount'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('lastBuildDate')">
+                Last  Build  Date
+                <span *ngIf="sortColumn === 'lastBuildDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
 End of commented block for alternate definition option -->
           </tr>
         </thead>
@@ -120,6 +132,9 @@ End of commented block for alternate definition option -->
             <td class="text-truncate"><a [routerLink]="['/project', project.id]" class="btn btn-link text-left" ngbTooltip="Open Project details">{{project.name}}</a></td>
             <td class="text-truncate">{{project.description}}</td>
             <td class="text-truncate">{{project.notes}}</td>
+            <td class="text-truncate">{{project.thumbnailImagePath}}</td>
+            <td class="text-truncate">{{project.partCount | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{project.lastBuildDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -277,6 +292,18 @@ End of commented block for alternate definition option -->
             <p class="project-info" *ngIf="project.notes != null">
               <strong>Notes: </strong>
               {{project.notes}}
+            </p>
+            <p class="project-info" *ngIf="project.thumbnailImagePath != null">
+              <strong>Thumbnail Image Path: </strong>
+              {{project.thumbnailImagePath}}
+            </p>
+            <p class="project-info" *ngIf="project.partCount != null">
+              <strong>Part Count: </strong>
+              {{project.partCount | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="project-info" *ngIf="project.lastBuildDate != null">
+              <strong>Last Build Date: </strong>
+              {{project.lastBuildDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
             </p>
             </div>
          </div>

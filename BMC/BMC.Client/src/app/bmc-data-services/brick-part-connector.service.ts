@@ -53,8 +53,8 @@ export class BrickPartConnectorQueryParameters {
 //
 export class BrickPartConnectorSubmitData {
     id!: bigint | number;
-    brickPartId: bigint | number | null = null;
-    connectorTypeId: bigint | number | null = null;
+    brickPartId!: bigint | number;
+    connectorTypeId!: bigint | number;
     positionX: number | null = null;
     positionY: number | null = null;
     positionZ: number | null = null;

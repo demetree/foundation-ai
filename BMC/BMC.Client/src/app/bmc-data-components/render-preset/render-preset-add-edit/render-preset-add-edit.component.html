@@ -1,0 +1,107 @@
+<div class="add-render-preset" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-render-preset me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Render Preset" 
+        *ngIf="userIsBMCRenderPresetWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #renderPresetModal let-modal>
+   <div class="modal-header bg-dark text-light render-preset-modal-header">
+      <h5 class="modal-title mb-0" id="renderPresetModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Render Preset' : 'Add Render Preset' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body render-preset-modal-body">
+      <form [formGroup]="renderPresetForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="RenderPreset-name" id="label-RenderPreset-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="RenderPreset-name" formControlName="name" placeholder="Enter Name" class="form-control render-preset-input" [disabled]="!userIsBMCRenderPresetWriter()" aria-labelledby="label-name" />
+                <div *ngIf="renderPresetForm.get('name')?.invalid && renderPresetForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="RenderPreset-description" id="label-RenderPreset-description"><span class="text-danger">*</span>Description</label>
+                <textarea id="RenderPreset-description" formControlName="description" placeholder="Enter Description" class="form-control render-preset-input" [disabled]="!userIsBMCRenderPresetWriter()"></textarea>
+                <div *ngIf="renderPresetForm.get('description')?.invalid && renderPresetForm.get('description')?.touched" class="text-danger">
+                    Description is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('resolutionWidth')">
+                <label for="RenderPreset-resolutionWidth" id="label-RenderPreset-resolutionWidth">Resolution Width</label>
+                <input type="number" id="RenderPreset-resolutionWidth" formControlName="resolutionWidth" placeholder="Enter Resolution Width" class="form-control render-preset-input" [disabled]="!userIsBMCRenderPresetWriter()" aria-labelledby="label-resolutionWidth" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('resolutionHeight')">
+                <label for="RenderPreset-resolutionHeight" id="label-RenderPreset-resolutionHeight">Resolution Height</label>
+                <input type="number" id="RenderPreset-resolutionHeight" formControlName="resolutionHeight" placeholder="Enter Resolution Height" class="form-control render-preset-input" [disabled]="!userIsBMCRenderPresetWriter()" aria-labelledby="label-resolutionHeight" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('backgroundColorHex')">
+                <label for="RenderPreset-backgroundColorHex" id="label-RenderPreset-backgroundColorHex">Background Color Hex</label>
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="RenderPreset-backgroundColorHex" 
+                        formControlName="backgroundColorHex" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsBMCRenderPresetWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="renderPresetForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('enableShadows')">
+                <input type="checkbox" id="RenderPreset-enableShadows" formControlName="enableShadows" class="form-check-input" [disabled]="!userIsBMCRenderPresetWriter()" />
+                <label for="RenderPreset-enableShadows" class="form-check-label" id="label-RenderPreset-enableShadows"><span class="text-danger">*</span>Enable Shadows</label>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('enableReflections')">
+                <input type="checkbox" id="RenderPreset-enableReflections" formControlName="enableReflections" class="form-check-input" [disabled]="!userIsBMCRenderPresetWriter()" />
+                <label for="RenderPreset-enableReflections" class="form-check-label" id="label-RenderPreset-enableReflections"><span class="text-danger">*</span>Enable Reflections</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('lightingMode')">
+                <label for="RenderPreset-lightingMode" id="label-RenderPreset-lightingMode">Lighting Mode</label>
+                <input type="text" id="RenderPreset-lightingMode" formControlName="lightingMode" placeholder="Enter Lighting Mode" class="form-control render-preset-input" [disabled]="!userIsBMCRenderPresetWriter()" aria-labelledby="label-lightingMode" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('antiAliasLevel')">
+                <label for="RenderPreset-antiAliasLevel" id="label-RenderPreset-antiAliasLevel">Anti Alias Level</label>
+                <input type="number" id="RenderPreset-antiAliasLevel" formControlName="antiAliasLevel" placeholder="Enter Anti Alias Level" class="form-control render-preset-input" [disabled]="!userIsBMCRenderPresetWriter()" aria-labelledby="label-antiAliasLevel" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="RenderPreset-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCRenderPresetWriter()" />
+                <label for="RenderPreset-active" class="form-check-label" id="label-RenderPreset-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="RenderPreset-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCRenderPresetWriter()" />
+                <label for="RenderPreset-deleted" class="form-check-label" id="label-RenderPreset-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer render-preset-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Render Preset changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !renderPresetForm.valid || renderPresetForm.pristine  || userIsBMCRenderPresetWriter() == false " ngbTooltip="Save the Render Preset changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Render Preset' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

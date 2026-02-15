@@ -1,0 +1,67 @@
+<div class="add-build-step-part" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-build-step-part me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Build Step Part" 
+        *ngIf="userIsBMCBuildStepPartWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #buildStepPartModal let-modal>
+   <div class="modal-header bg-dark text-light build-step-part-modal-header">
+      <h5 class="modal-title mb-0" id="buildStepPartModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Build Step Part' : 'Add Build Step Part' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body build-step-part-modal-body">
+      <form [formGroup]="buildStepPartForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('buildManualStepId')">
+                <label for="BuildStepPart-buildManualStepId" id="label-BuildStepPart-buildManualStepId"><span class="text-danger">*</span>Build Manual Step</label>
+                <select id="BuildStepPart-buildManualStepId" formControlName="buildManualStepId" class="form-select build-step-part-select" [disabled]="!userIsBMCBuildStepPartWriter()">
+                    <option [ngValue]="null">Select Build Manual Step</option>
+                    <option *ngFor="let buildManualStep of buildManualSteps$ | async" [ngValue]="buildManualStep.id">{{buildManualStep.id}}</option>
+                </select>
+                <div *ngIf="buildStepPartForm.get('buildManualStepId')?.invalid && buildStepPartForm.get('buildManualStepId')?.touched" class="text-danger">
+                    Build Manual Step is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('placedBrickId')">
+                <label for="BuildStepPart-placedBrickId" id="label-BuildStepPart-placedBrickId"><span class="text-danger">*</span>Placed Brick</label>
+                <select id="BuildStepPart-placedBrickId" formControlName="placedBrickId" class="form-select build-step-part-select" [disabled]="!userIsBMCBuildStepPartWriter()">
+                    <option [ngValue]="null">Select Placed Brick</option>
+                    <option *ngFor="let placedBrick of placedBricks$ | async" [ngValue]="placedBrick.id">{{placedBrick.id}}</option>
+                </select>
+                <div *ngIf="buildStepPartForm.get('placedBrickId')?.invalid && buildStepPartForm.get('placedBrickId')?.touched" class="text-danger">
+                    Placed Brick is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="BuildStepPart-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCBuildStepPartWriter()" />
+                <label for="BuildStepPart-active" class="form-check-label" id="label-BuildStepPart-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="BuildStepPart-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCBuildStepPartWriter()" />
+                <label for="BuildStepPart-deleted" class="form-check-label" id="label-BuildStepPart-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer build-step-part-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Build Step Part changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !buildStepPartForm.valid || buildStepPartForm.pristine  || userIsBMCBuildStepPartWriter() == false " ngbTooltip="Save the Build Step Part changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Build Step Part' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

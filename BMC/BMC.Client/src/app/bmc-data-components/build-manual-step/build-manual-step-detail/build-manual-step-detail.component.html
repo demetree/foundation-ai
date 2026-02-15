@@ -1,0 +1,142 @@
+<div class="container-fluid p-1 m-0 build-manual-step-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="build-manual-step-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Build Manual Step</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Build Manual Step' : 'Add Build Manual Step'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCBuildManualStepReader()">
+                <div class="col m-2 build-manual-step-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="buildManualStepForm" (ngSubmit)="submitForm()" class="build-manual-step-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('buildManualPageId')">
+                                <label for="BuildManualStep-buildManualPageId" id="label-BuildManualStep-buildManualPageId"><span class="text-danger">*</span>Build Manual Page</label>
+                                <select id="BuildManualStep-buildManualPageId" formControlName="buildManualPageId" class="form-select build-manual-step-select" [disabled]="!userIsBMCBuildManualStepWriter()">
+                                    <option [ngValue]="null">Select Build Manual Page</option>
+                                    <option *ngFor="let buildManualPage of buildManualPages$ | async" [ngValue]="buildManualPage.id">{{buildManualPage.title}}</option>
+                                </select>
+                                <div *ngIf="buildManualStepForm.get('buildManualPageId')?.invalid && buildManualStepForm.get('buildManualPageId')?.touched" class="text-danger">
+                                    Build Manual Page is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('stepNumber')">
+                                <label for="BuildManualStep-stepNumber" id="label-BuildManualStep-stepNumber">Step Number</label>
+                                <input type="number" id="BuildManualStep-stepNumber" formControlName="stepNumber" placeholder="Enter Step Number" class="form-control build-manual-step-input" [disabled]="!userIsBMCBuildManualStepWriter()" aria-labelledby="label-stepNumber" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('cameraPositionX')">
+                                <label for="BuildManualStep-cameraPositionX" id="label-BuildManualStep-cameraPositionX">Camera Position X</label>
+                                <input type="number" id="BuildManualStep-cameraPositionX" formControlName="cameraPositionX" placeholder="Enter Camera Position X" class="form-control build-manual-step-input" [disabled]="!userIsBMCBuildManualStepWriter()" aria-labelledby="label-cameraPositionX" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('cameraPositionY')">
+                                <label for="BuildManualStep-cameraPositionY" id="label-BuildManualStep-cameraPositionY">Camera Position Y</label>
+                                <input type="number" id="BuildManualStep-cameraPositionY" formControlName="cameraPositionY" placeholder="Enter Camera Position Y" class="form-control build-manual-step-input" [disabled]="!userIsBMCBuildManualStepWriter()" aria-labelledby="label-cameraPositionY" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('cameraPositionZ')">
+                                <label for="BuildManualStep-cameraPositionZ" id="label-BuildManualStep-cameraPositionZ">Camera Position Z</label>
+                                <input type="number" id="BuildManualStep-cameraPositionZ" formControlName="cameraPositionZ" placeholder="Enter Camera Position Z" class="form-control build-manual-step-input" [disabled]="!userIsBMCBuildManualStepWriter()" aria-labelledby="label-cameraPositionZ" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('cameraTargetX')">
+                                <label for="BuildManualStep-cameraTargetX" id="label-BuildManualStep-cameraTargetX">Camera Target X</label>
+                                <input type="number" id="BuildManualStep-cameraTargetX" formControlName="cameraTargetX" placeholder="Enter Camera Target X" class="form-control build-manual-step-input" [disabled]="!userIsBMCBuildManualStepWriter()" aria-labelledby="label-cameraTargetX" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('cameraTargetY')">
+                                <label for="BuildManualStep-cameraTargetY" id="label-BuildManualStep-cameraTargetY">Camera Target Y</label>
+                                <input type="number" id="BuildManualStep-cameraTargetY" formControlName="cameraTargetY" placeholder="Enter Camera Target Y" class="form-control build-manual-step-input" [disabled]="!userIsBMCBuildManualStepWriter()" aria-labelledby="label-cameraTargetY" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('cameraTargetZ')">
+                                <label for="BuildManualStep-cameraTargetZ" id="label-BuildManualStep-cameraTargetZ">Camera Target Z</label>
+                                <input type="number" id="BuildManualStep-cameraTargetZ" formControlName="cameraTargetZ" placeholder="Enter Camera Target Z" class="form-control build-manual-step-input" [disabled]="!userIsBMCBuildManualStepWriter()" aria-labelledby="label-cameraTargetZ" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('cameraZoom')">
+                                <label for="BuildManualStep-cameraZoom" id="label-BuildManualStep-cameraZoom">Camera Zoom</label>
+                                <input type="number" id="BuildManualStep-cameraZoom" formControlName="cameraZoom" placeholder="Enter Camera Zoom" class="form-control build-manual-step-input" [disabled]="!userIsBMCBuildManualStepWriter()" aria-labelledby="label-cameraZoom" />
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('showExplodedView')">
+                                <input type="checkbox" id="BuildManualStep-showExplodedView" formControlName="showExplodedView" class="form-check-input" [disabled]="!userIsBMCBuildManualStepWriter()" />
+                                <label for="BuildManualStep-showExplodedView" class="form-check-label" id="label-BuildManualStep-showExplodedView"><span class="text-danger">*</span>Show Exploded View</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('explodedDistance')">
+                                <label for="BuildManualStep-explodedDistance" id="label-BuildManualStep-explodedDistance">Exploded Distance</label>
+                                <input type="number" id="BuildManualStep-explodedDistance" formControlName="explodedDistance" placeholder="Enter Exploded Distance" class="form-control build-manual-step-input" [disabled]="!userIsBMCBuildManualStepWriter()" aria-labelledby="label-explodedDistance" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="BuildManualStep-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCBuildManualStepWriter()" />
+                                <label for="BuildManualStep-active" class="form-check-label" id="label-BuildManualStep-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="BuildManualStep-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCBuildManualStepWriter()" />
+                                <label for="BuildManualStep-deleted" class="form-check-label" id="label-BuildManualStep-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="build-manual-step-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="buildManualStepForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Build Manual Step">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !buildManualStepForm.valid || !buildManualStepForm.dirty || buildManualStepForm.pristine  || userIsBMCBuildManualStepWriter() == false " ngbTooltip="Save the Build Manual Step changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Build Manual Step' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsBMCBuildManualStepReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 build-manual-step-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="buildStepPartService.userIsBMCBuildStepPartReader()">
+                            <button ngbNavLink>Build Step Parts
+                                <span class="badge bg-primary ms-2">
+                                    {{ (buildManualStepData?.BuildStepPartsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-build-step-part-table [queryParams]="{ buildManualStepId: buildManualStepData?.id }"></app-build-step-part-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-build-step-part-add-edit [preSeededData]="{ buildManualStepId: buildManualStepData?.id }" [hiddenFields]="['buildManualStepId']"></app-build-step-part-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="buildStepAnnotationService.userIsBMCBuildStepAnnotationReader()">
+                            <button ngbNavLink>Build Step Annotations
+                                <span class="badge bg-primary ms-2">
+                                    {{ (buildManualStepData?.BuildStepAnnotationsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-build-step-annotation-table [queryParams]="{ buildManualStepId: buildManualStepData?.id }"></app-build-step-annotation-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-build-step-annotation-add-edit [preSeededData]="{ buildManualStepId: buildManualStepData?.id }" [hiddenFields]="['buildManualStepId']"></app-build-step-annotation-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

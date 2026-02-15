@@ -56,7 +56,7 @@ End of commented block for alternate definition option -->
         <table class="custom-table mb-0">
         <tbody>
             <!-- Only visible rows are rendered -->
-          <tr *cdkVirtualFor="let colourFinish of filteredColourFinishs; trackBy: getColourFinishId"
+          <tr *cdkVirtualFor="let colourFinish of filteredColourFinishes; trackBy: getColourFinishId"
               [ngClass]="{
                  'row-inactive': colourFinish.active == false,
                  'row-deleted': colourFinish.deleted == true 
@@ -144,7 +144,7 @@ End of commented block for alternate definition option -->
 
       <!-- Cards for Mobile -->
       <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
-        <div *cdkVirtualFor="let colourFinish of filteredColourFinishs; trackBy: getColourFinishId" class="card my-2"
+        <div *cdkVirtualFor="let colourFinish of filteredColourFinishes; trackBy: getColourFinishId" class="card my-2"
               [ngClass]="{
                  'row-inactive': colourFinish.active == false,
                  'row-deleted': colourFinish.deleted == true 

@@ -21,8 +21,10 @@ namespace Foundation.BMC.Database
 		public class BrickPartConnectorDTO
 		{
 			public Int32 id { get; set; }
-			public Int32? brickPartId { get; set; }
-			public Int32? connectorTypeId { get; set; }
+			[Required]
+			public Int32 brickPartId { get; set; }
+			[Required]
+			public Int32 connectorTypeId { get; set; }
 			public Single? positionX { get; set; }
 			public Single? positionY { get; set; }
 			public Single? positionZ { get; set; }

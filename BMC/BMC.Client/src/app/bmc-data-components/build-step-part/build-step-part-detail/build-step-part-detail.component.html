@@ -1,0 +1,68 @@
+<div class="container-fluid p-1 m-0 build-step-part-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="build-step-part-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Build Step Part</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Build Step Part' : 'Add Build Step Part'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCBuildStepPartReader()">
+                <div class="col m-2 build-step-part-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="buildStepPartForm" (ngSubmit)="submitForm()" class="build-step-part-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('buildManualStepId')">
+                                <label for="BuildStepPart-buildManualStepId" id="label-BuildStepPart-buildManualStepId"><span class="text-danger">*</span>Build Manual Step</label>
+                                <select id="BuildStepPart-buildManualStepId" formControlName="buildManualStepId" class="form-select build-step-part-select" [disabled]="!userIsBMCBuildStepPartWriter()">
+                                    <option [ngValue]="null">Select Build Manual Step</option>
+                                    <option *ngFor="let buildManualStep of buildManualSteps$ | async" [ngValue]="buildManualStep.id">{{buildManualStep.id}}</option>
+                                </select>
+                                <div *ngIf="buildStepPartForm.get('buildManualStepId')?.invalid && buildStepPartForm.get('buildManualStepId')?.touched" class="text-danger">
+                                    Build Manual Step is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('placedBrickId')">
+                                <label for="BuildStepPart-placedBrickId" id="label-BuildStepPart-placedBrickId"><span class="text-danger">*</span>Placed Brick</label>
+                                <select id="BuildStepPart-placedBrickId" formControlName="placedBrickId" class="form-select build-step-part-select" [disabled]="!userIsBMCBuildStepPartWriter()">
+                                    <option [ngValue]="null">Select Placed Brick</option>
+                                    <option *ngFor="let placedBrick of placedBricks$ | async" [ngValue]="placedBrick.id">{{placedBrick.id}}</option>
+                                </select>
+                                <div *ngIf="buildStepPartForm.get('placedBrickId')?.invalid && buildStepPartForm.get('placedBrickId')?.touched" class="text-danger">
+                                    Placed Brick is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="BuildStepPart-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCBuildStepPartWriter()" />
+                                <label for="BuildStepPart-active" class="form-check-label" id="label-BuildStepPart-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="BuildStepPart-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCBuildStepPartWriter()" />
+                                <label for="BuildStepPart-deleted" class="form-check-label" id="label-BuildStepPart-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="build-step-part-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="buildStepPartForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Build Step Part">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !buildStepPartForm.valid || !buildStepPartForm.dirty || buildStepPartForm.pristine  || userIsBMCBuildStepPartWriter() == false " ngbTooltip="Save the Build Step Part changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Build Step Part' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

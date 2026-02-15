@@ -1,0 +1,96 @@
+<div class="add-project-reference-image" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-project-reference-image me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Project Reference Image" 
+        *ngIf="userIsBMCProjectReferenceImageWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #projectReferenceImageModal let-modal>
+   <div class="modal-header bg-dark text-light project-reference-image-modal-header">
+      <h5 class="modal-title mb-0" id="projectReferenceImageModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Project Reference Image' : 'Add Project Reference Image' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body project-reference-image-modal-body">
+      <form [formGroup]="projectReferenceImageForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('projectId')">
+                <label for="ProjectReferenceImage-projectId" id="label-ProjectReferenceImage-projectId"><span class="text-danger">*</span>Project</label>
+                <select id="ProjectReferenceImage-projectId" formControlName="projectId" class="form-select project-reference-image-select" [disabled]="!userIsBMCProjectReferenceImageWriter()">
+                    <option [ngValue]="null">Select Project</option>
+                    <option *ngFor="let project of projects$ | async" [ngValue]="project.id">{{project.name}}</option>
+                </select>
+                <div *ngIf="projectReferenceImageForm.get('projectId')?.invalid && projectReferenceImageForm.get('projectId')?.touched" class="text-danger">
+                    Project is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="ProjectReferenceImage-name" id="label-ProjectReferenceImage-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="ProjectReferenceImage-name" formControlName="name" placeholder="Enter Name" class="form-control project-reference-image-input" [disabled]="!userIsBMCProjectReferenceImageWriter()" aria-labelledby="label-name" />
+                <div *ngIf="projectReferenceImageForm.get('name')?.invalid && projectReferenceImageForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('imageFilePath')">
+                <label for="ProjectReferenceImage-imageFilePath" id="label-ProjectReferenceImage-imageFilePath">Image File Path</label>
+                <input type="text" id="ProjectReferenceImage-imageFilePath" formControlName="imageFilePath" placeholder="Enter Image File Path" class="form-control project-reference-image-input" [disabled]="!userIsBMCProjectReferenceImageWriter()" aria-labelledby="label-imageFilePath" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('opacity')">
+                <label for="ProjectReferenceImage-opacity" id="label-ProjectReferenceImage-opacity">Opacity</label>
+                <input type="number" id="ProjectReferenceImage-opacity" formControlName="opacity" placeholder="Enter Opacity" class="form-control project-reference-image-input" [disabled]="!userIsBMCProjectReferenceImageWriter()" aria-labelledby="label-opacity" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('positionX')">
+                <label for="ProjectReferenceImage-positionX" id="label-ProjectReferenceImage-positionX">Position X</label>
+                <input type="number" id="ProjectReferenceImage-positionX" formControlName="positionX" placeholder="Enter Position X" class="form-control project-reference-image-input" [disabled]="!userIsBMCProjectReferenceImageWriter()" aria-labelledby="label-positionX" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('positionY')">
+                <label for="ProjectReferenceImage-positionY" id="label-ProjectReferenceImage-positionY">Position Y</label>
+                <input type="number" id="ProjectReferenceImage-positionY" formControlName="positionY" placeholder="Enter Position Y" class="form-control project-reference-image-input" [disabled]="!userIsBMCProjectReferenceImageWriter()" aria-labelledby="label-positionY" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('positionZ')">
+                <label for="ProjectReferenceImage-positionZ" id="label-ProjectReferenceImage-positionZ">Position Z</label>
+                <input type="number" id="ProjectReferenceImage-positionZ" formControlName="positionZ" placeholder="Enter Position Z" class="form-control project-reference-image-input" [disabled]="!userIsBMCProjectReferenceImageWriter()" aria-labelledby="label-positionZ" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('scaleX')">
+                <label for="ProjectReferenceImage-scaleX" id="label-ProjectReferenceImage-scaleX">Scale X</label>
+                <input type="number" id="ProjectReferenceImage-scaleX" formControlName="scaleX" placeholder="Enter Scale X" class="form-control project-reference-image-input" [disabled]="!userIsBMCProjectReferenceImageWriter()" aria-labelledby="label-scaleX" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('scaleY')">
+                <label for="ProjectReferenceImage-scaleY" id="label-ProjectReferenceImage-scaleY">Scale Y</label>
+                <input type="number" id="ProjectReferenceImage-scaleY" formControlName="scaleY" placeholder="Enter Scale Y" class="form-control project-reference-image-input" [disabled]="!userIsBMCProjectReferenceImageWriter()" aria-labelledby="label-scaleY" />
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isVisible')">
+                <input type="checkbox" id="ProjectReferenceImage-isVisible" formControlName="isVisible" class="form-check-input" [disabled]="!userIsBMCProjectReferenceImageWriter()" />
+                <label for="ProjectReferenceImage-isVisible" class="form-check-label" id="label-ProjectReferenceImage-isVisible"><span class="text-danger">*</span>Is Visible</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ProjectReferenceImage-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCProjectReferenceImageWriter()" />
+                <label for="ProjectReferenceImage-active" class="form-check-label" id="label-ProjectReferenceImage-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ProjectReferenceImage-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCProjectReferenceImageWriter()" />
+                <label for="ProjectReferenceImage-deleted" class="form-check-label" id="label-ProjectReferenceImage-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer project-reference-image-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Project Reference Image changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !projectReferenceImageForm.valid || projectReferenceImageForm.pristine  || userIsBMCProjectReferenceImageWriter() == false " ngbTooltip="Save the Project Reference Image changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Project Reference Image' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

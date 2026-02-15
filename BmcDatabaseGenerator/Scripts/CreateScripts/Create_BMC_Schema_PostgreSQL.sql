@@ -363,21 +363,21 @@ CREATE INDEX "I_BrickColour_active" ON "BMC"."BrickColour" ("active")
 CREATE INDEX "I_BrickColour_deleted" ON "BMC"."BrickColour" ("deleted")
 ;
 
-INSERT INTO "BMC"."BrickColour" ( "name", "ldrawColourCode", "hexRgb", "hexEdgeColour", "alpha", "isTransparent", "isMetallic", "legoColourId", "sequence", "objectGuid" ) VALUES  ( 'Black', 0, '#1B2A34', '#808080', 255, false, false, 26, 1, 'c0100001-0001-4000-8000-000000000001' );
+INSERT INTO "BMC"."BrickColour" ( "name", "ldrawColourCode", "hexRgb", "hexEdgeColour", "alpha", "isTransparent", "isMetallic", "legoColourId", "sequence", "colourFinishId", "objectGuid" ) VALUES  ( 'Black', 0, '#1B2A34', '#808080', 255, false, false, 26, 1, ( SELECT id FROM "ColourFinish" WHERE "name" = 'Solid' LIMIT 1), 'c0100001-0001-4000-8000-000000000001' );
 
-INSERT INTO "BMC"."BrickColour" ( "name", "ldrawColourCode", "hexRgb", "hexEdgeColour", "alpha", "isTransparent", "isMetallic", "legoColourId", "sequence", "objectGuid" ) VALUES  ( 'Blue', 1, '#1E5AA8', '#333333', 255, false, false, 23, 2, 'c0100001-0001-4000-8000-000000000002' );
+INSERT INTO "BMC"."BrickColour" ( "name", "ldrawColourCode", "hexRgb", "hexEdgeColour", "alpha", "isTransparent", "isMetallic", "legoColourId", "sequence", "colourFinishId", "objectGuid" ) VALUES  ( 'Blue', 1, '#1E5AA8', '#333333', 255, false, false, 23, 2, ( SELECT id FROM "ColourFinish" WHERE "name" = 'Solid' LIMIT 1), 'c0100001-0001-4000-8000-000000000002' );
 
-INSERT INTO "BMC"."BrickColour" ( "name", "ldrawColourCode", "hexRgb", "hexEdgeColour", "alpha", "isTransparent", "isMetallic", "legoColourId", "sequence", "objectGuid" ) VALUES  ( 'Green', 2, '#00852B', '#333333', 255, false, false, 28, 3, 'c0100001-0001-4000-8000-000000000003' );
+INSERT INTO "BMC"."BrickColour" ( "name", "ldrawColourCode", "hexRgb", "hexEdgeColour", "alpha", "isTransparent", "isMetallic", "legoColourId", "sequence", "colourFinishId", "objectGuid" ) VALUES  ( 'Green', 2, '#00852B', '#333333', 255, false, false, 28, 3, ( SELECT id FROM "ColourFinish" WHERE "name" = 'Solid' LIMIT 1), 'c0100001-0001-4000-8000-000000000003' );
 
-INSERT INTO "BMC"."BrickColour" ( "name", "ldrawColourCode", "hexRgb", "hexEdgeColour", "alpha", "isTransparent", "isMetallic", "legoColourId", "sequence", "objectGuid" ) VALUES  ( 'Red', 4, '#B40000', '#333333', 255, false, false, 21, 4, 'c0100001-0001-4000-8000-000000000004' );
+INSERT INTO "BMC"."BrickColour" ( "name", "ldrawColourCode", "hexRgb", "hexEdgeColour", "alpha", "isTransparent", "isMetallic", "legoColourId", "sequence", "colourFinishId", "objectGuid" ) VALUES  ( 'Red', 4, '#B40000', '#333333', 255, false, false, 21, 4, ( SELECT id FROM "ColourFinish" WHERE "name" = 'Solid' LIMIT 1), 'c0100001-0001-4000-8000-000000000004' );
 
-INSERT INTO "BMC"."BrickColour" ( "name", "ldrawColourCode", "hexRgb", "hexEdgeColour", "alpha", "isTransparent", "isMetallic", "legoColourId", "sequence", "objectGuid" ) VALUES  ( 'Yellow', 14, '#FAC80A', '#333333', 255, false, false, 24, 5, 'c0100001-0001-4000-8000-000000000005' );
+INSERT INTO "BMC"."BrickColour" ( "name", "ldrawColourCode", "hexRgb", "hexEdgeColour", "alpha", "isTransparent", "isMetallic", "legoColourId", "sequence", "colourFinishId", "objectGuid" ) VALUES  ( 'Yellow', 14, '#FAC80A', '#333333', 255, false, false, 24, 5, ( SELECT id FROM "ColourFinish" WHERE "name" = 'Solid' LIMIT 1), 'c0100001-0001-4000-8000-000000000005' );
 
-INSERT INTO "BMC"."BrickColour" ( "name", "ldrawColourCode", "hexRgb", "hexEdgeColour", "alpha", "isTransparent", "isMetallic", "legoColourId", "sequence", "objectGuid" ) VALUES  ( 'White', 15, '#F4F4F4', '#333333', 255, false, false, 1, 6, 'c0100001-0001-4000-8000-000000000006' );
+INSERT INTO "BMC"."BrickColour" ( "name", "ldrawColourCode", "hexRgb", "hexEdgeColour", "alpha", "isTransparent", "isMetallic", "legoColourId", "sequence", "colourFinishId", "objectGuid" ) VALUES  ( 'White', 15, '#F4F4F4', '#333333', 255, false, false, 1, 6, ( SELECT id FROM "ColourFinish" WHERE "name" = 'Solid' LIMIT 1), 'c0100001-0001-4000-8000-000000000006' );
 
-INSERT INTO "BMC"."BrickColour" ( "name", "ldrawColourCode", "hexRgb", "hexEdgeColour", "alpha", "isTransparent", "isMetallic", "legoColourId", "sequence", "objectGuid" ) VALUES  ( 'Light Bluish Grey', 71, '#969696', '#333333', 255, false, false, 194, 7, 'c0100001-0001-4000-8000-000000000007' );
+INSERT INTO "BMC"."BrickColour" ( "name", "ldrawColourCode", "hexRgb", "hexEdgeColour", "alpha", "isTransparent", "isMetallic", "legoColourId", "sequence", "colourFinishId", "objectGuid" ) VALUES  ( 'Light Bluish Grey', 71, '#969696', '#333333', 255, false, false, 194, 7, ( SELECT id FROM "ColourFinish" WHERE "name" = 'Solid' LIMIT 1), 'c0100001-0001-4000-8000-000000000007' );
 
-INSERT INTO "BMC"."BrickColour" ( "name", "ldrawColourCode", "hexRgb", "hexEdgeColour", "alpha", "isTransparent", "isMetallic", "legoColourId", "sequence", "objectGuid" ) VALUES  ( 'Dark Bluish Grey', 72, '#646464', '#333333', 255, false, false, 199, 8, 'c0100001-0001-4000-8000-000000000008' );
+INSERT INTO "BMC"."BrickColour" ( "name", "ldrawColourCode", "hexRgb", "hexEdgeColour", "alpha", "isTransparent", "isMetallic", "legoColourId", "sequence", "colourFinishId", "objectGuid" ) VALUES  ( 'Dark Bluish Grey', 72, '#646464', '#333333', 255, false, false, 199, 8, ( SELECT id FROM "ColourFinish" WHERE "name" = 'Solid' LIMIT 1), 'c0100001-0001-4000-8000-000000000008' );
 
 
 -- Lookup table of LDraw part classification types (Part, Subpart, Primitive, etc.).
@@ -1366,7 +1366,7 @@ CREATE TABLE "BMC"."BuildManualPage"
 	"id" SERIAL PRIMARY KEY NOT NULL,
 	"tenantGuid" VARCHAR(50) NOT NULL,		-- The guid for the Tenant to which this record belongs.
 	"buildManualId" INT NOT NULL,		-- The manual this page belongs to
-	"pageNumber" INT NULL,		-- Sequential page number within the manual
+	"pageNum" INT NULL,		-- Sequential page number within the manual.  Note purposely not called pageNumber to not clash with code generated parameter
 	"title" VARCHAR(250) NULL,		-- Optional page title (e.g. 'Bag 1', 'Chassis Assembly')
 	"notes" TEXT NULL,		-- Optional internal notes about this page
 	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.

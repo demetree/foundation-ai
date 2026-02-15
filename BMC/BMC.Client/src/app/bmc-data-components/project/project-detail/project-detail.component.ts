@@ -26,6 +26,13 @@ import { ProjectService, ProjectData, ProjectSubmitData } from '../../../bmc-dat
 import { ProjectChangeHistoryService } from '../../../bmc-data-services/project-change-history.service';
 import { PlacedBrickService } from '../../../bmc-data-services/placed-brick.service';
 import { BrickConnectionService } from '../../../bmc-data-services/brick-connection.service';
+import { SubmodelService } from '../../../bmc-data-services/submodel.service';
+import { ProjectTagAssignmentService } from '../../../bmc-data-services/project-tag-assignment.service';
+import { ProjectCameraPresetService } from '../../../bmc-data-services/project-camera-preset.service';
+import { ProjectReferenceImageService } from '../../../bmc-data-services/project-reference-image.service';
+import { BuildManualService } from '../../../bmc-data-services/build-manual.service';
+import { ProjectRenderService } from '../../../bmc-data-services/project-render.service';
+import { ProjectExportService } from '../../../bmc-data-services/project-export.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -40,6 +47,9 @@ interface ProjectFormValues {
   name: string,
   description: string,
   notes: string | null,
+  thumbnailImagePath: string | null,
+  partCount: string | null,     // Stored as string for form input, converted to number on submit.
+  lastBuildDate: string | null,
   versionNumber: string,     // Stored as string for form input, converted to number on submit.
   active: boolean,
   deleted: boolean,
@@ -73,6 +83,9 @@ export class ProjectDetailComponent implements OnInit, CanComponentDeactivate {
         name: ['', Validators.required],
         description: ['', Validators.required],
         notes: [''],
+        thumbnailImagePath: [''],
+        partCount: [''],
+        lastBuildDate: [''],
         versionNumber: [''],
         active: [true],
         deleted: [false],
@@ -93,6 +106,13 @@ export class ProjectDetailComponent implements OnInit, CanComponentDeactivate {
   public projectChangeHistories$ = this.projectChangeHistoryService.GetProjectChangeHistoryList();
   public placedBricks$ = this.placedBrickService.GetPlacedBrickList();
   public brickConnections$ = this.brickConnectionService.GetBrickConnectionList();
+  public submodels$ = this.submodelService.GetSubmodelList();
+  public projectTagAssignments$ = this.projectTagAssignmentService.GetProjectTagAssignmentList();
+  public projectCameraPresets$ = this.projectCameraPresetService.GetProjectCameraPresetList();
+  public projectReferenceImages$ = this.projectReferenceImageService.GetProjectReferenceImageList();
+  public buildManuals$ = this.buildManualService.GetBuildManualList();
+  public projectRenders$ = this.projectRenderService.GetProjectRenderList();
+  public projectExports$ = this.projectExportService.GetProjectExportList();
 
   private destroy$ = new Subject<void>();
 
@@ -101,6 +121,13 @@ export class ProjectDetailComponent implements OnInit, CanComponentDeactivate {
     public projectChangeHistoryService: ProjectChangeHistoryService,
     public placedBrickService: PlacedBrickService,
     public brickConnectionService: BrickConnectionService,
+    public submodelService: SubmodelService,
+    public projectTagAssignmentService: ProjectTagAssignmentService,
+    public projectCameraPresetService: ProjectCameraPresetService,
+    public projectReferenceImageService: ProjectReferenceImageService,
+    public buildManualService: BuildManualService,
+    public projectRenderService: ProjectRenderService,
+    public projectExportService: ProjectExportService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,
@@ -385,6 +412,9 @@ export class ProjectDetailComponent implements OnInit, CanComponentDeactivate {
         name: '',
         description: '',
         notes: '',
+        thumbnailImagePath: '',
+        partCount: '',
+        lastBuildDate: '',
         versionNumber: '',
         active: true,
         deleted: false,
@@ -400,6 +430,9 @@ export class ProjectDetailComponent implements OnInit, CanComponentDeactivate {
         name: projectData.name ?? '',
         description: projectData.description ?? '',
         notes: projectData.notes ?? '',
+        thumbnailImagePath: projectData.thumbnailImagePath ?? '',
+        partCount: projectData.partCount?.toString() ?? '',
+        lastBuildDate: isoUtcStringToDateTimeLocal(projectData.lastBuildDate) ?? '',
         versionNumber: projectData.versionNumber?.toString() ?? '',
         active: projectData.active ?? true,
         deleted: projectData.deleted ?? false,
@@ -465,6 +498,9 @@ export class ProjectDetailComponent implements OnInit, CanComponentDeactivate {
         name: formValue.name!.trim(),
         description: formValue.description!.trim(),
         notes: formValue.notes?.trim() || null,
+        thumbnailImagePath: formValue.thumbnailImagePath?.trim() || null,
+        partCount: formValue.partCount ? Number(formValue.partCount) : null,
+        lastBuildDate: formValue.lastBuildDate ? dateTimeLocalToIsoUtc(formValue.lastBuildDate.trim()) : null,
         versionNumber: this.projectData?.versionNumber ?? 0,
         active: !!formValue.active,
         deleted: !!formValue.deleted,

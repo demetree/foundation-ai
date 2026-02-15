@@ -89,7 +89,7 @@ export class ColourFinishAddEditComponent {
 
   public isSaving: boolean = false;
 
-  colourFinishs$ = this.colourFinishService.GetColourFinishList();
+  colourFinishes$ = this.colourFinishService.GetColourFinishList();
 
   constructor(
     private modalService: NgbModal,
@@ -106,7 +106,7 @@ export class ColourFinishAddEditComponent {
 
       if (!this.colourFinishService.userIsBMCColourFinishReader()) {
         this.alertService.showMessage(
-          `${this.authService.currentUser?.userName} does not have permission to read Colour Finishs`,
+          `${this.authService.currentUser?.userName} does not have permission to read Colour Finishes`,
           '',
           MessageSeverity.info
         );
@@ -122,7 +122,7 @@ export class ColourFinishAddEditComponent {
 
       if (!this.colourFinishService.userIsBMCColourFinishWriter()) {
         this.alertService.showMessage(
-          `${this.authService.currentUser?.userName} does not have permission to write Colour Finishs`,
+          `${this.authService.currentUser?.userName} does not have permission to write Colour Finishes`,
           '',
           MessageSeverity.info
         );
@@ -188,7 +188,7 @@ export class ColourFinishAddEditComponent {
 
     if (this.colourFinishService.userIsBMCColourFinishWriter() == false) {
       this.alertService.showMessage(
-        `${this.authService.currentUser?.userName} does not have permission to write Colour Finishs`,
+        `${this.authService.currentUser?.userName} does not have permission to write Colour Finishes`,
         '',
         MessageSeverity.info
       );

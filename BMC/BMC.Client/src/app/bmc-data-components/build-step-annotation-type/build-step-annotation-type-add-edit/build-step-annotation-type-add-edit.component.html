@@ -1,0 +1,65 @@
+<div class="add-build-step-annotation-type" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-build-step-annotation-type me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Build Step Annotation Type" 
+        *ngIf="userIsBMCBuildStepAnnotationTypeWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #buildStepAnnotationTypeModal let-modal>
+   <div class="modal-header bg-dark text-light build-step-annotation-type-modal-header">
+      <h5 class="modal-title mb-0" id="buildStepAnnotationTypeModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Build Step Annotation Type' : 'Add Build Step Annotation Type' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body build-step-annotation-type-modal-body">
+      <form [formGroup]="buildStepAnnotationTypeForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="BuildStepAnnotationType-name" id="label-BuildStepAnnotationType-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="BuildStepAnnotationType-name" formControlName="name" placeholder="Enter Name" class="form-control build-step-annotation-type-input" [disabled]="!userIsBMCBuildStepAnnotationTypeWriter()" aria-labelledby="label-name" />
+                <div *ngIf="buildStepAnnotationTypeForm.get('name')?.invalid && buildStepAnnotationTypeForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="BuildStepAnnotationType-description" id="label-BuildStepAnnotationType-description"><span class="text-danger">*</span>Description</label>
+                <textarea id="BuildStepAnnotationType-description" formControlName="description" placeholder="Enter Description" class="form-control build-step-annotation-type-input" [disabled]="!userIsBMCBuildStepAnnotationTypeWriter()"></textarea>
+                <div *ngIf="buildStepAnnotationTypeForm.get('description')?.invalid && buildStepAnnotationTypeForm.get('description')?.touched" class="text-danger">
+                    Description is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                <label for="BuildStepAnnotationType-sequence" id="label-BuildStepAnnotationType-sequence">Sequence</label>
+                <input type="number" id="BuildStepAnnotationType-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control build-step-annotation-type-input" [disabled]="!userIsBMCBuildStepAnnotationTypeWriter()" aria-labelledby="label-sequence" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="BuildStepAnnotationType-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCBuildStepAnnotationTypeWriter()" />
+                <label for="BuildStepAnnotationType-active" class="form-check-label" id="label-BuildStepAnnotationType-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="BuildStepAnnotationType-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCBuildStepAnnotationTypeWriter()" />
+                <label for="BuildStepAnnotationType-deleted" class="form-check-label" id="label-BuildStepAnnotationType-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer build-step-annotation-type-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Build Step Annotation Type changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !buildStepAnnotationTypeForm.valid || buildStepAnnotationTypeForm.pristine  || userIsBMCBuildStepAnnotationTypeWriter() == false " ngbTooltip="Save the Build Step Annotation Type changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Build Step Annotation Type' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

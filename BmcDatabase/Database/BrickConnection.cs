@@ -11,7 +11,7 @@ public partial class BrickConnection
 
     public Guid tenantGuid { get; set; }
 
-    public int? projectId { get; set; }
+    public int projectId { get; set; }
 
     public long? sourcePlacedBrickId { get; set; }
 

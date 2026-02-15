@@ -69,6 +69,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 			string name = null,
 			string description = null,
 			string notes = null,
+			string thumbnailImagePath = null,
+			int? partCount = null,
+			DateTime? lastBuildDate = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -119,6 +122,14 @@ namespace Foundation.BMC.Controllers.WebAPI
 			    pageSize = null;
 			}
 
+			//
+			// Turn any local time kinded parameters to UTC.
+			//
+			if (lastBuildDate.HasValue == true && lastBuildDate.Value.Kind != DateTimeKind.Utc)
+			{
+				lastBuildDate = lastBuildDate.Value.ToUniversalTime();
+			}
+
 			IQueryable<Database.Project> query = (from p in _context.Projects select p);
 
 			query = query.Where(x => x.tenantGuid == userTenantGuid);
@@ -134,6 +145,18 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (string.IsNullOrEmpty(notes) == false)
 			{
 				query = query.Where(p => p.notes == notes);
+			}
+			if (string.IsNullOrEmpty(thumbnailImagePath) == false)
+			{
+				query = query.Where(p => p.thumbnailImagePath == thumbnailImagePath);
+			}
+			if (partCount.HasValue == true)
+			{
+				query = query.Where(p => p.partCount == partCount.Value);
+			}
+			if (lastBuildDate.HasValue == true)
+			{
+				query = query.Where(p => p.lastBuildDate == lastBuildDate.Value);
 			}
 			if (versionNumber.HasValue == true)
 			{
@@ -168,7 +191,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 				query = query.Where(p => p.deleted == false);
 			}
 
-			query = query.OrderBy(p => p.name).ThenBy(p => p.description);
+			query = query.OrderBy(p => p.name).ThenBy(p => p.description).ThenBy(p => p.thumbnailImagePath);
 
 			if (pageNumber.HasValue == true &&
 			    pageSize.HasValue == true)
@@ -193,6 +216,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       x.name.Contains(anyStringContains)
 			       || x.description.Contains(anyStringContains)
 			       || x.notes.Contains(anyStringContains)
+			       || x.thumbnailImagePath.Contains(anyStringContains)
 			   );
 			}
 
@@ -238,6 +262,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 			string name = null,
 			string description = null,
 			string notes = null,
+			string thumbnailImagePath = null,
+			int? partCount = null,
+			DateTime? lastBuildDate = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -270,6 +297,14 @@ namespace Foundation.BMC.Controllers.WebAPI
 			}
 
 
+			//
+			// Fix any non-UTC date parameters that come in.
+			//
+			if (lastBuildDate.HasValue == true && lastBuildDate.Value.Kind != DateTimeKind.Utc)
+			{
+				lastBuildDate = lastBuildDate.Value.ToUniversalTime();
+			}
+
 			IQueryable<Database.Project> query = (from p in _context.Projects select p);
 			query = query.Where(x => x.tenantGuid == userTenantGuid);
 			if (name != null)
@@ -283,6 +318,18 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (notes != null)
 			{
 				query = query.Where(p => p.notes == notes);
+			}
+			if (thumbnailImagePath != null)
+			{
+				query = query.Where(p => p.thumbnailImagePath == thumbnailImagePath);
+			}
+			if (partCount.HasValue == true)
+			{
+				query = query.Where(p => p.partCount == partCount.Value);
+			}
+			if (lastBuildDate.HasValue == true)
+			{
+				query = query.Where(p => p.lastBuildDate == lastBuildDate.Value);
 			}
 			if (versionNumber.HasValue == true)
 			{
@@ -328,6 +375,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       x.name.Contains(anyStringContains)
 			       || x.description.Contains(anyStringContains)
 			       || x.notes.Contains(anyStringContains)
+			       || x.thumbnailImagePath.Contains(anyStringContains)
 			   );
 			}
 
@@ -572,6 +620,16 @@ namespace Foundation.BMC.Controllers.WebAPI
 					project.description = project.description.Substring(0, 500);
 				}
 
+				if (project.thumbnailImagePath != null && project.thumbnailImagePath.Length > 250)
+				{
+					project.thumbnailImagePath = project.thumbnailImagePath.Substring(0, 250);
+				}
+
+				if (project.lastBuildDate.HasValue == true && project.lastBuildDate.Value.Kind != DateTimeKind.Utc)
+				{
+					project.lastBuildDate = project.lastBuildDate.Value.ToUniversalTime();
+				}
+
 				try
 				{
 				    EntityEntry<Database.Project> attached = _context.Entry(existing);
@@ -690,6 +748,16 @@ namespace Foundation.BMC.Controllers.WebAPI
 					project.description = project.description.Substring(0, 500);
 				}
 
+				if (project.thumbnailImagePath != null && project.thumbnailImagePath.Length > 250)
+				{
+					project.thumbnailImagePath = project.thumbnailImagePath.Substring(0, 250);
+				}
+
+				if (project.lastBuildDate.HasValue == true && project.lastBuildDate.Value.Kind != DateTimeKind.Utc)
+				{
+					project.lastBuildDate = project.lastBuildDate.Value.ToUniversalTime();
+				}
+
 				project.objectGuid = Guid.NewGuid();
 				project.versionNumber = 1;
 
@@ -712,8 +780,15 @@ namespace Foundation.BMC.Controllers.WebAPI
 				    // Nullify all object properties before serializing.
 				    //
 					project.BrickConnections = null;
+					project.BuildManuals = null;
 					project.PlacedBricks = null;
+					project.ProjectCameraPresets = null;
 					project.ProjectChangeHistories = null;
+					project.ProjectExports = null;
+					project.ProjectReferenceImages = null;
+					project.ProjectRenders = null;
+					project.ProjectTagAssignments = null;
+					project.Submodels = null;
 
 
 				    ProjectChangeHistory projectChangeHistory = new ProjectChangeHistory();
@@ -829,8 +904,15 @@ namespace Foundation.BMC.Controllers.WebAPI
 				// Remove any object fields from the clone object so that it can serialize effectively
 				//
 				cloneOfExisting.BrickConnections = null;
+				cloneOfExisting.BuildManuals = null;
 				cloneOfExisting.PlacedBricks = null;
+				cloneOfExisting.ProjectCameraPresets = null;
 				cloneOfExisting.ProjectChangeHistories = null;
+				cloneOfExisting.ProjectExports = null;
+				cloneOfExisting.ProjectReferenceImages = null;
+				cloneOfExisting.ProjectRenders = null;
+				cloneOfExisting.ProjectTagAssignments = null;
+				cloneOfExisting.Submodels = null;
 
 				if (versionNumber >= project.versionNumber)
 				{
@@ -862,6 +944,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 				    project.name = oldProject.name;
 				    project.description = oldProject.description;
 				    project.notes = oldProject.notes;
+				    project.thumbnailImagePath = oldProject.thumbnailImagePath;
+				    project.partCount = oldProject.partCount;
+				    project.lastBuildDate = oldProject.lastBuildDate;
 				    project.objectGuid = oldProject.objectGuid;
 				    project.active = oldProject.active;
 				    project.deleted = oldProject.deleted;
@@ -1307,6 +1392,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 			string name = null,
 			string description = null,
 			string notes = null,
+			string thumbnailImagePath = null,
+			int? partCount = null,
+			DateTime? lastBuildDate = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -1356,6 +1444,14 @@ namespace Foundation.BMC.Controllers.WebAPI
 			    pageSize = null;
 			}
 
+			//
+			// Turn any local time kinded parameters to UTC.
+			//
+			if (lastBuildDate.HasValue == true && lastBuildDate.Value.Kind != DateTimeKind.Utc)
+			{
+				lastBuildDate = lastBuildDate.Value.ToUniversalTime();
+			}
+
 			IQueryable<Database.Project> query = (from p in _context.Projects select p);
 
 			query = query.Where(x => x.tenantGuid == userTenantGuid);
@@ -1371,6 +1467,18 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (string.IsNullOrEmpty(notes) == false)
 			{
 				query = query.Where(p => p.notes == notes);
+			}
+			if (string.IsNullOrEmpty(thumbnailImagePath) == false)
+			{
+				query = query.Where(p => p.thumbnailImagePath == thumbnailImagePath);
+			}
+			if (partCount.HasValue == true)
+			{
+				query = query.Where(p => p.partCount == partCount.Value);
+			}
+			if (lastBuildDate.HasValue == true)
+			{
+				query = query.Where(p => p.lastBuildDate == lastBuildDate.Value);
 			}
 			if (versionNumber.HasValue == true)
 			{
@@ -1417,6 +1525,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       x.name.Contains(anyStringContains)
 			       || x.description.Contains(anyStringContains)
 			       || x.notes.Contains(anyStringContains)
+			       || x.thumbnailImagePath.Contains(anyStringContains)
 			   );
 			}
 
@@ -1424,7 +1533,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 
-			query = query.OrderBy(x => x.name).ThenBy(x => x.description);
+			query = query.OrderBy(x => x.name).ThenBy(x => x.description).ThenBy(x => x.thumbnailImagePath);
 			if (pageNumber.HasValue == true &&
 			    pageSize.HasValue == true)
 			{

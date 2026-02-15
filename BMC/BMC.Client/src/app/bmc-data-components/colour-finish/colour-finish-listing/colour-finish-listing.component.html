@@ -9,8 +9,8 @@
 
                 <!-- Title -->
                 <div>
-                    <h3 class="page-title mb-0">Colour Finishs</h3>
-                    <small class="text-muted">View Colour Finishs</small>
+                    <h3 class="page-title mb-0">Colour Finishes</h3>
+                    <small class="text-muted">View Colour Finishes</small>
                 </div>
             </div>
 
@@ -26,20 +26,20 @@
                     <!-- Filtered: some results -->
                     <ng-container *ngIf="filteredColourFinishCount$ | async as filteredCount">
                       <span *ngIf="filterText && (filteredCount ?? 0) > 0">
-                        {{ filteredCount }} of {{ total }} {{ total !== 1 ? 'Colour Finishs' : 'Colour Finish' }}
+                        {{ filteredCount }} of {{ total }} {{ total !== 1 ? 'Colour Finishes' : 'Colour Finish' }}
                       </span>
                     </ng-container>
                     <!-- Filtered: 0 results -->
                     <span *ngIf="total > 0 && filterText && (filteredColourFinishCount$ | async) === 0">
-                      No matching Colour Finishs
+                      No matching Colour Finishes
                     </span>
                     <!-- No filter: normal count -->
                     <span *ngIf="!filterText">
-                      {{ total }} {{ total !== 1 ? 'Colour Finishs' : 'Colour Finish' }}
+                      {{ total }} {{ total !== 1 ? 'Colour Finishes' : 'Colour Finish' }}
                     </span>
-                    <!-- No Colour Finishs at all (even unfiltered) -->
+                    <!-- No Colour Finishes at all (even unfiltered) -->
                     <span *ngIf="total === 0">
-                      No Colour Finishs
+                      No Colour Finishes
                     </span>
 
                   </span>
@@ -51,7 +51,7 @@
                     <i class="fa fa-spinner fa-spin me-1"></i> Loading...
                   </span>
                   <span class="badge bg-secondary mx-2" *ngIf="!(loadingTotalCount || loadingFilteredCount)">
-                    No Colour Finishs
+                    No Colour Finishes
                   </span>
                 </ng-template>
 
@@ -62,7 +62,7 @@
                 <i class="fa fa-search search-icon"></i>
                 <input type="text"
                    class="form-control search-input"
-                   placeholder="Search ColourFinishs..."
+                   placeholder="Search ColourFinishes..."
                    [(ngModel)]="filterText"
                    (ngModelChange)="onFilterChange()">
                 <button *ngIf="filterText"

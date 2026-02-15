@@ -1,0 +1,91 @@
+<div class="add-project-render" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-project-render me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Project Render" 
+        *ngIf="userIsBMCProjectRenderWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #projectRenderModal let-modal>
+   <div class="modal-header bg-dark text-light project-render-modal-header">
+      <h5 class="modal-title mb-0" id="projectRenderModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Project Render' : 'Add Project Render' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body project-render-modal-body">
+      <form [formGroup]="projectRenderForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('projectId')">
+                <label for="ProjectRender-projectId" id="label-ProjectRender-projectId"><span class="text-danger">*</span>Project</label>
+                <select id="ProjectRender-projectId" formControlName="projectId" class="form-select project-render-select" [disabled]="!userIsBMCProjectRenderWriter()">
+                    <option [ngValue]="null">Select Project</option>
+                    <option *ngFor="let project of projects$ | async" [ngValue]="project.id">{{project.name}}</option>
+                </select>
+                <div *ngIf="projectRenderForm.get('projectId')?.invalid && projectRenderForm.get('projectId')?.touched" class="text-danger">
+                    Project is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('renderPresetId')">
+                <label for="ProjectRender-renderPresetId" id="label-ProjectRender-renderPresetId">Render Preset</label>
+                <select id="ProjectRender-renderPresetId" formControlName="renderPresetId" class="form-select project-render-select" [disabled]="!userIsBMCProjectRenderWriter()">
+                    <option [ngValue]="null">Select Render Preset</option>
+                    <option *ngFor="let renderPreset of renderPresets$ | async" [ngValue]="renderPreset.id">{{renderPreset.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="ProjectRender-name" id="label-ProjectRender-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="ProjectRender-name" formControlName="name" placeholder="Enter Name" class="form-control project-render-input" [disabled]="!userIsBMCProjectRenderWriter()" aria-labelledby="label-name" />
+                <div *ngIf="projectRenderForm.get('name')?.invalid && projectRenderForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('outputFilePath')">
+                <label for="ProjectRender-outputFilePath" id="label-ProjectRender-outputFilePath">Output File Path</label>
+                <input type="text" id="ProjectRender-outputFilePath" formControlName="outputFilePath" placeholder="Enter Output File Path" class="form-control project-render-input" [disabled]="!userIsBMCProjectRenderWriter()" aria-labelledby="label-outputFilePath" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('resolutionWidth')">
+                <label for="ProjectRender-resolutionWidth" id="label-ProjectRender-resolutionWidth">Resolution Width</label>
+                <input type="number" id="ProjectRender-resolutionWidth" formControlName="resolutionWidth" placeholder="Enter Resolution Width" class="form-control project-render-input" [disabled]="!userIsBMCProjectRenderWriter()" aria-labelledby="label-resolutionWidth" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('resolutionHeight')">
+                <label for="ProjectRender-resolutionHeight" id="label-ProjectRender-resolutionHeight">Resolution Height</label>
+                <input type="number" id="ProjectRender-resolutionHeight" formControlName="resolutionHeight" placeholder="Enter Resolution Height" class="form-control project-render-input" [disabled]="!userIsBMCProjectRenderWriter()" aria-labelledby="label-resolutionHeight" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('renderedDate')">
+                <label for="ProjectRender-renderedDate" id="label-ProjectRender-renderedDate">Rendered Date</label>
+                <input type="datetime-local" id="ProjectRender-renderedDate" formControlName="renderedDate" placeholder="Enter Rendered Date" class="form-control project-render-input" [disabled]="!userIsBMCProjectRenderWriter()" aria-labelledby="label-renderedDate" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('renderDurationSeconds')">
+                <label for="ProjectRender-renderDurationSeconds" id="label-ProjectRender-renderDurationSeconds">Render Duration Seconds</label>
+                <input type="number" id="ProjectRender-renderDurationSeconds" formControlName="renderDurationSeconds" placeholder="Enter Render Duration Seconds" class="form-control project-render-input" [disabled]="!userIsBMCProjectRenderWriter()" aria-labelledby="label-renderDurationSeconds" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ProjectRender-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCProjectRenderWriter()" />
+                <label for="ProjectRender-active" class="form-check-label" id="label-ProjectRender-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ProjectRender-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCProjectRenderWriter()" />
+                <label for="ProjectRender-deleted" class="form-check-label" id="label-ProjectRender-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer project-render-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Project Render changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !projectRenderForm.valid || projectRenderForm.pristine  || userIsBMCProjectRenderWriter() == false " ngbTooltip="Save the Project Render changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Project Render' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

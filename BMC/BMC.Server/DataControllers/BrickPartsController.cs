@@ -804,7 +804,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 					brickPart.BrickPartChangeHistories = null;
 					brickPart.BrickPartColours = null;
 					brickPart.BrickPartConnectors = null;
+					brickPart.LegoSetParts = null;
 					brickPart.PlacedBricks = null;
+					brickPart.UserCollectionParts = null;
+					brickPart.UserWishlistItems = null;
 					brickPart.brickCategory = null;
 					brickPart.partType = null;
 
@@ -909,7 +912,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 				cloneOfExisting.BrickPartChangeHistories = null;
 				cloneOfExisting.BrickPartColours = null;
 				cloneOfExisting.BrickPartConnectors = null;
+				cloneOfExisting.LegoSetParts = null;
 				cloneOfExisting.PlacedBricks = null;
+				cloneOfExisting.UserCollectionParts = null;
+				cloneOfExisting.UserWishlistItems = null;
 				cloneOfExisting.brickCategory = null;
 				cloneOfExisting.partType = null;
 

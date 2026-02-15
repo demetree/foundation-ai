@@ -40,14 +40,14 @@ interface BrickPartFormValues {
   ldrawPartId: string,
   ldrawTitle: string | null,
   ldrawCategory: string | null,
-  partTypeId: number | bigint | null,       // For FK link number
+  partTypeId: number | bigint,       // For FK link number
   keywords: string | null,
   author: string | null,
-  brickCategoryId: number | bigint | null,       // For FK link number
-  widthLdu: string,     // Stored as string for form input, converted to number on submit.
-  heightLdu: string,     // Stored as string for form input, converted to number on submit.
-  depthLdu: string,     // Stored as string for form input, converted to number on submit.
-  massGrams: string,     // Stored as string for form input, converted to number on submit.
+  brickCategoryId: number | bigint,       // For FK link number
+  widthLdu: string | null,     // Stored as string for form input, converted to number on submit.
+  heightLdu: string | null,     // Stored as string for form input, converted to number on submit.
+  depthLdu: string | null,     // Stored as string for form input, converted to number on submit.
+  massGrams: string | null,     // Stored as string for form input, converted to number on submit.
   geometryFilePath: string | null,
   toothCount: string | null,     // Stored as string for form input, converted to number on submit.
   gearRatio: string | null,     // Stored as string for form input, converted to number on submit.
@@ -88,14 +88,14 @@ export class BrickPartAddEditComponent {
         ldrawPartId: ['', Validators.required],
         ldrawTitle: [''],
         ldrawCategory: [''],
-        partTypeId: [null],
+        partTypeId: [null, Validators.required],
         keywords: [''],
         author: [''],
-        brickCategoryId: [null],
-        widthLdu: ['', Validators.required],
-        heightLdu: ['', Validators.required],
-        depthLdu: ['', Validators.required],
-        massGrams: ['', Validators.required],
+        brickCategoryId: [null, Validators.required],
+        widthLdu: [''],
+        heightLdu: [''],
+        depthLdu: [''],
+        massGrams: [''],
         geometryFilePath: [''],
         toothCount: [''],
         gearRatio: [''],
@@ -243,14 +243,14 @@ export class BrickPartAddEditComponent {
         ldrawPartId: formValue.ldrawPartId!.trim(),
         ldrawTitle: formValue.ldrawTitle?.trim() || null,
         ldrawCategory: formValue.ldrawCategory?.trim() || null,
-        partTypeId: formValue.partTypeId ? Number(formValue.partTypeId) : null,
+        partTypeId: Number(formValue.partTypeId),
         keywords: formValue.keywords?.trim() || null,
         author: formValue.author?.trim() || null,
-        brickCategoryId: formValue.brickCategoryId ? Number(formValue.brickCategoryId) : null,
-        widthLdu: Number(formValue.widthLdu),
-        heightLdu: Number(formValue.heightLdu),
-        depthLdu: Number(formValue.depthLdu),
-        massGrams: Number(formValue.massGrams),
+        brickCategoryId: Number(formValue.brickCategoryId),
+        widthLdu: formValue.widthLdu ? Number(formValue.widthLdu) : null,
+        heightLdu: formValue.heightLdu ? Number(formValue.heightLdu) : null,
+        depthLdu: formValue.depthLdu ? Number(formValue.depthLdu) : null,
+        massGrams: formValue.massGrams ? Number(formValue.massGrams) : null,
         geometryFilePath: formValue.geometryFilePath?.trim() || null,
         toothCount: formValue.toothCount ? Number(formValue.toothCount) : null,
         gearRatio: formValue.gearRatio ? Number(formValue.gearRatio) : null,

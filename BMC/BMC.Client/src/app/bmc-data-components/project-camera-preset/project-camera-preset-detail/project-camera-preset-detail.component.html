@@ -1,0 +1,101 @@
+<div class="container-fluid p-1 m-0 project-camera-preset-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="project-camera-preset-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Project Camera Preset</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Project Camera Preset' : 'Add Project Camera Preset'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCProjectCameraPresetReader()">
+                <div class="col m-2 project-camera-preset-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="projectCameraPresetForm" (ngSubmit)="submitForm()" class="project-camera-preset-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('projectId')">
+                                <label for="ProjectCameraPreset-projectId" id="label-ProjectCameraPreset-projectId"><span class="text-danger">*</span>Project</label>
+                                <select id="ProjectCameraPreset-projectId" formControlName="projectId" class="form-select project-camera-preset-select" [disabled]="!userIsBMCProjectCameraPresetWriter()">
+                                    <option [ngValue]="null">Select Project</option>
+                                    <option *ngFor="let project of projects$ | async" [ngValue]="project.id">{{project.name}}</option>
+                                </select>
+                                <div *ngIf="projectCameraPresetForm.get('projectId')?.invalid && projectCameraPresetForm.get('projectId')?.touched" class="text-danger">
+                                    Project is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="ProjectCameraPreset-name" id="label-ProjectCameraPreset-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="ProjectCameraPreset-name" formControlName="name" placeholder="Enter Name" class="form-control project-camera-preset-input" [disabled]="!userIsBMCProjectCameraPresetWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="projectCameraPresetForm.get('name')?.invalid && projectCameraPresetForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('positionX')">
+                                <label for="ProjectCameraPreset-positionX" id="label-ProjectCameraPreset-positionX">Position X</label>
+                                <input type="number" id="ProjectCameraPreset-positionX" formControlName="positionX" placeholder="Enter Position X" class="form-control project-camera-preset-input" [disabled]="!userIsBMCProjectCameraPresetWriter()" aria-labelledby="label-positionX" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('positionY')">
+                                <label for="ProjectCameraPreset-positionY" id="label-ProjectCameraPreset-positionY">Position Y</label>
+                                <input type="number" id="ProjectCameraPreset-positionY" formControlName="positionY" placeholder="Enter Position Y" class="form-control project-camera-preset-input" [disabled]="!userIsBMCProjectCameraPresetWriter()" aria-labelledby="label-positionY" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('positionZ')">
+                                <label for="ProjectCameraPreset-positionZ" id="label-ProjectCameraPreset-positionZ">Position Z</label>
+                                <input type="number" id="ProjectCameraPreset-positionZ" formControlName="positionZ" placeholder="Enter Position Z" class="form-control project-camera-preset-input" [disabled]="!userIsBMCProjectCameraPresetWriter()" aria-labelledby="label-positionZ" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('targetX')">
+                                <label for="ProjectCameraPreset-targetX" id="label-ProjectCameraPreset-targetX">Target X</label>
+                                <input type="number" id="ProjectCameraPreset-targetX" formControlName="targetX" placeholder="Enter Target X" class="form-control project-camera-preset-input" [disabled]="!userIsBMCProjectCameraPresetWriter()" aria-labelledby="label-targetX" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('targetY')">
+                                <label for="ProjectCameraPreset-targetY" id="label-ProjectCameraPreset-targetY">Target Y</label>
+                                <input type="number" id="ProjectCameraPreset-targetY" formControlName="targetY" placeholder="Enter Target Y" class="form-control project-camera-preset-input" [disabled]="!userIsBMCProjectCameraPresetWriter()" aria-labelledby="label-targetY" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('targetZ')">
+                                <label for="ProjectCameraPreset-targetZ" id="label-ProjectCameraPreset-targetZ">Target Z</label>
+                                <input type="number" id="ProjectCameraPreset-targetZ" formControlName="targetZ" placeholder="Enter Target Z" class="form-control project-camera-preset-input" [disabled]="!userIsBMCProjectCameraPresetWriter()" aria-labelledby="label-targetZ" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('zoom')">
+                                <label for="ProjectCameraPreset-zoom" id="label-ProjectCameraPreset-zoom">Zoom</label>
+                                <input type="number" id="ProjectCameraPreset-zoom" formControlName="zoom" placeholder="Enter Zoom" class="form-control project-camera-preset-input" [disabled]="!userIsBMCProjectCameraPresetWriter()" aria-labelledby="label-zoom" />
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isPerspective')">
+                                <input type="checkbox" id="ProjectCameraPreset-isPerspective" formControlName="isPerspective" class="form-check-input" [disabled]="!userIsBMCProjectCameraPresetWriter()" />
+                                <label for="ProjectCameraPreset-isPerspective" class="form-check-label" id="label-ProjectCameraPreset-isPerspective"><span class="text-danger">*</span>Is Perspective</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                                <label for="ProjectCameraPreset-sequence" id="label-ProjectCameraPreset-sequence">Sequence</label>
+                                <input type="number" id="ProjectCameraPreset-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control project-camera-preset-input" [disabled]="!userIsBMCProjectCameraPresetWriter()" aria-labelledby="label-sequence" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ProjectCameraPreset-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCProjectCameraPresetWriter()" />
+                                <label for="ProjectCameraPreset-active" class="form-check-label" id="label-ProjectCameraPreset-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ProjectCameraPreset-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCProjectCameraPresetWriter()" />
+                                <label for="ProjectCameraPreset-deleted" class="form-check-label" id="label-ProjectCameraPreset-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="project-camera-preset-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="projectCameraPresetForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Project Camera Preset">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !projectCameraPresetForm.valid || !projectCameraPresetForm.dirty || projectCameraPresetForm.pristine  || userIsBMCProjectCameraPresetWriter() == false " ngbTooltip="Save the Project Camera Preset changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Project Camera Preset' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

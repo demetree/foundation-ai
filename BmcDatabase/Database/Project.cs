@@ -17,6 +17,12 @@ public partial class Project
 
     public string notes { get; set; }
 
+    public string thumbnailImagePath { get; set; }
+
+    public int? partCount { get; set; }
+
+    public DateTime? lastBuildDate { get; set; }
+
     public int versionNumber { get; set; }
 
     public Guid objectGuid { get; set; }
@@ -27,7 +33,21 @@ public partial class Project
 
     public virtual ICollection<BrickConnection> BrickConnections { get; set; } = new List<BrickConnection>();
 
+    public virtual ICollection<BuildManual> BuildManuals { get; set; } = new List<BuildManual>();
+
     public virtual ICollection<PlacedBrick> PlacedBricks { get; set; } = new List<PlacedBrick>();
 
+    public virtual ICollection<ProjectCameraPreset> ProjectCameraPresets { get; set; } = new List<ProjectCameraPreset>();
+
     public virtual ICollection<ProjectChangeHistory> ProjectChangeHistories { get; set; } = new List<ProjectChangeHistory>();
+
+    public virtual ICollection<ProjectExport> ProjectExports { get; set; } = new List<ProjectExport>();
+
+    public virtual ICollection<ProjectReferenceImage> ProjectReferenceImages { get; set; } = new List<ProjectReferenceImage>();
+
+    public virtual ICollection<ProjectRender> ProjectRenders { get; set; } = new List<ProjectRender>();
+
+    public virtual ICollection<ProjectTagAssignment> ProjectTagAssignments { get; set; } = new List<ProjectTagAssignment>();
+
+    public virtual ICollection<Submodel> Submodels { get; set; } = new List<Submodel>();
 }

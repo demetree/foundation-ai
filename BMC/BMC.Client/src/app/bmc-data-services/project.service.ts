@@ -19,6 +19,13 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
 import { ProjectChangeHistoryService, ProjectChangeHistoryData } from './project-change-history.service';
 import { PlacedBrickService, PlacedBrickData } from './placed-brick.service';
 import { BrickConnectionService, BrickConnectionData } from './brick-connection.service';
+import { SubmodelService, SubmodelData } from './submodel.service';
+import { ProjectTagAssignmentService, ProjectTagAssignmentData } from './project-tag-assignment.service';
+import { ProjectCameraPresetService, ProjectCameraPresetData } from './project-camera-preset.service';
+import { ProjectReferenceImageService, ProjectReferenceImageData } from './project-reference-image.service';
+import { BuildManualService, BuildManualData } from './build-manual.service';
+import { ProjectRenderService, ProjectRenderData } from './project-render.service';
+import { ProjectExportService, ProjectExportData } from './project-export.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -33,6 +40,9 @@ export class ProjectQueryParameters {
     name: string | null | undefined = null;
     description: string | null | undefined = null;
     notes: string | null | undefined = null;
+    thumbnailImagePath: string | null | undefined = null;
+    partCount: bigint | number | null | undefined = null;
+    lastBuildDate: string | null | undefined = null;        // ISO 8601
     versionNumber: bigint | number | null | undefined = null;
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
@@ -52,6 +62,9 @@ export class ProjectSubmitData {
     name!: string;
     description!: string;
     notes: string | null = null;
+    thumbnailImagePath: string | null = null;
+    partCount: bigint | number | null = null;
+    lastBuildDate: string | null = null;     // ISO 8601
     versionNumber!: bigint | number;
     active!: boolean;
     deleted!: boolean;
@@ -125,6 +138,9 @@ export class ProjectData {
     name!: string;
     description!: string;
     notes!: string | null;
+    thumbnailImagePath!: string | null;
+    partCount!: bigint | number;
+    lastBuildDate!: string | null;   // ISO 8601
     versionNumber!: bigint | number;
     objectGuid!: string;
     active!: boolean;
@@ -146,6 +162,41 @@ export class ProjectData {
     private _brickConnections: BrickConnectionData[] | null = null;
     private _brickConnectionsPromise: Promise<BrickConnectionData[]> | null  = null;
     private _brickConnectionsSubject = new BehaviorSubject<BrickConnectionData[] | null>(null);
+
+                
+    private _submodels: SubmodelData[] | null = null;
+    private _submodelsPromise: Promise<SubmodelData[]> | null  = null;
+    private _submodelsSubject = new BehaviorSubject<SubmodelData[] | null>(null);
+
+                
+    private _projectTagAssignments: ProjectTagAssignmentData[] | null = null;
+    private _projectTagAssignmentsPromise: Promise<ProjectTagAssignmentData[]> | null  = null;
+    private _projectTagAssignmentsSubject = new BehaviorSubject<ProjectTagAssignmentData[] | null>(null);
+
+                
+    private _projectCameraPresets: ProjectCameraPresetData[] | null = null;
+    private _projectCameraPresetsPromise: Promise<ProjectCameraPresetData[]> | null  = null;
+    private _projectCameraPresetsSubject = new BehaviorSubject<ProjectCameraPresetData[] | null>(null);
+
+                
+    private _projectReferenceImages: ProjectReferenceImageData[] | null = null;
+    private _projectReferenceImagesPromise: Promise<ProjectReferenceImageData[]> | null  = null;
+    private _projectReferenceImagesSubject = new BehaviorSubject<ProjectReferenceImageData[] | null>(null);
+
+                
+    private _buildManuals: BuildManualData[] | null = null;
+    private _buildManualsPromise: Promise<BuildManualData[]> | null  = null;
+    private _buildManualsSubject = new BehaviorSubject<BuildManualData[] | null>(null);
+
+                
+    private _projectRenders: ProjectRenderData[] | null = null;
+    private _projectRendersPromise: Promise<ProjectRenderData[]> | null  = null;
+    private _projectRendersSubject = new BehaviorSubject<ProjectRenderData[] | null>(null);
+
+                
+    private _projectExports: ProjectExportData[] | null = null;
+    private _projectExportsPromise: Promise<ProjectExportData[]> | null  = null;
+    private _projectExportsSubject = new BehaviorSubject<ProjectExportData[] | null>(null);
 
                 
 
@@ -221,6 +272,139 @@ export class ProjectData {
 
 
 
+    public Submodels$ = this._submodelsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._submodels === null && this._submodelsPromise === null) {
+            this.loadSubmodels(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public SubmodelsCount$ = SubmodelService.Instance.GetSubmodelsRowCount({projectId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    public ProjectTagAssignments$ = this._projectTagAssignmentsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._projectTagAssignments === null && this._projectTagAssignmentsPromise === null) {
+            this.loadProjectTagAssignments(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public ProjectTagAssignmentsCount$ = ProjectTagAssignmentService.Instance.GetProjectTagAssignmentsRowCount({projectId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    public ProjectCameraPresets$ = this._projectCameraPresetsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._projectCameraPresets === null && this._projectCameraPresetsPromise === null) {
+            this.loadProjectCameraPresets(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public ProjectCameraPresetsCount$ = ProjectCameraPresetService.Instance.GetProjectCameraPresetsRowCount({projectId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    public ProjectReferenceImages$ = this._projectReferenceImagesSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._projectReferenceImages === null && this._projectReferenceImagesPromise === null) {
+            this.loadProjectReferenceImages(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public ProjectReferenceImagesCount$ = ProjectReferenceImageService.Instance.GetProjectReferenceImagesRowCount({projectId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    public BuildManuals$ = this._buildManualsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._buildManuals === null && this._buildManualsPromise === null) {
+            this.loadBuildManuals(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public BuildManualsCount$ = BuildManualService.Instance.GetBuildManualsRowCount({projectId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    public ProjectRenders$ = this._projectRendersSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._projectRenders === null && this._projectRendersPromise === null) {
+            this.loadProjectRenders(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public ProjectRendersCount$ = ProjectRenderService.Instance.GetProjectRendersRowCount({projectId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    public ProjectExports$ = this._projectExportsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._projectExports === null && this._projectExportsPromise === null) {
+            this.loadProjectExports(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public ProjectExportsCount$ = ProjectExportService.Instance.GetProjectExportsRowCount({projectId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
 
   //
   // Full reload — refreshes the entire object and clears all lazy caches 
@@ -270,6 +454,34 @@ export class ProjectData {
      this._brickConnections = null;
      this._brickConnectionsPromise = null;
      this._brickConnectionsSubject.next(null);
+
+     this._submodels = null;
+     this._submodelsPromise = null;
+     this._submodelsSubject.next(null);
+
+     this._projectTagAssignments = null;
+     this._projectTagAssignmentsPromise = null;
+     this._projectTagAssignmentsSubject.next(null);
+
+     this._projectCameraPresets = null;
+     this._projectCameraPresetsPromise = null;
+     this._projectCameraPresetsSubject.next(null);
+
+     this._projectReferenceImages = null;
+     this._projectReferenceImagesPromise = null;
+     this._projectReferenceImagesSubject.next(null);
+
+     this._buildManuals = null;
+     this._buildManualsPromise = null;
+     this._buildManualsSubject.next(null);
+
+     this._projectRenders = null;
+     this._projectRendersPromise = null;
+     this._projectRendersSubject.next(null);
+
+     this._projectExports = null;
+     this._projectExportsPromise = null;
+     this._projectExportsSubject.next(null);
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -475,6 +687,461 @@ export class ProjectData {
     }
 
 
+    /**
+     *
+     * Gets the Submodels for this Project.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.project.Submodels.then(projects => { ... })
+     *   or
+     *   await this.project.projects
+     *
+    */
+    public get Submodels(): Promise<SubmodelData[]> {
+        if (this._submodels !== null) {
+            return Promise.resolve(this._submodels);
+        }
+
+        if (this._submodelsPromise !== null) {
+            return this._submodelsPromise;
+        }
+
+        // Start the load
+        this.loadSubmodels();
+
+        return this._submodelsPromise!;
+    }
+
+
+
+    private loadSubmodels(): void {
+
+        this._submodelsPromise = lastValueFrom(
+            ProjectService.Instance.GetSubmodelsForProject(this.id)
+        )
+        .then(Submodels => {
+            this._submodels = Submodels ?? [];
+            this._submodelsSubject.next(this._submodels);
+            return this._submodels;
+         })
+        .catch(err => {
+            this._submodels = [];
+            this._submodelsSubject.next(this._submodels);
+            throw err;
+        })
+        .finally(() => {
+            this._submodelsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached Submodel. Call after mutations to force refresh.
+     */
+    public ClearSubmodelsCache(): void {
+        this._submodels = null;
+        this._submodelsPromise = null;
+        this._submodelsSubject.next(this._submodels);      // Emit to observable
+    }
+
+    public get HasSubmodels(): Promise<boolean> {
+        return this.Submodels.then(submodels => submodels.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the ProjectTagAssignments for this Project.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.project.ProjectTagAssignments.then(projects => { ... })
+     *   or
+     *   await this.project.projects
+     *
+    */
+    public get ProjectTagAssignments(): Promise<ProjectTagAssignmentData[]> {
+        if (this._projectTagAssignments !== null) {
+            return Promise.resolve(this._projectTagAssignments);
+        }
+
+        if (this._projectTagAssignmentsPromise !== null) {
+            return this._projectTagAssignmentsPromise;
+        }
+
+        // Start the load
+        this.loadProjectTagAssignments();
+
+        return this._projectTagAssignmentsPromise!;
+    }
+
+
+
+    private loadProjectTagAssignments(): void {
+
+        this._projectTagAssignmentsPromise = lastValueFrom(
+            ProjectService.Instance.GetProjectTagAssignmentsForProject(this.id)
+        )
+        .then(ProjectTagAssignments => {
+            this._projectTagAssignments = ProjectTagAssignments ?? [];
+            this._projectTagAssignmentsSubject.next(this._projectTagAssignments);
+            return this._projectTagAssignments;
+         })
+        .catch(err => {
+            this._projectTagAssignments = [];
+            this._projectTagAssignmentsSubject.next(this._projectTagAssignments);
+            throw err;
+        })
+        .finally(() => {
+            this._projectTagAssignmentsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached ProjectTagAssignment. Call after mutations to force refresh.
+     */
+    public ClearProjectTagAssignmentsCache(): void {
+        this._projectTagAssignments = null;
+        this._projectTagAssignmentsPromise = null;
+        this._projectTagAssignmentsSubject.next(this._projectTagAssignments);      // Emit to observable
+    }
+
+    public get HasProjectTagAssignments(): Promise<boolean> {
+        return this.ProjectTagAssignments.then(projectTagAssignments => projectTagAssignments.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the ProjectCameraPresets for this Project.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.project.ProjectCameraPresets.then(projects => { ... })
+     *   or
+     *   await this.project.projects
+     *
+    */
+    public get ProjectCameraPresets(): Promise<ProjectCameraPresetData[]> {
+        if (this._projectCameraPresets !== null) {
+            return Promise.resolve(this._projectCameraPresets);
+        }
+
+        if (this._projectCameraPresetsPromise !== null) {
+            return this._projectCameraPresetsPromise;
+        }
+
+        // Start the load
+        this.loadProjectCameraPresets();
+
+        return this._projectCameraPresetsPromise!;
+    }
+
+
+
+    private loadProjectCameraPresets(): void {
+
+        this._projectCameraPresetsPromise = lastValueFrom(
+            ProjectService.Instance.GetProjectCameraPresetsForProject(this.id)
+        )
+        .then(ProjectCameraPresets => {
+            this._projectCameraPresets = ProjectCameraPresets ?? [];
+            this._projectCameraPresetsSubject.next(this._projectCameraPresets);
+            return this._projectCameraPresets;
+         })
+        .catch(err => {
+            this._projectCameraPresets = [];
+            this._projectCameraPresetsSubject.next(this._projectCameraPresets);
+            throw err;
+        })
+        .finally(() => {
+            this._projectCameraPresetsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached ProjectCameraPreset. Call after mutations to force refresh.
+     */
+    public ClearProjectCameraPresetsCache(): void {
+        this._projectCameraPresets = null;
+        this._projectCameraPresetsPromise = null;
+        this._projectCameraPresetsSubject.next(this._projectCameraPresets);      // Emit to observable
+    }
+
+    public get HasProjectCameraPresets(): Promise<boolean> {
+        return this.ProjectCameraPresets.then(projectCameraPresets => projectCameraPresets.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the ProjectReferenceImages for this Project.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.project.ProjectReferenceImages.then(projects => { ... })
+     *   or
+     *   await this.project.projects
+     *
+    */
+    public get ProjectReferenceImages(): Promise<ProjectReferenceImageData[]> {
+        if (this._projectReferenceImages !== null) {
+            return Promise.resolve(this._projectReferenceImages);
+        }
+
+        if (this._projectReferenceImagesPromise !== null) {
+            return this._projectReferenceImagesPromise;
+        }
+
+        // Start the load
+        this.loadProjectReferenceImages();
+
+        return this._projectReferenceImagesPromise!;
+    }
+
+
+
+    private loadProjectReferenceImages(): void {
+
+        this._projectReferenceImagesPromise = lastValueFrom(
+            ProjectService.Instance.GetProjectReferenceImagesForProject(this.id)
+        )
+        .then(ProjectReferenceImages => {
+            this._projectReferenceImages = ProjectReferenceImages ?? [];
+            this._projectReferenceImagesSubject.next(this._projectReferenceImages);
+            return this._projectReferenceImages;
+         })
+        .catch(err => {
+            this._projectReferenceImages = [];
+            this._projectReferenceImagesSubject.next(this._projectReferenceImages);
+            throw err;
+        })
+        .finally(() => {
+            this._projectReferenceImagesPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached ProjectReferenceImage. Call after mutations to force refresh.
+     */
+    public ClearProjectReferenceImagesCache(): void {
+        this._projectReferenceImages = null;
+        this._projectReferenceImagesPromise = null;
+        this._projectReferenceImagesSubject.next(this._projectReferenceImages);      // Emit to observable
+    }
+
+    public get HasProjectReferenceImages(): Promise<boolean> {
+        return this.ProjectReferenceImages.then(projectReferenceImages => projectReferenceImages.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the BuildManuals for this Project.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.project.BuildManuals.then(projects => { ... })
+     *   or
+     *   await this.project.projects
+     *
+    */
+    public get BuildManuals(): Promise<BuildManualData[]> {
+        if (this._buildManuals !== null) {
+            return Promise.resolve(this._buildManuals);
+        }
+
+        if (this._buildManualsPromise !== null) {
+            return this._buildManualsPromise;
+        }
+
+        // Start the load
+        this.loadBuildManuals();
+
+        return this._buildManualsPromise!;
+    }
+
+
+
+    private loadBuildManuals(): void {
+
+        this._buildManualsPromise = lastValueFrom(
+            ProjectService.Instance.GetBuildManualsForProject(this.id)
+        )
+        .then(BuildManuals => {
+            this._buildManuals = BuildManuals ?? [];
+            this._buildManualsSubject.next(this._buildManuals);
+            return this._buildManuals;
+         })
+        .catch(err => {
+            this._buildManuals = [];
+            this._buildManualsSubject.next(this._buildManuals);
+            throw err;
+        })
+        .finally(() => {
+            this._buildManualsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached BuildManual. Call after mutations to force refresh.
+     */
+    public ClearBuildManualsCache(): void {
+        this._buildManuals = null;
+        this._buildManualsPromise = null;
+        this._buildManualsSubject.next(this._buildManuals);      // Emit to observable
+    }
+
+    public get HasBuildManuals(): Promise<boolean> {
+        return this.BuildManuals.then(buildManuals => buildManuals.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the ProjectRenders for this Project.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.project.ProjectRenders.then(projects => { ... })
+     *   or
+     *   await this.project.projects
+     *
+    */
+    public get ProjectRenders(): Promise<ProjectRenderData[]> {
+        if (this._projectRenders !== null) {
+            return Promise.resolve(this._projectRenders);
+        }
+
+        if (this._projectRendersPromise !== null) {
+            return this._projectRendersPromise;
+        }
+
+        // Start the load
+        this.loadProjectRenders();
+
+        return this._projectRendersPromise!;
+    }
+
+
+
+    private loadProjectRenders(): void {
+
+        this._projectRendersPromise = lastValueFrom(
+            ProjectService.Instance.GetProjectRendersForProject(this.id)
+        )
+        .then(ProjectRenders => {
+            this._projectRenders = ProjectRenders ?? [];
+            this._projectRendersSubject.next(this._projectRenders);
+            return this._projectRenders;
+         })
+        .catch(err => {
+            this._projectRenders = [];
+            this._projectRendersSubject.next(this._projectRenders);
+            throw err;
+        })
+        .finally(() => {
+            this._projectRendersPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached ProjectRender. Call after mutations to force refresh.
+     */
+    public ClearProjectRendersCache(): void {
+        this._projectRenders = null;
+        this._projectRendersPromise = null;
+        this._projectRendersSubject.next(this._projectRenders);      // Emit to observable
+    }
+
+    public get HasProjectRenders(): Promise<boolean> {
+        return this.ProjectRenders.then(projectRenders => projectRenders.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the ProjectExports for this Project.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.project.ProjectExports.then(projects => { ... })
+     *   or
+     *   await this.project.projects
+     *
+    */
+    public get ProjectExports(): Promise<ProjectExportData[]> {
+        if (this._projectExports !== null) {
+            return Promise.resolve(this._projectExports);
+        }
+
+        if (this._projectExportsPromise !== null) {
+            return this._projectExportsPromise;
+        }
+
+        // Start the load
+        this.loadProjectExports();
+
+        return this._projectExportsPromise!;
+    }
+
+
+
+    private loadProjectExports(): void {
+
+        this._projectExportsPromise = lastValueFrom(
+            ProjectService.Instance.GetProjectExportsForProject(this.id)
+        )
+        .then(ProjectExports => {
+            this._projectExports = ProjectExports ?? [];
+            this._projectExportsSubject.next(this._projectExports);
+            return this._projectExports;
+         })
+        .catch(err => {
+            this._projectExports = [];
+            this._projectExportsSubject.next(this._projectExports);
+            throw err;
+        })
+        .finally(() => {
+            this._projectExportsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached ProjectExport. Call after mutations to force refresh.
+     */
+    public ClearProjectExportsCache(): void {
+        this._projectExports = null;
+        this._projectExportsPromise = null;
+        this._projectExportsSubject.next(this._projectExports);      // Emit to observable
+    }
+
+    public get HasProjectExports(): Promise<boolean> {
+        return this.ProjectExports.then(projectExports => projectExports.length > 0);
+    }
+
+
 
 
     //
@@ -556,6 +1223,13 @@ export class ProjectService extends SecureEndpointBase {
         private projectChangeHistoryService: ProjectChangeHistoryService,
         private placedBrickService: PlacedBrickService,
         private brickConnectionService: BrickConnectionService,
+        private submodelService: SubmodelService,
+        private projectTagAssignmentService: ProjectTagAssignmentService,
+        private projectCameraPresetService: ProjectCameraPresetService,
+        private projectReferenceImageService: ProjectReferenceImageService,
+        private buildManualService: BuildManualService,
+        private projectRenderService: ProjectRenderService,
+        private projectExportService: ProjectExportService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
 
@@ -616,6 +1290,9 @@ export class ProjectService extends SecureEndpointBase {
         output.name = data.name;
         output.description = data.description;
         output.notes = data.notes;
+        output.thumbnailImagePath = data.thumbnailImagePath;
+        output.partCount = data.partCount;
+        output.lastBuildDate = data.lastBuildDate;
         output.versionNumber = data.versionNumber;
         output.active = data.active;
         output.deleted = data.deleted;
@@ -1047,6 +1724,76 @@ export class ProjectService extends SecureEndpointBase {
     }
 
 
+    public GetSubmodelsForProject(projectId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<SubmodelData[]> {
+        return this.submodelService.GetSubmodelList({
+            projectId: projectId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
+    public GetProjectTagAssignmentsForProject(projectId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<ProjectTagAssignmentData[]> {
+        return this.projectTagAssignmentService.GetProjectTagAssignmentList({
+            projectId: projectId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
+    public GetProjectCameraPresetsForProject(projectId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<ProjectCameraPresetData[]> {
+        return this.projectCameraPresetService.GetProjectCameraPresetList({
+            projectId: projectId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
+    public GetProjectReferenceImagesForProject(projectId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<ProjectReferenceImageData[]> {
+        return this.projectReferenceImageService.GetProjectReferenceImageList({
+            projectId: projectId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
+    public GetBuildManualsForProject(projectId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<BuildManualData[]> {
+        return this.buildManualService.GetBuildManualList({
+            projectId: projectId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
+    public GetProjectRendersForProject(projectId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<ProjectRenderData[]> {
+        return this.projectRenderService.GetProjectRenderList({
+            projectId: projectId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
+    public GetProjectExportsForProject(projectId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<ProjectExportData[]> {
+        return this.projectExportService.GetProjectExportList({
+            projectId: projectId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
  /**
    *
    * Revives a plain object from the server into a full ProjectData instance.
@@ -1093,6 +1840,34 @@ export class ProjectService extends SecureEndpointBase {
     (revived as any)._brickConnections = null;
     (revived as any)._brickConnectionsPromise = null;
     (revived as any)._brickConnectionsSubject = new BehaviorSubject<BrickConnectionData[] | null>(null);
+
+    (revived as any)._submodels = null;
+    (revived as any)._submodelsPromise = null;
+    (revived as any)._submodelsSubject = new BehaviorSubject<SubmodelData[] | null>(null);
+
+    (revived as any)._projectTagAssignments = null;
+    (revived as any)._projectTagAssignmentsPromise = null;
+    (revived as any)._projectTagAssignmentsSubject = new BehaviorSubject<ProjectTagAssignmentData[] | null>(null);
+
+    (revived as any)._projectCameraPresets = null;
+    (revived as any)._projectCameraPresetsPromise = null;
+    (revived as any)._projectCameraPresetsSubject = new BehaviorSubject<ProjectCameraPresetData[] | null>(null);
+
+    (revived as any)._projectReferenceImages = null;
+    (revived as any)._projectReferenceImagesPromise = null;
+    (revived as any)._projectReferenceImagesSubject = new BehaviorSubject<ProjectReferenceImageData[] | null>(null);
+
+    (revived as any)._buildManuals = null;
+    (revived as any)._buildManualsPromise = null;
+    (revived as any)._buildManualsSubject = new BehaviorSubject<BuildManualData[] | null>(null);
+
+    (revived as any)._projectRenders = null;
+    (revived as any)._projectRendersPromise = null;
+    (revived as any)._projectRendersSubject = new BehaviorSubject<ProjectRenderData[] | null>(null);
+
+    (revived as any)._projectExports = null;
+    (revived as any)._projectExportsPromise = null;
+    (revived as any)._projectExportsSubject = new BehaviorSubject<ProjectExportData[] | null>(null);
 
 
     //
@@ -1148,6 +1923,118 @@ export class ProjectService extends SecureEndpointBase {
       );
 
     (revived as any).BrickConnectionsCount$ = BrickConnectionService.Instance.GetBrickConnectionsRowCount({projectId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).Submodels$ = (revived as any)._submodelsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._submodels === null && (revived as any)._submodelsPromise === null) {
+                (revived as any).loadSubmodels();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).SubmodelsCount$ = SubmodelService.Instance.GetSubmodelsRowCount({projectId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).ProjectTagAssignments$ = (revived as any)._projectTagAssignmentsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._projectTagAssignments === null && (revived as any)._projectTagAssignmentsPromise === null) {
+                (revived as any).loadProjectTagAssignments();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).ProjectTagAssignmentsCount$ = ProjectTagAssignmentService.Instance.GetProjectTagAssignmentsRowCount({projectId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).ProjectCameraPresets$ = (revived as any)._projectCameraPresetsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._projectCameraPresets === null && (revived as any)._projectCameraPresetsPromise === null) {
+                (revived as any).loadProjectCameraPresets();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).ProjectCameraPresetsCount$ = ProjectCameraPresetService.Instance.GetProjectCameraPresetsRowCount({projectId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).ProjectReferenceImages$ = (revived as any)._projectReferenceImagesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._projectReferenceImages === null && (revived as any)._projectReferenceImagesPromise === null) {
+                (revived as any).loadProjectReferenceImages();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).ProjectReferenceImagesCount$ = ProjectReferenceImageService.Instance.GetProjectReferenceImagesRowCount({projectId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).BuildManuals$ = (revived as any)._buildManualsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._buildManuals === null && (revived as any)._buildManualsPromise === null) {
+                (revived as any).loadBuildManuals();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).BuildManualsCount$ = BuildManualService.Instance.GetBuildManualsRowCount({projectId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).ProjectRenders$ = (revived as any)._projectRendersSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._projectRenders === null && (revived as any)._projectRendersPromise === null) {
+                (revived as any).loadProjectRenders();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).ProjectRendersCount$ = ProjectRenderService.Instance.GetProjectRendersRowCount({projectId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).ProjectExports$ = (revived as any)._projectExportsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._projectExports === null && (revived as any)._projectExportsPromise === null) {
+                (revived as any).loadProjectExports();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).ProjectExportsCount$ = ProjectExportService.Instance.GetProjectExportsRowCount({projectId: (revived as any).id,
       active: true,
       deleted: false
     });

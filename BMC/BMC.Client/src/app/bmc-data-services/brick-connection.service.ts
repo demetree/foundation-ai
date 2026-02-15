@@ -48,7 +48,7 @@ export class BrickConnectionQueryParameters {
 //
 export class BrickConnectionSubmitData {
     id!: bigint | number;
-    projectId: bigint | number | null = null;
+    projectId!: bigint | number;
     sourcePlacedBrickId: bigint | number | null = null;
     sourceConnectorId: bigint | number | null = null;
     targetPlacedBrickId: bigint | number | null = null;

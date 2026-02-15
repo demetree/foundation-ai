@@ -169,6 +169,9 @@ export class ProjectTableComponent implements OnInit, OnChanges, AfterViewInit {
     { key: 'name', label: 'Name', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/project', 'id']  },
     { key: 'description', label: 'Description', width: undefined },
     { key: 'notes', label: 'Notes', width: undefined },
+    { key: 'thumbnailImagePath', label: 'Thumbnail Image Path', width: undefined },
+    { key: 'partCount', label: 'Part Count', width: undefined },
+    { key: 'lastBuildDate', label: 'Last Build Date', width: undefined, template: 'date' },
 
     ];
 
@@ -317,6 +320,9 @@ export class ProjectTableComponent implements OnInit, OnChanges, AfterViewInit {
                       'name',
                       'description',
                       'notes',
+                      'thumbnailImagePath',
+                      'partCount',
+                      'lastBuildDate',
         ];
 
         result = result.filter((project) =>

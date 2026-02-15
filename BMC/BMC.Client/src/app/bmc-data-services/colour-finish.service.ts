@@ -205,9 +205,9 @@ export class ColourFinishData {
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.colourFinish.BrickColours.then(colourFinishs => { ... })
+     *   this.colourFinish.BrickColours.then(colourFinishes => { ... })
      *   or
-     *   await this.colourFinish.colourFinishs
+     *   await this.colourFinish.colourFinishes
      *
     */
     public get BrickColours(): Promise<BrickColourData[]> {
@@ -448,7 +448,7 @@ export class ColourFinishService extends SecureEndpointBase {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.get<Array<ColourFinishData>>(this.baseUrl + 'api/ColourFinishs', { 
+        return this.http.get<Array<ColourFinishData>>(this.baseUrl + 'api/ColourFinishes', { 
             params: queryParams, 
             headers: authenticationHeaders }).pipe(
             map(rawList => this.ReviveColourFinishList(rawList)),
@@ -457,31 +457,31 @@ export class ColourFinishService extends SecureEndpointBase {
             }));
     }
 
-    public GetColourFinishsRowCount(config: ColourFinishQueryParameters | any = null) : Observable<bigint | number> {
+    public GetColourFinishesRowCount(config: ColourFinishQueryParameters | any = null) : Observable<bigint | number> {
 
         const configHash = this.getConfigHash(config);
 
         if (!this.rowCountCache.has(configHash)) {
-            const colourFinishsRowCount$ = this.requestColourFinishsRowCount(config).pipe(
+            const colourFinishesRowCount$ = this.requestColourFinishesRowCount(config).pipe(
                 shareReplay({ bufferSize: SHARE_REPLAY_CACHE_SIZE, refCount: true }),
                 catchError((error) => {
                     this.rowCountCache.delete(configHash);
           
-                    //this.alertService.showHttpErrorMessage("Unable to get ColourFinishs row count", error);
+                    //this.alertService.showHttpErrorMessage("Unable to get ColourFinishes row count", error);
 
                     return throwError(() => error);
                 })
             )
 
-            this.rowCountCache.set(configHash, colourFinishsRowCount$);
+            this.rowCountCache.set(configHash, colourFinishesRowCount$);
 
-            return colourFinishsRowCount$;
+            return colourFinishesRowCount$;
         }
 
         return this.rowCountCache.get(configHash) as Observable<bigint | number>;
     }
 
-    private requestColourFinishsRowCount(config: ColourFinishQueryParameters | any) : Observable<bigint | number> {
+    private requestColourFinishesRowCount(config: ColourFinishQueryParameters | any) : Observable<bigint | number> {
 
         let queryParams = new HttpParams();
 
@@ -496,38 +496,38 @@ export class ColourFinishService extends SecureEndpointBase {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.get<bigint | number>(this.baseUrl + 'api/ColourFinishs/RowCount', { params: queryParams, headers: authenticationHeaders }).pipe(
+        return this.http.get<bigint | number>(this.baseUrl + 'api/ColourFinishes/RowCount', { params: queryParams, headers: authenticationHeaders }).pipe(
             catchError(error => {
-                return this.handleError(error, () => this.requestColourFinishsRowCount(config));
+                return this.handleError(error, () => this.requestColourFinishesRowCount(config));
             }));
     }
 
-    public GetColourFinishsBasicListData(config: ColourFinishQueryParameters | any = null) : Observable<Array<ColourFinishBasicListData>> {
+    public GetColourFinishesBasicListData(config: ColourFinishQueryParameters | any = null) : Observable<Array<ColourFinishBasicListData>> {
 
         const configHash = this.getConfigHash(config);
 
         if (!this.basicListDataCache.has(configHash)) {
-            const colourFinishsBasicListData$ = this.requestColourFinishsBasicListData(config).pipe(
+            const colourFinishesBasicListData$ = this.requestColourFinishesBasicListData(config).pipe(
                 shareReplay({ bufferSize: SHARE_REPLAY_CACHE_SIZE, refCount: true }),
                 catchError((error) => {
                     this.basicListDataCache.delete(configHash);
 
-                    //this.alertService.showHttpErrorMessage("Unable to get ColourFinishs basic list data", error);
+                    //this.alertService.showHttpErrorMessage("Unable to get ColourFinishes basic list data", error);
 
                     return throwError(() => error);
                 })
             );
       
-            this.basicListDataCache.set(configHash, colourFinishsBasicListData$);
+            this.basicListDataCache.set(configHash, colourFinishesBasicListData$);
 
-            return colourFinishsBasicListData$;
+            return colourFinishesBasicListData$;
         }
 
         return this.basicListDataCache.get(configHash) as Observable<Array<ColourFinishBasicListData>>;
     }
 
 
-    private requestColourFinishsBasicListData(config: ColourFinishQueryParameters | any) : Observable<Array<ColourFinishBasicListData>> {
+    private requestColourFinishesBasicListData(config: ColourFinishQueryParameters | any) : Observable<Array<ColourFinishBasicListData>> {
 
         let queryParams = new HttpParams();
 
@@ -542,9 +542,9 @@ export class ColourFinishService extends SecureEndpointBase {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.get<Array<ColourFinishBasicListData>>(this.baseUrl + 'api/ColourFinishs/ListData', { params: queryParams, headers: authenticationHeaders }).pipe(
+        return this.http.get<Array<ColourFinishBasicListData>>(this.baseUrl + 'api/ColourFinishes/ListData', { params: queryParams, headers: authenticationHeaders }).pipe(
             catchError(error => {
-                return this.handleError(error, () => this.requestColourFinishsBasicListData(config));
+                return this.handleError(error, () => this.requestColourFinishesBasicListData(config));
             }));
 
     }
@@ -619,7 +619,7 @@ export class ColourFinishService extends SecureEndpointBase {
         let userIsBMCColourFinishReader = this.authService.isBMCReader;
 
         //
-        // Next test to see if the user has a high enough read permission level to read from BMC.ColourFinishs
+        // Next test to see if the user has a high enough read permission level to read from BMC.ColourFinishes
         //
         if (userIsBMCColourFinishReader == true) {
             const user = this.authService.currentUser;
@@ -643,7 +643,7 @@ export class ColourFinishService extends SecureEndpointBase {
         let userIsBMCColourFinishWriter = this.authService.isBMCReaderWriter;
 
         //
-        // Next test to see if the user has a high enough write permission level to write to BMC.ColourFinishs
+        // Next test to see if the user has a high enough write permission level to write to BMC.ColourFinishes
         //
         if (userIsBMCColourFinishWriter == true) {
           let user = this.authService.currentUser;

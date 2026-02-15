@@ -17,21 +17,21 @@ public partial class BrickPart
 
     public string ldrawCategory { get; set; }
 
-    public int? partTypeId { get; set; }
+    public int partTypeId { get; set; }
 
     public string keywords { get; set; }
 
     public string author { get; set; }
 
-    public int? brickCategoryId { get; set; }
+    public int brickCategoryId { get; set; }
 
-    public float widthLdu { get; set; }
+    public float? widthLdu { get; set; }
 
-    public float heightLdu { get; set; }
+    public float? heightLdu { get; set; }
 
-    public float depthLdu { get; set; }
+    public float? depthLdu { get; set; }
 
-    public float massGrams { get; set; }
+    public float? massGrams { get; set; }
 
     public string geometryFilePath { get; set; }
 
@@ -53,7 +53,13 @@ public partial class BrickPart
 
     public virtual ICollection<BrickPartConnector> BrickPartConnectors { get; set; } = new List<BrickPartConnector>();
 
+    public virtual ICollection<LegoSetPart> LegoSetParts { get; set; } = new List<LegoSetPart>();
+
     public virtual ICollection<PlacedBrick> PlacedBricks { get; set; } = new List<PlacedBrick>();
+
+    public virtual ICollection<UserCollectionPart> UserCollectionParts { get; set; } = new List<UserCollectionPart>();
+
+    public virtual ICollection<UserWishlistItem> UserWishlistItems { get; set; } = new List<UserWishlistItem>();
 
     public virtual BrickCategory brickCategory { get; set; }
 

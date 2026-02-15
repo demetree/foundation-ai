@@ -36,8 +36,8 @@ import { AuthService } from '../../../services/auth.service';
 // - Does not include navigation properties or methods from domain models.
 //
 interface BrickPartConnectorFormValues {
-  brickPartId: number | bigint | null,       // For FK link number
-  connectorTypeId: number | bigint | null,       // For FK link number
+  brickPartId: number | bigint,       // For FK link number
+  connectorTypeId: number | bigint,       // For FK link number
   positionX: string | null,     // Stored as string for form input, converted to number on submit.
   positionY: string | null,     // Stored as string for form input, converted to number on submit.
   positionZ: string | null,     // Stored as string for form input, converted to number on submit.
@@ -77,8 +77,8 @@ export class BrickPartConnectorAddEditComponent {
 
 
   public brickPartConnectorForm: FormGroup = this.fb.group({
-        brickPartId: [null],
-        connectorTypeId: [null],
+        brickPartId: [null, Validators.required],
+        connectorTypeId: [null, Validators.required],
         positionX: [''],
         positionY: [''],
         positionZ: [''],
@@ -225,8 +225,8 @@ export class BrickPartConnectorAddEditComponent {
     //
     const brickPartConnectorSubmitData: BrickPartConnectorSubmitData = {
         id: this.brickPartConnectorSubmitData?.id || 0,
-        brickPartId: formValue.brickPartId ? Number(formValue.brickPartId) : null,
-        connectorTypeId: formValue.connectorTypeId ? Number(formValue.connectorTypeId) : null,
+        brickPartId: Number(formValue.brickPartId),
+        connectorTypeId: Number(formValue.connectorTypeId),
         positionX: formValue.positionX ? Number(formValue.positionX) : null,
         positionY: formValue.positionY ? Number(formValue.positionY) : null,
         positionZ: formValue.positionZ ? Number(formValue.positionZ) : null,

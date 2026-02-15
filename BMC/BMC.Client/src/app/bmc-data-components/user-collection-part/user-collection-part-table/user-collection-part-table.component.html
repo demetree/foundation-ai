@@ -1,0 +1,305 @@
+<app-user-collection-part-add-edit [showAddButton]="false"></app-user-collection-part-add-edit>
+<div class="row" *ngIf="userIsBMCUserCollectionPartReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCUserCollectionPartWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCUserCollectionPartWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('userCollection.name')">
+                User  Collection
+                <span *ngIf="sortColumn === 'userCollection.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('brickPart.name')">
+                Brick  Part
+                <span *ngIf="sortColumn === 'brickPart.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('brickColour.name')">
+                Brick  Colour
+                <span *ngIf="sortColumn === 'brickColour.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('quantityOwned')">
+                Quantity  Owned
+                <span *ngIf="sortColumn === 'quantityOwned'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('quantityUsed')">
+                Quantity  Used
+                <span *ngIf="sortColumn === 'quantityUsed'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let userCollectionPart of filteredUserCollectionParts; trackBy: getUserCollectionPartId"
+              [ngClass]="{
+                 'row-inactive': userCollectionPart.active == false,
+                 'row-deleted': userCollectionPart.deleted == true 
+                 }">
+            <td class="header-action-button" *ngIf="userIsBMCUserCollectionPartWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleEdit(userCollectionPart)"
+                      ngbTooltip="Edit" 
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsBMCUserCollectionPartWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleDelete(userCollectionPart)"
+                      ngbTooltip="Delete" 
+                      placement="top"
+                      *ngIf="userCollectionPart.deleted == false">
+                <i class="fa fa-trash"></i>
+              </button>
+              <button class="btn btn-sm"
+                      (click)="handleUndelete(userCollectionPart)"
+                      ngbTooltip="Undelete" 
+                      placement="top"
+                      *ngIf="userCollectionPart.deleted == true">
+                <i class="fa fa-trash-arrow-up"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(userCollectionPart, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(userCollectionPart, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(userCollectionPart, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(userCollectionPart, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(userCollectionPart, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(userCollectionPart, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(userCollectionPart, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(userCollectionPart, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/usercollection', userCollectionPart.userCollectionId]" class="btn btn-link text-left" ngbTooltip="Open User Collection details">{{userCollectionPart.userCollection?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/brickpart', userCollectionPart.brickPartId]" class="btn btn-link text-left" ngbTooltip="Open Brick Part details">{{userCollectionPart.brickPart?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/brickcolour', userCollectionPart.brickColourId]" class="btn btn-link text-left" ngbTooltip="Open Brick Colour details">{{userCollectionPart.brickColour?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/usercollectionpart', userCollectionPart.id]" class="btn btn-link text-left" ngbTooltip="Open User Collection Part details">{{userCollectionPart.quantityOwned | bigNumberFormat : '1.0-2'}}</a></td>
+            <td class="text-truncate">{{userCollectionPart.quantityUsed | bigNumberFormat : '1.0-2'}}</td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let userCollectionPart of filteredUserCollectionParts; trackBy: getUserCollectionPartId" class="card my-2"
+              [ngClass]="{
+                 'row-inactive': userCollectionPart.active == false,
+                 'row-deleted': userCollectionPart.deleted == true 
+                 }">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(userCollectionPart, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(userCollectionPart, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(userCollectionPart, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(userCollectionPart, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(userCollectionPart, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(userCollectionPart, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(userCollectionPart, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(userCollectionPart, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(userCollectionPart, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(userCollectionPart, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(userCollectionPart, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(userCollectionPart, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(userCollectionPart, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/usercollectionpart', userCollectionPart.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(userCollectionPart)" *ngIf="userIsBMCUserCollectionPartWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(userCollectionPart)" *ngIf="userIsBMCUserCollectionPartWriter() && userCollectionPart.deleted == false" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+            <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(userCollectionPart)" *ngIf="userIsBMCUserCollectionPartWriter() && userCollectionPart.deleted == true" ngbTooltip="Undelete">
+              <i class="fa fa-trash-arrow-upp"></i> UnDelete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{userCollectionPart.id}}</strong>
+               <small class="text-muted d-block">{{userCollectionPart.userCollection?.name}}</small>
+             </div>
+             <div>
+                <button class="btn btn-sm"
+                        [routerLink]="['/usercollectionpart', userCollectionPart.id]"
+                        ngbTooltip="User Collection Part Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="btn btn-sm"
+                        (click)="handleEdit(userCollectionPart)"
+                        ngbTooltip="Edit User Collection Part">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleDelete(userCollectionPart)"
+                      ngbTooltip="Delete User Collection Part" 
+                      placement="top"
+                      *ngIf="userCollectionPart.deleted == false">
+                  <i class="fa fa-trash"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleUndelete(userCollectionPart)"
+                      ngbTooltip="Undelete User Collection Part" 
+                      placement="top"
+                      *ngIf="userCollectionPart.deleted == true">
+                 <i class="fa fa-trash-arrow-up"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="user-collection-part-info" *ngIf="userCollectionPart.userCollectionId != null">
+              <strong>User Collection: </strong>
+              <a [routerLink]="['/usercollection', userCollectionPart.userCollectionId]" class="text-left p-0 m-0" ngbTooltip="Open User Collection details">{{userCollectionPart.userCollection?.name}}</a>
+            </p>
+            <p class="user-collection-part-info" *ngIf="userCollectionPart.brickPartId != null">
+              <strong>Brick Part: </strong>
+              <a [routerLink]="['/brickpart', userCollectionPart.brickPartId]" class="text-left p-0 m-0" ngbTooltip="Open Brick Part details">{{userCollectionPart.brickPart?.name}}</a>
+            </p>
+            <p class="user-collection-part-info" *ngIf="userCollectionPart.brickColourId != null">
+              <strong>Brick Colour: </strong>
+              <a [routerLink]="['/brickcolour', userCollectionPart.brickColourId]" class="text-left p-0 m-0" ngbTooltip="Open Brick Colour details">{{userCollectionPart.brickColour?.name}}</a>
+            </p>
+            <p class="user-collection-part-info" *ngIf="userCollectionPart.quantityOwned != null">
+              <strong>Quantity Owned: </strong>
+              {{userCollectionPart.quantityOwned | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="user-collection-part-info" *ngIf="userCollectionPart.quantityUsed != null">
+              <strong>Quantity Used: </strong>
+              {{userCollectionPart.quantityUsed | bigNumberFormat : '1.0-2'}}
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+   </div>
+</div>

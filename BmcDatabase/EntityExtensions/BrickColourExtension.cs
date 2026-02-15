@@ -32,7 +32,8 @@ namespace Foundation.BMC.Database
 			public Boolean isTransparent { get; set; }
 			[Required]
 			public Boolean isMetallic { get; set; }
-			public Int32? colourFinishId { get; set; }
+			[Required]
+			public Int32 colourFinishId { get; set; }
 			public Int32? luminance { get; set; }
 			public Int32? legoColourId { get; set; }
 			public Int32? sequence { get; set; }

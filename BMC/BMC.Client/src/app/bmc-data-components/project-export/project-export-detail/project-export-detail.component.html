@@ -1,0 +1,91 @@
+<div class="container-fluid p-1 m-0 project-export-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="project-export-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Project Export</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Project Export' : 'Add Project Export'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCProjectExportReader()">
+                <div class="col m-2 project-export-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="projectExportForm" (ngSubmit)="submitForm()" class="project-export-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('projectId')">
+                                <label for="ProjectExport-projectId" id="label-ProjectExport-projectId"><span class="text-danger">*</span>Project</label>
+                                <select id="ProjectExport-projectId" formControlName="projectId" class="form-select project-export-select" [disabled]="!userIsBMCProjectExportWriter()">
+                                    <option [ngValue]="null">Select Project</option>
+                                    <option *ngFor="let project of projects$ | async" [ngValue]="project.id">{{project.name}}</option>
+                                </select>
+                                <div *ngIf="projectExportForm.get('projectId')?.invalid && projectExportForm.get('projectId')?.touched" class="text-danger">
+                                    Project is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('exportFormatId')">
+                                <label for="ProjectExport-exportFormatId" id="label-ProjectExport-exportFormatId"><span class="text-danger">*</span>Export Format</label>
+                                <select id="ProjectExport-exportFormatId" formControlName="exportFormatId" class="form-select project-export-select" [disabled]="!userIsBMCProjectExportWriter()">
+                                    <option [ngValue]="null">Select Export Format</option>
+                                    <option *ngFor="let exportFormat of exportFormats$ | async" [ngValue]="exportFormat.id">{{exportFormat.name}}</option>
+                                </select>
+                                <div *ngIf="projectExportForm.get('exportFormatId')?.invalid && projectExportForm.get('exportFormatId')?.touched" class="text-danger">
+                                    Export Format is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="ProjectExport-name" id="label-ProjectExport-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="ProjectExport-name" formControlName="name" placeholder="Enter Name" class="form-control project-export-input" [disabled]="!userIsBMCProjectExportWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="projectExportForm.get('name')?.invalid && projectExportForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('outputFilePath')">
+                                <label for="ProjectExport-outputFilePath" id="label-ProjectExport-outputFilePath">Output File Path</label>
+                                <input type="text" id="ProjectExport-outputFilePath" formControlName="outputFilePath" placeholder="Enter Output File Path" class="form-control project-export-input" [disabled]="!userIsBMCProjectExportWriter()" aria-labelledby="label-outputFilePath" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('exportedDate')">
+                                <label for="ProjectExport-exportedDate" id="label-ProjectExport-exportedDate">Exported Date</label>
+                                <input type="datetime-local" id="ProjectExport-exportedDate" formControlName="exportedDate" placeholder="Enter Exported Date" class="form-control project-export-input" [disabled]="!userIsBMCProjectExportWriter()" aria-labelledby="label-exportedDate" />
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('includeInstructions')">
+                                <input type="checkbox" id="ProjectExport-includeInstructions" formControlName="includeInstructions" class="form-check-input" [disabled]="!userIsBMCProjectExportWriter()" />
+                                <label for="ProjectExport-includeInstructions" class="form-check-label" id="label-ProjectExport-includeInstructions"><span class="text-danger">*</span>Include Instructions</label>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('includePartsList')">
+                                <input type="checkbox" id="ProjectExport-includePartsList" formControlName="includePartsList" class="form-check-input" [disabled]="!userIsBMCProjectExportWriter()" />
+                                <label for="ProjectExport-includePartsList" class="form-check-label" id="label-ProjectExport-includePartsList"><span class="text-danger">*</span>Include Parts List</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ProjectExport-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCProjectExportWriter()" />
+                                <label for="ProjectExport-active" class="form-check-label" id="label-ProjectExport-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ProjectExport-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCProjectExportWriter()" />
+                                <label for="ProjectExport-deleted" class="form-check-label" id="label-ProjectExport-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="project-export-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="projectExportForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Project Export">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !projectExportForm.valid || !projectExportForm.dirty || projectExportForm.pristine  || userIsBMCProjectExportWriter() == false " ngbTooltip="Save the Project Export changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Project Export' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

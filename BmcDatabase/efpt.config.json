@@ -47,11 +47,55 @@
          "ObjectType": 0
       },
       {
+         "Name": "[BMC].[BuildManual]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[BuildManualChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[BuildManualPage]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[BuildManualStep]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[BuildStepAnnotation]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[BuildStepAnnotationType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[BuildStepPart]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[BMC].[ColourFinish]",
          "ObjectType": 0
       },
       {
          "Name": "[BMC].[ConnectorType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[ExportFormat]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[LegoSet]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[LegoSetPart]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[LegoTheme]",
          "ObjectType": 0
       },
       {
@@ -71,7 +115,67 @@
          "ObjectType": 0
       },
       {
+         "Name": "[BMC].[ProjectCameraPreset]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[BMC].[ProjectChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[ProjectExport]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[ProjectReferenceImage]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[ProjectRender]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[ProjectTag]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[ProjectTagAssignment]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[RenderPreset]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[Submodel]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[SubmodelChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[SubmodelPlacedBrick]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[UserCollection]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[UserCollectionChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[UserCollectionPart]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[UserCollectionSetImport]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[UserWishlistItem]",
          "ObjectType": 0
       }
    ],

@@ -21,7 +21,8 @@ namespace Foundation.BMC.Database
 		public class BrickConnectionDTO
 		{
 			public Int32 id { get; set; }
-			public Int32? projectId { get; set; }
+			[Required]
+			public Int32 projectId { get; set; }
 			public Int64? sourcePlacedBrickId { get; set; }
 			public Int64? sourceConnectorId { get; set; }
 			public Int64? targetPlacedBrickId { get; set; }

@@ -11,11 +11,11 @@ public partial class PlacedBrick
 
     public Guid tenantGuid { get; set; }
 
-    public int? projectId { get; set; }
+    public int projectId { get; set; }
 
-    public int? brickPartId { get; set; }
+    public int brickPartId { get; set; }
 
-    public int? brickColourId { get; set; }
+    public int brickColourId { get; set; }
 
     public float? positionX { get; set; }
 
@@ -33,6 +33,8 @@ public partial class PlacedBrick
 
     public int? buildStepNumber { get; set; }
 
+    public bool isHidden { get; set; }
+
     public int versionNumber { get; set; }
 
     public Guid objectGuid { get; set; }
@@ -41,7 +43,13 @@ public partial class PlacedBrick
 
     public bool deleted { get; set; }
 
+    public virtual ICollection<BuildStepAnnotation> BuildStepAnnotations { get; set; } = new List<BuildStepAnnotation>();
+
+    public virtual ICollection<BuildStepPart> BuildStepParts { get; set; } = new List<BuildStepPart>();
+
     public virtual ICollection<PlacedBrickChangeHistory> PlacedBrickChangeHistories { get; set; } = new List<PlacedBrickChangeHistory>();
+
+    public virtual ICollection<SubmodelPlacedBrick> SubmodelPlacedBricks { get; set; } = new List<SubmodelPlacedBrick>();
 
     public virtual BrickColour brickColour { get; set; }
 

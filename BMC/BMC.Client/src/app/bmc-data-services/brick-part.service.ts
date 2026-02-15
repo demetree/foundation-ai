@@ -22,6 +22,9 @@ import { BrickPartChangeHistoryService, BrickPartChangeHistoryData } from './bri
 import { BrickPartConnectorService, BrickPartConnectorData } from './brick-part-connector.service';
 import { BrickPartColourService, BrickPartColourData } from './brick-part-colour.service';
 import { PlacedBrickService, PlacedBrickData } from './placed-brick.service';
+import { LegoSetPartService, LegoSetPartData } from './lego-set-part.service';
+import { UserCollectionPartService, UserCollectionPartData } from './user-collection-part.service';
+import { UserWishlistItemService, UserWishlistItemData } from './user-wishlist-item.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -68,14 +71,14 @@ export class BrickPartSubmitData {
     ldrawPartId!: string;
     ldrawTitle: string | null = null;
     ldrawCategory: string | null = null;
-    partTypeId: bigint | number | null = null;
+    partTypeId!: bigint | number;
     keywords: string | null = null;
     author: string | null = null;
-    brickCategoryId: bigint | number | null = null;
-    widthLdu!: number;
-    heightLdu!: number;
-    depthLdu!: number;
-    massGrams!: number;
+    brickCategoryId!: bigint | number;
+    widthLdu: number | null = null;
+    heightLdu: number | null = null;
+    depthLdu: number | null = null;
+    massGrams: number | null = null;
     geometryFilePath: string | null = null;
     toothCount: bigint | number | null = null;
     gearRatio: number | null = null;
@@ -157,10 +160,10 @@ export class BrickPartData {
     keywords!: string | null;
     author!: string | null;
     brickCategoryId!: bigint | number;
-    widthLdu!: number;
-    heightLdu!: number;
-    depthLdu!: number;
-    massGrams!: number;
+    widthLdu!: number | null;
+    heightLdu!: number | null;
+    depthLdu!: number | null;
+    massGrams!: number | null;
     geometryFilePath!: string | null;
     toothCount!: bigint | number;
     gearRatio!: number | null;
@@ -192,6 +195,21 @@ export class BrickPartData {
     private _placedBricks: PlacedBrickData[] | null = null;
     private _placedBricksPromise: Promise<PlacedBrickData[]> | null  = null;
     private _placedBricksSubject = new BehaviorSubject<PlacedBrickData[] | null>(null);
+
+                
+    private _legoSetParts: LegoSetPartData[] | null = null;
+    private _legoSetPartsPromise: Promise<LegoSetPartData[]> | null  = null;
+    private _legoSetPartsSubject = new BehaviorSubject<LegoSetPartData[] | null>(null);
+
+                
+    private _userCollectionParts: UserCollectionPartData[] | null = null;
+    private _userCollectionPartsPromise: Promise<UserCollectionPartData[]> | null  = null;
+    private _userCollectionPartsSubject = new BehaviorSubject<UserCollectionPartData[] | null>(null);
+
+                
+    private _userWishlistItems: UserWishlistItemData[] | null = null;
+    private _userWishlistItemsPromise: Promise<UserWishlistItemData[]> | null  = null;
+    private _userWishlistItemsSubject = new BehaviorSubject<UserWishlistItemData[] | null>(null);
 
                 
 
@@ -286,6 +304,63 @@ export class BrickPartData {
 
 
 
+    public LegoSetParts$ = this._legoSetPartsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._legoSetParts === null && this._legoSetPartsPromise === null) {
+            this.loadLegoSetParts(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public LegoSetPartsCount$ = LegoSetPartService.Instance.GetLegoSetPartsRowCount({brickPartId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    public UserCollectionParts$ = this._userCollectionPartsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._userCollectionParts === null && this._userCollectionPartsPromise === null) {
+            this.loadUserCollectionParts(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public UserCollectionPartsCount$ = UserCollectionPartService.Instance.GetUserCollectionPartsRowCount({brickPartId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    public UserWishlistItems$ = this._userWishlistItemsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._userWishlistItems === null && this._userWishlistItemsPromise === null) {
+            this.loadUserWishlistItems(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+  
+    public UserWishlistItemsCount$ = UserWishlistItemService.Instance.GetUserWishlistItemsRowCount({brickPartId: this.id,
+      active: true,
+      deleted: false
+    });
+
+
+
 
   //
   // Full reload — refreshes the entire object and clears all lazy caches 
@@ -339,6 +414,18 @@ export class BrickPartData {
      this._placedBricks = null;
      this._placedBricksPromise = null;
      this._placedBricksSubject.next(null);
+
+     this._legoSetParts = null;
+     this._legoSetPartsPromise = null;
+     this._legoSetPartsSubject.next(null);
+
+     this._userCollectionParts = null;
+     this._userCollectionPartsPromise = null;
+     this._userCollectionPartsSubject.next(null);
+
+     this._userWishlistItems = null;
+     this._userWishlistItemsPromise = null;
+     this._userWishlistItemsSubject.next(null);
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -609,6 +696,201 @@ export class BrickPartData {
     }
 
 
+    /**
+     *
+     * Gets the LegoSetParts for this BrickPart.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.brickPart.LegoSetParts.then(brickParts => { ... })
+     *   or
+     *   await this.brickPart.brickParts
+     *
+    */
+    public get LegoSetParts(): Promise<LegoSetPartData[]> {
+        if (this._legoSetParts !== null) {
+            return Promise.resolve(this._legoSetParts);
+        }
+
+        if (this._legoSetPartsPromise !== null) {
+            return this._legoSetPartsPromise;
+        }
+
+        // Start the load
+        this.loadLegoSetParts();
+
+        return this._legoSetPartsPromise!;
+    }
+
+
+
+    private loadLegoSetParts(): void {
+
+        this._legoSetPartsPromise = lastValueFrom(
+            BrickPartService.Instance.GetLegoSetPartsForBrickPart(this.id)
+        )
+        .then(LegoSetParts => {
+            this._legoSetParts = LegoSetParts ?? [];
+            this._legoSetPartsSubject.next(this._legoSetParts);
+            return this._legoSetParts;
+         })
+        .catch(err => {
+            this._legoSetParts = [];
+            this._legoSetPartsSubject.next(this._legoSetParts);
+            throw err;
+        })
+        .finally(() => {
+            this._legoSetPartsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached LegoSetPart. Call after mutations to force refresh.
+     */
+    public ClearLegoSetPartsCache(): void {
+        this._legoSetParts = null;
+        this._legoSetPartsPromise = null;
+        this._legoSetPartsSubject.next(this._legoSetParts);      // Emit to observable
+    }
+
+    public get HasLegoSetParts(): Promise<boolean> {
+        return this.LegoSetParts.then(legoSetParts => legoSetParts.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the UserCollectionParts for this BrickPart.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.brickPart.UserCollectionParts.then(brickParts => { ... })
+     *   or
+     *   await this.brickPart.brickParts
+     *
+    */
+    public get UserCollectionParts(): Promise<UserCollectionPartData[]> {
+        if (this._userCollectionParts !== null) {
+            return Promise.resolve(this._userCollectionParts);
+        }
+
+        if (this._userCollectionPartsPromise !== null) {
+            return this._userCollectionPartsPromise;
+        }
+
+        // Start the load
+        this.loadUserCollectionParts();
+
+        return this._userCollectionPartsPromise!;
+    }
+
+
+
+    private loadUserCollectionParts(): void {
+
+        this._userCollectionPartsPromise = lastValueFrom(
+            BrickPartService.Instance.GetUserCollectionPartsForBrickPart(this.id)
+        )
+        .then(UserCollectionParts => {
+            this._userCollectionParts = UserCollectionParts ?? [];
+            this._userCollectionPartsSubject.next(this._userCollectionParts);
+            return this._userCollectionParts;
+         })
+        .catch(err => {
+            this._userCollectionParts = [];
+            this._userCollectionPartsSubject.next(this._userCollectionParts);
+            throw err;
+        })
+        .finally(() => {
+            this._userCollectionPartsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached UserCollectionPart. Call after mutations to force refresh.
+     */
+    public ClearUserCollectionPartsCache(): void {
+        this._userCollectionParts = null;
+        this._userCollectionPartsPromise = null;
+        this._userCollectionPartsSubject.next(this._userCollectionParts);      // Emit to observable
+    }
+
+    public get HasUserCollectionParts(): Promise<boolean> {
+        return this.UserCollectionParts.then(userCollectionParts => userCollectionParts.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the UserWishlistItems for this BrickPart.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.brickPart.UserWishlistItems.then(brickParts => { ... })
+     *   or
+     *   await this.brickPart.brickParts
+     *
+    */
+    public get UserWishlistItems(): Promise<UserWishlistItemData[]> {
+        if (this._userWishlistItems !== null) {
+            return Promise.resolve(this._userWishlistItems);
+        }
+
+        if (this._userWishlistItemsPromise !== null) {
+            return this._userWishlistItemsPromise;
+        }
+
+        // Start the load
+        this.loadUserWishlistItems();
+
+        return this._userWishlistItemsPromise!;
+    }
+
+
+
+    private loadUserWishlistItems(): void {
+
+        this._userWishlistItemsPromise = lastValueFrom(
+            BrickPartService.Instance.GetUserWishlistItemsForBrickPart(this.id)
+        )
+        .then(UserWishlistItems => {
+            this._userWishlistItems = UserWishlistItems ?? [];
+            this._userWishlistItemsSubject.next(this._userWishlistItems);
+            return this._userWishlistItems;
+         })
+        .catch(err => {
+            this._userWishlistItems = [];
+            this._userWishlistItemsSubject.next(this._userWishlistItems);
+            throw err;
+        })
+        .finally(() => {
+            this._userWishlistItemsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached UserWishlistItem. Call after mutations to force refresh.
+     */
+    public ClearUserWishlistItemsCache(): void {
+        this._userWishlistItems = null;
+        this._userWishlistItemsPromise = null;
+        this._userWishlistItemsSubject.next(this._userWishlistItems);      // Emit to observable
+    }
+
+    public get HasUserWishlistItems(): Promise<boolean> {
+        return this.UserWishlistItems.then(userWishlistItems => userWishlistItems.length > 0);
+    }
+
+
 
 
     //
@@ -691,6 +973,9 @@ export class BrickPartService extends SecureEndpointBase {
         private brickPartConnectorService: BrickPartConnectorService,
         private brickPartColourService: BrickPartColourService,
         private placedBrickService: PlacedBrickService,
+        private legoSetPartService: LegoSetPartService,
+        private userCollectionPartService: UserCollectionPartService,
+        private userWishlistItemService: UserWishlistItemService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
 
@@ -1204,6 +1489,36 @@ export class BrickPartService extends SecureEndpointBase {
     }
 
 
+    public GetLegoSetPartsForBrickPart(brickPartId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<LegoSetPartData[]> {
+        return this.legoSetPartService.GetLegoSetPartList({
+            brickPartId: brickPartId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
+    public GetUserCollectionPartsForBrickPart(brickPartId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<UserCollectionPartData[]> {
+        return this.userCollectionPartService.GetUserCollectionPartList({
+            brickPartId: brickPartId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
+    public GetUserWishlistItemsForBrickPart(brickPartId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<UserWishlistItemData[]> {
+        return this.userWishlistItemService.GetUserWishlistItemList({
+            brickPartId: brickPartId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
  /**
    *
    * Revives a plain object from the server into a full BrickPartData instance.
@@ -1254,6 +1569,18 @@ export class BrickPartService extends SecureEndpointBase {
     (revived as any)._placedBricks = null;
     (revived as any)._placedBricksPromise = null;
     (revived as any)._placedBricksSubject = new BehaviorSubject<PlacedBrickData[] | null>(null);
+
+    (revived as any)._legoSetParts = null;
+    (revived as any)._legoSetPartsPromise = null;
+    (revived as any)._legoSetPartsSubject = new BehaviorSubject<LegoSetPartData[] | null>(null);
+
+    (revived as any)._userCollectionParts = null;
+    (revived as any)._userCollectionPartsPromise = null;
+    (revived as any)._userCollectionPartsSubject = new BehaviorSubject<UserCollectionPartData[] | null>(null);
+
+    (revived as any)._userWishlistItems = null;
+    (revived as any)._userWishlistItemsPromise = null;
+    (revived as any)._userWishlistItemsSubject = new BehaviorSubject<UserWishlistItemData[] | null>(null);
 
 
     //
@@ -1325,6 +1652,54 @@ export class BrickPartService extends SecureEndpointBase {
       );
 
     (revived as any).PlacedBricksCount$ = PlacedBrickService.Instance.GetPlacedBricksRowCount({brickPartId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).LegoSetParts$ = (revived as any)._legoSetPartsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._legoSetParts === null && (revived as any)._legoSetPartsPromise === null) {
+                (revived as any).loadLegoSetParts();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).LegoSetPartsCount$ = LegoSetPartService.Instance.GetLegoSetPartsRowCount({brickPartId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).UserCollectionParts$ = (revived as any)._userCollectionPartsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._userCollectionParts === null && (revived as any)._userCollectionPartsPromise === null) {
+                (revived as any).loadUserCollectionParts();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).UserCollectionPartsCount$ = UserCollectionPartService.Instance.GetUserCollectionPartsRowCount({brickPartId: (revived as any).id,
+      active: true,
+      deleted: false
+    });
+
+
+
+    (revived as any).UserWishlistItems$ = (revived as any)._userWishlistItemsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._userWishlistItems === null && (revived as any)._userWishlistItemsPromise === null) {
+                (revived as any).loadUserWishlistItems();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any).UserWishlistItemsCount$ = UserWishlistItemService.Instance.GetUserWishlistItemsRowCount({brickPartId: (revived as any).id,
       active: true,
       deleted: false
     });

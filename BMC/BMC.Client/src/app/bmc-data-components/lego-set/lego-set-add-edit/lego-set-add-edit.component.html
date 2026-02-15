@@ -1,0 +1,94 @@
+<div class="add-lego-set" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-lego-set me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Lego Set" 
+        *ngIf="userIsBMCLegoSetWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #legoSetModal let-modal>
+   <div class="modal-header bg-dark text-light lego-set-modal-header">
+      <h5 class="modal-title mb-0" id="legoSetModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Lego Set' : 'Add Lego Set' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body lego-set-modal-body">
+      <form [formGroup]="legoSetForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="LegoSet-name" id="label-LegoSet-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="LegoSet-name" formControlName="name" placeholder="Enter Name" class="form-control lego-set-input" [disabled]="!userIsBMCLegoSetWriter()" aria-labelledby="label-name" />
+                <div *ngIf="legoSetForm.get('name')?.invalid && legoSetForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('setNumber')">
+                <label for="LegoSet-setNumber" id="label-LegoSet-setNumber"><span class="text-danger">*</span>Set Number</label>
+                <input type="text" id="LegoSet-setNumber" formControlName="setNumber" placeholder="Enter Set Number" class="form-control lego-set-input" [disabled]="!userIsBMCLegoSetWriter()" aria-labelledby="label-setNumber" />
+                <div *ngIf="legoSetForm.get('setNumber')?.invalid && legoSetForm.get('setNumber')?.touched" class="text-danger">
+                    Set Number is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('year')">
+                <label for="LegoSet-year" id="label-LegoSet-year"><span class="text-danger">*</span>Year</label>
+                <input type="number" id="LegoSet-year" formControlName="year" placeholder="Enter Year" class="form-control lego-set-input" [disabled]="!userIsBMCLegoSetWriter()" aria-labelledby="label-year" />
+                <div *ngIf="legoSetForm.get('year')?.invalid && legoSetForm.get('year')?.touched" class="text-danger">
+                    Year is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('partCount')">
+                <label for="LegoSet-partCount" id="label-LegoSet-partCount"><span class="text-danger">*</span>Part Count</label>
+                <input type="number" id="LegoSet-partCount" formControlName="partCount" placeholder="Enter Part Count" class="form-control lego-set-input" [disabled]="!userIsBMCLegoSetWriter()" aria-labelledby="label-partCount" />
+                <div *ngIf="legoSetForm.get('partCount')?.invalid && legoSetForm.get('partCount')?.touched" class="text-danger">
+                    Part Count is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('legoThemeId')">
+                <label for="LegoSet-legoThemeId" id="label-LegoSet-legoThemeId">Lego Theme</label>
+                <select id="LegoSet-legoThemeId" formControlName="legoThemeId" class="form-select lego-set-select" [disabled]="!userIsBMCLegoSetWriter()">
+                    <option [ngValue]="null">Select Lego Theme</option>
+                    <option *ngFor="let legoTheme of legoThemes$ | async" [ngValue]="legoTheme.id">{{legoTheme.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('imageUrl')">
+                <label for="LegoSet-imageUrl" id="label-LegoSet-imageUrl">Image Url</label>
+                <input type="text" id="LegoSet-imageUrl" formControlName="imageUrl" placeholder="Enter Image Url" class="form-control lego-set-input" [disabled]="!userIsBMCLegoSetWriter()" aria-labelledby="label-imageUrl" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('brickLinkUrl')">
+                <label for="LegoSet-brickLinkUrl" id="label-LegoSet-brickLinkUrl">Brick Link Url</label>
+                <input type="text" id="LegoSet-brickLinkUrl" formControlName="brickLinkUrl" placeholder="Enter Brick Link Url" class="form-control lego-set-input" [disabled]="!userIsBMCLegoSetWriter()" aria-labelledby="label-brickLinkUrl" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('rebrickableUrl')">
+                <label for="LegoSet-rebrickableUrl" id="label-LegoSet-rebrickableUrl">Rebrickable Url</label>
+                <input type="text" id="LegoSet-rebrickableUrl" formControlName="rebrickableUrl" placeholder="Enter Rebrickable Url" class="form-control lego-set-input" [disabled]="!userIsBMCLegoSetWriter()" aria-labelledby="label-rebrickableUrl" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="LegoSet-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCLegoSetWriter()" />
+                <label for="LegoSet-active" class="form-check-label" id="label-LegoSet-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="LegoSet-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCLegoSetWriter()" />
+                <label for="LegoSet-deleted" class="form-check-label" id="label-LegoSet-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer lego-set-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Lego Set changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !legoSetForm.valid || legoSetForm.pristine  || userIsBMCLegoSetWriter() == false " ngbTooltip="Save the Lego Set changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Lego Set' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

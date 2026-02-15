@@ -28,16 +28,16 @@ namespace Foundation.BMC.Controllers.WebAPI
     /// It demonstrates the features available for the ColourFinish entity, possibly including: multi tenancy, data visibility, version control with rollback, and favouriting.
 	/// 
     /// </summary>
-	public partial class ColourFinishsController : SecureWebAPIController
+	public partial class ColourFinishesController : SecureWebAPIController
 	{
 		public const int READ_PERMISSION_LEVEL_REQUIRED = 1;
 		public const int WRITE_PERMISSION_LEVEL_REQUIRED = 255;
 
 		private BMCContext _context;
 
-		private ILogger<ColourFinishsController> _logger;
+		private ILogger<ColourFinishesController> _logger;
 
-		public ColourFinishsController(BMCContext context, ILogger<ColourFinishsController> logger) : base("BMC", "ColourFinish")
+		public ColourFinishesController(BMCContext context, ILogger<ColourFinishesController> logger) : base("BMC", "ColourFinish")
 		{
 			this._context = context;
 			this._logger = logger;
@@ -49,7 +49,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 
 		/// <summary>
 		/// 
-		/// This gets a list of ColourFinishs filtered by the parameters provided.
+		/// This gets a list of ColourFinishes filtered by the parameters provided.
 		/// 
 		/// There is a filter parameter for every field, and an 'anyStringContains' parameter for cross field string partial searches.
 		/// 
@@ -60,8 +60,8 @@ namespace Foundation.BMC.Controllers.WebAPI
 		/// </summary>
 		[HttpGet]
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
-		[Route("api/ColourFinishs")]
-		public async Task<IActionResult> GetColourFinishs(
+		[Route("api/ColourFinishes")]
+		public async Task<IActionResult> GetColourFinishes(
 			string name = null,
 			string description = null,
 			bool? requiresEnvironmentMap = null,
@@ -216,14 +216,14 @@ namespace Foundation.BMC.Controllers.WebAPI
 		
         /// <summary>
         /// 
-        /// This returns a row count of ColourFinishs filtered by the parameters provided.  Its query is similar to the GetColourFinishs method, but it only returns the count of rows that would be returned.
+        /// This returns a row count of ColourFinishes filtered by the parameters provided.  Its query is similar to the GetColourFinishes method, but it only returns the count of rows that would be returned.
         ///
         /// The rate limit is 10 per second per user.
         /// 
         /// </summary>
 		[HttpGet]
 		[RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
-		[Route("api/ColourFinishs/RowCount")]
+		[Route("api/ColourFinishes/RowCount")]
 		public async Task<IActionResult> GetRowCount(
 			string name = null,
 			string description = null,
@@ -688,7 +688,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 		/// The rate limit is 2 per second per user.
         /// 
         /// </summary>
-		[Route("api/ColourFinishs/ListData")]
+		[Route("api/ColourFinishes/ListData")]
 		[HttpGet]
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		public async Task<IActionResult> GetListData(

@@ -1,0 +1,139 @@
+<div class="container-fluid p-1 m-0 lego-set-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="lego-set-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Lego Set</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Lego Set' : 'Add Lego Set'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCLegoSetReader()">
+                <div class="col m-2 lego-set-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="legoSetForm" (ngSubmit)="submitForm()" class="lego-set-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="LegoSet-name" id="label-LegoSet-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="LegoSet-name" formControlName="name" placeholder="Enter Name" class="form-control lego-set-input" [disabled]="!userIsBMCLegoSetWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="legoSetForm.get('name')?.invalid && legoSetForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('setNumber')">
+                                <label for="LegoSet-setNumber" id="label-LegoSet-setNumber"><span class="text-danger">*</span>Set Number</label>
+                                <input type="text" id="LegoSet-setNumber" formControlName="setNumber" placeholder="Enter Set Number" class="form-control lego-set-input" [disabled]="!userIsBMCLegoSetWriter()" aria-labelledby="label-setNumber" />
+                                <div *ngIf="legoSetForm.get('setNumber')?.invalid && legoSetForm.get('setNumber')?.touched" class="text-danger">
+                                    Set Number is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('year')">
+                                <label for="LegoSet-year" id="label-LegoSet-year"><span class="text-danger">*</span>Year</label>
+                                <input type="number" id="LegoSet-year" formControlName="year" placeholder="Enter Year" class="form-control lego-set-input" [disabled]="!userIsBMCLegoSetWriter()" aria-labelledby="label-year" />
+                                <div *ngIf="legoSetForm.get('year')?.invalid && legoSetForm.get('year')?.touched" class="text-danger">
+                                    Year is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('partCount')">
+                                <label for="LegoSet-partCount" id="label-LegoSet-partCount"><span class="text-danger">*</span>Part Count</label>
+                                <input type="number" id="LegoSet-partCount" formControlName="partCount" placeholder="Enter Part Count" class="form-control lego-set-input" [disabled]="!userIsBMCLegoSetWriter()" aria-labelledby="label-partCount" />
+                                <div *ngIf="legoSetForm.get('partCount')?.invalid && legoSetForm.get('partCount')?.touched" class="text-danger">
+                                    Part Count is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('legoThemeId')">
+                                <label for="LegoSet-legoThemeId" id="label-LegoSet-legoThemeId">Lego Theme</label>
+                                <select id="LegoSet-legoThemeId" formControlName="legoThemeId" class="form-select lego-set-select" [disabled]="!userIsBMCLegoSetWriter()">
+                                    <option [ngValue]="null">Select Lego Theme</option>
+                                    <option *ngFor="let legoTheme of legoThemes$ | async" [ngValue]="legoTheme.id">{{legoTheme.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('imageUrl')">
+                                <label for="LegoSet-imageUrl" id="label-LegoSet-imageUrl">Image Url</label>
+                                <input type="text" id="LegoSet-imageUrl" formControlName="imageUrl" placeholder="Enter Image Url" class="form-control lego-set-input" [disabled]="!userIsBMCLegoSetWriter()" aria-labelledby="label-imageUrl" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('brickLinkUrl')">
+                                <label for="LegoSet-brickLinkUrl" id="label-LegoSet-brickLinkUrl">Brick Link Url</label>
+                                <input type="text" id="LegoSet-brickLinkUrl" formControlName="brickLinkUrl" placeholder="Enter Brick Link Url" class="form-control lego-set-input" [disabled]="!userIsBMCLegoSetWriter()" aria-labelledby="label-brickLinkUrl" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('rebrickableUrl')">
+                                <label for="LegoSet-rebrickableUrl" id="label-LegoSet-rebrickableUrl">Rebrickable Url</label>
+                                <input type="text" id="LegoSet-rebrickableUrl" formControlName="rebrickableUrl" placeholder="Enter Rebrickable Url" class="form-control lego-set-input" [disabled]="!userIsBMCLegoSetWriter()" aria-labelledby="label-rebrickableUrl" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="LegoSet-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCLegoSetWriter()" />
+                                <label for="LegoSet-active" class="form-check-label" id="label-LegoSet-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="LegoSet-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCLegoSetWriter()" />
+                                <label for="LegoSet-deleted" class="form-check-label" id="label-LegoSet-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="lego-set-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="legoSetForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Lego Set">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !legoSetForm.valid || !legoSetForm.dirty || legoSetForm.pristine  || userIsBMCLegoSetWriter() == false " ngbTooltip="Save the Lego Set changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Lego Set' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsBMCLegoSetReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 lego-set-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="legoSetPartService.userIsBMCLegoSetPartReader()">
+                            <button ngbNavLink>Lego Set Parts
+                                <span class="badge bg-primary ms-2">
+                                    {{ (legoSetData?.LegoSetPartsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-lego-set-part-table [queryParams]="{ legoSetId: legoSetData?.id }"></app-lego-set-part-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-lego-set-part-add-edit [preSeededData]="{ legoSetId: legoSetData?.id }" [hiddenFields]="['legoSetId']"></app-lego-set-part-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="userCollectionSetImportService.userIsBMCUserCollectionSetImportReader()">
+                            <button ngbNavLink>User Collection Set Imports
+                                <span class="badge bg-primary ms-2">
+                                    {{ (legoSetData?.UserCollectionSetImportsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-user-collection-set-import-table [queryParams]="{ legoSetId: legoSetData?.id }"></app-user-collection-set-import-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-user-collection-set-import-add-edit [preSeededData]="{ legoSetId: legoSetData?.id }" [hiddenFields]="['legoSetId']"></app-user-collection-set-import-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,359 @@
+<app-project-camera-preset-add-edit [showAddButton]="false"></app-project-camera-preset-add-edit>
+<div class="row" *ngIf="userIsBMCProjectCameraPresetReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCProjectCameraPresetWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCProjectCameraPresetWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('project.name')">
+                Project
+                <span *ngIf="sortColumn === 'project.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('name')">
+                Name
+                <span *ngIf="sortColumn === 'name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('positionX')">
+                Position  X
+                <span *ngIf="sortColumn === 'positionX'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('positionY')">
+                Position  Y
+                <span *ngIf="sortColumn === 'positionY'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('positionZ')">
+                Position  Z
+                <span *ngIf="sortColumn === 'positionZ'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('targetX')">
+                Target  X
+                <span *ngIf="sortColumn === 'targetX'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('targetY')">
+                Target  Y
+                <span *ngIf="sortColumn === 'targetY'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('targetZ')">
+                Target  Z
+                <span *ngIf="sortColumn === 'targetZ'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('zoom')">
+                Zoom
+                <span *ngIf="sortColumn === 'zoom'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('isPerspective')">
+                Is  Perspective
+                <span *ngIf="sortColumn === 'isPerspective'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('sequence')">
+                Sequence
+                <span *ngIf="sortColumn === 'sequence'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let projectCameraPreset of filteredProjectCameraPresets; trackBy: getProjectCameraPresetId"
+              [ngClass]="{
+                 'row-inactive': projectCameraPreset.active == false,
+                 'row-deleted': projectCameraPreset.deleted == true 
+                 }">
+            <td class="header-action-button" *ngIf="userIsBMCProjectCameraPresetWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleEdit(projectCameraPreset)"
+                      ngbTooltip="Edit" 
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsBMCProjectCameraPresetWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleDelete(projectCameraPreset)"
+                      ngbTooltip="Delete" 
+                      placement="top"
+                      *ngIf="projectCameraPreset.deleted == false">
+                <i class="fa fa-trash"></i>
+              </button>
+              <button class="btn btn-sm"
+                      (click)="handleUndelete(projectCameraPreset)"
+                      ngbTooltip="Undelete" 
+                      placement="top"
+                      *ngIf="projectCameraPreset.deleted == true">
+                <i class="fa fa-trash-arrow-up"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(projectCameraPreset, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(projectCameraPreset, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(projectCameraPreset, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(projectCameraPreset, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(projectCameraPreset, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(projectCameraPreset, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(projectCameraPreset, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(projectCameraPreset, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/project', projectCameraPreset.projectId]" class="btn btn-link text-left" ngbTooltip="Open Project details">{{projectCameraPreset.project?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/projectcamerapreset', projectCameraPreset.id]" class="btn btn-link text-left" ngbTooltip="Open Project Camera Preset details">{{projectCameraPreset.name}}</a></td>
+            <td class="text-truncate">{{projectCameraPreset.positionX | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{projectCameraPreset.positionY | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{projectCameraPreset.positionZ | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{projectCameraPreset.targetX | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{projectCameraPreset.targetY | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{projectCameraPreset.targetZ | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{projectCameraPreset.zoom | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate"><boolean-icon [value]="projectCameraPreset.isPerspective"/></td>
+            <td class="text-truncate">{{projectCameraPreset.sequence | bigNumberFormat : '1.0-2'}}</td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let projectCameraPreset of filteredProjectCameraPresets; trackBy: getProjectCameraPresetId" class="card my-2"
+              [ngClass]="{
+                 'row-inactive': projectCameraPreset.active == false,
+                 'row-deleted': projectCameraPreset.deleted == true 
+                 }">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(projectCameraPreset, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(projectCameraPreset, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(projectCameraPreset, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(projectCameraPreset, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(projectCameraPreset, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(projectCameraPreset, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(projectCameraPreset, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(projectCameraPreset, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(projectCameraPreset, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(projectCameraPreset, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(projectCameraPreset, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(projectCameraPreset, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(projectCameraPreset, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/projectcamerapreset', projectCameraPreset.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(projectCameraPreset)" *ngIf="userIsBMCProjectCameraPresetWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(projectCameraPreset)" *ngIf="userIsBMCProjectCameraPresetWriter() && projectCameraPreset.deleted == false" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+            <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(projectCameraPreset)" *ngIf="userIsBMCProjectCameraPresetWriter() && projectCameraPreset.deleted == true" ngbTooltip="Undelete">
+              <i class="fa fa-trash-arrow-upp"></i> UnDelete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{projectCameraPreset.name}}</strong>
+               <small class="text-muted d-block">{{projectCameraPreset.project?.name}}</small>
+             </div>
+             <div>
+                <button class="btn btn-sm"
+                        [routerLink]="['/projectcamerapreset', projectCameraPreset.id]"
+                        ngbTooltip="Project Camera Preset Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="btn btn-sm"
+                        (click)="handleEdit(projectCameraPreset)"
+                        ngbTooltip="Edit Project Camera Preset">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleDelete(projectCameraPreset)"
+                      ngbTooltip="Delete Project Camera Preset" 
+                      placement="top"
+                      *ngIf="projectCameraPreset.deleted == false">
+                  <i class="fa fa-trash"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleUndelete(projectCameraPreset)"
+                      ngbTooltip="Undelete Project Camera Preset" 
+                      placement="top"
+                      *ngIf="projectCameraPreset.deleted == true">
+                 <i class="fa fa-trash-arrow-up"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="project-camera-preset-info" *ngIf="projectCameraPreset.projectId != null">
+              <strong>Project: </strong>
+              <a [routerLink]="['/project', projectCameraPreset.projectId]" class="text-left p-0 m-0" ngbTooltip="Open Project details">{{projectCameraPreset.project?.name}}</a>
+            </p>
+            <p class="project-camera-preset-info" *ngIf="projectCameraPreset.name != null">
+              <strong>Name: </strong>
+              {{projectCameraPreset.name}}
+            </p>
+            <p class="project-camera-preset-info" *ngIf="projectCameraPreset.positionX != null">
+              <strong>Position X: </strong>
+              {{projectCameraPreset.positionX | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="project-camera-preset-info" *ngIf="projectCameraPreset.positionY != null">
+              <strong>Position Y: </strong>
+              {{projectCameraPreset.positionY | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="project-camera-preset-info" *ngIf="projectCameraPreset.positionZ != null">
+              <strong>Position Z: </strong>
+              {{projectCameraPreset.positionZ | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="project-camera-preset-info" *ngIf="projectCameraPreset.targetX != null">
+              <strong>Target X: </strong>
+              {{projectCameraPreset.targetX | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="project-camera-preset-info" *ngIf="projectCameraPreset.targetY != null">
+              <strong>Target Y: </strong>
+              {{projectCameraPreset.targetY | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="project-camera-preset-info" *ngIf="projectCameraPreset.targetZ != null">
+              <strong>Target Z: </strong>
+              {{projectCameraPreset.targetZ | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="project-camera-preset-info" *ngIf="projectCameraPreset.zoom != null">
+              <strong>Zoom: </strong>
+              {{projectCameraPreset.zoom | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="project-camera-preset-info" *ngIf="projectCameraPreset.isPerspective != null">
+              <strong>Is Perspective: </strong>
+              <boolean-icon [value]="projectCameraPreset.isPerspective"/>
+            </p>
+            <p class="project-camera-preset-info" *ngIf="projectCameraPreset.sequence != null">
+              <strong>Sequence: </strong>
+              {{projectCameraPreset.sequence | bigNumberFormat : '1.0-2'}}
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+   </div>
+</div>

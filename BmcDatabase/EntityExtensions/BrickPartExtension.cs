@@ -261,7 +261,7 @@ namespace Foundation.BMC.Database
 
                 if (includeData == true)
                 {
-                    version.data = await chts.GetVersionAsync(this, 1).ConfigureAwait(false);
+                    version.data = await chts.GetVersionAsync(this, versionAudit.versionNumber).ConfigureAwait(false);
                 }
 
                 versions.Add(version);
@@ -287,18 +287,16 @@ namespace Foundation.BMC.Database
 			public String ldrawPartId { get; set; }
 			public String ldrawTitle { get; set; }
 			public String ldrawCategory { get; set; }
-			public Int32? partTypeId { get; set; }
+			[Required]
+			public Int32 partTypeId { get; set; }
 			public String keywords { get; set; }
 			public String author { get; set; }
-			public Int32? brickCategoryId { get; set; }
 			[Required]
-			public Single widthLdu { get; set; }
-			[Required]
-			public Single heightLdu { get; set; }
-			[Required]
-			public Single depthLdu { get; set; }
-			[Required]
-			public Single massGrams { get; set; }
+			public Int32 brickCategoryId { get; set; }
+			public Single? widthLdu { get; set; }
+			public Single? heightLdu { get; set; }
+			public Single? depthLdu { get; set; }
+			public Single? massGrams { get; set; }
 			public String geometryFilePath { get; set; }
 			public Int32? toothCount { get; set; }
 			public Single? gearRatio { get; set; }

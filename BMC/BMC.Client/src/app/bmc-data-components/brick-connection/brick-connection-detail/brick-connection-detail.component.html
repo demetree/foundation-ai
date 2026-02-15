@@ -18,11 +18,14 @@
                     <div *showSpinner="isLoading$ | async">
                         <form [class.hidden]="isLoading$ | async" [formGroup]="brickConnectionForm" (ngSubmit)="submitForm()" class="brick-connection-details-form">
                             <div class="form-group" *ngIf="!isFieldHidden('projectId')">
-                                <label for="BrickConnection-projectId" id="label-BrickConnection-projectId">Project</label>
+                                <label for="BrickConnection-projectId" id="label-BrickConnection-projectId"><span class="text-danger">*</span>Project</label>
                                 <select id="BrickConnection-projectId" formControlName="projectId" class="form-select brick-connection-select" [disabled]="!userIsBMCBrickConnectionWriter()">
                                     <option [ngValue]="null">Select Project</option>
                                     <option *ngFor="let project of projects$ | async" [ngValue]="project.id">{{project.name}}</option>
                                 </select>
+                                <div *ngIf="brickConnectionForm.get('projectId')?.invalid && brickConnectionForm.get('projectId')?.touched" class="text-danger">
+                                    Project is required
+                                </div>
                             </div>
                             <div class="form-group" *ngIf="!isFieldHidden('sourcePlacedBrickId')">
                                 <label for="BrickConnection-sourcePlacedBrickId" id="label-BrickConnection-sourcePlacedBrickId">Source Placed Brick Id</label>

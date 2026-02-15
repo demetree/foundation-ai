@@ -40,11 +40,14 @@
                                 <input type="text" id="BrickPart-ldrawCategory" formControlName="ldrawCategory" placeholder="Enter Ldraw Category" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-ldrawCategory" />
                             </div>
                             <div class="form-group" *ngIf="!isFieldHidden('partTypeId')">
-                                <label for="BrickPart-partTypeId" id="label-BrickPart-partTypeId">Part Type</label>
+                                <label for="BrickPart-partTypeId" id="label-BrickPart-partTypeId"><span class="text-danger">*</span>Part Type</label>
                                 <select id="BrickPart-partTypeId" formControlName="partTypeId" class="form-select brick-part-select" [disabled]="!userIsBMCBrickPartWriter()">
                                     <option [ngValue]="null">Select Part Type</option>
                                     <option *ngFor="let partType of partTypes$ | async" [ngValue]="partType.id">{{partType.name}}</option>
                                 </select>
+                                <div *ngIf="brickPartForm.get('partTypeId')?.invalid && brickPartForm.get('partTypeId')?.touched" class="text-danger">
+                                    Part Type is required
+                                </div>
                             </div>
                             <div class="form-group" *ngIf="!isFieldHidden('keywords')">
                                 <label for="BrickPart-keywords" id="label-BrickPart-keywords">Keywords</label>
@@ -55,39 +58,30 @@
                                 <input type="text" id="BrickPart-author" formControlName="author" placeholder="Enter Author" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-author" />
                             </div>
                             <div class="form-group" *ngIf="!isFieldHidden('brickCategoryId')">
-                                <label for="BrickPart-brickCategoryId" id="label-BrickPart-brickCategoryId">Brick Category</label>
+                                <label for="BrickPart-brickCategoryId" id="label-BrickPart-brickCategoryId"><span class="text-danger">*</span>Brick Category</label>
                                 <select id="BrickPart-brickCategoryId" formControlName="brickCategoryId" class="form-select brick-part-select" [disabled]="!userIsBMCBrickPartWriter()">
                                     <option [ngValue]="null">Select Brick Category</option>
                                     <option *ngFor="let brickCategory of brickCategories$ | async" [ngValue]="brickCategory.id">{{brickCategory.name}}</option>
                                 </select>
+                                <div *ngIf="brickPartForm.get('brickCategoryId')?.invalid && brickPartForm.get('brickCategoryId')?.touched" class="text-danger">
+                                    Brick Category is required
+                                </div>
                             </div>
                             <div class="form-group" *ngIf="!isFieldHidden('widthLdu')">
-                                <label for="BrickPart-widthLdu" id="label-BrickPart-widthLdu"><span class="text-danger">*</span>Width Ldu</label>
+                                <label for="BrickPart-widthLdu" id="label-BrickPart-widthLdu">Width Ldu</label>
                                 <input type="number" id="BrickPart-widthLdu" formControlName="widthLdu" placeholder="Enter Width Ldu" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-widthLdu" />
-                                <div *ngIf="brickPartForm.get('widthLdu')?.invalid && brickPartForm.get('widthLdu')?.touched" class="text-danger">
-                                    Width Ldu is required
-                                </div>
                             </div>
                             <div class="form-group" *ngIf="!isFieldHidden('heightLdu')">
-                                <label for="BrickPart-heightLdu" id="label-BrickPart-heightLdu"><span class="text-danger">*</span>Height Ldu</label>
+                                <label for="BrickPart-heightLdu" id="label-BrickPart-heightLdu">Height Ldu</label>
                                 <input type="number" id="BrickPart-heightLdu" formControlName="heightLdu" placeholder="Enter Height Ldu" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-heightLdu" />
-                                <div *ngIf="brickPartForm.get('heightLdu')?.invalid && brickPartForm.get('heightLdu')?.touched" class="text-danger">
-                                    Height Ldu is required
-                                </div>
                             </div>
                             <div class="form-group" *ngIf="!isFieldHidden('depthLdu')">
-                                <label for="BrickPart-depthLdu" id="label-BrickPart-depthLdu"><span class="text-danger">*</span>Depth Ldu</label>
+                                <label for="BrickPart-depthLdu" id="label-BrickPart-depthLdu">Depth Ldu</label>
                                 <input type="number" id="BrickPart-depthLdu" formControlName="depthLdu" placeholder="Enter Depth Ldu" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-depthLdu" />
-                                <div *ngIf="brickPartForm.get('depthLdu')?.invalid && brickPartForm.get('depthLdu')?.touched" class="text-danger">
-                                    Depth Ldu is required
-                                </div>
                             </div>
                             <div class="form-group" *ngIf="!isFieldHidden('massGrams')">
-                                <label for="BrickPart-massGrams" id="label-BrickPart-massGrams"><span class="text-danger">*</span>Mass Grams</label>
+                                <label for="BrickPart-massGrams" id="label-BrickPart-massGrams">Mass Grams</label>
                                 <input type="number" id="BrickPart-massGrams" formControlName="massGrams" placeholder="Enter Mass Grams" class="form-control brick-part-input" [disabled]="!userIsBMCBrickPartWriter()" aria-labelledby="label-massGrams" />
-                                <div *ngIf="brickPartForm.get('massGrams')?.invalid && brickPartForm.get('massGrams')?.touched" class="text-danger">
-                                    Mass Grams is required
-                                </div>
                             </div>
                             <div class="form-group" *ngIf="!isFieldHidden('geometryFilePath')">
                                 <label for="BrickPart-geometryFilePath" id="label-BrickPart-geometryFilePath">Geometry File Path</label>
@@ -200,6 +194,57 @@
                                 </div>
                                 <div class="d-flex justify-content-end">
                                     <app-placed-brick-add-edit [preSeededData]="{ brickPartId: brickPartData?.id }" [hiddenFields]="['brickPartId']"></app-placed-brick-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="legoSetPartService.userIsBMCLegoSetPartReader()">
+                            <button ngbNavLink>Lego Set Parts
+                                <span class="badge bg-primary ms-2">
+                                    {{ (brickPartData?.LegoSetPartsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-lego-set-part-table [queryParams]="{ brickPartId: brickPartData?.id }"></app-lego-set-part-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-lego-set-part-add-edit [preSeededData]="{ brickPartId: brickPartData?.id }" [hiddenFields]="['brickPartId']"></app-lego-set-part-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="userCollectionPartService.userIsBMCUserCollectionPartReader()">
+                            <button ngbNavLink>User Collection Parts
+                                <span class="badge bg-primary ms-2">
+                                    {{ (brickPartData?.UserCollectionPartsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-user-collection-part-table [queryParams]="{ brickPartId: brickPartData?.id }"></app-user-collection-part-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-user-collection-part-add-edit [preSeededData]="{ brickPartId: brickPartData?.id }" [hiddenFields]="['brickPartId']"></app-user-collection-part-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="userWishlistItemService.userIsBMCUserWishlistItemReader()">
+                            <button ngbNavLink>User Wishlist Items
+                                <span class="badge bg-primary ms-2">
+                                    {{ (brickPartData?.UserWishlistItemsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-user-wishlist-item-table [queryParams]="{ brickPartId: brickPartData?.id }"></app-user-wishlist-item-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-user-wishlist-item-add-edit [preSeededData]="{ brickPartId: brickPartData?.id }" [hiddenFields]="['brickPartId']"></app-user-wishlist-item-add-edit>
                                 </div>
                             </div>
                             </ng-template>

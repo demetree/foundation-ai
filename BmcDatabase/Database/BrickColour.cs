@@ -23,7 +23,7 @@ public partial class BrickColour
 
     public bool isMetallic { get; set; }
 
-    public int? colourFinishId { get; set; }
+    public int colourFinishId { get; set; }
 
     public int? luminance { get; set; }
 
@@ -39,7 +39,13 @@ public partial class BrickColour
 
     public virtual ICollection<BrickPartColour> BrickPartColours { get; set; } = new List<BrickPartColour>();
 
+    public virtual ICollection<LegoSetPart> LegoSetParts { get; set; } = new List<LegoSetPart>();
+
     public virtual ICollection<PlacedBrick> PlacedBricks { get; set; } = new List<PlacedBrick>();
+
+    public virtual ICollection<UserCollectionPart> UserCollectionParts { get; set; } = new List<UserCollectionPart>();
+
+    public virtual ICollection<UserWishlistItem> UserWishlistItems { get; set; } = new List<UserWishlistItem>();
 
     public virtual ColourFinish colourFinish { get; set; }
 }

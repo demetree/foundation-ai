@@ -91,7 +91,7 @@ export class ColourFinishDetailComponent implements OnInit, CanComponentDeactiva
 
   public isEditMode = true;   // Defaults to true (edit).  Gets set to false in ngOnInit if route is 'new'
 
-  colourFinishs$ = this.colourFinishService.GetColourFinishList();
+  colourFinishes$ = this.colourFinishService.GetColourFinishList();
   public brickColours$ = this.brickColourService.GetBrickColourList();
 
   private destroy$ = new Subject<void>();
@@ -219,7 +219,7 @@ export class ColourFinishDetailComponent implements OnInit, CanComponentDeactiva
     if (!this.colourFinishService.userIsBMCColourFinishReader()) {
 
       const userName = this.authService.currentUser?.userName || 'Current user';
-      this.alertService.showMessage(`${userName} does not have permission to read ColourFinishs.`,
+      this.alertService.showMessage(`${userName} does not have permission to read ColourFinishes.`,
                                     'Access Denied',
                                      MessageSeverity.warn
       );
@@ -443,7 +443,7 @@ export class ColourFinishDetailComponent implements OnInit, CanComponentDeactiva
     }
 
     if (this.colourFinishService.userIsBMCColourFinishWriter() == false) {
-      this.alertService.showMessage(this.authService.currentUser?.userName + " does not have the permission to write to Colour Finishs", 'Access Denied', MessageSeverity.info);
+      this.alertService.showMessage(this.authService.currentUser?.userName + " does not have the permission to write to Colour Finishes", 'Access Denied', MessageSeverity.info);
       return;
     }
 
@@ -497,7 +497,7 @@ export class ColourFinishDetailComponent implements OnInit, CanComponentDeactiva
           this.colourFinishForm.markAsPristine();     // Set the form to new state so the deactivate guard won't complain during routing
           this.colourFinishForm.markAsUntouched();
 
-          this.router.navigate(['/colourfinishs', savedColourFinishData.id]);
+          this.router.navigate(['/colourfinishes', savedColourFinishData.id]);
           this.alertService.showMessage('Colour Finish added successfully', '', MessageSeverity.success);
         } else {
 

@@ -177,6 +177,7 @@ export class PlacedBrickTableComponent implements OnInit, OnChanges, AfterViewIn
     { key: 'rotationZ', label: 'Rotation Z', width: undefined },
     { key: 'rotationW', label: 'Rotation W', width: undefined },
     { key: 'buildStepNumber', label: 'Build Step Number', width: undefined },
+    { key: 'isHidden', label: 'Is Hidden', width: '120px', template: 'boolean' },
 
     ];
 
@@ -333,6 +334,7 @@ export class PlacedBrickTableComponent implements OnInit, OnChanges, AfterViewIn
                       'rotationZ',
                       'rotationW',
                       'buildStepNumber',
+                      'isHidden',
         ];
 
         result = result.filter((placedBrick) =>

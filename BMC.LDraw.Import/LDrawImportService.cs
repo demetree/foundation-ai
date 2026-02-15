@@ -54,7 +54,7 @@ namespace BMC.LDraw.Import
             {
                 // Resolve ColourFinish FK
                 string finishName = NormalizeFinishName(parsed_colour.FinishType);
-                int? colourFinishId = finishLookup.ContainsKey(finishName) ? finishLookup[finishName] : (int?)null;
+                int colourFinishId = finishLookup.ContainsKey(finishName) ? finishLookup[finishName] : 1;       // default to 1, which is solid
 
                 if (existing.TryGetValue(parsed_colour.Code, out BrickColour entity))
                 {
@@ -156,14 +156,14 @@ namespace BMC.LDraw.Import
                 }
 
                 // Resolve PartType FK
-                int? partTypeId = null;
+                int partTypeId = 1;
                 if (!string.IsNullOrEmpty(header.PartType) && partTypeLookup.ContainsKey(header.PartType))
                 {
                     partTypeId = partTypeLookup[header.PartType];
                 }
 
                 // Resolve BrickCategory FK — try to match the LDraw category to our categories
-                int? brickCategoryId = null;
+                int brickCategoryId = 1;
                 if (!string.IsNullOrEmpty(header.Category) && categoryLookup.ContainsKey(header.Category))
                 {
                     brickCategoryId = categoryLookup[header.Category];

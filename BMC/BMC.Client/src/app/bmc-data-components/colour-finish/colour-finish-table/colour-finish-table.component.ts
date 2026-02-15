@@ -34,7 +34,7 @@ import { TableColumn } from '../../../utility/foundation.utility';
 export class ColourFinishTableComponent implements OnInit, OnChanges, AfterViewInit {
   @ViewChild(ColourFinishAddEditComponent) addEditColourFinishComponent!: ColourFinishAddEditComponent;
 
-  @Input() ColourFinishs: ColourFinishData[] | null = null; // Optional prefiltered data
+  @Input() ColourFinishes: ColourFinishData[] | null = null; // Optional prefiltered data
   @Input() isSmallScreen: boolean = false;
   @Input() filterText: string | null = null; // Optional filter text 
   @Input() queryParams: Partial<ColourFinishQueryParameters> = { } // Optional query parameters
@@ -49,7 +49,7 @@ export class ColourFinishTableComponent implements OnInit, OnChanges, AfterViewI
 
   @Input() columns: TableColumn[] = [];     // Default set built in ngOnInit
 
-  public filteredColourFinishs: ColourFinishData[] | null = null;        // Stores the filtered/sorted data
+  public filteredColourFinishes: ColourFinishData[] | null = null;        // Stores the filtered/sorted data
 
   // Sorting properties
   public sortColumn: string | null = null;
@@ -83,7 +83,7 @@ export class ColourFinishTableComponent implements OnInit, OnChanges, AfterViewI
       this.buildDefaultColumns();
     }
 
-    if (!this.ColourFinishs) {
+    if (!this.ColourFinishes) {
 
         this.isManagingData = true; // Component is managing data loading
         this.loadData(); // Load data on initialization
@@ -216,7 +216,7 @@ export class ColourFinishTableComponent implements OnInit, OnChanges, AfterViewI
     }
 
     if (this.colourFinishService.userIsBMCColourFinishReader() == false) {
-      this.alertService.showMessage(this.authService.currentUser?.userName + " does not have the permission to read from Colour Finishs", '', MessageSeverity.info);
+      this.alertService.showMessage(this.authService.currentUser?.userName + " does not have the permission to read from Colour Finishes", '', MessageSeverity.info);
       return;
     }
 
@@ -234,9 +234,9 @@ export class ColourFinishTableComponent implements OnInit, OnChanges, AfterViewI
     this.colourFinishService.GetColourFinishList(colourFinishQueryParams).subscribe({
       next: (ColourFinishList) => {
         if (ColourFinishList) {
-          this.ColourFinishs = ColourFinishList;
+          this.ColourFinishes = ColourFinishList;
         } else {
-          this.ColourFinishs = [];
+          this.ColourFinishes = [];
         }
 
         //
@@ -292,8 +292,8 @@ export class ColourFinishTableComponent implements OnInit, OnChanges, AfterViewI
 
    private applyFiltersAndSort(): void {
 
-    if (!this.ColourFinishs) {
-      this.filteredColourFinishs = null;
+    if (!this.ColourFinishes) {
+      this.filteredColourFinishes = null;
       return;
     }
 
@@ -305,7 +305,7 @@ export class ColourFinishTableComponent implements OnInit, OnChanges, AfterViewI
     };
 
 
-    let result = [...this.ColourFinishs];
+    let result = [...this.ColourFinishes];
 
     if (this.filterText) {
 
@@ -351,7 +351,7 @@ export class ColourFinishTableComponent implements OnInit, OnChanges, AfterViewI
       });
     }
 
-    this.filteredColourFinishs = result;
+    this.filteredColourFinishes = result;
   }
 
 

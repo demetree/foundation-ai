@@ -1,0 +1,69 @@
+<div class="add-user-collection" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-user-collection me-2"
+        (click)="openModal()"
+        ngbTooltip="Add User Collection" 
+        *ngIf="userIsBMCUserCollectionWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #userCollectionModal let-modal>
+   <div class="modal-header bg-dark text-light user-collection-modal-header">
+      <h5 class="modal-title mb-0" id="userCollectionModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit User Collection' : 'Add User Collection' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body user-collection-modal-body">
+      <form [formGroup]="userCollectionForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="UserCollection-name" id="label-UserCollection-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="UserCollection-name" formControlName="name" placeholder="Enter Name" class="form-control user-collection-input" [disabled]="!userIsBMCUserCollectionWriter()" aria-labelledby="label-name" />
+                <div *ngIf="userCollectionForm.get('name')?.invalid && userCollectionForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="UserCollection-description" id="label-UserCollection-description"><span class="text-danger">*</span>Description</label>
+                <textarea id="UserCollection-description" formControlName="description" placeholder="Enter Description" class="form-control user-collection-input" [disabled]="!userIsBMCUserCollectionWriter()"></textarea>
+                <div *ngIf="userCollectionForm.get('description')?.invalid && userCollectionForm.get('description')?.touched" class="text-danger">
+                    Description is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isDefault')">
+                <input type="checkbox" id="UserCollection-isDefault" formControlName="isDefault" class="form-check-input" [disabled]="!userIsBMCUserCollectionWriter()" />
+                <label for="UserCollection-isDefault" class="form-check-label" id="label-UserCollection-isDefault"><span class="text-danger">*</span>Is Default</label>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="UserCollection-versionNumber" id="label-UserCollection-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="UserCollection-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control user-collection-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="UserCollection-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCUserCollectionWriter()" />
+                <label for="UserCollection-active" class="form-check-label" id="label-UserCollection-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="UserCollection-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCUserCollectionWriter()" />
+                <label for="UserCollection-deleted" class="form-check-label" id="label-UserCollection-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer user-collection-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the User Collection changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !userCollectionForm.valid || userCollectionForm.pristine  || userIsBMCUserCollectionWriter() == false " ngbTooltip="Save the User Collection changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add User Collection' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

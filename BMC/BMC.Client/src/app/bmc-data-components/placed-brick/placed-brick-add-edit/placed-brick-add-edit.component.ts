@@ -37,9 +37,9 @@ import { AuthService } from '../../../services/auth.service';
 // - Does not include navigation properties or methods from domain models.
 //
 interface PlacedBrickFormValues {
-  projectId: number | bigint | null,       // For FK link number
-  brickPartId: number | bigint | null,       // For FK link number
-  brickColourId: number | bigint | null,       // For FK link number
+  projectId: number | bigint,       // For FK link number
+  brickPartId: number | bigint,       // For FK link number
+  brickColourId: number | bigint,       // For FK link number
   positionX: string | null,     // Stored as string for form input, converted to number on submit.
   positionY: string | null,     // Stored as string for form input, converted to number on submit.
   positionZ: string | null,     // Stored as string for form input, converted to number on submit.
@@ -48,6 +48,7 @@ interface PlacedBrickFormValues {
   rotationZ: string | null,     // Stored as string for form input, converted to number on submit.
   rotationW: string | null,     // Stored as string for form input, converted to number on submit.
   buildStepNumber: string | null,     // Stored as string for form input, converted to number on submit.
+  isHidden: boolean,
   versionNumber: string,     // Stored as string for form input, converted to number on submit.
   active: boolean,
   deleted: boolean,
@@ -81,9 +82,9 @@ export class PlacedBrickAddEditComponent {
 
 
   public placedBrickForm: FormGroup = this.fb.group({
-        projectId: [null],
-        brickPartId: [null],
-        brickColourId: [null],
+        projectId: [null, Validators.required],
+        brickPartId: [null, Validators.required],
+        brickColourId: [null, Validators.required],
         positionX: [''],
         positionY: [''],
         positionZ: [''],
@@ -92,6 +93,7 @@ export class PlacedBrickAddEditComponent {
         rotationZ: [''],
         rotationW: [''],
         buildStepNumber: [''],
+        isHidden: [false],
         versionNumber: [''],
         active: [true],
         deleted: [false],
@@ -234,9 +236,9 @@ export class PlacedBrickAddEditComponent {
     //
     const placedBrickSubmitData: PlacedBrickSubmitData = {
         id: this.placedBrickSubmitData?.id || 0,
-        projectId: formValue.projectId ? Number(formValue.projectId) : null,
-        brickPartId: formValue.brickPartId ? Number(formValue.brickPartId) : null,
-        brickColourId: formValue.brickColourId ? Number(formValue.brickColourId) : null,
+        projectId: Number(formValue.projectId),
+        brickPartId: Number(formValue.brickPartId),
+        brickColourId: Number(formValue.brickColourId),
         positionX: formValue.positionX ? Number(formValue.positionX) : null,
         positionY: formValue.positionY ? Number(formValue.positionY) : null,
         positionZ: formValue.positionZ ? Number(formValue.positionZ) : null,
@@ -245,6 +247,7 @@ export class PlacedBrickAddEditComponent {
         rotationZ: formValue.rotationZ ? Number(formValue.rotationZ) : null,
         rotationW: formValue.rotationW ? Number(formValue.rotationW) : null,
         buildStepNumber: formValue.buildStepNumber ? Number(formValue.buildStepNumber) : null,
+        isHidden: !!formValue.isHidden,
         versionNumber: this.placedBrickSubmitData?.versionNumber ?? 0,
         active: !!formValue.active,
         deleted: !!formValue.deleted,
@@ -385,6 +388,7 @@ export class PlacedBrickAddEditComponent {
         rotationZ: '',
         rotationW: '',
         buildStepNumber: '',
+        isHidden: false,
         versionNumber: '',
         active: true,
         deleted: false,
@@ -408,6 +412,7 @@ export class PlacedBrickAddEditComponent {
         rotationZ: placedBrickData.rotationZ?.toString() ?? '',
         rotationW: placedBrickData.rotationW?.toString() ?? '',
         buildStepNumber: placedBrickData.buildStepNumber?.toString() ?? '',
+        isHidden: placedBrickData.isHidden ?? false,
         versionNumber: placedBrickData.versionNumber?.toString() ?? '',
         active: placedBrickData.active ?? true,
         deleted: placedBrickData.deleted ?? false,

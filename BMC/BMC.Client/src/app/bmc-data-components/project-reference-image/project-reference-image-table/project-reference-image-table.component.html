@@ -1,0 +1,350 @@
+<app-project-reference-image-add-edit [showAddButton]="false"></app-project-reference-image-add-edit>
+<div class="row" *ngIf="userIsBMCProjectReferenceImageReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCProjectReferenceImageWriter() == true"></th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsBMCProjectReferenceImageWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('project.name')">
+                Project
+                <span *ngIf="sortColumn === 'project.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('name')">
+                Name
+                <span *ngIf="sortColumn === 'name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('imageFilePath')">
+                Image  File  Path
+                <span *ngIf="sortColumn === 'imageFilePath'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('opacity')">
+                Opacity
+                <span *ngIf="sortColumn === 'opacity'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('positionX')">
+                Position  X
+                <span *ngIf="sortColumn === 'positionX'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('positionY')">
+                Position  Y
+                <span *ngIf="sortColumn === 'positionY'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('positionZ')">
+                Position  Z
+                <span *ngIf="sortColumn === 'positionZ'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('scaleX')">
+                Scale  X
+                <span *ngIf="sortColumn === 'scaleX'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('scaleY')">
+                Scale  Y
+                <span *ngIf="sortColumn === 'scaleY'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('isVisible')">
+                Is  Visible
+                <span *ngIf="sortColumn === 'isVisible'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let projectReferenceImage of filteredProjectReferenceImages; trackBy: getProjectReferenceImageId"
+              [ngClass]="{
+                 'row-inactive': projectReferenceImage.active == false,
+                 'row-deleted': projectReferenceImage.deleted == true 
+                 }">
+            <td class="header-action-button" *ngIf="userIsBMCProjectReferenceImageWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleEdit(projectReferenceImage)"
+                      ngbTooltip="Edit" 
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsBMCProjectReferenceImageWriter() == true">
+              <button class="btn btn-sm"
+                      (click)="handleDelete(projectReferenceImage)"
+                      ngbTooltip="Delete" 
+                      placement="top"
+                      *ngIf="projectReferenceImage.deleted == false">
+                <i class="fa fa-trash"></i>
+              </button>
+              <button class="btn btn-sm"
+                      (click)="handleUndelete(projectReferenceImage)"
+                      ngbTooltip="Undelete" 
+                      placement="top"
+                      *ngIf="projectReferenceImage.deleted == true">
+                <i class="fa fa-trash-arrow-up"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(projectReferenceImage, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(projectReferenceImage, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(projectReferenceImage, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(projectReferenceImage, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(projectReferenceImage, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(projectReferenceImage, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(projectReferenceImage, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(projectReferenceImage, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/project', projectReferenceImage.projectId]" class="btn btn-link text-left" ngbTooltip="Open Project details">{{projectReferenceImage.project?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/projectreferenceimage', projectReferenceImage.id]" class="btn btn-link text-left" ngbTooltip="Open Project Reference Image details">{{projectReferenceImage.name}}</a></td>
+            <td class="text-truncate">{{projectReferenceImage.imageFilePath}}</td>
+            <td class="text-truncate">{{projectReferenceImage.opacity | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{projectReferenceImage.positionX | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{projectReferenceImage.positionY | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{projectReferenceImage.positionZ | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{projectReferenceImage.scaleX | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{projectReferenceImage.scaleY | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate"><boolean-icon [value]="projectReferenceImage.isVisible"/></td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let projectReferenceImage of filteredProjectReferenceImages; trackBy: getProjectReferenceImageId" class="card my-2"
+              [ngClass]="{
+                 'row-inactive': projectReferenceImage.active == false,
+                 'row-deleted': projectReferenceImage.deleted == true 
+                 }">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(projectReferenceImage, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(projectReferenceImage, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(projectReferenceImage, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(projectReferenceImage, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(projectReferenceImage, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(projectReferenceImage, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(projectReferenceImage, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(projectReferenceImage, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(projectReferenceImage, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(projectReferenceImage, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(projectReferenceImage, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(projectReferenceImage, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(projectReferenceImage, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="btn btn-sm btn-outline-primary flex-fill" [routerLink]="['/projectreferenceimage', projectReferenceImage.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="handleEdit(projectReferenceImage)" *ngIf="userIsBMCProjectReferenceImageWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(projectReferenceImage)" *ngIf="userIsBMCProjectReferenceImageWriter() && projectReferenceImage.deleted == false" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+            <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(projectReferenceImage)" *ngIf="userIsBMCProjectReferenceImageWriter() && projectReferenceImage.deleted == true" ngbTooltip="Undelete">
+              <i class="fa fa-trash-arrow-upp"></i> UnDelete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{projectReferenceImage.name}}</strong>
+               <small class="text-muted d-block">{{projectReferenceImage.project?.name}}</small>
+             </div>
+             <div>
+                <button class="btn btn-sm"
+                        [routerLink]="['/projectreferenceimage', projectReferenceImage.id]"
+                        ngbTooltip="Project Reference Image Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="btn btn-sm"
+                        (click)="handleEdit(projectReferenceImage)"
+                        ngbTooltip="Edit Project Reference Image">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleDelete(projectReferenceImage)"
+                      ngbTooltip="Delete Project Reference Image" 
+                      placement="top"
+                      *ngIf="projectReferenceImage.deleted == false">
+                  <i class="fa fa-trash"></i>
+                </button>
+                <button class="btn btn-sm"
+                      (click)="handleUndelete(projectReferenceImage)"
+                      ngbTooltip="Undelete Project Reference Image" 
+                      placement="top"
+                      *ngIf="projectReferenceImage.deleted == true">
+                 <i class="fa fa-trash-arrow-up"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="project-reference-image-info" *ngIf="projectReferenceImage.projectId != null">
+              <strong>Project: </strong>
+              <a [routerLink]="['/project', projectReferenceImage.projectId]" class="text-left p-0 m-0" ngbTooltip="Open Project details">{{projectReferenceImage.project?.name}}</a>
+            </p>
+            <p class="project-reference-image-info" *ngIf="projectReferenceImage.name != null">
+              <strong>Name: </strong>
+              {{projectReferenceImage.name}}
+            </p>
+            <p class="project-reference-image-info" *ngIf="projectReferenceImage.imageFilePath != null">
+              <strong>Image File Path: </strong>
+              {{projectReferenceImage.imageFilePath}}
+            </p>
+            <p class="project-reference-image-info" *ngIf="projectReferenceImage.opacity != null">
+              <strong>Opacity: </strong>
+              {{projectReferenceImage.opacity | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="project-reference-image-info" *ngIf="projectReferenceImage.positionX != null">
+              <strong>Position X: </strong>
+              {{projectReferenceImage.positionX | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="project-reference-image-info" *ngIf="projectReferenceImage.positionY != null">
+              <strong>Position Y: </strong>
+              {{projectReferenceImage.positionY | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="project-reference-image-info" *ngIf="projectReferenceImage.positionZ != null">
+              <strong>Position Z: </strong>
+              {{projectReferenceImage.positionZ | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="project-reference-image-info" *ngIf="projectReferenceImage.scaleX != null">
+              <strong>Scale X: </strong>
+              {{projectReferenceImage.scaleX | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="project-reference-image-info" *ngIf="projectReferenceImage.scaleY != null">
+              <strong>Scale Y: </strong>
+              {{projectReferenceImage.scaleY | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="project-reference-image-info" *ngIf="projectReferenceImage.isVisible != null">
+              <strong>Is Visible: </strong>
+              <boolean-icon [value]="projectReferenceImage.isVisible"/>
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+   </div>
+</div>

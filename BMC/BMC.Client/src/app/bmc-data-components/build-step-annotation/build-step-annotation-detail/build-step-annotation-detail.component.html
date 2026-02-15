@@ -1,0 +1,95 @@
+<div class="container-fluid p-1 m-0 build-step-annotation-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="build-step-annotation-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Build Step Annotation</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Build Step Annotation' : 'Add Build Step Annotation'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCBuildStepAnnotationReader()">
+                <div class="col m-2 build-step-annotation-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="buildStepAnnotationForm" (ngSubmit)="submitForm()" class="build-step-annotation-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('buildManualStepId')">
+                                <label for="BuildStepAnnotation-buildManualStepId" id="label-BuildStepAnnotation-buildManualStepId"><span class="text-danger">*</span>Build Manual Step</label>
+                                <select id="BuildStepAnnotation-buildManualStepId" formControlName="buildManualStepId" class="form-select build-step-annotation-select" [disabled]="!userIsBMCBuildStepAnnotationWriter()">
+                                    <option [ngValue]="null">Select Build Manual Step</option>
+                                    <option *ngFor="let buildManualStep of buildManualSteps$ | async" [ngValue]="buildManualStep.id">{{buildManualStep.id}}</option>
+                                </select>
+                                <div *ngIf="buildStepAnnotationForm.get('buildManualStepId')?.invalid && buildStepAnnotationForm.get('buildManualStepId')?.touched" class="text-danger">
+                                    Build Manual Step is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('buildStepAnnotationTypeId')">
+                                <label for="BuildStepAnnotation-buildStepAnnotationTypeId" id="label-BuildStepAnnotation-buildStepAnnotationTypeId"><span class="text-danger">*</span>Build Step Annotation Type</label>
+                                <select id="BuildStepAnnotation-buildStepAnnotationTypeId" formControlName="buildStepAnnotationTypeId" class="form-select build-step-annotation-select" [disabled]="!userIsBMCBuildStepAnnotationWriter()">
+                                    <option [ngValue]="null">Select Build Step Annotation Type</option>
+                                    <option *ngFor="let buildStepAnnotationType of buildStepAnnotationTypes$ | async" [ngValue]="buildStepAnnotationType.id">{{buildStepAnnotationType.name}}</option>
+                                </select>
+                                <div *ngIf="buildStepAnnotationForm.get('buildStepAnnotationTypeId')?.invalid && buildStepAnnotationForm.get('buildStepAnnotationTypeId')?.touched" class="text-danger">
+                                    Build Step Annotation Type is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('positionX')">
+                                <label for="BuildStepAnnotation-positionX" id="label-BuildStepAnnotation-positionX">Position X</label>
+                                <input type="number" id="BuildStepAnnotation-positionX" formControlName="positionX" placeholder="Enter Position X" class="form-control build-step-annotation-input" [disabled]="!userIsBMCBuildStepAnnotationWriter()" aria-labelledby="label-positionX" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('positionY')">
+                                <label for="BuildStepAnnotation-positionY" id="label-BuildStepAnnotation-positionY">Position Y</label>
+                                <input type="number" id="BuildStepAnnotation-positionY" formControlName="positionY" placeholder="Enter Position Y" class="form-control build-step-annotation-input" [disabled]="!userIsBMCBuildStepAnnotationWriter()" aria-labelledby="label-positionY" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('width')">
+                                <label for="BuildStepAnnotation-width" id="label-BuildStepAnnotation-width">Width</label>
+                                <input type="number" id="BuildStepAnnotation-width" formControlName="width" placeholder="Enter Width" class="form-control build-step-annotation-input" [disabled]="!userIsBMCBuildStepAnnotationWriter()" aria-labelledby="label-width" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('height')">
+                                <label for="BuildStepAnnotation-height" id="label-BuildStepAnnotation-height">Height</label>
+                                <input type="number" id="BuildStepAnnotation-height" formControlName="height" placeholder="Enter Height" class="form-control build-step-annotation-input" [disabled]="!userIsBMCBuildStepAnnotationWriter()" aria-labelledby="label-height" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('text')">
+                                <label for="BuildStepAnnotation-text" id="label-BuildStepAnnotation-text">Text</label>
+                                <textarea id="BuildStepAnnotation-text" formControlName="text" placeholder="Enter Text" class="form-control build-step-annotation-input" [disabled]="!userIsBMCBuildStepAnnotationWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('placedBrickId')">
+                                <label for="BuildStepAnnotation-placedBrickId" id="label-BuildStepAnnotation-placedBrickId">Placed Brick</label>
+                                <select id="BuildStepAnnotation-placedBrickId" formControlName="placedBrickId" class="form-select build-step-annotation-select" [disabled]="!userIsBMCBuildStepAnnotationWriter()">
+                                    <option [ngValue]="null">Select Placed Brick</option>
+                                    <option *ngFor="let placedBrick of placedBricks$ | async" [ngValue]="placedBrick.id">{{placedBrick.id}}</option>
+                                </select>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="BuildStepAnnotation-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCBuildStepAnnotationWriter()" />
+                                <label for="BuildStepAnnotation-active" class="form-check-label" id="label-BuildStepAnnotation-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="BuildStepAnnotation-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCBuildStepAnnotationWriter()" />
+                                <label for="BuildStepAnnotation-deleted" class="form-check-label" id="label-BuildStepAnnotation-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="build-step-annotation-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="buildStepAnnotationForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Build Step Annotation">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !buildStepAnnotationForm.valid || !buildStepAnnotationForm.dirty || buildStepAnnotationForm.pristine  || userIsBMCBuildStepAnnotationWriter() == false " ngbTooltip="Save the Build Step Annotation changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Build Step Annotation' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

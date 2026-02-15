@@ -1,0 +1,97 @@
+<div class="container-fluid p-1 m-0 build-manual-page-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="build-manual-page-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Build Manual Page</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Build Manual Page' : 'Add Build Manual Page'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCBuildManualPageReader()">
+                <div class="col m-2 build-manual-page-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="buildManualPageForm" (ngSubmit)="submitForm()" class="build-manual-page-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('buildManualId')">
+                                <label for="BuildManualPage-buildManualId" id="label-BuildManualPage-buildManualId"><span class="text-danger">*</span>Build Manual</label>
+                                <select id="BuildManualPage-buildManualId" formControlName="buildManualId" class="form-select build-manual-page-select" [disabled]="!userIsBMCBuildManualPageWriter()">
+                                    <option [ngValue]="null">Select Build Manual</option>
+                                    <option *ngFor="let buildManual of buildManuals$ | async" [ngValue]="buildManual.id">{{buildManual.name}}</option>
+                                </select>
+                                <div *ngIf="buildManualPageForm.get('buildManualId')?.invalid && buildManualPageForm.get('buildManualId')?.touched" class="text-danger">
+                                    Build Manual is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('pageNum')">
+                                <label for="BuildManualPage-pageNum" id="label-BuildManualPage-pageNum">Page Num</label>
+                                <input type="number" id="BuildManualPage-pageNum" formControlName="pageNum" placeholder="Enter Page Num" class="form-control build-manual-page-input" [disabled]="!userIsBMCBuildManualPageWriter()" aria-labelledby="label-pageNum" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('title')">
+                                <label for="BuildManualPage-title" id="label-BuildManualPage-title">Title</label>
+                                <input type="text" id="BuildManualPage-title" formControlName="title" placeholder="Enter Title" class="form-control build-manual-page-input" [disabled]="!userIsBMCBuildManualPageWriter()" aria-labelledby="label-title" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('notes')">
+                                <label for="BuildManualPage-notes" id="label-BuildManualPage-notes">Notes</label>
+                                <textarea id="BuildManualPage-notes" formControlName="notes" placeholder="Enter Notes" class="form-control build-manual-page-input" [disabled]="!userIsBMCBuildManualPageWriter()"></textarea>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="BuildManualPage-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCBuildManualPageWriter()" />
+                                <label for="BuildManualPage-active" class="form-check-label" id="label-BuildManualPage-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="BuildManualPage-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCBuildManualPageWriter()" />
+                                <label for="BuildManualPage-deleted" class="form-check-label" id="label-BuildManualPage-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="build-manual-page-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="buildManualPageForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Build Manual Page">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !buildManualPageForm.valid || !buildManualPageForm.dirty || buildManualPageForm.pristine  || userIsBMCBuildManualPageWriter() == false " ngbTooltip="Save the Build Manual Page changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Build Manual Page' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsBMCBuildManualPageReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 build-manual-page-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="buildManualStepService.userIsBMCBuildManualStepReader()">
+                            <button ngbNavLink>Build Manual Steps
+                                <span class="badge bg-primary ms-2">
+                                    {{ (buildManualPageData?.BuildManualStepsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-build-manual-step-table [queryParams]="{ buildManualPageId: buildManualPageData?.id }"></app-build-manual-step-table>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <app-build-manual-step-add-edit [preSeededData]="{ buildManualPageId: buildManualPageData?.id }" [hiddenFields]="['buildManualPageId']"></app-build-manual-step-add-edit>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

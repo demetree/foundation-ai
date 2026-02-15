@@ -182,13 +182,39 @@ namespace Foundation.BMC
                 controllers.Add(typeof(BrickPartChangeHistoriesController));
                 controllers.Add(typeof(BrickPartColoursController));
                 controllers.Add(typeof(BrickPartConnectorsController));
+                controllers.Add(typeof(BuildManualsController));
+                controllers.Add(typeof(BuildManualChangeHistoriesController));
+                controllers.Add(typeof(BuildManualPagesController));
+                controllers.Add(typeof(BuildManualStepsController));
+                controllers.Add(typeof(BuildStepAnnotationsController));
+                controllers.Add(typeof(BuildStepAnnotationTypesController));
+                controllers.Add(typeof(BuildStepPartsController));
                 controllers.Add(typeof(ColourFinishsController));
                 controllers.Add(typeof(ConnectorTypesController));
+                controllers.Add(typeof(ExportFormatsController));
+                controllers.Add(typeof(LegoSetsController));
+                controllers.Add(typeof(LegoSetPartsController));
+                controllers.Add(typeof(LegoThemesController));
                 controllers.Add(typeof(PartTypesController));
                 controllers.Add(typeof(PlacedBricksController));
                 controllers.Add(typeof(PlacedBrickChangeHistoriesController));
                 controllers.Add(typeof(ProjectsController));
+                controllers.Add(typeof(ProjectCameraPresetsController));
                 controllers.Add(typeof(ProjectChangeHistoriesController));
+                controllers.Add(typeof(ProjectExportsController));
+                controllers.Add(typeof(ProjectReferenceImagesController));
+                controllers.Add(typeof(ProjectRendersController));
+                controllers.Add(typeof(ProjectTagsController));
+                controllers.Add(typeof(ProjectTagAssignmentsController));
+                controllers.Add(typeof(RenderPresetsController));
+                controllers.Add(typeof(SubmodelsController));
+                controllers.Add(typeof(SubmodelChangeHistoriesController));
+                controllers.Add(typeof(SubmodelPlacedBricksController));
+                controllers.Add(typeof(UserCollectionsController));
+                controllers.Add(typeof(UserCollectionChangeHistoriesController));
+                controllers.Add(typeof(UserCollectionPartsController));
+                controllers.Add(typeof(UserCollectionSetImportsController));
+                controllers.Add(typeof(UserWishlistItemsController));
                 //
                 // End of code generated controller list for BMC module
                 //

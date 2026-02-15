@@ -1,0 +1,74 @@
+<div class="add-user-collection-change-history" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-user-collection-change-history me-2"
+        (click)="openModal()"
+        ngbTooltip="Add User Collection Change History" 
+        *ngIf="userIsBMCUserCollectionChangeHistoryWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #userCollectionChangeHistoryModal let-modal>
+   <div class="modal-header bg-dark text-light user-collection-change-history-modal-header">
+      <h5 class="modal-title mb-0" id="userCollectionChangeHistoryModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit User Collection Change History' : 'Add User Collection Change History' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body user-collection-change-history-modal-body">
+      <form [formGroup]="userCollectionChangeHistoryForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('userCollectionId')">
+                <label for="UserCollectionChangeHistory-userCollectionId" id="label-UserCollectionChangeHistory-userCollectionId"><span class="text-danger">*</span>User Collection</label>
+                <select id="UserCollectionChangeHistory-userCollectionId" formControlName="userCollectionId" class="form-select user-collection-change-history-select" [disabled]="!userIsBMCUserCollectionChangeHistoryWriter()">
+                    <option [ngValue]="null">Select User Collection</option>
+                    <option *ngFor="let userCollection of userCollections$ | async" [ngValue]="userCollection.id">{{userCollection.name}}</option>
+                </select>
+                <div *ngIf="userCollectionChangeHistoryForm.get('userCollectionId')?.invalid && userCollectionChangeHistoryForm.get('userCollectionId')?.touched" class="text-danger">
+                    User Collection is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="UserCollectionChangeHistory-versionNumber" id="label-UserCollectionChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="UserCollectionChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control user-collection-change-history-input" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                <label for="UserCollectionChangeHistory-timeStamp" id="label-UserCollectionChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                <input type="datetime-local" id="UserCollectionChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control user-collection-change-history-input" [disabled]="!userIsBMCUserCollectionChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                <div *ngIf="userCollectionChangeHistoryForm.get('timeStamp')?.invalid && userCollectionChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                    Time Stamp is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                <label for="UserCollectionChangeHistory-userId" id="label-UserCollectionChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                <input type="number" id="UserCollectionChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control user-collection-change-history-input" [disabled]="!userIsBMCUserCollectionChangeHistoryWriter()" aria-labelledby="label-userId" />
+                <div *ngIf="userCollectionChangeHistoryForm.get('userId')?.invalid && userCollectionChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                    User Id is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                <label for="UserCollectionChangeHistory-data" id="label-UserCollectionChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                <textarea id="UserCollectionChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control user-collection-change-history-input" [disabled]="!userIsBMCUserCollectionChangeHistoryWriter()"></textarea>
+                <div *ngIf="userCollectionChangeHistoryForm.get('data')?.invalid && userCollectionChangeHistoryForm.get('data')?.touched" class="text-danger">
+                    Data is required
+                </div>
+            </div>
+         <div class="modal-footer user-collection-change-history-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the User Collection Change History changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !userCollectionChangeHistoryForm.valid || userCollectionChangeHistoryForm.pristine  || userIsBMCUserCollectionChangeHistoryWriter() == false " ngbTooltip="Save the User Collection Change History changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add User Collection Change History' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

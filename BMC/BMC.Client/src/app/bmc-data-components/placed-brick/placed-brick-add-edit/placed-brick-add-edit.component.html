@@ -22,25 +22,34 @@
    <div class="modal-body placed-brick-modal-body">
       <form [formGroup]="placedBrickForm" (ngSubmit)="submitForm()">
             <div class="form-group" *ngIf="!isFieldHidden('projectId')">
-                <label for="PlacedBrick-projectId" id="label-PlacedBrick-projectId">Project</label>
+                <label for="PlacedBrick-projectId" id="label-PlacedBrick-projectId"><span class="text-danger">*</span>Project</label>
                 <select id="PlacedBrick-projectId" formControlName="projectId" class="form-select placed-brick-select" [disabled]="!userIsBMCPlacedBrickWriter()">
                     <option [ngValue]="null">Select Project</option>
                     <option *ngFor="let project of projects$ | async" [ngValue]="project.id">{{project.name}}</option>
                 </select>
+                <div *ngIf="placedBrickForm.get('projectId')?.invalid && placedBrickForm.get('projectId')?.touched" class="text-danger">
+                    Project is required
+                </div>
             </div>
             <div class="form-group" *ngIf="!isFieldHidden('brickPartId')">
-                <label for="PlacedBrick-brickPartId" id="label-PlacedBrick-brickPartId">Brick Part</label>
+                <label for="PlacedBrick-brickPartId" id="label-PlacedBrick-brickPartId"><span class="text-danger">*</span>Brick Part</label>
                 <select id="PlacedBrick-brickPartId" formControlName="brickPartId" class="form-select placed-brick-select" [disabled]="!userIsBMCPlacedBrickWriter()">
                     <option [ngValue]="null">Select Brick Part</option>
                     <option *ngFor="let brickPart of brickParts$ | async" [ngValue]="brickPart.id">{{brickPart.name}}</option>
                 </select>
+                <div *ngIf="placedBrickForm.get('brickPartId')?.invalid && placedBrickForm.get('brickPartId')?.touched" class="text-danger">
+                    Brick Part is required
+                </div>
             </div>
             <div class="form-group" *ngIf="!isFieldHidden('brickColourId')">
-                <label for="PlacedBrick-brickColourId" id="label-PlacedBrick-brickColourId">Brick Colour</label>
+                <label for="PlacedBrick-brickColourId" id="label-PlacedBrick-brickColourId"><span class="text-danger">*</span>Brick Colour</label>
                 <select id="PlacedBrick-brickColourId" formControlName="brickColourId" class="form-select placed-brick-select" [disabled]="!userIsBMCPlacedBrickWriter()">
                     <option [ngValue]="null">Select Brick Colour</option>
                     <option *ngFor="let brickColour of brickColours$ | async" [ngValue]="brickColour.id">{{brickColour.name}}</option>
                 </select>
+                <div *ngIf="placedBrickForm.get('brickColourId')?.invalid && placedBrickForm.get('brickColourId')?.touched" class="text-danger">
+                    Brick Colour is required
+                </div>
             </div>
             <div class="form-group" *ngIf="!isFieldHidden('positionX')">
                 <label for="PlacedBrick-positionX" id="label-PlacedBrick-positionX">Position X</label>
@@ -73,6 +82,10 @@
             <div class="form-group" *ngIf="!isFieldHidden('buildStepNumber')">
                 <label for="PlacedBrick-buildStepNumber" id="label-PlacedBrick-buildStepNumber">Build Step Number</label>
                 <input type="number" id="PlacedBrick-buildStepNumber" formControlName="buildStepNumber" placeholder="Enter Build Step Number" class="form-control placed-brick-input" [disabled]="!userIsBMCPlacedBrickWriter()" aria-labelledby="label-buildStepNumber" />
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isHidden')">
+                <input type="checkbox" id="PlacedBrick-isHidden" formControlName="isHidden" class="form-check-input" [disabled]="!userIsBMCPlacedBrickWriter()" />
+                <label for="PlacedBrick-isHidden" class="form-check-label" id="label-PlacedBrick-isHidden"><span class="text-danger">*</span>Is Hidden</label>
             </div>
             <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
                 <label for="PlacedBrick-versionNumber" id="label-PlacedBrick-versionNumber"><span class="text-danger">*</span>Version Number</label>

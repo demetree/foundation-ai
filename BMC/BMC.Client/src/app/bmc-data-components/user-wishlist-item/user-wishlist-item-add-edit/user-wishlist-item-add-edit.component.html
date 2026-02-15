@@ -1,0 +1,82 @@
+<div class="add-user-wishlist-item" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-user-wishlist-item me-2"
+        (click)="openModal()"
+        ngbTooltip="Add User Wishlist Item" 
+        *ngIf="userIsBMCUserWishlistItemWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #userWishlistItemModal let-modal>
+   <div class="modal-header bg-dark text-light user-wishlist-item-modal-header">
+      <h5 class="modal-title mb-0" id="userWishlistItemModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit User Wishlist Item' : 'Add User Wishlist Item' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body user-wishlist-item-modal-body">
+      <form [formGroup]="userWishlistItemForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('userCollectionId')">
+                <label for="UserWishlistItem-userCollectionId" id="label-UserWishlistItem-userCollectionId"><span class="text-danger">*</span>User Collection</label>
+                <select id="UserWishlistItem-userCollectionId" formControlName="userCollectionId" class="form-select user-wishlist-item-select" [disabled]="!userIsBMCUserWishlistItemWriter()">
+                    <option [ngValue]="null">Select User Collection</option>
+                    <option *ngFor="let userCollection of userCollections$ | async" [ngValue]="userCollection.id">{{userCollection.name}}</option>
+                </select>
+                <div *ngIf="userWishlistItemForm.get('userCollectionId')?.invalid && userWishlistItemForm.get('userCollectionId')?.touched" class="text-danger">
+                    User Collection is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('brickPartId')">
+                <label for="UserWishlistItem-brickPartId" id="label-UserWishlistItem-brickPartId"><span class="text-danger">*</span>Brick Part</label>
+                <select id="UserWishlistItem-brickPartId" formControlName="brickPartId" class="form-select user-wishlist-item-select" [disabled]="!userIsBMCUserWishlistItemWriter()">
+                    <option [ngValue]="null">Select Brick Part</option>
+                    <option *ngFor="let brickPart of brickParts$ | async" [ngValue]="brickPart.id">{{brickPart.name}}</option>
+                </select>
+                <div *ngIf="userWishlistItemForm.get('brickPartId')?.invalid && userWishlistItemForm.get('brickPartId')?.touched" class="text-danger">
+                    Brick Part is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('brickColourId')">
+                <label for="UserWishlistItem-brickColourId" id="label-UserWishlistItem-brickColourId">Brick Colour</label>
+                <select id="UserWishlistItem-brickColourId" formControlName="brickColourId" class="form-select user-wishlist-item-select" [disabled]="!userIsBMCUserWishlistItemWriter()">
+                    <option [ngValue]="null">Select Brick Colour</option>
+                    <option *ngFor="let brickColour of brickColours$ | async" [ngValue]="brickColour.id">{{brickColour.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('quantityDesired')">
+                <label for="UserWishlistItem-quantityDesired" id="label-UserWishlistItem-quantityDesired">Quantity Desired</label>
+                <input type="number" id="UserWishlistItem-quantityDesired" formControlName="quantityDesired" placeholder="Enter Quantity Desired" class="form-control user-wishlist-item-input" [disabled]="!userIsBMCUserWishlistItemWriter()" aria-labelledby="label-quantityDesired" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('notes')">
+                <label for="UserWishlistItem-notes" id="label-UserWishlistItem-notes">Notes</label>
+                <textarea id="UserWishlistItem-notes" formControlName="notes" placeholder="Enter Notes" class="form-control user-wishlist-item-input" [disabled]="!userIsBMCUserWishlistItemWriter()"></textarea>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="UserWishlistItem-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCUserWishlistItemWriter()" />
+                <label for="UserWishlistItem-active" class="form-check-label" id="label-UserWishlistItem-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="UserWishlistItem-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCUserWishlistItemWriter()" />
+                <label for="UserWishlistItem-deleted" class="form-check-label" id="label-UserWishlistItem-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer user-wishlist-item-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the User Wishlist Item changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !userWishlistItemForm.valid || userWishlistItemForm.pristine  || userIsBMCUserWishlistItemWriter() == false " ngbTooltip="Save the User Wishlist Item changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add User Wishlist Item' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

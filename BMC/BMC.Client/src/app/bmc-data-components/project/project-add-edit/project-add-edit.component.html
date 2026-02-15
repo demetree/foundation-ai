@@ -39,6 +39,18 @@
                 <label for="Project-notes" id="label-Project-notes">Notes</label>
                 <textarea id="Project-notes" formControlName="notes" placeholder="Enter Notes" class="form-control project-input" [disabled]="!userIsBMCProjectWriter()"></textarea>
             </div>
+            <div class="form-group" *ngIf="!isFieldHidden('thumbnailImagePath')">
+                <label for="Project-thumbnailImagePath" id="label-Project-thumbnailImagePath">Thumbnail Image Path</label>
+                <input type="text" id="Project-thumbnailImagePath" formControlName="thumbnailImagePath" placeholder="Enter Thumbnail Image Path" class="form-control project-input" [disabled]="!userIsBMCProjectWriter()" aria-labelledby="label-thumbnailImagePath" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('partCount')">
+                <label for="Project-partCount" id="label-Project-partCount">Part Count</label>
+                <input type="number" id="Project-partCount" formControlName="partCount" placeholder="Enter Part Count" class="form-control project-input" [disabled]="!userIsBMCProjectWriter()" aria-labelledby="label-partCount" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('lastBuildDate')">
+                <label for="Project-lastBuildDate" id="label-Project-lastBuildDate">Last Build Date</label>
+                <input type="datetime-local" id="Project-lastBuildDate" formControlName="lastBuildDate" placeholder="Enter Last Build Date" class="form-control project-input" [disabled]="!userIsBMCProjectWriter()" aria-labelledby="label-lastBuildDate" />
+            </div>
             <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
                 <label for="Project-versionNumber" id="label-Project-versionNumber"><span class="text-danger">*</span>Version Number</label>
                 <input type="number" id="Project-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control project-input" />

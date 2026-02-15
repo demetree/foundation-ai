@@ -35,7 +35,7 @@ import { AuthService } from '../../../services/auth.service';
 // - Does not include navigation properties or methods from domain models.
 //
 interface BrickConnectionFormValues {
-  projectId: number | bigint | null,       // For FK link number
+  projectId: number | bigint,       // For FK link number
   sourcePlacedBrickId: string | null,     // Stored as string for form input, converted to number on submit.
   sourceConnectorId: string | null,     // Stored as string for form input, converted to number on submit.
   targetPlacedBrickId: string | null,     // Stored as string for form input, converted to number on submit.
@@ -72,7 +72,7 @@ export class BrickConnectionAddEditComponent {
 
 
   public brickConnectionForm: FormGroup = this.fb.group({
-        projectId: [null],
+        projectId: [null, Validators.required],
         sourcePlacedBrickId: [''],
         sourceConnectorId: [''],
         targetPlacedBrickId: [''],
@@ -214,7 +214,7 @@ export class BrickConnectionAddEditComponent {
     //
     const brickConnectionSubmitData: BrickConnectionSubmitData = {
         id: this.brickConnectionSubmitData?.id || 0,
-        projectId: formValue.projectId ? Number(formValue.projectId) : null,
+        projectId: Number(formValue.projectId),
         sourcePlacedBrickId: formValue.sourcePlacedBrickId ? Number(formValue.sourcePlacedBrickId) : null,
         sourceConnectorId: formValue.sourceConnectorId ? Number(formValue.sourceConnectorId) : null,
         targetPlacedBrickId: formValue.targetPlacedBrickId ? Number(formValue.targetPlacedBrickId) : null,

@@ -35,7 +35,7 @@ export class ColourFinishListingComponent implements OnInit, AfterViewInit, CanC
   @ViewChild(ColourFinishAddEditComponent) addEditColourFinishComponent!: ColourFinishAddEditComponent;
   @ViewChild(ColourFinishTableComponent) colourFinishTableComponent!: ColourFinishTableComponent;
 
-  public ColourFinishs: ColourFinishData[] | null = null;
+  public ColourFinishes: ColourFinishData[] | null = null;
   public isSmallScreen: boolean = false;
 
   public filterText: string | null = null;
@@ -97,7 +97,7 @@ export class ColourFinishListingComponent implements OnInit, AfterViewInit, CanC
     this.loadingFilteredCount = true;
 
     // Total count (no filter)
-    this.totalColourFinishCount$ = this.colourFinishService.GetColourFinishsRowCount({
+    this.totalColourFinishCount$ = this.colourFinishService.GetColourFinishesRowCount({
       active: true,
       deleted: false
     }).pipe(
@@ -111,7 +111,7 @@ export class ColourFinishListingComponent implements OnInit, AfterViewInit, CanC
 
     if (this.filterText) {
 
-      this.filteredColourFinishCount$ = this.colourFinishService.GetColourFinishsRowCount({
+      this.filteredColourFinishCount$ = this.colourFinishService.GetColourFinishesRowCount({
         active: true,
         deleted: false,
         anyStringContains: this.filterText || undefined

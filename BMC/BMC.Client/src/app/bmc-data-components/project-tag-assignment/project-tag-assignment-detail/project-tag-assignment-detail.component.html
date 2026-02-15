@@ -1,0 +1,68 @@
+<div class="container-fluid p-1 m-0 project-tag-assignment-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="project-tag-assignment-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Project Tag Assignment</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Project Tag Assignment' : 'Add Project Tag Assignment'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCProjectTagAssignmentReader()">
+                <div class="col m-2 project-tag-assignment-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="projectTagAssignmentForm" (ngSubmit)="submitForm()" class="project-tag-assignment-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('projectId')">
+                                <label for="ProjectTagAssignment-projectId" id="label-ProjectTagAssignment-projectId"><span class="text-danger">*</span>Project</label>
+                                <select id="ProjectTagAssignment-projectId" formControlName="projectId" class="form-select project-tag-assignment-select" [disabled]="!userIsBMCProjectTagAssignmentWriter()">
+                                    <option [ngValue]="null">Select Project</option>
+                                    <option *ngFor="let project of projects$ | async" [ngValue]="project.id">{{project.name}}</option>
+                                </select>
+                                <div *ngIf="projectTagAssignmentForm.get('projectId')?.invalid && projectTagAssignmentForm.get('projectId')?.touched" class="text-danger">
+                                    Project is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('projectTagId')">
+                                <label for="ProjectTagAssignment-projectTagId" id="label-ProjectTagAssignment-projectTagId"><span class="text-danger">*</span>Project Tag</label>
+                                <select id="ProjectTagAssignment-projectTagId" formControlName="projectTagId" class="form-select project-tag-assignment-select" [disabled]="!userIsBMCProjectTagAssignmentWriter()">
+                                    <option [ngValue]="null">Select Project Tag</option>
+                                    <option *ngFor="let projectTag of projectTags$ | async" [ngValue]="projectTag.id">{{projectTag.name}}</option>
+                                </select>
+                                <div *ngIf="projectTagAssignmentForm.get('projectTagId')?.invalid && projectTagAssignmentForm.get('projectTagId')?.touched" class="text-danger">
+                                    Project Tag is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ProjectTagAssignment-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCProjectTagAssignmentWriter()" />
+                                <label for="ProjectTagAssignment-active" class="form-check-label" id="label-ProjectTagAssignment-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ProjectTagAssignment-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCProjectTagAssignmentWriter()" />
+                                <label for="ProjectTagAssignment-deleted" class="form-check-label" id="label-ProjectTagAssignment-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="project-tag-assignment-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="projectTagAssignmentForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Project Tag Assignment">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !projectTagAssignmentForm.valid || !projectTagAssignmentForm.dirty || projectTagAssignmentForm.pristine  || userIsBMCProjectTagAssignmentWriter() == false " ngbTooltip="Save the Project Tag Assignment changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Project Tag Assignment' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

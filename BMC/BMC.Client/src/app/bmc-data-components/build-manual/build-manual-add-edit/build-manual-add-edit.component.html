@@ -1,0 +1,87 @@
+<div class="add-build-manual" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-build-manual me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Build Manual" 
+        *ngIf="userIsBMCBuildManualWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #buildManualModal let-modal>
+   <div class="modal-header bg-dark text-light build-manual-modal-header">
+      <h5 class="modal-title mb-0" id="buildManualModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Build Manual' : 'Add Build Manual' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body build-manual-modal-body">
+      <form [formGroup]="buildManualForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('projectId')">
+                <label for="BuildManual-projectId" id="label-BuildManual-projectId"><span class="text-danger">*</span>Project</label>
+                <select id="BuildManual-projectId" formControlName="projectId" class="form-select build-manual-select" [disabled]="!userIsBMCBuildManualWriter()">
+                    <option [ngValue]="null">Select Project</option>
+                    <option *ngFor="let project of projects$ | async" [ngValue]="project.id">{{project.name}}</option>
+                </select>
+                <div *ngIf="buildManualForm.get('projectId')?.invalid && buildManualForm.get('projectId')?.touched" class="text-danger">
+                    Project is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="BuildManual-name" id="label-BuildManual-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="BuildManual-name" formControlName="name" placeholder="Enter Name" class="form-control build-manual-input" [disabled]="!userIsBMCBuildManualWriter()" aria-labelledby="label-name" />
+                <div *ngIf="buildManualForm.get('name')?.invalid && buildManualForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="BuildManual-description" id="label-BuildManual-description"><span class="text-danger">*</span>Description</label>
+                <textarea id="BuildManual-description" formControlName="description" placeholder="Enter Description" class="form-control build-manual-input" [disabled]="!userIsBMCBuildManualWriter()"></textarea>
+                <div *ngIf="buildManualForm.get('description')?.invalid && buildManualForm.get('description')?.touched" class="text-danger">
+                    Description is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('pageWidthMm')">
+                <label for="BuildManual-pageWidthMm" id="label-BuildManual-pageWidthMm">Page Width Mm</label>
+                <input type="number" id="BuildManual-pageWidthMm" formControlName="pageWidthMm" placeholder="Enter Page Width Mm" class="form-control build-manual-input" [disabled]="!userIsBMCBuildManualWriter()" aria-labelledby="label-pageWidthMm" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('pageHeightMm')">
+                <label for="BuildManual-pageHeightMm" id="label-BuildManual-pageHeightMm">Page Height Mm</label>
+                <input type="number" id="BuildManual-pageHeightMm" formControlName="pageHeightMm" placeholder="Enter Page Height Mm" class="form-control build-manual-input" [disabled]="!userIsBMCBuildManualWriter()" aria-labelledby="label-pageHeightMm" />
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isPublished')">
+                <input type="checkbox" id="BuildManual-isPublished" formControlName="isPublished" class="form-check-input" [disabled]="!userIsBMCBuildManualWriter()" />
+                <label for="BuildManual-isPublished" class="form-check-label" id="label-BuildManual-isPublished"><span class="text-danger">*</span>Is Published</label>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="BuildManual-versionNumber" id="label-BuildManual-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="BuildManual-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control build-manual-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="BuildManual-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCBuildManualWriter()" />
+                <label for="BuildManual-active" class="form-check-label" id="label-BuildManual-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="BuildManual-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCBuildManualWriter()" />
+                <label for="BuildManual-deleted" class="form-check-label" id="label-BuildManual-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer build-manual-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Build Manual changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !buildManualForm.valid || buildManualForm.pristine  || userIsBMCBuildManualWriter() == false " ngbTooltip="Save the Build Manual changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Build Manual' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

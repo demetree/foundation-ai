@@ -261,7 +261,7 @@ namespace Foundation.BMC.Database
 
                 if (includeData == true)
                 {
-                    version.data = await chts.GetVersionAsync(this, 1).ConfigureAwait(false);
+                    version.data = await chts.GetVersionAsync(this, versionAudit.versionNumber).ConfigureAwait(false);
                 }
 
                 versions.Add(version);
@@ -281,9 +281,12 @@ namespace Foundation.BMC.Database
 		public class PlacedBrickDTO
 		{
 			public Int32 id { get; set; }
-			public Int32? projectId { get; set; }
-			public Int32? brickPartId { get; set; }
-			public Int32? brickColourId { get; set; }
+			[Required]
+			public Int32 projectId { get; set; }
+			[Required]
+			public Int32 brickPartId { get; set; }
+			[Required]
+			public Int32 brickColourId { get; set; }
 			public Single? positionX { get; set; }
 			public Single? positionY { get; set; }
 			public Single? positionZ { get; set; }
@@ -292,6 +295,8 @@ namespace Foundation.BMC.Database
 			public Single? rotationZ { get; set; }
 			public Single? rotationW { get; set; }
 			public Int32? buildStepNumber { get; set; }
+			[Required]
+			public Boolean isHidden { get; set; }
 			public Int32 versionNumber { get; set; }
 			[Required]
 			public Guid objectGuid { get; set; }
@@ -336,6 +341,7 @@ namespace Foundation.BMC.Database
 				rotationZ = this.rotationZ,
 				rotationW = this.rotationW,
 				buildStepNumber = this.buildStepNumber,
+				isHidden = this.isHidden,
 				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -390,6 +396,7 @@ namespace Foundation.BMC.Database
 				rotationZ = this.rotationZ,
 				rotationW = this.rotationW,
 				buildStepNumber = this.buildStepNumber,
+				isHidden = this.isHidden,
 				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -447,6 +454,7 @@ namespace Foundation.BMC.Database
 				rotationZ = dto.rotationZ,
 				rotationW = dto.rotationW,
 				buildStepNumber = dto.buildStepNumber,
+				isHidden = dto.isHidden,
 				versionNumber = dto.versionNumber,
 				objectGuid = dto.objectGuid,
 				active = dto.active ?? true,
@@ -478,6 +486,7 @@ namespace Foundation.BMC.Database
 			this.rotationZ = dto.rotationZ;
 			this.rotationW = dto.rotationW;
 			this.buildStepNumber = dto.buildStepNumber;
+			this.isHidden = dto.isHidden;
 			this.versionNumber = dto.versionNumber;
 			this.objectGuid = dto.objectGuid;
 			if (dto.active.HasValue == true)
@@ -515,6 +524,7 @@ namespace Foundation.BMC.Database
 				rotationZ = this.rotationZ,
 				rotationW = this.rotationW,
 				buildStepNumber = this.buildStepNumber,
+				isHidden = this.isHidden,
 				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -583,6 +593,7 @@ namespace Foundation.BMC.Database
 				rotationZ = placedBrick.rotationZ,
 				rotationW = placedBrick.rotationW,
 				buildStepNumber = placedBrick.buildStepNumber,
+				isHidden = placedBrick.isHidden,
 				versionNumber = placedBrick.versionNumber,
 				objectGuid = placedBrick.objectGuid,
 				active = placedBrick.active,
@@ -618,6 +629,7 @@ namespace Foundation.BMC.Database
 				rotationZ = placedBrick.rotationZ,
 				rotationW = placedBrick.rotationW,
 				buildStepNumber = placedBrick.buildStepNumber,
+				isHidden = placedBrick.isHidden,
 				versionNumber = placedBrick.versionNumber,
 				objectGuid = placedBrick.objectGuid,
 				active = placedBrick.active,

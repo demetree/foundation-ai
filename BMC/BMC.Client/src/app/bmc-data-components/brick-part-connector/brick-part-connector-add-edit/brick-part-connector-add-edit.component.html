@@ -22,18 +22,24 @@
    <div class="modal-body brick-part-connector-modal-body">
       <form [formGroup]="brickPartConnectorForm" (ngSubmit)="submitForm()">
             <div class="form-group" *ngIf="!isFieldHidden('brickPartId')">
-                <label for="BrickPartConnector-brickPartId" id="label-BrickPartConnector-brickPartId">Brick Part</label>
+                <label for="BrickPartConnector-brickPartId" id="label-BrickPartConnector-brickPartId"><span class="text-danger">*</span>Brick Part</label>
                 <select id="BrickPartConnector-brickPartId" formControlName="brickPartId" class="form-select brick-part-connector-select" [disabled]="!userIsBMCBrickPartConnectorWriter()">
                     <option [ngValue]="null">Select Brick Part</option>
                     <option *ngFor="let brickPart of brickParts$ | async" [ngValue]="brickPart.id">{{brickPart.name}}</option>
                 </select>
+                <div *ngIf="brickPartConnectorForm.get('brickPartId')?.invalid && brickPartConnectorForm.get('brickPartId')?.touched" class="text-danger">
+                    Brick Part is required
+                </div>
             </div>
             <div class="form-group" *ngIf="!isFieldHidden('connectorTypeId')">
-                <label for="BrickPartConnector-connectorTypeId" id="label-BrickPartConnector-connectorTypeId">Connector Type</label>
+                <label for="BrickPartConnector-connectorTypeId" id="label-BrickPartConnector-connectorTypeId"><span class="text-danger">*</span>Connector Type</label>
                 <select id="BrickPartConnector-connectorTypeId" formControlName="connectorTypeId" class="form-select brick-part-connector-select" [disabled]="!userIsBMCBrickPartConnectorWriter()">
                     <option [ngValue]="null">Select Connector Type</option>
                     <option *ngFor="let connectorType of connectorTypes$ | async" [ngValue]="connectorType.id">{{connectorType.name}}</option>
                 </select>
+                <div *ngIf="brickPartConnectorForm.get('connectorTypeId')?.invalid && brickPartConnectorForm.get('connectorTypeId')?.touched" class="text-danger">
+                    Connector Type is required
+                </div>
             </div>
             <div class="form-group" *ngIf="!isFieldHidden('positionX')">
                 <label for="BrickPartConnector-positionX" id="label-BrickPartConnector-positionX">Position X</label>

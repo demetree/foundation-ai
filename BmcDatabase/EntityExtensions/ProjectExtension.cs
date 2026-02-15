@@ -261,7 +261,7 @@ namespace Foundation.BMC.Database
 
                 if (includeData == true)
                 {
-                    version.data = await chts.GetVersionAsync(this, 1).ConfigureAwait(false);
+                    version.data = await chts.GetVersionAsync(this, versionAudit.versionNumber).ConfigureAwait(false);
                 }
 
                 versions.Add(version);
@@ -286,6 +286,9 @@ namespace Foundation.BMC.Database
 			[Required]
 			public String description { get; set; }
 			public String notes { get; set; }
+			public String thumbnailImagePath { get; set; }
+			public Int32? partCount { get; set; }
+			public DateTime? lastBuildDate { get; set; }
 			public Int32 versionNumber { get; set; }
 			[Required]
 			public Guid objectGuid { get; set; }
@@ -319,6 +322,9 @@ namespace Foundation.BMC.Database
 				name = this.name,
 				description = this.description,
 				notes = this.notes,
+				thumbnailImagePath = this.thumbnailImagePath,
+				partCount = this.partCount,
+				lastBuildDate = this.lastBuildDate,
 				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -365,6 +371,9 @@ namespace Foundation.BMC.Database
 				name = this.name,
 				description = this.description,
 				notes = this.notes,
+				thumbnailImagePath = this.thumbnailImagePath,
+				partCount = this.partCount,
+				lastBuildDate = this.lastBuildDate,
 				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -411,6 +420,9 @@ namespace Foundation.BMC.Database
 				name = dto.name,
 				description = dto.description,
 				notes = dto.notes,
+				thumbnailImagePath = dto.thumbnailImagePath,
+				partCount = dto.partCount,
+				lastBuildDate = dto.lastBuildDate,
 				versionNumber = dto.versionNumber,
 				objectGuid = dto.objectGuid,
 				active = dto.active ?? true,
@@ -434,6 +446,9 @@ namespace Foundation.BMC.Database
 			this.name = dto.name;
 			this.description = dto.description;
 			this.notes = dto.notes;
+			this.thumbnailImagePath = dto.thumbnailImagePath;
+			this.partCount = dto.partCount;
+			this.lastBuildDate = dto.lastBuildDate;
 			this.versionNumber = dto.versionNumber;
 			this.objectGuid = dto.objectGuid;
 			if (dto.active.HasValue == true)
@@ -463,6 +478,9 @@ namespace Foundation.BMC.Database
 				name = this.name,
 				description = this.description,
 				notes = this.notes,
+				thumbnailImagePath = this.thumbnailImagePath,
+				partCount = this.partCount,
+				lastBuildDate = this.lastBuildDate,
 				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -523,6 +541,9 @@ namespace Foundation.BMC.Database
 				name = project.name,
 				description = project.description,
 				notes = project.notes,
+				thumbnailImagePath = project.thumbnailImagePath,
+				partCount = project.partCount,
+				lastBuildDate = project.lastBuildDate,
 				versionNumber = project.versionNumber,
 				objectGuid = project.objectGuid,
 				active = project.active,
@@ -550,6 +571,9 @@ namespace Foundation.BMC.Database
 				name = project.name,
 				description = project.description,
 				notes = project.notes,
+				thumbnailImagePath = project.thumbnailImagePath,
+				partCount = project.partCount,
+				lastBuildDate = project.lastBuildDate,
 				versionNumber = project.versionNumber,
 				objectGuid = project.objectGuid,
 				active = project.active,

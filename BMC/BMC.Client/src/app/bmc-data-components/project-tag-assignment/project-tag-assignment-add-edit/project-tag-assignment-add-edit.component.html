@@ -1,0 +1,67 @@
+<div class="add-project-tag-assignment" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-project-tag-assignment me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Project Tag Assignment" 
+        *ngIf="userIsBMCProjectTagAssignmentWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #projectTagAssignmentModal let-modal>
+   <div class="modal-header bg-dark text-light project-tag-assignment-modal-header">
+      <h5 class="modal-title mb-0" id="projectTagAssignmentModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Project Tag Assignment' : 'Add Project Tag Assignment' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body project-tag-assignment-modal-body">
+      <form [formGroup]="projectTagAssignmentForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('projectId')">
+                <label for="ProjectTagAssignment-projectId" id="label-ProjectTagAssignment-projectId"><span class="text-danger">*</span>Project</label>
+                <select id="ProjectTagAssignment-projectId" formControlName="projectId" class="form-select project-tag-assignment-select" [disabled]="!userIsBMCProjectTagAssignmentWriter()">
+                    <option [ngValue]="null">Select Project</option>
+                    <option *ngFor="let project of projects$ | async" [ngValue]="project.id">{{project.name}}</option>
+                </select>
+                <div *ngIf="projectTagAssignmentForm.get('projectId')?.invalid && projectTagAssignmentForm.get('projectId')?.touched" class="text-danger">
+                    Project is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('projectTagId')">
+                <label for="ProjectTagAssignment-projectTagId" id="label-ProjectTagAssignment-projectTagId"><span class="text-danger">*</span>Project Tag</label>
+                <select id="ProjectTagAssignment-projectTagId" formControlName="projectTagId" class="form-select project-tag-assignment-select" [disabled]="!userIsBMCProjectTagAssignmentWriter()">
+                    <option [ngValue]="null">Select Project Tag</option>
+                    <option *ngFor="let projectTag of projectTags$ | async" [ngValue]="projectTag.id">{{projectTag.name}}</option>
+                </select>
+                <div *ngIf="projectTagAssignmentForm.get('projectTagId')?.invalid && projectTagAssignmentForm.get('projectTagId')?.touched" class="text-danger">
+                    Project Tag is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ProjectTagAssignment-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCProjectTagAssignmentWriter()" />
+                <label for="ProjectTagAssignment-active" class="form-check-label" id="label-ProjectTagAssignment-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ProjectTagAssignment-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCProjectTagAssignmentWriter()" />
+                <label for="ProjectTagAssignment-deleted" class="form-check-label" id="label-ProjectTagAssignment-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer project-tag-assignment-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Project Tag Assignment changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !projectTagAssignmentForm.valid || projectTagAssignmentForm.pristine  || userIsBMCProjectTagAssignmentWriter() == false " ngbTooltip="Save the Project Tag Assignment changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Project Tag Assignment' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

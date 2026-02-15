@@ -1,0 +1,72 @@
+<div class="add-lego-theme" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-lego-theme me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Lego Theme" 
+        *ngIf="userIsBMCLegoThemeWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #legoThemeModal let-modal>
+   <div class="modal-header bg-dark text-light lego-theme-modal-header">
+      <h5 class="modal-title mb-0" id="legoThemeModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Lego Theme' : 'Add Lego Theme' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body lego-theme-modal-body">
+      <form [formGroup]="legoThemeForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="LegoTheme-name" id="label-LegoTheme-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="LegoTheme-name" formControlName="name" placeholder="Enter Name" class="form-control lego-theme-input" [disabled]="!userIsBMCLegoThemeWriter()" aria-labelledby="label-name" />
+                <div *ngIf="legoThemeForm.get('name')?.invalid && legoThemeForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="LegoTheme-description" id="label-LegoTheme-description"><span class="text-danger">*</span>Description</label>
+                <textarea id="LegoTheme-description" formControlName="description" placeholder="Enter Description" class="form-control lego-theme-input" [disabled]="!userIsBMCLegoThemeWriter()"></textarea>
+                <div *ngIf="legoThemeForm.get('description')?.invalid && legoThemeForm.get('description')?.touched" class="text-danger">
+                    Description is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('legoThemeId')">
+                <label for="LegoTheme-legoThemeId" id="label-LegoTheme-legoThemeId">Lego Theme</label>
+                <select id="LegoTheme-legoThemeId" formControlName="legoThemeId" class="form-select lego-theme-select" [disabled]="!userIsBMCLegoThemeWriter()">
+                    <option [ngValue]="null">Select Lego Theme</option>
+                    <option *ngFor="let legoTheme of legoThemes$ | async" [ngValue]="legoTheme.id">{{legoTheme.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                <label for="LegoTheme-sequence" id="label-LegoTheme-sequence">Sequence</label>
+                <input type="number" id="LegoTheme-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control lego-theme-input" [disabled]="!userIsBMCLegoThemeWriter()" aria-labelledby="label-sequence" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="LegoTheme-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCLegoThemeWriter()" />
+                <label for="LegoTheme-active" class="form-check-label" id="label-LegoTheme-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="LegoTheme-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCLegoThemeWriter()" />
+                <label for="LegoTheme-deleted" class="form-check-label" id="label-LegoTheme-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer lego-theme-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Lego Theme changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !legoThemeForm.valid || legoThemeForm.pristine  || userIsBMCLegoThemeWriter() == false " ngbTooltip="Save the Lego Theme changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Lego Theme' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

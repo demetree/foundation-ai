@@ -1,0 +1,67 @@
+<div class="add-submodel-placed-brick" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-submodel-placed-brick me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Submodel Placed Brick" 
+        *ngIf="userIsBMCSubmodelPlacedBrickWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #submodelPlacedBrickModal let-modal>
+   <div class="modal-header bg-dark text-light submodel-placed-brick-modal-header">
+      <h5 class="modal-title mb-0" id="submodelPlacedBrickModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Submodel Placed Brick' : 'Add Submodel Placed Brick' }}
+      </h5>
+      <button type="button"
+              class="btn btn-sm btn-close btn-close-white"
+              (click)="closeModal()">
+       </button>
+   </div>
+   <div class="modal-body submodel-placed-brick-modal-body">
+      <form [formGroup]="submodelPlacedBrickForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('submodelId')">
+                <label for="SubmodelPlacedBrick-submodelId" id="label-SubmodelPlacedBrick-submodelId"><span class="text-danger">*</span>Submodel</label>
+                <select id="SubmodelPlacedBrick-submodelId" formControlName="submodelId" class="form-select submodel-placed-brick-select" [disabled]="!userIsBMCSubmodelPlacedBrickWriter()">
+                    <option [ngValue]="null">Select Submodel</option>
+                    <option *ngFor="let submodel of submodels$ | async" [ngValue]="submodel.id">{{submodel.name}}</option>
+                </select>
+                <div *ngIf="submodelPlacedBrickForm.get('submodelId')?.invalid && submodelPlacedBrickForm.get('submodelId')?.touched" class="text-danger">
+                    Submodel is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('placedBrickId')">
+                <label for="SubmodelPlacedBrick-placedBrickId" id="label-SubmodelPlacedBrick-placedBrickId"><span class="text-danger">*</span>Placed Brick</label>
+                <select id="SubmodelPlacedBrick-placedBrickId" formControlName="placedBrickId" class="form-select submodel-placed-brick-select" [disabled]="!userIsBMCSubmodelPlacedBrickWriter()">
+                    <option [ngValue]="null">Select Placed Brick</option>
+                    <option *ngFor="let placedBrick of placedBricks$ | async" [ngValue]="placedBrick.id">{{placedBrick.id}}</option>
+                </select>
+                <div *ngIf="submodelPlacedBrickForm.get('placedBrickId')?.invalid && submodelPlacedBrickForm.get('placedBrickId')?.touched" class="text-danger">
+                    Placed Brick is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="SubmodelPlacedBrick-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCSubmodelPlacedBrickWriter()" />
+                <label for="SubmodelPlacedBrick-active" class="form-check-label" id="label-SubmodelPlacedBrick-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="SubmodelPlacedBrick-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCSubmodelPlacedBrickWriter()" />
+                <label for="SubmodelPlacedBrick-deleted" class="form-check-label" id="label-SubmodelPlacedBrick-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer submodel-placed-brick-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Submodel Placed Brick changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !submodelPlacedBrickForm.valid || submodelPlacedBrickForm.pristine  || userIsBMCSubmodelPlacedBrickWriter() == false " ngbTooltip="Save the Submodel Placed Brick changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Submodel Placed Brick' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>
